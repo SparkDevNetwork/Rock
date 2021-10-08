@@ -50,7 +50,11 @@ export const enum Group {
     GroupCommunicationApprovers = "74B1B26E-1955-49A7-4C59-ABCD7543FF71",
     /** Group of people who are responsible for the safety and security of staff and members */
     GroupSafetySecurity = "32E80B6C-A1EB-40FD-BEC3-E11DE8FF75AB",
+    /** Group of people who are responsible for the integrity of the data. */
+    GroupDataIntegrityWorker = "40517E10-0F2D-4C61-AA8D-BDE36D58C63A",
     /** WEB - Admistration */
     GroupWebAdministrators = "1918E74F-C00D-4DDD-94C4-2E7209CE12C3",
+    /** RSR - Prayer Access */
+    GroupRsrPrayerAccess = "9E17621E-F559-44E9-8C40-E8CF44CF8FCF",
 }
 

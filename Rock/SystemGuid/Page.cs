@@ -1815,7 +1815,7 @@ namespace Rock.SystemGuid
         /// Gets the SMS Phone Numbers page guid
         /// ParentPage: Communications
         /// </summary>
-        [Obsolete( "Use SMS_PHONE_NUMBERS instead" )]
+        [Obsolete( "Use SMS_PHONE_NUMBERS instead", true )]
         [RockObsolete( "1.9" )]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 

@@ -32,6 +32,7 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Cms.StructuredContent;
 
 namespace Rock.Model
 {
@@ -394,6 +395,13 @@ namespace Rock.Model
                     PreSaveBinaryFile( dbContext, entry );
                 }
 
+                // Check to see if this attribute value is for a StructureContentEditorFieldType.
+                // If so then we need to detect any changes in the content blocks.
+                if ( field is Field.Types.StructureContentEditorFieldType )
+                {
+                    PreSaveStructuredContent( dbContext, entry );
+                }
+
                 // Save to the historical table if history is enabled
                 if ( attributeCache.EnableHistory )
                 {
@@ -513,6 +521,27 @@ namespace Rock.Model
                 {
                     binaryFile.IsTemporary = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Processes the PreSave event when this value is for
+        /// <see cref="Field.Types.StructureContentEditorFieldType"/>. Detect any
+        /// changes to the internal content and apply them to the database as well.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        private void PreSaveStructuredContent( Rock.Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( dbContext is RockContext rockContext )
+            {
+                string content = entry.State == EntityState.Added || entry.State == EntityState.Modified ? Value : string.Empty;
+                string oldContent = entry.State == EntityState.Modified ? entry.OriginalValues["Value"] as string : string.Empty;
+
+                var helper = new StructuredContentHelper( content );
+                var changes = helper.DetectChanges( oldContent );
+
+                helper.ApplyDatabaseChanges( changes, rockContext );
             }
         }
 

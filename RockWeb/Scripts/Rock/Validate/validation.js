@@ -24,10 +24,12 @@
             $("span.validation-error").bind("DOMAttrModified propertychange", function (e) {
 
                 // Exit early if IE because it throws this event lots more
-                if (e.originalEvent.propertyName && e.originalEvent.propertyName != "isvalid") return;
+                if (e.originalEvent.propertyName && e.originalEvent.propertyName !== "isvalid") return;
 
                 var controlToValidate = $("#" + this.controltovalidate);
-                if (controlToValidate == null) return;
+                if (controlToValidate === null) return;
+                
+                if (controlToValidate.css('display') === 'none') return;
 
                 var isValid = true;
 

@@ -1605,11 +1605,11 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// takes two datetimes and returns the difference in the unit you provide
+        /// Returns the difference between two datetime values in the specified units.
         /// </summary>
-        /// <param name="sStartDate">The s start date.</param>
-        /// <param name="sEndDate">The s end date.</param>
-        /// <param name="unit">The unit.</param>
+        /// <param name="sStartDate">The start date.</param>
+        /// <param name="sEndDate">The end date.</param>
+        /// <param name="unit">The unit of measurement.</param>
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
@@ -1631,7 +1631,8 @@ namespace Rock.Lava
                     case "M":
                         return ( Int64 ) GetMonthsBetween( startDate.Value, endDate.Value );
                     case "Y":
-                        return ( Int64 ) ( endDate.Value.Year - startDate.Value.Year );
+                        // Return the difference between the dates as the number of whole years.
+                        return ( Int64 ) Math.Truncate( endDate.Value.Subtract( startDate.Value ).TotalDays / 365.25 );
                     case "s":
                         return ( Int64 ) difference.TotalSeconds;
                     default:
@@ -3598,6 +3599,139 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        public static List<Model.Step> Steps( ILavaRenderContext context, object input, string stepProgram = "All", string stepStatus = "All", string stepType = "All" )
+        {
+            var person = GetPerson( input, context );
+
+            if ( person == null )
+            {
+                return new List<Step>();
+            }
+
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            var stepsQuery = GetPersonSteps( rockContext, person, stepProgram, stepStatus, stepType );
+
+            return stepsQuery.ToList();
+        }
+
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        internal static IQueryable<Model.Step> GetPersonSteps( RockContext rockContext, Person person, string stepProgram = null, string stepStatus = null, string stepType = null )
+        {
+            // Get Person from context.
+            if ( person == null )
+            {
+                return null;
+            }
+
+            // Get base Steps query.
+            var stepQuery = new StepService( rockContext )
+                .Queryable( "Campus,StepStatus,StepType" )
+                .Where( s => s.PersonAlias.PersonId == person.Id );
+
+            // Filter by: Step Program.
+            // The identifier can be either an Id or a Guid.
+            stepProgram = stepProgram ?? string.Empty;
+            stepProgram = stepProgram.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepProgram )
+                 && stepProgram != "all" )
+            {
+                var stepProgramId = stepProgram.AsIntegerOrNull();
+
+                if ( stepProgramId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepType.StepProgramId == stepProgramId.Value );
+                }
+                else
+                {
+                    var stepProgramGuid = stepProgram.AsGuidOrNull();
+
+                    if ( stepProgramGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepType != null && s.StepType.StepProgram != null && s.StepType.StepProgram.Guid == stepProgramGuid.Value );
+                    }
+                }
+
+                // Step Program Identifier is invalid.
+            }
+
+            // Filter by: Step Type.
+            // The identifier can be either an Id or a Guid.
+            stepType = stepType ?? string.Empty;
+            stepType = stepType.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepType )
+                 && stepType != "all" )
+            {
+                var stepTypeId = stepType.AsIntegerOrNull();
+
+                if ( stepTypeId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepTypeId == stepTypeId.Value );
+                }
+                else
+                {
+                    var stepTypeGuid = stepType.AsGuidOrNull();
+
+                    if ( stepTypeGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepType != null && s.StepType.Guid == stepTypeGuid.Value );
+                    }
+                }
+
+                // Step Type Identifier is invalid.
+            }
+
+            // Filter by: Step Status
+            stepStatus = stepStatus ?? string.Empty;
+            stepStatus = stepStatus.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepStatus )
+                 && stepStatus != "all" )
+            {
+                var stepStatusId = stepStatus.AsIntegerOrNull();
+
+                if ( stepStatusId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepStatusId == stepStatusId.Value );
+                }
+                else
+                {
+                    var stepStatusGuid = stepStatus.AsGuidOrNull();
+
+                    if ( stepStatusGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepStatus != null && s.StepStatus.Guid == stepStatusGuid.Value );
+                    }
+                    else
+                    {
+                        // Name
+                        stepQuery = stepQuery.Where( s => s.StepStatus != null && s.StepStatus.Name == stepStatus );
+                    }
+                }
+            }
+
+            return stepQuery;
+        }
+
         #endregion Person Filters
 
         #region Group Filters
@@ -5243,8 +5377,8 @@ namespace Rock.Lava
                 if ( lavaObject != null )
                 {
                     if ( lavaObject.ContainsKey( filterKey )
-                            && ( ( comparisonType == "equal" && AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                 || ( comparisonType == "notequal" && !AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                            && ( ( comparisonType == "equal" && GetLavaCompareResult( lavaObject.GetValue( filterKey ), filterValue ) == 0 )
+                                 || ( comparisonType == "notequal" && GetLavaCompareResult( lavaObject.GetValue( filterKey ), filterValue ) != 0 ) ) )
                     {
                         result.Add( lavaObject );
                     }
@@ -5269,8 +5403,10 @@ namespace Rock.Lava
                         propertyValue = string.Empty;
                     }
 
-                    if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
-                            || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                    var compareResult = GetLavaCompareResult( propertyValue, filterValue );
+
+                    if ( ( compareResult == 0 && comparisonType == "equal" )
+                            || ( compareResult != 0 && comparisonType == "notequal" ) )
                     {
                         result.Add( value );
                     }
@@ -5280,19 +5416,62 @@ namespace Rock.Lava
             return result;
         }
 
-        private static bool AreEqualValue( object left, object right )
+        /// <summary>
+        /// Returns the result of a comparison between two values, indicating if the left value is less than, greater than or equal to the right value.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns>
+        /// A signed integer that indicates the relative values of x and y.
+        /// -2: x is not equal to y, but the comparison is indeterminate.
+        /// -1: x is less than y.
+        /// 0: x equals y.
+        /// +1: x is greater than y.
+        /// </returns>
+        private static int GetLavaCompareResult( object left, object right )
         {
-            if ( right == null )
+            if ( left == null || right == null )
             {
-                if ( left == null )
+                if ( left == null && right == null )
                 {
-                    return true;
+                    return 0;
                 }
 
-                return false;
+                // Return a result that indicates inqueality without specifying greater or less.
+                return -2;
             }
 
-            return left.Equals( right );
+            // Compare DateTimeOffset values by converting to DateTime to ignore differences in offset.
+            if ( right is DateTimeOffset rightDto )
+            {
+                right = rightDto.DateTime;
+            }
+
+            if ( left is DateTimeOffset leftDto )
+            {
+                left = leftDto.DateTime;
+            }
+
+            // If the operand types are not the same, try to convert the right type to the left type.
+            var leftType = left.GetType();
+            var rightType = right.GetType();
+
+
+            if ( leftType != rightType )
+            {
+                if ( leftType.IsEnum )
+                {
+                    right = Enum.Parse( leftType, right.ToString() );
+                }
+                else
+                {
+                    right = Convert.ChangeType( right, leftType );
+                }
+            }
+
+            var compareResult = Comparer.Default.Compare( left, right );
+
+            return compareResult;
         }
 
         /// <summary>

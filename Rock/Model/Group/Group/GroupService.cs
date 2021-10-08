@@ -21,8 +21,10 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Text;
+
 using Rock.Data;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -84,13 +86,21 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> by their IsSecurityRole flag.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> by their IsSecurityRole flag. This is the same as calling
+        /// <seealso cref="GroupServiceExtensions.IsSecurityRoleOrSecurityRoleGroupType" /> or <seealso cref="GroupServiceExtensions.IsNotSecurityRoleOrSecurityRoleGroupType" />
         /// </summary>
         /// <param name="isSecurityRole">A <see cref="System.Boolean"/> representing the IsSecurityRole flag value to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that contains a IsSecurityRole flag that matches the provided value.</returns>
         public IQueryable<Group> GetByIsSecurityRole( bool isSecurityRole )
         {
-            return Queryable().Where( t => t.IsSecurityRole == isSecurityRole );
+            if ( isSecurityRole )
+            {
+                return Queryable().IsSecurityRoleOrSecurityRoleGroupType();
+            }
+            else
+            {
+                return Queryable().IsNotSecurityRoleOrSecurityRoleGroupType();
+            }
         }
 
         /// <summary>
@@ -462,7 +472,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
         /// </returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need" )]
+        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need", true )]
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
             return GetAllDescendentGroups( parentGroupId, true );
@@ -1381,7 +1391,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
-        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", false )]
+        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", true )]
         [RockObsolete( "1.9" )]
         public bool AllowsDuplicateMembers( Group group )
         {
@@ -1459,7 +1469,7 @@ namespace Rock.Model
         /// <param name="members">The members.</param>
         /// <param name="selector">The selector.</param>
         /// <returns></returns>
-        public static TResult GetHeadOfHousehold<TResult>( this IQueryable<GroupMember> members,System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
+        public static TResult GetHeadOfHousehold<TResult>( this IQueryable<GroupMember> members, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
         {
             return members
                 .OrderBy( m => m.GroupRole.Order )
@@ -1512,6 +1522,26 @@ namespace Rock.Model
                     .Where( g => g.Members.Any( m =>
                                     m.GroupMemberStatus == GroupMemberStatus.Active &&
                                     m.GroupRole.IsLeader ) );
+        }
+
+        /// <summary>
+        /// Returns a queryable of groups that are Security role based on either <see cref="Group.IsSecurityRole" />
+        /// or if <see cref="Group.GroupTypeId"/> is the Security Role Group Type.
+        /// </summary>
+        public static IQueryable<Group> IsSecurityRoleOrSecurityRoleGroupType( this IQueryable<Group> groupQuery )
+        {
+            var groupTypeIdSecurityRole = GroupTypeCache.GetSecurityRoleGroupType()?.Id ?? 0;
+            return groupQuery.Where( g => g.IsSecurityRole || g.GroupTypeId == groupTypeIdSecurityRole );
+        }
+
+        /// <summary>
+        /// Returns a queryable of groups that are not Security role based on either <see cref="Group.IsSecurityRole" />
+        /// or if <see cref="Group.GroupTypeId"/> is the Security Role Group Type.
+        /// </summary>
+        public static IQueryable<Group> IsNotSecurityRoleOrSecurityRoleGroupType( this IQueryable<Group> groupQuery )
+        {
+            var groupTypeIdSecurityRole = GroupTypeCache.GetSecurityRoleGroupType()?.Id ?? 0;
+            return groupQuery.Where( g => !g.IsSecurityRole && g.GroupTypeId != groupTypeIdSecurityRole );
         }
 
         /// <summary>

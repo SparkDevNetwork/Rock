@@ -414,7 +414,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// takes computer-readible-formats and makes them human readable
+        /// takes computer-readable-formats and makes them human readable
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -1530,7 +1530,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Dayses from now.
+        /// Days from now.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -1773,11 +1773,11 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// takes two datetimes and returns the difference in the unit you provide
+        /// Returns the difference between two datetime values in the specified units.
         /// </summary>
-        /// <param name="sStartDate">The s start date.</param>
-        /// <param name="sEndDate">The s end date.</param>
-        /// <param name="unit">The unit.</param>
+        /// <param name="sStartDate">The start date.</param>
+        /// <param name="sEndDate">The end date.</param>
+        /// <param name="unit">The unit of measurement.</param>
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
@@ -1786,22 +1786,23 @@ namespace Rock.Lava
 
             if ( startDate != null && endDate != null )
             {
-                TimeSpan difference = endDate.Value - startDate.Value;
+                var difference = endDate.Value - startDate.Value;
 
                 switch ( unit )
                 {
                     case "d":
-                        return (Int64)difference.TotalDays;
+                        return ( Int64 ) difference.TotalDays;
                     case "h":
-                        return (Int64)difference.TotalHours;
+                        return ( Int64 ) difference.TotalHours;
                     case "m":
-                        return (Int64)difference.TotalMinutes;
+                        return ( Int64 ) difference.TotalMinutes;
                     case "M":
-                        return (Int64)GetMonthsBetween( startDate.Value, endDate.Value );
+                        return ( Int64 ) GetMonthsBetween( startDate.Value, endDate.Value );
                     case "Y":
-                        return (Int64)( endDate.Value.Year - startDate.Value.Year );
+                        // Return the difference between the dates as the number of whole years.
+                        return ( Int64 ) Math.Truncate( endDate.Value.Subtract( startDate.Value ).TotalDays / 365.25 );
                     case "s":
-                        return (Int64)difference.TotalSeconds;
+                        return ( Int64 ) difference.TotalSeconds;
                     default:
                         return null;
                 }
@@ -3047,7 +3048,7 @@ namespace Rock.Lava
 
             if ( includeInactive == false && useFormalNames == false && finalfinalSeparator == "&" && separator == "," && person.PrimaryFamilyId.HasValue )
             {
-                // if default parameters are specified, we can get the family salutation from the GroupSalutionField of the person's PrimaryFamily
+                // if default parameters are specified, we can get the family salutation from the GroupSalutationField of the person's PrimaryFamily
                 if ( includeChildren )
                 {
                     familySalutation = person.PrimaryFamily?.GroupSalutationFull;
@@ -3931,6 +3932,30 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        public static List<Model.Step> Steps( object input, string stepProgram = "All", string stepStatus = "All", string stepType = "All" )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return new List<Step>();
+            }
+
+            var rockContext = new RockContext();
+
+            var stepsQuery = LavaFilters.GetPersonSteps( rockContext, person, stepProgram, stepStatus, stepType );
+
+            return stepsQuery.ToList();
+        }
+
         #endregion Person Filters
 
         #region Group Filters
@@ -4386,7 +4411,7 @@ namespace Rock.Lava
                 // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
                 isCollection = resultDataObject is IEnumerable<ExpandoObject>;
 
-                // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidently modify the cached object
+                // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidentally modify the cached object
                 if ( isCollection )
                 {
                     resultDataObject = ( resultDataObject as IEnumerable<ExpandoObject> ).Select( a => a.ShallowCopy() ).ToList();
@@ -5601,8 +5626,10 @@ namespace Rock.Lava
                             propertyValue = string.Empty;
                         }
 
-                        if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
-                                || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                        var compareResult = GetLavaCompareResult( propertyValue, filterValue );
+
+                        if ( ( compareResult == 0 && comparisonType == "equal" )
+                                || ( compareResult != 0 && comparisonType == "notequal" ) )
                         {
                             result.Add( value );
                         }
@@ -5613,6 +5640,64 @@ namespace Rock.Lava
             }
 
             return input;
+        }
+
+        /// <summary>
+        /// Returns the result of a comparison between two values, indicating if the left value is less than, greater than or equal to the right value.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns>
+        /// A signed integer that indicates the relative values of x and y.
+        /// -2: x is not equal to y, but the comparison is indeterminate.
+        /// -1: x is less than y.
+        /// 0: x equals y.
+        /// +1: x is greater than y.
+        /// </returns>
+        private static int GetLavaCompareResult( object left, object right )
+        {
+            if ( left == null || right == null )
+            {
+                if ( left == null && right == null )
+                {
+                    return 0;
+                }
+
+                // Return a result that indicates inqueality without specifying greater or less.
+                return -2;
+            }
+
+            // Compare DateTimeOffset values by converting to DateTime to ignore differences in offset.
+            if ( right is DateTimeOffset rightDto )
+            {
+                right = rightDto.DateTime;
+            }
+
+            if ( left is DateTimeOffset leftDto )
+            {
+                left = leftDto.DateTime;
+            }
+
+            // If the operand types are not the same, try to convert the right type to the left type.
+            var leftType = left.GetType();
+            var rightType = right.GetType();
+
+
+            if ( leftType != rightType )
+            {
+                if ( leftType.IsEnum )
+                {
+                    right = Enum.Parse( leftType, right.ToString() );
+                }
+                else
+                {
+                    right = Convert.ChangeType( right, leftType );
+                }
+            }
+
+            var compareResult = Comparer.Default.Compare( left, right );
+
+            return compareResult;
         }
 
         /// <summary>

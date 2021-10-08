@@ -223,16 +223,16 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( "Show if" );
                 writer.RenderEndTag();
-                toggleAllAny.CssClass = "pull-left";
+                toggleAllAny.CssClass = "d-flex pull-left";
                 toggleAllAny.RenderControl( writer );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( "of these are" );
                 writer.RenderEndTag();
-                toggleTrueFalse.CssClass = "pull-left";
+                toggleTrueFalse.CssClass = "d-flex pull-left";
                 toggleTrueFalse.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm pull-right" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm d-sm-flex pull-right" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 btnAddGroup.Visible = ( AddGroupClick != null );

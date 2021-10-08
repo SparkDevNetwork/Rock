@@ -1668,7 +1668,7 @@ $('#{0}').tooltip();
             scheduleSignUpRowItem.Controls.Add( hfAttendanceId );
 
             var pnlCheckboxCol = new Panel();
-            pnlCheckboxCol.Attributes.Add( "class", "col-md-4" );
+            pnlCheckboxCol.Attributes.Add( "class", "col-xs-12 col-sm-5 col-md-4" );
 
             var cbSignupSchedule = new RockCheckBox();
             cbSignupSchedule.ID = "cbSignupSchedule";
@@ -1681,10 +1681,15 @@ $('#{0}').tooltip();
             cbSignupSchedule.CheckedChanged += CbSignupSchedule_CheckedChanged;
             cbSignupSchedule.Enabled = !personScheduleSignup.MaxScheduled;
 
-            if ( personScheduleSignup.MaxScheduled )
+            if ( personScheduleSignup.PeopleNeeded > 0 )
             {
-                cbSignupSchedule.Text += " (filled)";
+                cbSignupSchedule.Text += $" <span class='schedule-signup-people-needed text-muted small'>({personScheduleSignup.PeopleNeeded} {"person".PluralizeIf( personScheduleSignup.PeopleNeeded != 1 )} needed)</span>";
             }
+            else if ( personScheduleSignup.MaxScheduled )
+            {
+                cbSignupSchedule.Text += " <span class='text-muted small'>(filled)</span>";
+            }
+            
 
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
 
@@ -1712,7 +1717,7 @@ $('#{0}').tooltip();
             ddlSignupLocations.SelectedIndexChanged += DdlSignupLocations_SelectedIndexChanged;
 
             var pnlLocationCol = new Panel();
-            pnlLocationCol.Attributes.Add( "class", "col-md-8" );
+            pnlLocationCol.Attributes.Add( "class", "col-xs-12 col-sm-7 col-md-8 col-lg-6 mb-3 mb-md-0" );
             pnlLocationCol.Controls.Add( ddlSignupLocations );
 
             var hlSignUpSaved = new HighlightLabel { ID = "hlSignUpSaved", LabelType = LabelType.Success, Text = "<i class='fa fa-check-square'></i> Saved" };
@@ -1822,9 +1827,7 @@ $('#{0}').tooltip();
                     && a.Group.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var personGroupLocationList = personGroupLocationQry.ToList();
-
                 var groupsThatHaveSchedulingRequirements = personGroupLocationQry.Where( a => a.Group.SchedulingMustMeetRequirements ).Select( a => a.Group ).Distinct().ToList();
-
                 var personDoesntMeetSchedulingRequirementGroupIds = new HashSet<int>();
 
                 foreach ( var groupThatHasSchedulingRequirements in groupsThatHaveSchedulingRequirements )
@@ -1844,10 +1847,27 @@ $('#{0}').tooltip();
                     foreach ( var schedule in personGroupLocation.Schedules )
                     {
                         //  find if this has max volunteers here
-                        int? maximumCapacitySetting = null;
+                        int maximumCapacitySetting = 0;
+                        int desiredCapacitySetting = 0;
+                        int minimumCapacitySetting = 0;
+                        int desiredOrMinimumNeeded = 0;
                         if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
                         {
-                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MaximumCapacity;
+                            var groupConfigs = personGroupLocationList.Where( x => x.GroupId == personGroupLocation.GroupId ).Select( x => x.GroupLocationScheduleConfigs );
+                            foreach ( var groupConfig in groupConfigs )
+                            {
+                                foreach( var config in groupConfig )
+                                {
+                                    if ( config.ScheduleId == schedule.Id )
+                                    {
+                                        maximumCapacitySetting += config.MaximumCapacity ?? 0;
+                                        desiredCapacitySetting += config.DesiredCapacity ?? 0;
+                                        minimumCapacitySetting += config.MinimumCapacity ?? 0;
+                                    }
+                                }
+                            }
+
+                            desiredOrMinimumNeeded = Math.Max( desiredCapacitySetting, minimumCapacitySetting );
                         }
 
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );
@@ -1872,14 +1892,17 @@ $('#{0}').tooltip();
                                 continue;
                             }
 
-                            // If there is a maximum Capacity then find out how many already RSVP with "Yes"
-                            var currentScheduled = maximumCapacitySetting != null
-                                ? attendanceService
-                                    .GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes )
-                                    .Count()
-                                : 0;
+                            // Get count of scheduled Occurrences with RSVP "Yes" for the group/schedule
+                            int currentScheduled = attendanceService
+                                .Queryable()
+                                .Where( a => a.Occurrence.OccurrenceDate == startDateTime.Date
+                                    && a.Occurrence.ScheduleId == schedule.Id
+                                    && a.RSVP == RSVP.Yes
+                                    && a.Occurrence.GroupId == personGroupLocation.GroupId )
+                                .Count();
 
-                            bool maxScheduled = maximumCapacitySetting != null && currentScheduled >= maximumCapacitySetting;
+                            bool maxScheduled = maximumCapacitySetting != 0 && currentScheduled >= maximumCapacitySetting;
+                            int peopleNeeded = desiredOrMinimumNeeded != 0 ? desiredOrMinimumNeeded - currentScheduled : 0;
 
                             // Add to master list personScheduleSignups
                             personScheduleSignups.Add( new PersonScheduleSignup
@@ -1894,7 +1917,8 @@ $('#{0}').tooltip();
                                 ScheduleId = schedule.Id,
                                 ScheduleName = schedule.Name,
                                 ScheduledDateTime = startDateTime,
-                                MaxScheduled = maxScheduled
+                                MaxScheduled = maxScheduled,
+                                PeopleNeeded = peopleNeeded < 0 ? 0 : peopleNeeded
                             } );
                         }
                     }
@@ -1927,6 +1951,8 @@ $('#{0}').tooltip();
             public int LocationOrder { get; set; }
 
             public bool MaxScheduled { get; set; }
+
+            public int PeopleNeeded { get; set; }
         }
 
         #endregion Sign-up Tab

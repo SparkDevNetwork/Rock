@@ -13,15 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -67,7 +65,6 @@ namespace RockWeb.Blocks.Connection
         {
             public const string ConnectionTypeId = "ConnectionTypeId";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
-
         }
 
         #endregion
@@ -144,14 +141,21 @@ namespace RockWeb.Blocks.Connection
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gConnectionOpportunities.DataKeyNames = new string[] { "Id" };
                     gConnectionOpportunities.Actions.AddClick += gConnectionOpportunities_AddClick;
+                    gConnectionOpportunities.GridReorder += gConnectionOpportunities_GridReorder;
                     gConnectionOpportunities.GridRebind += gConnectionOpportunities_GridRebind;
                     gConnectionOpportunities.ExportFilename = _connectionType.Name;
                     gConnectionOpportunities.RowDataBound += GConnectionOpportunities_RowDataBound;
                     gConnectionOpportunities.Actions.ShowAdd = _canEdit;
                     gConnectionOpportunities.IsDeleteEnabled = _canEdit;
+
+                    var reorderField = gConnectionOpportunities.ColumnsOfType<ReorderField>().FirstOrDefault();
+
+                    if ( reorderField != null )
+                    {
+                        reorderField.Visible = _canEdit;
+                    }
                 }
             }
-
         }
 
         /// <summary>
@@ -211,7 +215,9 @@ namespace RockWeb.Blocks.Connection
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                             rFilter.SaveUserPreference( MakeKeyUniqueToConnectionType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
-                        catch { }
+                        catch
+                        {
+                        }
                     }
                 }
             }
@@ -237,7 +243,9 @@ namespace RockWeb.Blocks.Connection
                         e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                         return;
                     }
-                    catch { }
+                    catch
+                    {
+                    }
                 }
             }
             else if ( e.Key == MakeKeyUniqueToConnectionType( "Status" ) )
@@ -277,7 +285,6 @@ namespace RockWeb.Blocks.Connection
                         rockContext.SaveChanges();
 
                         ConnectionWorkflowService.RemoveCachedTriggers();
-
                     }
                     else
                     {
@@ -285,6 +292,7 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
             }
+
             BindConnectionOpportunitiesGrid();
         }
 
@@ -336,6 +344,23 @@ namespace RockWeb.Blocks.Connection
                     NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionOpportunityId, connectionOpportunity.Id, PageParameterKey.ConnectionTypeId, _connectionType.Id );
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gConnectionOpportunities control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs" /> instance containing the event data.</param>
+        protected void gConnectionOpportunities_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var service = new ConnectionOpportunityService( rockContext );
+            var connectionOpportunities = service.Queryable().OrderBy( b => b.Order );
+
+            service.Reorder( connectionOpportunities.ToList(), e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
+
+            BindConnectionOpportunitiesGrid();
         }
 
         /// <summary>
@@ -449,7 +474,9 @@ namespace RockWeb.Blocks.Connection
                                 var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
                                 attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
                             }
-                            catch { }
+                            catch
+                            {
+                            }
                         }
                     }
 
@@ -516,21 +543,17 @@ namespace RockWeb.Blocks.Connection
                         qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, connectionOpportunityService, Rock.Reporting.FilterMode.SimpleFilter );
                     }
                 }
-                SortProperty sortProperty = gConnectionOpportunities.SortProperty;
+
+                // Sort GridView by Order and then Name.
+                qry = qry.OrderBy( q => q.Order ).ThenBy( q => q.Name );
 
                 List<ConnectionOpportunity> connectionOpportunities = null;
-                if ( sortProperty != null )
-                {
-                    connectionOpportunities = qry.Sort( sortProperty ).ToList();
-                }
-                else
-                {
-                    connectionOpportunities = qry.ToList().OrderBy( a => a.Name ).ToList();
-                }
+
+                connectionOpportunities = qry.OrderBy( q => q.Order ).ThenBy( q => q.Name ).ToList();
                 
                 // Only include opportunities that current person is allowed to view
                 var authorizedOpportunities = new List<ConnectionOpportunity>();
-                foreach( var opportunity in connectionOpportunities )
+                foreach ( var opportunity in connectionOpportunities )
                 {
                     if ( opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
@@ -580,6 +603,7 @@ namespace RockWeb.Blocks.Connection
             {
                 return string.Format( "{0}-{1}", _connectionType.Id, key );
             }
+
             return key;
         }
 

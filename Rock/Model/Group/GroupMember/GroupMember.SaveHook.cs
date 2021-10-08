@@ -19,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Humanizer;
+
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Web.Cache;
@@ -388,6 +390,39 @@ namespace Rock.Model
 
                         // NOTE, make sure to do this after UpdatePrimaryFamily
                         PersonService.UpdateGroupSalutations( Entity.PersonId, rockContext );
+                    }
+                }
+
+                if ( State == EntityContextState.Added || State == EntityContextState.Modified )
+                {
+                    if ( Entity.Group != null && Entity.Person != null )
+                    {
+                        if ( Entity.Group?.IsSecurityRoleOrSecurityGroupType() == true )
+                        {
+                            /* 09/27/2021 MDP
+
+                            If this GroupMember record results in making this Person having a higher AccountProtectionProfile level,
+                            update the Person's AccountProtectionProfile.
+                            Note: If this GroupMember record could result in making this Person having a *lower* AccountProtectionProfile level,
+                            don't lower the AccountProtectionProfile here, because other rules have to be considered before
+                            lowering the AccountProtectionProfile level. So we'll let the RockCleanup job take care of making sure the
+                            AccountProtectionProfile is updated after factoring in all the rules.
+                            
+                             */
+
+                            if ( Entity.Group.ElevatedSecurityLevel >= Utility.Enums.ElevatedSecurityLevel.High
+                                && Entity.Person.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.Extreme )
+                            {
+                                Entity.Person.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.Extreme;
+                                rockContext.SaveChanges();
+                            }
+                            else if ( Entity.Group.ElevatedSecurityLevel >= Utility.Enums.ElevatedSecurityLevel.Low
+                                && Entity.Person.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.High )
+                            {
+                                Entity.Person.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.High;
+                                rockContext.SaveChanges();
+                            }
+                        }
                     }
                 }
             }

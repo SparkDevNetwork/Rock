@@ -30,18 +30,6 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
     private readonly AggregateCatalog _catalog;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SafeDirectoryCatalog" /> class.
-    /// </summary>
-    /// <param name="directory">The directory.</param>
-    /// <param name="baseType">Type of the base.</param>
-    [RockObsolete( "1.8" )]
-    [Obsolete( "Use SafeDirectoryCatalog(baseType) instead", true )]
-    public SafeDirectoryCatalog( string directory, Type baseType )
-    : this( baseType )
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="SafeDirectoryCatalog"/> class.
     /// </summary>
     /// <param name="baseType">Type of the base.</param>

@@ -13,7 +13,7 @@
 
                 <Rock:HighlightLabel ID="hlInvalidZoneWarning" runat="server" LabelType="Danger" CssClass="margin-l-md" Text="Invalid Zone" ToolTip="This zone is no longer part of the zones for this layout." Visible="false" />
 
-                <div class="pull-right">
+                <div class="panel-labels">
                     <Rock:RockDropDownList ID="ddlZones" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlZones_SelectedIndexChanged" CssClass="input-xs" />
                 </div>
             </div>

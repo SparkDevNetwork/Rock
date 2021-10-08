@@ -26,18 +26,25 @@
                 <asp:Panel runat="server" ID="pnlEdit">
                     <Rock:PersonPicker ID="ppAdd" runat="server" Label="Add Another Person" OnSelectPerson="ppAdd_SelectPerson" />
 
+                    <Rock:NotificationBox
+                        runat="server"
+                        ID="nbAccountProtectProfile"
+                        NotificationBoxType="Warning"
+                        Visible="false" />
+
                     <Rock:NotificationBox ID="nbPeople" runat="server" NotificationBoxType="Warning" Visible="false"
                         Text="You need to select at least two people to merge." />
 
                     <asp:HiddenField ID="hfSelectedColumnPersonId" runat="server" />
 
-                    <div class="grid">
-                        <Rock:Grid ID="gValues" CssClass="sticky-headers js-sticky-headers js-person-merge-table" RowStyle-CssClass="js-merge-field-row" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
-                    </div>
+                    <Rock:NotificationBox runat="server"
+                        ID="nbSecurityAlert"
+                        NotificationBoxType="danger"
+                        Visible="false" />
 
                     <Rock:NotificationBox ID="nmMultipleFamilies" runat="server" NotificationBoxType="Warning" Visible="true" Heading="Merge Target Has Multiple Families:"
                         Text="The person selected as the merge target is a member of multiple families. Any family-related merge values will only be applied to the primary family."
-                        CssClass="js-multiple-family-target-enable" />
+                        CssClass="js-multiple-family-target-enable d-none" />
 
                     <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Heading="Security Alert, Account Hijack Possible:" />
                     <Rock:NotificationBox ID="nbPermissionNotice" runat="server" NotificationBoxType="Warning" Visible="false"
@@ -45,10 +52,13 @@
                         Text="You do not have permission to view an attribute that has a conflicting value. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please contact someone with rights to view all attributes." />
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
+                    <div class="grid">
+                        <Rock:Grid ID="gValues" TableStriped="false" CssClass="sticky-headers js-sticky-headers js-person-merge-table" RowStyle-CssClass="js-merge-field-row" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
+                    </div>
+
                     <div class="actions">
                         <asp:LinkButton ID="lbMerge" runat="server" Text="Merge Records" CssClass="btn btn-primary pull-right" OnClick="lbMerge_Click" />
                     </div>
-
                 </asp:Panel>
             </div>
         </div>
@@ -60,10 +70,10 @@
 
                 $('.js-multiple-family-target-enable').each(function (index) {
                     if (hasMultipleFamilies) {
-                        $(this).show();
+                        $(this).removeClass("d-none");
                     }
                     else {
-                        $(this).hide();
+                        $(this).addClass("d-none");
                     }
                 });
             }

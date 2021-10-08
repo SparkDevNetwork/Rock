@@ -26,10 +26,17 @@
                         </div>
 
                         <div class="col-md-6">
-                            <Rock:RockTextBox Label="Key" Help="Enter a key to use for a access token, or use the 'Generate Key' button to create a random 24 digit key." ID="tbKey" runat="server" MaxLength="24" />
+                            <div class="d-flex align-items-end">
+                                <div class="flex-fill">
+                                    <Rock:RockTextBox Label="Key" Help="Enter a key to use for a access token, or use the 'Generate Key' button to create a random 24 digit key." ID="tbKey" runat="server" MaxLength="24" />
+                                </div>
+                                <div class="form-group">
+                                    <Rock:BootstrapButton ID="lbGenerate" runat="server" Text="Generate Key" CssClass="btn btn-primary ml-2" OnClick="lbGenerate_Click" />
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <Rock:BootstrapButton ID="lbGenerate" runat="server" Text="Generate Key" CssClass="btn btn-primary btn-controlaligned" OnClick="lbGenerate_Click" />
+
                         </div>
                     </div>
                     <div class="actions">
@@ -40,7 +47,7 @@
 
             </div>
 
-            
+
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

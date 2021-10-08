@@ -1010,12 +1010,29 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                 // Load the people that are in this giving group so their attribute values can be set
                 var personService = new PersonService( rockContext );
-                var people = personService.Queryable()
+
+                // Limit to only Business and Person type records.
+                // Include deceased to cover transactions that could have occurred when they were not deceased
+                // or transactions that are dated after they were marked deceased.
+                var personQueryOptions = new PersonService.PersonQueryOptions
+                {
+                    IncludeDeceased = true,
+                    IncludeBusinesses = true,
+                    IncludePersons = true,
+                    IncludeNameless = false,
+                    IncludeRestUsers = false
+                };
+
+                var people = personService.Queryable( personQueryOptions )
                     .Include( p => p.Aliases )
                     .Where( p => p.GivingId == givingId )
                     .ToList();
 
-                var personAliasIds = people.SelectMany( p => p.Aliases.Select( a => a.Id ) ).ToList();
+                if ( !people.Any() )
+                {
+                    return;
+                }
+
                 people.LoadAttributes( rockContext );
 
                 // Get the gifts from the past 12 months for the giving group
@@ -1025,20 +1042,9 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 // off of all giving in the last 12 months.In the case of a tie in values( e.g. 50% credit card, 50%
                 // cash ) use the most recent value as the tie breaker. This could be calculated with only one gift.
                 var oneYearAgo = context.Now.AddMonths( -12 );
-                var twelveMonthsTransactionsQry = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
-                    .Where( t =>
-                        t.AuthorizedPersonAliasId.HasValue &&
-                        t.TransactionDateTime >= oneYearAgo );
-
-                if ( personAliasIds.Count == 1 )
-                {
-                    var personAliasId = personAliasIds[0];
-                    twelveMonthsTransactionsQry = twelveMonthsTransactionsQry.Where( t => t.AuthorizedPersonAliasId == personAliasId );
-                }
-                else
-                {
-                    twelveMonthsTransactionsQry = twelveMonthsTransactionsQry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
-                }
+                var twelveMonthsTransactionsQry = financialTransactionService
+                        .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                        .Where( t => t.TransactionDateTime >= oneYearAgo );
 
                 var twelveMonthsTransactions = twelveMonthsTransactionsQry
                     .Select( t => new TransactionView
@@ -1081,20 +1087,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                 if ( !firstGiftDate.HasValue )
                 {
-                    var firstGiftDateQry = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
-                        .Where( t =>
-                            t.AuthorizedPersonAliasId.HasValue &&
-                            t.TransactionDateTime.HasValue );
-
-                    if ( personAliasIds.Count == 1 )
-                    {
-                        var personAliasId = personAliasIds[0];
-                        firstGiftDateQry = firstGiftDateQry.Where( t => t.AuthorizedPersonAliasId == personAliasId );
-                    }
-                    else
-                    {
-                        firstGiftDateQry = firstGiftDateQry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
-                    }
+                    var firstGiftDateQry = financialTransactionService.GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                        .Where( t => t.TransactionDateTime.HasValue );
 
                     firstGiftDate = firstGiftDateQry.Min( t => t.TransactionDateTime );
 
@@ -1117,20 +1111,9 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 {
                     // We need to know if this giving group has other transactions. If they do then we do not need to
                     // extrapolate because we have the complete 12 month data picture.
-                    var mostRecentOldTransactionDateQuery = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
-                        .Where( t =>
-                            t.AuthorizedPersonAliasId.HasValue &&
-                            t.TransactionDateTime < oneYearAgo );
-
-                    if ( personAliasIds.Count == 1 )
-                    {
-                        var personAliasId = personAliasIds[0];
-                        mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => t.AuthorizedPersonAliasId == personAliasId );
-                    }
-                    else
-                    {
-                        mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
-                    }
+                    var mostRecentOldTransactionDateQuery = financialTransactionService
+                            .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                            .Where( t => t.TransactionDateTime < oneYearAgo );
 
                     var mostRecentOldTransactionDate = mostRecentOldTransactionDateQuery.Select( t => t.TransactionDateTime ).Max();
 
@@ -1144,12 +1127,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                         // Do not continue with alerts if classification failed
                         return;
                     }
-
-                    // Update the giving history attribute. This is done outside of the UpdateGivingUnitClassifications method because it
-                    // requires a unique query
-                    List<MonthlyAccountGivingHistory> monthlyAccountGivingHistoryList = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId );
-                    var givingHistoryJson = monthlyAccountGivingHistoryList.ToJson();
-                    SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_HISTORY_JSON, givingHistoryJson );
 
                     // Save all the attribute value changes
                     people.ForEach( p => p.SaveAttributeValues( rockContext ) );
@@ -1204,15 +1181,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     .Where( a =>
                         a.AlertDateTime > oneYearAgo );
 
-                if ( personAliasIds.Count == 1 )
-                {
-                    var personAliasId = personAliasIds[0];
-                    twelveMonthsAlertsQry = twelveMonthsAlertsQry.Where( t => t.PersonAliasId == personAliasId );
-                }
-                else
-                {
-                    twelveMonthsAlertsQry = twelveMonthsAlertsQry.Where( t => personAliasIds.Contains( t.PersonAliasId ) );
-                }
+                var givingIdPersonAliasIdQuery = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
+                twelveMonthsAlertsQry = twelveMonthsAlertsQry.Where( t => givingIdPersonAliasIdQuery.Contains( t.PersonAliasId ) );
 
                 var twelveMonthsAlerts = twelveMonthsAlertsQry.Select( a => new AlertView
                 {
@@ -1557,32 +1527,11 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return false;
             }
 
-            // Update the group's gift count attributes
-            var transactionTwelveMonthCount = transactions.Count;
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_12_MONTHS_COUNT, transactionTwelveMonthCount );
-
-            var ninetyDaysAgo = context.Now.AddDays( -90 );
-            var transactionNinetyDayCount = transactions.Count( t => t.TransactionDateTime >= ninetyDaysAgo );
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_90_DAYS_COUNT, transactionNinetyDayCount );
-
-            // Update the group's gift total attributes
-            var transactionTwelveMonthTotal = transactions.Sum( t => t.TotalAmount );
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_12_MONTHS, transactionTwelveMonthTotal );
-
-            var transactionNinetyDayTotal = transactions.Where( t => t.TransactionDateTime >= ninetyDaysAgo ).Sum( t => t.TotalAmount );
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_90_DAYS, transactionNinetyDayTotal );
-
-            var oneEightyDaysAgo = context.Now.AddDays( -180 );
-            var transactionPriorNinetyDayTotal = transactions
-                .Where( t =>
-                    t.TransactionDateTime >= oneEightyDaysAgo &&
-                    t.TransactionDateTime < ninetyDaysAgo )
-                .Sum( t => t.TotalAmount );
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_PRIOR_90_DAYS, transactionPriorNinetyDayTotal );
-
             // Update the groups "last gift date" attribute
             var lastGiftDate = transactions.LastOrDefault().TransactionDateTime;
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE, lastGiftDate );
+
+            var transactionTwelveMonthCount = transactions.Count;
 
             // Store percent scheduled
             var scheduledTransactionsCount = transactions.Count( t => t.IsScheduled );

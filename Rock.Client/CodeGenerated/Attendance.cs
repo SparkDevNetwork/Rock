@@ -59,11 +59,6 @@ namespace Rock.Client
         public bool? DidAttend { get; set; } = true;
 
         /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
-        public bool? DidNotOccur { get; set; }
-
-        /// <summary />
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
@@ -73,17 +68,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.GroupId instead", true )]
-        public int? GroupId { get; set; }
-
-        /// <summary />
         public bool? IsFirstTime { get; set; }
-
-        /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.LocationId instead", true )]
-        public int? LocationId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -130,11 +115,6 @@ namespace Rock.Client
         public bool? ScheduledToAttend { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.ScheduleId instead", true )]
-        public int? ScheduleId { get; set; }
-
-        /// <summary />
         public bool? ScheduleReminderSent { get; set; }
 
         /// <summary />
@@ -148,11 +128,6 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime StartDateTime { get; set; }
-
-        /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "Use Occurrence.SundayDate instead", true )]
-        public DateTime SundayDate { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this

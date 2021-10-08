@@ -94,17 +94,6 @@ namespace Rock.Model
 
         private Dictionary<string, string> _supportedActions;
 
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead", true )]
-        public virtual List<string> HistoryChanges { get; set; }
-
         #endregion Properties
 
         #region Indexing Methods
@@ -253,14 +242,14 @@ namespace Rock.Model
         {
             // If the group changed, and it was a security group, flush the security for the group
             Guid? originalGroupTypeGuid = null;
-            Guid groupTypeScheduleRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            Guid groupTypeSecurityRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
             if ( _originalGroupTypeId.HasValue && _originalGroupTypeId != this.GroupTypeId )
             {
                 originalGroupTypeGuid = GroupTypeCache.Get( _originalGroupTypeId.Value, ( RockContext ) dbContext )?.Guid;
             }
 
             var groupTypeGuid = GroupTypeCache.Get( this.GroupTypeId, ( RockContext ) dbContext )?.Guid;
-            if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
+            if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeSecurityRole ) || ( originalGroupTypeGuid == groupTypeSecurityRole ) )
             {
                 RoleCache.FlushItem( this.Id );
             }
@@ -395,6 +384,19 @@ namespace Rock.Model
             }
 
             return authorized;
+        }
+
+        /// <summary>
+        /// Determines whether is a Security role based on either <see cref="Group.IsSecurityRole" />
+        /// or if <see cref="Group.GroupTypeId"/> is the Security Role Group Type.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is security role or security group type]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSecurityRoleOrSecurityGroupType()
+        {
+            var groupTypeSecurityRole = GroupTypeCache.GetSecurityRoleGroupType();
+            return this.IsSecurityRole || this.GroupTypeId == groupTypeSecurityRole?.Id;
         }
 
         /// <summary>

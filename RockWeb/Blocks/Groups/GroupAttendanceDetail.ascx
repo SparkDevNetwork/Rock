@@ -57,7 +57,7 @@
 
                             <div class="js-roster">
                                 <div class="panel-labels clearfix">
-                                    <h4 class="js-members-label">
+                                    <h4 class="js-members-label cursor-pointer">
                                         <asp:Literal ID="lMembers" runat="server" />
                                     </h4>
                                     <Rock:Toggle ID="tglSort" runat="server" OnText="Last Name" OnCssClass="btn-primary" OffCssClass="btn-outline-primary" ActiveButtonCssClass="btn-primary" ButtonSizeCssClass="btn-xs" OffText="First Name" AutoPostBack="true" OnCheckedChanged="tglSort_CheckedChanged" Checked="true" Label="Sort by" />
@@ -122,7 +122,7 @@
                 // toggle all checkboxes
                 $('.js-members-label').on('click', function (e) {
 
-                    var container = $(this).parent();
+                    var container = $(this).closest('.js-roster');
                     var isChecked = container.hasClass('all-checked');
 
                     container.find('input:checkbox').each(function () {

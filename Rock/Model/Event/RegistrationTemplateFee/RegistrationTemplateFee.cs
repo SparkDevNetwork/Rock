@@ -77,7 +77,7 @@ namespace Rock.Model
         [MaxLength( 400 )]
         [DataMember]
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use FeeItems instead" )]
+        [Obsolete( "Use FeeItems instead", true )]
         public string CostValue { get; set; }
 
         /// <summary>

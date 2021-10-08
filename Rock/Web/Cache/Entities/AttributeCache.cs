@@ -349,17 +349,6 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead", true )]
-        public override void CopyFromModel( Data.IEntity model )
-        {
-            this.SetFromEntity( model );
-        }
-
-        /// <summary>
         /// WARNING: This will contain all the Attribute records that in the database.
         /// This could be an expensive call.
         /// Please use <code> AttributeCache.AllForEntityType(int entityTypeId)</code> if you only need the attributes
@@ -438,18 +427,6 @@ namespace Rock.Web.Cache
             }
 
             SetFromEntity( attribute, qualifiers );
-        }
-
-        /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="qualifiers">The qualifiers.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead", true )]
-        public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
-        {
-            this.SetFromEntity( attribute, qualifiers );
         }
 
         /// <summary>
@@ -769,19 +746,6 @@ namespace Rock.Web.Cache
             return value;
         }
 
-        /// <summary>
-        /// Reads the specified attribute model.
-        /// </summary>
-        /// <param name="attributeModel">The attribute model.</param>
-        /// <param name="qualifiers">The qualifiers.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
-        public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
-        {
-            return Get( attributeModel, qualifiers );
-        }
-
         #endregion
 
         #region ILiquidizable Implementation
@@ -850,27 +814,6 @@ namespace Rock.Web.Cache
         [RockObsolete( "1.12" )]
         [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
         public static void RemoveEntityAttributes()
-        {
-            EntityAttributesCache.Remove();
-        }
-
-        /// <summary>
-        /// Loads the entity attributes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed", true )]
-        public static void LoadEntityAttributes( RockContext rockContext )
-        {
-            //
-        }
-
-        /// <summary>
-        /// Flushes the entity attributes.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveEntityAttributes instead", true )]
-        public static void FlushEntityAttributes()
         {
             EntityAttributesCache.Remove();
         }

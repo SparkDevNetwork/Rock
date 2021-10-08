@@ -33,7 +33,7 @@ namespace Rock.Model
         /// <param name="registrationTemplateFeeId">The registration template fee identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use RegistrationTemplateFee.FeeItems instead" )]
+        [Obsolete( "Use RegistrationTemplateFee.FeeItems instead", true )]
         public List<string> GetParsedFeeOptionsWithoutCost( int registrationTemplateFeeId )
         {
             RegistrationTemplateFee registrationTemplateFee = this.Get( registrationTemplateFeeId );
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// <param name="registrationTemplateFeeId">The registration template fee identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use RegistrationTemplateFee.FeeItems instead" )]
+        [Obsolete( "Use RegistrationTemplateFee.FeeItems instead", true )]
         public List<Tuple<string, decimal>> GetParsedFeeOptionsWithCostAsNumber( int registrationTemplateFeeId )
         {
             RegistrationTemplateFee registrationTemplateFee = this.Get( registrationTemplateFeeId );
@@ -89,7 +89,7 @@ namespace Rock.Model
         /// <param name="registrationTemplateFeeId">The registration template fee identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use RegistrationTemplateFee.FeeItems instead" )]
+        [Obsolete( "Use RegistrationTemplateFee.FeeItems instead", true )]
         public Dictionary<string, string> GetParsedFeeOptionsWithNameAndValueString( int registrationTemplateFeeId )
         {
             RegistrationTemplateFee registrationTemplateFee = this.Get( registrationTemplateFeeId );
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// Migrates registrationTemplateFee.CostValue (string) to registrationTemplateFee.FeeItems (List of RegistrationTemplateFeeItem)
         /// </summary>
         [RockObsolete( "1.9" )]
-        [Obsolete( "This is only needed to migrate the obsolete CostValue to FeeItems" )]
+        [Obsolete( "This is only needed to migrate the obsolete CostValue to FeeItems", true )]
         public void MigrateFeeCostValueToFeeItems()
         {
             var registrationTemplateFeeItemService = new Rock.Model.RegistrationTemplateFeeItemService( this.Context as Rock.Data.RockContext );
@@ -307,7 +307,7 @@ namespace Rock.Model
         /// The option.
         /// </value>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use FeeItemName instead" )]
+        [Obsolete( "Use FeeItemName instead", true )]
         public string Option
         {
             get => FeeItemOption;

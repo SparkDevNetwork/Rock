@@ -15,11 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -406,6 +409,129 @@ namespace Rock.Model
                 user.FailedPasswordAttemptCount = 1;
                 user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="UserLogin"/> that matches the username and password.
+        /// This method verifies the password as well all other conditions for the
+        /// account to be considered valid.
+        /// </summary>
+        /// <param name="username">The username to be retrieved.</param>
+        /// <param name="password">The password to be verified.</param>
+        /// <returns>The result of the authentication attempt and the <see cref="UserLogin"/> that was looked up. Always check the state as the UserLogin is always included except when not found.</returns>
+        /// <remarks>
+        /// Internal until the concept of a tuple that returns the state and the
+        /// login is approved for general use. The intention is that this method
+        /// can be called from various places that need to validate a username
+        /// and password. We then have a central place to update security logic.
+        ///
+        /// But we can't just return null because often the caller needs to know
+        /// the specific reason authentication failed so it can take appropriate
+        /// action or display the correct message. For example, a Login block
+        /// needs to know if the failure was because the login wasn't confirmed.
+        /// It also needs the UserLogin that was found so it can send a confirmation
+        /// e-mail to the individual.
+        /// </remarks>
+        internal (UserLoginValidationState State, UserLogin UserLogin) GetAuthenticatedUserLogin( string username, string password )
+        {
+            var userLogin = GetByUserName( username );
+
+            // Check if either login is null or the authentication component is
+            // not known.
+            if ( userLogin?.EntityType == null )
+            {
+                return (UserLoginValidationState.InvalidUsername, null);
+            }
+
+            var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+
+            // Check if the password is valid for this login.
+            if ( component?.IsActive != true || !component.Authenticate( userLogin, password ) )
+            {
+                return (UserLoginValidationState.InvalidPassword, userLogin);
+            }
+
+            // Make sure the login is confirmed, otherwise login is not allowed.
+            if ( userLogin.IsConfirmed != true )
+            {
+                return (UserLoginValidationState.NotConfirmed, userLogin);
+            }
+
+            // Make sure the login is not locked out.
+            if ( userLogin.IsLockedOut == true )
+            {
+                return (UserLoginValidationState.LockedOut, userLogin);
+            }
+
+            return (UserLoginValidationState.Valid, userLogin);
+        }
+
+        /// <summary>
+        /// Sends the confirmation e-mail to the person this <see cref="UserLogin"/>
+        /// is associated with. The e-mail will contain a link to the page where
+        /// the person can confirm they own the account.
+        /// </summary>
+        /// <param name="userLogin">The user login.</param>
+        /// <param name="systemEmailGuid">The system email unique identifier.</param>
+        /// <param name="confirmationPage">The confirmation page.</param>
+        /// <param name="baseUrl">The base URL to use if known, such as https://www.rockrms.com/. If <c>null</c> the default domain for the page will be used.</param>
+        /// <param name="mergeFields">The additional merge fields to provide.</param>
+        internal static void SendConfirmationEmail( UserLogin userLogin, Guid systemEmailGuid, PageCache confirmationPage, string baseUrl, Dictionary<string, object> mergeFields )
+        {
+            string url = null;
+
+            // Check for the required parameters.
+            if ( userLogin == null )
+            {
+                throw new ArgumentNullException( nameof( userLogin ) );
+            }
+
+            if ( confirmationPage == null )
+            {
+                throw new ArgumentNullException( nameof( confirmationPage ) );
+            }
+
+            // Get the default route that doesn't require any parameters.
+            url = confirmationPage.PageRoutes
+                .Where( r => !r.Route.Contains( "{" ) )
+                .OrderByDescending( r => r.IsGlobal )
+                .Select( r => r.Route )
+                .FirstOrDefault();
+
+            // No route, just use legacy page id syntax.
+            if ( url.IsNullOrWhiteSpace() )
+            {
+                url = $"/page/{confirmationPage.Id}";
+            }
+
+            // If they didn't provide a base url, then use the one for the page.
+            if ( baseUrl.IsNullOrWhiteSpace() )
+            {
+                baseUrl = confirmationPage.Layout.Site.DefaultDomainUri.AbsoluteUri;
+            }
+
+            var confirmAccountUrl = baseUrl.TrimEnd( '/' ) + "/" + url.TrimStart( '/' );
+
+            // Duplicate the merge fields so we don't corrupt the original
+            // dictionary.
+            mergeFields = mergeFields != null ? new Dictionary<string, object>( mergeFields ) : new Dictionary<string, object>();
+            mergeFields.AddOrReplace( "ConfirmAccountUrl", confirmAccountUrl );
+            mergeFields.AddOrReplace( "Person", userLogin.Person );
+            mergeFields.AddOrReplace( "User", userLogin );
+
+            // Send the e-mail to the on-file address for the person.
+            var recipients = new List<RockEmailMessageRecipient>
+            {
+                new RockEmailMessageRecipient( userLogin.Person, mergeFields )
+            };
+
+            // Send it off.
+            var message = new RockEmailMessage( systemEmailGuid );
+            message.SetRecipients( recipients );
+            message.AppRoot = "/";
+            message.ThemeRoot = $"/Themes/{confirmationPage.Layout.Site.Theme}";
+            message.CreateCommunicationRecord = false;
+            message.Send();
         }
 
         #endregion

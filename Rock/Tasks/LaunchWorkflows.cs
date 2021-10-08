@@ -29,6 +29,8 @@ namespace Rock.Tasks
     /// Launches multiple workflows and optionally sets the entity, name and/or attribute values
     /// Or to use the Transaction Queue, use <seealso cref="Rock.Transactions.LaunchWorkflowsTransaction" />
     /// </summary>
+    [Obsolete( "This should not be used due to size limitations for BusStartedTask message. Use Rock.Transactions.LaunchWorkflowsTransaction instead." )]
+    [RockObsolete( "1.13" )]
     public sealed class LaunchWorkflows : BusStartedTask<LaunchWorkflows.Message>
     {
         /// <summary>

@@ -97,6 +97,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.NG", "Rock.Comm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com_rocksolidchurchdemo.PageDebug", "org_rocksolidchurch.PageDebug\com_rocksolidchurchdemo.PageDebug.csproj", "{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.EditorJs", "Rock.JavaScript.EditorJs\Rock.JavaScript.EditorJs.njsproj", "{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.DotLiquid", "Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj", "{79AA470A-DC63-4CB4-B0B6-77285F60C69B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lava.Fluid\Rock.Lava.Fluid.csproj", "{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}"
@@ -245,6 +247,10 @@ Global
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Release|Any CPU.Build.0 = Release|Any CPU
 		{79AA470A-DC63-4CB4-B0B6-77285F60C69B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{79AA470A-DC63-4CB4-B0B6-77285F60C69B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79AA470A-DC63-4CB4-B0B6-77285F60C69B}.Release|Any CPU.ActiveCfg = Release|Any CPU

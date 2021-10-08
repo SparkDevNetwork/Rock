@@ -105,6 +105,42 @@
     <Compile Include="Migrations\202109212253216_CodeGenerated_20210921.Designer.cs">
       <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202109292108441_RestoreDeletedAttributes.cs" />
+    <Compile Include="Migrations\202109292108441_RestoreDeletedAttributes.Designer.cs">
+      <DependentUpon>202109292108441_RestoreDeletedAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110011220239_UpdateWebProspectToProspect.cs" />
+    <Compile Include="Migrations\202110011220239_UpdateWebProspectToProspect.Designer.cs">
+      <DependentUpon>202110011220239_UpdateWebProspectToProspect.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110012332586_RemoveObsoleteV8Fields.cs" />
+    <Compile Include="Migrations\202110012332586_RemoveObsoleteV8Fields.Designer.cs">
+      <DependentUpon>202110012332586_RemoveObsoleteV8Fields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110021016356_AddConnectionStatusAutomation.cs" />
+    <Compile Include="Migrations\202110021016356_AddConnectionStatusAutomation.Designer.cs">
+      <DependentUpon>202110021016356_AddConnectionStatusAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.cs" />
+    <Compile Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.Designer.cs">
+      <DependentUpon>202110031055066_UpdateConnectionStatusAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110041858310_ElevatedPrivilege.cs" />
+    <Compile Include="Migrations\202110041858310_ElevatedPrivilege.Designer.cs">
+      <DependentUpon>202110041858310_ElevatedPrivilege.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110051957189_Rollup_20211005.cs" />
+    <Compile Include="Migrations\202110051957189_Rollup_20211005.Designer.cs">
+      <DependentUpon>202110051957189_Rollup_20211005.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110052025475_CodeGenerated_20211005.cs" />
+    <Compile Include="Migrations\202110052025475_CodeGenerated_20211005.Designer.cs">
+      <DependentUpon>202110052025475_CodeGenerated_20211005.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.cs" />
+    <Compile Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.Designer.cs">
+      <DependentUpon>202110062117275_MigrateFieldVisibilityRulesJSONData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -743,6 +779,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202109212253216_CodeGenerated_20210921.resx">
       <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109292108441_RestoreDeletedAttributes.resx">
+      <DependentUpon>202109292108441_RestoreDeletedAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110011220239_UpdateWebProspectToProspect.resx">
+      <DependentUpon>202110011220239_UpdateWebProspectToProspect.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110012332586_RemoveObsoleteV8Fields.resx">
+      <DependentUpon>202110012332586_RemoveObsoleteV8Fields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110021016356_AddConnectionStatusAutomation.resx">
+      <DependentUpon>202110021016356_AddConnectionStatusAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.resx">
+      <DependentUpon>202110031055066_UpdateConnectionStatusAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110041858310_ElevatedPrivilege.resx">
+      <DependentUpon>202110041858310_ElevatedPrivilege.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110051957189_Rollup_20211005.resx">
+      <DependentUpon>202110051957189_Rollup_20211005.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110052025475_CodeGenerated_20211005.resx">
+      <DependentUpon>202110052025475_CodeGenerated_20211005.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.resx">
+      <DependentUpon>202110062117275_MigrateFieldVisibilityRulesJSONData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>

@@ -34,8 +34,6 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlTransactionEntry" runat="server">
-            <asp:HiddenField ID="hfTargetPersonId" runat="server" />
-
             <div class="row">
                 <%-- Transaction Entry Panel --%>
                 <asp:Panel ID="pnlTransactionEntryPanel" runat="server" CssClass="col-xs-12 col-sm-8">

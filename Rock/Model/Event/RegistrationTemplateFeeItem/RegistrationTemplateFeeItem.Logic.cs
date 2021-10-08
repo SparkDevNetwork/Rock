@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,18 +22,6 @@ namespace Rock.Model
 {
     public partial class RegistrationTemplateFeeItem
     {
-        /// <summary>
-        /// Gets the usage count remaining.
-        /// </summary>
-        /// <param name="registrationInstance">The registration instance.</param>
-        /// <returns></returns>
-        [RockObsolete("1.8")]
-        [Obsolete("Use the override that includes otherRegistrant instead.", true )]
-        public int? GetUsageCountRemaining( RegistrationInstance registrationInstance )
-        {
-            return GetUsageCountRemaining( registrationInstance, null );
-        }
-
         /// <summary>
         /// If this fee has a <see cref="MaximumUsageCount" />, returns the number of allowed usages remaining for the specified <see cref="RegistrationInstance" />
         /// </summary>
