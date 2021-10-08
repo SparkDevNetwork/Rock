@@ -250,22 +250,31 @@ namespace Rock.CodeGeneration
                 }
             }
 
-            ReportRockCodeWarnings();
+            var hasWarnings = ReportRockCodeWarnings();
 
             progressBar1.Visible = false;
             Cursor = Cursors.Default;
-            MessageBox.Show( "Files have been generated" );
+            if ( hasWarnings )
+            {
+                MessageBox.Show( "Files have been generated with warnings", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+            }
+            else
+            {
+                MessageBox.Show( "Files have been generated" );
+            }
         }
 
         /// <summary>
-        /// Reports the rock code warnings.
+        /// Reports the rock code warnings
+        /// and returns true if there are warnings.
         /// </summary>
-        public void ReportRockCodeWarnings()
+        public bool ReportRockCodeWarnings()
         {
+            bool hasWarnings = false;
             StringBuilder missingDbSetWarnings = new StringBuilder();
             StringBuilder rockObsoleteWarnings = new StringBuilder();
             List<string> singletonClassVariablesWarnings = new List<string>();
-            List<string> obsoleteList = new List<string>();
+            List<string> obsoleteReportList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
             rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
@@ -302,7 +311,7 @@ namespace Rock.CodeGeneration
                         }
                         else
                         {
-                            obsoleteList.Add( $"{rockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
+                            obsoleteReportList.Add( $"{rockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
                         }
                     }
 
@@ -334,7 +343,7 @@ namespace Rock.CodeGeneration
                                     }
                                 }
 
-                                obsoleteList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                                obsoleteReportList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
                             }
                         }
 
@@ -346,14 +355,30 @@ namespace Rock.CodeGeneration
                         var ignoredThreadSafeTypeWarning = new Type[] {
                             typeof(Rock.UniversalSearch.IndexComponents.Lucene),
                         };
-
-                        // fields that OK based on how we use them
+                        
                         var ignoredThreadSafeFieldWarning = new string[]
                         {
+                            // fields that OK based on how we use them
                             "Rock.Extension.Component.Attributes",
                             "Rock.Extension.Component.AttributeValues",
                             "Rock.Web.HttpModules.ResponseHeaders.Headers",
-                            "Rock.Field.FieldType.QualifierUpdated"
+                            "Rock.Field.FieldType.QualifierUpdated",
+
+                             // Fields that probably should be fixed, but would take some time to figure out how to fix them.
+                             "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
+                             "Rock.Field.Types.EnumFieldType`1._EnumValues",
+                             "Rock.Financial.TestGateway.MostRecentException",
+                             "Rock.Financial.TestRedirectionGateway.MostRecentException",
+                             "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
+                             "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
+                             "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
+                             "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
+                             "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
+                             "Rock.Workflow.Action.AddStep._mergeFields",
+                             "Rock.Workflow.Action.PrayerRequestAdd._action",
+                             "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
+                             "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
+                             "Rock.Workflow.Action.PrayerRequestAdd._mergeFields"
                         };
 
                         if ( typeof( Rock.Field.FieldType ).IsAssignableFrom( type )
@@ -409,8 +434,6 @@ namespace Rock.CodeGeneration
                                 }
                             }
                         }
-
-
                     }
                 }
             }
@@ -418,6 +441,7 @@ namespace Rock.CodeGeneration
             StringBuilder warnings = new StringBuilder();
             if ( entityPropertyShouldBeVirtualWarnings.Count > 0 )
             {
+                hasWarnings = true;
                 warnings.AppendLine( "Model Properties that should be marked virtual" );
                 foreach ( var warning in entityPropertyShouldBeVirtualWarnings )
                 {
@@ -425,9 +449,24 @@ namespace Rock.CodeGeneration
                 }
             }
 
+            if ( rockObsoleteWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine();
+                warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
+                warnings.Append( rockObsoleteWarnings );
+            }
+
+            if ( missingDbSetWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine( "RockContext missing DbSet<T>s" );
+                warnings.Append( missingDbSetWarnings );
+            }
 
             if ( singletonClassVariablesWarnings.Count > 0 )
             {
+                hasWarnings = true;
                 warnings.AppendLine();
                 warnings.AppendLine( "Singleton non-threadsafe class variables." );
                 foreach ( var warning in singletonClassVariablesWarnings )
@@ -436,29 +475,17 @@ namespace Rock.CodeGeneration
                 }
             }
 
-            if ( missingDbSetWarnings.Length > 0 )
-            {
-
-                warnings.AppendLine( "RockContext missing DbSet<T>s" );
-                warnings.Append( missingDbSetWarnings );
-            }
-
-            if ( rockObsoleteWarnings.Length > 0 )
-            {
-                warnings.AppendLine();
-                warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
-                warnings.Append( rockObsoleteWarnings );
-            }
-
             if ( cbGenerateObsoleteExport.Checked )
             {
                 warnings.AppendLine();
 
-                obsoleteList = obsoleteList.OrderBy( a => a.Split( new char[] { ',' } )[0] ).ToList();
-                warnings.Append( $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteList.AsDelimited( Environment.NewLine ) );
+                obsoleteReportList = obsoleteReportList.OrderBy( a => a.Split( new char[] { ',' } )[0] ).ToList();
+                warnings.Append( $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteReportList.AsDelimited( Environment.NewLine ) );
             }
 
-            tbResults.Text = warnings.ToString();
+            tbResults.Text = warnings.ToString().Trim();
+
+            return hasWarnings;
         }
 
         /// <summary>
