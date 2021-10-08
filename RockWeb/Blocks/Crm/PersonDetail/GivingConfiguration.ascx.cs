@@ -136,9 +136,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( addTransactionPage != null )
             {
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addTransactionPage.PageId );
-                addTransactionPage.QueryString["Person"] = personKey;
-                Response.Redirect( addTransactionPage.BuildUrl() );
+                var personKey = this.Person.GetImpersonationToken(
+                    RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addTransactionPage.PageId );
+
+                if ( personKey.IsNotNullOrWhiteSpace() )
+                {
+                    addTransactionPage.QueryString["Person"] = personKey;
+                    Response.Redirect( addTransactionPage.BuildUrl() );
+                }
+                else
+                {
+                    if ( !this.Person.IsPersonTokenUsageAllowed() )
+                    {
+                        // Open question on if we should 
+                        mdWarningAlert.Show( $"Impersonation of {this.Person} is not enabled.", ModalAlertType.Warning );
+                    }
+                }
             }
         }
 
@@ -174,7 +187,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             lPledgeAccountName.Text = financialPledge.Account?.Name;
             lPledgeTotalAmount.Text = financialPledge.TotalAmount.FormatAsCurrency();
-            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ): string.Empty;
+            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ) : string.Empty;
             btnPledgeEdit.CommandArgument = financialPledge.Guid.ToString();
             btnPledgeDelete.CommandArgument = financialPledge.Guid.ToString();
 
@@ -222,7 +235,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
             btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
-            
+
 
             if ( financialScheduledTransaction.IsActive )
             {
@@ -254,7 +267,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
-            
+
 
             if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
@@ -392,7 +405,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string errorMessage;
                 if ( !financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out errorMessage ) )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    mdWarningAlert.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
@@ -565,7 +578,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                mdWarningAlert.Show( errorMessage, ModalAlertType.Information );
             }
 
             ShowDetail();
@@ -645,7 +658,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( !pledgeService.CanDelete( pledge, out errorMessage ) )
             {
-                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                mdWarningAlert.Show( errorMessage, ModalAlertType.Information );
                 return;
             }
 
@@ -688,7 +701,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
 
-            
+
 
             if ( Person.GivingGroupId.HasValue )
             {

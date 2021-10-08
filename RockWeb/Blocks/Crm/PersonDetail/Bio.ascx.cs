@@ -323,10 +323,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
-            // only show if the Impersonation button if the feature is enabled, and the current user is authorized to Administrate the person
+            // only show if the when all these are true
+            //   -- EnableImpersonation is enabled
+            //   -- Not the same as the current person
+            //   -- The current user is authorized to Administrate the person
+            //   -- PersonToken usage is allowed on the person (due to AccountProtectionProfile)
+
             bool enableImpersonation = this.GetAttributeValue( AttributeKey.EnableImpersonation ).AsBoolean();
             lbImpersonate.Visible = false;
-            if ( enableImpersonation && Person.Id != CurrentPersonId && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
+            if ( enableImpersonation
+                    && Person.Id != CurrentPersonId
+                    && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson )
+                    && Person.IsPersonTokenUsageAllowed()
+                    )
             {
                 lbImpersonate.Visible = true;
             }
