@@ -18,10 +18,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -199,30 +200,7 @@ namespace Rock.Model
 
         #endregion IHasActiveFlag
 
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return AchievementTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            AchievementTypeCache.UpdateCachedEntity( Id, entityState );
-        }
-
-        #endregion ICacheable
-
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="EntityType"/> of the achievement.
@@ -288,6 +266,7 @@ namespace Rock.Model
             get => _attempts ?? ( _attempts = new Collection<AchievementAttempt>() );
             set => _attempts = value;
         }
+
         private ICollection<AchievementAttempt> _attempts;
 
         /// <summary>
@@ -302,6 +281,7 @@ namespace Rock.Model
             get => _prerequisites ?? ( _prerequisites = new Collection<AchievementTypePrerequisite>() );
             set => _prerequisites = value;
         }
+
         private ICollection<AchievementTypePrerequisite> _prerequisites;
 
         /// <summary>
@@ -316,9 +296,10 @@ namespace Rock.Model
             get => _dependencies ?? ( _dependencies = new Collection<AchievementTypePrerequisite>() );
             set => _dependencies = value;
         }
+
         private ICollection<AchievementTypePrerequisite> _dependencies;
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 
@@ -345,28 +326,5 @@ namespace Rock.Model
         }
 
         #endregion Entity Configuration
-
-        #region Overrides
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        public override bool IsValid
-        {
-            get
-            {
-                var isValid = base.IsValid;
-
-                if ( MaxAccomplishmentsAllowed > 1 && AllowOverAchievement )
-                {
-                    ValidationResults.Add( new ValidationResult( "MaxAccomplishmentsAllowed cannot be greater than 1 if AllowOverAchievement is set" ) );
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-        }
-
-        #endregion Overrides
     }
 }

@@ -13,17 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Tasks;
-using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -108,7 +104,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Model.AchievementType"/>.
@@ -116,7 +112,7 @@ namespace Rock.Model
         [DataMember]
         public virtual AchievementType AchievementType { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 
@@ -135,67 +131,5 @@ namespace Rock.Model
         }
 
         #endregion Entity Configuration
-
-        #region Overrides
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        public override bool IsValid
-        {
-            get
-            {
-                var isValid = base.IsValid;
-
-                if ( AchievementAttemptEndDateTime.HasValue && AchievementAttemptStartDateTime > AchievementAttemptEndDateTime.Value )
-                {
-                    ValidationResults.Add( new ValidationResult( "The AchievementAttemptStartDateTime must occur before the AchievementAttemptEndDateTime" ) );
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-        }
-
-        /// <summary>
-        /// Perform tasks prior to saving changes to this entity.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
-        {
-            var updateAchievementAttemptMsg = GetUpdateAchievementAttemptMessage( entry );
-            updateAchievementAttemptMsg.Send();
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        private UpdateAchievementAttempt.Message GetUpdateAchievementAttemptMessage( DbEntityEntry entry )
-        {
-            var updateAchievementAttemptMsg = new UpdateAchievementAttempt.Message();
-            if ( entry.State != System.Data.Entity.EntityState.Added && entry.State != System.Data.Entity.EntityState.Modified )
-            {
-                return updateAchievementAttemptMsg;
-            }
-
-            var achievementAttempt = entry.Entity as AchievementAttempt;
-
-            var wasClosed = entry.State != System.Data.Entity.EntityState.Added && ( entry.Property( "IsClosed" )?.OriginalValue as bool? ?? false );
-            var wasSuccessful = entry.State != System.Data.Entity.EntityState.Added && ( entry.Property( "IsSuccessful" )?.OriginalValue as bool? ?? false );
-
-            // Add a transaction to process workflows and add steps
-            updateAchievementAttemptMsg = new UpdateAchievementAttempt.Message
-            {
-                AchievementAttemptGuid = achievementAttempt.Guid,
-                IsNowStarting = entry.State == System.Data.Entity.EntityState.Added,
-                IsNowEnding = !wasClosed && achievementAttempt.IsClosed,
-                IsNowSuccessful = !wasSuccessful && achievementAttempt.IsSuccessful,
-                AchievementTypeId = achievementAttempt.AchievementTypeId,
-                StartDate = achievementAttempt.AchievementAttemptStartDateTime,
-                EndDate = achievementAttempt.AchievementAttemptEndDateTime
-            };
-            return updateAchievementAttemptMsg;
-        }
-
-        #endregion Overrides
     }
 }

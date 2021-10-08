@@ -774,6 +774,11 @@
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerification.cs" />
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerificationService.cs" />
+    <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.Logic.cs" />
+    <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.SaveHook.cs" />
+    <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.cs" />
+    <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.Logic.cs" />
+    <Compile Include="Model\Engagement\AchievementType\AchievementType.Logic.cs" />
     <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.Logic.cs" />
     <Compile Include="Model\Engagement\StepProgram\StepProgram.Logic.cs" />
     <Compile Include="Model\Engagement\StepStatus\StepStatus.Logic.cs" />
@@ -1104,7 +1109,7 @@
     <Compile Include="Media\MediaElementQuality.cs" />
     <Compile Include="Media\SyncOperationResult.cs" />
     <Compile Include="Media\MediaElementThumbnailData.cs" />
-    <Compile Include="Model\AchievementAttemptService.Partial.cs" />
+    <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttemptService.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceGivingUnit\AnalyticsSourceGivingUnit.cs" />
     <Compile Include="Model\CampusSchedule.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceGivingUnitService.CodeGenerated.cs" />
@@ -1362,10 +1367,9 @@
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\Engagement\StepType\StepTypeService.cs" />
     <Compile Include="Model\Engagement\Step\StepService.cs" />
-    <Compile Include="Model\AchievementAttempt.cs" />
-    <Compile Include="Model\AchievementTypePrerequisite.cs" />
-    <Compile Include="Model\AchievementTypeService.Partial.cs" />
-    <Compile Include="Model\AchievementType.cs" />
+    <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.cs" />
+    <Compile Include="Model\Engagement\AchievementType\AchievementTypeService.cs" />
+    <Compile Include="Model\Engagement\AchievementType\AchievementType.cs" />
     <Compile Include="Model\SystemCommunication.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />

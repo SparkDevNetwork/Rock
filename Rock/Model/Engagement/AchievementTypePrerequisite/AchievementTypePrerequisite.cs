@@ -16,9 +16,9 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -50,7 +50,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.AchievementType"/>.
@@ -64,53 +64,9 @@ namespace Rock.Model
         [DataMember]
         public virtual AchievementType PrerequisiteAchievementType { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return AchievementTypePrerequisiteCache.Get( Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            AchievementTypePrerequisiteCache.UpdateCachedEntity( Id, entityState );
-        }
-
-        #endregion ICacheable
-
-        #region Overrides
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        public override bool IsValid
-        {
-            get
-            {
-                var isValid = base.IsValid;
-
-                if ( AchievementTypeId == PrerequisiteAchievementTypeId )
-                {
-                    ValidationResults.Add( new ValidationResult( $"{nameof( AchievementTypeId )} cannot be equal to {nameof( PrerequisiteAchievementTypeId )}" ) );
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-        }
-
-        #endregion Overrides
+        
 
         #region Entity Configuration
 

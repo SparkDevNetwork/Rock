@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -228,9 +229,9 @@ namespace Rock.Model
             var attemptService = new AchievementAttemptService( rockContext );
 
             var attemptsQuery = attemptService.Queryable().AsNoTracking();
-                
+
             var attempts = attemptService.GetOrderedAchieverAttempts( attemptsQuery, achievementTypeCache, achieverEntityId );
-            
+
             var progressStatement = new ProgressStatement( achievementTypeCache );
 
             // If there are no attempts, no other information can be derived
@@ -316,7 +317,7 @@ namespace Rock.Model
     /// <summary>
     /// Statement of Progress for an Achievement Type
     /// </summary>
-    public class ProgressStatement: ILiquidizable, ILavaDataDictionary
+    public class ProgressStatement : ILiquidizable, ILavaDataDictionary
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressStatement" /> class.
@@ -328,9 +329,8 @@ namespace Rock.Model
             AchievementTypeId = achievementTypeCache.Id;
             AchievementTypeName = achievementTypeCache.Name;
             AchievementTypeDescription = achievementTypeCache.Description;
-            Attributes = achievementTypeCache.AttributeValues?
-                .Where( kvp => kvp.Key != "Active" && kvp.Key != "Order" )
-                .ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value );
+            Attributes = achievementTypeCache.AttributeValues?.Where( kvp => kvp.Key != "Active" && kvp.Key != "Order" )
+                    .ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value );
         }
 
         /// <summary>
