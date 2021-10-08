@@ -97,30 +97,11 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( entityId == 0 )
                 {
-                    iSecured = (ISecured)Activator.CreateInstance( type );
+                    iSecured = ( ISecured ) Activator.CreateInstance( type );
                 }
                 else
                 {
-                    // Get the context type since this may be for a non-rock core object
-                    Type contextType = null;
-                    var contexts = Rock.Reflection.SearchAssembly( type.Assembly, typeof( Rock.Data.DbContext ) );
-                    if ( contexts.Any() )
-                    {
-                        contextType = contexts.First().Value;
-                    }
-                    else
-                    {
-                        contextType = typeof( RockContext );
-                    }
-
-                    Type serviceType = typeof( Rock.Data.Service<> );
-                    Type[] modelType = { type };
-                    Type service = serviceType.MakeGenericType( modelType );
-                    var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-
-                    var context = Activator.CreateInstance( contextType );
-                    var serviceInstance = Activator.CreateInstance( service, new object[] { context } );
-                    iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
+                    iSecured = Rock.Reflection.GetIEntityForEntityType( type, entityId ) as ISecured;
                 }
 
                 var block = iSecured as Rock.Model.Block;
@@ -259,8 +240,8 @@ namespace RockWeb.Blocks.Administration
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var myAuthRule = (AuthRule)e.Row.DataItem;
-                RadioButtonList rbl = (RadioButtonList)e.Row.FindControl( "rblAllowDeny" );
+                var myAuthRule = ( AuthRule ) e.Row.DataItem;
+                RadioButtonList rbl = ( RadioButtonList ) e.Row.FindControl( "rblAllowDeny" );
                 rbl.SelectedValue = myAuthRule.AllowOrDeny.ToString();
             }
         }
@@ -326,11 +307,11 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblAllowDeny_SelectedIndexChanged( object sender, EventArgs e )
         {
-            RadioButtonList rblAllowDeny = (RadioButtonList)sender;
+            RadioButtonList rblAllowDeny = ( RadioButtonList ) sender;
             GridViewRow selectedRow = rblAllowDeny.NamingContainer as GridViewRow;
             if ( selectedRow != null )
             {
-                int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["Id"];
+                int id = ( int ) rGrid.DataKeys[selectedRow.RowIndex]["Id"];
 
                 var rockContext = new RockContext();
                 var authService = new Rock.Model.AuthService( rockContext );
@@ -412,13 +393,17 @@ namespace RockWeb.Blocks.Administration
 
                         switch ( groupId )
                         {
-                            case -1: specialRole = Rock.Model.SpecialRole.AllUsers;
+                            case -1:
+                                specialRole = Rock.Model.SpecialRole.AllUsers;
                                 break;
-                            case -2: specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers;
+                            case -2:
+                                specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers;
                                 break;
-                            case -3: specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers;
+                            case -3:
+                                specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers;
                                 break;
-                            default: specialRole = Rock.Model.SpecialRole.None;
+                            default:
+                                specialRole = Rock.Model.SpecialRole.None;
                                 break;
                         }
 
@@ -429,7 +414,7 @@ namespace RockWeb.Blocks.Administration
 
                         var existingAuths = authService.GetAuths( iSecured.TypeId, iSecured.Id, li.Text ).ToList();
                         if ( !existingAuths.Any( a => a.SpecialRole == specialRole && a.GroupId.Equals( groupId ) ) )
-                        { 
+                        {
                             int order = existingAuths.Count > 0 ? existingAuths.Last().Order + 1 : 0;
 
                             Rock.Model.Auth auth = new Rock.Model.Auth();
@@ -463,14 +448,14 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddUser_Click( object sender, EventArgs e )
         {
-            
+
             if ( ppUser.PersonId.HasValue )
             {
                 int? personAliasId = ppUser.PersonAliasId;
                 if ( personAliasId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
-                    { 
+                    {
                         var authService = new Rock.Model.AuthService( rockContext );
                         var existingAuths = authService.GetAuths( iSecured.TypeId, iSecured.Id, CurrentAction ).ToList();
 
@@ -584,7 +569,7 @@ namespace RockWeb.Blocks.Administration
             ddlRoles.Items.Add( new ListItem( "[All Un-Authenticated Users]", "-3" ) );
 
             var securityRoleType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-            
+
             foreach ( var role in RoleCache.AllRoles() )
             {
                 string name = role.IsSecurityTypeGroup ? role.Name : "GROUP - " + role.Name;
@@ -648,13 +633,17 @@ namespace RockWeb.Blocks.Administration
 
                         switch ( groupId )
                         {
-                            case -1: specialRole = Rock.Model.SpecialRole.AllUsers;
+                            case -1:
+                                specialRole = Rock.Model.SpecialRole.AllUsers;
                                 break;
-                            case -2: specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers;
+                            case -2:
+                                specialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers;
                                 break;
-                            case -3: specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers;
+                            case -3:
+                                specialRole = Rock.Model.SpecialRole.AllUnAuthenticatedUsers;
                                 break;
-                            default: specialRole = Rock.Model.SpecialRole.None;
+                            default:
+                                specialRole = Rock.Model.SpecialRole.None;
                                 break;
                         }
 
@@ -681,7 +670,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    public class MyAuthRule 
+    public class MyAuthRule
     {
         /// <summary>
         /// Gets or sets the identifier.
