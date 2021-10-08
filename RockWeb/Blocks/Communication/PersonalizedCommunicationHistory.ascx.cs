@@ -120,12 +120,12 @@ namespace RockWeb.Blocks.Communication
             <td class='leading-snug'>
                 <span class='d-block mb-1'>{{ Communication.Title }}</span>
                 <span class='d-block text-sm text-muted mb-1'>{{ Communication.Sender.FullName }}</span>
-                {% capture moreHtml %}<i class=&quot;fa fa-xs fa-chevron-right&quot;></i> More{% endcapture %}
-                {% capture lessHtml %}<i class=&quot;fa fa-xs fa-chevron-down&quot;></i> Less{% endcapture %}
+                {% capture moreHtml %}<i class=&quot;fa fa-xs mr-1 fa-chevron-right&quot;></i> <span>More</span>{% endcapture %}
+                {% capture lessHtml %}<i class=&quot;fa fa-xs mr-1 fa-chevron-down&quot;></i> <span>Less</span>{% endcapture %}
                 {% if HasDetail %}
-                    <a href='#' class='text-xs py-2 px-0' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return false;"">{{ lessHtml | HtmlDecode }}</a>
+                    <a href='#' class='text-xs py-1 d-inline-flex align-items-center' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return false;"">{{ lessHtml | HtmlDecode }}</a>
                 {% else %}
-                    <a href=""{{ ShowDetailPostBackEventReference }}"" class='text-xs py-2 px-0' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return true;"">{{ moreHtml | HtmlDecode }}</a>
+                    <a href=""{{ ShowDetailPostBackEventReference }}"" class='text-xs py-1 d-inline-flex align-items-center' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return true;"">{{ moreHtml | HtmlDecode }}</a>
                 {% endif %}
             </td>
             <td class='w-1 align-middle text-right d-none d-sm-table-cell'>
@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Communication
                                     {% endif %}
                                 </div>
                                 <dl>
-                                    {% if Communication.Detail.CommunicationListName != empty %}
+                                    {% if Communication.Detail.CommunicationListName != null %}
                                         <dt>Communication List</dt>
                                         {% if ListDetailUrl != empty %}
                                             <dd><a href=""{{ ListDetailUrl }}"">{{ Communication.Detail.CommunicationListName }}</a></dd>
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Communication
                                             <dd>{{ Communication.Detail.CommunicationListName }}</dd>
                                         {% endif %}
                                     {% endif %}
-                                    {% if Communication.Detail.CommunicationSegments != empty %}
+                                    {% if Communication.Detail.CommunicationSegments != null %}
                                         <dt>Segments ({{ Communication.Detail.CommunicationSegmentInclusionType }})</dt>
                                         <dd>
                                             {% for segment in Communication.Detail.CommunicationSegments %}
@@ -221,13 +221,16 @@ namespace RockWeb.Blocks.Communication
                             </div>
                             <div class='col-md-6'>
                                 <span class='control-label d-block text-muted'>Message Preview</span>
-                                {% if Communication.CommunicationType == 'SMS' %}
+                                {% case Communication.CommunicationType %}
+                                {% when 'SMS' %}
                                     <div class='card communication-preview'>
                                         <div class='card-heading text-center'><span class='d-block font-weight-semibold'>{{ Communication.Detail.SenderName }}</span> <span class='d-block text-xs text-muted'>{{ Communication.Detail.SenderAddress }}</span></div>
                                         <div class='card-body'>
-                                            <div class='sms-bubble'>
-                                            {{ Communication.Detail.Message }}
-                                            </div>
+                                            {% if Communication.Detail.Message != null %}
+                                                <div class='sms-bubble'>
+                                                    {{ Communication.Detail.Message }}
+                                                </div>
+                                            {% endif %}
                                             {% for attachmentUrl in Communication.Detail.Attachments %}
                                                 <div class='sms-image'>
                                                     <img src='{{ attachmentUrl }}' alt='' class='img-responsive'>
@@ -235,7 +238,7 @@ namespace RockWeb.Blocks.Communication
                                             {% endfor %}
                                         </div>
                                     </div>
-                                {% elseif Communication.CommunicationType == 'PushNotification' %}
+                                {% when 'PushNotification' %}
                                     <div class='card communication-preview'>
                                         <div class='card-heading'><span class='font-weight-semibold'>{{ Communication.Detail.RecipientName }}</span></div>
                                         <div class='card-body' style='background:#FCFCFC'>
@@ -272,7 +275,7 @@ namespace RockWeb.Blocks.Communication
                                             <svg class='d-block' style='filter: blur(4px);' fill='none' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 364 150'><path fill='#FCFCFC' d='M0 0h364v226H0z'/><path d='M240.1 8H123.9c-3 0-5.4 2.4-5.4 5.4v199.2c0 3 2.4 5.4 5.4 5.4h116.2c3 0 5.4-2.4 5.4-5.4V13.4c0-3-2.4-5.4-5.4-5.4Z' fill='#fff' stroke='#DBDBDB' stroke-miterlimit='10'/><path d='M229.3 131.8h-94.6a4 4 0 0 0-4 4v2.8a4 4 0 0 0 4 4h94.6a4 4 0 0 0 4-4v-2.7a4 4 0 0 0-4-4ZM214.4 28.2H155a2.7 2.7 0 1 0 0 5.4h59.4a2.7 2.7 0 1 0 0-5.4ZM138.8 36.3a5.4 5.4 0 1 0 0-10.8 5.4 5.4 0 0 0 0 10.8Z' fill='#737475'/><path d='M230.6 48.4h-97.2a2.7 2.7 0 0 0-2.7 2.7V113c0 1.5 1.2 2.7 2.7 2.7h97.2c1.5 0 2.7-1.2 2.7-2.7V51c0-1.4-1.2-2.6-2.7-2.6Z' fill='#E6E6E6'/><path d='M215.4 72a8.4 8.4 0 1 0 0-17 8.4 8.4 0 0 0 0 17Z' fill='#fff'/><path d='M210.4 115.7h-40.6l20.3-40.4 20.3 40.4Z' fill='#737475'/><path d='M196.9 115.7h-57.5l28.8-53.9 28.7 53.9Z' fill='#737475'/></svg>
                                         </div>
                                     </div>
-                                {% endif %}
+                                {% endcase %}
 
                                 {% if Communication.ViewDetailIsAllowed and DetailUrl != empty %}
                                     <div class='text-right'><a href=""{{ DetailUrl }}"" class='text-xs'>View Communication</a></div>
@@ -317,12 +320,8 @@ namespace RockWeb.Blocks.Communication
                     <div id='details-{{ Communication.RowId }}' class='pb-5' style='display: none;'>
                         <div class='row'>
                             <div class='col-md-12 mb-4'><div class='border-top border-panel'></div></div>
-                            <div class='col-md-6'>
-                                <div class='row'>
-                                    <div class='col-xs-6 col-md-4 leading-snug mb-4'>
-                                        <span class='d-block text-sm text-muted mb-1'>Loading...</span>
-                                    </div>
-                                </div>
+                            <div class='col-md-12 text-center'>
+                                <span class='d-block text-sm text-muted mb-1'>Loading...</span>
                             </div>
                         </div>
                     </div>
