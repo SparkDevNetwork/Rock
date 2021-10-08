@@ -1892,7 +1892,6 @@ $('#{0}').tooltip();
                                 continue;
                             }
 
-                            rockContext.SqlLogging( true );
                             // Get count of scheduled Occurrences with RSVP "Yes" for the group/schedule
                             int currentScheduled = attendanceService
                                 .Queryable()
