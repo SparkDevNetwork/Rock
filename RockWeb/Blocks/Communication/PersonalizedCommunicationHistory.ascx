@@ -136,7 +136,7 @@
     <ContentTemplate>
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comments-o"></i>Communication List</h1>
+                <h1 class="panel-title"><i class="fa fa-comments-o"></i><asp:Literal ID="lBlockTitle" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">
 

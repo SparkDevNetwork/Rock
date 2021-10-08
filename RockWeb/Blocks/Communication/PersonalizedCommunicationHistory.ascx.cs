@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -373,6 +374,11 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
+                if ( _person != null )
+                {
+                    lBlockTitle.Text = $"{_person.FullName}'s Communication History";
+                }
+
                 SetFilter();
             }
 
@@ -448,19 +454,14 @@ namespace RockWeb.Blocks.Communication
             {
                 case FilterSettingName.Medium:
                     {
-                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
-                        {
-                            e.Value = ( ( CommunicationType ) System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
-                        }
+                        var item = ddlMedium.Items.FindByValue( e.Value );
+                        e.Value = item != null ? item.Text : string.Empty;
                         break;
                     }
                 case FilterSettingName.Status:
                     {
-                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
-                        {
-                            var status = e.Value.ConvertToEnumOrNull<CommunicationRecipientStatus>();
-                            e.Value = status.ConvertToString();
-                        }
+                        var item = ddlStatus.Items.FindByValue( e.Value );
+                        e.Value = item != null ? item.Text : string.Empty;
                         break;
                     }
                 case FilterSettingName.CreatedBy:
@@ -491,26 +492,20 @@ namespace RockWeb.Blocks.Communication
                     }
                 case FilterSettingName.BulkStatus:
                     {
-                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
-                        {
-                            e.Value = ddlBulk.Items.FindByValue( e.Value ).Text;
-                        }
+                        var item = ddlBulk.Items.FindByValue( e.Value );
+                        e.Value = item != null ? item.Text : string.Empty;
                         break;
                     }
                 case FilterSettingName.CommunicationTemplate:
                     {
-                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
-                        {
-                            e.Value = ddlTemplate.Items.FindByValue( e.Value ).Text;
-                        }
+                        var item = ddlTemplate.Items.FindByValue( e.Value );
+                        e.Value = item != null ? item.Text : string.Empty;
                         break;
                     }
                 case FilterSettingName.SystemCommunicationType:
                     {
-                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
-                        {
-                            e.Value = ddlSystemCommunicationType.Items.FindByValue( e.Value ).Text;
-                        }
+                        var item = ddlSystemCommunicationType.Items.FindByValue( e.Value );
+                        e.Value = item != null ? item.Text : string.Empty;
                         break;
                     }
             }
@@ -655,11 +650,41 @@ namespace RockWeb.Blocks.Communication
             tbSubject.Text = rFilter.GetUserPreference( FilterSettingName.Subject );
 
             // Communication Medium
-            ddlMedium.BindToEnum( insertBlankOption: true, ignoreTypes: new CommunicationType[] { CommunicationType.RecipientPreference } );
+            ddlMedium.Items.Clear();
+            ddlMedium.Items.Add( new ListItem() );
+
+            var activeMediums = MediumContainer.Instance.Components
+                .Select( x => x.Value.Value )
+                .Where( x => x.IsActive )
+                .Select( x => x.TypeGuid )
+                .ToList();
+
+            if ( activeMediums.Contains( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ) )
+            {
+                ddlMedium.Items.Add( new ListItem( "Email", CommunicationType.Email.ConvertToInt().ToString() ) );
+            }
+            if ( activeMediums.Contains( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ) )
+            {
+                ddlMedium.Items.Add( new ListItem( "SMS", CommunicationType.SMS.ConvertToInt().ToString() ) );
+            }
+            if ( activeMediums.Contains( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() ) )
+            {
+                ddlMedium.Items.Add( new ListItem( "Push Notification", CommunicationType.PushNotification.ConvertToInt().ToString() ) );
+            }
+
             ddlMedium.SetValue( rFilter.GetUserPreference( FilterSettingName.Medium ) );
 
-            // Status
-            ddlStatus.BindToEnum<CommunicationRecipientStatus>( insertBlankOption: true );
+            // Status.
+            // "Opened" status is displayed as "Interacted".
+            ddlStatus.Items.Clear();
+            ddlStatus.Items.Add( new ListItem() );
+            ddlStatus.Items.Add( new ListItem( CommunicationRecipientStatus.Cancelled.ToString(), CommunicationRecipientStatus.Cancelled.ConvertToInt().ToString() ) );
+            ddlStatus.Items.Add( new ListItem( CommunicationRecipientStatus.Delivered.ToString(), CommunicationRecipientStatus.Delivered.ConvertToInt().ToString() ) );
+            ddlStatus.Items.Add( new ListItem( CommunicationRecipientStatus.Failed.ToString(), CommunicationRecipientStatus.Failed.ConvertToInt().ToString() ) );
+            ddlStatus.Items.Add( new ListItem( "Interacted", CommunicationRecipientStatus.Opened.ConvertToInt().ToString() ) );
+            ddlStatus.Items.Add( new ListItem( CommunicationRecipientStatus.Pending.ToString(), CommunicationRecipientStatus.Pending.ConvertToInt().ToString() ) );
+            ddlStatus.Items.Add( new ListItem( CommunicationRecipientStatus.Sending.ToString(), CommunicationRecipientStatus.Sending.ConvertToInt().ToString() ) );
+
             ddlStatus.SelectedValue = rFilter.GetUserPreference( FilterSettingName.Status );
 
             // Created By
@@ -991,7 +1016,14 @@ namespace RockWeb.Blocks.Communication
                             InternalAttachments = ciGroup.Communication.Attachments.Select( x => new CommunicationAttachmentInfo { BinaryFileId = x.BinaryFileId, CommunicationType = x.CommunicationType } ).ToList(),
                             RecipientName = ciGroup.Recipient.PersonAlias.Person.NickName + " " + ciGroup.Recipient.PersonAlias.Person.LastName,
                             RecipientAddress = ciGroup.Recipient.PersonAlias.Person.Email,
-                            Message = ciGroup.Recipient.SentMessage,
+                            /* 
+                             * [2021-10-08] DJL - The SentMessage field may not be populated if the message failed to send,
+                             * depending upon which specific transport processed the message.
+                             */
+                            Message = ciGroup.Recipient.SentMessage ??
+                              ( ciGroup.Communication.CommunicationType == CommunicationType.SMS ? ciGroup.Communication.SMSMessage
+                                : ciGroup.Communication.CommunicationType == CommunicationType.PushNotification ? ciGroup.Communication.PushMessage
+                                : ciGroup.Communication.Message ),
                             CommunicationSegmentInclusionType = ciGroup.Communication.SegmentCriteria.ToString(),
                             InternalCommunicationSegmentData = ciGroup.Communication.Segments,
                             PersonalInteractionCount = ciGroup.Interactions.Count(),
@@ -1163,7 +1195,7 @@ namespace RockWeb.Blocks.Communication
                 info.Detail.SenderAddress = info.Detail.InternalSenderEmail;
             }
 
-            // Resolve the URLs for attachments.
+            // Create URLs for attachments to be accessed via a web service call, to ensure that the content is accessible regardless of where it is stored.
             if ( info.CommunicationType == CommunicationType.PushNotification )
             {
                 // Resolve the URL for a Push notification image file.
@@ -1171,9 +1203,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     var file = _gridBinaryFileService.Get( info.Detail.InternalPushImageFileId.ToIntSafe( 0 ) );
 
-                    info.Detail.Attachments = new List<string>();
-
-                    info.Detail.Attachments.Add( file.Url );
+                    info.Detail.Attachments = new List<string>() { $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?id={ file.Id }" };
                 }
             }
             else
@@ -1187,7 +1217,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         var file = _gridBinaryFileService.Get( attachment.BinaryFileId );
 
-                        info.Detail.Attachments.Add( file.Url );
+                        info.Detail.Attachments.Add( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?id={ attachment.BinaryFileId }" );
                     }
                 }
             }
@@ -1235,7 +1265,6 @@ namespace RockWeb.Blocks.Communication
 
                     ctlContainer.Update();
                 }
-
             }
         }
 
