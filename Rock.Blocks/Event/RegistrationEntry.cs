@@ -2654,7 +2654,10 @@ namespace Rock.Blocks.Event
                 {
                     foreach ( var item in newRegistration.Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
                     {
-                        newRegistration.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), null, null );
+                        var parameters = new Dictionary<string, string>();
+                        parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
+                        parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
+                        newRegistration.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                     }
 
                     if ( settings.WorkflowTypeIds.Any() )

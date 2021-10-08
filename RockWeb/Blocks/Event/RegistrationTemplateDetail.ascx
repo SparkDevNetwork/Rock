@@ -165,7 +165,7 @@
                                 <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
                                     Help="An optional workflow type to launch when a new registration is completed." />
                                  <Rock:WorkflowTypePicker ID="wtpRegistrantWorkflow" runat="server" Label="Registrant Workflow"
-                                    Help="An optional workflow type to launch for each Registrant when a new registration is completed." />
+                                    Help="An optional workflow type to launch for each Registrant when a new registration is completed. Both the 'RegistrationRegistrantId' and the 'RegistrationId' will be passed to the workflow." />
                                 <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
                                     Help="Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will
                                             not be allowed to change any of the registrant information and attributes." />
