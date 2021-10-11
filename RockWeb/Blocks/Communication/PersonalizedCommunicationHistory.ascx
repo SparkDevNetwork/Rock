@@ -131,15 +131,14 @@
         font-weight: 500;
     }
 </style>
-<asp:UpdatePanel ID="upPanel" runat="server" ChildrenAsTriggers="false" UpdateMode="Conditional">
-    <%-- Block updating is set to conditional to prevent unwanted page refreshes during postback when fetching a communication detail panel. --%>
+<asp:UpdatePanel ID="upPanel" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+    <%-- Block updating is set to conditional and automatic triggering disabled to prevent unwanted page refreshes during postback when fetching a communication detail panel. --%>
     <ContentTemplate>
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comments-o"></i><asp:Literal ID="lBlockTitle" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">
-
                 <div class="grid grid-panel">
                     <%-- The filter is enclosed in an UpdatePanel to prevent unwanted updates during postback from the Communications List. --%>
                     <asp:UpdatePanel ID="upFilter" runat="server">
@@ -178,15 +177,13 @@
                             </Rock:GridFilter>
                         </ContentTemplate>
                     </asp:UpdatePanel>
-
                     <div class="communication-grid">
                         <Rock:Grid CssClass="communication-grid" ID="gCommunication" runat="server" AllowSorting="false" PageSizes="50,100"
                             RowClickEnabled="false">
                             <Columns>
                                 <Rock:RockTemplateField ItemStyle-CssClass="p-0">
                                     <ItemTemplate>
-                                        <asp:HiddenField ID="showDetail" runat="server" />
-                                        <asp:UpdatePanel runat="server" ID="upCommunicationItem" UpdateMode="Conditional">
+                                        <asp:UpdatePanel runat="server" ID="upCommunicationItem" UpdateMode="Conditional" ChildrenAsTriggers="false">
                                             <ContentTemplate>
                                                 <asp:Literal ID="lCommunicationDetailRow" runat="server"></asp:Literal>
                                             </ContentTemplate>
@@ -197,7 +194,6 @@
                         </Rock:Grid>
                     </div>
                 </div>
-
             </div>
         </div>
         <script>

@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Communication
 
     #endregion Block Attributes
 
-    public partial class PersonalizedCommunicationHistory : RockBlock, IPostBackEventHandler
+    public partial class PersonalizedCommunicationHistory : RockBlock
     {
         #region Attribute Keys
 
@@ -372,18 +372,25 @@ namespace RockWeb.Blocks.Communication
             InitializeContextPerson();
             InitializeCommunicationMediumMap();
 
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
             {
+                // Handle postback request to load communication details.
+                var postbackCtl = Request.Params.Get( "__EVENTTARGET" ) ?? string.Empty;
+
+                if ( postbackCtl.EndsWith( nameof( upPanel ) ) )
+                {
+                    HandlePostBack( postbackCtl, Request["__EVENTARGUMENT"] );
+                }
+            }
+            else
+            {
+                // Full page load.
                 if ( _person != null )
                 {
                     lBlockTitle.Text = $"{_person.FullName}'s Communication History";
                 }
 
                 SetFilter();
-            }
-
-            if ( !Page.IsPostBack )
-            {
                 BindGrid();
             }
 
@@ -1099,8 +1106,6 @@ namespace RockWeb.Blocks.Communication
             }
 
             // Create the "More" PostBack link and arguments.
-            // The PostBack link must be generated for the same control that implements IPostbackHandler (in this case, the block usercontrol),
-            // so we need to also include an argument to identify the specific detail panel control that should be updated for this request.
             var args = new CommunicationDetailPostbackArgs
             {
                 Action = "ShowDetail",
@@ -1108,11 +1113,9 @@ namespace RockWeb.Blocks.Communication
                 DetailContainerControlId = rowContainerControl.ClientID
             };
 
-            var argsString = args.ToJson();
+            var argsString = WebUtility.UrlEncode( args.ToJson() );
 
-            argsString = WebUtility.UrlEncode( argsString );
-
-            var postbackLink = Page.ClientScript.GetPostBackClientHyperlink( this, argsString );
+            var postbackLink = Page.ClientScript.GetPostBackClientHyperlink( this.upPanel, argsString, false );
 
             mergeValues.Add( "ShowDetailPostBackEventReference", postbackLink );
             mergeValues.Add( "HasDetail", includeDetailInfo );
@@ -1226,8 +1229,13 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Handles postback events for this block.
         /// </summary>
+        /// <param name="controlId"></param>
         /// <param name="eventArgument"></param>
-        public void RaisePostBackEvent( string eventArgument )
+        /// <remarks>
+        /// Note that we deliberately avoid using IPostBackHandler to process requests for this block, because registering the block
+        /// as the postback target has the unwanted side-effect of causing the entire grid to refresh when loading the detail for a single row.
+        /// </remarks>
+        public void HandlePostBack( string controlId, string eventArgument )
         {
             var argsString = WebUtility.UrlDecode( eventArgument );
 
@@ -1565,9 +1573,10 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// The postback arguments of a request for Comunication List Item details.
         /// </summary>
-        private class CommunicationDetailPostbackArgs : RockDynamic
+        private class CommunicationDetailPostbackArgs
         {
             public string Action { get; set; }
+
             public int? CommunicationId { get; set; }
 
             public string DetailContainerControlId { get; set; }
