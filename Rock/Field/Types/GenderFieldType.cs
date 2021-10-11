@@ -101,6 +101,11 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
+            if (value.IsNullOrWhiteSpace())
+            {
+                return string.Empty;
+            }
+
             if ( configurationValues.GetValueOrNull( HIDE_UNKNOWN_GENDER_KEY ).AsBooleanOrNull() ?? false )
             {
                 return value.ConvertToEnum<Gender>().ConvertToString();
