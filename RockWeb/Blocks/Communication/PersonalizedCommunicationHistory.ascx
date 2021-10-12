@@ -181,7 +181,7 @@
                         <Rock:Grid CssClass="communication-grid" ID="gCommunication" runat="server" AllowSorting="false" PageSizes="50,100"
                             RowClickEnabled="false">
                             <Columns>
-                                <Rock:RockTemplateField ItemStyle-CssClass="p-0">
+                                <Rock:RockTemplateField ItemStyle-CssClass="py-0">
                                     <ItemTemplate>
                                         <asp:UpdatePanel runat="server" ID="upCommunicationItem" UpdateMode="Conditional" ChildrenAsTriggers="false">
                                             <ContentTemplate>

@@ -101,25 +101,25 @@ namespace RockWeb.Blocks.Communication
         private Dictionary<int, CommunicationType> _mediumEntityIdToCommunicationTypeMap;
 
         private const string _communicationItemLavaTemplate = @"
-<table class='grid-table'>
-    <tbody>
-        <tr class='communication-item'>
-            <td class='d-none d-sm-table-cell w-1 align-middle pr-0'>
-                <div class='avatar avatar-lg avatar-icon'>
-                {% case Communication.CommunicationType %}
-                    {% when 'Email' %}
-                        <i class='fa fa-envelope'></i>
-                    {% when 'SMS' %}
-                        <i class='fa fa-comment-alt'></i>
-                    {% when 'PushNotification' %}
-                        <i class='fa fa-mobile-alt'></i>
-                    {% else %}
-                        <i class='fa fa-question-circle'></i>
-                {% endcase %}
-                </div>
-            </td>
-            <td class='leading-snug'>
-                <span class='d-block mb-1'>{{ Communication.Title }}</span>
+<div class='communication-item pt-3 d-flex flex-row cursor-default'>
+    <div class='d-none d-sm-block pt-1 pl-2 pr-3'>
+        <div class='avatar avatar-lg avatar-icon'>
+        {% case Communication.CommunicationType %}
+            {% when 'Email' %}
+                <i class='fa fa-envelope'></i>
+            {% when 'SMS' %}
+                <i class='fa fa-comment-alt'></i>
+            {% when 'PushNotification' %}
+                <i class='fa fa-mobile-alt'></i>
+            {% else %}
+                <i class='fa fa-question-circle'></i>
+        {% endcase %}
+        </div>
+    </div>
+    <div class='flex-grow-1'>
+        <div class='d-flex flex-row align-items-top align-items-sm-center pb-3'>
+            <div class='flex-fill pr-sm-3 leading-snug'>
+                <span class='d-block text-wrap text-break mb-1'>{{ Communication.Title }}</span>
                 <span class='d-block text-sm text-muted mb-1'>{{ Communication.Sender.FullName }}</span>
                 {% capture moreHtml %}<i class=&quot;fa fa-xs mr-1 fa-chevron-right&quot;></i> <span>More</span>{% endcapture %}
                 {% capture lessHtml %}<i class=&quot;fa fa-xs mr-1 fa-chevron-down&quot;></i> <span>Less</span>{% endcapture %}
@@ -128,11 +128,11 @@ namespace RockWeb.Blocks.Communication
                 {% else %}
                     <a href=""{{ ShowDetailPostBackEventReference }}"" class='text-xs py-1 d-inline-flex align-items-center' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return true;"">{{ moreHtml | HtmlDecode }}</a>
                 {% endif %}
-            </td>
-            <td class='w-1 align-middle text-right d-none d-sm-table-cell'>
+            </div>
+            <div class='text-right d-none d-sm-block'>
                 <span class='badge badge-info' data-toggle='tooltip' data-placement='top' title='{{ Communication.RecipientTotal }} {{ 'Recipient' | PluralizeForQuantity:Communication.RecipientTotal }}'>{{ Communication.RecipientTotal }}</span>
-            </td>
-            <td class='w-1 text-right'>
+            </div>
+            <div class='text-right pl-3 pr-2'>
                 <span class='d-block text-sm text-muted mb-1 text-nowrap' title='{{ Communication.SendDateTime }}'>{{ Communication.SendDateTime | HumanizeDateTime | SentenceCase }}</span>
                 {% case Communication.RecipientStatus %}
                 {% when 'Delivered' %}
@@ -161,12 +161,12 @@ namespace RockWeb.Blocks.Communication
                 {% else %}
                     <span class='label label-default'>{{ Communication.RecipientStatus }}</span>
                 {% endcase %}
-            </td>
-        </tr>
+            </div>
+        </div>
+
         {% if HasDetail %}
-            <tr class='communication-details'>
-                <td class='d-none d-sm-table-cell border-0 py-0'></td>
-                <td class='border-0 py-0' colspan='3'>
+            <div class='communication-details'>
+                <div class='border-0 py-0'>
                     <div id='details-{{ Communication.RowId }}' class='pb-5'>
                         <div class='row'>
                             <div class='col-md-12 mb-4'><div class='border-top border-panel'></div></div>
@@ -262,8 +262,8 @@ namespace RockWeb.Blocks.Communication
                                     </div>
                                 {% else %}
                                     <div class='card communication-preview'>
-                                        <div class='card-heading' title='Message From'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName }}</span> <span class='text-muted'>{{ Communication.Detail.SenderAddress }}</span> </div>
-                                        <div class='card-heading' title='Message Subject'>{{ Communication.Title }}</div>
+                                        <div class='card-heading text-wrap' title='Message From'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName }}</span> <span class='text-muted'>{{ Communication.Detail.SenderAddress }}</span> </div>
+                                        <div class='card-heading text-wrap' title='Message Subject'>{{ Communication.Title }}</div>
                                         <div class='card-body p-0 position-relative' style='background:#FCFCFC'>
                                             {% if Communication.ViewDetailIsAllowed and DetailUrl != empty %}
                                                 <div class='d-flex justify-content-center align-items-center position-absolute inset-0 z-10'>
@@ -312,25 +312,21 @@ namespace RockWeb.Blocks.Communication
                             </div>
                         {% endif %}
                     </div>
-                </td>
-            </tr>
+                </div>
+            </div>
+
         {% else %}
-            <tr class='communication-details'>
-                <td class='d-none d-sm-table-cell border-0 py-0'></td>
-                <td class='border-0 py-0' colspan='3'>
-                    <div id='details-{{ Communication.RowId }}' class='pb-5' style='display: none;'>
-                        <div class='row'>
-                            <div class='col-md-12 mb-4'><div class='border-top border-panel'></div></div>
-                            <div class='col-md-12 text-center'>
-                                <span class='d-block text-sm text-muted mb-1'>Loading...</span>
-                            </div>
-                        </div>
+            <div id='details-{{ Communication.RowId }}' class='communication-details' style='display: none;'>
+                <div class='row pb-5'>
+                    <div class='col-md-12 mb-4'><div class='border-top border-panel'></div></div>
+                    <div class='col-md-12 text-center'>
+                        <span class='d-block text-sm text-muted mb-1'>Loading...</span>
                     </div>
-                </td>
-            </tr>
+                </div>
+            </div>
         {% endif %}
-    </tbody>
-</table>
+    </div>
+<div>
 ";
 
         #endregion
