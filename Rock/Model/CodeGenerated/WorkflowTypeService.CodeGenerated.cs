@@ -151,6 +151,7 @@ namespace Rock.Model
                 IsSystem = model.IsSystem,
                 LoggingLevel = ( int ) model.LoggingLevel,
                 LogRetentionPeriod = model.LogRetentionPeriod,
+                MaxWorkflowAgeDays = model.MaxWorkflowAgeDays,
                 Name = model.Name,
                 NoActionMessage = model.NoActionMessage,
                 Order = model.Order,
@@ -238,6 +239,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.LoggingLevel = source.LoggingLevel;
             target.LogRetentionPeriod = source.LogRetentionPeriod;
+            target.MaxWorkflowAgeDays = source.MaxWorkflowAgeDays;
             target.Name = source.Name;
             target.NoActionMessage = source.NoActionMessage;
             target.Order = source.Order;
