@@ -192,6 +192,15 @@ namespace Rock.Model
 
         #region Additional Lava Properties
 
+        /// <summary>
+        /// Gets the weekly time of day in friendly text, such as "7:00 PM".
+        /// </summary>
+        /// <value>
+        /// The weekly time of day in friendly text or an empty string if not valid.
+        /// </value>
+        [LavaVisible]
+        public string WeeklyTimeOfDayText => WeeklyTimeOfDay?.ToTimeString() ?? string.Empty;
+
         /*
             2021-02-17 - DJL
 

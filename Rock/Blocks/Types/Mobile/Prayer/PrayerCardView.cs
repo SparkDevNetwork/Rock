@@ -320,9 +320,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         {
             var helper = new ClientHelper( rockContext, RequestContext.CurrentPerson );
 
-            // We are not running as the target user so don't try to enforce
-            // security based on the currently logged in person when retrieving
-            // the list of campuses.
+            // Bypass security because the admin has specified which campuses
+            // they want to show up.
             helper.EnableSecurity = false;
 
             return helper.GetCampusesAsListItems( new ViewModel.Client.CampusOptions

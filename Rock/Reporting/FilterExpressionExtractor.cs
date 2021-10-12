@@ -30,41 +30,6 @@ namespace Rock.Reporting
     public static class FilterExpressionExtractor
     {
         /// <summary>
-        /// Helps rewrite the expression by replacing the parameter expression in the qry with another parameterExpression
-        /// </summary>
-        private class ParameterExpressionVisitor : ExpressionVisitor
-        {
-            private ParameterExpression _parameterExpression;
-            private string _parameterName;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ParameterExpressionVisitor"/> class.
-            /// </summary>
-            /// <param name="parameterExpression">The parameter expression.</param>
-            /// <param name="parameterName">Name of the parameter.</param>
-            public ParameterExpressionVisitor( ParameterExpression parameterExpression, string parameterName )
-            {
-                this._parameterExpression = parameterExpression;
-                this._parameterName = parameterName;
-            }
-
-            /// <summary>
-            /// Visits the parameter.
-            /// </summary>
-            /// <param name="p">The application.</param>
-            /// <returns></returns>
-            protected override Expression VisitParameter( ParameterExpression p )
-            {
-                if ( p.Name == _parameterName )
-                {
-                    p = _parameterExpression;
-                }
-
-                return base.VisitParameter( p );
-            }
-        }
-
-        /// <summary>
         /// Extracts the "Where" clause Expression from an IQueryable
         /// </summary>
         /// <param name="qry">The qry.</param>
@@ -77,9 +42,7 @@ namespace Rock.Reporting
             Expression<Func<LambdaExpression>> executionLambda = Expression.Lambda<Func<LambdaExpression>>( methodCallExpression.Arguments[1] );
             Expression extractedExpression = ( executionLambda.Compile().Invoke() as Expression<Func<T, bool>> ).Body;
 
-            var filterExpressionVisitor = new ParameterExpressionVisitor( parameterExpression, parameterName );
-
-            return filterExpressionVisitor.Visit( extractedExpression );
+            return extractedExpression.ReplaceParameter( parameterName, parameterExpression );
         }
 
         /// <summary>
