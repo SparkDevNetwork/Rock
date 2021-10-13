@@ -173,6 +173,15 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKey.DetailPage,
         Order = 14 )]
 
+    [EnumField(
+        "Results Transition",
+        Description = "The transition to use when going from filters to results and back.",
+        IsRequired = true,
+        EnumSourceType = typeof( GroupFinderTransition ),
+        DefaultEnumValue = ( int ) GroupFinderTransition.Fade,
+        Key = AttributeKey.ResultsTransition,
+        Order = 15 )]
+
     // -- Custom Settings --
 
     [GroupTypesField(
@@ -182,6 +191,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
         EnhancedSelection = true,
         Category = "customsetting",
         Key = AttributeKey.GroupTypes )]
+
+    [TextField(
+        "Group Types Location Type",
+        Description = "The type of location each group type can use for distance calculations.",
+        IsRequired = false,
+        Category = "customsetting",
+        Key = AttributeKey.GroupTypesLocationType )]
 
     [AttributeField( "Attribute Filters",
         EntityTypeGuid = Rock.SystemGuid.EntityType.GROUP,
@@ -202,10 +218,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region Block Attributes
 
-        private static class AttributeKey
+        /// <summary>
+        /// Attribute keys for the <see cref="GroupFinder"/> block.
+        /// </summary>
+        public static class AttributeKey
         {
-            public const string GroupTypes = "GroupTypes";
-
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
             public const string LocationTypes = "LocationTypes";
 
             public const string HideOvercapacityGroups = "HideOvercapacityGroups";
@@ -234,7 +252,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             public const string DetailPage = "DetailPage";
 
+            public const string ResultsTransition = "ResultsTransition";
+
+            public const string GroupTypes = "GroupTypes";
+
+            public const string GroupTypesLocationType = "GroupTypesLocationType";
+
             public const string AttributeFilters = "AttributeFilters";
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         }
 
         /// <summary>
@@ -358,6 +383,22 @@ namespace Rock.Blocks.Types.Mobile.Groups
         protected Guid? DetailPageGuid => GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull();
 
         /// <summary>
+        /// Gets the results transition.
+        /// </summary>
+        /// <value>
+        /// The results transition.
+        /// </value>
+        protected GroupFinderTransition ResultsTransition => GetAttributeValue( AttributeKey.ResultsTransition ).ConvertToEnum<GroupFinderTransition>( GroupFinderTransition.Fade );
+
+        /// <summary>
+        /// Gets the group types location type map.
+        /// </summary>
+        /// <value>
+        /// The group types location type map.
+        /// </value>
+        protected Dictionary<int, int> GroupTypesLocationType => GetAttributeValue( AttributeKey.GroupTypesLocationType ).FromJsonOrNull<Dictionary<int, int>>() ?? new Dictionary<int, int>();
+
+        /// <summary>
         /// Gets the group attribute unique identifiers enabled for this block.
         /// </summary>
         /// <value>
@@ -421,6 +462,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     ShowDayOfWeekFilter,
                     ShowTimePeriodFilter,
                     ShowLocationFilter,
+                    ResultsTransition,
                     Attributes = attributes
                 };
             }
@@ -543,9 +585,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 .Where( a => a.Attribute != null )
                 .ToDictionary( a => a.Attribute.Key, a => a.Value );
 
+            
             return new GroupFinderFilter
             {
-                CampusGuid = null,
+                CampusGuid = CampusContextEnabled ? RequestContext.GetContextEntity<Campus>()?.Guid : null,
                 Attributes = attributeValues
             };
         }
@@ -712,20 +755,30 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// used.
         /// </summary>
         /// <param name="groups">The groups to be queried.</param>
+        /// <param name="groupTypeLocation">The map of group types and the allowed location type to use.</param>
         /// <param name="latitude">The latitude of the reference point.</param>
         /// <param name="longitude">The longitude of the reference point.</param>
         /// <returns>
         /// A dictionary of group identifiers as the key and distance from the
         /// reference point as the values.
         /// </returns>
-        private Dictionary<int, double> GetDistances( IEnumerable<Group> groups, double latitude, double longitude )
+        private Dictionary<int, double> GetDistances( IEnumerable<Group> groups, Dictionary<int, int> groupTypeLocation, double latitude, double longitude )
         {
             var distances = new Dictionary<int, double>();
 
             foreach ( var group in groups )
             {
-                foreach ( var groupLocation in group.GroupLocations
-                    .Where( gl => gl.Location.GeoPoint != null ) )
+                var groupLocations = group.GroupLocations
+                    .Where( gl => gl.Location.GeoPoint != null );
+
+                var locationTypeId = groupTypeLocation.GetValueOrNull( group.GroupTypeId );
+
+                if ( locationTypeId.HasValue )
+                {
+                    groupLocations = groupLocations.Where( gl => gl.GroupLocationTypeValueId == locationTypeId.Value );
+                }
+
+                foreach ( var groupLocation in groupLocations )
                 {
                     var geoPoint = System.Data.Entity.Spatial.DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
                     double meters = groupLocation.Location.GeoPoint.Distance( geoPoint ) ?? 0.0D;
@@ -767,7 +820,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             // distance.
             if ( filter.Location?.Latitude != null && filter.Location?.Longitude != null )
             {
-                var distances = GetDistances( groups, filter.Location.Latitude.Value, filter.Location.Longitude.Value );
+                var distances = GetDistances( groups, GroupTypesLocationType, filter.Location.Latitude.Value, filter.Location.Longitude.Value );
 
                 // Only show groups with a known location, and sort those by distance.
                 // Filtering is done to keep in parity with the Web version.
@@ -806,6 +859,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var showResults = ShouldShowInitialResults();
                 var validLocations = GetValidNamedLocations( rockContext );
                 var filter = GetInitialFilter( rockContext );
+
+                if ( validLocations.Any() )
+                {
+                    filter.Location = validLocations[0].Location;
+                }
 
                 return ActionOk( new
                 {
@@ -958,6 +1016,32 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The latitude and longitude of this location.
             /// </value>
             public GroupFinderLocation Location { get; set; }
+        }
+
+        /// <summary>
+        /// The type of transition to use in the Group Finder.
+        /// </summary>
+        public enum GroupFinderTransition
+        {
+            /// <summary>
+            /// No transition is performed, hide and reveal will be instant.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// The content will fade out to hide and fade in to reveal.
+            /// </summary>
+            Fade = 1,
+
+            /// <summary>
+            /// The content will flip with a flip view.
+            /// </summary>
+            Flip = 2,
+
+            /// <summary>
+            /// The content will slide up to hide and down to reveal.
+            /// </summary>
+            Slide = 3
         }
 
         #endregion
