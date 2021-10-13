@@ -372,7 +372,7 @@
 }
 
 .badge-baptism {
-  color: #23a5c5;
+  color: @badge-baptism-color;
 }
 
 .badge-era {
@@ -387,7 +387,7 @@
   }
 
   &.era-loss {
-    color: #ee7624;
+    color: @badge-era-loss-color;
   }
 
   span {
@@ -405,7 +405,7 @@
   font-size: var(--badge-size, 45px);
 
   &.badge-disabled {
-    color: #939393;
+    color: @badge-disabled-color;
     opacity: .2;
   }
 }
@@ -544,7 +544,7 @@
         display: block;
         width: .2222em;
         min-height: 2px;
-        background: lighten(#4f89bd, 20%);
+        background: lighten(@badge-disc-primary-color, 20%);
 
         @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
@@ -555,13 +555,13 @@
 
       &.badge-disc-primary {
         span {
-          background: #4f89bd;
+          background: @badge-disc-primary-color;
         }
       }
 
       &.badge-disc-disabled {
         span {
-          background-color: #939393;
+          background-color: @badge-disc-disabled-color;
           opacity: .2;
         }
       }
@@ -574,7 +574,7 @@
     left: 12px;
     padding: 1px 5px;
     font-size: 24px;
-    background-color: #e3ded7;
+    background-color: @badge-disc-requested-color;
     border-radius: 99px;
     opacity: .8;
   }
@@ -595,22 +595,22 @@
 
   .duration-metric {
     position: relative;
-    color: #e5d24d;  // Default (.duration-weeks)
+    color: @badge-attending-weeks-color;  // Default (.duration-weeks)
     &::before {
       &:extend(.badge-background);
       border-radius: 50%;
     }
 
     &.duration-new {
-      color: #d25555;
+      color: @badge-attending-new-color;
     }
 
     &.duration-months {
-      color: #69ad5e;
+      color: @badge-attending-months-color;
     }
 
     &.duration-years {
-      color: #56789e;
+      color: @badge-attending-years-color;
     }
 
     .metric-value {
@@ -687,7 +687,7 @@
     position: relative;
     font-size: 40px;
     font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
-    color: #4f89bd;
+    color: @badge-lastvisitonsite-color;
 
     .badge-icon {
       font-size: inherit;
@@ -759,11 +759,11 @@
 
   // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
   &.not-requested {
-    color: @ui-4 !important;
+    color: fade(@badge-disabled-color, 20%) !important;
   }
 
   &.requested {
-    color: @ui-5 !important;
+    color: @persondetails-badge-color !important;
   }
 
   .fa-stack-1x {
@@ -808,7 +808,7 @@
     position: relative;
     font-size: 40px;
     font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
-    color: #4f89bd;
+    color: @badge-personaldevice-color;
 
     .badge-icon {
       font-size: inherit;
