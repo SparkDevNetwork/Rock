@@ -1187,7 +1187,7 @@ namespace Rock.Lava
             {
                 // To correctly include the Rock configured timezone, we need to use a DateTimeOffset.
                 // The DateTime object can only represent local server time or UTC time.
-                input = new DateTimeOffset( RockDateTime.Now, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                input = new DateTimeOffset( RockDateTime.Now, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now ) );
             }
 
             // Use the General Short Date/Long Time format by default.
@@ -1230,8 +1230,8 @@ namespace Rock.Lava
                 }
                 else
                 {
-                    // The input date kind is unspecified, so assume it is expressed in Rock time?
-                    var rockDateTime = new DateTimeOffset( dt, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                    // The input date kind is local or unspecified, so assume it is expressed in Rock time.
+                    var rockDateTime = new DateTimeOffset( dt, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dt ) );
 
                     return rockDateTime.ToString( format ).Trim();
                 }

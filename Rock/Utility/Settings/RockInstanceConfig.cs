@@ -96,6 +96,17 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
+        /// </summary>
+        public static DateTimeOffset RockDateTimeOffset
+        {
+            get
+            {
+                return _serviceInstance.RockDateTimeOffset;
+            }
+        }
+
+        /// <summary>
         /// Returns the date and time of the application host server.
         /// </summary>
         public static DateTime SystemDateTime
