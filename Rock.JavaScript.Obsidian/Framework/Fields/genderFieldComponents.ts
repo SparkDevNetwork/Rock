@@ -18,7 +18,7 @@ import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
 
-enum ConfigurationValueKey {
+const enum ConfigurationValueKey {
     HideUnknownGender = "hideUnknownGender"
 }
 
