@@ -391,14 +391,7 @@ namespace RockWeb.Blocks.Connection
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
 
-            if ( LavaService.RockLiquidIsEnabled )
-            {
-                mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
-            }
-            else
-            {
-                mergeFields.Add( "OpportunitySummary", opportunitySummary );
-            }
+            mergeFields.Add( "OpportunitySummary", opportunitySummary );
 
             string result = null;
             using ( var rockContext = new RockContext() )
@@ -1401,7 +1394,7 @@ namespace RockWeb.Blocks.Connection
         }
 
         [Serializable]
-        public class OpportunitySummary
+        public class OpportunitySummary : LavaDataObject
         {
             public int Id { get; set; }
 
