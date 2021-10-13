@@ -43,12 +43,16 @@ legend {
 
 a.aspNetDisabled {
   opacity: .5;
+}
 
-  &.picker-label {
-    color: @text-muted;
-    background: @input-bg-disabled;
-    opacity: 1;
-  }
+.picker.aspNetDisabled {
+  opacity: 1;
+}
+
+a.aspNetDisabled.picker-label,
+.picker.aspNetDisabled .picker-label {
+  background: @input-bg-disabled;
+  opacity: 1;
 }
 
 .form-group.rock-literal,
