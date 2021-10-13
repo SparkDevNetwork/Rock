@@ -287,6 +287,14 @@ namespace RockWeb.Blocks.Event
         private PanelIndex CurrentPanel { get; set; }
 
         /// <summary>
+        /// Gets or sets the last panel.
+        /// </summary>
+        /// <value>
+        /// The last panel.
+        /// </value>
+        private PanelIndex LastPanel { get; set; }
+
+        /// <summary>
         /// Gets or sets the index of the current registrant.
         /// </summary>
         /// <value>
@@ -684,6 +692,7 @@ namespace RockWeb.Blocks.Event
             GroupId = ViewState[GROUP_ID_KEY] as int?;
             CampusId = ViewState[CAMPUS_ID_KEY] as int?;
             CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelStart;
+            LastPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelStart;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
             LastFormIndex = ViewState[LAST_FORM_INDEX_KEY] as int? ?? 0;
@@ -924,11 +933,11 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( CurrentPanel != PanelIndex.PanelRegistrant )
                     {
-                        this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
+                        this.AddHistory( "event", $"{CurrentPanel},0,0,{LastPanel}" );
                     }
                     else
                     {
-                        this.AddHistory( "event", string.Format( "2,{0},{1}", CurrentRegistrantIndex, CurrentFormIndex ) );
+                        this.AddHistory( "event", $"{PanelIndex.PanelRegistrant.ConvertToInt()},{CurrentRegistrantIndex},{CurrentFormIndex},{LastPanel}" );
                     }
                 }
                 catch ( System.InvalidOperationException )
@@ -947,7 +956,10 @@ namespace RockWeb.Blocks.Event
         #region Navigation Events
 
         /// <summary>
-        /// Handles the Navigate event of the sm control.
+        /// This method is run by the ScriptManager.Navigate event for the current page. The Navigate event fires for browser forward, back, and refresh buttons.
+        /// When this method is called a postback has already been done and the "CurrentPanel" is the one that is loading.
+        /// TODO: If the refresh button was used then the Current Panel andand not the panel the user was on when
+        /// the back/forward/refresh button was pressed. That panel is in the "state" string Handles the Navigate event of the sm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
@@ -955,22 +967,37 @@ namespace RockWeb.Blocks.Event
         {
             var state = e.State["event"];
 
-            if ( CurrentPanel > 0 && state != null && hfAllowNavigate.Value.AsBoolean() && !IsPostBack )
+            if ( CurrentPanel > 0 && state != null && hfAllowNavigate.Value.AsBoolean() )
             {
                 string[] commands = state.Split( ',' );
 
-                PanelIndex panelIndex = PanelIndex.PanelStart;
+                PanelIndex currentPanelIndex = PanelIndex.PanelStart;
+                PanelIndex lastPanelIndex = PanelIndex.PanelStart;
                 int registrantId = 0;
                 int formId = 0;
 
-                if ( commands.Count() == 3 )
+                /// Check for a valid set of commands that includes the PanelIndex that Registration should be navigating to.
+                /// Index 0 is the Current PanelIndex enum
+                /// Index 1 is the Registrant ID
+                /// Index 2 is the Form ID
+                /// Index 3 is the Last PanelIndex enum
+                if ( commands.Count() == 4 )
                 {
-                    panelIndex = commands[0].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelStart;
+                    currentPanelIndex = commands[0].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelStart;
+                    lastPanelIndex = commands[3].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelStart;
                     registrantId = int.Parse( commands[1] );
                     formId = int.Parse( commands[2] );
                 }
 
-                switch ( panelIndex )
+                if ( lastPanelIndex < currentPanelIndex )
+                {
+                    // If the back button is pressed the currentPageIndex is less than the lastPanelIndex, navigate to previous page.
+                    // If the refresh button is pressed the lastPanelIndex is less than the currentPageIndex, load the start panel as it is likely there is dynamic form data that has been lost.
+                    ShowStart();
+                    return;
+                }
+                
+                switch ( currentPanelIndex )
                 {
                     case PanelIndex.PanelRegistrationAttributesStart:
                         ShowRegistrationAttributesStart( true );
@@ -1001,6 +1028,8 @@ namespace RockWeb.Blocks.Event
             }
             else if ( CurrentPanel == PanelIndex.PanelSuccess && !hfAllowNavigate.Value.AsBoolean() )
             {
+                // If the user was on PanelSuccess the registration is compelted. Go to the begining by reloading the page with the current RegistrationInstance ID as a query parameter.
+                // This allows the Registration to go to the initial panel without hitting the DB for the RegistrationInstance.Id.
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 if ( RegistrationInstanceState != null )
                 {
