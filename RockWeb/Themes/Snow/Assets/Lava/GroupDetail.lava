@@ -95,6 +95,15 @@
 					<li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
 				{% endif %}
 			{% endif %}
+
+			{% if AllowedActions.Edit == true and Group.GroupTypeId == 39 or Group.GroupTypeId == 40 %}
+                {% if CurrentPage.Id == 1272 %}
+                    <li role="presentation" class="active"><a href="/page/1272?GroupId={{ Group.Id }}">Leader Content</a></li>
+                    {% else %}
+                    <li role="presentation"><a href="/page/1272?GroupId={{ Group.Id }}">Leader Content</a></li>
+                {% endif %}
+            {% endif %}
+
 		</ul>
 	{% endif %}
 
