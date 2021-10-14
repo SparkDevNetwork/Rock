@@ -864,7 +864,7 @@ namespace Rock.Lava
             else if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.Ignore )
             {
                 // Ignore the exception and return a null render result.
-                // The caller should subscribe to the ExceptionEncountered event in order to catch errors in the rendering process.
+                // The caller must inspect the return object or subscribe to the ExceptionEncountered event in order to catch errors in the rendering process.
                 message = null;
             }
             else
