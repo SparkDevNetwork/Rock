@@ -1170,6 +1170,7 @@
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetricService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\141_MigratePlacementGroupsData.cs" />
     <Compile Include="Plugin\HotFixes\140_MigrateFieldVisibilityRulesJSONData.cs" />
     <Compile Include="Plugin\HotFixes\139_ProfileEdit_RequireGender.cs" />
     <Compile Include="Plugin\HotFixes\138_MigrationRollupsFor11_4_1.cs" />
