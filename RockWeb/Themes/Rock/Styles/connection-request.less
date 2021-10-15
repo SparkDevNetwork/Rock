@@ -19,7 +19,7 @@
 
 .panel-collapsible {
   // Put toolbar shadow in front of grid.
-  z-index: 1;
+  z-index: 10; // Set to 10 so the toolbar is in front of the panel-body and active pagination button.
   box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
 
   .panel-drawer {
@@ -223,7 +223,7 @@
 
 .dropdown-menu-mega {
   position: absolute;
-  top: 85px !important;
+  top: 75px !important;
   bottom: 0;
   z-index: (@zindex-dropdown - 10);
   width: 300px;
