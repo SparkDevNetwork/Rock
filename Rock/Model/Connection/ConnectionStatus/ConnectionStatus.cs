@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -146,10 +147,12 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionStatusAutomation">ConnectionStatusAutomations</see> who are associated with the Connection Status.
+        ///
         /// </value>
+        [DataMember]
         public virtual ICollection<ConnectionStatusAutomation> ConnectionStatusAutomations
         {
-            get { return _connectionStatusAutomations; }
+            get { return _connectionStatusAutomations ?? ( _connectionStatusAutomations = new Collection<ConnectionStatusAutomation>() ); }
             set { _connectionStatusAutomations = value; }
         }
 
