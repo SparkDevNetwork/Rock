@@ -48,26 +48,6 @@
                 </a>
 
                 <Rock:Zone Name="Nav" runat="server" />
-
-                <!--
-                <ul class="menubar__nav ml-auto">
-                    <li class="menubar__nav__item">
-                        <a href="menubar__link">About</a>
-                    </li>
-                    <li class="menubar__nav__item">
-                        <a href="menubar__link">Times &amp; Locations</a>
-                    </li>
-                    <li class="menubar__nav__item">
-                        <a href="menubar__link">Next Steps</a>
-                    </li>
-                    <li class="menubar__nav__item">
-                        <a href="menubar__link">Watch &amp; Read</a>
-                    </li>
-                    <li class="menubar__nav__item">
-                        <a href="menubar__link">Give</a>
-                    </li>
-                </ul>
-                -->
                 
                 <!--<a class="menubar__item menubar__item--profile" href="">
                     <img src="https://rock.lcbcchurch.com/GetImage.ashx?id=494530&maxwidth=200&maxheight=200" width="40" alt="">
@@ -76,7 +56,7 @@
                     </svg>
                 </a>-->
 
-                <a class=" menubar__item" href="/myaccount">
+                <a class=" d-none d-md-flex menubar__item menubar__item--account" href="/myaccount">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor"
                         class="bi bi-person-circle" viewBox="0 0 16 16">
                         <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
@@ -85,11 +65,13 @@
                     </svg>
                 </a>
 
-                <!-- <a class="menubar__item" href="">
+                <a class=" menubar__item menubar__item--hamburger" href="">
                     <svg width="22" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill="#393939" d="M0 1h22v3H0zM0 9h22v3H0z"/>
                     </svg>
-                </a> -->
+                </a>
+
+
             </header>
 
             <div class="site-body">
