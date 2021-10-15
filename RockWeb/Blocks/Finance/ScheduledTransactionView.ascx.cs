@@ -244,6 +244,15 @@ namespace RockWeb.Blocks.Finance
             var financialScheduledTransaction = GetScheduledTransaction();
             if ( financialScheduledTransaction != null && financialScheduledTransaction.AuthorizedPersonAlias != null && financialScheduledTransaction.AuthorizedPersonAlias.Person != null )
             {
+                if ( !financialScheduledTransaction.AuthorizedPersonAlias.Person.IsPersonTokenUsageAllowed() )
+                {
+                    if ( financialScheduledTransaction.AuthorizedPersonAlias.PersonId != this.CurrentPersonId )
+                    {
+                        mdWarningAlert.Show( $"Due to their protection profile level you cannot edit a transaction on behalf of this person.", ModalAlertType.Warning );
+                        return;
+                    }
+                }
+
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( PageParameterKey.ScheduledTransactionId, financialScheduledTransaction.Id.ToString() );
                 queryParams.Add( PageParameterKey.Person, financialScheduledTransaction.AuthorizedPersonAlias.Person.UrlEncodedKey );

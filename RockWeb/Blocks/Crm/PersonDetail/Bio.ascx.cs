@@ -321,6 +321,25 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
+            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low )
+            {
+                hlAccountProtectionLevel.Visible = true;
+                hlAccountProtectionLevel.Text = $"Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}";
+                if ( Person.AccountProtectionProfile == Rock.Utility.Enums.AccountProtectionProfile.Extreme )
+                {
+                    // show 'danger' if AccountProtectionProfile is extreme
+                    hlAccountProtectionLevel.LabelType = LabelType.Danger;
+                }
+                else
+                {
+                    hlAccountProtectionLevel.LabelType = LabelType.Warning;
+                }
+            }
+            else
+            {
+                hlAccountProtectionLevel.Visible = false;
+            }
+
             lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             // only show if the when all these are true
@@ -334,10 +353,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             if ( enableImpersonation
                     && Person.Id != CurrentPersonId
                     && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson )
-                    && Person.IsPersonTokenUsageAllowed()
                     )
             {
+                // We are allowed to impersonate for anybody that has Token Usage Allowed.
                 lbImpersonate.Visible = true;
+
+                if ( Person.IsPersonTokenUsageAllowed() == false )
+                {
+                    // Since the logged-in user would normally see an Impersonate button, but this Person doesn't have TokenUsage allowed,
+                    // show the button, but have it be disabled.
+                    lbImpersonate.Enabled = false;
+                }
+                else
+                {
+                    lbImpersonate.Enabled = true;
+                }
             }
         }
 
@@ -695,6 +725,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
+                    if ( this.Person.IsPersonTokenUsageAllowed() )
+                    {
+                        // we hide/disable the lbImpersonate in this situation, but prevent just in case
+                        return;
+                    }
+
                     var impersonationToken = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( 5 ), 1, null );
 
                     // store the current user in Session["ImpersonatedByUser"] so that we can log back in as them from the Admin Bar

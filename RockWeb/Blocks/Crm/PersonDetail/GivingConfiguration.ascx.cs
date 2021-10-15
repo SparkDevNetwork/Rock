@@ -135,22 +135,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var addTransactionPage = new Rock.Web.PageReference( this.GetAttributeValue( AttributeKey.AddTransactionPage ) );
             if ( addTransactionPage != null )
             {
+                if ( !this.Person.IsPersonTokenUsageAllowed() )
+                { 
+                    mdWarningAlert.Show( $"Due to their protection profile level you cannot add a transaction on behalf of this person.", ModalAlertType.Warning );
+                    return;
+                }
+
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
                 var personKey = this.Person.GetImpersonationToken(
-                    RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addTransactionPage.PageId );
+                        RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ),
+                        this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(),
+                        addTransactionPage.PageId );
 
                 if ( personKey.IsNotNullOrWhiteSpace() )
                 {
                     addTransactionPage.QueryString["Person"] = personKey;
                     Response.Redirect( addTransactionPage.BuildUrl() );
-                }
-                else
-                {
-                    if ( !this.Person.IsPersonTokenUsageAllowed() )
-                    {
-                        // Open question on if we should 
-                        mdWarningAlert.Show( $"Impersonation of {this.Person} is not enabled.", ModalAlertType.Warning );
-                    }
                 }
             }
         }

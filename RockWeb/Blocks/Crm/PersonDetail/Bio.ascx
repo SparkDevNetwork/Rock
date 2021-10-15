@@ -52,6 +52,7 @@
                     <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
                 
                     <Rock:BadgeListControl ID="blStatus" runat="server" />
+                    <Rock:HighlightLabel ID="hlAccountProtectionLevel" runat="server" Visible="false" LabelType="Warning" Text="Protection Profile: " />
 
                     <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
 

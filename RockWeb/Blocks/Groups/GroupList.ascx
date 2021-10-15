@@ -31,6 +31,7 @@
                             <Rock:RockBoundField DataField="GroupTypeName" HeaderText="Group Type" SortExpression="GroupTypeName"/>
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" ColumnPriority="Desktop" SortExpression="Description" />
                             <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="Role" />
+                            <Rock:RockLiteralField ID="lElevatedSecurityLevel" HeaderText="Elevated Security Level" Visible="true" SortExpression="ElevatedSecurityLevel" Text="" />
                             <Rock:RockBoundField DataField="MemberCount" HeaderText="Members" SortExpression="MemberCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:DateTimeField DataField="DateAdded" HeaderText="Added" SortExpression="DateAdded" FormatAsElapsedTime="true" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />

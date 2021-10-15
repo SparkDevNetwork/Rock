@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -155,11 +156,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var addTransactionPage = new Rock.Web.PageReference( this.GetAttributeValue( AttributeKey.AddTransactionPage ) );
             if ( addTransactionPage != null )
             {
-                // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addTransactionPage.PageId );
-                addTransactionPage.QueryString["Person"] = personKey;
-                Response.Redirect( addTransactionPage.BuildUrl() );
+                if ( !this.Person.IsPersonTokenUsageAllowed() )
+                {
+                    mdWarningAlert.Show( $"Due to their protection profile level you cannot add a transaction on behalf of this person.", ModalAlertType.Warning );
+                    return;
+                }
 
+                // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
+                var personKey = this.Person.GetImpersonationToken(
+                        RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ),
+                        this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(),
+                        addTransactionPage.PageId );
+
+                if ( personKey.IsNotNullOrWhiteSpace() )
+                {
+                    addTransactionPage.QueryString["Person"] = personKey;
+                    Response.Redirect( addTransactionPage.BuildUrl() );
+                }
             }
         }
 

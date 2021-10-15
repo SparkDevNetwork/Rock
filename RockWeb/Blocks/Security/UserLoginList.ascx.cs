@@ -362,8 +362,9 @@ namespace RockWeb.Blocks.Security
 
                 rockContext.SaveChanges();
 
-                HideDialog();
-                BindGrid();
+                // Reload the page so that other blocks will know about any data that changed as a result of a new login.
+                // On the PersonProfile page, this will help update the UserProtectionProfile label just in case it was changed.
+                this.NavigateToCurrentPageReference();
             }
         }
 
