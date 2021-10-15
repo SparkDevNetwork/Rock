@@ -51,11 +51,8 @@ namespace Rock.Model
             {
                 if ( _supportedActions == null )
                 {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions = base.SupportedActions;
                     _supportedActions.Add( Authorization.MANAGE_STEPS, "The roles and/or users that have access to manage the steps." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }
                 return _supportedActions;
             }

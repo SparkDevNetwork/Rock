@@ -205,8 +205,8 @@ namespace Rock.Model
              NOTE: MANAGE_STEPS is NOT a possible action on Step. However, this can be confusing
              because MANAGE_STEPS is a possible action on Step Type (which would grant EDIT on its steps)
 
-             This is how this has implemented
-             - If they can EDIT a Step Type, then can Manage Steps (regardless if the ManageSteps settings)
+             This is how this has been implemented
+             - If they can EDIT a Step Type, then can Manage Steps
              - If they can't EDIT a Step Type, but can Manage Steps, then can EDIT (which includes Add and Delete) steps.
                 - Note that this is fairly complex, see StepType.IsAuthorized for how this should work
 
