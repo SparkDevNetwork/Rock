@@ -36,13 +36,28 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Add From Attribute" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to add to the group.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.PersonKey,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
-    [WorkflowAttribute( "Group", "Workflow Attribute that contains the group to add the person to.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowAttribute( "Group",
+        Description = "Workflow Attribute that contains the group to add the person to.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.GroupKey,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" } )]
+
     public class AddPersonToGroupWFAttribute : ActionComponent
     {
+        private class AttributeKey
+        {
+            public const string PersonKey = "Person";
+            public const string GroupKey = "Group";
+        }
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -51,7 +66,7 @@ namespace Rock.Workflow.Action
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -59,7 +74,7 @@ namespace Rock.Workflow.Action
             Group group = null;
             int? groupRoleId = null;
 
-            var guidGroupAttribute = GetAttributeValue( action, "Group" ).AsGuidOrNull();
+            var guidGroupAttribute = GetAttributeValue( action, AttributeKey.GroupKey ).AsGuidOrNull();
 
             if ( guidGroupAttribute.HasValue )
             {
@@ -95,7 +110,7 @@ namespace Rock.Workflow.Action
             Person person = null;
 
             // get the Attribute.Guid for this workflow's Person Attribute so that we can lookup the value
-            var guidPersonAttribute = GetAttributeValue( action, "Person" ).AsGuidOrNull();
+            var guidPersonAttribute = GetAttributeValue( action, AttributeKey.PersonKey ).AsGuidOrNull();
 
             if ( guidPersonAttribute.HasValue )
             {
@@ -156,6 +171,7 @@ namespace Rock.Workflow.Action
                     {
                         groupMemberService.Add( groupMember );
                     }
+
                     rockContext.SaveChanges();
                 }
                 else
@@ -169,6 +185,5 @@ namespace Rock.Workflow.Action
 
             return true;
         }
-
     }
 }
