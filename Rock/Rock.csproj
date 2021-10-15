@@ -725,6 +725,7 @@
     <Compile Include="Jobs\GivingAutomation.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
+    <Compile Include="Model\AuthAuditLog.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemStatus.cs" />
@@ -737,6 +738,7 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
+    <Compile Include="Model\CodeGenerated\AuthAuditLogService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />

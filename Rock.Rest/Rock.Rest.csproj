@@ -130,6 +130,7 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuthAuditLogsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />

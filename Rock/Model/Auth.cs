@@ -16,6 +16,8 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
@@ -34,7 +36,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Auth : Model<Auth>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -153,6 +154,15 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Model.EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Audit Log.
+        /// </summary>
+        /// <value>
+        /// The Audit Log.
+        /// </value>
+        [NotMapped]
+        private AuthAuditLog AuthAuditLog { get; set; }
+
         #endregion
 
         #region Methods
@@ -190,8 +200,62 @@ namespace Rock.Model
             return sb.ToString();
         }
 
-        #endregion
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            var rockContext = dbContext as RockContext;
+            if ( rockContext != null &&
+                ( entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.State == EntityState.Deleted ) )
+            {
+                var authAuditLogService = new AuthAuditLogService( rockContext );
+                var authAuditLog = new AuthAuditLog();
+                authAuditLog.EntityTypeId = this.EntityTypeId;
+                authAuditLog.EntityId = this.EntityId;
+                authAuditLog.Action = this.Action;
+                authAuditLog.ChangeDateTime = RockDateTime.Now;
+                authAuditLog.GroupId = this.GroupId;
+                authAuditLog.SpecialRole = this.SpecialRole;
+                var currentPersonAlias = rockContext.GetCurrentPersonAlias();
+                if ( currentPersonAlias!=null )
+                {
+                    authAuditLog.ChangeByPersonAliasId = currentPersonAlias.Id;
+                }
+                authAuditLogService.Add( authAuditLog );
 
+                if ( entry.State == EntityState.Added )
+                {
+                    authAuditLog.ChangeType = ChangeType.Add;
+                }
+                else if ( entry.State == EntityState.Modified )
+                {
+                    authAuditLog.ChangeType = ChangeType.Modify;
+                }
+                else
+                {
+                    authAuditLog.ChangeType = ChangeType.Delete;
+                }
+
+                if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+                {
+                    authAuditLog.PostAllowOrDeny = entry.Property( "AllowOrDeny" )?.CurrentValue as string;
+                    authAuditLog.PostOrder = entry.Property( "Order" )?.CurrentValue as int?;
+                }
+
+                if ( entry.State == EntityState.Modified || entry.State == EntityState.Deleted )
+                {
+                    authAuditLog.PreAllowOrDeny = entry.Property( "AllowOrDeny" )?.OriginalValue as string;
+                    authAuditLog.PreOrder = entry.Property( "Order" )?.OriginalValue as int?;
+                }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
