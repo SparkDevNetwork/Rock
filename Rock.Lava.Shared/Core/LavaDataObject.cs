@@ -43,6 +43,20 @@ namespace Rock.Lava
         [NonSerialized]
         private LavaDataObjectInternal _lavaDataObjectInternal = null;
 
+        #region Factory Methods
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="LavaDataObject"/> class as a proxy that makes the properties of the supplied object available to Lava.
+        /// Additional properties may be added at runtime.
+        /// </summary>
+        /// <param name="obj">The proxy object.</param>
+        public static LavaDataObject FromAnonymousObject( object obj )
+        {
+            return new LavaDataObject( obj );
+        }
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
