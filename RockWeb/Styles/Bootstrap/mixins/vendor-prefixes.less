@@ -68,14 +68,14 @@
 // supported browsers that have box shadow capabilities now support it.
 
 .box-shadow(@shadow) {
-  -webkit-box-shadow: @shadow; // iOS <4.3 & Android <4.1
-          box-shadow: @shadow;
+  // -webkit-box-shadow: @shadow; // iOS <4.3 & Android <4.1
+  box-shadow: @shadow;
 }
 
 // Box sizing
 .box-sizing(@boxmodel) {
-  -webkit-box-sizing: @boxmodel;
-     -moz-box-sizing: @boxmodel;
+  // -webkit-box-sizing: @boxmodel;
+  //    -moz-box-sizing: @boxmodel;
           box-sizing: @boxmodel;
 }
 
@@ -191,7 +191,6 @@
 
 .transition(@transition) {
   -webkit-transition: @transition;
-       -o-transition: @transition;
           transition: @transition;
 }
 .transition-property(@transition-property) {
@@ -213,7 +212,6 @@
 .transition-transform(@transition) {
   -webkit-transition: -webkit-transform @transition;
      -moz-transition: -moz-transform @transition;
-       -o-transition: -o-transform @transition;
           transition: transform @transition;
 }
 
