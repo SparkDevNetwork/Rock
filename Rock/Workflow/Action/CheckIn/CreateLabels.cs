@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Newtonsoft.Json;
+
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
@@ -40,6 +41,17 @@ namespace Rock.Workflow.Action.CheckIn
 
     public class CreateLabels : CheckInActionComponent
     {
+        private static class MergeFieldKey
+        {
+            public const string Location = "Location";
+            public const string Group = "Group";
+            public const string Person = "Person";
+            public const string People = "People";
+            public const string GroupType = "GroupType";
+            public const string GroupMembers = "GroupMembers";
+            public const string JustCompletedAchievements = "JustCompletedAchievements";
+        }
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -129,18 +141,21 @@ namespace Rock.Workflow.Action.CheckIn
                                             mergeObjects.Add( keyValue.Key, keyValue.Value );
                                         }
 
-                                        mergeObjects.Add( "Location", location );
-                                        mergeObjects.Add( "Group", group );
-                                        mergeObjects.Add( "Person", person );
-                                        mergeObjects.Add( "People", people );
-                                        mergeObjects.Add( "GroupType", groupType );
+                                        mergeObjects.Add( MergeFieldKey.Location, location );
+                                        mergeObjects.Add( MergeFieldKey.Group, group );
+                                        mergeObjects.Add( MergeFieldKey.Person, person );
+                                        mergeObjects.Add( MergeFieldKey.People, people );
+                                        mergeObjects.Add( MergeFieldKey.GroupType, groupType );
+
+                                        var justCompletedAchievements = checkInState.CheckIn.GetJustCompletedAchievementAttempts( person.Person.Id );
+                                        mergeObjects.Add( MergeFieldKey.JustCompletedAchievements, justCompletedAchievements );
 
                                         var groupMembers = groupMemberService.Queryable().AsNoTracking()
                                             .Where( m =>
                                                 m.PersonId == person.Person.Id &&
                                                 m.GroupId == group.Group.Id )
                                             .ToList();
-                                        mergeObjects.Add( "GroupMembers", groupMembers );
+                                        mergeObjects.Add( MergeFieldKey.GroupMembers, groupMembers );
 
                                         //string debugInfo = mergeObjects.lavaDebugInfo();
                                         var label = new CheckInLabel( labelCache, mergeObjects, person.Person.Id );
@@ -266,7 +281,7 @@ namespace Rock.Workflow.Action.CheckIn
 
             foreach ( var attendance in attendanceRecords )
             {
-                if (attendance.AttendanceData == null)
+                if ( attendance.AttendanceData == null )
                 {
                     attendance.AttendanceData = new AttendanceData();
                 }

@@ -107,7 +107,7 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Model.AchievementType"/>.
+        /// Gets or sets the <see cref="Model.AchievementType"/> of this attempt.
         /// </summary>
         [DataMember]
         public virtual AchievementType AchievementType { get; set; }
