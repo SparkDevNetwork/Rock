@@ -76,5 +76,13 @@ namespace Rock.Utility
         /// The campuses to filter prayer requests to.
         /// </value>
         public List<Guid> Campuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include nullable campus if campuses exists.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if nullable campus should be included if campuses exists; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeNullableCampus { get; set; } = false;
     }
 }
