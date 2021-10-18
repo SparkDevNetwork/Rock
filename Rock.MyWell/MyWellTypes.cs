@@ -2754,6 +2754,178 @@ namespace Rock.MyWell
 
     #endregion
 
+    #region CardSync Webhook
+
+
+    public class CardSyncWebhookResponse : BaseResponseData
+    {
+        [JsonProperty( "account_type" )]
+        public string AccountType { get; set; }
+
+        [JsonProperty( "account_type_id" )]
+        public string AccountTypeId { get; set; }
+
+        [JsonProperty( "transaction_id" )]
+        public string TransactionId { get; set; }
+
+        [JsonProperty( "action_at" )]
+        public DateTime action_at { get; set; }
+
+        [JsonProperty( "data" )]
+        public CardSyncWebhookPaymentMethod PaymentMethodData { get; set; }
+
+        [JsonProperty( "type" )]
+        public string type { get; set; }
+    }
+
+    public class CardSyncWebhookPaymentMethod
+    {
+        [JsonProperty( "card_id" )]
+        public string CardId { get; set; }
+
+        [JsonProperty( "digest" )]
+        public string digest { get; set; }
+
+        [JsonProperty( "expiration_date" )]
+        public string ExpirationDate { get; set; }
+
+        [JsonProperty( "flags" )]
+        public object Flags { get; set; }
+
+        [JsonProperty( "generic_card_level" )]
+        public string GenericCardLevel { get; set; }
+
+        [JsonProperty( "instrument_type" )]
+        public string instrument_type { get; set; }
+
+        [JsonProperty( "masked_number" )]
+        public string MaskedNumber { get; set; }
+
+        [JsonProperty( "processor_id" )]
+        public string processor_id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record identifier (The CustomerId)
+        /// </summary>
+        /// <value>
+        /// The record identifier.
+        /// </value>
+        [JsonProperty( "record_id" )]
+        public string RecordId { get; set; }
+
+        [JsonProperty( "status" )]
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
+        /// matching class member into the specified collection
+        /// </summary>
+        /// <value>
+        /// The other data.
+        /// </value>
+        [Newtonsoft.Json.JsonExtensionData( ReadData = true, WriteData = false )]
+        public IDictionary<string, Newtonsoft.Json.Linq.JToken> _additionalData { get; set; }
+    }
+
+    #endregion CardSync Webhook
+
+    #region Transaction WebHook
+
+    /*
+
+    TransactionWebhookResponse and TransactionWebhookResponseData
+    aren't currently needed (yet). 
+
+    */
+
+    internal class TransactionWebhookResponse : BaseResponseData
+    {
+        public string account_type { get; set; }
+        public string account_type_id { get; set; }
+        public string action_at { get; set; }
+        public TransactionWebhookResponseData data { get; set; }
+        public string msg { get; set; }
+        public string status { get; set; }
+        public string transaction_id { get; set; }
+        public string type { get; set; }
+    }
+
+    internal class TransactionWebhookResponseData
+    {
+        public int amount { get; set; }
+        public int amount_authorized { get; set; }
+        public int amount_captured { get; set; }
+        public int amount_refunded { get; set; }
+        public int amount_settled { get; set; }
+        public int base_amount { get; set; }
+        public BillingAddress billing_address { get; set; }
+        public object captured_at { get; set; }
+        public string created_at { get; set; }
+        public string currency { get; set; }
+        //public CustomFields custom_fields { get; set; }
+        public string customer_id { get; set; }
+        public string customer_payment_ID { get; set; }
+        public string customer_payment_type { get; set; }
+        public string customer_vat_registration_number { get; set; }
+        public string description { get; set; }
+        public int discount_amount { get; set; }
+        public int duty_amount { get; set; }
+        public string email_address { get; set; }
+        public bool email_receipt { get; set; }
+        public string[] features { get; set; }
+        public string id { get; set; }
+        public string idempotency_key { get; set; }
+        public int idempotency_time { get; set; }
+        public string ip_address { get; set; }
+        public object line_items { get; set; }
+        public string merchant_id { get; set; }
+        public string merchant_name { get; set; }
+        public string merchant_vat_registration_number { get; set; }
+        public int national_tax_amount { get; set; }
+        public string order_id { get; set; }
+        public int payment_adjustment { get; set; }
+        public string payment_method { get; set; }
+        public string payment_type { get; set; }
+        public string po_number { get; set; }
+        public string processor_id { get; set; }
+        public string processor_name { get; set; }
+        public string processor_type { get; set; }
+        public string referenced_transaction_id { get; set; }
+        public string response { get; set; }
+        public PaymentMethodResponse response_body { get; set; }
+        public int response_code { get; set; }
+        public int service_fee { get; set; }
+        public object settled_at { get; set; }
+        public string settlement_batch_id { get; set; }
+        public string ship_from_postal_code { get; set; }
+        public BillingAddress shipping_address { get; set; }
+        public int shipping_amount { get; set; }
+        public string status { get; set; }
+        public string subscription_id { get; set; }
+        public string summary_commodity_code { get; set; }
+        public int surcharge { get; set; }
+        public int tax_amount { get; set; }
+        public bool tax_exempt { get; set; }
+        public int tip_amount { get; set; }
+        public string transaction_source { get; set; }
+        public string type { get; set; }
+        public string updated_at { get; set; }
+        public string user_id { get; set; }
+        public string user_name { get; set; }
+
+        /// <summary>
+        /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
+        /// matching class member into the specified collection
+        /// </summary>
+        /// <value>
+        /// The other data.
+        /// </value>
+        [Newtonsoft.Json.JsonExtensionData( ReadData = true, WriteData = false )]
+        public IDictionary<string, Newtonsoft.Json.Linq.JToken> _additionalData { get; set; }
+    }
+
+    #endregion Transaction WebHook
+
     #region Rock Wrapper Type
 
     /// <summary>
@@ -2953,7 +3125,7 @@ namespace Rock.MyWell
     /// <summary>
     /// MyWell Subscription Status Enum
     /// </summary>
-    [JsonConverter( typeof(StringEnumConverter) )]
+    [JsonConverter( typeof( StringEnumConverter ) )]
     public enum MyWellSubscriptionStatus
     {
         /// <summary>
