@@ -3804,15 +3804,6 @@ namespace Rock.Lava
                 mergeFields = mergeFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
             }
 
-            //var mergeFields = context.GetEnvironments().SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value );
-            //var allFields = mergeFields.Union( context.GetScopes().SelectMany( a => a ).DistinctBy( x => x.Key ).ToDictionary( k => k.Key, v => v.Value ) );
-
-            // if a specific MergeField was specified as the Input, limit the help to just that MergeField
-            //if ( input != null && allFields.Any( a => a.Value == input ) )
-            //{
-            //    mergeFields = allFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
-            //}
-
             // TODO: implement the outputFormat option to support ASCII
             return mergeFields.lavaDebugInfo();
         }
