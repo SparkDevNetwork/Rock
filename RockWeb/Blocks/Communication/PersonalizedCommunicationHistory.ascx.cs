@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Communication
                                             {% endif %}
                                             {% for attachmentUrl in Communication.Detail.Attachments %}
                                                 <div class='sms-image'>
-                                                    <img src='{{ attachmentUrl }}' alt='' class='img-responsive'>
+                                                    <img src='{{ attachmentUrl }}' alt='' class='w-100'>
                                                 </div>
                                             {% endfor %}
                                         </div>
@@ -251,18 +251,14 @@ namespace RockWeb.Blocks.Communication
                                                 <div class='push-msg-body'>
                                                     <span class='push-msg-title'>{{ Communication.Title }}</span>
                                                     <span class='push-summary'>{{ Communication.Detail.Message }}</span>
-                                                    {% for attachmentUrl in Communication.Detail.Attachments %}
-                                                        <div class='sms-image'>
-                                                            <img src='{{ attachmentUrl }}' alt='' class='img-responsive'>
-                                                        </div>
-                                                    {% endfor %}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 {% else %}
+                                    {%- assign orgName = 'Global' | Attribute:'OrganizationName' -%}
                                     <div class='card communication-preview'>
-                                        <div class='card-heading text-wrap' title='Message From'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName }}</span> <span class='text-muted'>{{ Communication.Detail.SenderAddress }}</span> </div>
+                                        <div class='card-heading text-wrap' title='Message From'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName | Default:orgName }}</span> {% if Communication.Detail.SenderAddress != '' %}<span class='text-muted'>{{ Communication.Detail.SenderAddress }}</span>{% endif %} </div>
                                         <div class='card-heading text-wrap' title='Message Subject'>{{ Communication.Title }}</div>
                                         <div class='card-body p-0 position-relative' style='background:#FCFCFC'>
                                             {% if Communication.ViewDetailIsAllowed and DetailUrl != empty %}
@@ -290,7 +286,9 @@ namespace RockWeb.Blocks.Communication
                                     <thead>
                                         <tr>
                                             <th>Activity</th>
+                                            {% if Communication.CommunicationType != 'PushNotification' %}
                                             <th>Details</th>
+                                            {% endif %}
                                             <th class='w-1'>Date</th>
                                         </tr>
                                     </thead>
@@ -303,7 +301,9 @@ namespace RockWeb.Blocks.Communication
                                                         <a class='help' href='#' tabindex='-1' data-toggle='tooltip' data-placement='auto' data-container='body' data-html='true' title='' data-original-title='Clicked {{ item.Details }}'><i class='fa fa-info-circle'></i></a>
                                                     {% endif %}
                                                 </td>
+                                                {% if Communication.CommunicationType != 'PushNotification' %}
                                                 <td>{{ item.DeviceDescription }}</td>
+                                                {% endif %}
                                                 <td class='w-1 text-nowrap'>{{ item.DateTime | Date }}</td>
                                             </tr>
                                         {% endfor %}
