@@ -88,7 +88,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Processes the connection type. Add steps for everyone in the dataview
+        /// Processes the connection type.
         /// </summary>
         /// <param name="connectionTypeView">The connection type view.</param>
         /// <param name="updatedResults">The updated results.</param>

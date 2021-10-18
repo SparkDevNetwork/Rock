@@ -144,7 +144,7 @@ namespace Rock.Model
                         bool isAutomationValid = true;
                         if ( connectionStatusAutomation.DataViewId.HasValue )
                         {
-                            // Get the dataview configured for the step type
+                            // Get the dataview configured for the connection request
                             var dataViewService = new DataViewService( rockContext );
                             var dataview = dataViewService.Get( connectionStatusAutomation.DataViewId.Value );
                             if ( dataview != null )
