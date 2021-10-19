@@ -2008,7 +2008,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( transaction != null )
             {
-                transaction.Summary = tbSummary.Text;
+                transaction.Summary = tbComments.Text;
                 transaction.AuthorizedPersonAliasId = personAliasId;
                 transaction.TransactionDateTime = RockDateTime.Now;
 

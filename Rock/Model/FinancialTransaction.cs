@@ -116,7 +116,7 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets a summary of the transaction.
+        /// Gets or sets a summary of the transaction. This would store any comments made.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing a summary of the transaction.

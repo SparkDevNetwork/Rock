@@ -330,7 +330,6 @@ namespace RockWeb.Blocks.Finance
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = "Online Contribution",
         Category = CategoryKey.TextOptions,
         Order = 13 )]
 

@@ -65,7 +65,7 @@
                             </div>
                         </asp:Panel>
 
-                        <Rock:RockLiteral ID="lSummary" runat="server" Label="Summary" />
+                        <Rock:RockLiteral ID="lComments" runat="server" Label="Comments" />
 
                     </div>
                 </div>

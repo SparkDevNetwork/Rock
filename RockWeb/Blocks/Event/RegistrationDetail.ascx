@@ -189,7 +189,7 @@
                                             <asp:PlaceHolder ID="phPaymentAmount" runat="server">
                                                 <Rock:PersonPicker ID="ppPayee" runat="server" Label="Payee" Required="true" ValidationGroup="Payment" Help="The person who is making the payment." />
                                                 <Rock:CurrencyBox ID="cbPaymentAmount" runat="server" Label="Payment Amount" Required="true" ValidationGroup="Payment"></Rock:CurrencyBox>
-                                                <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
+                                                <Rock:RockTextBox ID="tbComments" runat="server" Label="Comments" TextMode="MultiLine" Rows="2" />
                                             </asp:PlaceHolder>
 
                                             <asp:PlaceHolder ID="phManualDetails" runat="server">

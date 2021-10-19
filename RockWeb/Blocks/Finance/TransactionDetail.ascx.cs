@@ -480,7 +480,7 @@ namespace RockWeb.Blocks.Finance
                     txn.ForeignCurrencyCodeValueId = dvpForeignCurrencyCode.SelectedValue.AsIntegerOrNull();
                 }
 
-                txn.Summary = tbSummary.Text;
+                txn.Summary = tbComments.Text;
                 var singleAccountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value;
                 var feeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
                 decimal totalAmount;
@@ -1510,7 +1510,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                detailsLeft.Add( "Summary", txn.Summary.ConvertCrLfToHtmlBr() );
+                detailsLeft.Add( "Comments", txn.Summary.ConvertCrLfToHtmlBr() );
 
                 if ( txn.RefundDetails != null )
                 {
@@ -1862,7 +1862,7 @@ namespace RockWeb.Blocks.Finance
 
                 BindAccounts();
 
-                tbSummary.Text = txn.Summary;
+                tbComments.Text = txn.Summary;
 
                 BindImages();
 
