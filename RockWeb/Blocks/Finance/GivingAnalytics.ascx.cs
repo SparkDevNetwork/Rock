@@ -24,7 +24,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Chart;
@@ -111,6 +113,8 @@ namespace RockWeb.Blocks.Finance
         private Literal lTotal;
         private bool hideViewByOption = false;
 
+        private int databaseTimeoutSeconds;
+
         #endregion
 
         #region Base Control Methods
@@ -136,12 +140,12 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
             //// Set postback timeout and request-timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
-            int databaseTimeout = GetAttributeValue( AttributeKeys.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+            databaseTimeoutSeconds = GetAttributeValue( AttributeKeys.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
-            if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
+            if ( sm.AsyncPostBackTimeout < databaseTimeoutSeconds + 5 )
             {
-                sm.AsyncPostBackTimeout = databaseTimeout + 5;
-                Server.ScriptTimeout = databaseTimeout + 5;
+                sm.AsyncPostBackTimeout = databaseTimeoutSeconds + 5;
+                Server.ScriptTimeout = databaseTimeoutSeconds + 5;
             }
 
             // Setup for being able to copy text to clipboard.
@@ -444,13 +448,13 @@ btnCopyToClipboard.ClientID );
             // Get all the accounts grouped by campus
             if ( _campusAccounts == null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContextAnalytics = new RockContextAnalytics() )
                 {
                     _campusAccounts = new Dictionary<int, Dictionary<int, string>>();
                     bool activeOnly = tglInactive.Checked;
                     bool taxDeductibleOnly = tglTaxDeductible.Checked;
 
-                    foreach ( var campusAccounts in new FinancialAccountService( rockContext )
+                    foreach ( var campusAccounts in new FinancialAccountService( rockContextAnalytics )
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             ( !activeOnly || a.IsActive ) &&
@@ -865,8 +869,10 @@ function(item) {
                 taskInfos.Add( ti );
 
                 transactionInfoList = new List<TransactionInfo>();
+                var threadRockContextAnalytics = new RockContextAnalytics();
+                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
 
-                var ds = FinancialTransactionDetailService.GetGivingAnalyticsTransactionData(
+                var ds = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsTransactionDataSet(
                     dateRange.Start,
                     dateRange.End,
                     accountIds,
@@ -968,7 +974,10 @@ function(item) {
 
                     idsWithValidTotals = new List<string>();
 
-                    var dtPersonSummary = FinancialTransactionDetailService.GetGivingAnalyticsPersonSummary(
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                    var dtPersonSummary = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsPersonSummaryDataSet(
                         dateRange.Start,
                         dateRange.End,
                         nreAmount.LowerValue,
@@ -997,15 +1006,17 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var threadRockContext = new RockContext();
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
                     var ti = new TaskInfo { name = "Get Data View People", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     dataViewGivingIds = new List<string>();
-                    var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
+                    var dataView = new DataViewService( threadRockContextAnalytics ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
-                        var dvPersonService = new PersonService( threadRockContext );
+                        var dvPersonService = new PersonService( threadRockContextAnalytics );
                         ParameterExpression paramExpression = dvPersonService.ParameterExpression;
                         Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression );
 
@@ -1183,7 +1194,10 @@ function(item) {
                 var ti = new TaskInfo { name = "Get all person summary data", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
-                var dt = FinancialTransactionDetailService.GetGivingAnalyticsPersonSummary(
+                var threadRockContextAnalytics = new RockContextAnalytics();
+                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsPersonSummaryDataSet(
                     start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
                     .Tables[0];
 
@@ -1269,7 +1283,10 @@ function(item) {
                 var ti = new TaskInfo { name = "Get the account summary values", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
-                var dt = FinancialTransactionDetailService.GetGivingAnalyticsAccountTotals(
+                var threadRockContextAnalytics = new RockContextAnalytics();
+                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsAccountTotalsDataSet(
                     start, end, accountIds, currencyTypeIds, sourceIds, transactionTypeIds )
                     .Tables[0];
                 foreach ( DataRow row in dt.Rows )
@@ -1298,7 +1315,10 @@ function(item) {
                 var ti = new TaskInfo { name = "Get the first/last ever dates", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
-                var dt = FinancialTransactionDetailService.GetGivingAnalyticsFirstLastEverDates()
+                var threadRockContextAnalytics = new RockContextAnalytics();
+                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsFirstLastEverDatesDataSet()
                     .Tables[0];
                 foreach ( DataRow row in dt.Rows )
                 {
@@ -1329,9 +1349,10 @@ function(item) {
                     var ti = new TaskInfo { name = "Data View Filter", start = RockDateTime.Now };
                     taskInfos.Add( ti );
                     var dataViewGetQueryArgs = new DataViewGetQueryArgs();
-                    using ( var threadRockContext = new RockContext() )
+                    using ( var threadRockContextAnalytics = new RockContextAnalytics() )
                     {
-                        var dataView = new DataViewService( threadRockContext ).Get( dataViewId.Value );
+                        threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                        var dataView = new DataViewService( threadRockContextAnalytics ).Get( dataViewId.Value );
                         if ( dataView != null )
                         {
                             dataviewPersonIds = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Person>().Select( p => p.Id ).ToHashSet();
@@ -1404,9 +1425,9 @@ function(item) {
                 // Add columns for the selected account totals.
                 if ( accountIds.Any() )
                 {
-                    using ( var threadRockContext = new RockContext() )
+                    using ( var threadRockContextAnalytics = new RockContextAnalytics() )
                     {
-                        var accounts = new FinancialAccountService( threadRockContext )
+                        var accounts = new FinancialAccountService( threadRockContextAnalytics )
                             .Queryable().AsNoTracking()
                             .Where( a => accountIds.Contains( a.Id ) )
                             .ToList();
@@ -1535,13 +1556,14 @@ function(item) {
                 personInfoList = personInfoList.Where( c => dataviewPersonIds.Contains( c.Id ) ).ToList();
             }
 
-            var rockContext = new RockContext();
+            var rockContextAnalytics = new RockContextAnalytics();
+            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
 
             // If Data View was selected and Data View Results option is includes all people in the Data View.
             if ( dataViewId.HasValue && rblDataViewAction.SelectedValue == "All" && dataviewPersonIds.Any() )
             {
                 personInfoList = personInfoList.Where( c => dataviewPersonIds.Contains( c.Id ) ).ToList();
-                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                var dataView = new DataViewService( rockContextAnalytics ).Get( dataViewId.Value );
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs();
                 var personInfoFromDataView = dataView.GetQuery( dataViewGetQueryArgs ).AsNoTracking().OfType<Person>()
                     .Select( p => new
@@ -1555,7 +1577,7 @@ function(item) {
                         p.Email,
                         IsGivingLeader = p.Id == p.GivingLeaderId
                     } );
-                
+
                 /*
                  * 2021-09-28 CWR
                  * This loop needs to have its C# / LINQ queries evaluated before entering the loop.
@@ -1651,7 +1673,7 @@ function(item) {
                         missedEnd = missedEnd.Value.AddDays( 1 );
 
                         // Get the GivingLeaderIds that gave any amount during the pattern's date range.  These are needed so that we know who to exclude from the result set.
-                        previousGivingIds = new FinancialTransactionDetailService( rockContext )
+                        previousGivingIds = new FinancialTransactionDetailService( rockContextAnalytics )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.Transaction.TransactionDateTime.HasValue &&
@@ -1697,7 +1719,7 @@ function(item) {
                 var cellPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                 if ( homePhoneType != null && cellPhoneType != null )
                 {
-                    phoneNumbers = new PhoneNumberService( rockContext )
+                    phoneNumbers = new PhoneNumberService( rockContextAnalytics )
                         .Queryable().AsNoTracking()
                         .Where( n =>
                             personIds.Contains( n.PersonId ) &&
@@ -1714,7 +1736,7 @@ function(item) {
                 var homeAddressDv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                 if ( familyGroupType != null && homeAddressDv != null )
                 {
-                    foreach ( var item in new GroupMemberService( rockContext )
+                    foreach ( var item in new GroupMemberService( rockContextAnalytics )
                         .Queryable().AsNoTracking()
                         .Where( m =>
                             personIds.Contains( m.PersonId ) &&
@@ -1920,7 +1942,7 @@ function(item) {
             this.AccountAmounts = new Dictionary<int, decimal>();
         }
 
-        public PersonInfo(int i, string gId, int glId, Guid g, string nick, string last, string e, bool isGivingLeader )
+        public PersonInfo( int i, string gId, int glId, Guid g, string nick, string last, string e, bool isGivingLeader )
         {
             Id = i;
             GivingId = gId;

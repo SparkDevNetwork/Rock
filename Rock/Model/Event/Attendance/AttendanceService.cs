@@ -519,11 +519,11 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public static DataSet GetAttendanceAnalyticsAttendeeDates( List<int> groupIds, DateTime? start, DateTime? end,
+        public DataSet GetAttendanceAnalyticsAttendeeDatesDataSet( List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
             var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_AttendeeDates", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -537,11 +537,11 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+        public DataSet GetAttendanceAnalyticsAttendeeFirstDatesDataSet( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
             var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -554,11 +554,11 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public static DataSet GetAttendanceAnalyticsAttendeeLastAttendance( List<int> groupIds, DateTime? start, DateTime? end,
+        public DataSet GetAttendanceAnalyticsAttendeeLastAttendanceDataSet( List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
             var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -573,11 +573,11 @@ namespace Rock.Model
         /// <param name="IncludeParentsWithChild">The include parents with child.</param>
         /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
-        public static DataSet GetAttendanceAnalyticsAttendees( List<int> groupIds, DateTime? start, DateTime? end,
+        public DataSet GetAttendanceAnalyticsAttendeesDataSet( List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
         {
             var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -593,11 +593,11 @@ namespace Rock.Model
         /// <param name="IncludeParentsWithChild">The include parents with child.</param>
         /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
-        public static DataSet GetAttendanceAnalyticsNonAttendees( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+        public DataSet GetAttendanceAnalyticsNonAttendeesDataSet( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
         {
             var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -665,6 +665,111 @@ namespace Rock.Model
 
             return parameters;
         }
+
+        #region Obsolete
+
+        /// <summary>
+        /// Gets the attendance analytics attendee dates.
+        /// </summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeDatesDataSet instead." )]
+        public static DataSet GetAttendanceAnalyticsAttendeeDates( List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics attendee first dates.
+        /// </summary>
+        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeFirstDatesDataSet instead." )]
+        public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics attendee last attendance.
+        /// </summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeLastAttendanceDataSet instead." )]
+        public static DataSet GetAttendanceAnalyticsAttendeeLastAttendance( List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics attendees.
+        /// </summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
+        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeesDataSet instead." )]
+        public static DataSet GetAttendanceAnalyticsAttendees( List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics non attendees.
+        /// </summary>
+        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
+        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetAttendanceAnalyticsNonAttendeesDataSet instead." )]
+        public static DataSet GetAttendanceAnalyticsNonAttendees( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        #endregion Obsolete
 
         /// <summary>
         /// 
@@ -2308,7 +2413,7 @@ namespace Rock.Model
             {
                 return;
             }
-            
+
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             var group = attendance.Occurrence.Group;
 

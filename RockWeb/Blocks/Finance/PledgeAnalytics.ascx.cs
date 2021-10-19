@@ -39,8 +39,22 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Pledge Analytics" )]
     [Category( "Finance" )]
     [Description( "Used to look at pledges using various criteria." )]
+
+    [IntegerField(
+        "Database Timeout",
+        Key = AttributeKeys.DatabaseTimeoutSeconds,
+        Description = "The number of seconds to wait before reporting a database timeout.",
+        IsRequired = false,
+        DefaultIntegerValue = 180,
+        Order = 0 )]
+
     public partial class PledgeAnalytics : Rock.Web.UI.RockBlock
     {
+        private static class AttributeKeys
+        {
+            public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
+        }
+
         #region Fields
 
         #endregion
@@ -166,7 +180,10 @@ namespace RockWeb.Blocks.Finance
             bool includePledges = includeOption != 1;
             bool includeGifts = includeOption != 0;
 
-            DataSet ds = FinancialPledgeService.GetPledgeAnalytics( accountId.Value, start, end,
+            var rockContextAnalytics = new RockContextAnalytics();
+            rockContextAnalytics.Database.CommandTimeout = this.GetAttributeValue( AttributeKeys.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+
+            DataSet ds = new FinancialPledgeService( rockContextAnalytics ).GetPledgeAnalyticsDataSet( accountId.Value, start, end,
                 minPledgeAmount, maxPledgeAmount, minComplete, maxComplete, minGiftAmount, maxGiftAmount,
                 includePledges, includeGifts );
             System.Data.DataView dv = ds.Tables[0].DefaultView;
