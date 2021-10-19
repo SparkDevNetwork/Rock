@@ -2040,8 +2040,8 @@ namespace Rock.Blocks.Event
             if ( gateway is IRedirectionGateway redirectionGateway )
             {
                 // Download the payment from the redirect gateway
-                var merchantId = context.RegistrationSettings.ExternalGatewayMerchantId.ToStringSafe();
-                transaction = redirectionGateway.FetchTransaction( rockContext, financialGateway, merchantId, args.GatewayToken );
+                var fundId = context.RegistrationSettings.ExternalGatewayFundId.ToStringSafe();
+                transaction = redirectionGateway.FetchTransaction( rockContext, financialGateway, fundId, args.GatewayToken );
                 paymentInfo.Amount = transaction.TotalAmount;
             }
             else if ( gateway is IHostedGatewayComponent hostedGateway )
