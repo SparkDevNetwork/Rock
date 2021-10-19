@@ -161,6 +161,14 @@
     <Compile Include="Migrations\202110151452129_AddAuthAuditLog.Designer.cs">
       <DependentUpon>202110151452129_AddAuthAuditLog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202110191808345_Rollup_20211019.cs" />
+    <Compile Include="Migrations\202110191808345_Rollup_20211019.Designer.cs">
+      <DependentUpon>202110191808345_Rollup_20211019.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110191825213_CodeGenerated_20211019.cs" />
+    <Compile Include="Migrations\202110191825213_CodeGenerated_20211019.Designer.cs">
+      <DependentUpon>202110191825213_CodeGenerated_20211019.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -841,6 +849,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202110151452129_AddAuthAuditLog.resx">
       <DependentUpon>202110151452129_AddAuthAuditLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110191808345_Rollup_20211019.resx">
+      <DependentUpon>202110191808345_Rollup_20211019.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110191825213_CodeGenerated_20211019.resx">
+      <DependentUpon>202110191825213_CodeGenerated_20211019.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
