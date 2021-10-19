@@ -760,6 +760,9 @@
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflowTriggerType.cs" />
+    <Compile Include="Model\Core\Audit\AuditType.cs" />
+    <Compile Include="Model\Core\Auth\Auth.SaveHook.cs" />
+    <Compile Include="Model\Core\Auth\SpecialRole.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
     <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
@@ -1168,7 +1171,7 @@
     <Compile Include="Model\Event\AttendanceCheckInSession\AttendanceCheckInSession.cs" />
     <Compile Include="Model\Core\AuthClaim\AuthClaim.cs" />
     <Compile Include="Model\Core\AuthClient\AuthClient.cs" />
-    <Compile Include="Model\Core\AuthClaim\AuthClientService.Partial.cs" />
+    <Compile Include="Model\Core\AuthClaim\AuthClientService.cs" />
     <Compile Include="Model\Core\AuthScope\AuthScope.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AuthClaimService.CodeGenerated.cs" />
@@ -2124,7 +2127,7 @@
     <Compile Include="Model\Core\Audit\Audit.cs" />
     <Compile Include="Model\AuditDetail.cs" />
     <Compile Include="Model\Core\Auth\Auth.cs" />
-    <Compile Include="Model\AuthService.Partial.cs" />
+    <Compile Include="Model\Core\Auth\AuthService.cs" />
     <Compile Include="Model\CRM\BackgroundCheck\BackgroundCheck.cs" />
     <Compile Include="Model\Finance\BenevolenceRequestDocument\BenevolenceRequestDocument.cs" />
     <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.cs" />
@@ -3574,6 +3577,7 @@
     <None Include="App.config" />
     <Compile Include="Model\Event\RegistrationTemplateFee\RegistrationTemplateFeeService.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />
+    <Compile Include="Model\Core\Auth\Auth.Logic.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

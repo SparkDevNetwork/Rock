@@ -38,7 +38,6 @@ namespace Rock.Model
     [HideFromReporting]
     public partial class Audit : Entity<Audit>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
@@ -188,30 +187,4 @@ namespace Rock.Model
     }
 
     #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Type of audit done to an entity
-    /// </summary>
-    public enum AuditType
-    {
-        /// <summary>
-        /// Add
-        /// </summary>
-        Add = 0,
-
-        /// <summary>
-        /// Modify
-        /// </summary>
-        Modify = 1,
-
-        /// <summary>
-        /// Delete
-        /// </summary>
-        Delete = 2
-    }
-
-    #endregion
-
 }

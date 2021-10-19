@@ -14,14 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using System.Text;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -125,7 +122,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the Security Role <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. This is used for Group based authorization. 
@@ -164,98 +161,6 @@ namespace Rock.Model
         private AuthAuditLog AuthAuditLog { get; set; }
 
         #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns the default authorization for a specific action.
-        /// </summary>
-        /// <param name="action">A <see cref="System.String"/> representing the name of the action.</param>
-        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the specified action is allowed by default; otherwise <c>false</c>.</returns>
-        public override bool IsAllowedByDefault( string action )
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.AppendFormat("{0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny");
-
-            if (SpecialRole != Model.SpecialRole.None)
-                sb.AppendFormat( "{0} ", SpecialRole.ToStringSafe().SplitCase() );
-            else if(PersonAlias != null)
-                sb.AppendFormat( "{0} ", PersonAlias.ToStringSafe() );
-            else if(Group != null)
-                sb.AppendFormat( "{0} ", Group.ToStringSafe() );
-
-            sb.AppendFormat("{0} Access", Action);
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var rockContext = dbContext as RockContext;
-            if ( rockContext != null &&
-                ( entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.State == EntityState.Deleted ) )
-            {
-                var authAuditLogService = new AuthAuditLogService( rockContext );
-                var authAuditLog = new AuthAuditLog();
-                authAuditLog.EntityTypeId = this.EntityTypeId;
-                authAuditLog.EntityId = this.EntityId;
-                authAuditLog.Action = this.Action;
-                authAuditLog.ChangeDateTime = RockDateTime.Now;
-                authAuditLog.GroupId = this.GroupId;
-                authAuditLog.SpecialRole = this.SpecialRole;
-                var currentPersonAlias = rockContext.GetCurrentPersonAlias();
-                if ( currentPersonAlias!=null )
-                {
-                    authAuditLog.ChangeByPersonAliasId = currentPersonAlias.Id;
-                }
-                authAuditLogService.Add( authAuditLog );
-
-                if ( entry.State == EntityState.Added )
-                {
-                    authAuditLog.ChangeType = ChangeType.Add;
-                }
-                else if ( entry.State == EntityState.Modified )
-                {
-                    authAuditLog.ChangeType = ChangeType.Modify;
-                }
-                else
-                {
-                    authAuditLog.ChangeType = ChangeType.Delete;
-                }
-
-                if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
-                {
-                    authAuditLog.PostAllowOrDeny = entry.Property( "AllowOrDeny" )?.CurrentValue as string;
-                    authAuditLog.PostOrder = entry.Property( "Order" )?.CurrentValue as int?;
-                }
-
-                if ( entry.State == EntityState.Modified || entry.State == EntityState.Deleted )
-                {
-                    authAuditLog.PreAllowOrDeny = entry.Property( "AllowOrDeny" )?.OriginalValue as string;
-                    authAuditLog.PreOrder = entry.Property( "Order" )?.OriginalValue as int?;
-                }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        #endregion
     }
 
     #region Entity Configuration
@@ -277,35 +182,4 @@ namespace Rock.Model
     }
 
     #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Authorization for a special group of users not defined by a specific role or person
-    /// </summary>
-    public enum SpecialRole
-    {
-        /// <summary>
-        /// No special role
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Authorize all users
-        /// </summary>
-        AllUsers = 1,
-
-        /// <summary>
-        /// Authorize all authenticated users
-        /// </summary>
-        AllAuthenticatedUsers = 2,
-
-        /// <summary>
-        /// Authorize all un-authenticated users
-        /// </summary>
-        AllUnAuthenticatedUsers = 3,
-    }
-
-    #endregion
-
 }
