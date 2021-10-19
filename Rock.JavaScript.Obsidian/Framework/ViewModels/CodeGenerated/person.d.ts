@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 import { Guid } from "../../Util/guid";
 
 export type Person = IEntity & {
+    accountProtectionProfile?: number;
     ageClassification?: number;
     anniversaryDate?: string | null;
     birthDay?: number | null;

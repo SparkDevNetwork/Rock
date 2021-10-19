@@ -431,23 +431,22 @@ namespace Rock.Lava
         /// The rendered output of the template.
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
+        /// <remarks>This render method is compatible with the legacy DotLiquid implementation.</remarks>
         public static LavaRenderResult RenderTemplate( string inputTemplate )
         {
-            return RenderTemplate( inputTemplate, LavaRenderParameters.Default() );
-        }
+            LavaRenderResult result;
 
-        /// <summary>
-        /// Render the provided template in a new context with the specified merge fields.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
-        /// <returns>
-        /// The rendered output of the template.
-        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( string inputTemplate, ILavaDataDictionary mergeFields )
-        {
-            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+            if ( _engine == null && _rockLiquidIsEnabled )
+            {
+                // If a Lava engine is not initialized, fall back to legacy DotLiquid.
+                result = new LavaRenderResult();
+
+                result.Text = inputTemplate.ResolveMergeFields( new Dictionary<string, object>() );
+
+                return result;
+            }
+
+            result = RenderTemplate( inputTemplate, LavaRenderParameters.Default() );
 
             return result;
         }
@@ -461,7 +460,37 @@ namespace Rock.Lava
         /// The rendered output of the template.
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
+        /// <remarks>This render method is compatible with the legacy DotLiquid implementation.</remarks>
         public static LavaRenderResult RenderTemplate( string inputTemplate, IDictionary<string, object> mergeFields )
+        {
+            LavaRenderResult result;
+
+            if ( _engine == null && _rockLiquidIsEnabled )
+            {
+                // If a Lava engine is not initialized, fall back to legacy DotLiquid.
+                // This allows developers to use a single method for basic template rendering that is backward-compatible with the RockLiquid implementation.
+                result = new LavaRenderResult();
+
+                result.Text = inputTemplate.ResolveMergeFields( mergeFields );
+
+                return result;
+            }
+
+            result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( string inputTemplate, ILavaDataDictionary mergeFields )
         {
             var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
 
@@ -504,6 +533,74 @@ namespace Rock.Lava
                 }
 
                 parameters.CacheKey = GetWebTemplateCacheKey( cacheKey, page.Site?.Theme );
+            }
+
+            return _engine.RenderTemplate( inputTemplate, parameters );
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaDataDictionary mergeFields )
+        {
+            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified parameters.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="context">The settings applied to the rendering process.</param>
+        /// <returns>
+        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaRenderContext context )
+        {
+            if ( _engine == null )
+            {
+                return null;
+            }
+
+            return RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( context ) );
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, IDictionary<string, object> mergeFields )
+        {
+            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified parameters.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="parameters">The settings applied to the rendering process.</param>
+        /// <returns>
+        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
+        {
+            if ( _engine == null )
+            {
+                return null;
             }
 
             return _engine.RenderTemplate( inputTemplate, parameters );
@@ -585,74 +682,6 @@ namespace Rock.Lava
             internalCacheKey = $"{internalCacheKey}@{baseCacheKey}";
 
             return internalCacheKey;
-        }
-
-        /// <summary>
-        /// Render the provided template in a new context with the specified merge fields.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
-        /// <returns>
-        /// The rendered output of the template.
-        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaDataDictionary mergeFields )
-        {
-            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
-
-            return result;
-        }
-
-        /// <summary>
-        /// Render the provided template in a new context with the specified parameters.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="context">The settings applied to the rendering process.</param>
-        /// <returns>
-        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaRenderContext context )
-        {
-            if ( _engine == null )
-            {
-                return null;
-            }
-
-            return RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( context ) );
-        }
-
-        /// <summary>
-        /// Render the provided template in a new context with the specified merge fields.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
-        /// <returns>
-        /// The rendered output of the template.
-        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, IDictionary<string, object> mergeFields )
-        {
-            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
-
-            return result;
-        }
-
-        /// <summary>
-        /// Render the provided template in a new context with the specified parameters.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="parameters">The settings applied to the rendering process.</param>
-        /// <returns>
-        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
-        {
-            if ( _engine == null )
-            {
-                return null;
-            }
-
-            return _engine.RenderTemplate( inputTemplate, parameters );
         }
 
         /// <summary>

@@ -49,7 +49,7 @@
                             <div class="py-3">
                                 <h5 class="m-0">Giving Characteristics</h5>
                                 <%-- Warning if Giving Characteristics are stale, probably because the person hasn't given for a while --%>
-                                <Rock:NotificationBox ID="nbGivingCharacteristicsStaleWarning" runat="server" NotificationBoxType="Warning" Text="The giving characteristics below were generated 3 months ago at the time of the last gift. Information on bin, percentile and typical gift patterns represent values from that time period." />
+                                <Rock:NotificationBox ID="nbGivingCharacteristicsStaleWarning" runat="server" NotificationBoxType="Warning" CssClass="my-3" Text="The giving characteristics below were generated 3 months ago at the time of the last gift. Information on bin, percentile and typical gift patterns represent values from that time period." />
                                 <div class="row d-flex flex-wrap align-items-lg-center">
                                     <div class="col-xs-12 col-sm-8 col-md-9 giving-characteristics">
                                         <%-- Lava Output for Giving Characteristics  --%>

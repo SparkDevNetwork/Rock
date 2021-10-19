@@ -449,6 +449,15 @@
 @calendar-today-color:                    @alert-info-text;
 @calendar-today-bg:                       @alert-info-bg;
 
+// Datepicker Styles
+@datepicker-today-color:                  #000;
+@datepicker-today-bg:                     lighten(orange, 30%);
+@datepicker-highlighted-bg:               @state-info-bg;
+
+@datepicker-range-bg:                     @gray-lighter;
+@datepicker-range-highlighted-bg:         mix(@state-info-bg, @gray-lighter, 50%);
+@datepicker-range-today-bg:               mix(orange, @gray-lighter, 50%);
+
 // Tree Viewer
 @tree-rollover-bg:                  lighten(@theme-7, 20%); // Background color of the rollover for items in the treeview.
 @tree-rollover-color:               @theme-7-text; // Text color of the rollover for items in the treeview.
@@ -501,6 +510,24 @@
 @badge-success-color:               #ffffff;
 @badge-info-color:                  #ffffff;
 @badge-critical-color:              #ffffff;
+
+@badge-rock-default-color:          #4f89bd;
+@badge-disabled-color:              #939393;
+
+@badge-baptism-color:               #23a5c5;
+@badge-era-loss-color:              #ee7624;
+
+@badge-disc-primary-color:          @badge-rock-default-color;
+@badge-disc-disabled-color:         @badge-disabled-color;
+@badge-disc-requested-color:        #e3ded7;
+
+@badge-attending-weeks-color:       #e5d24d;
+@badge-attending-new-color:         #d25555;
+@badge-attending-months-color:      #69ad5e;
+@badge-attending-years-color:       #56789e;
+
+@badge-lastvisitonsite-color:       @badge-rock-default-color;
+@badge-personaldevice-color:        @badge-rock-default-color;
 
 // Below Not in Rock Theme
 

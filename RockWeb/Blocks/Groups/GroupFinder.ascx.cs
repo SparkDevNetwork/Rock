@@ -644,9 +644,7 @@ namespace RockWeb.Blocks.Groups
             acAddress.SetValues( null );
             BuildDynamicControls();
 
-            pnlMap.Visible = false;
-            pnlLavaOutput.Visible = false;
-            pnlGrid.Visible = false;
+            ShowResults();
         }
 
         /// <summary>

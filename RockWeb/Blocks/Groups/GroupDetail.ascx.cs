@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -36,6 +37,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Groups
@@ -168,7 +170,7 @@ namespace RockWeb.Blocks.Groups
         Key = AttributeKey.AddAdministrateSecurityToGroupCreator,
         Description = "If enabled, the person who creates a new group will be granted 'Administrate' security rights to the group.  This was the behavior in previous versions of Rock.  If disabled, the group creator will not be able to edit security or possibly perform other functions without the Rock administrator settings up a role that is allowed to perform such functions.",
         DefaultBooleanValue = false,
-        Order = 19)]
+        Order = 19 )]
 
     #endregion Block Attributes
 
@@ -1151,7 +1153,7 @@ namespace RockWeb.Blocks.Groups
                  * Do not assign the group creater Administrate security permisisons unless AddAdministrateSecurityToGroupCreator is true.
                  */
 
-                if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToGroupCreator).AsBoolean() )
+                if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToGroupCreator ).AsBoolean() )
                 {
                     // Add ADMINISTRATE to the person who added the group
                     Rock.Security.Authorization.AllowPerson( group, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
@@ -1886,7 +1888,7 @@ namespace RockWeb.Blocks.Groups
         private void LoadElevatedSecurityRadioList()
         {
             rblElevatedSecurityLevel.Items.Clear();
-            foreach ( ElevatedSecurityLevel value in Enum.GetValues( typeof(ElevatedSecurityLevel) ) )
+            foreach ( ElevatedSecurityLevel value in Enum.GetValues( typeof( ElevatedSecurityLevel ) ) )
             {
                 rblElevatedSecurityLevel.Items.Add( new ListItem( value.ToString(), value.ConvertToInt().ToString() ) );
             }
@@ -2199,6 +2201,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     hlType.Text = groupType.Name;
                 }
+
                 hlType.ToolTip = groupType.Description;
             }
 
@@ -2216,6 +2219,24 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlCampus.Visible = false;
+            }
+
+            if ( group.IsSecurityRole && group.ElevatedSecurityLevel > ElevatedSecurityLevel.None )
+            {
+                hlElevatedSecurityLevel.Visible = true;
+                hlElevatedSecurityLevel.Text = $"Security Level: {group.ElevatedSecurityLevel.ConvertToString( true )}";
+                if ( group.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
+                {
+                    hlElevatedSecurityLevel.LabelType = LabelType.Danger;
+                }
+                else
+                {
+                    hlElevatedSecurityLevel.LabelType = LabelType.Warning;
+                };
+            }
+            else
+            {
+                hlElevatedSecurityLevel.Visible = true;
             }
 
             var pageParams = new Dictionary<string, string>();
@@ -3006,7 +3027,7 @@ namespace RockWeb.Blocks.Groups
                 ddlLocationType.SetValue( groupLocation.GroupLocationTypeValueId );
 
                 var activeSchedules = groupLocation.Schedules.Where( s => s.IsActive );
-                var inactiveScheduleIds = groupLocation.Schedules.Where( s=> !s.IsActive ).Select( s => s.Id ).ToList();
+                var inactiveScheduleIds = groupLocation.Schedules.Where( s => !s.IsActive ).Select( s => s.Id ).ToList();
                 spSchedules.SetValues( activeSchedules );
                 hfInactiveGroupLocationSchedules.Value = inactiveScheduleIds.AsDelimited( "," );
 
@@ -3656,7 +3677,7 @@ namespace RockWeb.Blocks.Groups
 
             // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
             if ( groupId > 0 )
-            { 
+            {
                 groupTypeId = new GroupService( rockContext ).Get( groupId ).GroupTypeId;
             }
 

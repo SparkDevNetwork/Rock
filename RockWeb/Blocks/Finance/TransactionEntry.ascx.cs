@@ -330,7 +330,6 @@ namespace RockWeb.Blocks.Finance
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = "Online Contribution",
         Category = CategoryKey.TextOptions,
         Order = 13 )]
 
@@ -546,6 +545,17 @@ namespace RockWeb.Blocks.Finance
             public const string Transfer = "Transfer";
         }
 
+        private static class ViewStateKey
+        {
+            public const string GroupLocationId = "GroupLocationId";
+            public const string SelectedAccountsJSON = "SelectedAccountsJSON";
+            public const string AvailableAccountsJSON = "AvailableAccountsJSON";
+            public const string TransactionCode = "TransactionCode";
+            public const string CreditCardTypeValueId = "CreditCardTypeValueId";
+            public const string ScheduleId = "ScheduleId";
+            public const string DisplayPhone = "DisplayPhone";
+            public const string PersonId = "PersonId";
+        }
         #endregion Block Keys
 
         #region Fields
@@ -584,8 +594,8 @@ namespace RockWeb.Blocks.Finance
         /// </value>
         protected int? GroupLocationId
         {
-            get { return ViewState["GroupLocationId"] as int?; }
-            set { ViewState["GroupLocationId"] = value; }
+            get { return ViewState[ViewStateKey.GroupLocationId] as int?; }
+            set { ViewState[ViewStateKey.GroupLocationId] = value; }
         }
 
         /// <summary>
@@ -596,8 +606,8 @@ namespace RockWeb.Blocks.Finance
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["SelectedAccountsJSON"] = SelectedAccounts.ToJson();
-            ViewState["AvailableAccountsJSON"] = AvailableAccounts.ToJson();
+            ViewState[ViewStateKey.SelectedAccountsJSON] = SelectedAccounts.ToJson();
+            ViewState[ViewStateKey.AvailableAccountsJSON] = AvailableAccounts.ToJson();
             return base.SaveViewState();
         }
 
@@ -608,8 +618,8 @@ namespace RockWeb.Blocks.Finance
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            AvailableAccounts = ( ViewState["AvailableAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
-            SelectedAccounts = ( ViewState["SelectedAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+            AvailableAccounts = (ViewState[ViewStateKey.AvailableAccountsJSON] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+            SelectedAccounts = (ViewState[ViewStateKey.SelectedAccountsJSON] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
         }
 
         /// <summary>
@@ -628,8 +638,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected string TransactionCode
         {
-            get { return ViewState["TransactionCode"] as string ?? string.Empty; }
-            set { ViewState["TransactionCode"] = value; }
+            get { return ViewState[ViewStateKey.TransactionCode] as string ?? string.Empty; }
+            set { ViewState[ViewStateKey.TransactionCode] = value; }
         }
 
         /// <summary>
@@ -637,8 +647,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected int? CreditCardTypeValueId
         {
-            get { return ViewState["CreditCardTypeValueId"] as int?; }
-            set { ViewState["CreditCardTypeValueId"] = value; }
+            get { return ViewState[ViewStateKey.CreditCardTypeValueId] as int?; }
+            set { ViewState[ViewStateKey.CreditCardTypeValueId] = value; }
         }
 
         /// <summary>
@@ -646,8 +656,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected int? ScheduleId
         {
-            get { return ViewState["ScheduleId"] as int?; }
-            set { ViewState["ScheduleId"] = value; }
+            get { return ViewState[ViewStateKey.ScheduleId] as int?; }
+            set { ViewState[ViewStateKey.ScheduleId] = value; }
         }
 
         // The URL for the Step-2 Iframe Url
@@ -655,8 +665,8 @@ namespace RockWeb.Blocks.Finance
 
         protected bool DisplayPhone
         {
-            get { return ViewState["DisplayPhone"].ToString().AsBoolean(); }
-            set { ViewState["DisplayPhone"] = value; }
+            get { return ViewState[ViewStateKey.DisplayPhone].ToString().AsBoolean(); }
+            set { ViewState[ViewStateKey.DisplayPhone] = value; }
         }
 
         /// <summary>
@@ -2172,7 +2182,7 @@ namespace RockWeb.Blocks.Finance
 
             Group familyGroup = null;
 
-            int personId = ViewState["PersonId"] as int? ?? 0;
+            int personId = ViewState[ViewStateKey.PersonId] as int? ?? 0;
             if ( personId == 0 && _targetPerson != null )
             {
                 personId = _targetPerson.Id;
@@ -2224,7 +2234,7 @@ namespace RockWeb.Blocks.Finance
                         familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
 
-                    ViewState["PersonId"] = person != null ? person.Id : 0;
+                    ViewState[ViewStateKey.PersonId] = person != null ? person.Id : 0;
                 }
             }
 

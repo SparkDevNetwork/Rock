@@ -20,7 +20,6 @@ using Fluid;
 using Fluid.Ast;
 using Fluid.Parser;
 using Fluid.Values;
-using Parlot;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
 
@@ -46,6 +45,8 @@ namespace Rock.Lava.Fluid
      * 1. Capture the source text of Lava blocks as they are processed, which is needed to support our
      *    implementation of custom tags and blocks that offers direct access to the source text of the template.
      * 2. Adds support for Lava shortcode tags using the "{[ shortcode ]}" syntax.
+     * 3. Adds support for Lava comment syntax.
+     * 4. Adds support for basic date and string comparisons using standard operators.
      */
     internal class LavaFluidParser : FluidParser
     {
@@ -88,12 +89,17 @@ namespace Rock.Lava.Fluid
         public Parser<List<FilterArgument>> ArgumentsListParser => ArgumentsList;
         public Parser<List<FilterArgument>> LavaArgumentsListParser;
 
+        private Parser<List<Statement>> _anyTagsListParser;
+        private Parser<List<Statement>> _knownTagsListParser;
+
         #endregion
 
         #region Constructors
         public LavaFluidParser()
             : base()
         {
+            CreateLavaDocumentParsers();
+
             RegisterLavaCommentTag();
             RegisterLavaCaptureTag();
             RegisterLavaElseIfTag();
@@ -109,6 +115,7 @@ namespace Rock.Lava.Fluid
         {
             // Define a parser for a named argument list separated by spaces in the form:
             // [name1:]value1 [name2:]value2 ...
+            // This parser can also return an empty argument list.
             LavaArgumentsListParser = OneOf( LavaTokenEnd.Then( x => new List<FilterArgument>() ),
                 Separated( Space,
                             OneOf(
@@ -126,12 +133,12 @@ namespace Rock.Lava.Fluid
             // Fluid defines a Primary expression as: primary => NUMBER | STRING | BOOLEAN | MEMBER
 
             // Reproduce the standard Fluid parsers that are internally defined by the default parser.
-            var Indexer = Between( LBracket, Primary, RBracket ).Then<MemberSegment>( x => new IndexerSegment( x ) );
+            var indexer = Between( LBracket, Primary, RBracket ).Then<MemberSegment>( x => new IndexerSegment( x ) );
 
-            var Member = Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ).And(
+            var member = Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ).And(
                 ZeroOrMany(
                     Dot.SkipAnd( Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ) )
-                    .Or( Indexer ) ) )
+                    .Or( indexer ) ) )
                 .Then( x =>
                 {
                     x.Item2.Insert( 0, x.Item1 );
@@ -139,23 +146,22 @@ namespace Rock.Lava.Fluid
                 } );
 
             // Redefine the Fluid keywords "true" and "false" as case-insensitive.
-            var TrueParser = Terms.Text( "true", caseInsensitive: true );
-            var FalseParser = Terms.Text( "false", caseInsensitive: true );
+            var trueParser = Terms.Text( "true", caseInsensitive: true );
+            var falseParser = Terms.Text( "false", caseInsensitive: true );
 
             // Replace the default definition of the Fluid Primary parser.
             Primary.Parser = Number.Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) )
                 .Or( String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) ) )
-                .Or( TrueParser.Then<Expression>( x => new LiteralExpression( BooleanValue.True ) ) )
-                .Or( FalseParser.Then<Expression>( x => new LiteralExpression( BooleanValue.False ) ) )
-                .Or( Member.Then<Expression>( x => x ) );
+                .Or( trueParser.Then<Expression>( x => new LiteralExpression( BooleanValue.True ) ) )
+                .Or( falseParser.Then<Expression>( x => new LiteralExpression( BooleanValue.False ) ) )
+                .Or( member.Then<Expression>( x => x ) );
         }
 
-        private void DefineLavaDocumentParsers()
+        private void CreateLavaDocumentParsers()
         {
             // Define the top-level parsers.
-            var anyTags = KnownTagsParser( throwOnUnknownTag: false );
-
-            var knownTags = KnownTagsParser( throwOnUnknownTag: true );
+            var anyTags = CreateKnownTagsParser( throwOnUnknownTag: false );
+            var knownTags = CreateKnownTagsParser( throwOnUnknownTag: true );
 
             var outputElement = OutputStart.SkipAnd( FilterExpression.And( OutputEnd.ElseError( ErrorMessages.ExpectedOutputEnd ) )
                 .Then<Statement>( x => new OutputStatement( x.Item1 ) ) );
@@ -182,6 +188,7 @@ namespace Rock.Lava.Fluid
                     return result;
                 } );
 
+            // Define parsers for Lava block/inline comments.
             var blockCommentElement = Terms.Text( "/-" ).SkipAnd( AnyCharBefore( Terms.Text( "-/" ) ) );
             var lineCommentElement = Terms.Text( "/-" ).SkipAnd( AnyCharBefore( Terms.Char( '\r' ).SkipAnd( Terms.Char( '\n' ) ) ) );
 
@@ -189,11 +196,22 @@ namespace Rock.Lava.Fluid
 
             // Set the parser to be used for a block element.
             // This parser returns an empty result when an unknown tag is found.
-            AnyTagsList.Parser = ZeroOrMany( outputElement.Or( anyTags ).Or( textElement ) );
+            _anyTagsListParser = ZeroOrMany( outputElement.Or( anyTags ).Or( textElement ) );
 
             // Set the parser to be used for the entire template.
             // This parser raises an exception when an unknown tag is found.
-            KnownTagsList.Parser = ZeroOrMany( outputElement.Or( knownTags ).Or( textElement ) );
+            _knownTagsListParser = ZeroOrMany( outputElement.Or( knownTags ).Or( textElement ) );
+        }
+
+        private void DefineLavaDocumentParsers()
+        {
+            // Set the parser to be used for a block element.
+            // This parser returns an empty result when an unknown tag is found.
+            AnyTagsList.Parser = _anyTagsListParser;
+
+            // Set the parser to be used for the entire template.
+            // This parser raises an exception when an unknown tag is found.
+            KnownTagsList.Parser = _knownTagsListParser;
 
             // Set the Grammer parser, which represents the top-level document elements.
             Grammar = KnownTagsList;
@@ -265,12 +283,12 @@ namespace Rock.Lava.Fluid
         {
             var ifTag = LogicalExpression
                 .AndSkip( TagEnd )
-                .And( AnyTagsList )
+                .And( _anyTagsListParser )
                 .And( ZeroOrMany(
-                    TagStart.SkipAnd( Terms.Text( "elsif" ).Or( Terms.Text( "elseif" ) ) ).SkipAnd( LogicalExpression ).AndSkip( TagEnd ).And( AnyTagsList ) )
+                    TagStart.SkipAnd( Terms.Text( "elsif" ).Or( Terms.Text( "elseif" ) ) ).SkipAnd( LogicalExpression ).AndSkip( TagEnd ).And( _anyTagsListParser ) )
                     .Then( x => x.Select( e => new ElseIfStatement( e.Item1, e.Item2 ) ).ToList() ) )
                 .And( ZeroOrOne(
-                    CreateTag( "else" ).SkipAnd( AnyTagsList ) )
+                    CreateTag( "else" ).SkipAnd( _anyTagsListParser ) )
                     .Then( x => x != null ? new ElseStatement( x ) : null ) )
                 .AndSkip( CreateTag( "endif" ).ElseError( $"'{{% endif %}}' was expected" ) )
                 .Then<Statement>( x => new IfStatement( x.Item1, x.Item2, x.Item4, x.Item3 ) )
@@ -279,7 +297,13 @@ namespace Rock.Lava.Fluid
             RegisteredTags["if"] = ifTag;
         }
 
-        public Parser<Statement> KnownTagsParser( bool throwOnUnknownTag )
+        /// <summary>
+        /// Create a parser for the set of tags and shortcodes that have been defined.
+        /// </summary>
+        /// <param name="throwOnUnknownTag">If true, undefined tags return null rather than throwing an exception.</param>
+        /// <returns></returns>
+        /// <remarks>The option to ignore unknown tags can be used to ignore output tags that are not defined until the render process.</remarks>
+        private Parser<Statement> CreateKnownTagsParser( bool throwOnUnknownTag )
         {
             var parser = OneOf(
                 LavaTagParsers.LavaTagStart()
@@ -308,14 +332,11 @@ namespace Rock.Lava.Fluid
                             {
                                 return shortcode;
                             }
-                            else if ( throwOnUnknownTag )
-                            {
-                                throw new global::Fluid.ParseException( $"Unknown shortcode '{tagName}' at {context.Scanner.Cursor.Position}" );
-                            }
 
-                            return null;
+                            throw new global::Fluid.ParseException( $"Unknown shortcode '{tagName}' at {context.Scanner.Cursor.Position}" );
                         } )
-                    ) );
+                    )
+                );
 
             return parser;
         }
@@ -337,23 +358,25 @@ namespace Rock.Lava.Fluid
             Parser<LavaTagResult> tokenEndParser;
 
             var registerTagName = tagName;
+            string errorMessage;
 
             if ( format == LavaTagFormatSpecifier.LavaShortcode )
             {
                 tokenEndParser = LavaTagParsers.LavaShortcodeEnd();
-
                 tagName = tagName.Substring( 0, tagName.Length - "_".Length );
+                errorMessage = $"Invalid '{{[ {tagName} ]}}' shortcode block";
             }
             else
             {
                 tokenEndParser = LavaTokenEnd;
+                errorMessage = $"Invalid '{{% {tagName} %}}' block";
             }
 
             var lavaBlock = AnyCharBefore( tokenEndParser, canBeEmpty: true )
                 .AndSkip( tokenEndParser )
                 .And( new LavaTagParsers.LavaBlockContentParser( tagName, format ) )
                 .Then<Statement>( x => new FluidLavaBlockStatement( this, tagName, format, x.Item1, x.Item2 ) )
-                .ElseError( $"Invalid '{{% {tagName} %}}' tag" );
+                .ElseError( errorMessage );
 
             RegisteredTags[registerTagName] = lavaBlock;
         }
@@ -372,22 +395,24 @@ namespace Rock.Lava.Fluid
             Parser<LavaTagResult> tokenEndParser;
 
             var registerTagName = tagName;
+            string errorMessage;
 
             if ( format == LavaTagFormatSpecifier.LavaShortcode )
             {
                 tokenEndParser = LavaTagParsers.LavaShortcodeEnd();
-
                 tagName = tagName.Substring( 0, tagName.Length - "_".Length );
+                errorMessage = $"Invalid '{{[ {tagName} ]}}' shortcode tag";
             }
             else
             {
                 tokenEndParser = LavaTokenEnd;
+                errorMessage = $"Invalid '{{% {tagName} %}}' tag";
             }
 
             var lavaTag = AnyCharBefore( tokenEndParser, canBeEmpty: true )
                            .AndSkip( tokenEndParser )
                            .Then<Statement>( x => new FluidLavaTagStatement( tagName, format, x ) )
-                           .ElseError( $"Invalid '{{% {tagName} %}}' tag" );
+                           .ElseError( errorMessage );
 
             this.RegisteredTags[registerTagName] = lavaTag;
         }

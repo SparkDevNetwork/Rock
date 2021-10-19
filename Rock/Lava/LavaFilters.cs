@@ -1604,47 +1604,6 @@ namespace Rock.Lava
             return defaultValue;
         }
 
-        /// <summary>
-        /// Returns the difference between two datetime values in the specified units.
-        /// </summary>
-        /// <param name="sStartDate">The start date.</param>
-        /// <param name="sEndDate">The end date.</param>
-        /// <param name="unit">The unit of measurement.</param>
-        /// <returns></returns>
-        public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
-        {
-            var startDate = GetDateTimeOffsetFromInputParameter( sStartDate, null );
-            var endDate = GetDateTimeOffsetFromInputParameter( sEndDate, null );
-
-            if ( startDate != null && endDate != null )
-            {
-                var difference = endDate.Value - startDate.Value;
-
-                switch ( unit )
-                {
-                    case "d":
-                        return ( Int64 ) difference.TotalDays;
-                    case "h":
-                        return ( Int64 ) difference.TotalHours;
-                    case "m":
-                        return ( Int64 ) difference.TotalMinutes;
-                    case "M":
-                        return ( Int64 ) GetMonthsBetween( startDate.Value, endDate.Value );
-                    case "Y":
-                        // Return the difference between the dates as the number of whole years.
-                        return ( Int64 ) Math.Truncate( endDate.Value.Subtract( startDate.Value ).TotalDays / 365.25 );
-                    case "s":
-                        return ( Int64 ) difference.TotalSeconds;
-                    default:
-                        return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         private static int GetMonthsBetween( DateTimeOffset from, DateTimeOffset to )
         {
             if ( from > to )
@@ -3599,6 +3558,139 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        public static List<Model.Step> Steps( ILavaRenderContext context, object input, string stepProgram = "All", string stepStatus = "All", string stepType = "All" )
+        {
+            var person = GetPerson( input, context );
+
+            if ( person == null )
+            {
+                return new List<Step>();
+            }
+
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            var stepsQuery = GetPersonSteps( rockContext, person, stepProgram, stepStatus, stepType );
+
+            return stepsQuery.ToList();
+        }
+
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        internal static IQueryable<Model.Step> GetPersonSteps( RockContext rockContext, Person person, string stepProgram = null, string stepStatus = null, string stepType = null )
+        {
+            // Get Person from context.
+            if ( person == null )
+            {
+                return null;
+            }
+
+            // Get base Steps query.
+            var stepQuery = new StepService( rockContext )
+                .Queryable( "Campus,StepStatus,StepType" )
+                .Where( s => s.PersonAlias.PersonId == person.Id );
+
+            // Filter by: Step Program.
+            // The identifier can be either an Id or a Guid.
+            stepProgram = stepProgram ?? string.Empty;
+            stepProgram = stepProgram.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepProgram )
+                 && stepProgram != "all" )
+            {
+                var stepProgramId = stepProgram.AsIntegerOrNull();
+
+                if ( stepProgramId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepType.StepProgramId == stepProgramId.Value );
+                }
+                else
+                {
+                    var stepProgramGuid = stepProgram.AsGuidOrNull();
+
+                    if ( stepProgramGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepType != null && s.StepType.StepProgram != null && s.StepType.StepProgram.Guid == stepProgramGuid.Value );
+                    }
+                }
+
+                // Step Program Identifier is invalid.
+            }
+
+            // Filter by: Step Type.
+            // The identifier can be either an Id or a Guid.
+            stepType = stepType ?? string.Empty;
+            stepType = stepType.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepType )
+                 && stepType != "all" )
+            {
+                var stepTypeId = stepType.AsIntegerOrNull();
+
+                if ( stepTypeId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepTypeId == stepTypeId.Value );
+                }
+                else
+                {
+                    var stepTypeGuid = stepType.AsGuidOrNull();
+
+                    if ( stepTypeGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepType != null && s.StepType.Guid == stepTypeGuid.Value );
+                    }
+                }
+
+                // Step Type Identifier is invalid.
+            }
+
+            // Filter by: Step Status
+            stepStatus = stepStatus ?? string.Empty;
+            stepStatus = stepStatus.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepStatus )
+                 && stepStatus != "all" )
+            {
+                var stepStatusId = stepStatus.AsIntegerOrNull();
+
+                if ( stepStatusId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepStatusId == stepStatusId.Value );
+                }
+                else
+                {
+                    var stepStatusGuid = stepStatus.AsGuidOrNull();
+
+                    if ( stepStatusGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepStatus != null && s.StepStatus.Guid == stepStatusGuid.Value );
+                    }
+                    else
+                    {
+                        // Name
+                        stepQuery = stepQuery.Where( s => s.StepStatus != null && s.StepStatus.Name == stepStatus );
+                    }
+                }
+            }
+
+            return stepQuery;
+        }
+
         #endregion Person Filters
 
         #region Group Filters
@@ -3711,15 +3803,6 @@ namespace Rock.Lava
             {
                 mergeFields = mergeFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
             }
-
-            //var mergeFields = context.GetEnvironments().SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value );
-            //var allFields = mergeFields.Union( context.GetScopes().SelectMany( a => a ).DistinctBy( x => x.Key ).ToDictionary( k => k.Key, v => v.Value ) );
-
-            // if a specific MergeField was specified as the Input, limit the help to just that MergeField
-            //if ( input != null && allFields.Any( a => a.Value == input ) )
-            //{
-            //    mergeFields = allFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
-            //}
 
             // TODO: implement the outputFormat option to support ASCII
             return mergeFields.lavaDebugInfo();

@@ -1687,7 +1687,7 @@ $('#{0}').tooltip();
             }
             else if ( personScheduleSignup.MaxScheduled )
             {
-                cbSignupSchedule.Text += " (filled)";
+                cbSignupSchedule.Text += " <span class='text-muted small'>(filled)</span>";
             }
             
 
@@ -1806,8 +1806,8 @@ $('#{0}').tooltip();
         {
             List<PersonScheduleSignup> personScheduleSignups = new List<PersonScheduleSignup>();
             int numOfWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 6;
-            var startDate = RockDateTime.Now.AddDays( 1 );
-            var endDate = RockDateTime.Now.AddDays( numOfWeeks * 7 );
+            var startDate = DateTime.Now.AddDays( 1 ).Date;
+            var endDate = DateTime.Now.AddDays( numOfWeeks * 7 );
 
             using ( var rockContext = new RockContext() )
             {
@@ -1827,9 +1827,7 @@ $('#{0}').tooltip();
                     && a.Group.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var personGroupLocationList = personGroupLocationQry.ToList();
-
                 var groupsThatHaveSchedulingRequirements = personGroupLocationQry.Where( a => a.Group.SchedulingMustMeetRequirements ).Select( a => a.Group ).Distinct().ToList();
-
                 var personDoesntMeetSchedulingRequirementGroupIds = new HashSet<int>();
 
                 foreach ( var groupThatHasSchedulingRequirements in groupsThatHaveSchedulingRequirements )
@@ -1849,16 +1847,27 @@ $('#{0}').tooltip();
                     foreach ( var schedule in personGroupLocation.Schedules )
                     {
                         //  find if this has max volunteers here
-                        int? maximumCapacitySetting = null;
-                        int? desiredCapacitySetting = null;
-                        int? minimumCapacitySetting = null;
-                        int? desiredOrMinimumNeeded = null;
+                        int maximumCapacitySetting = 0;
+                        int desiredCapacitySetting = 0;
+                        int minimumCapacitySetting = 0;
+                        int desiredOrMinimumNeeded = 0;
                         if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
                         {
-                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MaximumCapacity;
-                            desiredCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.DesiredCapacity;
-                            minimumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MinimumCapacity;
-                            desiredOrMinimumNeeded = desiredCapacitySetting == null ? minimumCapacitySetting : minimumCapacitySetting == null ? desiredCapacitySetting : Math.Max( desiredCapacitySetting.Value, minimumCapacitySetting.Value );
+                            var groupConfigs = personGroupLocationList.Where( x => x.GroupId == personGroupLocation.GroupId ).Select( x => x.GroupLocationScheduleConfigs );
+                            foreach ( var groupConfig in groupConfigs )
+                            {
+                                foreach( var config in groupConfig )
+                                {
+                                    if ( config.ScheduleId == schedule.Id )
+                                    {
+                                        maximumCapacitySetting += config.MaximumCapacity ?? 0;
+                                        desiredCapacitySetting += config.DesiredCapacity ?? 0;
+                                        minimumCapacitySetting += config.MinimumCapacity ?? 0;
+                                    }
+                                }
+                            }
+
+                            desiredOrMinimumNeeded = Math.Max( desiredCapacitySetting, minimumCapacitySetting );
                         }
 
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );
@@ -1883,14 +1892,17 @@ $('#{0}').tooltip();
                                 continue;
                             }
 
-                            // If there is a maximum Capacity then find out how many already RSVP with "Yes"
-                            var currentScheduled = maximumCapacitySetting != null
-                                ? attendanceService.GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, RSVP.Yes ).Where( a => a.Occurrence.GroupId == personGroupLocation.GroupId ).Count()
-                                : 0;
+                            // Get count of scheduled Occurrences with RSVP "Yes" for the group/schedule
+                            int currentScheduled = attendanceService
+                                .Queryable()
+                                .Where( a => a.Occurrence.OccurrenceDate == startDateTime.Date
+                                    && a.Occurrence.ScheduleId == schedule.Id
+                                    && a.RSVP == RSVP.Yes
+                                    && a.Occurrence.GroupId == personGroupLocation.GroupId )
+                                .Count();
 
-                            bool maxScheduled = maximumCapacitySetting != null && currentScheduled >= maximumCapacitySetting;
-
-                            int peopleNeeded = desiredOrMinimumNeeded != null ? desiredOrMinimumNeeded.Value - currentScheduled : 0;
+                            bool maxScheduled = maximumCapacitySetting != 0 && currentScheduled >= maximumCapacitySetting;
+                            int peopleNeeded = desiredOrMinimumNeeded != 0 ? desiredOrMinimumNeeded - currentScheduled : 0;
 
                             // Add to master list personScheduleSignups
                             personScheduleSignups.Add( new PersonScheduleSignup
@@ -1906,7 +1918,7 @@ $('#{0}').tooltip();
                                 ScheduleName = schedule.Name,
                                 ScheduledDateTime = startDateTime,
                                 MaxScheduled = maxScheduled,
-                                PeopleNeeded = peopleNeeded
+                                PeopleNeeded = peopleNeeded < 0 ? 0 : peopleNeeded
                             } );
                         }
                     }

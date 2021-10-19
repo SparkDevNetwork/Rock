@@ -144,6 +144,31 @@ namespace Rock.Model
             /// </remarks>
             protected override void PostSave()
             {
+                var personId = Entity.PersonId;
+                if ( personId.HasValue && State == EntityContextState.Added )
+                {
+                    // if EntityPerson doesn't lazy load, get it from the database using the same RockContext as this UserLogin record.
+                    var userLoginPerson = Entity.Person ?? new PersonService( this.RockContext ).Get( personId.Value );
+
+                    // If this is a new userLogin for this person, ensure that the AccountProtection profile is at least Medium.
+                    // Note that if this UserLogin is deleted, we'll let the RockCleanup job re-calculate their AccountProtectionProfile.
+                    if ( userLoginPerson != null && userLoginPerson.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.Medium )
+                    {
+                        // use a new RockContext to elevate the AccountProtection level to Medium
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var accountProtectionProfilePerson = new PersonService( rockContext ).Get( personId.Value );
+
+                            // double check that account protection profile needs to be elevated to medium
+                            if ( accountProtectionProfilePerson != null && accountProtectionProfilePerson.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.Medium )
+                            {
+                                accountProtectionProfilePerson.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.Medium;
+                                rockContext.SaveChanges();
+                            }
+                        }
+                    }
+                }
+
                 if ( HistoryChanges?.Any() == true && Entity.PersonId.HasValue )
                 {
                     try

@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var last12MonthCountText = $"{last12MonthCount} {"gift".PluralizeIf( last12MonthCount != 1 )}";
             kpiLast12Months = GetKpiShortCode(
                 "Last 12 Months",
-                FormatAsCurrency( last12MonthTotal ),
+                $"<span class=\"currency-span\">{FormatAsCurrency( last12MonthTotal )}</span>",
                 subValue: $"<div class=\"small\">{last12MonthCountText}</div>" );
 
             // Last 90 Days KPI
@@ -399,7 +399,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
 
             var kpiLast90Days = GetKpiShortCode(
                 "Last 90 Days",
-                FormatAsCurrency( last90DaysContribution ),
+                $"<span class=\"currency-span\">{FormatAsCurrency( last90DaysContribution )}</span>",
                 subValue: last90DaysSubValue );
 
             // Gives as family / individual KPI
@@ -514,7 +514,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
 
             var typicalGiftKpi = GetKpiShortCode(
                 "Typical Gift",
-                giftAmountMedian,
+                $"<span class=\"currency-span\">{giftAmountMedian}</span>",
                 $"{PlusOrMinus} {giftAmountIqr}",
                 "fa-fw fa-money-bill",
                 "left",

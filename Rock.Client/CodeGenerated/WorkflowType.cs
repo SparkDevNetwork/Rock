@@ -67,6 +67,9 @@ namespace Rock.Client
         /// <summary />
         public int? LogRetentionPeriod { get; set; }
 
+        /// <summary />
+        public int? MaxWorkflowAgeDays { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -137,6 +140,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.LoggingLevel = source.LoggingLevel;
             this.LogRetentionPeriod = source.LogRetentionPeriod;
+            this.MaxWorkflowAgeDays = source.MaxWorkflowAgeDays;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.NoActionMessage = source.NoActionMessage;

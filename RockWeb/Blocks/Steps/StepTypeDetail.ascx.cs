@@ -184,6 +184,8 @@ namespace RockWeb.Blocks.Steps
 
         #region Private Variables
 
+        private StepType _stepType = null;
+        private StepProgram _program = null;
         private int _stepProgramId = 0;
         private int _stepTypeId = 0;
         private RockContext _dataContext = null;
@@ -220,7 +222,15 @@ namespace RockWeb.Blocks.Steps
             dvpAudience.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvpAudience.CategoryGuids = GetAttributeValue( AttributeKey.DataViewCategories ).SplitDelimitedValues().AsGuidList();
 
-            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
+            bool editAllowed = false;
+            if ( _stepType != null )
+            {
+                editAllowed =  _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+            }
+            else if ( _program != null )
+            {
+                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _program.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+            }
 
             InitializeAttributesGrid( editAllowed );
             InitializeWorkflowGrid( editAllowed );
@@ -1244,6 +1254,8 @@ namespace RockWeb.Blocks.Steps
         /// <returns>True, if the block context is valid.</returns>
         private bool InitializeBlockContext()
         {
+            _stepType = null;
+
             _stepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
             _stepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsInteger();
 
@@ -1253,6 +1265,18 @@ namespace RockWeb.Blocks.Steps
                 ShowNotification( "A new Step cannot be added because there is no Step Program available in this context.", NotificationBoxType.Danger, true );
 
                 return false;
+            }
+
+            var dataContext = this.GetDataContext();
+            if ( _stepTypeId != 0 )
+            {
+                var stepTypeService = new StepTypeService( dataContext );
+                _stepType = stepTypeService.Queryable().Where( g => g.Id == _stepTypeId ).FirstOrDefault();
+            }
+            else
+            {
+                var stepProgramService = new StepProgramService( dataContext );
+                _program = stepProgramService.Queryable().Where( g => g.Id == _stepProgramId ).FirstOrDefault();
             }
 
             return true;
@@ -1419,7 +1443,7 @@ namespace RockWeb.Blocks.Steps
 
             LoadPrerequisiteStepsList();
             LoadWorkflowTriggerTypesSelectionList();
-            
+
             // General properties
             tbName.Text = stepType.Name;
             cbIsActive.Checked = stepType.IsActive;

@@ -177,9 +177,18 @@ namespace Rock.Model
             // Filter by campus if we have been given any.
             if ( options.Campuses != null && options.Campuses.Any() )
             {
-                qryPrayerRequests = qryPrayerRequests
-                    .Include( r => r.Campus )
-                    .Where( r => r.CampusId.HasValue && options.Campuses.Contains( r.Campus.Guid ) );
+                if ( options.IncludeNullableCampus )
+                {
+                    qryPrayerRequests = qryPrayerRequests
+                        .Include( r => r.Campus )
+                        .Where( r => !r.CampusId.HasValue || ( r.CampusId.HasValue && options.Campuses.Contains( r.Campus.Guid ) ) );
+                }
+                else
+                {
+                    qryPrayerRequests = qryPrayerRequests
+                        .Include( r => r.Campus )
+                        .Where( r => r.CampusId.HasValue && options.Campuses.Contains( r.Campus.Guid ) );
+                }
             }
 
             return qryPrayerRequests;

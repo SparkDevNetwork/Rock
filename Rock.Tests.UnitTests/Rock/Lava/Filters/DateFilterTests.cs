@@ -605,6 +605,22 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Requesting the difference between two dates in years should yield the result as multiples of 365.25 days.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_CompareDifferenceWithInterveningLeapYears_ReturnsCorrectYearDifference()
+        {
+            // A period spanning 365 days that occurs during a non-leap year should return a difference of 1.
+            TestHelper.AssertTemplateOutput( "1", "{{ '2024-03-02' | DateDiff:'2025-03-02','Y' }}" );
+
+            // A period spanning 365 days that occurs during a leap year should return a difference of 0.
+            TestHelper.AssertTemplateOutput( "0", "{{ '2024-02-29' | DateDiff:'2025-02-27','Y' }}" );
+
+            // A period spanning 366 days that occurs during a leap year should return a difference of 1.
+            TestHelper.AssertTemplateOutput( "1", "{{ '2023-03-02' | DateDiff:'2024-03-02','Y' }}" );
+        }
+
+        /// <summary>
         /// Requesting the difference between a target date and a DateTimeOffset should return a result that accounts for the input time zone.
         /// </summary>
         [TestMethod]

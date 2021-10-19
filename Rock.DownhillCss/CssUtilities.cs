@@ -1534,6 +1534,88 @@ formfield .required-indicator {
 ^radiobutton {
   color: ?color-text;
 }
+
+
+/*** Prayer Card Block ***/
+.prayer-card-container {
+    border-color: #a6a6a6;
+    border-radius: 0;
+    padding: 12 24;
+    margin: 0 0 18 0;
+}
+
+.prayer-card-container .prayer-card-name {
+    font-size: ?shell-font-scale(24);
+    font-style: bold;
+    color: #1d1d1d;
+}
+
+.prayer-card-container .prayer-card-category {
+    background-color: #009ce3;
+    padding: 5;
+}
+    .prayer-card-container .prayer-card-category Label {
+        font-size: ?shell-font-scale(12);
+        color: #ffffff;
+    }
+
+.prayer-card-container .prayer-card-text {
+    margin: 12 0 0 0;
+}
+
+
+/*** Group Finder Block ***/
+.group-finder-container {
+    -xf-spacing: 0;
+}
+
+.group-finder-container .group-finder-search-button {
+    margin: 0 0 30 0;
+}
+
+.group-finder-container .group-finder-filter-button {
+    padding: 4 12;
+    background-color: #f5f5f5;
+    color: #767676;
+    border-color: #b9b9b9;
+    border-width: 1;
+    border-radius: 4;
+}
+
+.group-finder-container .group-finder-filter-button.active {
+    background-color: #007acc;
+    color: #fff;
+}
+
+.group-finder-container .group-primary-content {
+    -xf-spacing: 3;
+}
+
+.group-finder-container .group-meeting-day {
+    color: #007aff;
+}
+
+.group-finder-container .group-name {
+    font-size: ?shell-font-scale(24);
+    font-style: bold;
+    color: #1d1d1d;
+}
+
+.group-finder-container .group-meeting-time {
+    color: #999999;
+}
+
+.group-finder-container .group-topic {
+    color: #999999;
+}
+
+.group-finder-container .group-distance {
+    color: #999999;
+}
+
+.group-finder-container .group-more-icon {
+    color: #999999;
+}
 ";
         #endregion
     }

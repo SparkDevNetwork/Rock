@@ -397,6 +397,14 @@ namespace Rock.Data
         public DbSet<AuditDetail> AuditDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the authentication audit log.
+        /// </summary>
+        /// <value>
+        /// The authentication audit log.
+        /// </value>
+        public DbSet<AuthAuditLog> AuthAuditLog { get; set; }
+
+        /// <summary>
         /// Gets or sets the Auth Clients.
         /// </summary>
         /// <value>

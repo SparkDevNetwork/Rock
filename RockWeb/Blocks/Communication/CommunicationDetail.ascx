@@ -281,7 +281,7 @@
                                     <div class="grid grid-panel">
                                         <Rock:Grid ID="gInteractions" runat="server" AllowSorting="true" RowItemText="Activity" OnRowDataBound="gInteractions_RowDataBound">
                                             <Columns>
-                                                <Rock:DateTimeField HeaderText="Date" DataField="InteractionDateTime" SortExpression="InteractionDateTime" />
+                                                <Rock:DateTimeField HeaderText="Date" DataField="InteractionDateTime" ItemStyle-CssClass="text-nowrap" SortExpression="InteractionDateTime" />
                                                 <Rock:PersonField HeaderText="Person" DataField="PersonAlias.Person"
                                                     SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                                                 <Rock:RockBoundField HeaderText="Activity" DataField="Operation" SortExpression="Operation" />

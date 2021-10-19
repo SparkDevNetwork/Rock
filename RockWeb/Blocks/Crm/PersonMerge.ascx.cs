@@ -454,7 +454,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMerge_Click( object sender, EventArgs e )
         {
-            if ( !CanMerge().CanMerge )
+            if ( !CanMerge().IsAllowedToMerge )
             {
                 nbError.Heading = "Merge Error";
                 nbError.Text = string.Format( "<p>You do not have the necessary permissions to merge this user.</p>" );
@@ -1209,7 +1209,7 @@ namespace RockWeb.Blocks.Crm
 
         private class CanMergeResult
         {
-            public bool CanMerge { get; set; }
+            public bool IsAllowedToMerge { get; set; }
 
             public AccountProtectionProfile MaxAccountProtectionProfile { get; set; }
 
@@ -1238,14 +1238,14 @@ namespace RockWeb.Blocks.Crm
                 MaxAccountProtectionProfile = maxAccountProtectionProfile,
                 MaxElevatedSecurityLevel = maxElevatedSecurityLevel,
                 RequiredSecurityRole = requiredSecurityRole,
-                CanMerge = true,
+                IsAllowedToMerge = true,
             };
 
             if ( requiredSecurityRole != null )
             {
                 if ( !requiredSecurityRole.IsPersonInRole( RockPage.CurrentPerson.Guid ) )
                 {
-                    canMergeResult.CanMerge = false;
+                    canMergeResult.IsAllowedToMerge = false;
                 }
             }
 
@@ -1260,9 +1260,9 @@ namespace RockWeb.Blocks.Crm
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
                 var canMergeResult = CanMerge();
-                lbMerge.Visible = canMergeResult.CanMerge;
+                lbMerge.Visible = canMergeResult.IsAllowedToMerge;
 
-                if ( !canMergeResult.CanMerge )
+                if ( !canMergeResult.IsAllowedToMerge )
                 {
                     nbAccountProtectProfile.Text = $"A record on this merge request has an Account Protection Profile of '{canMergeResult.MaxAccountProtectionProfile}'. This will require an individual in the '{canMergeResult.RequiredSecurityRole}' role to perform the merge.";
                     nbAccountProtectProfile.Visible = true;
@@ -1295,7 +1295,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="canMergeResult">The can merge result.</param>
         private void ShowMessages( CanMergeResult canMergeResult )
         {
-            if ( !canMergeResult.CanMerge )
+            if ( !canMergeResult.IsAllowedToMerge )
             {
                 return;
             }
@@ -1439,7 +1439,7 @@ namespace RockWeb.Blocks.Crm
                 }
                 else
                 {
-                    memberOfSecurityRoleMessage = "One or more of these records is a member of a security role with elevated privileges";
+                    memberOfSecurityRoleMessage = "One or more of these records is a member of a security role with elevated privileges.";
                 }
 
                 if ( maxAccountProtectionProfile == AccountProtectionProfile.Extreme )

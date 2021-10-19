@@ -42,42 +42,6 @@
             padding: 16px;
         }
 
-    .communication-grid .table {
-        background-color: white;
-        margin-bottom: 0px;
-    }
-
-    .communication-grid .table-striped tbody tr {
-        background-color: white;
-    }
-
-    .communication-grid .grid-select-cell {
-        padding: 0px;
-    }
-
-    .communication-grid .form-group {
-        padding: 0px;
-        margin-bottom: 0px;
-    }
-
-    .communication-grid .form-control-static {
-        padding: 0px;
-        margin-bottom: 0px;
-    }
-
-    .communication-grid .grid-table th {
-        padding: 0px;
-    }
-
-    /* Needed to negate the empty Label element added by the Literal control. */
-    .communication-grid .control-label {
-        display: none;
-    }
-
-    .grid-table {
-        padding: 0px;
-    }
-
     .sms-bubble {
         background: #0084FF;
         border-radius: 20px;
@@ -136,18 +100,14 @@
         font-weight: 500;
     }
 </style>
-<asp:UpdatePanel ID="upPanel" runat="server" ChildrenAsTriggers="false" UpdateMode="Conditional">
-    <%-- Block updating is set to conditional to prevent unwanted page refreshes during postback when fetching a communication detail panel. --%>
-    <Triggers>
-        <asp:AsyncPostBackTrigger ControlID="rFilter" />
-    </Triggers>
+<asp:UpdatePanel ID="upPanel" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+    <%-- Block updating is set to conditional and automatic triggering disabled to prevent unwanted page refreshes during postback when fetching a communication detail panel. --%>
     <ContentTemplate>
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comments-o"></i>Communication List</h1>
+                <h1 class="panel-title"><i class="fa fa-comments-o"></i><asp:Literal ID="lBlockTitle" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">
-
                 <div class="grid grid-panel">
                     <%-- The filter is enclosed in an UpdatePanel to prevent unwanted updates during postback from the Communications List. --%>
                     <asp:UpdatePanel ID="upFilter" runat="server">
@@ -164,32 +124,37 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" EnableSelfSelection="true" />
-                                        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Communication Template" EnhanceForLongLists="true" />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Sent Date Range" />
-                                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:RockDropDownList ID="ddlSystemCommunicationType" runat="server" Label="System Communication Type" EnhanceForLongLists="true" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Communication Template" EnhanceForLongLists="true" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                                    </div>
+                                    <div class="col-md-4">
                                         <Rock:RockDropDownList ID="ddlBulk" runat="server" Label="Bulk Message" />
                                     </div>
                                 </div>
                             </Rock:GridFilter>
                         </ContentTemplate>
                     </asp:UpdatePanel>
-
                     <div class="communication-grid">
                         <Rock:Grid CssClass="communication-grid" ID="gCommunication" runat="server" AllowSorting="false" PageSizes="50,100"
-                            RowClickEnabled="false"
-                            ShowHeader="false">
+                            RowClickEnabled="false">
                             <Columns>
-                                <Rock:RockTemplateField>
+                                <Rock:RockTemplateField ItemStyle-CssClass="py-0">
                                     <ItemTemplate>
-                                        <asp:HiddenField ID="showDetail" runat="server" />
-                                        <asp:UpdatePanel runat="server" ID="upCommunicationItem" UpdateMode="Conditional">
+                                        <asp:UpdatePanel runat="server" ID="upCommunicationItem" UpdateMode="Conditional" ChildrenAsTriggers="false">
                                             <ContentTemplate>
-                                                <Rock:RockLiteral ID="lCommunicationDetailRow" runat="server" Label=""></Rock:RockLiteral>
+                                                <asp:Literal ID="lCommunicationDetailRow" runat="server"></asp:Literal>
                                             </ContentTemplate>
                                         </asp:UpdatePanel>
                                     </ItemTemplate>
@@ -198,7 +163,6 @@
                         </Rock:Grid>
                     </div>
                 </div>
-
             </div>
         </div>
         <script>

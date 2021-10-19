@@ -1006,6 +1006,10 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Updates the person fields based on what the values in the PersonBasicEditor are.
+        /// <para>
+        /// If you populated the PersonEditor with <see cref="SetFromPerson(Person)"/>, but are using a matched or new person instead,
+        /// make sure to use <see cref="SetPersonId(int?)"/> to let the editor which person you are editing before calling <see cref="UpdatePerson(Person, RockContext)" />
+        /// </para>
         /// (Changes are not saved to the database.)
         /// </summary>
         /// <param name="person">The new person.</param>
@@ -1074,7 +1078,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the <see cref="PersonId" /> property to the Id or the specified person without changing the displayed values that are
+        /// in the Editor.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        public void SetPersonId( int? personId )
+        {
+            this.PersonId = personId;
+        }
+
+        /// <summary>
         /// Updates the PersonEditor values based on the specified person
+        /// and sets the <see cref="PersonId" /> property to the Id or the specified person.
         /// </summary>
         /// <param name="person">The person.</param>
         public void SetFromPerson( Person person )

@@ -17,11 +17,11 @@
                 <hr />
                 <Rock:NotificationBox
                     runat="server"
-                    ID="nbWarning"
+                    ID="nbRecommendHigherSettingsForDuplicateDetection"
                     NotificationBoxType="Danger"
                     Visible="true"
                     Text="We highly recommend that you prevent duplicate detection for individuals with an Account Protection Profile of High and Extreme"
-                    CssClass="js-notification-box d-none" />
+                    CssClass="js-duplicate-detection-notification-box d-none" />
 
                 <Rock:NotificationBox
                     runat="server"
@@ -114,9 +114,9 @@
         }
 
         if (!highFound || !extremeFound) {
-            $(".js-notification-box").removeClass("d-none");
+            $(".js-duplicate-detection-notification-box").removeClass("d-none");
         } else {
-            $(".js-notification-box").addClass("d-none");
+            $(".js-duplicate-detection-notification-box").addClass("d-none");
         }
     }
 </script>

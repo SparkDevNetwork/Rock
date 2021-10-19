@@ -278,7 +278,7 @@ namespace Rock.Jobs
                     } )
                     .Where( a =>
                         a.GroupLocation.GroupId != a.GroupLocationHistorical.GroupId
-                        || ( a.GroupLocation.GroupLocationTypeValueId != a.GroupLocation.GroupLocationTypeValueId )
+                        || ( a.GroupLocation.GroupLocationTypeValueId != a.GroupLocationHistorical.GroupLocationTypeValueId )
                         || ( a.GroupLocation.GroupLocationTypeValueId.HasValue && a.GroupLocation.GroupLocationTypeValue.Value != a.GroupLocationHistorical.GroupLocationTypeName )
                         || a.GroupLocation.LocationId != a.GroupLocationHistorical.LocationId
                         || a.GroupLocation.Location.ModifiedDateTime != a.GroupLocationHistorical.LocationModifiedDateTime

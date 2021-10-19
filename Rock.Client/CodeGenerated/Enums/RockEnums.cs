@@ -145,6 +145,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ChangeType
+    {
+        Add = 0x0,
+        Modify = 0x1,
+        Delete = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ColorDepth
     {
         BlackWhite = 0x0,
@@ -873,6 +882,7 @@ namespace Rock.Client.Enums
     {
         Web = 0x0,
         Mobile = 0x1,
+        Tv = 0x2,
     }
 
     /// <summary>
