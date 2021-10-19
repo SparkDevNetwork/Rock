@@ -56,6 +56,7 @@ namespace RockWeb.Webhooks
             if ( cardSyncWebhookResponse == null )
             {
                 response.StatusCode = ( int ) HttpStatusCode.BadRequest;
+                response.StatusDescription = "Unable to determine response format.";
                 return;
             }
 
@@ -64,6 +65,7 @@ namespace RockWeb.Webhooks
             if ( paymentMethodData == null )
             {
                 response.StatusCode = ( int ) HttpStatusCode.BadRequest;
+                response.StatusDescription = "Unable to determine payment method 'data'.";
                 return;
             }
 
@@ -82,7 +84,10 @@ namespace RockWeb.Webhooks
                 if ( myWellGateway == null )
                 {
                     ExceptionLogService.LogException( new MyWellGatewayException( $"Unable to determine Gateway for CardSync GatewayPersonIdentifier: {paymentMethodData.RecordId} and FinancialGatewayId: {savedAccount.FinancialGatewayId}" ) );
-                    continue;
+                    
+                    response.StatusCode = ( int ) HttpStatusCode.BadRequest;
+                    response.StatusDescription = $"Unable to find matching financial gateway record for recordId: {paymentMethodData.RecordId}";
+                    return;
                 }
 
                 financialGateway.LoadAttributes();
@@ -90,7 +95,9 @@ namespace RockWeb.Webhooks
                 if ( !validSignature )
                 {
                     ExceptionLogService.LogException( new MyWellGatewayException( $"Invalid WebHook signature included in header. (PostedData for RecordId: {paymentMethodData.RecordId} and FinancialGatewayId: {savedAccount.FinancialGatewayId})" ) );
-                    continue;
+                    response.StatusCode = ( int ) HttpStatusCode.Forbidden;
+                    response.StatusDescription = "Invalid WebHook signature included in header";
+                    return;
                 }
 
                 var financialPaymentDetail = savedAccount.FinancialPaymentDetail;
