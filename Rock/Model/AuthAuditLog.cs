@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 
 namespace Rock.Model
@@ -147,7 +143,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> of of the entity that is being secured.
         /// </value>
-        [LavaInclude]
+        [Rock.Lava.LavaVisibleAttribute]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
@@ -156,7 +152,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that the Auth entity allowed or denied access to. If group based authorization is not used, this value will be null.
         /// </value>
-        [LavaInclude]
+        [Rock.Lava.LavaVisibleAttribute]
         public virtual Model.Group Group { get; set; }
 
         /// <summary>
@@ -165,7 +161,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.PersonAlias"/> the changed the auth.
         /// </value>
-        [LavaInclude]
+        [Rock.Lava.LavaVisibleAttribute]
         public virtual Model.PersonAlias ChangeByPersonAlias { get; set; }
 
         #endregion

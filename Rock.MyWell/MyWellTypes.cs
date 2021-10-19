@@ -2757,50 +2757,141 @@ namespace Rock.MyWell
     #region CardSync Webhook
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.MyWell.BaseResponseData" />
     public class CardSyncWebhookResponse : BaseResponseData
     {
+        /// <summary>
+        /// Gets or sets the type of the account.
+        /// </summary>
+        /// <value>
+        /// The type of the account.
+        /// </value>
         [JsonProperty( "account_type" )]
         public string AccountType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the account type identifier.
+        /// </summary>
+        /// <value>
+        /// The account type identifier.
+        /// </value>
         [JsonProperty( "account_type_id" )]
         public string AccountTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction identifier.
+        /// </value>
         [JsonProperty( "transaction_id" )]
         public string TransactionId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the action at.
+        /// </summary>
+        /// <value>
+        /// The action at.
+        /// </value>
         [JsonProperty( "action_at" )]
         public DateTime action_at { get; set; }
 
+        /// <summary>
+        /// Gets or sets the payment method data.
+        /// </summary>
+        /// <value>
+        /// The payment method data.
+        /// </value>
         [JsonProperty( "data" )]
         public CardSyncWebhookPaymentMethod PaymentMethodData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>
+        /// The type.
+        /// </value>
         [JsonProperty( "type" )]
         public string type { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class CardSyncWebhookPaymentMethod
     {
+        /// <summary>
+        /// Gets or sets the card identifier.
+        /// </summary>
+        /// <value>
+        /// The card identifier.
+        /// </value>
         [JsonProperty( "card_id" )]
         public string CardId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the digest.
+        /// </summary>
+        /// <value>
+        /// The digest.
+        /// </value>
         [JsonProperty( "digest" )]
         public string digest { get; set; }
 
+        /// <summary>
+        /// Gets or sets the expiration date.
+        /// </summary>
+        /// <value>
+        /// The expiration date.
+        /// </value>
         [JsonProperty( "expiration_date" )]
         public string ExpirationDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the flags.
+        /// </summary>
+        /// <value>
+        /// The flags.
+        /// </value>
         [JsonProperty( "flags" )]
         public object Flags { get; set; }
 
+        /// <summary>
+        /// Gets or sets the generic card level.
+        /// </summary>
+        /// <value>
+        /// The generic card level.
+        /// </value>
         [JsonProperty( "generic_card_level" )]
         public string GenericCardLevel { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the instrument.
+        /// </summary>
+        /// <value>
+        /// The type of the instrument.
+        /// </value>
         [JsonProperty( "instrument_type" )]
         public string instrument_type { get; set; }
 
+        /// <summary>
+        /// Gets or sets the masked number.
+        /// </summary>
+        /// <value>
+        /// The masked number.
+        /// </value>
         [JsonProperty( "masked_number" )]
         public string MaskedNumber { get; set; }
 
+        /// <summary>
+        /// Gets or sets the processor identifier.
+        /// </summary>
+        /// <value>
+        /// The processor identifier.
+        /// </value>
         [JsonProperty( "processor_id" )]
         public string processor_id { get; set; }
 
@@ -2813,6 +2904,12 @@ namespace Rock.MyWell
         [JsonProperty( "record_id" )]
         public string RecordId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
         [JsonProperty( "status" )]
         public string Status { get; set; }
 

@@ -70,6 +70,7 @@ namespace Rock.Cms.StructuredContent.BlockTypes
         ///   <c>true</c> if a border should be displayed; otherwise, <c>false</c>.
         /// </value>
         [Obsolete( "This value is not used by Rock." )]
+        [RockObsolete("1.13")]
         [DataMember( Name = "withBorder" )]
         public bool WithBorder { get; set; }
 
@@ -81,6 +82,7 @@ namespace Rock.Cms.StructuredContent.BlockTypes
         ///   <c>true</c> if a background should be displayed; otherwise, <c>false</c>.
         /// </value>
         [Obsolete( "This value is not used by Rock." )]
+        [RockObsolete("1.13")]
         [DataMember( Name = "withBackground" )]
         public bool WithBackground { get; set; }
     }

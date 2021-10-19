@@ -33,6 +33,7 @@ export type WorkflowType = IEntity & {
     isSystem?: boolean;
     loggingLevel?: number;
     logRetentionPeriod?: number | null;
+    maxWorkflowAgeDays?: number | null;
     name?: string | null;
     noActionMessage?: string | null;
     order?: number;

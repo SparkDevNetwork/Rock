@@ -739,7 +739,7 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
-    <Compile Include="Model\CodeGenerated\AuthAuditLogService.cs" />
+    <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />

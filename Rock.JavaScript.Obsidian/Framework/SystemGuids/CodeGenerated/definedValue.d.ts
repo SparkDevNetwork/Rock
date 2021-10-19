@@ -40,6 +40,8 @@ export const enum DefinedValue {
     BlockTemplateMobileGroupMemberView = "09053C7C-9374-4489-8A7B-71F02E3E7D89",
     /** The block template for the mobile group view. */
     BlockTemplateMobileGroupView = "559346FB-C684-42CF-8F4C-CF4A1C278AD6",
+    /** The block template for the mobile group finder. */
+    BlockTemplateMobileGroupsGroupFinder = "1B6D540A-2E40-44F6-8AE9-2857DE913459",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests = "198F3006-5F0F-48AB-9EA0-2FA56F633753",
     /** The block template for Mobile &gt; Prayer &gt; Prayer Card View block. */
