@@ -1,0 +1,44 @@
+{% sql return:'items' %}
+SELECT
+    DISTINCT cci.Id
+FROM TaggedItem ti
+JOIN ContentChannelItem cci
+ON ti.EntityGuid = cci.Guid
+JOIN Tag t
+ON ti.TagId = t.Id
+WHERE t.CategoryId = 979
+{% endsql %}
+[
+{% for item in items %}{
+  {% sql return:'related' %}
+    SELECT TOP 10
+      cci2.Id,
+      cci2.ContentChannelId 'ChannelId',
+      cci2.Status,
+      cci2.StartDateTime 'PublishDateTime',
+      cci2.ExpireDateTime 'ExpireDateTime',
+      ccis.Slug,
+      pd.AccessKey 'Dataset'
+    FROM TaggedItem ti
+    JOIN ContentChannelItem cci
+    ON ti.EntityGuid = cci.Guid
+    JOIN TaggedItem ti2
+    ON ti.TagId = ti2.TagId
+    JOIN ContentChannelItem cci2
+    ON ti2.EntityGuid = cci2.Guid
+    JOIN ContentChannelItemSlug ccis
+    ON cci2.Id = ccis.ContentChannelItemId
+    JOIN AttributeValue av
+    ON av.EntityId = cci2.ContentChannelId
+    JOIN PersistedDataset pd
+    ON av.Value = pd.Id
+    WHERE cci.Id = {{ item.Id }}
+    AND cci2.Id != {{ item.Id }}
+    AND av.AttributeId = 107096
+    GROUP BY cci2.Id, cci2.ContentChannelId, cci2.Status, cci2.StartDateTime, cci2.ExpireDateTime, ccis.Slug, pd.AccessKey, cci2.ModifiedDateTime
+    ORDER BY COUNT(*) DESC, cci2.ModifiedDateTime DESC
+  {% endsql %}
+  "Id": {{ item.Id }},
+  "Related": {{ related | ToJSON }}
+}{% unless forloop.last %},{% endunless %}{% endfor %}
+]

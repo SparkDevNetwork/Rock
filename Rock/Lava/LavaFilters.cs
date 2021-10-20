@@ -1061,7 +1061,7 @@ namespace Rock.Lava
         #region DateTime Filters
 
         /* [2021-07-31] DL
-         * 
+         *
          * Lava Date filters may return DateTime, DateTimeOffset, or string values according to their purpose.
          * Where possible, a filter should return a DateTime value specified in UTC, or a DateTimeOffset.
          * Local DateTime values may give unexpected results if the Rock timezone setting is different from the server timezone.
@@ -4190,7 +4190,7 @@ namespace Rock.Lava
             }
             else
             {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset
                 if ( isCollection )
                 {
                     IEnumerable<dynamic> dataObjectAsCollection = dataObject as IEnumerable<dynamic>;
@@ -4314,7 +4314,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum FollowFilterType
         {
