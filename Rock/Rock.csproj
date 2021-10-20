@@ -591,6 +591,8 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
+    <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistData.cs" />
@@ -1305,6 +1307,7 @@
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
+    <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />

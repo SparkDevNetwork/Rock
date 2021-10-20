@@ -23,9 +23,9 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
-using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -394,6 +394,7 @@ namespace Rock.Web
         {
             RemoveRockPageRoutes();
             RegisterRoutes();
+            PageRouteWasUpdatedMessage.Publish();
         }
 
         /// <summary>
