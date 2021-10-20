@@ -134,6 +134,8 @@
                                         <rock:rocktextbox id="tbDayOfWeekLabel" runat="server" label="Day of Week Filter Label" help="The text above the day of week filter" autopostback="true" required="true" validationgroup="GroupFinderSettings" />
                                         <rock:rocktextbox id="tbTimeOfDayLabel" runat="server" label="Time of Day Filter Label" help="The text above the time of day filter" autopostback="true" required="true" validationgroup="GroupFinderSettings" />
                                         <rock:rocktextbox id="tbCampusLabel" runat="server" label="Campus Filter Label" help="The text above the campus filter" autopostback="true" required="true" validationgroup="GroupFinderSettings" />
+                                        <Rock:DefinedValuesPicker ID="dvpCampusTypes" runat="server" Label="Campus Types" Help="The campus types to filter the list of campuses on." />
+                                        <Rock:DefinedValuesPicker ID="dvpCampusStatuses" runat="server" Label="Campus Statuses" Help="The campus statuses to filter the list of campuses on." />
                                     </div>
                                     <div class="col-md-6">
                                         <rock:rockradiobuttonlist id="rblFilterDOW" runat="server" label="Display Day of Week Filter" repeatdirection="Horizontal"

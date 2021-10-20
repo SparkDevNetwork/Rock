@@ -365,7 +365,7 @@ StackTrace:
 --  [{commandExecutedElaspedTimeMS,10:0.000} ms] ElapsedTime   (CommandExecuted)".Trim();
 
                         _sqlOutput.Append( statsMessage );
-                        System.Diagnostics.Debug.Write( statsMessage );
+                        System.Diagnostics.Debug.WriteLine( statsMessage );
                     }
 
                     debugHelperUserState.Stopwatch.Start();

@@ -39,7 +39,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.9"
-        [Obsolete( "Use FeeItems instead", false )]
+        [Obsolete( "Use FeeItems instead", true )]
         public string CostValue { get; set; }
 
         /// <summary />
@@ -111,9 +111,6 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AllowMultiple = source.AllowMultiple;
-            #pragma warning disable 612, 618
-            this.CostValue = source.CostValue;
-            #pragma warning restore 612, 618
             this.DiscountApplies = source.DiscountApplies;
             this.FeeType = source.FeeType;
             this.ForeignGuid = source.ForeignGuid;

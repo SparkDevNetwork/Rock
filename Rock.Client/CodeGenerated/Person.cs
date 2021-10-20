@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int /* AccountProtectionProfile*/ AccountProtectionProfile { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.AgeClassification AgeClassification { get; set; }
 
         /// <summary />
@@ -215,6 +218,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Person source )
         {
             this.Id = source.Id;
+            this.AccountProtectionProfile = source.AccountProtectionProfile;
             this.AgeClassification = source.AgeClassification;
             this.AnniversaryDate = source.AnniversaryDate;
             this.BirthDay = source.BirthDay;

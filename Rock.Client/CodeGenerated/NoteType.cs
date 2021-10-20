@@ -59,11 +59,6 @@ namespace Rock.Client
         public string BorderColor { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "No Longer Supported", true )]
-        public string CssClass { get; set; }
-
-        /// <summary />
         public int EntityTypeId { get; set; }
 
         /// <summary />

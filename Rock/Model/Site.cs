@@ -393,7 +393,6 @@ namespace Rock.Model
         [DataMember]
         public string IndexStartingLocation { get; set; }
 
-
         /// <summary>
         /// Gets or sets a value indicating whether [requires encryption].
         /// </summary>
@@ -496,18 +495,6 @@ namespace Rock.Model
             private set { }
         }
 
-
-        /// <summary>
-        /// Gets or sets the FontAwesome icon CSS weight that will be used for the Site
-        /// </summary>
-        /// <value>
-        /// The icon CSS weight.
-        /// </value>
-        [DataMember]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme", true )]
-        public IconCssWeight IconCssWeight { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -538,16 +525,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<SiteDomain> SiteDomains { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon extensions.
-        /// </summary>
-        /// <value>
-        /// The icon extensions.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme" )]
-        public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
         /// <summary>
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
@@ -931,48 +908,25 @@ namespace Rock.Model
 
     #region enums
 
-
     /// <summary>
     /// Types Web, Mobile
     /// </summary>
     public enum SiteType
     {
         /// <summary>
+        /// Websites
         /// </summary>
         Web,
 
         /// <summary>
+        /// Mobile applications
         /// </summary>
-        Mobile
-    }
-
-    /// <summary>
-    /// Font Awesome Icon CSS Weight
-    /// </summary>
-    [RockObsolete( "1.8" )]
-    [Obsolete( "Moved to Theme", true )]
-    public enum IconCssWeight
-    {
+        Mobile,
 
         /// <summary>
-        /// regular
+        /// TV Apps
         /// </summary>
-        Regular,
-
-        /// <summary>
-        /// solid
-        /// </summary>
-        Solid,
-
-        /// <summary>
-        /// light
-        /// </summary>
-        Light,
-
-        /// <summary>
-        /// thin
-        /// </summary>
-        Thin
+        Tv
     }
 
     #endregion
@@ -1007,16 +961,6 @@ namespace Rock.Model
             this.HasOptional( p => p.ThumbnailBinaryFile ).WithMany().HasForeignKey( p => p.ThumbnailBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConfigurationMobilePhoneBinaryFile ).WithMany().HasForeignKey( p => p.ConfigurationMobilePhoneBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConfigurationMobileTabletBinaryFile ).WithMany().HasForeignKey( p => p.ConfigurationMobileTabletBinaryFileId ).WillCascadeOnDelete( false );
-
-#pragma warning disable 0618
-            // Need Associative table for IconExtensions (which are Defined Values)
-            this.HasMany( p => p.IconExtensions ).WithMany().Map( p =>
-            {
-                p.MapLeftKey( "SiteId" );
-                p.MapRightKey( "DefinedValueId" );
-                p.ToTable( "SiteIconExtensions" );
-            } );
-#pragma warning restore 0618
         }
     }
 

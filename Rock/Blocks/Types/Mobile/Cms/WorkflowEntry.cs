@@ -96,6 +96,22 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     public class WorkflowEntry : RockMobileBlockType
     {
+        #region Feature Keys
+
+        /// <summary>
+        /// Features supported by both server and client.
+        /// </summary>
+        private static class FeatureKey
+        {
+            /// <summary>
+            /// Client values (i.e. values converted from Rock Database to Client Native)
+            /// are supported.
+            /// </summary>
+            public const string ClientValues = "clientValues";
+        }
+
+        #endregion
+
         #region Block Attributes
 
         /// <summary>
@@ -257,7 +273,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 foreach ( var field in fields )
                 {
-                    workflow.SetAttributeValue( field.Key, field.Value );
+                    workflow.SetClientAttributeValue( field.Key, field.Value, RequestContext.CurrentPerson, false );
                 }
             }
         }
@@ -344,7 +360,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                         if ( item != null )
                         {
-                            item.SetAttributeValue( attribute.Key, formField.Value );
+                            item.SetClientAttributeValue( attribute.Key, formField.Value, RequestContext.CurrentPerson, false );
                         }
                     }
                 }
@@ -1025,11 +1041,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="formAction">The form action button that was pressed.</param>
         /// <param name="formFields">The form field values.</param>
         /// <param name="personEntryValues">The person entry values.</param>
+        /// <param name="supportedFeatures">The list of features that the client supports.</param>
         /// <returns>
         /// The data for the next form to be displayed.
         /// </returns>
         [BlockAction]
-        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null, WorkflowFormPersonEntryValues personEntryValues = null )
+        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null, WorkflowFormPersonEntryValues personEntryValues = null, List<string> supportedFeatures = null )
         {
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
@@ -1119,6 +1136,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 PersonEntry = GetPersonEntryDetails( rockContext, action, RequestContext.CurrentPerson?.Id, mergeFields )
             };
 
+            var useClientValues = supportedFeatures?.Contains( FeatureKey.ClientValues ) ?? false;
+
             //
             // Populate all the form fields that should be visible on the workflow.
             //
@@ -1147,9 +1166,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Key = attribute.Key,
                         Title = attribute.Name,
                         IsRequired = formAttribute.IsRequired,
-                        ConfigurationValues = attribute.QualifierValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ),
+                        ConfigurationValues = useClientValues
+                            ? attribute.FieldType.Field?.GetClientConfigurationValues( attribute.QualifierValues )
+                            : attribute.QualifierValues.ToDictionary( v => v.Key, v => v.Value.Value ),
+                        FieldTypeGuid = attribute.FieldType.Guid,
+#pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         RockFieldType = attribute.FieldType.Class,
-                        Value = value
+#pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
+                        Value = useClientValues
+                            ? attribute.FieldType.Field?.GetClientEditValue( value, attribute.QualifierValues )
+                            : value
                     };
 
                     if ( formAttribute.IsReadOnly )
@@ -1169,7 +1195,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         }
 
                         mobileField.Value = formattedValue;
+                        mobileField.FieldTypeGuid = null;
+#pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         mobileField.RockFieldType = string.Empty;
+#pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
 
                         if ( formAttribute.HideLabel )
                         {

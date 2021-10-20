@@ -18,9 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 using Rock.Utility.ExtensionMethods;
+
 using Serilog.Events;
 using Serilog.Formatting.Compact.Reader;
 
@@ -142,25 +145,39 @@ namespace Rock.Logging
             }
 
             long lines = 0;
-            foreach ( var filePath in rockLogFiles )
-            {
-                _rockLogger.Close();
-                var logFileInfo = new System.IO.FileInfo( filePath );
 
-                // if the logFile is zero-length, we'll get an i/o error when reading it, so skip it
-                if ( logFileInfo.Exists && logFileInfo.Length > 0 )
+            try
+            {
+                foreach ( var filePath in rockLogFiles )
                 {
-                    using ( var file = logFileInfo.OpenRead() )
+                    _rockLogger.Close();
+                    var logFileInfo = new System.IO.FileInfo( filePath );
+
+                    // if the logFile is zero-length, we'll get an i/o error when reading it, so skip it
+                    if ( logFileInfo.Exists && logFileInfo.Length > 0 )
                     {
-                        lines += file.CountLines();
+
+                        using ( var file = logFileInfo.OpenRead() )
+                        {
+                            lines += file.CountLines();
+                        }
+
                     }
                 }
+            }
+            catch ( Exception ex )
+            {
+                // If you get an exception it is probably because a file is in use
+                // and we can't read it. So just move on.
+                ExceptionLogService.LogException( ex );
+                return 0;
             }
 
             if ( lines >= int.MaxValue )
             {
                 return int.MaxValue;
             }
+
             return Convert.ToInt32( lines );
         }
 

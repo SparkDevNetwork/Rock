@@ -104,6 +104,14 @@ namespace Rock.ViewModel
         public int? LogRetentionPeriod { get; set; }
 
         /// <summary>
+        /// Gets or sets the MaxWorkflowAgeDays.
+        /// </summary>
+        /// <value>
+        /// The MaxWorkflowAgeDays.
+        /// </value>
+        public int? MaxWorkflowAgeDays { get; set; }
+
+        /// <summary>
         /// Gets or sets the Name.
         /// </summary>
         /// <value>

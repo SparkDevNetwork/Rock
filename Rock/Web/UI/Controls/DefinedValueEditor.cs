@@ -213,7 +213,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get => ViewState["ValidationGroup"] as string ?? "DefinedValueValidationGroup";
+            get => ViewState["ValidationGroup"] as string ?? $"{this.ClientID}_DefinedValueValidationGroup";
             set => ViewState["ValidationGroup"] = value;
         }
 

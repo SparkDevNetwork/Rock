@@ -42,18 +42,6 @@ namespace Rock.Web.Cache
     public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, ILavaDataDictionary, Rock.Lava.ILiquidizable where T : IEntityCache, new()
         where TT : Model<TT>, new()
     {
-
-        /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Use SetFromEntity instead", true )]
-        public virtual void CopyFromModel( Rock.Data.IEntity model )
-        {
-            this.SetFromEntity( model );
-        }
-
         /// <summary>
         /// Set's the cached objects properties from the model/entities properties.
         /// </summary>
@@ -346,48 +334,6 @@ namespace Rock.Web.Cache
                 };
                 AttributeValues.Add( key, attributeValue );
             }
-        }
-
-        /// <summary>
-        /// Reloads the attribute values.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed. The Attributes will get reloaded automatically.", true )]
-        public virtual void ReloadAttributeValues()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var service = new Service<TT>( rockContext );
-                var model = service.Get( Id );
-
-                if ( model == null ) return;
-
-                model.LoadAttributes( rockContext );
-
-                AttributeValues = model.AttributeValues;
-                Attributes = model.Attributes;
-            }
-        }
-
-        /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
-        public void LoadAttributes( RockContext rockContext )
-        {
-            ReloadAttributeValues();
-        }
-
-        /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
-        public void LoadAttributes()
-        {
-            ReloadAttributeValues();
         }
 
         #endregion

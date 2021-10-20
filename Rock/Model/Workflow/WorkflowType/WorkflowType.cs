@@ -218,6 +218,15 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number of days since the creation date after which a workflow would be automatically marked completed.
+        /// </summary>
+        /// <value>
+        /// The number of days since the creation date after which a workflow would be automatically marked completed.
+        /// </value>
+        [DataMember]
+        public int? MaxWorkflowAgeDays { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

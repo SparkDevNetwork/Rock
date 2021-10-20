@@ -849,38 +849,38 @@ th[align="right"] {
     background-color: darken(@btn-default-bg, 10%);
   }
 
-  &.facebook {
+  &.facebook,
+  &.google,
+  &.twitter {
     color: #fff;
-    background-color: #3d5a96;
 
     &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
+    }
+  }
+
+  &.facebook {
+    background-color: @brand-facebook;
+
+    &::before {
       content: @fa-var-facebook;
     }
   }
 
   &.google {
-    color: #fff;
-    background-color: #ed4e23;
+    background-color: @brand-googleplus;
 
     &::before {
-      margin-right: 12px;
-      font-family: "@{fa-font-face} Brands";
-      font-weight: 400;
       content: @fa-var-google;
     }
   }
 
   &.twitter {
-    color: #fff;
-    background-color: #2aa3ef;
+    background-color: @brand-twitter;
 
     &::before {
-      margin-right: 12px;
-      font-family: "@{fa-font-face} Brands";
-      font-weight: 400;
       content: @fa-var-twitter;
     }
   }

@@ -51,7 +51,7 @@ namespace Rock.Tests.Integration.Lava
 Base64Format: {{ image | Base64Encode }}<br/>
 ";
 
-            var expectedOutput = @"/9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}";
+            var expectedOutput = @"Base64Format: /9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}<br/>";
 
             var options = new LavaTestRenderOptions() { MergeFields = values, Wildcards = new List<string> { "{moreBase64Data}" } };
 

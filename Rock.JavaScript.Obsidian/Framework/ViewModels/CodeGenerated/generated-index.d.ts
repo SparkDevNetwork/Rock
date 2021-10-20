@@ -69,6 +69,7 @@ import { ConnectionRequest } from "./connectionRequest";
 import { ConnectionRequestActivity } from "./connectionRequestActivity";
 import { ConnectionRequestWorkflow } from "./connectionRequestWorkflow";
 import { ConnectionStatus } from "./connectionStatus";
+import { ConnectionStatusAutomation } from "./connectionStatusAutomation";
 import { ConnectionType } from "./connectionType";
 import { ConnectionWorkflow } from "./connectionWorkflow";
 import { ContentChannel } from "./contentChannel";
@@ -285,6 +286,7 @@ export {
     ConnectionRequestActivity,
     ConnectionRequestWorkflow,
     ConnectionStatus,
+    ConnectionStatusAutomation,
     ConnectionType,
     ConnectionWorkflow,
     ContentChannel,

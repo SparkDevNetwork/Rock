@@ -60,11 +60,11 @@ namespace Rock.Utility
         /// <returns></returns>
         public static string GetClientIpAddress( HttpRequestBase request )
         {
-            string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            string ipAddress = GetXForwardedForIpAddress( request ); // First look for the value in the X-FORWARDED-FOR header (proxies)
 
             if ( string.IsNullOrWhiteSpace( ipAddress ) )
             {
-                ipAddress = request.ServerVariables["REMOTE_ADDR"];
+                ipAddress = request.ServerVariables["REMOTE_ADDR"]; // Then look in the normal header (direct traffic)
             }
 
             if ( string.IsNullOrWhiteSpace( ipAddress ) )
@@ -120,6 +120,31 @@ namespace Rock.Utility
             }
 
             return ipAddress;
+        }
+
+        /// <summary>
+        /// Gets the IP Address from the X-Forward-For header. 
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        private static string GetXForwardedForIpAddress( HttpRequestBase request )
+        {
+            /* 10/7/2021 - JME 
+               Gets the IP Address from the X-Forward-For header. This can be a single address or in complex environments it could be a commma
+               delimited list of proxies.
+               Example from parner church with a CDN AND Web Farm: X-Forwarded-For: 68.14.xxx.xx, 147.243.xxx.xxx, 147.243.xxxx.xxx:57275
+            */
+
+            var headerValue = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if ( headerValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var ipAddresses = headerValue.Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries ).ToList().FirstOrDefault();
+
+            return ipAddresses;
         }
     }
 }

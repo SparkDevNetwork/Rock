@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -69,9 +71,19 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
 
         /// <summary>
+        /// The block template for the mobile group finder.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUPS_GROUP_FINDER = "1B6D540A-2E40-44F6-8AE9-2857DE913459";
+
+        /// <summary>
         /// The block template for mobile my prayer requests.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS = "198F3006-5F0F-48AB-9EA0-2FA56F633753";
+
+        /// <summary>
+        /// The block template for Mobile > Prayer > Prayer Card View block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_PRAYER_PRAYER_CARD_VIEW = "DCFECA8C-CDF5-4863-851E-7EFEE6758EE9";
 
         /// <summary>
         /// The block template for the mobile prayer session block.
@@ -678,8 +690,15 @@ namespace Rock.SystemGuid
         public const string PERSON_CONNECTION_STATUS_PARTICIPANT = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061";
 
         /// <summary>
+        /// Person Connection Status - Prospect
+        /// </summary>
+        public const string PERSON_CONNECTION_STATUS_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
+
+        /// <summary>
         /// Person Connection Status - Web Prospect
         /// </summary>
+        [Obsolete( "This is the same as the old Web Prospect but it is renamed to just Prospect." )]
+        [RockObsolete( "1.13" )]
         public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
 
         #endregion
@@ -731,7 +750,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Default Structure Content Editor
         /// </summary>
-        public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "31C63FB9-1365-4EEF-851D-8AB9A188A06C";
+        public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "09B25845-B879-4E69-87E9-003F9380B8DD";
 
         #endregion
 

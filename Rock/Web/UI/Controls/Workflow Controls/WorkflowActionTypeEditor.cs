@@ -131,13 +131,13 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // action animation
 $('.workflow-action > header').on('click', function () {
+    $(this).parent('.workflow-action').toggleClass('collapsed');
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('i.workflow-action-state', this).toggleClass('fa-chevron-down');
-    $('i.workflow-action-state', this).toggleClass('fa-chevron-up');
+    $('i.workflow-action-state', this).toggleClass('fa-chevron-down fa-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
@@ -459,7 +459,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget workflow-action" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "panel panel-widget workflow-action" : "panel panel-widget workflow-action collapsed" );
             writer.AddAttribute( "data-key", _hfActionTypeGuid.Value );
             writer.RenderBeginTag( "article" );
 

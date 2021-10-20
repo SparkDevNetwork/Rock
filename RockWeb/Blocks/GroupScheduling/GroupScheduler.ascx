@@ -444,7 +444,7 @@
                                                                     <asp:Panel ID="pnlStatusLabels" runat="server" CssClass="panel-labels">
                                                                         <div class="scheduling-status js-scheduling-status" data-placement="bottom">
                                                                             <div class="scheduling-status-progress">
-                                                                                <div class="progress js-scheduling-progress">
+                                                                                <div class="progress rounded-0 js-scheduling-progress">
                                                                                     <div class="progress-bar scheduling-progress-confirmed js-scheduling-progress-confirmed" style="width: 0%">
                                                                                         <span class="sr-only"><span class="js-progress-text-percent"></span>% Complete (confirmed)</span>
                                                                                     </div>

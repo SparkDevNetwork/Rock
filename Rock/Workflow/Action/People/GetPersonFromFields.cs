@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Default Record Status", "The record status to use when creating a new person", false, false,
         Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 8 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT, "", 9 )]
+        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT, "", 9 )]
     [WorkflowAttribute( "Default Campus", "The attribute value to use as the default campus when creating a new person.",
         false, "", "", 10, DEFAULT_CAMPUS_KEY, new string[] { "Rock.Field.Types.CampusFieldType" } )]
 

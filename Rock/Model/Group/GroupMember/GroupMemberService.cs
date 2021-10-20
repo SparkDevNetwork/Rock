@@ -871,6 +871,16 @@ namespace Rock.Model
         {
             return groupMembers.Where( m => m.GroupRole.IsLeader );
         }
+
+        /// <summary>
+        /// Returns a queryable of group members that are in Security Role Group based on the either <see cref="Group.IsSecurityRole" />
+        /// or if <see cref="Group.GroupTypeId"/> is the Security Role Group Type.
+        /// </summary>
+        public static IQueryable<GroupMember> IsInSecurityRoleGroupOrSecurityRoleGroupType( this IQueryable<GroupMember> groupMemberQuery )
+        {
+            var groupTypeIdSecurityRole = GroupTypeCache.GetSecurityRoleGroupType()?.Id ?? 0;
+            return groupMemberQuery.Where( g => g.Group.IsSecurityRole || g.Group.GroupTypeId == groupTypeIdSecurityRole );
+        }
     }
 
     #endregion
