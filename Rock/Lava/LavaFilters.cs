@@ -3840,10 +3840,10 @@ namespace Rock.Lava
 
             if ( input != null )
             {
-                // Don't call Redirect with a false -- we want it to throw the thread abort exception
-                // so remaining lava does not continue to execute.  We'll catch the exception in the
-                // LavaExtension's ResolveMergeFields method.
-                HttpContext.Current.Response.Redirect( input, true );
+                HttpContext.Current.Response.Redirect( input, false );
+
+                // Having redirected to a new page, abort the rendering process for the current page.
+                throw new LavaInterruptException( "Render aborted by PageRedirect filter." );
             }
 
             return string.Empty;

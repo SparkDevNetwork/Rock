@@ -531,10 +531,6 @@ namespace Rock.Lava
 
                 renderResult = RenderTemplate( template, parameters );
             }
-            catch ( ThreadAbortException )
-            {
-                // Ignore this exception, the calling thread is terminating.
-            }
             catch ( Exception ex )
             {
                 var lre = GetLavaRenderException( ex, inputTemplate );
@@ -602,13 +598,21 @@ namespace Rock.Lava
                     result.Error = GetLavaRenderException( result.Error );
                 }
             }
-            catch ( ThreadAbortException )
+            catch ( LavaInterruptException )
             {
-                // Ignore this exception, the calling thread is terminating and no result is required.
-                result = null;
+                // This exception is intentionally thrown by a component to halt the render process.
+                result = new LavaRenderResult();
+
+                result.Text = string.Empty;
             }
             catch ( Exception ex )
             {
+                if ( ex is ThreadAbortException )
+                {
+                    // Ignore this exception, the calling thread is terminating and no result is required.
+                    return null;
+                }
+
                 result = new LavaRenderResult();
 
                 var lre = GetLavaRenderException( ex );
