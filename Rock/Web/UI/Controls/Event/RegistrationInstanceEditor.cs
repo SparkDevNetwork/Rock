@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -730,22 +731,45 @@ namespace Rock.Web.UI.Controls
                     _ddlGatewayMerchants.Visible = true;
                     _ddlGatewayMerchants.Items.Clear();
                     _ddlGatewayMerchants.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                    _ddlGatewayMerchants.Items.AddRange( gateway.GetMerchants().Select( x => new ListItem( x.Value, x.Key ) ).ToArray() );
+
+                    var merchants = gateway.GetMerchants().ToDictionary( x => x.Key, x => x.Value );
+                    var merchantListItems = merchants.Select( x => new ListItem( x.Value, x.Key ) ).ToArray();
+                    _ddlGatewayMerchants.Items.AddRange( merchantListItems );
 
                     _ddlGatewayFunds.Label = gateway.FundFieldLabel;
                     _ddlGatewayFunds.Visible = true;
 
-                    _ddlGatewayMerchants.SelectedValue = instance.ExternalGatewayMerchantId.ToString();
-                    if ( instance.ExternalGatewayMerchantId != null )
+                    // Only set the merchant value (in _ddlGatewayMerchants.SelectedValue) if the instance has a value
+                    // and the value is in the list of merchants in the database (avoids hitting a null reference if
+                    // the merchant has been deleted from the database).
+                    bool shouldSetMerchant = instance.ExternalGatewayMerchantId.HasValue
+                        && merchants.ContainsKey( instance.ExternalGatewayMerchantId.ToString() );
+
+                    var merchantFunds = new Dictionary<string, string>();
+                    bool shouldSetFund = false;
+
+                    if ( shouldSetMerchant )
                     {
+                        _ddlGatewayMerchants.SelectedValue = instance.ExternalGatewayMerchantId.ToString();
+
+                        merchantFunds = gateway.GetMerchantFunds( instance.ExternalGatewayMerchantId.ToString() )
+                            .ToDictionary( x => x.Key, x => x.Value );
+
+                        // Only set the merchant fund value (in _ddlGatewayFunds.SelectedValue) if we have already set
+                        // the merchant, the instance has a value, and the value is in the list of funds for the selected
+                        // merchant.
+                        shouldSetFund = instance.ExternalGatewayFundId.HasValue
+                            && merchantFunds.ContainsKey( instance.ExternalGatewayFundId.ToString() );
+
+                        // Add gateway merchant fund options.
+                        var fundListItems = merchantFunds.Select( x => new ListItem( x.Value, x.Key ) ).ToArray();
                         _ddlGatewayFunds.Items.Clear();
                         _ddlGatewayFunds.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                        _ddlGatewayFunds
-                            .Items
-                            .AddRange(
-                                gateway.GetMerchantFunds( instance.ExternalGatewayMerchantId.ToString() )
-                                .Select( x => new ListItem( x.Value, x.Key )
-                            ).ToArray() );
+                        _ddlGatewayFunds.Items.AddRange( fundListItems );
+                    }
+
+                    if ( shouldSetFund )
+                    {
                         _ddlGatewayFunds.SelectedValue = instance.ExternalGatewayFundId.ToString();
                     }
 
