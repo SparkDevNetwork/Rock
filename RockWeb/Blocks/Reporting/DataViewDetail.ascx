@@ -84,9 +84,9 @@
                                 <div class="pull-right ml-1 mb-1">
                                     <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
 
-                                    <div class="label-group">
+                                    <span class="label-group">
                                         <Rock:HighlightLabel runat="server" ID="hlRunSince" CustomClass="rounded-right-0" /><Rock:BootstrapButton CssClass="label btn-label rounded-left-0" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
-                                    </div>
+                                    </span>
 
                                     <Rock:HighlightLabel runat="server" ID="hlLastRun" />
                                 </div>
