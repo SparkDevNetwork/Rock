@@ -7,7 +7,7 @@
             <Rock:ModalAlert ID="maGridWarning" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file"></i> Security Change Audit</h1>
+                <h1 class="panel-title"><i class="fa fa-user-secret"></i> Security Change Audit</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
