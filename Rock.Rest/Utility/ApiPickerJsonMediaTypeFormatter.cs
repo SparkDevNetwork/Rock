@@ -62,7 +62,17 @@ namespace Rock.Rest.Utility
 
             // Configure the v2 formatter.
             ApiV2Formatter = new JsonMediaTypeFormatter();
-            ApiV2Formatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            ApiV2Formatter.SerializerSettings.ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy
+                {
+                    // Do not process dictionaries, this messes up attribute keys
+                    // and generally with a dictionary they are specifying a specific
+                    // key that it should be anyway.
+                    ProcessDictionaryKeys = false,
+                    OverrideSpecifiedNames = true
+                }
+            };
             ApiV2Formatter.SerializerSettings.Converters.Add( new RockOrganizationDateTimeJsonConverter() );
         }
 

@@ -52,7 +52,7 @@ namespace Rock.Blocks.Event
         Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Order = 0 )]
 
     [DefinedValueField( "Record Status",
@@ -2654,7 +2654,10 @@ namespace Rock.Blocks.Event
                 {
                     foreach ( var item in newRegistration.Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
                     {
-                        newRegistration.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), null, null );
+                        var parameters = new Dictionary<string, string>();
+                        parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
+                        parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
+                        newRegistration.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                     }
 
                     if ( settings.WorkflowTypeIds.Any() )

@@ -515,12 +515,9 @@ namespace RockWeb.Blocks.Administration
         {
             lDatabase.Text = GetDbInfo();
 
-            var systemDateTime = RockInstanceConfig.SystemDateTime;
+            lSystemDateTime.Text = new DateTimeOffset( RockInstanceConfig.SystemDateTime ).ToString();
 
-            // Display System DateTime in Server TimeZone
-            lSystemDateTime.Text = new DateTimeOffset( systemDateTime ).ToString();
-
-            lRockTime.Text = new DateTimeOffset( RockInstanceConfig.RockDateTime, Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ).ToString();
+            lRockTime.Text = RockInstanceConfig.RockDateTimeOffset.ToString();
 
             var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
 
@@ -534,7 +531,7 @@ namespace RockWeb.Blocks.Administration
                 lProcessStartTime.Text = "-";
             }
 
-            lRockApplicationStartTime.Text = new DateTimeOffset( RockInstanceConfig.ApplicationStartedDateTime, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ).ToString();
+            lRockApplicationStartTime.Text = new DateTimeOffset( RockInstanceConfig.ApplicationStartedDateTime ).ToString();
 
             lExecLocation.Text = "Machine Name: " + RockInstanceConfig.MachineName;
             lExecLocation.Text += "<br>" + Assembly.GetExecutingAssembly().Location + "<br>" + RockInstanceConfig.PhysicalDirectory;

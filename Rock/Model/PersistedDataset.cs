@@ -51,10 +51,10 @@ namespace Rock.Model
         public string AccessKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name of the PesistedDataset.
+        /// Gets or sets the Name of the PersistedDataset.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the name of the PesistedDataset.
+        /// A <see cref="System.String"/> representing the name of the PersistedDataset.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -62,10 +62,10 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a user defined description of the PesistedDataset.
+        /// Gets or sets a user defined description of the PersistedDataset.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the description of the PesistedDataset.
+        /// A <see cref="System.String"/> representing the description of the PersistedDataset.
         /// </value>
         [DataMember]
         public string Description { get; set; }
@@ -152,10 +152,10 @@ namespace Rock.Model
         public PersistedDatasetScriptType BuildScriptType { get; set; } = PersistedDatasetScriptType.Lava;
 
         /// <summary>
-        /// Gets or sets a flag indicating that this PesistedDataset is part of the Rock core system/framework. This property is required.
+        /// Gets or sets a flag indicating that this PersistedDataset is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this PesistedDataset is part of the core system/framework, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this PersistedDataset is part of the core system/framework, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -181,7 +181,7 @@ namespace Rock.Model
         public double? TimeToBuildMS { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Web.Cache.EntityTypeCache"/> (<see cref="Rock.Model.EntityType"/>) that this PesistedDataset is used for.
+        /// Gets or sets the Id of the <see cref="Rock.Web.Cache.EntityTypeCache"/> (<see cref="Rock.Model.EntityType"/>) that this PersistedDataset is used for.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/>

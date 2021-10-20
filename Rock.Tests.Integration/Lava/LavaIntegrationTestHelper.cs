@@ -755,6 +755,12 @@ namespace Rock.Tests.Integration.Lava
 
                     expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.*)" );
 
+                    if ( options.OutputMatchType != LavaTestOutputMatchTypeSpecifier.RegEx )
+                    {
+                        // If the inputTemplate is not specified as a RegEx, add anchors for the start and end of the template.
+                        expectedOutput = "^" + expectedOutput + "$";
+                    }
+
                     var regex = new Regex( expectedOutput );
 
                     StringAssert.Matches( outputString, regex );

@@ -14,9 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -143,5 +147,181 @@ Schedule Active = {{isScheduleActive}}
         }
 
         #endregion
+
+        /// <summary>
+        /// Verify that an invalid shortcode name correctly throws a shortcode parsing error when embedded in an if/endif block.
+        /// </summary>
+        [TestMethod]
+        public void ShortcodeParsing_UndefinedShortcodeTag_ThrowsUnknownShortcodeParsingError()
+        {
+            // Create a template containing an undefined shortcode "testshortcode1".
+
+            var input = @"
+<p>Document start.</p>
+{[ testshortcode1 ]}
+<p>Document end.</p>
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
+
+                var error = result.Error;
+
+                // Verify that the result is the expected parse error.
+                if ( !( result.Error is LavaParseException ) )
+                {
+                    throw new Exception( "Parse exception expected but not encountered." );
+                }
+
+                if ( engine.GetType() == typeof( FluidEngine ) )
+                {
+                    Assert.That.IsTrue( result.Error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
+                }
+            } );
+
+        }
+
+        /// <summary>
+        /// Verify that an invalid shortcode name correctly throws a shortcode parsing error when embedded in an if/endif block.
+        /// </summary>
+        [TestMethod]
+        public void ShortcodeParsing_UndefinedShortcodeEmbeddedInIfBlock_ThrowsCorrectParsingError()
+        {
+            // Create a template containing an undefined shortcode "testshortcode1".
+
+            var input = @"
+{% if 1 == 1 %}
+    {[ invalidshortcode ]}
+{% endif %}
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
+
+                var error = result.Error;
+
+                // Verify that the result is the expected parse error.
+                if ( !( result.Error is LavaParseException ) )
+                {
+                    throw new Exception( "Parse exception expected but not encountered." );
+                }
+
+                // In Fluid, parse error should correctly identify the invalid shortcode.
+                if ( engine.GetType() == typeof( FluidEngine ) )
+                {
+                    if ( !result.Error.Message.Contains( "Unknown shortcode 'invalidshortcode'" ) )
+                    {
+                        throw result.Error;
+                    }
+                }
+
+            } );
+
+        }
+
+        /// <summary>
+        /// Verify that a shortcode tag is parsed correctly when embedded in an if/endif block.
+        /// </summary>
+        /// <remarks>This test is necessary to verify custom changes to the Fluid parser.</remarks>
+        [TestMethod]
+        public void ShortcodeParsing_ShortcodeEmbeddedInIfBlock_IsParsedCorrectly()
+        {
+            var input = @"
+{% if 1 == 1 %}
+{[ sparkline type:'line' data:'5,6,7,9,9,5,3,2,2,4,6,7' ]}
+{% endif %}
+";
+
+            var expectedResult = @"
+<script src='~/Scripts/sparkline/jquery-sparkline.min.js' type='text/javascript'></script>
+<span class=""sparkline sparkline-id-<guid>"">Loading...</span><script>
+  $("".sparkline-id-<guid>"").sparkline([5,6,7,9,9,5,3,2,2,4,6,7], {
+      type: 'line'
+      , width: 'auto'
+      , height: 'auto'
+      , lineColor: '#ee7625'
+      , fillColor: '#f7c09b'
+      , lineWidth: 1
+      , spotColor: '#f80'
+      , minSpotColor: '#f80'
+      , maxSpotColor: '#f80'
+      , highlightSpotColor: ''
+      , highlightLineColor: ''
+      , spotRadius: 1.5
+      , chartRangeMin: undefined
+      , chartRangeMax: undefined
+      , chartRangeMinX: undefined
+      , chartRangeMaxX: undefined
+      , normalRangeMin: undefined
+      , normalRangeMax: undefined
+      , normalRangeColor: '#ccc'
+    });
+  </script>
+";
+
+            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards= new List<string> { "<guid>" } } );
+        }
+
+        /// <summary>
+        /// Verify that an invalid shortcode name correctly throws a shortcode parsing error when embedded in an if/endif block.
+        /// </summary>
+        [TestMethod]
+        public void ShortcodeParsing_ShortcodeEmbeddedInOuterShortcode_IsParsedCorrectly()
+        {
+            var input = @"
+{[ accordion ]}
+    [[ item title:'Line Chart' ]]
+        {[ sparkline type:'line' data:'5,6,7,9,9,5,3,2,2,4,6,7' ]}
+    [[ enditem ]]
+{[ endaccordion ]}
+";
+
+            var expectedResult = @"
+<div class=""panel-group"" id=""accordion-id-<guid1>"" role=""tablist"" aria-multiselectable=""true"">
+    <div class=""panel panel-default"">
+        <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid1>"">
+          <h4 class=""panel-title"">
+            <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid1>"" href=""#collapse1-id-<guid1>"" aria-expanded=""true"" aria-controls=""collapse1"">
+              Line Chart
+            </a>
+          </h4>
+        </div>
+        <div id=""collapse1-id-<guid1>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid1>"">
+          <div class=""panel-body"">
+            <script src='~/Scripts/sparkline/jquery-sparkline.min.js' type='text/javascript'></script>
+            <span class=""sparkline sparkline-id-<guid2>"">Loading...</span>
+            <script>
+              $("".sparkline-id-<guid2>"").sparkline([5,6,7,9,9,5,3,2,2,4,6,7], {
+                  type: 'line'
+                  , width: 'auto'
+                  , height: 'auto'
+                  , lineColor: '#ee7625'
+                  , fillColor: '#f7c09b'
+                  , lineWidth: 1
+                  , spotColor: '#f80'
+                  , minSpotColor: '#f80'
+                  , maxSpotColor: '#f80'
+                  , highlightSpotColor: ''
+                  , highlightLineColor: ''
+                  , spotRadius: 1.5
+                  , chartRangeMin: undefined
+                  , chartRangeMax: undefined
+                  , chartRangeMinX: undefined
+                  , chartRangeMaxX: undefined
+                  , normalRangeMin: undefined
+                  , normalRangeMax: undefined
+                  , normalRangeColor: '#ccc'
+                });
+            </script>
+          </div>
+        </div>
+    </div>
+</div>
+";
+
+            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards = new List<string> { "<guid1>", "<guid2>" } } );
+        }
     }
 }

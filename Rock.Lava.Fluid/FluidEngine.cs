@@ -71,15 +71,6 @@ namespace Rock.Lava.Fluid
         protected override ILavaRenderContext OnCreateRenderContext()
         {
             var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
-
-            // Context variables are case-sensitive, so add both upper/lower case entries for built-in symbols.
-            fluidContext.SetValue( "Empty", NilValue.Empty );
-            fluidContext.SetValue( "empty", NilValue.Empty );
-
-            fluidContext.SetValue( "Blank", NilValue.Empty );
-            fluidContext.SetValue( "blank", NilValue.Empty );
-
-
             var context = new FluidRenderContext( fluidContext );
 
             return context;
@@ -669,6 +660,16 @@ namespace Rock.Lava.Fluid
             {
                 _parser.RegisterLavaBlock( name, LavaTagFormatSpecifier.LiquidTag );
             }
+        }
+
+        /// <summary>
+        /// Process a template and return the list of valid tokens identified by the parser.
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public List<string> TokenizeTemplate( string lavaTemplate )
+        {
+            return LavaFluidParser.ParseToTokens( lavaTemplate );
         }
 
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )

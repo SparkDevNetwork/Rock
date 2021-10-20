@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Fundraising
 
                 var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( groupMember.Group.GetAttributeValue( "OpportunityDateRange" ) );
 
-                lDateRange.Text = dateRange.ToString( "MMMM dd, yyyy" );
+                lDateRange.Text = dateRange.ToString( "MMMM d, yyyy" );
                 CreateDynamicControls( groupMember );
             }
         }
@@ -438,7 +438,7 @@ namespace RockWeb.Blocks.Fundraising
                     warningItems.Add( "personal opportunity introduction" );
                 }
 
-                nbProfileWarning.Text = "<stong>Tip!</strong> Edit your profile to add a " + warningItems.AsDelimited( ", ", " and " ) + ".";
+                nbProfileWarning.Text = "<strong>Tip!</strong> Edit your profile to add a " + warningItems.AsDelimited( ", ", " and " ) + ".";
                 nbProfileWarning.Visible = warningItems.Any();
             }
             else

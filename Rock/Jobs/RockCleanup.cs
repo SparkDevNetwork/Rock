@@ -31,6 +31,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -255,6 +256,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
 
+            RunCleanupTask( "update account protection profile", () => UpdatePersonAccountProtectionProfile() );
+
             RunCleanupTask( "remove expired registration sessions", () => RemoveExpiredRegistrationSessions() );
 
             RunCleanupTask( "remove expired saved accounts", () => RemoveExpiredSavedAccounts( dataMap ) );
@@ -339,6 +342,22 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Updates the person account protection profile.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdatePersonAccountProtectionProfile()
+        {
+            var rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
+                PersonService.UpdateAccountProtectionProfileAll( rockContext );
+            }
+
+            return rowsUpdated;
+        }
         /// <summary>
         /// Get a cleanup job result as a formatted string
         /// </summary>

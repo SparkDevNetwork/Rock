@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Crm
             {
                 signalType = new SignalType();
                 pdAuditDetails.Visible = false;
-                lActionTitle.Text = ActionTitle.Add( signalType.Name ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( SignalType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {

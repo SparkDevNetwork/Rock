@@ -1974,7 +1974,7 @@ namespace RockWeb.Blocks.Communication
 
                 sb.AppendLine( string.Format( @"
             <div class='bg-gray-100 flex-fill position-relative mb-3 mb-sm-0 styled-scroll' style='min-height:400px'>
-            <div class='position-absolute w-100 h-100 inset-0 overflow-auto'>
+            <div class='position-absolute w-100 h-100 inset-0 overflow-auto bg-white'>
             <iframe id='js-email-body-iframe' class='w-100' scrolling='yes' onload='resizeIframe(this)'></iframe>
             </div>
             </div>

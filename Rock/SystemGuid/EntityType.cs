@@ -340,9 +340,12 @@ namespace Rock.SystemGuid
         public const string MOBILE_EVENTS_PRAYER_SESSION_SETUP_BLOCK_TYPE = "51431866-FF92-433C-8B0F-0F6BBAD9BCE7";
 
         /// <summary>
-        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.AddToGroup
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupRegistration
         /// </summary>
+        [Obsolete( "Use MOBILE_GROUPS_GROUP_REGISTRATION_BLOCK_TYPE instead." )]
+        [RockObsolete( "1.13" )]
         public const string MOBILE_GROUPS_GROUP_ADD_TO_GROUP = "E0664BDC-9583-44F2-AC8D-23AE48603EAB";
+
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry
         /// </summary>
@@ -352,6 +355,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupEdit
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_EDIT_BLOCK_TYPE = "DE46759A-CE15-4F27-9FC8-154CD30D4637";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupFinder"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_FINDER_BLOCK_TYPE = "15492F6A-344A-484E-AA26-A5E667CBD502";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberEdit
@@ -369,6 +377,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_GROUPS_GROUP_MEMBER_VIEW_BLOCK_TYPE = "3213DCBC-C5EC-4DD2-BB78-19B3636AE842";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupRegistration"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_REGISTRATION_BLOCK_TYPE = "E0664BDC-9583-44F2-AC8D-23AE48603EAB";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_VIEW_BLOCK_TYPE = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158";
@@ -377,6 +390,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails
         /// </summary>
         public const string MOBILE_PRAYER_PRAYER_REQUEST_DETAILS_BLOCK_TYPE = "F8E56BC0-E9D1-44A4-9900-46589A1FB784";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.PrayerCardView"/>.
+        /// </summary>
+        public const string MOBILE_PRAYER_PRAYER_CARD_VIEW_BLOCK_TYPE = "0D0F1D7E-2D75-451B-95EE-0610B8F26BBF";
 
         /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Security.OnboardPerson"/>.

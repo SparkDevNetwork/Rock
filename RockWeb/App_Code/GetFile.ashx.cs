@@ -112,18 +112,66 @@ namespace RockWeb
         /// <param name="eTag">The e tag.</param>
         private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName, string eTag, RockCacheability rockCacheability )
         {
-            int startIndex = 0;
-            int fileLength = ( int ) fileContents.Length;
-            int responseLength = fileLength;
+            /* 
+                9/23/2021 - JME - Range Support
+                The original implementation of range support did not take into account the size of the file compared to the requested range in bytes. For
+                example if the Azure CDN requested 8MB of bytes starting at the 8MB byte (the second chunk 8MB chunk) and the file is only 12MB is size the
+                "Content-Range" response header was being sent as: "bytes 8388608-16777215/12582912". Basically saying "I'm going to send you 8MB but only
+                sending ~4MB.
 
-            // resumable logic from http://stackoverflow.com/a/6475414/1755417
+                Also, if the file was quite large (say 50MB) and the Azure CDN made the same request it would send back the correct "Content-Range" header
+                ("bytes 8388608-16777215/52428800") but would send the contents of the file starting at 8MB all the way to the end of the file (instead of
+                stopping at the 16MB point).
+
+                The logic had to be updated to send the correct header if the file does not have the full range available and to send only the requested range
+                of content.
+
+                More Details: https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+
+                Worries:
+                Little nervous of some of the +1 -1 logic from the SO article. Worried that when there is more content than requested in the range we could be
+                off by one byte. Used the curl below to does the size of the output. Looks correct.
+
+                In the Azure CDN example above the request header from Azure for the range is:
+                "Range: bytes=8388608-16777215"
+
+                curl -so curl.bin -i --location --request GET 'http://{server_name}/GetFile.ashx?Id=538' --header 'Range: bytes=8388608-16777215' -w '%{size_download}'
+                Outputs: 8388608
+
+                According to the documentation here: https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests this is correct. In their example of
+                "Range: bytes=0-1023" the response length should be 1024 (inclusive of start and end).
+                so
+                "Range: bytes=8388608-16777215" = 16777215 - 8388608 + 1 = 8388608
+            */
+
+            const int _defaultBufferSize = 4096;
+
+            var rangeStartIndex = 0;
+            var rangeEndIndex = 0;
+            var fileLength = ( int ) fileContents.Length;
+            var responseLength = fileLength;
+            var isRangeRequest = false;
+            var numberOfBytesSent = 0;
+
+            // Rresumable logic from http://stackoverflow.com/a/6475414/1755417
             if ( context.Request.Headers["Range"] != null && ( context.Request.Headers["If-Range"] == null ) )
             {
+                isRangeRequest = true;
                 var match = Regex.Match( context.Request.Headers["Range"], @"bytes=(\d*)-(\d*)" );
-                startIndex = match.Groups[1].Value.AsInteger();
-                responseLength = ( match.Groups[2].Value.AsIntegerOrNull() + 1 ?? fileLength ) - startIndex;
+                rangeStartIndex = match.Groups[1].Value.AsInteger();
+                rangeEndIndex = match.Groups[2].Value.AsIntegerOrNull() + 1 ?? fileLength;
+
+                var requestedRangeSize = rangeEndIndex - rangeStartIndex;
+                var rangeAvailable = fileLength - rangeStartIndex;
+
+                // Response length will be the range requested or the remaining file content size
+                responseLength = Math.Min( requestedRangeSize, rangeAvailable );
+
+                // Send the Content-Range header
+                context.Response.Headers["Content-Range"] = "bytes " + rangeStartIndex + "-" + ( rangeStartIndex + responseLength - 1 ) + "/" + fileLength;
+
+                // Send 209 status code 'Partial Content'
                 context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.PartialContent;
-                context.Response.Headers["Content-Range"] = "bytes " + startIndex + "-" + ( startIndex + responseLength - 1 ) + "/" + fileLength;
             }
 
             context.Response.Clear();
@@ -139,7 +187,7 @@ namespace RockWeb
 
             context.Response.Cache.SetETag( eTag ); // required for IE9 resumable downloads
             context.Response.ContentType = mimeType;
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[_defaultBufferSize];
 
             if ( context.Response.IsClientConnected )
             {
@@ -147,10 +195,21 @@ namespace RockWeb
                 {
                     if ( fileStream.CanSeek )
                     {
-                        fileStream.Seek( startIndex, SeekOrigin.Begin );
+                        fileStream.Seek( rangeStartIndex, SeekOrigin.Begin );
                     }
+
                     while ( true )
                     {
+                        // If range request we may need to adjust the size of the buffer if we don't need to read the entire 4k default size
+                        if ( isRangeRequest )
+                        {
+                            var amountLeftToRead = responseLength - numberOfBytesSent;
+                            if ( amountLeftToRead < _defaultBufferSize )
+                            {
+                                buffer = new byte[amountLeftToRead];
+                            }
+                        }
+
                         var bytesRead = fileStream.Read( buffer, 0, buffer.Length );
                         if ( bytesRead == 0 )
                         {
@@ -166,6 +225,7 @@ namespace RockWeb
                         try
                         {
                             context.Response.OutputStream.Write( buffer, 0, bytesRead );
+                            numberOfBytesSent = numberOfBytesSent + bytesRead;
                         }
                         catch ( HttpException ex )
                         {

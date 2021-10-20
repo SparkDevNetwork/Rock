@@ -156,25 +156,7 @@ namespace Rock.Web.Cache
         {
             return Name;
         }
-
-        /// <summary>
-        /// Reads the specified unique identifier.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get Instead", true )]
-        public static InteractionComponentCache Read( string guid )
-        {
-            Guid realGuid = guid.AsGuid();
-            if ( realGuid.Equals( Guid.Empty ) )
-            {
-                return null;
-            }
-
-            return Get( realGuid );
-        }
-
+        
         /// <summary>
         /// Gets the component by entity identifier, and creates it if it doesn't exist
         /// </summary>

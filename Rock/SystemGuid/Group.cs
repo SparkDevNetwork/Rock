@@ -24,7 +24,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// RSR - Rock Administration
         /// </summary>
-        public const string GROUP_ADMINISTRATORS= "628C51A8-4613-43ED-A18D-4A6FB999273E";
+        public const string GROUP_ADMINISTRATORS = "628C51A8-4613-43ED-A18D-4A6FB999273E";
 
         /// <summary>
         /// RSR - Benevolence Group Guid
@@ -45,7 +45,7 @@ namespace Rock.SystemGuid
         /// The Communication Administrators Group guid
         /// </summary>
         public const string GROUP_COMMUNICATION_ADMINISTRATORS = "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B";
-        
+
         /// <summary>
         /// The Connection Administrators Group guid
         /// </summary>
@@ -80,7 +80,7 @@ namespace Rock.SystemGuid
         /// Gets the staff-like member group guid (Staff Users)
         /// </summary>
         public const string GROUP_STAFF_LIKE_MEMBERS = "300BA2C8-49A3-44BA-A82A-82E3FD8C3745";
-        
+
         /// <summary>
         /// The group of communication approvers
         /// </summary>
@@ -92,8 +92,18 @@ namespace Rock.SystemGuid
         public const string GROUP_SAFETY_SECURITY = "32E80B6C-A1EB-40FD-BEC3-E11DE8FF75AB";
 
         /// <summary>
+        /// Group of people who are responsible for the integrity of the data.
+        /// </summary>
+        public const string GROUP_DATA_INTEGRITY_WORKER = "40517E10-0F2D-4C61-AA8D-BDE36D58C63A";
+
+        /// <summary>
         /// WEB - Admistration
         /// </summary>
         public const string GROUP_WEB_ADMINISTRATORS = "1918E74F-C00D-4DDD-94C4-2E7209CE12C3";
+
+        /// <summary>
+        /// RSR - Prayer Access
+        /// </summary>
+        public const string GROUP_RSR_PRAYER_ACCESS = "9E17621E-F559-44E9-8C40-E8CF44CF8FCF";
     }
 }

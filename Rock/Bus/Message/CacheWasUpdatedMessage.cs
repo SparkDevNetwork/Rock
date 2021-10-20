@@ -93,7 +93,25 @@ namespace Rock.Bus.Message
         /// <returns></returns>
         internal string ToDebugString()
         {
-            var debugString = $"CacheType: {System.Type.GetType( this.CacheTypeName, false )}. (";
+            string debugString;
+            
+
+            if ( this.CacheTypeName.IsNotNullOrWhiteSpace() )
+            {
+                try
+                {
+                    debugString = $"CacheType: {System.Type.GetType( this.CacheTypeName, false )}. (";
+                }
+                catch
+                {
+                    debugString = $"CacheType: {this.CacheTypeName}. (";
+                }
+            }
+            else
+            {
+                debugString = $"CacheType (";
+            }
+
             if ( this.Key.IsNotNullOrWhiteSpace() )
             {
                 debugString += $"Key: {this.Key}";
@@ -123,7 +141,7 @@ namespace Rock.Bus.Message
             {
                 Key = key,
                 Region = region,
-                CacheTypeName = typeof( T ).AssemblyQualifiedName,
+                CacheTypeName = typeof( T )?.AssemblyQualifiedName,
                 SenderNodeName = RockMessageBus.NodeName
             };
 

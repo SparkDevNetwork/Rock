@@ -849,6 +849,7 @@ namespace Rock.WebStartup
             InitializeLavaTags( engine );
             InitializeLavaBlocks( engine );
             InitializeLavaShortcodes( engine );
+            InitializeLavaSafeTypes( engine );
         }
 
         private static void Engine_ExceptionEncountered( object sender, LavaEngineExceptionEventArgs e )
@@ -981,6 +982,17 @@ namespace Rock.WebStartup
             {
                 ExceptionLogService.LogException( ex, null );
             }
+        }
+
+        /// <summary>
+        /// Initializes the lava safe types on the engine. This takes care
+        /// of special types that we don't have direct access to so we can't
+        /// add the proper interfaces to them.
+        /// </summary>
+        /// <param name="engine">The engine.</param>
+        private static void InitializeLavaSafeTypes( ILavaEngine engine )
+        {
+            engine.RegisterSafeType( typeof( Common.Mobile.DeviceData ) );
         }
 
         /// <summary>

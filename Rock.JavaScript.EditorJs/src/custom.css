@@ -1,0 +1,7 @@
+/*
+    By default nested-list plugin displays nested ordered lists like "3.2.2.1".
+    This changes it to display the same as just "1".
+*/
+.cdx-nested-list--ordered > .cdx-nested-list__item::before {
+    content: counter(item) ". ";
+}

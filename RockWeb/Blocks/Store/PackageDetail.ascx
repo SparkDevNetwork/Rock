@@ -80,9 +80,9 @@
                             <div class="col-md-9">
 
                                 <h4>Package Description</h4>
-                                <p class="margin-b-lg">
+                                <div class="margin-b-lg clearfix">
                                     <asp:Literal ID="lPackageDescription" runat="server" />
-                                </p>
+                                </div>
 
                                 <p class="clearfix margin-t-md">
                                     <asp:HyperLink ID="hlPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:HyperLink>
@@ -90,10 +90,10 @@
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />
 
-                                <div class="row">
+                                <div class="row d-flex flex-wrap">
                                     <asp:Repeater ID="rptScreenshots" runat="server">
                                         <ItemTemplate>
-                                            <div class="col-sm-6">
+                                            <div class="col-xs-12 col-sm-6">
                                                 <a href='' class='package-screenshot'>
                                                     <%# string.Format("<img src=\"{0}\" style=\"width: 100%\" class=\"margin-b-lg\" />", Eval("ImageUrl"))%>
                                                 </a>

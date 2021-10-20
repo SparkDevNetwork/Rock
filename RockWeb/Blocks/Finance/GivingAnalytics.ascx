@@ -219,9 +219,9 @@
                                         </asp:Panel>
                                     </Rock:RockControlWrapper>
 
-                                    <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Dataview Results" RepeatDirection="Vertical" Visible="false">
-                                        <asp:ListItem Text="Only show people from dataview that have giving data" Value="Limit" />
-                                        <asp:ListItem Text="Include all people from dataview" Value="All" />
+                                    <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Data View Results" RepeatDirection="Vertical" Visible="false">
+                                        <asp:ListItem Text="Only show people from Data View that have giving data" Value="Limit" />
+                                        <asp:ListItem Text="Include all people from Data View" Value="All" />
                                     </Rock:RockRadioButtonList>
 
                                     <div class="actions margin-b-md">

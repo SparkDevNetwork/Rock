@@ -43,12 +43,16 @@ legend {
 
 a.aspNetDisabled {
   opacity: .5;
+}
 
-  &.picker-label {
-    color: @text-muted;
-    background: @input-bg-disabled;
-    opacity: 1;
-  }
+.picker.aspNetDisabled {
+  opacity: 1;
+}
+
+a.aspNetDisabled.picker-label,
+.picker.aspNetDisabled .picker-label {
+  background: @input-bg-disabled;
+  opacity: 1;
 }
 
 .form-group.rock-literal,
@@ -314,7 +318,10 @@ dl:not(.dl-horizontal) {
 
   & > span {
     float: left;
-    margin: 8px 6px 0 0;
+    margin: (@input-padding-y - 1) 6px (@input-padding-y + 1) 0;
+    font-size: @input-font-size;
+    line-height: @input-line-height;
+    color: @text-muted;
   }
 
   & > label {
@@ -411,10 +418,11 @@ dl:not(.dl-horizontal) {
 
 .month-year-picker .separator,
 .month-day-picker .separator {
-  float: left;
-  margin: 4px 8px 0 -2px;
+  @separator-margin: ((@input-height-base - @font-size-lg) / 2);
+  margin: @separator-margin 6px @separator-margin 0;
   font-size: @font-size-lg;
-  color: lighten(@text-color, 35%);
+  line-height: 1;
+  color: @text-muted;
 }
 
 .rock-check-box {

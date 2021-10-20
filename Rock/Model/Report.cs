@@ -34,7 +34,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Report (based off of a <see cref="Rock.Model.DataView"/> in Rock.
+    /// Represents a Report (based off of a <see cref="Rock.Model.DataView"/> in Rock).
     /// </summary>
     [RockDomain( "Reporting" )]
     [Table( "Report" )]

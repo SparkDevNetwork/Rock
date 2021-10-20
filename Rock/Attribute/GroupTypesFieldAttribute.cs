@@ -26,6 +26,11 @@ namespace Rock.Attribute
     public class GroupTypesFieldAttribute : SelectFieldAttribute
     {
         /// <summary>
+        /// The key value for the enhanced selection value to use in the FieldConfigurationValues dictionary.
+        /// </summary>
+        private const string ENHANCED_SELECTION_KEY = "enhancedselection";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypesFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -38,6 +43,21 @@ namespace Rock.Attribute
         public GroupTypesFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuids = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultGroupTypeGuids, category, order, key, typeof( Rock.Field.Types.GroupTypesFieldType ).FullName )
         {
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether enhanced selection should be used.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enhanced selection should be used; otherwise, <c>false</c>.
+        /// </value>
+        /// <remarks>
+        /// The default value for this is <c>false</c>, but in the future it may be changed to <c>true</c>.
+        /// </remarks>
+        public bool EnhancedSelection
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENHANCED_SELECTION_KEY )?.AsBoolean() ?? false;
+            set => FieldConfigurationValues.AddOrReplace( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

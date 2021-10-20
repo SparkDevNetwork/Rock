@@ -114,6 +114,12 @@ export const enum BlockType {
     WorkflowEntry = "A8BD05C8-6F89-4628-845B-059E686F089A",
     /** The Checkin Manager En Route */
     CheckInManagerEnRoute = "BC86F18C-9F38-4CA3-8CF9-5A837CBC700D",
+    /** The mobile Groups &gt; Group Registration block type. */
+    MobileGroupsGroupRegistration = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912",
+    /** The mobile Groups &gt; Group Finder block type. */
+    MobileGroupsGroupFinder = "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C",
+    /** The mobile Prayer &gt; Prayer Card View block type. */
+    MobilePrayerPrayerCardView = "CA75C558-9345-47E7-99AF-D8191D31D00D",
     /** The obsidian event registration entry */
     ObsidianEventRegistrationEntry = "0252E237-0684-4426-9E5C-D454A13E152A",
     /** The obsidian event control gallery */

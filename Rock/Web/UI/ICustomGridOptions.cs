@@ -33,13 +33,6 @@ namespace Rock.Web.UI
     public class CustomGridOptionsConfig
     {
         /// <summary>
-        /// The enable sticker headers attribute key
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use EnableStickyHeadersAttributeKey instead", true ) ]
-        public const string EnableStickerHeadersAttributeKey = "core.CustomGridEnableStickerHeaders";
-
-        /// <summary>
         /// The enable sticky headers attribute key
         /// </summary>
         public const string EnableStickyHeadersAttributeKey = "core.CustomGridEnableStickyHeaders";

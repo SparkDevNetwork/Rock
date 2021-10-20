@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
@@ -37,7 +39,7 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void PersonAddress_WithAddressTypeParameterOnly_ReturnsFullAddress()
         {
-            var values = AddPersonTedDeckerToMergeDictionary();
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
             var options = new LavaTestRenderOptions { MergeFields = values };
 
@@ -52,7 +54,7 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void PersonAddress_WithFormatTemplateFieldCityState_ReturnsExpectedOutput()
         {
-            var values = AddPersonTedDeckerToMergeDictionary();
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
             var options = new LavaTestRenderOptions { MergeFields = values };
 
@@ -67,7 +69,7 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void PersonAddress_WithFormatTemplateFieldGuid_ReturnsLocationGuid()
         {
-            var values = AddPersonTedDeckerToMergeDictionary();
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
             var person = values["CurrentPerson"] as Person;
 
@@ -89,7 +91,7 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void PersonNotes_WithCurrentPersonHavingNotes_ReturnsNotes()
         {
-            var values = AddPersonTedDeckerToMergeDictionary();
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
             var person = values["CurrentPerson"] as Person;
 
@@ -114,15 +116,121 @@ namespace Rock.Tests.Integration.Lava
 
         #endregion
 
-        private LavaDataDictionary AddPersonTedDeckerToMergeDictionary( LavaDataDictionary dictionary = null, string mergeKey = "CurrentPerson" )
+        #region Steps
+
+        [TestMethod]
+        public void PersonSteps_WithDefaultParameters_ReturnsAllStepsForCurrentPerson()
         {
-            var personDecker = TestHelper.GetTestPersonTedDecker();
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
-            var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
+            var options = new LavaTestRenderOptions { MergeFields = values };
 
+            var template = @"
+{% assign steps = CurrentPerson | Steps %}
+{% for step in steps %}
+    <p>{{ step.StepType.Name }} - {{ step.StepStatus.Name }}</p>
+{% endfor %}
+";
+
+            var outputExpected = @"<p>Baptism-Success</p><p>Confirmation-Success</p><p>Marriage-Incomplete</p><p>Marriage-Success</p><p>Attender-Completed</p><p>Volunteer-Started</p>";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        [TestMethod]
+        public void PersonSteps_WithStepProgramParameter_ReturnsStepsForProgramOnly()
+        {
+            // Test with Step Program Guid
+            PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
+                Tests.Shared.TestGuids.Steps.ProgramAlphaGuid.ToString(),
+                null,
+                null,
+                "Ted Decker:<p>Attender - Completed</p><p>Volunteer - Started</p>" );
+
+            // Test with Step Program Id.
+            var dataContext = new RockContext();
+
+            var stepProgramId = new StepProgramService( dataContext ).GetId( Tests.Shared.TestGuids.Steps.ProgramAlphaGuid );
+
+            PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
+                stepProgramId.ToString(),
+                null,
+                null,
+                "Ted Decker: <p>Attender - Completed</p><p>Volunteer - Started</p>" );
+        }
+
+        [TestMethod]
+        public void PersonSteps_WithStepTypeParameter_ReturnsStepsForStepTypeOnly()
+        {
+            // Test with Step Type Guid
+            PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
+                null,
+                Tests.Shared.TestGuids.Steps.StepTypeBaptismGuid.ToString(),
+                null,
+                "Ted Decker: <p>Baptism - Success</p>" );
+
+            // Test with Step Type Id.
+            var dataContext = new RockContext();
+
+            var stepTypeId = new StepTypeService( dataContext ).GetId( Tests.Shared.TestGuids.Steps.StepTypeBaptismGuid );
+
+            PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
+                null,
+                stepTypeId.ToString(),
+                null,
+                "Ted Decker: <p>Baptism - Success</p>" );
+        }
+
+        [TestMethod]
+        public void PersonSteps_WithStatusParameter_ReturnsStepsHavingMatchingStatusOnly()
+        {
+            // Test with Status Name
+            PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
+                null,
+                null,
+                "Incomplete",
+                "Ted Decker: <p>Marriage - Incomplete</p>" );
+
+            // Test with Status Guid
+            PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
+                null,
+                null,
+                TestGuids.Steps.StatusSacramentsSuccessGuid.ToString(),
+                "Ted Decker: <p>Baptism - Success</p><p>Confirmation - Success</p><p>Marriage - Success</p>" );
+        }
+
+        private void PersonStepsTestWithTemplate( string testPersonGuid, string stepProgram, string stepType, string stepStatus, string expectedOutput )
+        {
+            var values = AddTestPersonToMergeDictionary( testPersonGuid.AsGuid() );
+
+            values.Add( "stepProgram", stepProgram );
+            values.Add( "stepType", stepType );
+            values.Add( "stepStatus", stepStatus );
+
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            var template = @"
+{% assign steps = CurrentPerson | Steps:stepProgram,stepStatus,stepType %}
+{{ CurrentPerson.FullName }}:
+{% for step in steps %}
+    <p>{{ step.StepType.Name }} - {{ step.StepStatus.Name }}</p>
+{% endfor %}
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput,
+                template,
+                options );
+        }
+
+        #endregion
+
+        private LavaDataDictionary AddTestPersonToMergeDictionary( Guid personGuid, LavaDataDictionary dictionary = null, string mergeKey = "CurrentPerson" )
+        {
             var rockContext = new RockContext();
 
-            var tedDeckerPerson = new PersonService( rockContext ).Queryable().First( x => x.Guid == tedDeckerGuid );
+            var tedDeckerPerson = new PersonService( rockContext ).Queryable().First( x => x.Guid == personGuid );
 
             if ( dictionary == null )
             {

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Test of a New Beautiful Table</title>
+
+  <style>
+    body,
+    html {
+      margin: 0;
+      font-family: Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .block {
+      width: 800px;
+      margin-top: 40px;
+    }
+
+    #editorjs {
+      width: 900px;
+      min-height: 100px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="block"></div>
+  <div id="editorjs"></div>
+
+  <button class="save-button">Save</button>
+  <pre class="output"></pre>
+
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+  <script src="dist/bundle.js"></script>
+
+  <script>
+
+    const editor = new EditorJS({
+      autofocus: true,
+      tools: {
+        table: {
+          class: Table,
+          inlineToolbar: true,
+        }
+      },
+      data: {
+        time: 1625072989362,
+        blocks: [
+          {
+            id: "XXVTfnMlcE",
+            type: "table",
+            data: {
+              withHeadings: true,
+              content: [
+                ["English", "Russian", "Japanese"], 
+                ["Sweet", "Сладкий", "あまい"], 
+                ["Good morning", "Доброе утро", "おはようございます"]]
+            }
+          }
+        ],
+        version: "2.22.1"
+      }
+    });
+
+    const saveButton = document.querySelector('.save-button');
+    const output = document.querySelector('.output');
+
+    saveButton.addEventListener('click', () => {
+      editor.save().then(savedData => {
+        output.innerHTML = JSON.stringify(savedData, null, 4);
+      });
+    });
+  </script>
+</body>
+
+</html>

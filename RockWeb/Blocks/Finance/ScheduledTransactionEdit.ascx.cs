@@ -305,7 +305,7 @@ achieve our mission.  We are so grateful for your commitment.
                     SetSavedAccounts( scheduledTransaction );
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
-                    tbSummary.Text = scheduledTransaction.Summary;
+                    tbComments.Text = scheduledTransaction.Summary;
 
                     dvpForeignCurrencyCode.SelectedDefinedValueId = scheduledTransaction.ForeignCurrencyCodeValueId;
                     dvpForeignCurrencyCode.Visible = !new RockCurrencyCodeInfo( scheduledTransaction.ForeignCurrencyCodeValueId ).IsOrganizationCurrency;
@@ -1210,7 +1210,7 @@ achieve our mission.  We are so grateful for your commitment.
                         detail.Amount = account.Amount;
                     }
 
-                    scheduledTransaction.Summary = tbSummary.Text;
+                    scheduledTransaction.Summary = tbComments.Text;
 
                     rockContext.SaveChanges();
 

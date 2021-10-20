@@ -365,9 +365,9 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.PersonConnectionStatus,
         Category = AttributeCategory.PersonOptions,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
         AllowMultiple = false,
-        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         IsRequired = true,
         Order = 4 )]
 
@@ -815,6 +815,7 @@ mission. We are so grateful for your commitment.</p>
             public const string HostPaymentInfoSubmitScript = "HostPaymentInfoSubmitScript";
             public const string TransactionCode = "TransactionCode";
             public const string CustomerTokenEncrypted = "CustomerTokenEncrypted";
+            public const string TargetPersonGuid = "TargetPersonGuid";
         }
 
         #endregion ViewState Keys
@@ -1186,7 +1187,7 @@ mission. We are so grateful for your commitment.</p>
             var feeCoverageGatewayComponent = FinancialGateway.GetGatewayComponent() as IFeeCoverageGatewayComponent;
             if ( feeCoverageGatewayComponent == null )
             {
-                // the gateway doesn't have fee converage options
+                // the gateway doesn't have fee coverage options
                 return;
             }
 
@@ -2032,11 +2033,11 @@ mission. We are so grateful for your commitment.</p>
 
             if ( targetPerson != null )
             {
-                hfTargetPersonId.Value = targetPerson.Id.ToString();
+                ViewState[ViewStateKey.TargetPersonGuid] = Rock.Security.Encryption.EncryptString( targetPerson.Guid.ToString() );
             }
             else
             {
-                hfTargetPersonId.Value = string.Empty;
+                ViewState[ViewStateKey.TargetPersonGuid] = string.Empty;
             }
 
             SetCampus( targetPerson );
@@ -2120,13 +2121,19 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private Person GetTargetPerson( RockContext rockContext )
         {
-            int? targetPersonId = hfTargetPersonId.Value.AsIntegerOrNull();
-            if ( targetPersonId == null )
+            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
+            if ( targetPersonValue.IsNullOrWhiteSpace() )
             {
                 return null;
             }
 
-            var targetPerson = new PersonService( rockContext ).Get( targetPersonId.Value );
+            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
+            if ( targetPersonGuid == null )
+            {
+                return null;
+            }
+
+            var targetPerson = new PersonService( rockContext ).Get( targetPersonGuid.Value );
             return targetPerson;
         }
 
@@ -2388,15 +2395,22 @@ mission. We are so grateful for your commitment.</p>
             ddlPersonSavedAccount.Visible = false;
             var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
 
-            int? targetPersonId = hfTargetPersonId.Value.AsIntegerOrNull();
-            if ( targetPersonId == null )
+            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
+            if ( targetPersonValue.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
+            if ( targetPersonGuid == null )
             {
                 return;
             }
 
             var rockContext = new RockContext();
+            var targetPersonId = new PersonService( rockContext ).Get( targetPersonGuid.Value ).Id;
             var personSavedAccountsQuery = new FinancialPersonSavedAccountService( rockContext )
-                .GetByPersonId( targetPersonId.Value )
+                .GetByPersonId( targetPersonId )
                 .Where( a => !a.IsSystem )
                 .AsNoTracking();
 
@@ -2681,7 +2695,7 @@ mission. We are so grateful for your commitment.</p>
                     targetPerson = this.CreateTargetPerson();
                 }
 
-                hfTargetPersonId.Value = targetPerson.Id.ToString();
+                ViewState[ViewStateKey.TargetPersonGuid] = Rock.Security.Encryption.EncryptString( targetPerson.Guid.ToString() );
             }
 
             UpdatePersonFromInputInformation( targetPerson, givingAsBusiness ? PersonInputSource.BusinessContact : PersonInputSource.Person );

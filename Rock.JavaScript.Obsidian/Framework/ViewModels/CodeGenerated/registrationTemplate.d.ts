@@ -57,6 +57,7 @@ export type RegistrationTemplate = IEntity & {
     pluralRegistrantTerm?: string | null;
     registrantsSameFamily?: number;
     registrantTerm?: string | null;
+    registrantWorkflowTypeId?: number | null;
     registrarOption?: number;
     registrationAttributeTitleEnd?: string | null;
     registrationAttributeTitleStart?: string | null;

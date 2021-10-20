@@ -152,22 +152,28 @@ export const enum EntityType {
     MobileEventsPrayerSessionBlockType = "BCAF9B7B-2ADE-496B-9303-150F495851FC",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup */
     MobileEventsPrayerSessionSetupBlockType = "51431866-FF92-433C-8B0F-0F6BBAD9BCE7",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.AddToGroup */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupRegistration */
     MobileGroupsGroupAddToGroup = "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry */
     MobileGroupsGroupAttendanceEntryBlockType = "1655E6A9-2BD6-4FA0-8886-D64DCA177FBB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupEdit */
     MobileGroupsGroupEditBlockType = "DE46759A-CE15-4F27-9FC8-154CD30D4637",
+    /** The GUID for the entity  */
+    MobileGroupsGroupFinderBlockType = "15492F6A-344A-484E-AA26-A5E667CBD502",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberEdit */
     MobileGroupsGroupMemberEditBlockType = "61208516-9051-4E0E-AC46-6C8E1F104F3A",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberList */
     MobileGroupsGroupMemberListBlockType = "70652D98-9285-4707-8F46-B7FC48B6503D",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupMemberView */
     MobileGroupsGroupMemberViewBlockType = "3213DCBC-C5EC-4DD2-BB78-19B3636AE842",
+    /** The GUID for the entity  */
+    MobileGroupsGroupRegistrationBlockType = "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView */
     MobileGroupsGroupViewBlockType = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails */
     MobilePrayerPrayerRequestDetailsBlockType = "F8E56BC0-E9D1-44A4-9900-46589A1FB784",
+    /** The GUID for the entity . */
+    MobilePrayerPrayerCardViewBlockType = "0D0F1D7E-2D75-451B-95EE-0610B8F26BBF",
     /** The GUID for the entity . */
     MobileSecurityOnboardPerson = "C9B7F36A-F70A-4ABF-9422-B18E579F927F",
     /** The obsidian event registration entry */

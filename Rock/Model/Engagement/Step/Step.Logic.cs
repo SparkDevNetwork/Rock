@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -158,6 +160,85 @@ namespace Rock.Model
 
                 return isValid;
             }
+        }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.StepType != null )
+                {
+                    return this.StepType;
+                }
+                else
+                {
+                    return base.ParentAuthority;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            /* 2021-09-30 SK
+             Step's record has a special MANAGE_STEPS action that grants access to managing steps.
+             This is effectively the same as EDIT. So, if checking security on EDIT, also check Step Type's
+             MANAGE_STEPS (in case they have MANAGE_STEPS but not EDIT)
+
+             Possible 'action' parameters on Step are
+             1) VIEW
+             2) EDIT
+             3) ADMINISTRATE
+
+             NOTE: MANAGE_STEPS is NOT a possible action on Step. However, this can be confusing
+             because MANAGE_STEPS is a possible action on Step Type (which would grant EDIT on its steps)
+
+             This is how this has been implemented
+             - If they can EDIT a Step Type, then can Manage Steps
+             - If they can't EDIT a Step Type, but can Manage Steps, then can EDIT (which includes Add and Delete) steps.
+                - Note that this is fairly complex, see StepType.IsAuthorized for how this should work
+
+             */
+
+            if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // first, see if they auth'd using normal AUTH rules
+                var isAuthorized = base.IsAuthorized( action, person );
+                if ( isAuthorized )
+                {
+                    return isAuthorized;
+                }
+
+                // now check if they are auth'd to EDIT or MANAGE_STEPS on this Step's Step Type
+                var stepType = this.StepType ?? new StepTypeService( new RockContext() ).Get( this.StepTypeId );
+
+                if ( stepType != null )
+                {
+                    // if they have EDIT on the step type, they can edit Steps records
+                    var canEditMembers = stepType.IsAuthorized( Rock.Security.Authorization.EDIT, person );
+                    if ( !canEditMembers )
+                    {
+                        // if they don't have EDIT on the step type, but do have MANAGE_STEPS, then they can 'edit' steps
+                        canEditMembers = stepType.IsAuthorized( Rock.Security.Authorization.MANAGE_STEPS, person );
+                    }
+
+                    return canEditMembers;
+                }
+            }
+
+            return base.IsAuthorized( action, person );
         }
 
         #endregion Overrides

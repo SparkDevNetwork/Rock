@@ -392,8 +392,8 @@
 @grid-column-header-font-weight:        @font-weight-semibold;// The font weight of the grid header.
 @grid-column-header-border-color:       @grid-border-color;   // The border color of the grid header.
 //--
-@grid-column-header-bold-bg:            @gray-darker;         // Background color for bold table headers like the merge person page.
-@grid-column-header-bold-color:         @gray-lighter;        // The text color for bold table headers like the merge person page.
+@grid-column-header-bold-bg:            @grid-column-header-bg;         // Background color for bold table headers like the merge person page.
+@grid-column-header-bold-color:         @grid-column-header-text-color;        // The text color for bold table headers like the merge person page.
 
 //// Row Striping
 @grid-row-odd-bg:             @panel-bg;                      // The even rows background color.
@@ -406,8 +406,10 @@
 @grid-hover-color:            inherit;                        // Row text color when hovered over.
 
 //// Section Headers
-@grid-section-bg:             @gray-dark;                     // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
-@grid-section-color:          @gray-lighter;                  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
+@grid-section-bg:             @grid-column-header-bold-bg;                     // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
+@grid-section-color:          @grid-column-header-bold-color;                  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
+@grid-section-font-size:      18px;
+@grid-section-font-weight:    @font-weight-bold;
 
 //// Pager Section
 @grid-pager-bg:               @panel-subheading;

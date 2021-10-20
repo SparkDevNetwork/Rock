@@ -96,6 +96,14 @@ namespace Rock.ViewModel
         public bool DisableScheduling { get; set; }
 
         /// <summary>
+        /// Gets or sets the ElevatedSecurityLevel.
+        /// </summary>
+        /// <value>
+        /// The ElevatedSecurityLevel.
+        /// </value>
+        public int ElevatedSecurityLevel { get; set; }
+
+        /// <summary>
         /// Gets or sets the GroupCapacity.
         /// </summary>
         /// <value>

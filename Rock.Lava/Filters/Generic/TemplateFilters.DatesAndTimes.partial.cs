@@ -159,13 +159,12 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static Int64? DateDiff( object startDate, object endDate, string interval )
         {
-            var startDateTime = GetDateFromObject( startDate );
-            var endDateTime = GetDateFromObject( endDate );
+            var startDto = GetDateTimeOffsetFromInputParameter( startDate, null );
+            var endDto = GetDateTimeOffsetFromInputParameter( endDate, null );
 
-            if ( startDateTime != DateTime.MinValue
-                 && endDateTime != DateTime.MinValue )
+            if ( startDto != null && endDto != null )
             {
-                var difference = endDateTime - startDateTime;
+                var difference = endDto.Value - startDto.Value;
 
                 switch ( interval )
                 {
@@ -176,9 +175,11 @@ namespace Rock.Lava.Filters
                     case "m":
                         return ( Int64 ) difference.TotalMinutes;
                     case "M":
-                        return ( Int64 ) GetMonthsBetween( startDateTime, endDateTime );
+                        return ( Int64 ) GetMonthsBetween( startDto.Value, endDto.Value );
                     case "Y":
-                        return ( Int64 ) ( endDateTime.Year - startDateTime.Year );
+                        // Return the difference between the dates as the number of whole years.
+                        var years = LavaDateTime.ConvertToRockDateTime( endDto.Value ).TotalYears( LavaDateTime.ConvertToRockDateTime( startDto.Value ) );
+                        return years;
                     case "s":
                         return ( Int64 ) difference.TotalSeconds;
                     default:
@@ -715,12 +716,62 @@ namespace Rock.Lava.Filters
         }
 
         /// <summary>
+        /// Converts an input value to a DateTimeOffset.
+        /// </summary>
+        /// <param name="input">The date.</param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        private static DateTimeOffset? GetDateTimeOffsetFromInputParameter( object input, DateTimeOffset? defaultValue )
+        {
+            if ( input is String inputString )
+            {
+                if ( inputString.Trim().ToLower() == "now" )
+                {
+                    return LavaDateTime.NowOffset;
+                }
+                else
+                {
+                    return LavaDateTime.ParseToOffset( inputString, defaultValue );
+                }
+            }
+            else if ( input is DateTime dt )
+            {
+                return LavaDateTime.ConvertToDateTimeOffset( dt );
+            }
+            else if ( input is DateTimeOffset inputDateTimeOffset )
+            {
+                return inputDateTimeOffset;
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Get the number of months between two dates.
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
         private static int GetMonthsBetween( DateTime from, DateTime to )
+        {
+            if ( from > to )
+            {
+                return GetMonthsBetween( to, from );
+            }
+
+            var monthDiff = Math.Abs( ( to.Year * 12 + ( to.Month - 1 ) ) - ( from.Year * 12 + ( from.Month - 1 ) ) );
+
+            if ( from.AddMonths( monthDiff ) > to || to.Day < from.Day )
+            {
+                return monthDiff - 1;
+            }
+            else
+            {
+                return monthDiff;
+            }
+        }
+
+        private static int GetMonthsBetween( DateTimeOffset from, DateTimeOffset to )
         {
             if ( from > to )
             {

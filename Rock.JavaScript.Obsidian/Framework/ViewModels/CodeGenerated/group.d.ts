@@ -32,6 +32,7 @@ export type Group = IEntity & {
     description?: string | null;
     disableScheduleToolboxAccess?: boolean;
     disableScheduling?: boolean;
+    elevatedSecurityLevel?: number;
     groupCapacity?: number | null;
     groupSalutation?: string | null;
     groupSalutationFull?: string | null;

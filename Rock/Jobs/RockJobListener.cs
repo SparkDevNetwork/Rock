@@ -229,7 +229,7 @@ namespace Rock.Jobs
                     }
                     else
                     {
-                        mergeFields.Add( "Exception", jobException );
+                        mergeFields.Add( "Exception", LavaDataObject.FromAnonymousObject( jobException ) );
                     }
                 }
 

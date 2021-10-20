@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Tasks;
@@ -30,6 +32,7 @@ namespace Rock.Model
         internal class SaveHook : EntitySaveHook<ConnectionRequest>
         {
             private History.HistoryChangeList HistoryChangeList { get; set; }
+
             private History.HistoryChangeList PersonHistoryChangeList { get; set; }
 
             /// <summary>
@@ -64,6 +67,7 @@ namespace Rock.Model
                             {
                                 PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
                             }
+
                             break;
                         }
 
@@ -131,6 +135,68 @@ namespace Rock.Model
                 {
                     Entity.ConnectionState = ConnectionState.Inactive;
                     rockContext.SaveChanges();
+                }
+
+                if ( Entity.ConnectionStatus.ConnectionStatusAutomations.Any() )
+                {
+                    foreach ( var connectionStatusAutomation in Entity.ConnectionStatus.ConnectionStatusAutomations )
+                    {
+                        bool isAutomationValid = true;
+                        if ( connectionStatusAutomation.DataViewId.HasValue )
+                        {
+                            // Get the dataview configured for the connection request
+                            var dataViewService = new DataViewService( rockContext );
+                            var dataview = dataViewService.Get( connectionStatusAutomation.DataViewId.Value );
+                            if ( dataview != null )
+                            {
+                                var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                                isAutomationValid = dataview.GetQuery( dataViewGetQueryArgs ).Any( a => a.Id == Entity.Id );
+                            }
+                        }
+
+                        if ( isAutomationValid && connectionStatusAutomation.GroupRequirementsFilter != GroupRequirementsFilter.Ignore )
+                        {
+                            // Group Requirement can't be meet when either placement group or placement group role id is missing
+                            if ( !Entity.AssignedGroupId.HasValue || !Entity.AssignedGroupMemberRoleId.HasValue )
+                            {
+                                isAutomationValid = false;
+                            }
+                            else
+                            {
+                                var isRequirementMeet = true;
+                                var group = new GroupService( rockContext ).Get( Entity.AssignedGroupId.Value );
+                                var hasGroupRequirement = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == group.GroupTypeId ) ).Any();
+                                if ( hasGroupRequirement )
+                                {
+                                    var requirementsResults = group.PersonMeetsGroupRequirements(
+                                        rockContext,
+                                        Entity.PersonAlias.PersonId,
+                                        Entity.AssignedGroupMemberRoleId.Value );
+
+                                    if ( requirementsResults != null && requirementsResults
+                                        .Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable )
+                                        .Any( r =>
+                                            r.MeetsGroupRequirement != MeetsGroupRequirement.Meets && r.MeetsGroupRequirement != MeetsGroupRequirement.MeetsWithWarning )
+                                        )
+                                    {
+                                        isRequirementMeet = false;
+                                    }
+                                }
+
+                                // connection request based on if group requirement is meet or not is added to list for status update
+                                isAutomationValid = ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.DoesNotMeet && !isRequirementMeet ) ||
+                                    ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.MustMeet && isRequirementMeet );
+                            }
+                        }
+
+                        if ( isAutomationValid )
+                        {
+                            Entity.ConnectionStatusId = connectionStatusAutomation.DestinationStatusId;
+
+                            // disabled pre post processing in order to prevent circular loop that may arise due to status change.
+                            rockContext.SaveChanges( true );
+                        }
+                    }
                 }
 
                 if ( HistoryChangeList?.Any() == true )
