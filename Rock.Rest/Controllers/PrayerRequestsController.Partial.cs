@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
@@ -21,7 +23,9 @@ using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -127,7 +131,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.OData.IEdmEntityObject"></exception>
         [Authenticate, Secured]
         [HttpPut]
-        [System.Web.Http.Route( "api/PrayerRequests/Prayed/{id}" )]
+        [System.Web.Http.Route( "api/PrayerRequests/Prayed/{id:int}" )]
         public virtual void Prayed( int id )
         {
             SetProxyCreation( true );
@@ -142,5 +146,103 @@ namespace Rock.Rest.Controllers
 
             Service.Context.SaveChanges();
         }
+
+        /// <summary>
+        /// Prays for the specified prayer request unique identifier.
+        /// </summary>
+        /// <param name="guid">The unique identifier of the prayer request being prayed for.</param>
+        /// <param name="workflowTypeGuid">The unique identifier of the workflow type to launch for this prayer request.</param>
+        /// <param name="recordInteraction">If <c>true</c> then an interaction will be recorded for this prayed action.</param>
+        /// <returns>The action result.</returns>
+        [Authenticate, Secured]
+        [HttpPut]
+        [System.Web.Http.Route( "api/PrayerRequests/Prayed/{guid:guid}" )]
+        public IHttpActionResult Prayed( Guid guid, Guid? workflowTypeGuid = null, bool recordInteraction = true )
+        {
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
+
+            var found = PrayForRequest( guid, new RockRequestContext( Request ), workflowTypeGuid, recordInteraction );
+
+            if ( !found )
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+
+        #region Helper Methods
+
+        /*
+         * These methods should be moved to the PrayerRequestsController after
+         * they have been tweaked to be a bit more general use approved.
+         * 
+         * Daniel Hazelbaker 9/29/2021
+         */
+
+        /// <summary>
+        /// Prays for the specified request and optionally launches a workflow
+        /// and/or records an interaction.
+        /// </summary>
+        /// <param name="prayerRequestGuid">The prayer request unique identifier that is being prayed for.</param>
+        /// <param name="requestContext">The request context that describes the current request in process.</param>
+        /// <param name="launchWorkflowGuid">The workflow type unique identifier to be launched.</param>
+        /// <param name="recordInteraction">If set to <c>true</c> then an interaction will be recorded.</param>
+        private bool PrayForRequest( Guid prayerRequestGuid, RockRequestContext requestContext, Guid? launchWorkflowGuid, bool recordInteraction )
+        {
+            return PrayForRequest( prayerRequestGuid,
+                requestContext.CurrentPerson,
+                launchWorkflowGuid,
+                recordInteraction,
+                string.Empty,
+                requestContext.ClientInformation?.UserAgent,
+                requestContext.ClientInformation?.IpAddress,
+                null );
+        }
+
+        /// <summary>
+        /// Prays for the specified request and optionally launches a workflow
+        /// and/or records an interaction.
+        /// </summary>
+        /// <param name="prayerRequestGuid">The prayer request unique identifier that is being prayed for.</param>
+        /// <param name="currentPerson">The current person whom is performing the action.</param>
+        /// <param name="launchWorkflowGuid">The workflow type unique identifier to be launched.</param>
+        /// <param name="recordInteraction">If set to <c>true</c> then an interaction will be recorded.</param>
+        /// <param name="interactionSummary">The interaction summary text.</param>
+        /// <param name="userAgent">The user agent for the interaction.</param>
+        /// <param name="clientIpAddress">The client IP address for the interaction.</param>
+        /// <param name="sessionGuid">The session unique identifier for the interaction.</param>
+        /// <exception cref="System.ArgumentNullException">prayerRequest</exception>
+        private static bool PrayForRequest( Guid prayerRequestGuid, Person currentPerson, Guid? launchWorkflowGuid, bool recordInteraction, string interactionSummary, string userAgent, string clientIpAddress, Guid? sessionGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var prayerRequestService = new PrayerRequestService( rockContext );
+                var prayerRequest = prayerRequestService.Get( prayerRequestGuid );
+
+                if ( prayerRequest == null )
+                {
+                    return false;
+                }
+
+                prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
+
+                rockContext.SaveChanges();
+
+                if ( launchWorkflowGuid.HasValue )
+                {
+                    PrayerRequestService.LaunchPrayedForWorkflow( prayerRequest, launchWorkflowGuid.Value, currentPerson );
+                }
+
+                if ( recordInteraction )
+                {
+                    PrayerRequestService.EnqueuePrayerInteraction( prayerRequest, currentPerson, interactionSummary, userAgent, clientIpAddress, sessionGuid );
+                }
+
+                return true;
+            }
+        }
+
+        #endregion
     }
 }

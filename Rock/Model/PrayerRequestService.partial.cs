@@ -16,9 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Net;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,7 +49,7 @@ namespace Rock.Model
             var prayerRequestEntityTypeId = EntityTypeCache.GetId( type );
 
             // Get all PrayerRequest category Ids that are the **parent or child** of the given categoryIds.
-            CategoryService categoryService = new CategoryService( (RockContext)Context );
+            CategoryService categoryService = new CategoryService( ( RockContext ) Context );
             IEnumerable<int> expandedCategoryIds = categoryService.GetByEntityTypeId( prayerRequestEntityTypeId )
                 .Where( c => categoryIds.Contains( c.Id ) || categoryIds.Contains( c.ParentCategoryId ?? -1 ) )
                 .Select( a => a.Id );
@@ -111,6 +114,197 @@ namespace Rock.Model
 
             var interactionTransaction = new Rock.Transactions.InteractionTransaction( info );
             interactionTransaction.Enqueue();
+        }
+
+        /// <summary>
+        /// Gets a collection of prayer requests by applying a standard filtering
+        /// algorithm as specified in the options.
+        /// </summary>
+        /// <param name="options">The options that specifies the filters.</param>
+        /// <returns>A collection of <see cref="PrayerRequest"/> objects.</returns>
+        public IQueryable<PrayerRequest> GetPrayerRequests( PrayerRequestQueryOptions options )
+        {
+            var qryPrayerRequests = Queryable();
+
+            // If not including inactive requests then filter them out.
+            if ( !options.IncludeInactive )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( r => r.IsActive ?? true );
+            }
+
+            // If not including expired requests then filter them out.
+            if ( !options.IncludeExpired )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( r => !r.ExpirationDate.HasValue
+                    || r.ExpirationDate >= RockDateTime.Now );
+            }
+
+            // If not including unapproved requests then filter them out.
+            if ( !options.IncludeUnapproved )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( r => r.IsApproved == true );
+            }
+
+            // If not including non-public requests then filter them out.
+            if ( !options.IncludeNonPublic )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( r => r.IsPublic == true );
+            }
+
+            // Filter by category if we have been given any.
+            if ( options.Categories != null && options.Categories.Any() )
+            {
+                var categoryService = new CategoryService( ( RockContext ) Context );
+                var categories = new List<Guid>( options.Categories );
+
+                // If filtered by category, only show prayer requests in that
+                // category or any of its descendant categories.
+                foreach ( var categoryGuid in options.Categories )
+                {
+                    categoryService.GetAllDescendents( categoryGuid )
+                        .Select( a => a.Guid )
+                        .ToList()
+                        .ForEach( c => categories.Add( c ) );
+                }
+
+                categories = categories.Distinct().ToList();
+
+                qryPrayerRequests = qryPrayerRequests
+                    .Include( r => r.Category )
+                    .Where( r => r.CategoryId.HasValue && categories.Contains( r.Category.Guid ) );
+            }
+
+            // Filter by campus if we have been given any.
+            if ( options.Campuses != null && options.Campuses.Any() )
+            {
+                qryPrayerRequests = qryPrayerRequests
+                    .Include( r => r.Campus )
+                    .Where( r => r.CampusId.HasValue && options.Campuses.Contains( r.Campus.Guid ) );
+            }
+
+            return qryPrayerRequests;
+        }
+
+        /// <summary>
+        /// Gets the last prayed details for a collection of prayer requests.
+        /// </summary>
+        /// <param name="prayerRequestIds">The prayer request identifiers.</param>
+        /// <returns>A collection of <see cref="PrayerRequestLastPrayedDetail"/> that describe the most recent prayer interactions.</returns>
+        public IEnumerable<PrayerRequestLastPrayedDetail> GetLastPrayedDetails( IEnumerable<int> prayerRequestIds )
+        {
+            var prayerRequestInteractionChannel = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.PRAYER_EVENTS ).Id;
+
+            return new InteractionService( ( RockContext ) Context ).Queryable()
+                .Where( i =>
+                    i.InteractionComponent.EntityId.HasValue
+                    && prayerRequestIds.Contains( i.InteractionComponent.EntityId.Value )
+                    && i.InteractionComponent.InteractionChannelId == prayerRequestInteractionChannel
+                    && i.Operation == "Prayed" )
+                .GroupBy( i => i.InteractionComponentId )
+                .Select( i => i.OrderByDescending( x => x.InteractionDateTime ).FirstOrDefault() )
+                .Select( y => new PrayerRequestLastPrayedDetail
+                {
+                    RequestId = y.InteractionComponent.EntityId.Value,
+                    PrayerDateTime = y.InteractionDateTime,
+                    FirstName = y.PersonAlias.Person.NickName,
+                    LastName = y.PersonAlias.Person.LastName
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Launches a workflow in response to a prayed for action.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request that was prayed for.</param>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier to be launched.</param>
+        /// <param name="currentPerson">The person that prayed for the request.</param>
+        public static void LaunchPrayedForWorkflow( PrayerRequest prayerRequest, Guid workflowTypeGuid, Person currentPerson )
+        {
+            var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
+
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+            {
+                try
+                {
+                    // Create parameters
+                    var parameters = new Dictionary<string, string>();
+                    parameters.Add( "EntityGuid", prayerRequest.Guid.ToString() );
+
+                    if ( currentPerson != null )
+                    {
+                        parameters.Add( "PrayerOfferedByPerson", currentPerson.PrimaryAlias.Guid.ToString() );
+                        parameters.Add( "PrayerOfferedByPersonAliasGuid", currentPerson.PrimaryAlias.Guid.ToString() );
+                    }
+
+                    prayerRequest.LaunchWorkflow( workflowTypeGuid, prayerRequest.Name, parameters, currentPerson.PrimaryAliasId );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Launches a workflow in response to a prayer request flagged action.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request that was flagged.</param>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier to be launched.</param>
+        /// <param name="currentPerson">The person that flagged the request.</param>
+        public static void LaunchFlaggedWorkflow( PrayerRequest prayerRequest, Guid workflowTypeGuid, Person currentPerson )
+        {
+            var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
+
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+            {
+                try
+                {
+                    // Create parameters
+                    var parameters = new Dictionary<string, string>();
+                    parameters.Add( "EntityGuid", prayerRequest.Guid.ToString() );
+
+                    if ( currentPerson != null )
+                    {
+                        parameters.Add( "FlaggedByPerson", currentPerson.PrimaryAlias.Guid.ToString() );
+                        parameters.Add( "FlaggedByPersonAliasGuid", currentPerson.PrimaryAlias.Guid.ToString() );
+                    }
+
+                    prayerRequest.LaunchWorkflow( workflowTypeGuid, prayerRequest.Name, parameters, currentPerson.PrimaryAliasId );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+        }
+    }
+
+    public static partial class PrayerRequestExtensionMethods
+    {
+        /// <summary>
+        /// Orders the collection of <see cref="PrayerRequest"/> by a defined
+        /// set of possible orders.
+        /// </summary>
+        /// <param name="prayerRequests">The prayer requests.</param>
+        /// <param name="order">The order.</param>
+        /// <returns>The collection in the requested order.</returns>
+        public static IEnumerable<PrayerRequest> OrderBy( this IEnumerable<PrayerRequest> prayerRequests, PrayerRequestOrder order )
+        {
+            switch ( order )
+            {
+                case PrayerRequestOrder.Newest:
+                    return prayerRequests.OrderByDescending( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Oldest:
+                    return prayerRequests.OrderBy( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Random:
+                    return prayerRequests.OrderBy( a => Guid.NewGuid() );
+
+                case 0:
+                default:
+                    return prayerRequests.OrderBy( a => a.PrayerCount );
+            }
         }
     }
 }

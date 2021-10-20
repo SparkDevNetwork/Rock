@@ -1534,6 +1534,31 @@ formfield .required-indicator {
 ^radiobutton {
   color: ?color-text;
 }
+
+
+/*** Prayer Card Block ***/
+.prayer-card-container {
+    border-color: #a6a6a6;
+    border-radius: 0;
+    padding: 12 24;
+    margin: 0 0 18 0;
+}
+.prayer-card-container .prayer-card-name {
+    font-size: ?shell-font-scale(24);
+    font-style: bold;
+    color: #1d1d1d;
+}
+.prayer-card-container .prayer-card-category {
+    background-color: #009ce3;
+    padding: 5;
+}
+    .prayer-card-container .prayer-card-category Label {
+        font-size: ?shell-font-scale(12);
+        color: #ffffff;
+    }
+.prayer-card-container .prayer-card-text {
+    margin: 12 0 0 0;
+}
 ";
         #endregion
     }

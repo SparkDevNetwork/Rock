@@ -277,6 +277,14 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CHECK_IN_MANAGER_EN_ROUTE = "BC86F18C-9F38-4CA3-8CF9-5A837CBC700D";
 
+        #region Mobile Block Types
+
+        /// <summary>
+        /// The mobile Prayer > Prayer Card View block type.
+        /// </summary>
+        public const string MOBILE_PRAYER_PRAYER_CARD_VIEW = "CA75C558-9345-47E7-99AF-D8191D31D00D";
+
+        #endregion
         /// <summary>
         /// The contribution statement lava (Legacy)
         /// </summary>
