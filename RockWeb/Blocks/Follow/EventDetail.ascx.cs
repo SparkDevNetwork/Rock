@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Follow
                 followingEvent.Description = tbDescription.Text;
                 followingEvent.EntityTypeId = cpEventType.SelectedEntityTypeId;
                 followingEvent.SendOnWeekends = !cbSendOnFriday.Checked;
-                if ( EntityTypeCache.Get( followingEvent.EntityType.Id ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
+                if ( EntityTypeCache.Get( cpEventType.SelectedEntityTypeId.Value ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
                 {
                     followingEvent.IncludeNonPublicRequests = cbIncludeNonPublicRequests.Checked;
                 }
@@ -162,10 +162,19 @@ namespace RockWeb.Blocks.Follow
         {
             var followingEvent = new FollowingEventType { Id = EventId, EntityTypeId = cpEventType.SelectedEntityTypeId };
 
-            if ( EntityTypeCache.Get( followingEvent.EntityType.Id ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
+            if ( cpEventType.SelectedEntityTypeId.HasValue )
             {
-                cbIncludeNonPublicRequests.Visible = true;
-                cbIncludeNonPublicRequests.Checked = followingEvent.IncludeNonPublicRequests;
+                //var entityType = new EntityTypeService( new RockContext() ).Get( cpEventType.SelectedEntityTypeId.Value );
+                if ( EntityTypeCache.Get( cpEventType.SelectedEntityTypeId.Value ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
+                {
+                    cbIncludeNonPublicRequests.Visible = true;
+                    cbIncludeNonPublicRequests.Checked = followingEvent.IncludeNonPublicRequests;
+                }
+                else
+                {
+                    cbIncludeNonPublicRequests.Visible = false;
+                    cbIncludeNonPublicRequests.Checked = false;
+                }
             }
 
             BuildDynamicControls( followingEvent, true );
@@ -244,10 +253,15 @@ namespace RockWeb.Blocks.Follow
             tbDescription.Text = followingEvent.Description;
             cpEventType.SetValue( followingEvent.EntityType != null ? followingEvent.EntityType.Guid.ToString().ToUpper() : string.Empty );
             cbSendOnFriday.Checked = !followingEvent.SendOnWeekends;
-            if ( EntityTypeCache.Get( followingEvent.EntityType.Id ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
+            if ( followingEvent.EntityType != null && EntityTypeCache.Get( followingEvent.EntityType.Id ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
             {
                 cbIncludeNonPublicRequests.Visible = true;
                 cbIncludeNonPublicRequests.Checked = followingEvent.IncludeNonPublicRequests;
+            }
+            else
+            {
+                cbIncludeNonPublicRequests.Visible = false;
+                cbIncludeNonPublicRequests.Checked = false;
             }
 
             cbRequireNotification.Checked = followingEvent.IsNoticeRequired;
@@ -278,7 +292,7 @@ namespace RockWeb.Blocks.Follow
             descriptionList.Add( "Require Notification", followingEvent.IsNoticeRequired ? "Yes" : "No" );
             descriptionList.Add( "Send Weekend Notices on Friday", followingEvent.SendOnWeekends ? "No" : "Yes" );
 
-            if ( EntityTypeCache.Get( followingEvent.EntityType.Id ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
+            if ( followingEvent.EntityType != null && EntityTypeCache.Get( followingEvent.EntityType.Id ).GetEntityType() == typeof( Rock.Follow.Event.PersonPrayerRequest ) )
             {
                 descriptionList.Add( "Include Non-Public Requests", followingEvent.IncludeNonPublicRequests ? "Yes" : "No" );
             }
