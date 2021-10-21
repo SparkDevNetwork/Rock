@@ -361,6 +361,14 @@ namespace RockWeb.Blocks.Communication
 
             gCommunication.RowDataBound += gCommunication_RowDataBound;
             gCommunication.GridRebind += gCommunication_GridRebind;
+
+            // Reconfigure the full-page progress meter to prevent it from appearing immediately when loading the detail panel.
+            var updateProgress = ( UpdateProgress ) this.Page.Master.FindControl( "updateProgress" );
+
+            if ( updateProgress != null )
+            {
+                updateProgress.DisplayAfter = 5000;
+            }
         }
 
         /// <summary>
