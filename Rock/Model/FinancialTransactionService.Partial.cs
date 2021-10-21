@@ -217,7 +217,7 @@ namespace Rock.Model
                         }
                         else
                         {
-                            transactionDetail.Amount = 0 - remainingForeignBalance;
+                            transactionDetail.ForeignCurrencyAmount = 0 - remainingForeignBalance;
                             remainingForeignBalance = 0.0m;
                         }
                     }
