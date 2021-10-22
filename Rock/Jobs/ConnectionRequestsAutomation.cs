@@ -152,26 +152,21 @@ namespace Rock.Jobs
                         var connectionRequests = connectionRequestQry.ToList();
                         foreach ( var connectionRequest in connectionRequests )
                         {
-                            var isRequirementMet = true;
                             // Group Requirement can't be met when either placement group or placement group role id is missing
-                            if ( !connectionRequest.AssignedGroupId.HasValue || !connectionRequest.AssignedGroupMemberRoleId.HasValue )
-                            {
-                                isRequirementMet = false;
-                            }
-                            else
+                            if ( connectionRequest.AssignedGroupId.HasValue && connectionRequest.AssignedGroupMemberRoleId.HasValue )
                             {
                                 var groupView = GetGroupView( connectionRequest, groupViews, rockContext );
                                 if ( groupView != null && groupView.HasGroupRequirement )
                                 {
-                                    isRequirementMet = IsGroupRequirementMet( connectionRequest, groupView, rockContext );
-                                }
-                            }
+                                    var isRequirementMet = IsGroupRequirementMet( connectionRequest, groupView, rockContext );
 
-                            // connection request based on if group requirement is met or not is added to list for status update
-                            if ( ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.DoesNotMeet && !isRequirementMet ) ||
-                                ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.MustMeet && isRequirementMet ) )
-                            {
-                                eligibleConnectionRequests.Add( connectionRequest );
+                                    // connection request based on if group requirement is met or not is added to list for status update
+                                    if ( ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.DoesNotMeet && !isRequirementMet ) ||
+                                        ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.MustMeet && isRequirementMet ) )
+                                    {
+                                        eligibleConnectionRequests.Add( connectionRequest );
+                                    }
+                                }
                             }
                         }
                     }
@@ -233,6 +228,7 @@ namespace Rock.Jobs
                     Group = group
                 };
 
+                groupViews.Add( groupView );
                 groupView.HasGroupRequirement = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == group.GroupTypeId ) ).Any();
             }
 
