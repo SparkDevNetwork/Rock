@@ -2421,8 +2421,8 @@
     <Compile Include="Model\Core\NoteType\NoteType.cs" />
     <Compile Include="Model\Core\NoteType\NoteTypeService.cs" />
     <Compile Include="Model\Core\NoteWatch\NoteWatch.cs" />
-    <Compile Include="Model\Notification.cs" />
-    <Compile Include="Model\NotificationRecipient.cs" />
+    <Compile Include="Model\Communication\Notification\Notification.cs" />
+    <Compile Include="Model\Communication\NotificationRecipient\NotificationRecipient.cs" />
     <Compile Include="Model\Page.cs" />
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageContextService.Partial.cs" />
