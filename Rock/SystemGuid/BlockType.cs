@@ -280,6 +280,16 @@ namespace Rock.SystemGuid
         #region Mobile Block Types
 
         /// <summary>
+        /// The mobile Groups > <see cref="Rock.Blocks.Types.Mobile.Groups.GroupRegistration">Group Registration</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_REGISTRATION = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912";
+
+        /// <summary>
+        /// The mobile Groups > <see cref="Rock.Blocks.Types.Mobile.Groups.GroupFinder">Group Finder</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_FINDER = "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C";
+
+        /// <summary>
         /// The mobile Prayer > Prayer Card View block type.
         /// </summary>
         public const string MOBILE_PRAYER_PRAYER_CARD_VIEW = "CA75C558-9345-47E7-99AF-D8191D31D00D";

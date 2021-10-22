@@ -69,6 +69,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
 
         /// <summary>
+        /// The block template for the mobile group finder.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUPS_GROUP_FINDER = "1B6D540A-2E40-44F6-8AE9-2857DE913459";
+
+        /// <summary>
         /// The block template for mobile my prayer requests.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS = "198F3006-5F0F-48AB-9EA0-2FA56F633753";

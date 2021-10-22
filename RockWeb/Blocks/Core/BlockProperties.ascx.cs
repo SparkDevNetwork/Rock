@@ -246,6 +246,9 @@ namespace RockWeb.Blocks.Core
 
             valSummaryTop.ValidationGroup = this.BlockValidationGroup;
 
+            // Set the validation group on any custom settings providers.
+            SetValidationGroup( CustomSettingsProviders.Values.ToArray(), this.BlockValidationGroup );
+
             int? blockId = PageParameter( "BlockId" ).AsIntegerOrNull();
             if ( !blockId.HasValue )
             {
@@ -568,21 +571,26 @@ namespace RockWeb.Blocks.Core
             var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() ).Reverse();
             foreach ( var provider in providers )
             {
-                var control = provider.GetCustomSettingsControl( block, phCustomSettings );
-                control.Visible = false;
+                // Place the custom controls in a naming container to avoid
+                // ID collisions.
+                var controlContainer = new CompositePlaceHolder();
 
                 if ( provider.CustomSettingsTitle == "Basic Settings" )
                 {
-                    phCustomBasicSettings.Controls.Add( control );
+                    phCustomBasicSettings.Controls.Add( controlContainer );
                 }
                 else if ( provider.CustomSettingsTitle == "Advanced Settings" )
                 {
-                    phCustomAdvancedSettings.Controls.Add( control );
+                    phCustomAdvancedSettings.Controls.Add( controlContainer );
                 }
                 else
                 {
-                    phCustomSettings.Controls.Add( control );
+                    phCustomSettings.Controls.Add( controlContainer );
                 }
+
+                var control = provider.GetCustomSettingsControl( block, phCustomSettings );
+                control.Visible = false;
+                controlContainer.Controls.Add( control );
 
                 CustomSettingsProviders.Add( provider, control );
             }

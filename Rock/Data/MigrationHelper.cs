@@ -4315,7 +4315,7 @@ BEGIN
 				AND [EntityId] = @entityId
 				AND [Action] = '{action}'
 				AND [SpecialRole] = {specialRole}
-				AND [GroupId] = @groupId
+				AND ISNULL([GroupId], 0) = ISNULL(@groupId, 0)
 			)
 	BEGIN
 		INSERT INTO [dbo].[Auth] (
