@@ -166,13 +166,13 @@ namespace Rock.Tests.Integration.Crm
             var memberConnectionStatusId = GetStatusValueIdOrThrow( "Member" );
             var attendeeConnectionStatusId = GetStatusValueIdOrThrow( "Attendee" );
             var visitorConnectionStatusId = GetStatusValueIdOrThrow( "Visitor" );
-            var prospectConnectionStatusId = GetStatusValueIdOrThrow( "Web Prospect" );
+            var prospectConnectionStatusId = GetStatusValueIdOrThrow( "Prospect" );
 
             // Get an unfiltered report.
-            // The unfiltered data should contain Original Status=[Attendee|Web Prospect].
+            // The unfiltered data should contain Original Status=[Attendee|Prospect].
 
             Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.OldConnectionStatusId == attendeeConnectionStatusId ), "Status expected but not found. [Status=Attendee]" );
-            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.OldConnectionStatusId == prospectConnectionStatusId ), "Status expected but not found. [Status=Web Prospect]" );
+            Assert.That.IsTrue( _BaselineReport.ChangeEvents.Any( x => x.OldConnectionStatusId == prospectConnectionStatusId ), "Status expected but not found. [Status=Prospect]" );
 
             // Get a filtered report: Original Status=Attendee, UpdatedStatus=Member.
             // The filtered data should only contain Original Status=Attendee.

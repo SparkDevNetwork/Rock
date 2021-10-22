@@ -22,9 +22,11 @@ using Rock.Lava;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Information about a definedValue that is required by the rendering engine.
-    /// This information will be cached by the engine
+    /// Represents a compiled lava template that is available for re-use.
+    /// This information will be cached by the engine.
     /// </summary>
+    [RockObsolete( "1.13" )]
+    [Obsolete( "Use the LavaService object to manage the LavaCache for web applications." )]
     public class LavaTemplateCache : ItemCache<LavaTemplateCache>
     {
         #region Constructors
@@ -54,19 +56,6 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
-        /// Gets the or add existing.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="valueFactory">The value factory.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed", true )]
-        public static LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
-        {
-            return ItemCache<LavaTemplateCache>.GetOrAddExisting( key, null );
-        }
-
-        /// <summary>
         /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
@@ -75,18 +64,6 @@ namespace Rock.Web.Cache
         public static LavaTemplateCache Get( string content )
         {
             return Get( content, content );
-        }
-
-        /// <summary>
-        /// Reads the specified content.
-        /// </summary>
-        /// <param name="content">The content.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
-        public static LavaTemplateCache Read( string content )
-        {
-            return Get( content );
         }
 
         /// <summary>

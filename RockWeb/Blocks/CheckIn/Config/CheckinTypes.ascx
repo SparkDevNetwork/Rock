@@ -7,8 +7,8 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-check-square-o"></i> Check-in Configurations</h1>
 
-                <div class="pull-right">
-                    <asp:LinkButton ID="lbAddCheckinType" runat="server" CssClass="btn btn-action btn-xs btn-square pull-right" OnClick="lbAddCheckinType_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
+                <div class="panel-labels">
+                    <asp:LinkButton ID="lbAddCheckinType" runat="server" CssClass="btn btn-action btn-xs btn-square" OnClick="lbAddCheckinType_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">

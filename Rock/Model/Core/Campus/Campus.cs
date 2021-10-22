@@ -209,7 +209,7 @@ namespace Rock.Model
         public virtual PersonAlias LeaderPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets the current date time.
+        /// Gets the current date time basd on the <see cref="Campus.TimeZoneId" />.
         /// </summary>
         /// <value>
         /// The current date time.

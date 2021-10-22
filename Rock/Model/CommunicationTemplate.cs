@@ -82,12 +82,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [CSS inlining enabled].
@@ -133,16 +128,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
-
-        /// <summary>
-        /// Gets or sets a Json formatted string containing the Medium specific data.
-        /// </summary>
-        /// <value>
-        /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumDataJson is no longer used.", true )]
-        public string MediumDataJson { get; set; }
 
         #region Email Fields
 

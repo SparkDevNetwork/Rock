@@ -18,8 +18,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Fluid;
 using Fluid.Ast;
@@ -68,7 +70,6 @@ namespace Rock.Lava.Fluid
         protected override ILavaRenderContext OnCreateRenderContext()
         {
             var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
-
             var context = new FluidRenderContext( fluidContext );
 
             return context;
@@ -209,6 +210,11 @@ namespace Rock.Lava.Fluid
 
                 // Set Fluid to use the local server culture for formatting dates, times and currencies.
                 _templateOptions.CultureInfo = CultureInfo.CurrentCulture;
+
+                // Set Fluid to use the Rock Organization timezone.
+                _templateOptions.TimeZone = RockDateTime.OrgTimeZoneInfo;
+
+                TemplateOptions.Default.TimeZone = RockDateTime.OrgTimeZoneInfo;
             }
 
             return _templateOptions;
@@ -428,9 +434,24 @@ namespace Rock.Lava.Fluid
                     }
                 }
 
-                var result = lavaFilterMethod.Invoke( null, lavaFilterMethodArguments );
+                try
+                {
+                    var result = lavaFilterMethod.Invoke( null, lavaFilterMethodArguments );
 
-                return FluidValue.Create( result, templateOptions );
+                    return FluidValue.Create( result, templateOptions );
+                }
+                catch ( TargetInvocationException ex )
+                {
+                    // Any exceptions thrown from the filter method are wrapped in a TargetInvocationException by the .NET framework.
+                    if ( ex.InnerException is LavaInterruptException )
+                    {
+                        // This exception is intentionally thrown by a component to abort the render process, so ensure it propagates to the caller.
+                        throw ex.InnerException;
+                    }
+
+                    // Rethrow the actual exception thrown by the filter, where possible.
+                    throw ex.InnerException ?? ex;
+                }
             }
 
             templateOptions.Filters.AddFilter( filterName, fluidFilterFunction );
@@ -526,6 +547,8 @@ namespace Rock.Lava.Fluid
             }
         }
 
+        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
+
         /// <summary>
         /// Pre-parses a Lava template to ensure it is using Liquid-compliant syntax, and creates a new template object.
         /// </summary>
@@ -536,7 +559,7 @@ namespace Rock.Lava.Fluid
         {
             FluidTemplate template;
 
-            liquidTemplate = ConvertToLiquid( lavaTemplate );
+            liquidTemplate = _lavaToLiquidConverter.RemoveLavaComments( lavaTemplate );
 
             string error;
             IFluidTemplate fluidTemplate;
@@ -572,7 +595,16 @@ namespace Rock.Lava.Fluid
 
             var result = new LavaRenderResult();
 
-            result.Text = template.Render( templateContext.FluidContext );
+            var sb = new StringBuilder();
+            var writer = new StringWriter( sb );
+
+            template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
+
+            writer.Flush();
+
+            result.Text = sb.ToString();
+
+            writer.Dispose();
 
             return result;
         }
@@ -597,7 +629,14 @@ namespace Rock.Lava.Fluid
             // Therefore, we register the tag as a factory that can produce the requested element on demand.
             FluidLavaTagStatement.RegisterFactory( name, factoryMethod );
 
-            _parser.RegisterLavaTag( name );
+            if ( name.EndsWith( "_" ) )
+            {
+                _parser.RegisterLavaTag( name, LavaTagFormatSpecifier.LavaShortcode );
+            }
+            else
+            {
+                _parser.RegisterLavaTag( name, LavaTagFormatSpecifier.LiquidTag );
+            }
         }
 
         /// <summary>
@@ -620,7 +659,24 @@ namespace Rock.Lava.Fluid
             // To implement this behaviour, register the tag as a factory that can create the requested element on demand.
             FluidLavaBlockStatement.RegisterFactory( name, factoryMethod );
 
-            _parser.RegisterLavaBlock( name );
+            if ( name.EndsWith( "_" ) )
+            {
+                _parser.RegisterLavaBlock( name, LavaTagFormatSpecifier.LavaShortcode );
+            }
+            else
+            {
+                _parser.RegisterLavaBlock( name, LavaTagFormatSpecifier.LiquidTag );
+            }
+        }
+
+        /// <summary>
+        /// Process a template and return the list of valid tokens identified by the parser.
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public List<string> TokenizeTemplate( string lavaTemplate )
+        {
+            return LavaFluidParser.ParseToTokens( lavaTemplate );
         }
 
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )

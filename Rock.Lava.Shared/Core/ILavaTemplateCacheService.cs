@@ -53,11 +53,11 @@ namespace Rock.Lava
         void ClearCache();
 
         /// <summary>
-        /// Gets a flag indicating if the cache contains the specified template.
+        /// Gets a flag indicating if the cache contains a template identified by the specified key.
         /// </summary>
-        /// <param name="content"></param>
+        /// <param name="key">The key that uniquely identifies the template in the cache.</param>
         /// <returns></returns>
-        bool ContainsKey( string content );
+        bool ContainsKey( string key );
 
         /// <summary>
         /// Calculates a cache key for the specified template.
@@ -72,6 +72,13 @@ namespace Rock.Lava
         /// <param name="content"></param>
         /// <returns></returns>
         void RemoveTemplate( string content );
+
+        /// <summary>
+        /// Removes the template associated with the specified key from the cache.
+        /// </summary>
+        /// <param name="key">The key that uniquely identifies the template in the cache.</param>
+        /// <returns></returns>
+        void RemoveKey( string key );
 
         /// <summary>
         /// Gets the number of times a request for a template has been satisfied from the cache.

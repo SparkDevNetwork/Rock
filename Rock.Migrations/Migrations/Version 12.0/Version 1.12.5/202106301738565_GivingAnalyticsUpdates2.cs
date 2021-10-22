@@ -102,9 +102,13 @@ namespace Rock.Migrations
         /// </summary>
         private void AttributesUp()
         {
+            // Since this is a migration. Don't change this to the PERSON_ATTRIBUTES_GIVING_OVERVIEW. We can suppress this warning.
+#pragma warning disable CS0618 // Type or member is obsolete
             var givingAnalyticsCategory = new List<string>() { SystemGuid.Category.PERSON_ATTRIBUTES_GIVING_ANALYTICS };
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Person Attribute "Giving History JSON"
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid(
                 SystemGuid.FieldType.CODE_EDITOR,
                 givingAnalyticsCategory,
@@ -116,7 +120,9 @@ namespace Rock.Migrations
                 2000,
                 "",
                 SystemGuid.Attribute.PERSON_GIVING_HISTORY_JSON );
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Person Attribute "Last 12 Month Giving"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid(
                 SystemGuid.FieldType.CURRENCY,
@@ -129,7 +135,9 @@ namespace Rock.Migrations
                 2001,
                 "",
                 SystemGuid.Attribute.PERSON_GIVING_12_MONTHS );
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Person Attribute "Last 90 Days Giving"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid(
                 SystemGuid.FieldType.CURRENCY,
@@ -142,7 +150,9 @@ namespace Rock.Migrations
                 2002,
                 "",
                 SystemGuid.Attribute.PERSON_GIVING_90_DAYS );
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Person Attribute "Prior 90 Days Giving"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid(
                 SystemGuid.FieldType.CURRENCY,
@@ -155,7 +165,9 @@ namespace Rock.Migrations
                 2003,
                 "",
                 SystemGuid.Attribute.PERSON_GIVING_PRIOR_90_DAYS );
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Person Attribute "Last 12 Month Gift Count"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid(
                 SystemGuid.FieldType.INTEGER,
@@ -168,7 +180,9 @@ namespace Rock.Migrations
                 2004,
                 "",
                 SystemGuid.Attribute.PERSON_GIVING_12_MONTHS_COUNT );
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Person Attribute "Last 90 Day Gift Count"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid(
                 SystemGuid.FieldType.INTEGER,
@@ -181,6 +195,7 @@ namespace Rock.Migrations
                 2005,
                 "",
                 SystemGuid.Attribute.PERSON_GIVING_90_DAYS_COUNT );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }

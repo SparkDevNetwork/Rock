@@ -69,6 +69,16 @@ td.wrap-contents {
   margin-bottom: 0;
 }
 
+// Add Border to last row
+.table-inline:not(.table-hide-last-border) > tbody > tr:last-child > td {
+  border-bottom: 1px solid @table-border-color;
+}
+
+// No Border on First row
+.table-inline > tbody > tr:first-child > td {
+  border-top: 0;
+}
+
 .grid {
   margin-bottom: 15px;
 
@@ -322,7 +332,6 @@ td.grid-col-actions {
 
   .btn-grid-custom-action {
     margin-bottom: 8px;
-    margin-bottom: 8px;
   }
 }
 
@@ -355,6 +364,7 @@ td.grid-col-actions {
   }
 }
 
+.panel-section .table-light,
 .well .table-light {
   > tfoot > tr > td {
     background-color: @well-bg;
@@ -368,6 +378,13 @@ td.grid-col-actions {
   td,
   th {
     padding: 12px !important;
+  }
+}
+
+.hide-row-border {
+  tbody > tr:first-child > td,
+  tbody > tr:first-child > th {
+    border-width: 0;
   }
 }
 
@@ -466,13 +483,12 @@ td.grid-col-actions {
 // 9. Row Types
 // -------------------------
 .table > tbody > tr.grid-section-header {
-  > td {
+  > td,
+  &:hover > td {
+    font-size: @grid-section-font-size;
+    font-weight: @grid-section-font-weight;
     color: @grid-section-color;
     background-color: @grid-section-bg;
-  }
-
-  &:hover > td {
-    background-color: @grid-section-bg !important;
   }
 }
 
@@ -497,7 +513,6 @@ tr.row-highlight {
     color: @grid-column-header-bold-color;
     vertical-align: top !important;
     background-color: @grid-column-header-bold-bg;
-    border-color: lighten(@grid-column-header-bold-bg, 5%);
   }
 
   &:hover td {

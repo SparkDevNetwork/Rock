@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using DbModelBuilder = Microsoft.EntityFrameworkCore.ModelBuilder;
 #else
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.ModelConfiguration.Conventions;
 #endif
 using System.Linq;
@@ -31,24 +32,6 @@ using Rock.Model;
 
 namespace Rock.Data
 {
-    /// <summary>
-    /// Helper class to set view cache
-    /// </summary>
-    [RockObsolete( "1.8" )]
-    [Obsolete( "Does nothing. No longer needed,", true )]
-    public static class RockInteractiveViews
-    {
-        /// <summary>
-        /// Sets the view factory.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Does nothing. No longer needed,", true )]
-        public static void SetViewFactory( string path )
-        {
-        }
-    }
-
     /// <summary>
     /// Entity Framework Context
     /// </summary>
@@ -91,6 +74,20 @@ namespace Rock.Data
             : base( nameOrConnectionString )
         {
         }
+
+#if !NET5_0_OR_GREATER
+        /// <summary>
+        /// Initializes a new instance of a <see cref="RockContext"/> sub-class using the same <see cref="ObjectContext"/> as regular RockContext.
+        /// This is for internal use by <see cref="RockContextReadOnly"/> and <see cref="RockContextAnalytics"/>. 
+        /// </summary>
+        /// <param name="objectContext">The object context.</param>
+        /// <param name="dbContextOwnsObjectContext">if set to <c>true</c> [database context owns object context].</param>
+        /// <inheritdoc />
+        internal protected RockContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
+            base( objectContext, dbContextOwnsObjectContext )
+        {
+        }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
@@ -411,6 +408,14 @@ namespace Rock.Data
         public DbSet<AuditDetail> AuditDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the authentication audit log.
+        /// </summary>
+        /// <value>
+        /// The authentication audit log.
+        /// </value>
+        public DbSet<AuthAuditLog> AuthAuditLog { get; set; }
+
+        /// <summary>
         /// Gets or sets the Auth Clients.
         /// </summary>
         /// <value>
@@ -425,7 +430,7 @@ namespace Rock.Data
         /// The Auth Claim.
         /// </value>
         public DbSet<AuthClaim> AuthClaims { get; set; }
-                
+
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
@@ -673,6 +678,14 @@ namespace Rock.Data
         /// The connection statuses.
         /// </value>
         public DbSet<ConnectionStatus> ConnectionStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection status automations.
+        /// </summary>
+        /// <value>
+        /// The connection automations.
+        /// </value>
+        public DbSet<ConnectionStatusAutomation> ConnectionStatusAutomations { get; set; }
 
         /// <summary>
         /// Gets or sets the connection types.

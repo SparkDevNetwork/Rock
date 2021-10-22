@@ -763,7 +763,7 @@ namespace RockWeb
                             "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
                                 person != null ? " for " + person.FullName : string.Empty,
                                 siteName,
-                                Context.Request.Url.OriginalString,
+                                Context.Request.UrlProxySafe().OriginalString,
                                 FormatException( ex, string.Empty ) );
 
                         // setup merge codes for email

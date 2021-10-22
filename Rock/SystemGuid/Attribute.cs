@@ -16,6 +16,8 @@
 //
 using System;
 
+using Rock.Financial;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -346,14 +348,6 @@ namespace Rock.SystemGuid
         public const string PERSON_MOTIVATOR_POSITIONAL_THEME = "075FDF4D-DDEC-4106-B996-F48CD1EFC978";
 
         #endregion
-
-        /// <summary>
-        /// The family attribute for storing a family's checkin identifiers
-        /// </summary>
-        ///
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.", true )]
-        public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
         #region eRA Attributes
 
@@ -805,7 +799,7 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_FREQUENCY_LABEL = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5";
 
         /// <summary>
-        /// Percent of Gifts Scheduled - Number
+        /// Percent of Gifts Scheduled - Integer
         /// </summary>
         public const string PERSON_GIVING_PERCENT_SCHEDULED = "98373264-0E65-4C79-B75B-4F8477AA647E";
 
@@ -820,22 +814,22 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_AMOUNT_IQR = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7";
 
         /// <summary>
-        /// Gift Frequency Days: Mean -  Number
+        /// Gift Frequency Days: Mean -  Decimal
         /// </summary>
         public const string PERSON_GIVING_FREQUENCY_MEAN_DAYS = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA";
 
         /// <summary>
-        /// Gift Frequency Days: Standard Deviation - Number
+        /// Gift Frequency Days: Standard Deviation - Decimal
         /// </summary>
         public const string PERSON_GIVING_FREQUENCY_STD_DEV_DAYS = "1D5E4356-DC66-4067-BEF1-3560E61150BD";
 
         /// <summary>
-        /// Giving Bin - Number
+        /// Giving Bin - Integer
         /// </summary>
         public const string PERSON_GIVING_BIN = "7FBB63CC-F4FC-4F7E-A8C5-44DC3D0F0720";
 
         /// <summary>
-        /// Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
+        /// Giving Percentile - Integer - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
         /// </summary>
         public const string PERSON_GIVING_PERCENTILE = "D03ACAB8-EB0C-4835-A04C-4C357014D935";
 
@@ -854,32 +848,59 @@ namespace Rock.SystemGuid
         /// Giving History JSON - Code - gets the JSON array of giving data by month objects.
         /// [{ Year: 2020, Month: 1, AccountId: 1, Amount: 550.67 }, ...]
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_HISTORY_JSON = "3BF34F25-4D50-4417-B436-37FEA3FA5473";
 
         /// <summary>
         /// Giving Total past 12 months - Currency
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_12_MONTHS = "ADD9BE86-49CA-46C4-B4EA-547F2F277294";
 
         /// <summary>
         /// Giving Total past 90 days - Currency
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_90_DAYS = "0DE95B77-D26E-4513-9A71-92A7FD5C4B7C";
 
         /// <summary>
         /// Giving Total prior 90 days (90-180 days ago) - Currency
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_PRIOR_90_DAYS = "0170A267-942A-480A-A9CF-E4EA60CAA529";
 
         /// <summary>
         /// Gift count 12 month - Integer
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_12_MONTHS_COUNT = "23B6A7BD-BBBB-4F2D-9695-2B1E03B3013A";
 
         /// <summary>
         /// Gift count 90 days - Integer
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_90_DAYS_COUNT = "356B8F0B-AA54-4F44-8513-F8A5FF592F18";
+
+        /// <summary>
+        /// Giving Journey - Current <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_CURRENT_GIVING_JOURNEY_STAGE = "13C55AEA-6D88-4470-B3AE-EE5138F044DF";
+
+        /// <summary>
+        /// Giving Journey - Previous <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_PREVIOUS_GIVING_JOURNEY_STAGE = "B35CE867-6017-484E-9EC7-AEB93CD4B2D8";
+
+        /// <summary>
+        /// Giving Journey - Change Date of <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_GIVING_JOURNEY_STAGE_CHANGE_DATE = "8FFE3554-43F2-40D8-8803-446559D2B1F7";
 
         #endregion Giving Analytics
 

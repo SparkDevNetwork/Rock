@@ -278,17 +278,17 @@ function ()
             dvpDataView.RenderControl( writer );
 
             // Comparison Row
-            writer.AddAttribute( "class", "row form-row field-criteria" );
+            writer.AddAttribute( "class", "row form-row field-criteria d-flex flex-wrap align-items-end" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Comparison Type
-            writer.AddAttribute( "class", "col-md-4" );
+            writer.AddAttribute( "class", "col-xs-12 col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
             // Comparison Value
-            writer.AddAttribute( "class", "col-md-8 vertical-align-bottom" );
+            writer.AddAttribute( "class", "col-xs-12 col-md-8 vertical-align-bottom" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             nbValue.RenderControl( writer );
             writer.RenderEndTag();

@@ -429,17 +429,17 @@ namespace RockWeb.Blocks.Cms
 
             if ( endPointErrorCount == 0)
             {
-                spRedisStatus.Attributes["class"] = "pull-right label label-success";
+                spRedisStatus.Attributes["class"] = "label label-success";
                 spRedisStatus.InnerText = "All Redis endpoints are available";
             }
             else if ( endPointErrorCount < endPoints.Length )
             {
-                spRedisStatus.Attributes["class"] = "pull-right label label-warning";
+                spRedisStatus.Attributes["class"] = "label label-warning";
                 spRedisStatus.InnerText = string.Format( "{0} of {1} Redis endpoints cannot connect", endPointErrorCount, endPoints.Length );
             }
             else
             {
-                spRedisStatus.Attributes["class"] = "pull-right label label-danger";
+                spRedisStatus.Attributes["class"] = "label label-danger";
                 spRedisStatus.InnerText = string.Format( "All {0} {1} cannot connect", endPoints.Length, "endpoint".ToQuantity( endPoints.Length ) );
             }
         }

@@ -109,41 +109,39 @@
     }
 
     &.today {
-      @today-bg: lighten(orange, 30%);
-      color: #000;
-      background-color: @today-bg;
+      color: @datepicker-today-color;
+      background-color: @datepicker-today-bg;
 
       &:hover,
       &:focus {
-        background: darken(@today-bg, 17%);
+        background: darken(@datepicker-today-bg, 17%);
       }
 
       &.focused {
-        background: darken(@today-bg, 10%);
+        background: darken(@datepicker-today-bg, 10%);
       }
 
       &.disabled,
       &.disabled:active {
         color: @btn-link-disabled-color;
-        background: @today-bg;
+        background: @datepicker-today-bg;
       }
     }
 
     &.range {
-      @range-bg: @gray-lighter;
       color: #000;
-      background: @range-bg;
+      background: @datepicker-range-bg;
       border-radius: 0;
 
       &.focused,
       &:hover {
-        background: darken(@range-bg, 10%);
+        background: darken(@datepicker-range-bg, 10%);
       }
 
       &.disabled,
       &.disabled:active {
         color: @btn-link-disabled-color;
-        background: @range-bg;
+        background: @datepicker-range-bg;
       }
     }
 
@@ -158,34 +156,32 @@
     }
 
     &.range.highlighted {
-      @range-highlighted-bg: mix(@state-info-bg, @gray-lighter, 50%);
       color: #0000;
-      background: @range-highlighted-bg;
+      background: @datepicker-range-highlighted-bg;
 
       &.focused {
-        background: darken(@range-highlighted-bg, 10%);
+        background: darken(@datepicker-range-highlighted-bg, 10%);
       }
 
       &.disabled,
       &.disabled:active {
         color: @btn-link-disabled-color;
-        background: @range-highlighted-bg;
+        background: @datepicker-range-highlighted-bg;
       }
     }
 
     &.range.today {
-      @range-today-bg: mix(orange, @gray-lighter, 50%);
       color: #000;
-      background: @range-today-bg;
+      background: @datepicker-range-today-bg;
 
       &:hover {
-        background: darken(@range-today-bg, 10%);
+        background: darken(@datepicker-range-today-bg, 10%);
       }
 
       &.disabled,
       &.disabled:active {
         color: @btn-link-disabled-color;
-        background: @range-today-bg;
+        background: @datepicker-range-today-bg;
       }
     }
 

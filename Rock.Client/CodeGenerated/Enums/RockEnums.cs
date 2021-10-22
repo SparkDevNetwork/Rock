@@ -145,6 +145,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ChangeType
+    {
+        Add = 0x0,
+        Modify = 0x1,
+        Delete = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ColorDepth
     {
         BlackWhite = 0x0,
@@ -238,6 +247,22 @@ namespace Rock.Client.Enums
     {
         List = 0x0,
         Board = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ConnectionWorkflowTriggerType
+    {
+        RequestStarted = 0x0,
+        RequestConnected = 0x1,
+        StatusChanged = 0x2,
+        StateChanged = 0x3,
+        ActivityAdded = 0x4,
+        PlacementGroupAssigned = 0x5,
+        Manual = 0x6,
+        RequestTransferred = 0x7,
+        RequestAssigned = 0x8,
+        FutureFollowupDateReached = 0x9,
     }
 
     /// <summary>
@@ -413,6 +438,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum GroupRequirementsFilter
+    {
+        Ignore = 0x0,
+        MustMeet = 0x1,
+        DoesNotMeet = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum GroupSchedulerResourceListSourceType
     {
         GroupMembers = 0x0,
@@ -452,16 +486,9 @@ namespace Rock.Client.Enums
         ConnectionRequestStatusModify = 0xe,
         ConnectionRequestStateModify = 0xf,
         ConnectionRequestDelete = 0x10,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum IconCssWeight
-    {
-        Regular = 0x0,
-        Solid = 0x1,
-        Light = 0x2,
-        Thin = 0x3,
+        StepAdded = 0x11,
+        StepStatusModify = 0x12,
+        StepCampusModify = 0x13,
     }
 
     /// <summary>
@@ -579,13 +606,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum PaymentRedirectVendor
-    {
-        Pushpay = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum PersistedDatasetDataFormat
     {
         JSON = 0x0,
@@ -680,7 +700,7 @@ namespace Rock.Client.Enums
         GroupMemberAttribute = 0x2,
         RegistrantAttribute = 0x4,
 
-        [Obsolete( "Use RegistrantAttribute instead", false )]
+        [Obsolete( "Use RegistrantAttribute instead", true )]
         RegistrationAttribute = 0x4,
     }
 
@@ -862,6 +882,7 @@ namespace Rock.Client.Enums
     {
         Web = 0x0,
         Mobile = 0x1,
+        Tv = 0x2,
     }
 
     /// <summary>

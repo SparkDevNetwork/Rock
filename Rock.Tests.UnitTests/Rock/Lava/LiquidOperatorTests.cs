@@ -18,6 +18,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Lava.RockLiquid;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -28,6 +29,19 @@ namespace Rock.Tests.UnitTests.Lava
     [TestClass]
     public class LiquidOperatorTests : LavaUnitTestBase
     {
+        [ClassInitialize]
+        public static void Initialize( TestContext context )
+        {
+            LavaTestHelper.SetRockDateTimeToAlternateTimezone();
+        }
+
+        [ClassCleanup]
+        public static void Cleanup()
+        {
+            // Reset the timezone to avoid problems with other tests.
+            LavaTestHelper.SetRockDateTimeToLocalTimezone();
+        }
+
         #region Operators: <
 
         /// <summary>
@@ -618,6 +632,26 @@ namespace Rock.Tests.UnitTests.Lava
 ";
 
             var expectedOutput = @"True";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verify the "not equals" comparison operator.
+        /// </summary>
+        [TestMethod]
+        public void FluidNotEqual_BooleanOperandAndEmptyString_AlwaysReturnsTrue()
+        {
+            var template = @"
+{% assign operandTrue = true %}
+{% assign operandFalse = false %}
+{% if operandTrue != '' %}1{% endif %}
+{% if operandFalse != '' %}2{% endif %}
+{% if '' != operandTrue %}3{% endif %}
+{% if '' != operandFalse %}4{% endif %}
+";
+
+            var expectedOutput = @"1234";
 
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }

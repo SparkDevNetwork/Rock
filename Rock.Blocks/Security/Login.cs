@@ -157,10 +157,7 @@ for help. Thank you.",
         {
             if ( username.IsNullOrWhiteSpace() || password.IsNullOrWhiteSpace() )
             {
-                return new BlockActionResult( HttpStatusCode.BadRequest )
-                {
-                    Error = "Username and password are required."
-                };
+                return ActionBadRequest( "Username and password are required." );
             }
 
             var userLogin = GetAuthenticatedUserLogin( username, password );
@@ -195,10 +192,7 @@ for help. Thank you.",
 
             if ( authCookie == null )
             {
-                return new BlockActionResult( HttpStatusCode.InternalServerError )
-                {
-                    Error = "An error occurred creating the cookie."
-                };
+                return ActionInternalServerError( "An error occurred creating the cookie." );
             }
 
             return new BlockActionResult( HttpStatusCode.Created, new LoginResponse

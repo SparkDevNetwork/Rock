@@ -422,6 +422,52 @@ namespace Rock.Tests.UnitTests.Lava
 
         #endregion
 
+        #region Filter Tests: Split
+
+        /// <summary>
+        /// Split filter should retain or remove zero-length items in accordance with the specified "removeEmpty" parameter.
+        /// </summary>
+        /// <remarks>
+        /// The default Liquid language behavior for this filter is to remove empty entries.
+        /// </remarks>
+        [DataTestMethod]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "','", "1+3+4+5+6+7+9+" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',',true", "1+3+4+5+6+7+9+" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',','true'", "1+3+4+5+6+7+9+" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',',false", "+1++3+4+5+6+7++9++" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',','false'", "+1++3+4+5+6+7++9++" )]
+        public void Split_WithRemoveEmptyEntriesOption_RetainsOrRemovesEmptyEntries( string inputString, string filterArgsString, string expectedOutput )
+        {
+            var template = @"
+{% assign items = '<inputString>' | Split:<args> %}
+{% for item in items %}
+{{ item }}+
+{% endfor %}
+";
+
+            template = template.Replace( "<inputString>", inputString );
+            template = template.Replace( "<args>", filterArgsString );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Split filter applied with option to remove empty entries should eliminate zero-length items.
+        /// </summary>
+        [TestMethod]
+        public void Split_DocumentationExamples_ProduceExpectedSampleOutput()
+        {
+            var expected = "1 and 3 and 4 and 5 and 6 and 7 and 9";
+
+            var template = @"
+{{ '1,,3,4,5,6,7,,9' | Split:',',true | Join:' and ' }}
+";
+
+            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: true );
+        }
+
+        #endregion
+
         #region Filter Tests: ToCssClass
 
         /// <summary>

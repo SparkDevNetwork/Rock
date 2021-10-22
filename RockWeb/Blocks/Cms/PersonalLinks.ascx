@@ -3,20 +3,8 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        Rock.personalLinks.buildQuickReturn();
-
-        $(".js-rock-bookmark").off("click").on("click", function (e) {
-            e.preventDefault();
-
-            // if one of the configuration options is open (AddLink or AddSection), don't hide the links
-            var bookMarkConfigurationMode = $(".js-bookmark-configuration").length > 0;
-
-            if (!bookMarkConfigurationMode) {
-
-                // Show/hide the personalLinks
-                Rock.personalLinks.showPersonalLinks($('#<%= upnlContent.ClientID %>'), $(this))
-            }
-        });
+        var clientId = $('#<%= upnlContent.ClientID %>');
+        Rock.personalLinks.initialize(clientId);
     })
 </script>
 
@@ -24,9 +12,10 @@
     href="#" ><i class="fa fa-bookmark"></i></asp:LinkButton>
 
 
-<asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional" class="popover rock-popover styled-scroll js-personal-link-popover position-fixed d-none" role="tooltip">
+<asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional" class="popover rock-popover styled-scroll js-bookmark-panel js-personal-link-popover position-fixed d-none" role="tooltip">
     <ContentTemplate>
-        <asp:Panel ID="pnlView" runat="server" CssClass="rock-popover">
+        <%-- Html for Bookmark button and link containers --%>
+        <asp:Panel ID="pnlView" runat="server" CssClass="rock-popover js-personal-links-container">
             <div class="popover-panel">
                 <h3 class="popover-title">Personal Links
 
@@ -47,26 +36,20 @@
                     </div>
                 </h3>
                 <div class="popover-content">
-                    <asp:Repeater ID="rptPersonalLinkSection" runat="server" OnItemDataBound="rptPersonalLinkSection_ItemDataBound">
-                        <ItemTemplate>
-                            <ul class="list-unstyled">
-                                <li><strong><%# (bool)Eval("IsShared") ? "<i class='fa fa-users'></i>" : string.Empty %> <%# ((string)Eval( "Name" )).FixCase() %></strong></li>
-                                <asp:Repeater ID="rptLinks" runat="server">
-                                    <ItemTemplate>
-                                        <li><a href="<%#Eval("Url")%>"><%#((string)Eval( "Name" )).FixCase()%></a></li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </ul>
-                        </ItemTemplate>
-                    </asp:Repeater>
+
+                    <%-- Container for personalLinks.js to put the personalLinks links html into --%>
+                    <div id="divPersonalLinks" runat="server" class="js-personal-links-links" data-last-shared-link-update-utc="01-01-1900"></div>
                 </div>
             </div>
             <div class="popover-panel">
                 <h3 class="popover-title">Quick Returns</h3>
-                <div id="divQuickReturn" class="popover-content"></div>
+
+                <%-- Container for personalLinks.js to put the quickReturns html into --%>
+                <div id="divQuickReturn" class="popover-content js-personal-links-quick-return"></div>
             </div>
         </asp:Panel>
 
+        <%-- Configuration panel for Adding Personal (non-shared) Section --%>
         <asp:Panel ID="pnlAddSection" runat="server" CssClass="popover-panel w-100 js-bookmark-configuration js-bookmark-add-section" Visible="false">
             <h3 class="popover-title">Personal Link Section</h3>
             <div class="panel-body">
@@ -80,6 +63,7 @@
             </div>
         </asp:Panel>
 
+        <%-- Configuration panel for adding Personal (non-shared) Links --%>
         <asp:Panel ID="pnlAddLink" runat="server" CssClass="popover-panel w-100 js-bookmark-configuration js-bookmark-add-link" Visible="false">
             <h3 class="popover-title">Personal Link</h3>
             <div class="panel-body">

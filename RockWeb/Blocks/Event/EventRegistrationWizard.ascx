@@ -155,7 +155,7 @@
                 <div class="panel-body">
 
                     <asp:Panel ID="pnlInitiate" runat="server">
-                        <asp:ValidationSummary ID="vsInitiate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsInitiate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">
@@ -190,7 +190,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlRegistration" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsRegistration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsRegistration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">
@@ -268,7 +268,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlGroup" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">
@@ -306,7 +306,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlEvent" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <asp:Panel ID="pnlNewEventSelection" runat="server">
@@ -383,7 +383,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlEventOccurrence" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsEventOccurrence" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsEventOccurrence" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">

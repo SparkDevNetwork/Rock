@@ -88,7 +88,18 @@ namespace Rock.Model
         public int TargetEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the purpose key.
+        /// Gets or sets the purpose key. This indicates the purpose of the relationship. For example:
+        /// <list type="bullet">
+        /// <item>
+        ///     <term><see cref="RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement"/></term>
+        ///     <description>This indicates a Placement Group that is specific to the <see cref="RegistrationInstance"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate"/></term>
+        ///     <description>This indicates a Placement Group that is 'shared' for all RegistrationInstances of the <see cref="RegistrationTemplate"/></description>
+        /// </item>
+        /// </list>
+        /// See details on <seealso cref="RelatedEntityPurposeKey"/>
         /// </summary>
         /// <value>
         /// The purpose key.
@@ -121,6 +132,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the qualifier value.
+        /// See more details on <seealso cref="RelatedEntityPurposeKey"/>.
         /// </summary>
         /// <value>
         /// The qualifier value.
@@ -135,6 +147,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the type of the source entity.
+        /// See notes on <seealso cref="RelatedEntityPurposeKey"/> for how this works.
         /// </summary>
         /// <value>
         /// The type of the entity.
@@ -160,12 +173,52 @@ namespace Rock.Model
     public static class RelatedEntityPurposeKey
     {
         /// <summary>
-        /// The group placement for a Registration Instance
+        /// The group placement for a specific Registration Instance.
+        /// <br />
+        /// <br />
+        /// For this, the <see cref="RelatedEntity"/> fields would be...
+        /// <list>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.PurposeKey" /></term>
+        ///     <description>PLACEMENT</description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.SourceEntityType"/></term>
+        ///     <description><see cref="RegistrationInstance"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.TargetEntityType"/></term>
+        ///     <description><see cref="Rock.Model.Group"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.QualifierValue"/></term>
+        ///     <description><see cref="RegistrationTemplatePlacement"/> Id</description>
+        /// </item>
+        /// </list>
         /// </summary>
         public const string RegistrationInstanceGroupPlacement = "PLACEMENT";
 
         /// <summary>
-        /// The group placement for a Registration Template (shared for all of the RegistrationTemplate's Registration Instances)
+        /// The group placement for a Registration Template ('Shared' for all of the RegistrationTemplate's Registration Instances),
+        /// For this, the RelatedEntity fields would be...
+        /// <list>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.PurposeKey" /></term>
+        ///     <description>PLACEMENT-TEMPLATE</description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.SourceEntityType"/></term>
+        ///     <description><see cref="RegistrationTemplatePlacement"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.TargetEntityType"/></term>
+        ///     <description><see cref="Rock.Model.Group"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.QualifierValue"/></term>
+        ///     <description><c>null</c></description>
+        /// </item>
+        /// </list>
         /// </summary>
         public const string RegistrationTemplateGroupPlacementTemplate = "PLACEMENT-TEMPLATE";
     }

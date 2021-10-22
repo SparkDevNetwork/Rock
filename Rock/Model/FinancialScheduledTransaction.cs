@@ -32,6 +32,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -172,12 +173,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> that is <c>true</c> if this scheduled transaction is active; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the gateway identifier.
@@ -208,7 +204,7 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets a summary of the scheduled transaction.
+        /// Gets or sets a summary of the scheduled transaction. This would store any comments made.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing a summary of the scheduled transaction.
@@ -296,6 +292,15 @@ namespace Rock.Model
         public virtual DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the foreign currency code type <see cref="Rock.Model.DefinedValue"/> indicating where the transaction originated from; the source of the transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the foreign currency code.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue ForeignCurrencyCodeValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialGateway">gateway</see>.
         /// </summary>
         /// <value>
@@ -365,17 +370,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList", true )]
-        public virtual List<string> HistoryChanges { get; set; }
-
-        /// <summary>
         /// Gets or sets the history change list.
         /// </summary>
         /// <value>
@@ -423,15 +417,20 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Gateway Schedule Id", string.Empty, GatewayScheduleId );
                         History.EvaluateChange( HistoryChangeList, "Transaction Code", string.Empty, TransactionCode );
                         History.EvaluateChange( HistoryChangeList, "Summary", string.Empty, Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", (int?)null, TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", (int?)null, SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Frequency", (int?)null, TransactionFrequencyValue, TransactionFrequencyValueId);
-                        History.EvaluateChange( HistoryChangeList, "Start Date", (DateTime?)null, StartDate );
-                        History.EvaluateChange( HistoryChangeList, "End Date", (DateTime?)null, EndDate );
-                        History.EvaluateChange( HistoryChangeList, "Number of Payments", (int?)null, NumberOfPayments );
-                        History.EvaluateChange( HistoryChangeList, "Is Active", (bool?)null, IsActive );
-                        History.EvaluateChange( HistoryChangeList, "Card Reminder Date", (DateTime?)null, CardReminderDate );
-                        History.EvaluateChange( HistoryChangeList, "Last Reminded Date", (DateTime?)null, LastRemindedDate );
+                        History.EvaluateChange( HistoryChangeList, "Type", ( null as int? ), TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Source", ( null as int? ), SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Frequency", ( null as int? ), TransactionFrequencyValue, TransactionFrequencyValueId );
+                        History.EvaluateChange( HistoryChangeList, "Start Date", ( null as DateTime? ), StartDate );
+                        History.EvaluateChange( HistoryChangeList, "End Date", ( null as DateTime? ), EndDate );
+                        History.EvaluateChange( HistoryChangeList, "Number of Payments", ( null as int? ), NumberOfPayments );
+                        History.EvaluateChange( HistoryChangeList, "Is Active", ( null as bool? ), IsActive );
+                        History.EvaluateChange( HistoryChangeList, "Card Reminder Date", ( null as DateTime? ), CardReminderDate );
+                        History.EvaluateChange( HistoryChangeList, "Last Reminded Date", ( null as DateTime? ), LastRemindedDate );
+                        var isOrganizationCurrency = new RockCurrencyCodeInfo( ForeignCurrencyCodeValueId ).IsOrganizationCurrency;
+                        if ( !isOrganizationCurrency )
+                        {
+                            History.EvaluateChange( HistoryChangeList, "Currency Code", ( null as int? ), ForeignCurrencyCodeValue, ForeignCurrencyCodeValueId );
+                        }
 
                         break;
                     }
@@ -460,6 +459,7 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Is Active", entry.OriginalValues["IsActive"].ToStringSafe().AsBooleanOrNull(), IsActive );
                         History.EvaluateChange( HistoryChangeList, "Card Reminder Date", entry.OriginalValues["CardReminderDate"].ToStringSafe().AsDateTime(), CardReminderDate );
                         History.EvaluateChange( HistoryChangeList, "Last Reminded Date", entry.OriginalValues["LastRemindedDate"].ToStringSafe().AsDateTime(), LastRemindedDate );
+                        History.EvaluateChange( HistoryChangeList, "Currency Code", entry.OriginalValues["ForeignCurrencyCodeValueId"].ToStringSafe().AsIntegerOrNull(), ForeignCurrencyCodeValue, ForeignCurrencyCodeValueId );
 
                         break;
                     }
@@ -517,6 +517,7 @@ namespace Rock.Model
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionFrequencyValue ).WithMany().HasForeignKey( t => t.TransactionFrequencyValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.ForeignCurrencyCodeValue ).WithMany().HasForeignKey( t => t.ForeignCurrencyCodeValueId ).WillCascadeOnDelete( false );
         }
     }
 

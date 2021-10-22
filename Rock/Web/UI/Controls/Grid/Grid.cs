@@ -151,6 +151,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [table striped].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [table striped]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Show a striped table." )
+        ]
+        public virtual bool TableStriped { get; set; } = true;
+        
+        /// <summary>
         /// Gets or sets the name of the row item.
         /// </summary>
         /// <value>
@@ -1171,7 +1184,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 this.RemoveCssClass( "table-condensed" );
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
-                this.AddCssClass( "table-striped" );
+
+                if ( TableStriped )
+                {
+                    this.AddCssClass( "table-striped" );
+                }
+                else
+                {
+                    this.RemoveCssClass( "table-striped" );
+                }
             }
 
             if ( DisplayType == GridDisplayType.Full
@@ -1933,9 +1954,9 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
 
-                    if ( rockPage.Request != null && rockPage.Request.Url != null )
+                    if ( rockPage.Request != null && rockPage.Request.UrlProxySafe() != null )
                     {
-                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
+                        communication.UrlReferrer = rockPage.Request.UrlProxySafe().AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
                     }
 
                     communicationService.Add( communication );
@@ -2043,7 +2064,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
             else
             {
-                var uri = new Uri( Page.Request.Url, routeTemplate );
+                var uri = new Uri( Page.Request.UrlProxySafe(), routeTemplate );
                 var uriBuilder = new UriBuilder( uri.AbsoluteUri );
                 var paramValues = HttpUtility.ParseQueryString( uriBuilder.Query );
                 paramValues.Add( "EntitySetId", entitySetId.Value.ToString() );
@@ -2157,7 +2178,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
 
             // add the page that created this
-            excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.Url.OriginalString );
+            excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.UrlProxySafe().OriginalString );
 
             ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add( workSheetName );
 

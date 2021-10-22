@@ -27,8 +27,11 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class GenderFieldAttribute : FieldAttribute
     {
+        private const string HIDE_UNKNOWN_GENDER_KEY = "hideUnknownGender";
+
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="DayOfWeekFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="GenderFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -40,6 +43,25 @@ namespace Rock.Attribute
         public GenderFieldAttribute( string name = "Gender", string description = "", bool required = true, Gender defaultValue = Gender.Unknown, string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue.ConvertToInt().ToString(), category, order, key, typeof( Field.Types.GenderFieldType ).FullName )
         {
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide unknown gender].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide unknown gender]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideUnknownGender
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( HIDE_UNKNOWN_GENDER_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( HIDE_UNKNOWN_GENDER_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
         }
     }
 }

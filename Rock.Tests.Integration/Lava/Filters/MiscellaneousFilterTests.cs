@@ -59,6 +59,57 @@ namespace Rock.Tests.Integration.Lava
             followingService.GetOrAddFollowing( personEntityTypeId, personService.Get( billMarbleGuid ).Id, tedDeckerAliasId, null );
 
             rockContext.SaveChanges();
+
+            // Add a Persisted Dataset containing some test people.
+            var datasetLava = @"
+[
+{%- person where:'Guid == `<benJonesGuid>` || Guid == `<billMarbleGuid>` || Guid == `<alishaMarbleGuid>`' iterator:'People' -%}
+  {%- for item in People -%}
+    {
+        `Id`: {{ item.Id | ToJSON }},
+        `FirstName`: {{ item.NickName | ToJSON }},
+        `LastName`: {{ item.LastName | ToJSON }},
+        `FullName`: {{ item.FullName | ToJSON }},
+    }
+    {%- unless forloop.last -%},{%- endunless -%}
+  {%- endfor -%}
+{%- endperson -%}
+]
+";
+
+            datasetLava = datasetLava.Replace( "<benJonesGuid>", TestGuids.TestPeople.BenJones )
+                .Replace( "<billMarbleGuid>", TestGuids.TestPeople.BillMarble )
+                .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
+
+            // Create a Persisted Dataset.
+            const string PersistedDataSetPeopleGuid = "99FF9EFA-D9E3-48DE-AD08-C67389FF688F";
+
+            datasetLava = datasetLava.Replace( "`", @"""" );
+
+            var ps = new PersistedDatasetService( rockContext );
+
+            var pds = ps.Get( PersistedDataSetPeopleGuid.AsGuid() );
+
+            if ( pds == null )
+            {
+                pds = new PersistedDataset();
+
+                pds.Guid = PersistedDataSetPeopleGuid.AsGuid();
+
+                ps.Add( pds );
+            }
+
+            pds.Name = "Persons";
+            pds.AccessKey = "persons";
+            pds.Description = "A persisted dataset created for testing purposes.";
+            pds.BuildScriptType = PersistedDatasetScriptType.Lava;
+            pds.BuildScript = datasetLava;
+            pds.EnabledLavaCommands = "RockEntity";
+            pds.EntityTypeId = EntityTypeCache.Get( typeof( Person ), createIfNotFound: false, rockContext ).Id;
+
+            pds.UpdateResultData();
+
+            rockContext.SaveChanges();
         }
 
         #region Debug
@@ -302,7 +353,7 @@ namespace Rock.Tests.Integration.Lava
 
             var template = @"
 {%- person where:'Guid == ""<benJonesGuid>"" || Guid == ""<billMarbleGuid>"" || Guid == ""<alishaMarbleGuid>""' iterator:'People' -%}
-  {%- assign followedItems = People | AppendFollowing -%}
+  {%- assign followedItems = People | AppendFollowing | Sort:'FullName' -%}
 <ul>
   {%- for item in followedItems -%}
     <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
@@ -316,8 +367,33 @@ namespace Rock.Tests.Integration.Lava
                 .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
 
             var outputExpected = @"
-<ul><li>Ben Jones - true</li><li>Alisha Marble - false</li><li>Bill Marble - true</li></ul>
+<ul><li>Alisha Marble - false</li><li>Ben Jones - true</li><li>Bill Marble - true</li></ul>
 ";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        [TestMethod]
+        public void AppendFollowing_ForPersistedDataset_ShowsCorrectFollowingStatus()
+        {
+            var template = @"
+{% assign followedItems = 'persons' | PersistedDataset | AppendFollowing | Sort:'FullName' %}
+<ul>
+  {%- for item in followedItems -%}
+    <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
+  {%- endfor -%}
+</ul>
+
+";
+
+            var outputExpected = @"
+<ul><li>Alisha Marble - false</li><li>Ben Jones - true</li><li>Bill Marble - true</li></ul>
+";
+            var values = AddPersonTedDeckerToMergeDictionary();
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "rockentity", MergeFields = values };
 
             TestHelper.AssertTemplateOutput( outputExpected,
                 template,
@@ -337,7 +413,7 @@ namespace Rock.Tests.Integration.Lava
 
             var template = @"
 {%- person where:'Guid == ""<benJonesGuid>"" || Guid == ""<billMarbleGuid>"" || Guid == ""<alishaMarbleGuid>""' iterator:'People' -%}
-  {%- assign followedItems = People | AppendFollowing | FilterFollowed -%}
+  {%- assign followedItems = People | AppendFollowing | FilterFollowed | Sort:'FullName' -%}
 <ul>
   {%- for item in followedItems -%}
     <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>

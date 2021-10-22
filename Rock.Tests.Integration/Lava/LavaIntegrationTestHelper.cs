@@ -321,7 +321,10 @@ namespace Rock.Tests.Integration.Lava
             {
                 try
                 {
+                    // Get Lava block components, except shortcodes which are registered separately.
                     var elementTypes = Rock.Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
+
+                    elementTypes = elementTypes.Where( x => !( typeof( ILavaShortcode ).IsAssignableFrom( x ) ) ).ToList();
 
                     foreach ( var elementType in elementTypes )
                     {
@@ -752,6 +755,12 @@ namespace Rock.Tests.Integration.Lava
                     expectedOutput = Regex.Escape( expectedOutput );
 
                     expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.*)" );
+
+                    if ( options.OutputMatchType != LavaTestOutputMatchTypeSpecifier.RegEx )
+                    {
+                        // If the inputTemplate is not specified as a RegEx, add anchors for the start and end of the template.
+                        expectedOutput = "^" + expectedOutput + "$";
+                    }
 
                     var regex = new Regex( expectedOutput );
 

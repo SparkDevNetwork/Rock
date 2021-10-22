@@ -89,7 +89,7 @@ namespace Rock.Lava.Blocks
                         var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => (object)i.Value ), sqlTimeout );
                         stopWatch.Stop();
 
-                        context.SetMergeField( parms["return"], results.Tables[0].ToDynamic(), LavaContextRelativeScopeSpecifier.Root );
+                        context.SetMergeField( parms["return"], results.Tables[0].ToDynamic() );
 
                         // Manually add query timings
                         var rockMockContext = LavaHelper.GetRockContextFromLavaContext( context );
@@ -134,7 +134,7 @@ namespace Rock.Lava.Blocks
                             int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
 #endif
 
-                            context.SetMergeField( parms["return"], numOfRowsAffected, LavaContextRelativeScopeSpecifier.Root );
+                            context.SetMergeField( parms["return"], numOfRowsAffected );
                         }
                         break;
                     default:

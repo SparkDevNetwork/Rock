@@ -160,14 +160,6 @@ namespace Rock.ViewModel
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentRedirectData.
-        /// </summary>
-        /// <value>
-        /// The PaymentRedirectData.
-        /// </value>
-        public string PaymentRedirectData { get; set; }
-
-        /// <summary>
         /// Gets or sets the RegistrationInstructions.
         /// </summary>
         /// <value>

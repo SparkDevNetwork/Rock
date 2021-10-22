@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Core
                         if ( location != null )
                         {
                             _LocationId = location.Id.ToString();
-                            string redirectUrl = this.Request.Url.AbsolutePath + "?LocationId=" + _LocationId.ToString();
+                            string redirectUrl = this.Request.UrlProxySafe().AbsolutePath + "?LocationId=" + _LocationId.ToString();
                             this.Response.Redirect( redirectUrl, false );
                             Context.ApplicationInstance.CompleteRequest();
                         }

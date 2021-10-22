@@ -61,6 +61,9 @@
 @brand-snapchat:                    #FFFC00;
 @brand-googleplus:                  #ed4e23;
 
+@brand-email:                       #209904;
+@brand-calendar:                    #f00;
+
 /*
     The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
@@ -200,6 +203,7 @@
 @panel-following-padding:           10px 0 0;
 //--
 @panel-options-margin:              -10px -15px -10px 10px;
+@panel-options-button-padding:      9px 12px 10px;
 @panel-following-active-color:    #fff;
 @panel-following-active-bg:         @panel-top-border-color; // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
 //--
@@ -277,6 +281,8 @@
 //// Section Headers
 @grid-section-bg:                   @theme-4; // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
 @grid-section-color:                @theme-4-text; // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
+@grid-section-font-size:            18px;
+@grid-section-font-weight:          @font-weight-bold;
 
 //// Pager Section
 @grid-pager-bg:                     @panel-heading-bg;
@@ -314,7 +320,9 @@
 
 //// Badge Bar
 @persondetails-badge-bg:                  @theme-5;
+@persondetails-badge-color-light:         @ui-4;
 @persondetails-badge-color:               @theme-5-text;
+@persondetails-badge-color-emphasis:      @ui-5;
 @badge-grid-width:                        86px;
 
 //// Family Bar
@@ -391,6 +399,8 @@
 @smartsearch-input-selection-text-color:  #fff;
 @smartsearch-text-color:                  @header-text-color;
 
+
+// Forms
 @control-label-weight:              @font-weight-bold;
 @input-focus-rgba:                  fade(@input-border-focus, 60%);
 @input-focus-box-shadow:            ~"0 0 0 3px @{input-focus-rgba}";
@@ -408,6 +418,9 @@
 
 //** Small `.form-control` height
 @input-height-xs:                   (floor(@font-size-small * @line-height-small) + (@padding-xs-vertical * 2) + 2);
+
+@description-term-margin-top:             16px;
+@description-term-margin-bottom:          2px;
 
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
 @wizard-bg:                               @gray-lighter;
@@ -435,6 +448,15 @@
 
 @calendar-today-color:                    @alert-info-text;
 @calendar-today-bg:                       @alert-info-bg;
+
+// Datepicker Styles
+@datepicker-today-color:                  #000;
+@datepicker-today-bg:                     lighten(orange, 30%);
+@datepicker-highlighted-bg:               @state-info-bg;
+
+@datepicker-range-bg:                     @gray-lighter;
+@datepicker-range-highlighted-bg:         mix(@state-info-bg, @gray-lighter, 50%);
+@datepicker-range-today-bg:               mix(orange, @gray-lighter, 50%);
 
 // Tree Viewer
 @tree-rollover-bg:                  lighten(@theme-7, 20%); // Background color of the rollover for items in the treeview.
@@ -488,6 +510,24 @@
 @badge-success-color:               #ffffff;
 @badge-info-color:                  #ffffff;
 @badge-critical-color:              #ffffff;
+
+@badge-rock-default-color:          #4f89bd;
+@badge-disabled-color:              #939393;
+
+@badge-baptism-color:               #23a5c5;
+@badge-era-loss-color:              #ee7624;
+
+@badge-disc-primary-color:          @badge-rock-default-color;
+@badge-disc-disabled-color:         @badge-disabled-color;
+@badge-disc-requested-color:        #e3ded7;
+
+@badge-attending-weeks-color:       #e5d24d;
+@badge-attending-new-color:         #d25555;
+@badge-attending-months-color:      #69ad5e;
+@badge-attending-years-color:       #56789e;
+
+@badge-lastvisitonsite-color:       @badge-rock-default-color;
+@badge-personaldevice-color:        @badge-rock-default-color;
 
 // Below Not in Rock Theme
 

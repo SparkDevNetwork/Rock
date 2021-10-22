@@ -34,7 +34,7 @@
                     <asp:Literal ID="ltDetails" runat="server" />
                 </div>
 
-                <div class="actions margin-t-md">
+                <div class="actions">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
                     <asp:LinkButton ID="lbBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="lbBack_Click" CausesValidation="false" />
 
@@ -115,7 +115,7 @@
                     <Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Page Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements on this page." />
                 </Rock:PanelWidget>
 
-                <div class="actions margin-t-md">
+                <div class="actions">
                     <asp:LinkButton ID="lbSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbSave_Click" ValidationGroup="EditPage" />
                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" />
                 </div>
@@ -233,9 +233,11 @@
         // Setup dragula to allow re-ordering within the actions.
         //
         var reorderOldIndex = -1;
+        var reorderOldZone = "";
         var reorderDrake = dragula(componentContainers, {
             moves: function (el, source, handle, sibling) {
                 reorderOldIndex = $(source).children().index(el);
+                reorderOldZone = $(el).closest('.js-block-zone').data('zone-name');
                 return $(handle).hasClass('js-reorder');
             },
             revertOnSpill: true
@@ -245,7 +247,7 @@
             var newIndex = $(target).children().index(el);
             var zone = $(el).closest('.js-block-zone').data('zone-name');
             var blockId = $(el).find('.js-block').data('block-id');
-            if (reorderOldIndex !== newIndex) {
+            if (reorderOldIndex !== newIndex || reorderOldZone !== zone) {
                 var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'reorder-block|" + zone + "|" + blockId + "|" + newIndex + "')";
                 window.location = postback;
             }

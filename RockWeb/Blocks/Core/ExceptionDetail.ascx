@@ -12,7 +12,6 @@
             <div class="panel-body">
 
                 <fieldset>
-                    <h4 class="mt-0">Summary</h4>
                     <div class="row">
                         <div class="col-md-12">
                             <asp:Literal ID="lExceptionSummary" runat="server" />
@@ -115,7 +114,6 @@
 
 <script type="text/javascript">
     function toggleStackTrace(exceptionId) {
-        debugger
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-hide");
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-show");
 

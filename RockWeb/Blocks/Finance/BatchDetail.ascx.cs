@@ -406,10 +406,10 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                string quckReturnLava = "{{ Batch.Name | AddQuickReturn:'Batches', 50 }}";
-                var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                quckReturnMergeFields.Add( "Batch", batch );
-                quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
+                string quickReturnLava = "{{ Batch.Name | AddQuickReturn:'Batches', 50 }}";
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                quickReturnMergeFields.Add( "Batch", batch );
+                quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }
 
             hfBatchId.Value = batch.Id.ToString();

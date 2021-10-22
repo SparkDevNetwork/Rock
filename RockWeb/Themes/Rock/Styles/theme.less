@@ -189,7 +189,7 @@ textarea,
   &.btn-xs {
     width: @input-height-xs;
     height: @input-height-xs;
-    padding: (@padding-xs-vertical - 1) 0;
+    padding: @padding-xs-vertical 0;
   }
 
   &.btn-sm {
@@ -241,9 +241,18 @@ textarea,
 
 .label.btn-label {
   padding: @label-padding;
-  color: @btn-default-color !important;
+  color: @btn-default-color;
   background: @btn-default-bg;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
   box-shadow: inset 0 0 0 1px @btn-default-border;
+}
+
+.label-group {
+  .label:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
 }
 
 .nav-tabs {
@@ -707,6 +716,7 @@ textarea,
     margin: 0;
     overflow: auto;
     background-color: @white;
+    border-radius: 0;
 
     .panel-block {
       height: auto !important;
@@ -840,11 +850,9 @@ textarea,
 }
 
 .panel .panel-heading .panel-options {
-  margin: -15px -15px -15px 10px;
-
   button {
-    padding: 13px 12px 12px;
     background-color: transparent;
+    box-shadow: none;
   }
 }
 
@@ -1617,6 +1625,7 @@ body.navbar-side-open {
 
 .main-footer {
   padding: 15px 0;
+  font-size: @font-size-sm;
 }
 
 // person profile
@@ -1625,6 +1634,14 @@ body.navbar-side-open {
 
   @media (min-width: @screen-md-min) {
     margin: -35px -35px 0;
+  }
+}
+
+.personprofilebar-bio,
+.personprofilebar-family {
+  small {
+    // lighten up small elements a bit
+    opacity: .7;
   }
 }
 
@@ -1831,7 +1848,7 @@ body.navbar-side-open {
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
 .debug-timings {
-  width: ~"calc(100% - 140px)" !important;
+  // width: ~"calc(100% - 140px)" !important;
   margin-left: 115px;
 }
 

@@ -82,19 +82,13 @@ namespace Rock.Follow.Event
                 var personAlias = entity as PersonAlias;
                 if ( personAlias != null && personAlias.Person != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    if ( followingEvent.IncludeNonPublicRequests )
                     {
-                        return new PrayerRequestService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Any( r =>
-                                r.RequestedByPersonAlias != null &&
-                                r.RequestedByPersonAlias.PersonId == personAlias.PersonId &&
-                                r.ApprovedOnDateTime.HasValue &&
-                                r.ApprovedOnDateTime.Value >= cuttoffDateTime && 
-                                r.IsApproved.HasValue && 
-                                r.IsApproved.Value &&
-                                r.IsPublic.HasValue &&
-                                r.IsPublic.Value );
+                        return HasPubicOrPrivatePrayerRequest( personAlias, cuttoffDateTime );
+                    }
+                    else
+                    {
+                        return HasPubicPrayerRequest( personAlias, cuttoffDateTime );
                     }
                 }
             }
@@ -104,5 +98,35 @@ namespace Rock.Follow.Event
 
         #endregion
 
+        private bool HasPubicPrayerRequest( PersonAlias personAlias, DateTime cuttoffDateTime )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new PrayerRequestService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Any( r =>
+                        r.RequestedByPersonAlias != null &&
+                        r.RequestedByPersonAlias.PersonId == personAlias.PersonId &&
+                        r.ApprovedOnDateTime.HasValue &&
+                        r.ApprovedOnDateTime.Value >= cuttoffDateTime && 
+                        r.IsApproved == true &&
+                        r.IsPublic == true );
+            }
+        }
+
+        private bool HasPubicOrPrivatePrayerRequest( PersonAlias personAlias, DateTime cuttoffDateTime )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new PrayerRequestService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Any( r =>
+                        r.RequestedByPersonAlias != null &&
+                        r.RequestedByPersonAlias.PersonId == personAlias.PersonId &&
+                        r.ApprovedOnDateTime.HasValue &&
+                        r.ApprovedOnDateTime.Value >= cuttoffDateTime && 
+                        r.IsApproved == true );
+            }
+        }
     }
 }

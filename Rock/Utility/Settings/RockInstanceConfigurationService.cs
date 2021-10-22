@@ -53,7 +53,25 @@ namespace Rock.Utility.Settings
         {
             get
             {
-                return Rock.RockDateTime.Now;
+                // RockDateTime represents Rock organization time rather than a local system time, so set the Kind to reflect this and avoid confusion.
+                var rockDateTime = DateTime.SpecifyKind( Rock.RockDateTime.Now, DateTimeKind.Unspecified );
+
+                return rockDateTime;
+            }
+        }
+
+        /// <summary>
+        /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
+        /// </summary>
+        public DateTimeOffset RockDateTimeOffset
+        {
+            get
+            {
+                var dtoRock = new DateTimeOffset( DateTime.UtcNow );
+
+                dtoRock = dtoRock.ToOffset( Rock.RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dtoRock ) );
+
+                return dtoRock;
             }
         }
 

@@ -40,7 +40,8 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets the original values the entity was loaded with. Only valid
-        /// if <see cref="PreSaveState"/> has the value <see cref="EntityContextState.Modified"/>.
+        /// if <see cref="PreSaveState"/> has the value <see cref="EntityContextState.Modified"/>
+        /// or <see cref="EntityContextState.Deleted"/>
         /// </summary>
         /// <value>
         /// The original values the entity was loaded with.

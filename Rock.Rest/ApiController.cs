@@ -40,6 +40,7 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using System.Threading.Tasks;
 using System.Threading;
@@ -559,16 +560,17 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues );
+                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, null );
             }
             else
             {
-                new LaunchWorkflow.Message
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeGuid, workflowName );
+                if ( workflowAttributeValues != null )
                 {
-                    WorkflowTypeGuid = workflowTypeGuid,
-                    WorkflowName = workflowName,
-                    WorkflowAttributeValues = workflowAttributeValues
-                }.Send();
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 
@@ -592,16 +594,17 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues );
+                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, null );
             }
             else
             {
-                new LaunchWorkflow.Message
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeId, workflowName );
+                if ( workflowAttributeValues != null )
                 {
-                    WorkflowTypeId = workflowTypeId,
-                    WorkflowName = workflowName,
-                    WorkflowAttributeValues = workflowAttributeValues
-                }.Send();
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 
@@ -749,7 +752,7 @@ namespace Rock.Rest
 #else
             var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
             contextCookie.Values[typeName] = contextValue;
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
             Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
 #endif
 

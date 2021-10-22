@@ -385,6 +385,27 @@ namespace Rock.Utility
                 return null;
             }
 
+            return BuildExpressionFromFieldType<T>( filterValues, attribute, serviceInstance, parameterExpression );
+        }
+#endif
+
+        /// <summary>
+        /// Builds an expression using the specified FieldType and control.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public static Expression BuildExpressionFromFieldType<T>( List<string> filterValues, AttributeCache attribute, IService serviceInstance, ParameterExpression parameterExpression ) where T : Entity<T>, new()
+        {
+            // If the filterValues are all empty then no filtering needs to be done.
+            if ( attribute == null || filterValues == null || filterValues.All( v => v.IsNullOrWhiteSpace() ) )
+            {
+                return null;
+            }
+
             var entityFields = EntityHelper.GetEntityFields( typeof( T ) );
 
             var entityField = entityFields.Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid == attribute.Guid ).FirstOrDefault();
@@ -393,9 +414,7 @@ namespace Rock.Utility
                 entityField = EntityHelper.GetEntityFieldForAttribute( attribute, false );
             }
 
-            var attributeExpression = ExpressionHelper.GetAttributeExpression( serviceInstance, parameterExpression, entityField, filterValues );
-            return attributeExpression;
+            return GetAttributeExpression( serviceInstance, parameterExpression, entityField, filterValues );
         }
-#endif
     }
 }

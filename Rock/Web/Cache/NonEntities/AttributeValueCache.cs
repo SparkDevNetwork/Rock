@@ -264,7 +264,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public AttributeValueViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new ViewModelHelper<AttributeValueCache, AttributeValueViewModel>();
+            var helper = new AttributeValueCacheViewModelHelper();
             var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
             return viewModel;
         }
@@ -275,7 +275,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// AttributeValueCache View Model Helper
     /// </summary>
-    public partial class AttributeValueViewModelHelper : ViewModelHelper<AttributeValueCache, AttributeValueViewModel>
+    public partial class AttributeValueCacheViewModelHelper : ViewModelHelper<AttributeValueCache, AttributeValueViewModel>
     {
         /// <summary>
         /// Converts to viewmodel.

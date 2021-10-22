@@ -31,6 +31,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -255,6 +256,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
 
+            RunCleanupTask( "update account protection profile", () => UpdatePersonAccountProtectionProfile() );
+
             RunCleanupTask( "remove expired registration sessions", () => RemoveExpiredRegistrationSessions() );
 
             RunCleanupTask( "remove expired saved accounts", () => RemoveExpiredSavedAccounts( dataMap ) );
@@ -339,6 +342,22 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Updates the person account protection profile.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdatePersonAccountProtectionProfile()
+        {
+            var rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
+                PersonService.UpdateAccountProtectionProfileAll( rockContext );
+            }
+
+            return rowsUpdated;
+        }
         /// <summary>
         /// Get a cleanup job result as a formatted string
         /// </summary>
@@ -455,24 +474,37 @@ namespace Rock.Jobs
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            // get list of Families that don't have a GroupSalutation populated yet. Include deceased and businesses.
-            var personIdListWithFamilyId = new PersonService( new RockContext() )
-                .Queryable( true, true )
-                .Where( a =>
-                    a.PrimaryFamilyId.HasValue
-                    && ( a.PrimaryFamily.GroupSalutation == null || a.PrimaryFamily.GroupSalutationFull == null || a.PrimaryFamily.GroupSalutation == "" || a.PrimaryFamily.GroupSalutationFull == "" ) )
-                .Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+            var rockContext = new RockContext();
+
+            // just in case there are Groups that have a null or empty Name, update them.
+            var familiesWithoutNames = new GroupService( rockContext )
+                .Queryable().Where( a => a.GroupTypeId == familyGroupTypeId )
+                .Where( a => string.IsNullOrEmpty( a.Name ) );
+
+            if ( familiesWithoutNames.Any() )
+            {
+                rockContext.BulkUpdate( familiesWithoutNames, g => new Group { Name = "Family" } );
+            }
+
+            // Get list of all Families.
+            // We'll recalculate all their GroupSalutions to make sure they are correct.
+            // This will take care of incorrect ones which could have happened as a result being
+            // externally edited (or ones that are incorrect due to a bug ).
+            var familyIdList = new GroupService( rockContext )
+                .Queryable().Where( a => a.GroupTypeId == familyGroupTypeId )
+                .Select( a => a.Id ).ToList();
 
             var recordsUpdated = 0;
 
-            // we only need one person from each family (and it doesn't matter who)
-            var personIdList = personIdListWithFamilyId.GroupBy( a => a.PrimaryFamilyId.Value ).Select( s => s.FirstOrDefault()?.Id ).Where( a => a.HasValue ).Select( s => s.Value ).ToList();
-
-            foreach ( var personId in personIdList )
+            foreach ( var familyId in familyIdList )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContextUpdate = new RockContext() )
                 {
-                    recordsUpdated += PersonService.UpdateGroupSalutations( personId, rockContext );
+                    if ( GroupService.UpdateGroupSalutations( familyId, rockContextUpdate ) )
+                    {
+                        recordsUpdated++;
+                        rockContext.SaveChanges();
+                    }
                 }
             }
 

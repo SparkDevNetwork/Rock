@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 
 namespace Rock.Utility.Settings
@@ -24,6 +23,20 @@ namespace Rock.Utility.Settings
     public static class RockInstanceConfig
     {
         private static RockInstanceConfigurationService _serviceInstance = new RockInstanceConfigurationService();
+
+        /// <summary>
+        /// Sets the application started date time.
+        /// </summary>
+        /// <param name="rockDateTime">The date time.</param>
+        public static void SetApplicationStartedDateTime( DateTime rockDateTime )
+        {
+            ApplicationStartedDateTime = rockDateTime;
+        }
+
+        /// <summary>
+        /// The time that Rock started
+        /// </summary>
+        public static DateTime ApplicationStartedDateTime { get; private set; }
 
         static RockInstanceConfig()
         {
@@ -79,6 +92,17 @@ namespace Rock.Utility.Settings
             get
             {
                 return _serviceInstance.RockDateTime;
+            }
+        }
+
+        /// <summary>
+        /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
+        /// </summary>
+        public static DateTimeOffset RockDateTimeOffset
+        {
+            get
+            {
+                return _serviceInstance.RockDateTimeOffset;
             }
         }
 

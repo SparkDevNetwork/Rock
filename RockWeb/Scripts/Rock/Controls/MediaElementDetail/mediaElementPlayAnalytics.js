@@ -251,8 +251,7 @@
 
                 $row.data("date", date.format("MMM D, YYYY"));
 
-                const lastDate = $panel.find("> .individual-play-row").last().data("date");
-                console.log(lastDate, $date.data("date"), $panel.find("> .individual-play-row").last());
+                const lastDate = $panel.find(".individual-play-row").last().data("date");
                 if ($row.data("date") !== lastDate) {
                     $date.html(date.format("dddd") + "<br />" + date.format("MMM D, YYYY") + "<br />" + date.format("h:mm a"));
                 }

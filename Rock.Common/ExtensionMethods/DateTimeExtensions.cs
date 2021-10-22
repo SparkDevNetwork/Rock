@@ -77,14 +77,35 @@ namespace Rock
         }
 
         /// <summary>
-        /// The total number of years between the two dates.
+        /// The number of whole years between the start and end dates.
         /// </summary>
         /// <param name="start">The start date.</param>
         /// <param name="end">The end date.</param>
-        /// <returns></returns>
+        /// <returns>A positive number of years if the start date is before the end date, otherwise a negative number.</returns>
         public static int TotalYears( this DateTime end, DateTime start )
         {
-            return end.Year - start.Year;
+            var years = (int)Math.Truncate( ( end.Subtract( start ).TotalDays - LeapDaysBetweenYears( start.Year, end.Year ) ) / 365 );
+            return years;
+        }
+
+        /// <summary>
+        /// Calculates the number of leap days that have occurred occur between two years.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        private static int LeapDaysBetweenYears( int start, int end )
+        {
+            // A given year qualifies as a leap year if:
+            // 1. it can be divided by 4, and...
+            // 2. it can't be divided by 100, except if it can also be divided by 400.
+            return Math.Abs( LeapYearsBefore( end ) - LeapYearsBefore( start + 1 ) );
+        }
+
+        private static int LeapYearsBefore( int year )
+        {
+            year--;
+            return ( year / 4 ) - ( year / 100 ) + ( year / 400 );
         }
 
         /// <summary>
@@ -359,7 +380,7 @@ namespace Rock
         /// <returns></returns>
         public static DateTime StartOfMonth( this DateTime dt )
         {
-            return new DateTime( dt.Year, dt.Month, 1 );
+            return new DateTime( dt.Year, dt.Month, 1, 0, 0, 0, dt.Kind );
         }
 
         /// <summary>

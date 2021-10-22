@@ -144,7 +144,10 @@ namespace RockWeb.Blocks.Core
 
                 // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
                 // usage of this shortcode is cached with a key we can't predict.
+#pragma warning disable CS0618 // Type or member is obsolete
+                // This obsolete code can be deleted when support for the DotLiquid Lava implementation is removed.
                 LavaTemplateCache.Clear();
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             if ( oldTagName.IsNotNullOrWhiteSpace() )

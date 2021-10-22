@@ -179,6 +179,16 @@ namespace Rock.Web.Cache
             return roles;
         }
 
+        /// <summary>
+        /// Converts to string.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
         #endregion
     }
 }

@@ -39,7 +39,7 @@
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
 
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnSyncContentChannelItems" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Sync missing content channel items." data-toggle="tooltip" OnClick="btnSyncContentChannelItems_Click" CausesValidation="false">
+                            <asp:LinkButton ID="btnSyncContentChannelItems" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Sync missing content channel items." data-toggle="tooltip" OnClick="btnSyncContentChannelItems_Click" CausesValidation="false">
                                 <i class="fa fa-sync"></i>
                             </asp:LinkButton>
                         </span>
@@ -79,7 +79,7 @@
                         </div>
                     </asp:Panel>
 
-                    <div class="actions margin-t-lg">
+                    <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>

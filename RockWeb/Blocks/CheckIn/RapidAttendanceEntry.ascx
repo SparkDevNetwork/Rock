@@ -86,8 +86,8 @@
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlAttendance" runat="server" LabelType="Info" />
                         <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Success" />
+                        <asp:LinkButton ID="lbSetting" runat="server" CssClass="btn btn-default btn-square margin-l-sm btn-xs" OnClick="lbSetting_Click" CausesValidation="false"><i class="fa fa-cog"></i></asp:LinkButton>
                     </div>
-                    <asp:LinkButton ID="lbSetting" runat="server" CssClass="btn btn-default btn-square margin-l-sm btn-xs" OnClick="lbSetting_Click" CausesValidation="false"><i class="fa fa-cog"></i></asp:LinkButton>
                 </div>
                 <div>
                     <asp:HiddenField ID="hfPersonGuid" runat="server" />
@@ -209,7 +209,7 @@
                                         <div class="pull-left margin-b-md">
                                             <asp:Literal ID="lPreviousAddress" runat="server" />
                                         </div>
-                                        <div class="pull-right">
+                                        <div class="pull-right mb-2">
                                             <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
                                         </div>
                                     </div>

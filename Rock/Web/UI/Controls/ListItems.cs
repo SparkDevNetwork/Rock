@@ -334,7 +334,7 @@ namespace Rock.Web.UI.Controls
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""controls controls-row form-control-group"">" );
             valueHtml.AppendFormat( @"<div class=""input-group""><span class=""input-group-addon""><i class=""fa fa-bars""></i></span><input class=""form-control input-width-lg js-list-items-input"" data-id=""00000000-0000-0000-0000-000000000000"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
-            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-square btn-danger list-items-remove""><i class=""fa fa-times""></i></a></div></div>" );
+            valueHtml.Append( @"</div><a href=""#"" class=""btn btn-sm btn-square btn-danger list-items-remove""><i class=""fa fa-times""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-list-items-html" );
@@ -379,6 +379,8 @@ namespace Rock.Web.UI.Controls
                     writer.Write( " " );
                     writer.WriteLine();
 
+                    writer.RenderEndTag();
+
                     // Write Remove Button
                     writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-square btn-danger list-items-remove" );
@@ -388,10 +390,6 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                     writer.RenderEndTag();
                     writer.WriteLine();
-
-                    writer.RenderEndTag();
-
-
 
                     writer.RenderEndTag();
                     writer.WriteLine();

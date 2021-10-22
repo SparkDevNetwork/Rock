@@ -28,6 +28,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Title" />
+                            <asp:CustomValidator ID="cvTitle" runat="server" ControlToValidate="tbTitle" OnServerValidate="cvTitle_ServerValidate" Display="None" ErrorMessage="Title already in use. Metrics that have 'Enable Analytics' checked must have unique Titles." />
                             <Rock:DataTextBox ID="tbSubtitle" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Subtitle" />
                         </div>
                         <div class="col-md-6">

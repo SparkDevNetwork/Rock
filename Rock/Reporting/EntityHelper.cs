@@ -303,9 +303,7 @@ namespace Rock.Reporting
             {
                 int entityTypeId = entityTypeCache.Id;
 
-                var entityAttributesCache = AttributeCache.GetByEntity( entityTypeCache.Id );
-
-                List<AttributeCache> cacheAttributeList = entityAttributesCache.SelectMany( a => a.AttributeIds ).Distinct().Select( a => AttributeCache.Get( a ) ).ToList();
+                IEnumerable<AttributeCache> cacheAttributeList = AttributeCache.GetByEntityType( entityTypeCache.Id );
 
                 if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
                 {
@@ -314,7 +312,7 @@ namespace Rock.Reporting
                             .Where( a =>
                                 a.EntityTypeQualifierColumn == null ||
                                 a.EntityTypeQualifierColumn == string.Empty ||
-                                a.EntityTypeQualifierColumn == "GroupTypeId" ).ToList();
+                                a.EntityTypeQualifierColumn == "GroupTypeId" );
                 }
                 else if ( entityType == typeof( ConnectionRequest ) )
                 {
@@ -324,7 +322,7 @@ namespace Rock.Reporting
                                 a.EntityTypeQualifierColumn == null ||
                                 a.EntityTypeQualifierColumn == string.Empty ||
                                 a.EntityTypeQualifierColumn == "ConnectionOpportunityId"
-                                ).ToList();
+                                );
                 }
                 else if ( entityType == typeof( Registration ) )
                 {
@@ -334,7 +332,7 @@ namespace Rock.Reporting
                                 a.EntityTypeQualifierColumn == null ||
                                 a.EntityTypeQualifierColumn == string.Empty ||
                                 a.EntityTypeQualifierColumn == "RegistrationTemplateId"
-                                ).ToList();
+                                );
                 }
                 else if ( entityType == typeof( ContentChannelItem ) )
                 {
@@ -345,7 +343,7 @@ namespace Rock.Reporting
                                 a.EntityTypeQualifierColumn == string.Empty ||
                                 a.EntityTypeQualifierColumn == "ContentChannelTypeId" ||
                                 a.EntityTypeQualifierColumn == "ContentChannelId"
-                                ).ToList();
+                                );
                 }
                 else if ( entityType == typeof( Rock.Model.Workflow ) )
                 {
@@ -362,7 +360,7 @@ namespace Rock.Reporting
                     cacheAttributeList = cacheAttributeList.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) ).ToList();
                 }
 
-                EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList );
+                EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList.ToList() );
 
             }
 

@@ -100,6 +100,7 @@ namespace Rock.Model
                     mergeFields.AddOrIgnore( additionalMergeField.Key, additionalMergeField.Value );
                 }
             }
+
             string timelineHtml = timelineLavaTemplate.ResolveMergeFields( mergeFields );
             return timelineHtml;
         }
@@ -602,8 +603,6 @@ namespace Rock.Model
             /// </value>
             public IEntity RelatedEntity { get; set; }
 
-
-
             /// <summary>
             /// Gets the formatted caption.
             /// </summary>
@@ -622,29 +621,42 @@ namespace Rock.Model
                         string virtualUrl = string.Empty;
                         if ( !string.IsNullOrWhiteSpace( urlMask ) )
                         {
-                            if ( urlMask.Contains( "{0}" ) )
+                            IEntity iEntity = null;
+                            if ( this.RelatedEntityTypeId.HasValue && this.RelatedEntityId.HasValue )
                             {
-                                string p1 = this.RelatedEntityId.HasValue ? this.RelatedEntityId.Value.ToString() : "";
+                                var relatedEntityType = EntityTypeCache.Get( this.RelatedEntityTypeId.Value );
+                                iEntity = Reflection.GetIEntityForEntityType( relatedEntityType.GetEntityType(), this.RelatedEntityId.Value );
+                            }
+
+                            if ( urlMask.Contains( "{0}" ) && iEntity != null )
+                            {
+                                string p1 = this.RelatedEntityId.Value.ToString();
                                 string p2 = this.EntityId.ToString();
                                 virtualUrl = string.Format( urlMask, p1, p2 );
                             }
 
-                            string resolvedUrl;
+                            string formattedCaption = caption;
+                            if ( virtualUrl.IsNotNullOrWhiteSpace() )
+                            {
+                                string resolvedUrl;
 
 #if NET5_0_OR_GREATER
-                            resolvedUrl = virtualUrl;
-#else
-                            if ( System.Web.HttpContext.Current == null )
-                            {
                                 resolvedUrl = virtualUrl;
-                            }
-                            else
-                            {
-                                resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
-                            }
+#else
+                                if ( System.Web.HttpContext.Current == null )
+                                {
+                                    resolvedUrl = virtualUrl;
+                                }
+                                else
+                                {
+                                    resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
+                                }
 #endif
 
-                            return string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
+                                formattedCaption = string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
+                            }
+
+                            return formattedCaption;
                         }
                     }
 
@@ -672,47 +684,9 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
-        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, int? modifiedByPersonAliasId = null )
-        {
-            AddChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, modifiedByPersonAliasId );
-        }
-
-        /// <summary>
-        /// Adds the changes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="modelType">Type of the model.</param>
-        /// <param name="categoryGuid">The category unique identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="changes">The changes.</param>
-        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, int? modifiedByPersonAliasId = null )
         {
             AddChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, modifiedByPersonAliasId );
-        }
-
-        /// <summary>
-        /// Adds the changes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="modelType">Type of the model.</param>
-        /// <param name="categoryGuid">The category unique identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="changes">The changes.</param>
-        /// <param name="caption">The caption.</param>
-        /// <param name="relatedModelType">Type of the related model.</param>
-        /// <param name="relatedEntityId">The related entity identifier.</param>
-        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
-        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
-        {
-            var historyChanges = new History.HistoryChangeList();
-            historyChanges.AddRange( changes.Select( a => new History.HistoryChange( a ) ).ToList() );
-
-            AddChanges( rockContext, modelType, categoryGuid, entityId, historyChanges, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
         }
 
         /// <summary>
@@ -794,7 +768,6 @@ namespace Rock.Model
                     }
 
                     historyRecordsToInsert.Add( history );
-
                 }
             }
 
@@ -811,54 +784,10 @@ namespace Rock.Model
         /// <param name="changes">The changes.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
         /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
-        {
-            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId );
-        }
-
-        /// <summary>
-        /// Saves a list of history messages.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="modelType">Type of the model.</param>
-        /// <param name="categoryGuid">The category unique identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="changes">The changes.</param>
-        /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
-        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
         /// <param name="sourceOfChange">The source of change.</param>
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, History.HistoryChangeList changes, bool commitSave = true, int? modifiedByPersonAliasId = null, string sourceOfChange = null )
         {
             SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId, sourceOfChange );
-        }
-
-        /// <summary>
-        /// Saves the changes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="modelType">Type of the model.</param>
-        /// <param name="categoryGuid">The category unique identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="changes">The changes.</param>
-        /// <param name="caption">The caption.</param>
-        /// <param name="relatedModelType">Type of the related model.</param>
-        /// <param name="relatedEntityId">The related entity identifier.</param>
-        /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
-        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( History.HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
-        {
-            if ( changes.Any() )
-            {
-                AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
-                if ( commitSave )
-                {
-                    rockContext.SaveChanges();
-                }
-            }
         }
 
         /// <summary>

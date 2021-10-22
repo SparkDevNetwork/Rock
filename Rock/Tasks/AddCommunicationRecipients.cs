@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif
 using System.Linq;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -32,6 +33,7 @@ namespace Rock.Tasks
     /// 
     /// </summary>
     [Obsolete( "This should not be used due to size limitations for BusStartedTask message. Use SaveMetaphoneTransaction instead " )]
+    [RockObsolete( "1.13" )]
     public sealed class AddCommunicationRecipients : BusStartedTask<AddCommunicationRecipients.Message>
     {
         /// <summary>

@@ -531,10 +531,6 @@ namespace Rock.Lava
 
                 renderResult = RenderTemplate( template, parameters );
             }
-            catch ( ThreadAbortException )
-            {
-                // Ignore this exception, the calling thread is terminating.
-            }
             catch ( Exception ex )
             {
                 var lre = GetLavaRenderException( ex, inputTemplate );
@@ -602,13 +598,21 @@ namespace Rock.Lava
                     result.Error = GetLavaRenderException( result.Error );
                 }
             }
-            catch ( ThreadAbortException )
+            catch ( LavaInterruptException )
             {
-                // Ignore this exception, the calling thread is terminating and no result is required.
-                result = null;
+                // This exception is intentionally thrown by a component to halt the render process.
+                result = new LavaRenderResult();
+
+                result.Text = string.Empty;
             }
             catch ( Exception ex )
             {
+                if ( ex is ThreadAbortException )
+                {
+                    // Ignore this exception, the calling thread is terminating and no result is required.
+                    return null;
+                }
+
                 result = new LavaRenderResult();
 
                 var lre = GetLavaRenderException( ex );
@@ -864,7 +868,7 @@ namespace Rock.Lava
             else if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.Ignore )
             {
                 // Ignore the exception and return a null render result.
-                // The caller should subscribe to the ExceptionEncountered event in order to catch errors in the rendering process.
+                // The caller must inspect the return object or subscribe to the ExceptionEncountered event in order to catch errors in the rendering process.
                 message = null;
             }
             else
@@ -912,6 +916,8 @@ namespace Rock.Lava
             }
         }
 
+        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
+
         /// <summary>
         /// Convert a Lava template to a Liquid-compatible template by replacing Lava-specific syntax and keywords.
         /// </summary>
@@ -919,9 +925,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public string ConvertToLiquid( string lavaTemplateText )
         {
-            var converter = new LavaToLiquidTemplateConverter();
-
-            return converter.ConvertToLiquid( lavaTemplateText );
+            return _lavaToLiquidConverter.ConvertToLiquid( lavaTemplateText );
         }
 
         /// <summary>

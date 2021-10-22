@@ -22,20 +22,18 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
 /*
-	06/24/2020 - MSB
-	
-	This filter needs to stay in this namespace unless a migration is created and tested to move the data view filters over to the
+    06/24/2020 - MSB
+
+    This filter needs to stay in this namespace unless a migration is created and tested to move the data view filters over to the
     new entity type that will be created for the new location.
-	
+
     Reason: DataView Filters
-	
 */
 
 namespace Rock.Reporting.DataSelect.Person
@@ -102,56 +100,51 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return @"
 function() {
-  var result = $('.js-registration-type input:first', $content).is(':checked') ? 'Registrar' : 'Registrant'
-
+  var result = $('.js-registration-type input:first', $content).is(':checked') ? 'Registrar' : 'Registrant';
+  var onWaitList = $('.js-on-wait-list option:selected', $content).val();
+  if (onWaitList) {
+    if (onWaitList === 'True') {
+        onWaitList = ', only wait list';
+    } else {
+        onWaitList = ', no wait list';
+    }
+  }
   var registrationInstance = $('.js-registration-instance option:selected', $content);
   if ( registrationInstance.length > 0  && registrationInstance.val() ) {
-     result = result + ' in registration instance ""' + registrationInstance.text() + '""';
+     result = result + ' in registration instance ""' + registrationInstance.text() + '""' + onWaitList;
   } else {
     var registrationTemplate = $('.js-registration-template option:selected', $content).text();
-    result = result + ' in any registration instance of template ""' + registrationTemplate + '""';
+    result = result + ' in any registration instance of template ""' + registrationTemplate + '""' + onWaitList;
   }
-
   return result;
 }
 ";
         }
 
         /// <summary>
-        /// Formats the selection. 1 is the template, 2 is the registration instance, 3 is the type (registrar or registrant)
+        /// Formats the selection.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string result = "Registrant";
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
-            string[] selectionValues = selection.Split( '|' );
+            string filterOptions = selectionConfig.RegistrationType == RegistrationTypeSpecifier.Registrar ? "Registrar" : "Registrant";
 
-            if ( selectionValues.Length >= 3 )
+            var waitlistFilterStatus = selectionConfig.OnWaitList == null ? string.Empty : Convert.ToBoolean( selectionConfig.OnWaitList ) ? ", only wait list" : ", no wait list";
+
+            var registrationInstance = new RegistrationInstanceService( new RockContext() ).Queryable().Where( a => a.Guid == selectionConfig.RegistrationInstanceGuid ).FirstOrDefault();
+            if ( registrationInstance != null )
             {
-                var registrationType = selectionValues[2].AsIntegerOrNull();
-                if ( registrationType == 1 )
-                {
-                    result = "Registrar";
-                }
-
-                var registrationInstanceGuid = selectionValues[1].AsGuid();
-                var registrationInstance = new RegistrationInstanceService( new RockContext() ).Queryable().Where( a => a.Guid == registrationInstanceGuid ).FirstOrDefault();
-                if ( registrationInstance != null )
-                {
-                    return string.Format( "{0} in registration instance '{1}'", result, registrationInstance.Name );
-                }
-                else
-                {
-                    var registrationTemplateId = selectionValues[0].AsIntegerOrNull() ?? 0;
-                    var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Queryable().Where( t => t.Id == registrationTemplateId ).FirstOrDefault();
-                    return string.Format( "{0} in any registration instance of template '{1}'", result, registrationTemplate.Name );
-                }
+                return string.Format( "{0} in registration instance '{1}' {2}", filterOptions, registrationInstance.Name, waitlistFilterStatus );
             }
-
-            return result;
+            else
+            {
+                var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Queryable().Where( t => t.Id == selectionConfig.RegistrationTemplateId ).FirstOrDefault();
+                return string.Format( "{0} in any registration instance of template '{1}' {2}", filterOptions, registrationTemplate.Name, waitlistFilterStatus );
+            }
         }
 
 #if !NET5_0_OR_GREATER
@@ -202,7 +195,21 @@ function() {
             _rblRegistrationType.SelectedValue = "2";
             filterControl.Controls.Add( _rblRegistrationType );
 
-            return new Control[3] { _ddlRegistrationTemplate, _ddlRegistrationInstance, _rblRegistrationType };
+            // Add control for 'on wait list' drop down.
+            RockDropDownList ddlOnWaitList = new RockDropDownList();
+            ddlOnWaitList.CssClass = "js-on-wait-list";
+            ddlOnWaitList.ID = $"{filterControl.ID}_ddlOnWaitList";
+            ddlOnWaitList.Label = "On Wait List";
+            ddlOnWaitList.Help = "Select 'Yes' to only show only people on the wait list. Select 'No' to only show people who are not on the wait list, or leave blank to ignore wait list status.";
+            ddlOnWaitList.Items.Add( new ListItem() );
+            ddlOnWaitList.Items.Add( new ListItem( "Yes", "True" ) );
+            ddlOnWaitList.Items.Add( new ListItem( "No", "False" ) );
+
+            // Set as blank (includes both wait list and regular registrations) by default.
+            ddlOnWaitList.SelectedValue = string.Empty;
+            filterControl.Controls.Add( ddlOnWaitList );
+
+            return new Control[4] { _ddlRegistrationTemplate, _ddlRegistrationInstance, _rblRegistrationType, ddlOnWaitList };
         }
 
         /// <summary>
@@ -222,7 +229,6 @@ function() {
         /// <param name="filterField">The filter field.</param>
         private void PopulateRegistrationInstanceList( FilterField filterField )
         {
-
             var _ddlRegistrationTemplate = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-registration-template" ) );
             var _ddlRegistrationInstance = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-registration-instance" ) );
 
@@ -230,7 +236,7 @@ function() {
             if ( registrationTemplateId != 0 )
             {
                 _ddlRegistrationInstance.Items.Clear();
-                _ddlRegistrationInstance.Items.Add( new ListItem( "- Any -", "" ) );
+                _ddlRegistrationInstance.Items.Add( new ListItem( "- Any -", string.Empty ) );
                 foreach ( var item in new RegistrationInstanceService( new RockContext() ).Queryable().Where( r => r.RegistrationTemplateId == registrationTemplateId ).OrderBy( r => r.Name ) )
                 {
                     _ddlRegistrationInstance.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
@@ -264,11 +270,18 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var ddlRegistrationTemplate = ( controls[0] as RockDropDownList );
-            var ddlRegistrationInstance = ( controls[1] as RockDropDownList );
-            var rblRegistrationType = ( controls[2] as RockRadioButtonList );
+            SelectionConfig selectionConfig = new SelectionConfig();
 
-            return string.Format( "{0}|{1}|{2}", ddlRegistrationTemplate.SelectedValue, ddlRegistrationInstance.SelectedValue, rblRegistrationType.SelectedValue );
+            var ddlRegistrationTemplate = controls[0] as RockDropDownList;
+            var ddlRegistrationInstance = controls[1] as RockDropDownList;
+            var rblRegistrationType = controls[2] as RockRadioButtonList;
+            var ddlOnWaitList = controls[3] as RockDropDownList;
+
+            selectionConfig.RegistrationTemplateId = ddlRegistrationTemplate.SelectedValue.AsInteger();
+            selectionConfig.RegistrationInstanceGuid = ddlRegistrationInstance.SelectedValue.AsGuidOrNull();
+            selectionConfig.RegistrationType = ( RegistrationTypeSpecifier ) rblRegistrationType.SelectedValue.AsInteger();
+            selectionConfig.OnWaitList = ddlOnWaitList.SelectedValue.AsBooleanOrNull();
+            return selectionConfig.ToJson();
         }
 
         /// <summary>
@@ -279,38 +292,39 @@ function() {
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 1 )
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+
+            var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Get( selectionConfig.RegistrationTemplateId );
+            var ddlRegistrationTemplate = controls[0] as RockDropDownList;
+            if ( registrationTemplate != null )
             {
-                int registrationTemplateId = selectionValues[0].AsInteger();
-                var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Get( registrationTemplateId );
-                var ddlRegistrationTemplate = ( controls[0] as RockDropDownList );
-                if ( registrationTemplate != null )
-                {
-                    ddlRegistrationTemplate.SetValue( registrationTemplateId );
-                }
+                ddlRegistrationTemplate.SetValue( selectionConfig.RegistrationTemplateId );
+            }
 
-                ddlRegistrationTemplate_SelectedIndexChanged( ddlRegistrationTemplate, new EventArgs() );
+            ddlRegistrationTemplate_SelectedIndexChanged( ddlRegistrationTemplate, new EventArgs() );
 
-                var ddlRegistrationInstance = controls[1] as RockDropDownList;
-                if ( selectionValues.Length >= 2 )
-                {
-                    ddlRegistrationInstance.SetValue( selectionValues[1] );
-                }
-                else
-                {
-                    ddlRegistrationInstance.SetValue( string.Empty );
-                }
+            var ddlRegistrationInstance = controls[1] as RockDropDownList;
+            if ( selectionConfig.RegistrationInstanceGuid != null )
+            {
+                ddlRegistrationInstance.SetValue( selectionConfig.RegistrationInstanceGuid );
+            }
+            else
+            {
+                ddlRegistrationInstance.SetValue( string.Empty );
+            }
 
-                var rblRegistrationType = controls[2] as RockRadioButtonList;
-                if ( selectionValues.Length >= 3 )
-                {
-                    rblRegistrationType.SetValue( selectionValues[2] );
-                }
-                else
-                {
-                    rblRegistrationType.SetValue( "2" );
-                }
+            var rblRegistrationType = controls[2] as RockRadioButtonList;
+
+            rblRegistrationType.SetValue( selectionConfig.RegistrationType.ConvertToInt() );
+
+            var ddlOnWaitList = controls[3] as RockDropDownList;
+            if ( selectionConfig.OnWaitList != null )
+            {
+                ddlOnWaitList.SetValue( selectionConfig.OnWaitList.ToString() );
+            }
+            else
+            {
+                ddlOnWaitList.SetValue( string.Empty );
             }
         }
 #endif
@@ -325,62 +339,168 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 3 )
+            var rockContext = ( RockContext ) serviceInstance.Context;
+
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            if ( selectionConfig == null )
             {
-                int? registrationTemplateId = selectionValues[0].AsIntegerOrNull();
-                Guid? registrationInstanceGuid = selectionValues[1].AsGuidOrNull();
-                var registrationType = selectionValues[2];
-
-                var rockContext = ( RockContext ) serviceInstance.Context;
-
-                IQueryable<RegistrationRegistrant> registrantQuery;
-                IQueryable<Registration> registrationQuery;
-                IQueryable<Rock.Model.Person> qry;
-
-                if ( registrationTemplateId == null )
-                {
-                    // no registration template id selected, so return nothing
-                    return Expression.Constant( false );
-                }
-
-                // Registrant
-                if ( registrationType == null || registrationType == "2" )
-                {
-                    registrantQuery = new RegistrationRegistrantService( rockContext ).Queryable()
-                        .Where( r => r.Registration.RegistrationInstance.RegistrationTemplateId == registrationTemplateId );
-
-                    if ( registrationInstanceGuid != null )
-                    {
-                        registrantQuery = registrantQuery.Where( r => r.Registration.RegistrationInstance.Guid == registrationInstanceGuid );
-                    }
-
-                    qry = new PersonService( rockContext ).Queryable()
-                        .Where( p => registrantQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() >= 1 );
-                }
-                // Registrar 
-                else
-                {
-                    registrationQuery = new RegistrationService( rockContext ).Queryable()
-                        .Where( r => r.RegistrationInstance.RegistrationTemplateId == registrationTemplateId );
-
-                    if ( registrationInstanceGuid != null )
-                    {
-                        registrationQuery = registrationQuery.Where( r => r.RegistrationInstance.Guid == registrationInstanceGuid );
-                    }
-
-                    qry = new PersonService( rockContext ).Queryable()
-                        .Where( p => registrationQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() >= 1 );
-                }
-
-                Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
-
-                return result;
+                // The selection configuration is null, so return nothing.
+                return Expression.Constant( false );
             }
 
-            return null;
+            IQueryable<RegistrationRegistrant> registrantQuery;
+            IQueryable<Registration> registrationQuery;
+            IQueryable<Rock.Model.Person> qry;
+
+            if ( selectionConfig.RegistrationType == RegistrationTypeSpecifier.Registrant )
+            {
+                registrantQuery = new RegistrationRegistrantService( rockContext ).Queryable()
+                    .Where( r => r.Registration.RegistrationInstance.RegistrationTemplateId == selectionConfig.RegistrationTemplateId );
+
+                if ( selectionConfig.RegistrationInstanceGuid != null )
+                {
+                    registrantQuery = registrantQuery.Where( r => r.Registration.RegistrationInstance.Guid == selectionConfig.RegistrationInstanceGuid );
+                }
+
+                // If the OnWaitList drop-down is NOT null, filter the registrant query based on registrants' wait list status.
+                if ( selectionConfig.OnWaitList != null )
+                {
+                    registrantQuery = registrantQuery.Where( r => r.OnWaitList == selectionConfig.OnWaitList );
+                }
+
+                qry = new PersonService( rockContext ).Queryable()
+                    .Where( p => registrantQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() >= 1 );
+            }
+            else
+            {
+                // When the type is the Registrar.
+                registrationQuery = new RegistrationService( rockContext ).Queryable()
+                    .Where( r => r.RegistrationInstance.RegistrationTemplateId == selectionConfig.RegistrationTemplateId );
+
+                if ( selectionConfig.RegistrationInstanceGuid != null )
+                {
+                    registrationQuery = registrationQuery.Where( r => r.RegistrationInstance.Guid == selectionConfig.RegistrationInstanceGuid );
+                }
+
+                // If the OnWaitList drop-down is NOT null, filter the registration query based on registrants' wait list status.
+                if ( selectionConfig.OnWaitList != null )
+                {
+                    registrationQuery = registrationQuery.SelectMany( r => r.Registrants.Where( reg => reg.OnWaitList == selectionConfig.OnWaitList ) ).Select( r => r.Registration );
+                }
+
+                qry = new PersonService( rockContext ).Queryable()
+                    .Where( p => registrationQuery.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count() >= 1 );
+            }
+
+            Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
+
+            return result;
         }
 
-        #endregion
+        #endregion Public methods
+
+        /// <summary>
+        /// Get and set the filter settings from DataViewFilter.Selection
+        /// </summary>
+        protected class SelectionConfig
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SelectionConfig"/> class.
+            /// </summary>
+            public SelectionConfig()
+            {
+                // Add values to set defaults / populate upon object creation.
+            }
+
+            /// <summary>
+            /// Gets or sets the registration template ID.
+            /// </summary>
+            /// <value>
+            /// The integer value of the registration template ID.
+            /// </value>
+            public int RegistrationTemplateId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registration instance guid.
+            /// </summary>
+            /// <value>
+            /// The nullable value of the registration instance guid.
+            /// </value>
+            public Guid? RegistrationInstanceGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registration type.
+            /// </summary>
+            /// <value>
+            /// The <see cref="RegistrationTypeSpecifier"/> of the registration type.
+            /// </value>
+            public RegistrationTypeSpecifier RegistrationType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the 'On Wait List' filter status.
+            /// </summary>
+            /// <value>
+            /// The nullable boolean value of the On Wait List filter.
+            /// </value>
+            public bool? OnWaitList { get; set; }
+
+            /// <summary>
+            /// Parses the specified selection from a JSON or delimited string.  If a delimited string, position 1 is the template, 2 is the registration instance, 3 is the type (registrar or registrant), 4 is the wait list status.
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns></returns>
+            public static SelectionConfig Parse( string selection )
+            {
+                var selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
+
+                // This will only occur when the selection string is not JSON.
+                if ( selectionConfig == null )
+                {
+                    selectionConfig = new SelectionConfig();
+
+                    // If the configuration is a pipe-delimited string, then try to parse it the old-fashioned way.
+                    string[] selectionValues = selection.Split( '|' );
+
+                    // Index 0 is the registration template ID.
+                    // Index 1 is the instance guid.
+                    // Index 2 is the registration type.
+                    if ( selectionValues.Count() >= 3 )
+                    {
+                        selectionConfig.RegistrationTemplateId = selectionValues[0].AsInteger();
+                        selectionConfig.RegistrationInstanceGuid = selectionValues[1].AsGuidOrNull();
+                        selectionConfig.RegistrationType = ( RegistrationTypeSpecifier ) selectionValues[2].AsInteger();
+                    }
+                    else
+                    {
+                        // If there are not at least 3 values in the selection string then it is not a valid selection.
+                        return null;
+                    }
+
+                    // Index 3 is the 'on wait list' option.
+                    if ( selectionValues.Count() >= 4 )
+                    {
+                        selectionConfig.OnWaitList = selectionValues[3].AsBooleanOrNull();
+                    }
+                }
+
+                return selectionConfig;
+            }
+        }
+
+        /// <summary>
+        /// Enumeration of registration type.
+        /// </summary>
+        public enum RegistrationTypeSpecifier
+        {
+            /// <summary>
+            /// When the results include the people who were registered.
+            /// </summary>
+            Registrant = 2,
+
+            /// <summary>
+            /// When the results include the person / people who made the registrations (for others). 
+            /// </summary>
+            Registrar = 1
+        }
     }
 }

@@ -44,6 +44,7 @@ namespace Rock.Financial
             public const string RenderMedium = "RenderMedium";
             public const string FinancialStatementTemplate = "FinancialStatementTemplate";
             public const string RenderedPageCount = "RenderedPageCount";
+            public const string Person = "Person";
             public const string PersonList = "PersonList";
             public const string StatementStartDate = "StatementStartDate";
             public const string StatementEndDate = "StatementEndDate";
@@ -386,6 +387,7 @@ namespace Rock.Financial
                 mergeFields.Add( MergeFieldKey.FinancialStatementTemplate, financialStatementTemplate );
                 mergeFields.Add( MergeFieldKey.RenderedPageCount, financialStatementGeneratorRecipientRequest.FinancialStatementGeneratorRecipient.RenderedPageCount );
 
+                mergeFields.Add( MergeFieldKey.Person, person );
                 mergeFields.Add( MergeFieldKey.PersonList, personList );
                 mergeFields.Add( MergeFieldKey.StatementStartDate, financialStatementGeneratorOptions.StartDate );
                 var humanFriendlyEndDate = financialStatementGeneratorOptions.EndDate.HasValue ? financialStatementGeneratorOptions.EndDate.Value.AddDays( -1 ) : RockDateTime.Now.Date;

@@ -13,12 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -29,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PersonalLinkSectionOrder" )]
     [DataContract]
-    public partial class PersonalLinkSectionOrder : Model<PersonalLinkSectionOrder>, IOrdered
+    public partial class PersonalLinkSectionOrder : Model<PersonalLinkSectionOrder>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -82,6 +88,50 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual PersonalLinkSection Section { get; set; }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            var currentPersonAliasId = dbContext.GetCurrentPersonAlias()?.Id;
+            if ( this.PersonAliasId == currentPersonAliasId )
+            {
+                // If the current person is the one modifying this (it probably is), update the Session
+                // Data so that the PersonalLinks block knows to update the localStorage of PersonalLinks.
+                // Note the PersonalLinkSectionOrder is not shared, so we don't need to update SharedPersonalLinkSectionCache.
+                PersonalLinkService.PersonalLinksHelper.FlushPersonalLinksSessionDataLastModifiedDateTime();
+            }
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns>IEntityCache.</returns>
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply
+            return null;
+        }
+
+        #endregion ICacheable
+
+        #region overrides
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
+        public override string ToString()
+        {
+            return $" {this.Section}, {this.PersonAlias}'s Order:{this.Order}";
+        }
 
         #endregion
     }

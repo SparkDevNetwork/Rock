@@ -47,14 +47,6 @@ iframe.email-body {
   height: ~"calc(100vh - var(--email-editor-offset, 360px))";
   min-height: 300px;
   margin: -@panel-body-padding -@panel-body-padding 0 -@panel-body-padding;
-  //border-bottom: 1px solid @panel-border;
-}
-
-// TODO: Find Better Way
-.communication-entry-wizard {
-  .actions {
-    margin-top: 0 !important;
-  }
 }
 
 .panel-actions-bordered {
@@ -260,6 +252,7 @@ iframe.email-body {
     }
 
     .sms-name {
+      font-weight: 600;
       color: #000;
     }
 
@@ -273,10 +266,6 @@ iframe.email-body {
       -webkit-box-direction: normal;
     }
 
-    .unread {
-      font-weight: 600;
-    }
-
     .table {
       table-layout: fixed;
 
@@ -286,10 +275,6 @@ iframe.email-body {
 
       tr:first-child td {
         border-top: 0;
-      }
-
-      tr.selected {
-        box-shadow: inset 4px 0 0 0 @brand-primary;
       }
     }
 
@@ -303,6 +288,15 @@ iframe.email-body {
       text-align: right;
       text-transform: capitalize;
       -webkit-box-flex: 1;
+    }
+
+    // Message States
+    .selected {
+      background: rgba(0,0,0,.02);
+    }
+
+    .unread {
+      box-shadow: inset 4px 0 0 0 @brand-primary;
     }
   }
 
@@ -556,7 +550,6 @@ iframe.email-body {
 
     &:hover {
       border: 1px solid @brand-primary;
-      -webkit-box-shadow: 0 0 0 1px @brand-primary inset;
       box-shadow: 0 0 0 1px @brand-primary inset;
     }
   }
@@ -678,8 +671,8 @@ iframe.email-body {
 .panel-palette {
   margin: 0;
   border: 0;
-  border-bottom-left-radius: 0;
   border-left: 1px solid @panel-border;
+  border-bottom-left-radius: 0;
 
   .panel-heading {
     font-weight: 500;

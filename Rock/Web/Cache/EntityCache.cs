@@ -239,59 +239,6 @@ namespace Rock.Web.Cache
             }
         }
 
-        #region Obsolete Methods
-
-        /// <summary>
-        /// Reads the specified identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead", true )]
-        public static T Read( int id, RockContext rockContext = null )
-        {
-            return Get( id, rockContext );
-        }
-
-        /// <summary>
-        /// Reads the specified unique identifier.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
-        public static T Read( Guid guid, RockContext rockContext = null )
-        {
-            return Get( guid, rockContext );
-        }
-
-        /// <summary>
-        /// Reads the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
-        public static T Read( TT model )
-        {
-            return Get( model );
-        }
-
-        /// <summary>
-        /// Flushes the specified identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use FlushItem or Remove instead", true )]
-        public static void Flush( int id )
-        {
-            Remove( id );
-        }
-
-        #endregion
-
         /// <summary>
         /// Removes or invalidates the CachedItem based on EntityState
         /// </summary>

@@ -37,6 +37,7 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Cms.StructuredContent;
 
 namespace Rock.Model
 {
@@ -403,6 +404,13 @@ namespace Rock.Model
                     PreSaveBinaryFile( dbContext, entry );
                 }
 
+                // Check to see if this attribute value is for a StructureContentEditorFieldType.
+                // If so then we need to detect any changes in the content blocks.
+                if ( field is Field.Types.StructureContentEditorFieldType )
+                {
+                    PreSaveStructuredContent( dbContext, entry );
+                }
+
                 // Save to the historical table if history is enabled
                 if ( attributeCache.EnableHistory )
                 {
@@ -439,13 +447,28 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
 
-            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with
+            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with.
+            // For example, if the FavoriteColor attribute of Ted Decker is changed from Red to Blue, we'll update Ted's Person.ModifiedDateTime.
             if ( this.EntityId.HasValue && AttributeCache.Get( this.AttributeId )?.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id )
             {
+                // since this could get called several times (one for each of changed Attributes on a person), do a direct SQL to minimize overhead
                 var currentDateTime = RockDateTime.Now;
                 int personId = this.EntityId.Value;
-                var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId );
-                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
+                if ( this.ModifiedByPersonAliasId.HasValue )
+                {
+                    rockContext.Database.ExecuteSqlCommand(
+                        $"UPDATE [Person] SET [ModifiedDateTime] = @modifiedDateTime, [ModifiedByPersonAliasId] = @modifiedByPersonAliasId WHERE [Id] = @personId",
+                        new System.Data.SqlClient.SqlParameter( "@modifiedDateTime", currentDateTime ),
+                        new System.Data.SqlClient.SqlParameter( "@modifiedByPersonAliasId", this.ModifiedByPersonAliasId.Value),
+                        new System.Data.SqlClient.SqlParameter( "@personId", personId ) );
+                }
+                else
+                {
+                    rockContext.Database.ExecuteSqlCommand(
+                        $"UPDATE [Person] SET [ModifiedDateTime] = @modifiedDateTime, [ModifiedByPersonAliasId] = NULL WHERE [Id] = @personId",
+                        new System.Data.SqlClient.SqlParameter( "@modifiedDateTime", currentDateTime ),
+                        new System.Data.SqlClient.SqlParameter( "@personId", personId ) );
+                }
             }
 
             base.PostSaveChanges( dbContext );
@@ -507,6 +530,27 @@ namespace Rock.Model
                 {
                     binaryFile.IsTemporary = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Processes the PreSave event when this value is for
+        /// <see cref="Field.Types.StructureContentEditorFieldType"/>. Detect any
+        /// changes to the internal content and apply them to the database as well.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        private void PreSaveStructuredContent( Rock.Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( dbContext is RockContext rockContext )
+            {
+                string content = entry.State == EntityState.Added || entry.State == EntityState.Modified ? Value : string.Empty;
+                string oldContent = entry.State == EntityState.Modified ? entry.OriginalValues["Value"] as string : string.Empty;
+
+                var helper = new StructuredContentHelper( content );
+                var changes = helper.DetectChanges( oldContent );
+
+                helper.ApplyDatabaseChanges( changes, rockContext );
             }
         }
 

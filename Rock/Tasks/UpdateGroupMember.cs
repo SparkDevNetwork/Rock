@@ -41,7 +41,7 @@ namespace Rock.Tasks
         public override void Execute( Message message )
         {
             // if a GroupMember is getting added, call CalculateRequirements to make sure that group member requirements are calculated (if the group has requirements)
-            if ( message.State == EntityState.Added || ( message.PreviousIsArchived && message.IsArchived != message.PreviousIsArchived ) )
+            if ( message.State == EntityContextState.Added || ( message.PreviousIsArchived && message.IsArchived != message.PreviousIsArchived ) )
             {
                 if ( message.GroupMemberGuid.HasValue )
                 {
@@ -126,7 +126,7 @@ namespace Rock.Tasks
                                     {
                                         case GroupMemberWorkflowTriggerType.MemberAddedToGroup:
                                             {
-                                                if ( message.State == EntityState.Added && QualifiersMatch( rockContext, trigger, message.GroupMemberStatus, message.GroupMemberStatus, message.GroupMemberRoleId, message.GroupMemberRoleId ) )
+                                                if ( message.State == EntityContextState.Added && QualifiersMatch( rockContext, trigger, message.GroupMemberStatus, message.GroupMemberStatus, message.GroupMemberRoleId, message.GroupMemberRoleId ) )
                                                 {
                                                     LaunchWorkflow( rockContext, trigger, message );
                                                 }
@@ -136,7 +136,7 @@ namespace Rock.Tasks
 
                                         case GroupMemberWorkflowTriggerType.MemberRemovedFromGroup:
                                             {
-                                                if ( message.State == EntityState.Deleted && QualifiersMatch( rockContext, trigger, message.PreviousGroupMemberStatus, message.PreviousGroupMemberStatus, message.PreviousGroupMemberRoleId, message.PreviousGroupMemberRoleId ) )
+                                                if ( message.State == EntityContextState.Deleted && QualifiersMatch( rockContext, trigger, message.GroupMemberStatus, message.GroupMemberStatus, message.GroupMemberRoleId, message.GroupMemberRoleId ) )
                                                 {
                                                     LaunchWorkflow( rockContext, trigger, message );
                                                 }
@@ -146,7 +146,7 @@ namespace Rock.Tasks
 
                                         case GroupMemberWorkflowTriggerType.MemberRoleChanged:
                                             {
-                                                if ( message.State == EntityState.Modified && message.PreviousGroupMemberRoleId != message.GroupMemberRoleId && QualifiersMatch( rockContext, trigger, message.PreviousGroupMemberRoleId, message.GroupMemberRoleId ) )
+                                                if ( message.State == EntityContextState.Modified && message.PreviousGroupMemberRoleId != message.GroupMemberRoleId && QualifiersMatch( rockContext, trigger, message.PreviousGroupMemberRoleId, message.GroupMemberRoleId ) )
                                                 {
                                                     LaunchWorkflow( rockContext, trigger, message );
                                                 }
@@ -156,7 +156,7 @@ namespace Rock.Tasks
 
                                         case GroupMemberWorkflowTriggerType.MemberStatusChanged:
                                             {
-                                                if ( message.State == EntityState.Modified && message.PreviousGroupMemberStatus != message.GroupMemberStatus && QualifiersMatch( rockContext, trigger, message.PreviousGroupMemberStatus, message.GroupMemberStatus ) )
+                                                if ( message.State == EntityContextState.Modified && message.PreviousGroupMemberStatus != message.GroupMemberStatus && QualifiersMatch( rockContext, trigger, message.PreviousGroupMemberStatus, message.GroupMemberStatus ) )
                                                 {
                                                     LaunchWorkflow( rockContext, trigger, message );
                                                 }
@@ -289,7 +289,7 @@ namespace Rock.Tasks
             /// <value>
             /// The entity state.
             /// </value>
-            public EntityState State { get; set; }
+            public EntityContextState State { get; set; }
 
             /// <summary>
             /// Gets or sets the group member unique identifier.

@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         /// The pre text.
         /// </value>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use PreHTML Instead" )]
+        [Obsolete( "Use PreHTML Instead", true )]
         public string PreText
         {
             get => PreHtml;

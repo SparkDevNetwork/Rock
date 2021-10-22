@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Finance
             if ( _canEdit )
             {
                 _ddlMove.ID = "ddlMove";
-                _ddlMove.CssClass = "pull-left input-width-xl";
+                _ddlMove.CssClass = "pull-left input-width-xl input-xs";
                 _ddlMove.DataValueField = "Id";
                 _ddlMove.DataTextField = "Name";
                 _ddlMove.DataSource = new FinancialBatchService( new RockContext() )

@@ -67,12 +67,12 @@
   <ItemGroup>
     <Compile Remove="Address\MelissaData.cs" />
     <Compile Remove="Address\ServiceObjects.cs" />
+    <Compile Remove="Blocks\Types\Mobile\Groups\GroupFinder.WebForms.cs" />
     <Compile Remove="Bus\Transport\Component\AzureServiceBus.cs" />
     <Compile Remove="Bus\Transport\Component\RabbitMq.cs" />
     <Compile Remove="Chart\ChartJsTimeSeriesDataPoint.cs" />
     <Compile Remove="CheckIn\CheckInBlock.cs" />
     <Compile Remove="CheckIn\CheckInBlockMultiPerson.cs" />
-    <Compile Remove="CheckIn\CheckinConfigurationHelper.cs" />
     <Compile Remove="CheckIn\CheckInEditFamilyBlock.cs" />
     <Compile Remove="CheckIn\CheckInSearchBlock.cs" />
     <Compile Remove="CheckIn\LocalDeviceConfiguration.cs" />
@@ -85,7 +85,9 @@
     <Compile Remove="Data\IRockStoreModelConvention.cs" />
     <Compile Remove="Data\MigrationHelper.cs" />
     <Compile Remove="Data\MigrationIndexHelper.cs" />
+    <Compile Remove="Data\RockContextAnalytics.cs" />
     <Compile Remove="Data\RockContextConfig.cs" />
+    <Compile Remove="Data\RockContextReadOnly.cs" />
     <Compile Remove="Data\RockPluginDBInitializer.cs" />
     <Compile Remove="Data\RouteAttribute.cs" />
     <Compile Remove="Field\EntitySingleSelectionListFieldTypeBase.cs" />
@@ -197,6 +199,7 @@
     <Compile Include="Web\Cache\Entities\RegistrationTemplateFormFieldCache.cs" />
     <Compile Include="Web\Cache\Entities\RestActionCache.cs" />
     <Compile Include="Web\Cache\Entities\RestControllerCache.cs" />
+    <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />
     <Compile Include="Web\Cache\Entities\SignalTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\SiteCache.cs" />
     <Compile Include="Web\Cache\Entities\SmsActionCache.cs" />
@@ -219,9 +222,9 @@
     <Compile Include="Web\Cache\ItemCache.cs" />
     <Compile Include="Web\Cache\ModelCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\EntityAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityNoteTypesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\IdFromGuidCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />

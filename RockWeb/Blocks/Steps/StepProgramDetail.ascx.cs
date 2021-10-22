@@ -119,6 +119,13 @@ namespace RockWeb.Blocks.Steps
 
         #endregion
 
+        #region Private Variables
+
+        private StepProgram _program = null;
+        private int _stepProgramId = 0;
+
+        #endregion Private Variables
+
         #region Control Methods
 
         /// <summary>
@@ -180,6 +187,7 @@ namespace RockWeb.Blocks.Steps
             base.OnInit( e );
 
             InitializeBlockNotification( nbBlockStatus, pnlDetails );
+            InitializeBlockContext();
             InitializeStatusesGrid();
             InitializeWorkflowsGrid();
             InitializeActionButtons();
@@ -188,6 +196,10 @@ namespace RockWeb.Blocks.Steps
             InitializeSettingsNotification( upStepProgram );
 
             var editAllowed = IsUserAuthorized( Authorization.EDIT );
+            if ( !editAllowed && _program != null )
+            {
+                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _program.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+            }
             InitializeAttributesGrid( editAllowed );
         }
 
@@ -1863,6 +1875,23 @@ namespace RockWeb.Blocks.Steps
             _detailContainerControl = detailContainerControl;
 
             ClearBlockNotification();
+        }
+
+        /// <summary>
+        /// Initialize the essential context in which this block is operating.
+        /// </summary>
+        /// <returns>True, if the block context is valid.</returns>
+        private bool InitializeBlockContext()
+        {
+            _stepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
+            if ( _stepProgramId != 0 )
+            {
+                var dataContext = this.GetDataContext();
+                var stepProgramService = new StepProgramService( dataContext );
+                _program = stepProgramService.Queryable().Where( g => g.Id == _stepProgramId ).FirstOrDefault();
+            }
+
+            return true;
         }
 
         /// <summary>

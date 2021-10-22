@@ -187,6 +187,9 @@ namespace Rock.Client
         public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
 
         /// <summary />
+        public DefinedValue ForeignCurrencyCodeValue { get; set; }
+
+        /// <summary />
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
 
         /// <summary />

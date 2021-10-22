@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class PersonViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the AccountProtectionProfile.
+        /// </summary>
+        /// <value>
+        /// The AccountProtectionProfile.
+        /// </value>
+        public int AccountProtectionProfile { get; set; }
+
+        /// <summary>
         /// Gets or sets the AgeClassification.
         /// </summary>
         /// <value>

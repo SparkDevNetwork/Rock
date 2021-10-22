@@ -353,17 +353,6 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead", true )]
-        public override void CopyFromModel( Data.IEntity model )
-        {
-            this.SetFromEntity( model );
-        }
-
-        /// <summary>
         /// WARNING: This will contain all the Attribute records that in the database.
         /// This could be an expensive call.
         /// Please use <code> AttributeCache.AllForEntityType(int entityTypeId)</code> if you only need the attributes
@@ -388,13 +377,23 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets a list of all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityTypeId.
+        /// Gets all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityTypeId.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <returns></returns>
         public static AttributeCache[] AllForEntityType( int entityTypeId )
         {
-            var attributeIds = AttributeCache.GetByEntity( entityTypeId ).SelectMany( a => a.AttributeIds ).ToList();
+            return GetByEntityType( entityTypeId );
+        }
+
+        /// <summary>
+        /// Gets all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityTypeId.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        internal static AttributeCache[] GetByEntityType( int? entityTypeId )
+        {
+            var attributeIds = EntityTypeAttributesCache.Get( entityTypeId ).AttributeIds;
             return attributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
         }
 
@@ -432,18 +431,6 @@ namespace Rock.Web.Cache
             }
 
             SetFromEntity( attribute, qualifiers );
-        }
-
-        /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="qualifiers">The qualifiers.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead", true )]
-        public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
-        {
-            this.SetFromEntity( attribute, qualifiers );
         }
 
         /// <summary>
@@ -498,7 +485,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public AttributeViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new AttributeViewModelHelper();
+            var helper = new AttributeCacheViewModelHelper();
             var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
             return viewModel;
         }
@@ -740,35 +727,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<AttributeCache> GetByEntityTypeQualifier( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool includeInactive )
         {
-            var query = GetByEntity( entityTypeId );
-
-            if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
-            {
-                query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ).ToList();
-            }
-            else
-            {
-                query = query.Where( t => t.EntityTypeQualifierColumn == entityQualifierColumn ).ToList();
-            }
-
-            if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
-            {
-                query = query.Where( t => t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ).ToList();
-            }
-            else
-            {
-                query = query.Where( t => t.EntityTypeQualifierValue == entityQualifierValue ).ToList();
-            }
-
-            var attributeIds = query.SelectMany( t => t.AttributeIds );
-            var attributes = attributeIds.Select( Get ).ToList();
-
-            if ( !includeInactive )
-            {
-                attributes = attributes.Where( a => a.IsActive == true ).ToList();
-            }
-
-            return attributes;
+            return EntityTypeAttributesCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, includeInactive ).ToList();
         }
 
         /// <summary>
@@ -791,19 +750,6 @@ namespace Rock.Web.Cache
             RockCacheManager<int?>.Instance.AddOrUpdate( QualifiedKey( value.Guid.ToString() ), value.Id );
 
             return value;
-        }
-
-        /// <summary>
-        /// Reads the specified attribute model.
-        /// </summary>
-        /// <param name="attributeModel">The attribute model.</param>
-        /// <param name="qualifiers">The qualifiers.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
-        public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
-        {
-            return Get( attributeModel, qualifiers );
         }
 
         #endregion
@@ -869,85 +815,13 @@ namespace Rock.Web.Cache
         #region Entity Attributes Cache
 
         /// <summary>
-        /// Gets a list of AttributeIds for the specified entityTypeId
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <returns></returns>
-        internal static List<EntityAttributes> GetByEntity( int? entityTypeId )
-        {
-            var allEntityAttributes = EntityAttributesCache.Get();
-            if ( allEntityAttributes != null )
-            {
-                List<EntityAttributes> result;
-                if ( entityTypeId.HasValue )
-                {
-                    result = allEntityAttributes.EntityAttributesByEntityTypeId.GetValueOrNull( entityTypeId.Value ) ?? new List<EntityAttributes>();
-                }
-                else
-                {
-                    result = allEntityAttributes.EntityAttributes.Where( a => !a.EntityTypeId.HasValue ).ToList();
-                }
-
-                return result;
-            }
-
-            return new List<EntityAttributes>();
-        }
-
-        /// <summary>
-        /// Gets the by entity.
-        /// </summary>
-        /// <param name="entityTypeid">The entity typeid.</param>
-        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
-        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
-        /// <returns></returns>
-        internal static List<int> GetByEntity( int? entityTypeid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
-        {
-            return GetByEntity( entityTypeid )
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn ) &&
-                    a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue ) )
-                .SelectMany( a => a.AttributeIds )
-                .ToList();
-        }
-
-        /// <summary>
         /// Flushes the entity attributes.
         /// </summary>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
         public static void RemoveEntityAttributes()
         {
             EntityAttributesCache.Remove();
-        }
-
-        /// <summary>
-        /// Loads the entity attributes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed", true )]
-        public static void LoadEntityAttributes( RockContext rockContext )
-        {
-            //
-        }
-
-        /// <summary>
-        /// Flushes the entity attributes.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveEntityAttributes instead", true )]
-        public static void FlushEntityAttributes()
-        {
-            EntityAttributesCache.Remove();
-        }
-
-        /// <summary>
-        /// Updates the <see cref="EntityAttributesCache" /> based on the attribute and entityState
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="entityState">State of the entity.</param>
-        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, EntityState entityState )
-        {
-            EntityAttributesCache.UpdateCacheEntityAttributes( attribute, entityState );
         }
 
         #endregion
@@ -1042,7 +916,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// AttributeValueCache View Model Helper
     /// </summary>
-    public partial class AttributeViewModelHelper : ViewModelHelper<AttributeCache, AttributeViewModel>
+    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeViewModel>
     {
         /// <summary>
         /// Converts to viewmodel.

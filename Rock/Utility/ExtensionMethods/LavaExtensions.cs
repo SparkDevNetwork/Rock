@@ -44,23 +44,6 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-        #region Constructors
-
-        /// <summary>
-        /// Initializes the <see cref="ExtensionMethods"/> class.
-        /// </summary>
-        static ExtensionMethods()
-        {
-#if !NET5_0_OR_GREATER
-            //
-            // Register any 3rd party library classes that are safe to use.
-            //
-            Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
-#endif
-        }
-
-        #endregion
-
         #region Lava Extensions
 
         /// <summary>
@@ -699,7 +682,9 @@ namespace Rock
                         }
                     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                     rockLiquidOutput = ResolveMergeFieldsForRockLiquid( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings, throwExceptionOnErrors );
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     if ( lavaEngineOutput != null )
                     {
@@ -733,7 +718,7 @@ namespace Rock
             }
             catch ( System.Threading.ThreadAbortException )
             {
-                // Ignore abort error caused by Lava PageRedirect filter.
+                // Ignore abort errors that may be caused by previous implementations of the Lava PageRedirect filter.
                 return string.Empty;
             }
             catch ( Exception ex )
@@ -754,6 +739,8 @@ namespace Rock
             }
         }
 
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
         private static string ResolveMergeFieldsForRockLiquid( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
 #if NET5_0_OR_GREATER
@@ -972,6 +959,8 @@ namespace Rock
         /// </summary>
         /// <param name="content">The content of the template.</param>
         /// <returns></returns>
+        [RockObsolete("1.13")]
+        [Obsolete("This method is only required for the DotLiquid Lava implementation.")]
         private static Template GetTemplate( string content )
         {
             const int hashLength = 10;

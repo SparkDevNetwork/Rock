@@ -16,8 +16,11 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 
+using LoxSmoke.DocXml;
+
 using Rock;
 using Rock.ViewModel;
+using Rock.Utility;
 
 namespace Rock.CodeGeneration
 {
@@ -26,6 +29,8 @@ namespace Rock.CodeGeneration
     /// </summary>
     public partial class Form1 : Form
     {
+        private DocXmlReader _rockXmlDoc;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Form1" /> class.
         /// </summary>
@@ -63,6 +68,8 @@ namespace Rock.CodeGeneration
                 }
             }
 
+            _rockXmlDoc = new DocXmlReader( assemblyFileName.Substring( 0, assemblyFileName.Length - 4 ) + ".xml" );
+
             CheckAllItems( true );
             cbSelectAll.Checked = true;
 
@@ -73,7 +80,7 @@ namespace Rock.CodeGeneration
 
             tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
             tbViewModelFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".ViewModel" );
-            tbViewModelTsFolder.Text = Path.Combine( RootFolder().FullName, projectName + "Web", "Obsidian", "ViewModels" );
+            tbViewModelTsFolder.Text = Path.Combine( RootFolder().FullName, "Rock.JavaScript.Obsidian", "Framework", "ViewModels" );
             tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
             tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
             tbDatabaseFolder.Text = Path.Combine( RootFolder().FullName, "Database" );
@@ -139,6 +146,42 @@ namespace Rock.CodeGeneration
                         Directory.CreateDirectory( Path.Combine( rockClientFolder, "CodeGenerated" ) );
                     }
 
+                    if ( cbViewModelTs.Checked && cblModels.Items.Count == cblModels.CheckedItems.Count )
+                    {
+                        var codeGenFolder = Path.Combine( viewModelTypescriptFolder, "CodeGenerated" );
+                        if ( Directory.Exists( codeGenFolder ) )
+                        {
+                            Directory.Delete( codeGenFolder, true );
+                        }
+
+                        Directory.CreateDirectory( codeGenFolder );
+                    }
+
+                    if ( cbService.Checked && cblModels.Items.Count == cblModels.CheckedItems.Count )
+                    {
+                        var codeGenFolder = Path.Combine( NamespaceFolder( serviceFolder, "Rock.Model" ).FullName, "CodeGenerated" );
+                        if ( Directory.Exists( codeGenFolder ) )
+                        {
+                            Directory.Delete( codeGenFolder, true );
+                        }
+
+                        Directory.CreateDirectory( codeGenFolder );
+                    }
+
+                    if (cbRest.Checked && cblModels.Items.Count == cblModels.CheckedItems.Count )
+                    {
+                        // var filePath1 = Path.Combine( rootFolder, "Controllers" );
+                        // var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.CodeGenerated.cs" ) );
+
+                        var codeGenFolder = Path.Combine( restFolder, "Controllers", "CodeGenerated" );
+                        if ( Directory.Exists( codeGenFolder ) )
+                        {
+                            Directory.Delete( codeGenFolder, true );
+                        }
+
+                        Directory.CreateDirectory( codeGenFolder );
+                    }
+
                     foreach ( object item in cblModels.CheckedItems )
                     {
                         progressBar1.Value++;
@@ -184,6 +227,12 @@ namespace Rock.CodeGeneration
                         WriteRockClientEnumsFile( rockClientFolder );
                     }
 
+                    if ( cbViewModelTs.Checked && cblModels.Items.Count == cblModels.CheckedItems.Count )
+                    {
+                        WriteViewModelTypeScriptIndexFile( viewModelTypescriptFolder, cblModels.CheckedItems.Cast<Type>() );
+                        WriteSystemGuidTypeScriptFiles( Path.Combine( RootFolder().FullName, "Rock.JavaScript.Obsidian", "Framework", "SystemGuids" ) );
+                    }
+
                     if ( cbDatabaseProcs.Checked )
                     {
                         WriteDatabaseProcsScripts( tbDatabaseFolder.Text, projectName );
@@ -201,22 +250,31 @@ namespace Rock.CodeGeneration
                 }
             }
 
-            ReportRockCodeWarnings();
+            var hasWarnings = ReportRockCodeWarnings();
 
             progressBar1.Visible = false;
             Cursor = Cursors.Default;
-            MessageBox.Show( "Files have been generated" );
+            if ( hasWarnings )
+            {
+                MessageBox.Show( "Files have been generated with warnings", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+            }
+            else
+            {
+                MessageBox.Show( "Files have been generated" );
+            }
         }
 
         /// <summary>
-        /// Reports the rock code warnings.
+        /// Reports the rock code warnings
+        /// and returns true if there are warnings.
         /// </summary>
-        public void ReportRockCodeWarnings()
+        public bool ReportRockCodeWarnings()
         {
+            bool hasWarnings = false;
             StringBuilder missingDbSetWarnings = new StringBuilder();
             StringBuilder rockObsoleteWarnings = new StringBuilder();
             List<string> singletonClassVariablesWarnings = new List<string>();
-            List<string> obsoleteList = new List<string>();
+            List<string> obsoleteReportList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
             rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
@@ -253,7 +311,7 @@ namespace Rock.CodeGeneration
                         }
                         else
                         {
-                            obsoleteList.Add( $"{rockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
+                            obsoleteReportList.Add( $"{rockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
                         }
                     }
 
@@ -285,7 +343,7 @@ namespace Rock.CodeGeneration
                                     }
                                 }
 
-                                obsoleteList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                                obsoleteReportList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
                             }
                         }
 
@@ -297,14 +355,30 @@ namespace Rock.CodeGeneration
                         var ignoredThreadSafeTypeWarning = new Type[] {
                             typeof(Rock.UniversalSearch.IndexComponents.Lucene),
                         };
-
-                        // fields that OK based on how we use them
+                        
                         var ignoredThreadSafeFieldWarning = new string[]
                         {
+                            // fields that OK based on how we use them
                             "Rock.Extension.Component.Attributes",
                             "Rock.Extension.Component.AttributeValues",
                             "Rock.Web.HttpModules.ResponseHeaders.Headers",
-                            "Rock.Field.FieldType.QualifierUpdated"
+                            "Rock.Field.FieldType.QualifierUpdated",
+
+                             // Fields that probably should be fixed, but would take some time to figure out how to fix them.
+                             "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
+                             "Rock.Field.Types.EnumFieldType`1._EnumValues",
+                             "Rock.Financial.TestGateway.MostRecentException",
+                             "Rock.Financial.TestRedirectionGateway.MostRecentException",
+                             "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
+                             "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
+                             "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
+                             "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
+                             "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
+                             "Rock.Workflow.Action.AddStep._mergeFields",
+                             "Rock.Workflow.Action.PrayerRequestAdd._action",
+                             "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
+                             "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
+                             "Rock.Workflow.Action.PrayerRequestAdd._mergeFields"
                         };
 
                         if ( typeof( Rock.Field.FieldType ).IsAssignableFrom( type )
@@ -360,8 +434,6 @@ namespace Rock.CodeGeneration
                                 }
                             }
                         }
-
-
                     }
                 }
             }
@@ -369,6 +441,7 @@ namespace Rock.CodeGeneration
             StringBuilder warnings = new StringBuilder();
             if ( entityPropertyShouldBeVirtualWarnings.Count > 0 )
             {
+                hasWarnings = true;
                 warnings.AppendLine( "Model Properties that should be marked virtual" );
                 foreach ( var warning in entityPropertyShouldBeVirtualWarnings )
                 {
@@ -376,9 +449,24 @@ namespace Rock.CodeGeneration
                 }
             }
 
+            if ( rockObsoleteWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine();
+                warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
+                warnings.Append( rockObsoleteWarnings );
+            }
+
+            if ( missingDbSetWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine( "RockContext missing DbSet<T>s" );
+                warnings.Append( missingDbSetWarnings );
+            }
 
             if ( singletonClassVariablesWarnings.Count > 0 )
             {
+                hasWarnings = true;
                 warnings.AppendLine();
                 warnings.AppendLine( "Singleton non-threadsafe class variables." );
                 foreach ( var warning in singletonClassVariablesWarnings )
@@ -387,29 +475,17 @@ namespace Rock.CodeGeneration
                 }
             }
 
-            if ( missingDbSetWarnings.Length > 0 )
-            {
-
-                warnings.AppendLine( "RockContext missing DbSet<T>s" );
-                warnings.Append( missingDbSetWarnings );
-            }
-
-            if ( rockObsoleteWarnings.Length > 0 )
-            {
-                warnings.AppendLine();
-                warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
-                warnings.Append( rockObsoleteWarnings );
-            }
-
             if ( cbGenerateObsoleteExport.Checked )
             {
                 warnings.AppendLine();
 
-                obsoleteList = obsoleteList.OrderBy( a => a.Split( new char[] { ',' } )[0] ).ToList();
-                warnings.Append( $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteList.AsDelimited( Environment.NewLine ) );
+                obsoleteReportList = obsoleteReportList.OrderBy( a => a.Split( new char[] { ',' } )[0] ).ToList();
+                warnings.Append( $"Version,Name,Type,IsError" + Environment.NewLine + obsoleteReportList.AsDelimited( Environment.NewLine ) );
             }
 
-            tbResults.Text = warnings.ToString();
+            tbResults.Text = warnings.ToString().Trim();
+
+            return hasWarnings;
         }
 
         /// <summary>
@@ -579,7 +655,7 @@ GO
 
             var isObsolete = type.GetCustomAttribute<ObsoleteAttribute>() != null;
             var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
-            var hasViewModel = !isObsolete && isModel && type.GetCustomAttribute<ViewModelExcludeAttribute>() == null;
+            var hasViewModel = !isObsolete && isModel && !( type.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile );
             var properties = GetEntityProperties( type, false, true, true );
             var viewModelProperties = GetViewModelProperties( type );
 
@@ -772,7 +848,7 @@ using Rock.Web.Cache;
             }
 
             sb.AppendLine( $@"
-        }}");
+        }}" );
 
             if ( hasViewModel )
             {
@@ -791,12 +867,12 @@ using Rock.Web.Cache;
         }}" );
             }
 
-            sb.AppendLine(@"
+            sb.AppendLine( @"
     }
 " );
             sb.AppendLine( "}" );
 
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.cs" ) );
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.CodeGenerated.cs" ) );
             WriteFile( file, sb );
         }
 
@@ -809,7 +885,7 @@ using Rock.Web.Cache;
         {
             var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
 
-            if ( !isModel || type.GetCustomAttribute<ViewModelExcludeAttribute>() != null )
+            if ( !isModel || ( type.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile ) )
             {
                 return;
             }
@@ -849,6 +925,144 @@ namespace Rock.ViewModel
             WriteFile( file, sb );
         }
 
+        private void WriteSystemGuidTypeScriptFiles( string rootFolder )
+        {
+            var basePath = Path.Combine( rootFolder, "Rock.JavaScript.Obsidian", "SystemGuids" );
+            var types = typeof( Rock.Data.IEntity ).Assembly
+                .ExportedTypes
+                .Where( t => t.Namespace == "Rock.SystemGuid" );
+            StringBuilder sb;
+            FileInfo file;
+
+            progressBar1.Maximum = types.Count();
+            progressBar1.Value = 0;
+
+            foreach ( var type in types )
+            {
+                var values = type.GetFields( BindingFlags.Static | BindingFlags.Public )
+                    .Select( f => new
+                    {
+                        Field = f,
+                        Value = ( string ) f.GetValue( null )
+                    } );
+                var camelName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
+
+                sb = new StringBuilder();
+                sb.AppendLine( AutoGeneratedLicense );
+                sb.AppendLine();
+                sb.AppendLine( $"export const enum {type.Name} {{" );
+
+                foreach ( var value in values )
+                {
+                    bool cap = true;
+                    string name = string.Empty;
+
+                    // Convert the name into a JavaScript friendly one.
+                    for ( int i = 0; i < value.Field.Name.Length; i++ )
+                    {
+                        if ( cap )
+                        {
+                            name += value.Field.Name[i].ToString().ToUpper();
+                            cap = false;
+                        }
+                        else
+                        {
+                            if ( value.Field.Name[i] == '_' )
+                            {
+                                cap = true;
+                            }
+                            else
+                            {
+                                name += value.Field.Name[i].ToString().ToLower();
+                            }
+                        }
+                    }
+
+                    var xdoc = _rockXmlDoc.GetMemberComment( value.Field )?.StripHtml();
+
+                    if ( xdoc.IsNotNullOrWhiteSpace() )
+                    {
+                        sb.AppendLine( $"    /** {xdoc} */" );
+                    }
+
+                    sb.AppendLine( $"    {name} = \"{value.Value}\"," );
+                }
+
+                sb.AppendLine( "}" );
+                sb.AppendLine();
+
+                file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", $"{camelName}.d.ts" ) );
+                WriteFile( file, sb );
+
+                progressBar1.Value++;
+            }
+
+            // Generate the index file.
+            sb = new StringBuilder();
+            sb.AppendLine( AutoGeneratedLicense );
+            sb.AppendLine();
+
+            foreach ( var type in types )
+            {
+                var camelName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
+                sb.AppendLine( $"import {{ {type.Name} }} from \"./{camelName}\";" );
+            }
+
+            sb.AppendLine();
+            sb.AppendLine( "export {" );
+
+            foreach ( var type in types )
+            {
+                sb.AppendLine( $"    {type.Name}," );
+            }
+
+            sb.AppendLine( "};" );
+
+            file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", "generated-index.d.ts" ) );
+            WriteFile( file, sb );
+        }
+
+        /// <summary>
+        /// Writes the view model type script index file.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <param name="types">The types.</param>
+        private void WriteViewModelTypeScriptIndexFile( string rootFolder, IEnumerable<Type> types )
+        {
+            var viewModelTypes = types
+                .Where( t => typeof( Rock.Data.IEntity ).IsAssignableFrom( t ) )
+                .Where( t => !( t.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile ) )
+                .Where( t => t.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> ) )
+                .Select( t => new
+                {
+                    Name = t.Name,
+                    CamelName = $"{t.Name.Substring( 0, 1 ).ToLower()}{t.Name.Substring( 1 )}"
+                } )
+                .ToList();
+
+            var sb = new StringBuilder();
+            sb.AppendLine( AutoGeneratedLicense );
+            sb.AppendLine();
+
+            foreach ( var type in viewModelTypes )
+            {
+                sb.AppendLine( $"import {{ {type.Name} }} from \"./{type.CamelName}\";" );
+            }
+
+            sb.AppendLine();
+            sb.AppendLine( "export {" );
+
+            foreach ( var type in viewModelTypes )
+            {
+                sb.AppendLine( $"    {type.Name}," );
+            }
+
+            sb.AppendLine( "};" );
+
+            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", "generated-index.d.ts" ) );
+            WriteFile( file, sb );
+        }
+
         /// <summary>
         /// Writes the ViewModel typescript file for a given type
         /// </summary>
@@ -856,7 +1070,9 @@ namespace Rock.ViewModel
         /// <param name="type"></param>
         private void WriteViewModelTypeScriptFile( string rootFolder, Type type, List<Type> viewModelTypes )
         {
-            if ( type.GetCustomAttribute<ViewModelExcludeAttribute>() != null )
+            var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
+
+            if ( !isModel || ( type.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile ) )
             {
                 return;
             }
@@ -870,14 +1086,15 @@ namespace Rock.ViewModel
 
             var sb = new StringBuilder();
             var imports = new HashSet<string> {
-                "import Entity from '../Entity';"
+                "import { IEntity } from \"../entity\";"
             };
 
             sb.AppendLine( AutoGeneratedLicense );
             sb.AppendLine();
 
             var viewModelProperties = GetViewModelProperties( viewModelType, type );
-            var fileName = $"{type.Name}ViewModel";
+            var camelName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
+            var fileName = camelName;
 
             foreach ( var property in viewModelProperties )
             {
@@ -905,15 +1122,15 @@ namespace Rock.ViewModel
                 sb.AppendLine();
             }
 
-            sb.AppendLine( $"export default interface {type.Name} extends Entity {{" );
+            sb.AppendLine( $"export type {type.Name} = IEntity & {{" );
 
             foreach ( var property in viewModelProperties )
             {
                 var camelCasePropertyName = $"{property.Name.Substring( 0, 1 ).ToLower()}{property.Name.Substring( 1 )}";
-                sb.AppendLine( $"    {camelCasePropertyName}: {property.TypeScriptType};" );
+                sb.AppendLine( $"    {camelCasePropertyName}?: {property.TypeScriptType};" );
             }
 
-            sb.AppendLine( "}" );
+            sb.AppendLine( "};" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", $"{fileName}.d.ts" ) );
             WriteFile( file, sb );
@@ -949,14 +1166,16 @@ namespace Rock.ViewModel
         /// <param name="viewModelType">Type of the view model.</param>
         /// <param name="modelType">Type of the model.</param>
         /// <returns></returns>
-        private List<ViewModelProperty> GetViewModelProperties( Type viewModelType, Type modelType = null ) {
+        private List<ViewModelProperty> GetViewModelProperties( Type viewModelType, Type modelType = null )
+        {
             var viewModelTypeProperties = GetEntityProperties( viewModelType, false, true, false );
-            var modelProperties = modelType != null?
+            var modelProperties = modelType != null ?
                 GetEntityProperties( modelType, false, true, true ) :
                 new Dictionary<string, PropertyInfo>();
 
             var properties = viewModelTypeProperties
-                .Where( p => p.Value.GetCustomAttribute<ViewModelExcludeAttribute>() == null )
+                .Where( p => !( p.Value.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile ) )
+                .Where( p => p.Value.Name != "Id" && p.Value.Name != "Guid" && p.Value.Name != "Attributes" ) // Handled automatically.
                 .Select( p =>
                 {
                     var obsolete = p.Value.GetCustomAttribute<ObsoleteAttribute>();
@@ -1037,7 +1256,7 @@ namespace Rock.ViewModel
                     if ( type == typeof( Guid ) )
                     {
                         tsType = "Guid";
-                        imports.Add( "import { Guid } from '../../Util/Guid';" );
+                        imports.Add( "import { Guid } from \"../../Util/guid\";" );
                     }
                     else if ( type.IsArray )
                     {
@@ -1055,8 +1274,7 @@ namespace Rock.ViewModel
                     }
                     break;
                 case TypeCode.DateTime:
-                    imports.Add( "import { RockDateType } from '../../Util/RockDate';" );
-                    tsType = "RockDateType";
+                    tsType = "string";
                     break;
                 case TypeCode.Boolean:
                     tsType = "boolean";
@@ -1409,7 +1627,7 @@ namespace Rock.ViewModel
             sb.AppendLine( "}" );
 
             var filePath1 = Path.Combine( rootFolder, "Controllers" );
-            var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.cs" ) );
+            var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.CodeGenerated.cs" ) );
             WriteFile( file, sb );
         }
 

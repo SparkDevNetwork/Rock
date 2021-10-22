@@ -123,7 +123,7 @@
                                 <Rock:NoteEditor ID="noteEditor" runat="server" CssClass="sms-conversation-note-editor" Visible="false" />
                             </div>
                             <div class="footer">
-                                <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message" Visible="false" autofocus></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message rounded-0" Visible="false" autofocus></Rock:RockTextBox>
                                 <div class="actions">
                                     <asp:LinkButton ID="btnEditNote" runat="server" CssClass="btn btn-default btn-square edit-note-button" OnClick="btnEditNote_Click" ToolTip="Add Note" ><i class="fa fa-edit"></i></asp:LinkButton>
                                     <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default image-button btn-square" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-camera"></i></asp:LinkButton>

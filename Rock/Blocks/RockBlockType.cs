@@ -70,16 +70,6 @@ namespace Rock.Blocks
         /// <inheritdoc/>
         public abstract object GetBlockInitialization( RockClientType clientType );
 
-
-        /// <summary>
-        /// Gets the control markup.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string GetControlMarkup()
-        {
-            return string.Empty;
-        }
-
         /// <summary>
         /// Gets the attribute value.
         /// </summary>
@@ -189,6 +179,26 @@ namespace Rock.Blocks
             else
             {
                 return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
+                {
+                    Error = message
+                };
+            }
+        }
+
+        /// <summary>
+        /// Creates a 401-Unauthorized response with an optional error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A BlockActionResult instance.</returns>
+        protected BlockActionResult ActionUnauthorized( string message = null )
+        {
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
                 {
                     Error = message
                 };

@@ -120,6 +120,15 @@ namespace Rock.CheckIn
         public List<int> ConfiguredGroupTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the configured groups.
+        /// </summary>
+        /// <value>
+        /// The configured groups.
+        /// </value>
+        [DataMember]
+        public List<int> ConfiguredGroups { get; set; }
+
+        /// <summary>
         /// Gets the kiosk.
         /// </summary>
         /// <value>
@@ -177,7 +186,8 @@ namespace Rock.CheckIn
             DeviceId = localDeviceConfiguration.CurrentKioskId ?? 0;
             CheckinTypeId = localDeviceConfiguration.CurrentCheckinTypeId;
             AllowCheckout = localDeviceConfiguration.AllowCheckout ?? this.CheckInType?.AllowCheckoutDefault ?? false;
-            ConfiguredGroupTypes = ( localDeviceConfiguration.CurrentGroupTypeIds == null ) ? new List<int>() : localDeviceConfiguration.CurrentGroupTypeIds.ToList();
+            ConfiguredGroupTypes = localDeviceConfiguration.CurrentGroupTypeIds == null ? new List<int>() : localDeviceConfiguration.CurrentGroupTypeIds.ToList();
+            ConfiguredGroups = localDeviceConfiguration.CurrentGroupIds == null ? new List<int>() : localDeviceConfiguration.CurrentGroupIds.ToList();
             CheckIn = new CheckInStatus();
             Messages = new List<CheckInMessage>();
         }

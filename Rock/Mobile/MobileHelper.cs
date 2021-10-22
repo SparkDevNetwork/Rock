@@ -433,19 +433,27 @@ namespace Rock.Mobile
             //
             // Load all the pages.
             //
+            var blockIds = new List<int>();
             using ( var rockContext = new RockContext() )
             {
                 AddPagesToUpdatePackage( package, applicationRoot, rockContext, new[] { PageCache.Get( site.DefaultPageId.Value ) } );
+
+                blockIds = new BlockService( rockContext ).Queryable()
+                    .Where( b => b.Page != null && b.Page.Layout.SiteId == site.Id && b.BlockType.EntityTypeId.HasValue )
+                    .OrderBy( b => b.Order )
+                    .Select( b => b.Id )
+                    .ToList();
             }
 
             //
             // Load all the blocks.
             //
-            foreach ( var block in BlockCache.All().Where( b => b.Page != null && b.Page.SiteId == site.Id && b.BlockType.EntityTypeId.HasValue ).OrderBy( b => b.Order ) )
+            foreach ( var blockId in blockIds )
             {
-                var blockEntityType = block.BlockType.EntityType.GetEntityType();
+                var block = BlockCache.Get( blockId );
+                var blockEntityType = block?.BlockType.EntityType.GetEntityType();
 
-                if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockEntityType ) )
+                if ( blockEntityType != null && typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockEntityType ) )
                 {
                     var additionalBlockSettings = block.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 

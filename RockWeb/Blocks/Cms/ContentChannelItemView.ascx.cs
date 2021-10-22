@@ -23,14 +23,13 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Web.Cache;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Transactions;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Field.Types;
-using Rock.Tasks;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -983,24 +982,27 @@ Guid - ContentChannelItem Guid";
                 }
             }
 
-            var message = new LaunchWorkflow.Message
-            {
-                WorkflowTypeId = workflowType.Id,
-                InitiatorPersonAliasId = CurrentPersonAliasId,
-                WorkflowAttributeValues = new Dictionary<string, string>
-                {
-                    { "ContentChannelItem", contentChannelItem.Guid.ToString() }
-                }
-            };
+            var workflowAttributeValues = new Dictionary<string, string>();
+            workflowAttributeValues.Add( "ContentChannelItem", contentChannelItem.Guid.ToString() );
 
+            LaunchWorkflowTransaction launchWorkflowTransaction;
             if ( this.CurrentPersonId.HasValue )
             {
-                message.WorkflowAttributeValues.Add( "Person", this.CurrentPerson.Guid.ToString() );
-                message.WorkflowTypeId = workflowType.Id;
-                message.EntityId = CurrentPersonId.Value;
+                workflowAttributeValues.Add( "Person", this.CurrentPerson.Guid.ToString() );
+                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction<Person>( workflowType.Id, null, this.CurrentPersonId.Value );
+            }
+            else
+            {
+                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id, null );
             }
 
-            message.Send();
+            if ( workflowAttributeValues != null )
+            {
+                launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
+            }
+
+            launchWorkflowTransaction.InitiatorPersonAliasId = this.CurrentPersonAliasId;
+            launchWorkflowTransaction.Enqueue();
         }
 
         /// <summary>

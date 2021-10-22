@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Model;
@@ -144,6 +145,46 @@ namespace Rock.Field
 
         public object ValueAsFieldType( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
             => value;
+
+        public Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return configurationValues.ToDictionary( c => c.Key, c => c.Value.Value );
+        }
+
+        public string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value;
+        }
+
+        public string GetHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetTextValue( value, configurationValues );
+        }
+
+        public string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetTextValue( value, configurationValues );
+        }
+
+        public string GetCondensedHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetHtmlValue( value, configurationValues );
+        }
+
+        public string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value;
+        }
+
+        public string GetClientEditValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value;
+        }
+
+        public string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return clientValue;
+        }
     }
 }
 

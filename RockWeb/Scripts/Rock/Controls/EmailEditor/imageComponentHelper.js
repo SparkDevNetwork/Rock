@@ -17,7 +17,7 @@
           self.setImageCss();
         });
 
-        $('#component-image-imageheight, #component-image-imagewidth, #component-image-resizemode').on('change', function (e)
+        $('#component-image-imageheight, #component-image-imagewidth, #component-image-resizemode, #component-image-alt').on('change', function (e)
         {
           self.setImageSrc();
         });
@@ -44,6 +44,7 @@
         var imageWidth = Rock.controls.emailEditor.$currentImageComponent.attr('data-image-width');
         var imageHeight = Rock.controls.emailEditor.$currentImageComponent.attr('data-image-height');
         var imageResizeMode = Rock.controls.emailEditor.$currentImageComponent.attr('data-image-resizemode');
+        var imageAltText = $img.attr('alt');
 
         $('#componentImageUploader').find('.imageupload-thumbnail-image').css('background-image', 'url("' + imageUrl + '")');
 
@@ -59,14 +60,15 @@
         $('#component-image-imagewidth').val(imageWidth);
         $('#component-image-imageheight').val(imageHeight);
         $('#component-image-resizemode').val(imageResizeMode);
-        
+        $('#component-image-alt').val(imageAltText);
+
         var imageEl = $imageComponent[0];
 
         $('#component-image-margin-top').val(parseFloat(imageEl.style['margin-top']) || '');
         $('#component-image-margin-left').val(parseFloat(imageEl.style['margin-left']) || '');
         $('#component-image-margin-right').val(parseFloat(imageEl.style['margin-right']) || '');
         $('#component-image-margin-bottom').val(parseFloat(imageEl.style['margin-bottom']) || '');
-        
+
         var $imageLinkInput = $('#component-image-link');
         if ($img.parent().is('a')) {
           $imageLinkInput.val($img.parent().attr('href'));
@@ -144,10 +146,11 @@
                   + '&id=' + binaryFileId
                   + '&fileName=' + Rock.controls.emailEditor.$currentImageComponent.attr('data-image-filename');
         }
-        
+
         var imageWidth = parseInt($('#component-image-imagewidth').val()) || '';
         var imageHeight = parseInt($('#component-image-imageheight').val()) || '';
         var imageResizeMode = $('#component-image-resizemode').val();
+        var imageAltText = $('#component-image-alt').val();
 
         Rock.controls.emailEditor.$currentImageComponent.attr('data-image-width', imageWidth);
         Rock.controls.emailEditor.$currentImageComponent.attr('data-image-height', imageHeight);
@@ -165,7 +168,7 @@
           imageUrl += '&mode=' + imageResizeMode;
         }
 
-        Rock.controls.emailEditor.$currentImageComponent.find('img').attr('src', imageUrl);
+        Rock.controls.emailEditor.$currentImageComponent.find('img').attr('src', imageUrl).attr('alt', imageAltText);
       }
     }
 

@@ -201,20 +201,7 @@ namespace Rock.Model
             var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e, attributeValues ) ).ToList();
 
             // Queue a transaction to launch workflow
-            var msg = new LaunchWorkflows.Message
-            {
-                WorkflowTypeId = workflowTypeId
-            };
-
-            msg.WorkflowDetails = entities
-                .Select( p => new LaunchWorkflows.WorkflowDetail
-                {
-                    EntityId = p.Id,
-                    EntityTypeId = p.TypeId,
-                    WorkflowAttributeValues = attributeValues
-                } ).ToList();
-
-            msg.Send();
+            new LaunchWorkflowsTransaction( workflowTypeId, launchWorkflowDetails ).Enqueue();
         }
 
         /// <summary>

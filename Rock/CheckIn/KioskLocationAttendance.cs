@@ -113,18 +113,6 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( int id ) instead.", true )]
-        public static KioskLocationAttendance Read( int id )
-        {
-            return Get( id );
-        }
-
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
         public static KioskLocationAttendance Get( int id )
         {
             return GetOrAddExisting( id, () => Create( id ) );
@@ -239,17 +227,6 @@ namespace Rock.CheckIn
             public Schedule Schedule { get; internal set; }
 
             public int? PersonId { get; internal set; }
-        }
-
-        /// <summary>
-        /// Flushes the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( int id ) instead.", true )]
-        public static void Flush( int id )
-        {
-            Remove( id );
         }
 
         /// <summary>

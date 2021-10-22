@@ -281,7 +281,7 @@
 @well-bg:                     @gray-100;                          // The background color for wells. Wells are used to group like content. #color
 @well-border:                 @gray-300;
 @photo-border:                @input-border;                  // Standard border color for photos. #color
-@hr-border:                   @ui-4;                          // The color horizontal rule lines. #color
+@hr-border:                   @gray-300;                          // The color horizontal rule lines. #color
 //--
 @legend-color:                @gray-dark;                     // Text color for html legend element. The legend element is not used much in the core blocks (provided here for theme developers.) #color
 @legend-border-color:         @input-border;                  // Border color for html legend element. The legend element is not used much in the core blocks (provided here for theme developers.) #color
@@ -315,6 +315,9 @@
 
 @form-group-margin-bottom:       12px;
 @control-label-weight:           @font-weight-semibold;
+
+@description-term-margin-top:             16px;
+@description-term-margin-bottom:          0;
 
 //// Picker
 @picker-action-bg:            @gray-50;                          // The background color of the actions bar at the bottom of the picker dropdown.
@@ -359,6 +362,9 @@
 @panel-following-active-color:#ffffff;
 @panel-following-active-bg:   @brand-color;                   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
 //--
+@panel-options-margin:        -14px -24px -14px 10px;   // Inverse of @panel-heading-padding with margin on the left.
+@panel-options-button-padding:      13px 12px 12px;
+
 @panel-footer-bg:             @panel-bg;                      // The background color of the panel's footer.
 @panel-footer-color:          @panel-text;                    // The color text of the panel's footer.
 
@@ -386,8 +392,8 @@
 @grid-column-header-font-weight:        @font-weight-semibold;// The font weight of the grid header.
 @grid-column-header-border-color:       @grid-border-color;   // The border color of the grid header.
 //--
-@grid-column-header-bold-bg:            @gray-darker;         // Background color for bold table headers like the merge person page.
-@grid-column-header-bold-color:         @gray-lighter;        // The text color for bold table headers like the merge person page.
+@grid-column-header-bold-bg:            @grid-column-header-bg;         // Background color for bold table headers like the merge person page.
+@grid-column-header-bold-color:         @grid-column-header-text-color;        // The text color for bold table headers like the merge person page.
 
 //// Row Striping
 @grid-row-odd-bg:             @panel-bg;                      // The even rows background color.
@@ -400,8 +406,10 @@
 @grid-hover-color:            inherit;                        // Row text color when hovered over.
 
 //// Section Headers
-@grid-section-bg:             @gray-dark;                     // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
-@grid-section-color:          @gray-lighter;                  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
+@grid-section-bg:             @grid-column-header-bold-bg;                     // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
+@grid-section-color:          @grid-column-header-bold-color;                  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
+@grid-section-font-size:      18px;
+@grid-section-font-weight:    @font-weight-bold;
 
 //// Pager Section
 @grid-pager-bg:               @panel-subheading;

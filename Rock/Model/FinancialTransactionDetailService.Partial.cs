@@ -33,7 +33,6 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialTransactionDetailService
     {
-
         /// <summary>
         /// Gets the gifts.
         /// </summary>
@@ -66,10 +65,10 @@ namespace Rock.Model
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <param name="transactionTypeIds">The transaction type ids.</param>
         /// <returns></returns>
-        public static DataSet GetGivingAnalyticsAccountTotals( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
+        public DataSet GetGivingAnalyticsAccountTotalsDataSet( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
             var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
-            return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_AccountTotals", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_GivingAnalyticsQuery_AccountTotals", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -82,20 +81,20 @@ namespace Rock.Model
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <param name="transactionTypeIds">The transaction type ids.</param>
         /// <returns></returns>
-        public static DataSet GetGivingAnalyticsTransactionData( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
+        public DataSet GetGivingAnalyticsTransactionDataSet( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
             var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
-            return DbService.GetDataSet( "[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
         /// Gets the giving analytics first last ever dates.
         /// </summary>
         /// <returns></returns>
-        public static DataSet GetGivingAnalyticsFirstLastEverDates()
+        public DataSet GetGivingAnalyticsFirstLastEverDatesDataSet()
         {
             var parameters = new Dictionary<string, object>();
-            return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_FirstLastEverDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_GivingAnalyticsQuery_FirstLastEverDates", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
@@ -110,11 +109,11 @@ namespace Rock.Model
         /// <param name="sourceTypeIds">The source type ids.</param>
         /// <param name="transactionTypeIds">The transaction type ids.</param>
         /// <returns></returns>
-        public static DataSet GetGivingAnalyticsPersonSummary( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
+        public DataSet GetGivingAnalyticsPersonSummaryDataSet( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
             List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
         {
             var parameters = GetGivingAnalyticsParameters( start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
-            return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_PersonSummary", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_GivingAnalyticsQuery_PersonSummary", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         private static Dictionary<string, object> GetGivingAnalyticsParameters( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
@@ -167,6 +166,77 @@ namespace Rock.Model
 
         #endregion
 
-    }
+        #region Obsolete
 
+        /// <summary>
+        /// Gets the giving analytics account totals.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetGivingAnalyticsAccountTotalsDataSet() instead. " )]
+        public static DataSet GetGivingAnalyticsAccountTotals( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
+        {
+            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
+            return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_AccountTotals", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the giving analytics transaction data.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetGivingAnalyticsTransactionDataSet() instead. " )]
+        public static DataSet GetGivingAnalyticsTransactionData( DateTime? start, DateTime? end, List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
+        {
+            var parameters = GetGivingAnalyticsParameters( start, end, null, null, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
+            return DbService.GetDataSet( "[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the giving analytics first last ever dates.
+        /// </summary>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetGivingAnalyticsFirstLastEverDatesDataSet() instead. " )]
+        public static DataSet GetGivingAnalyticsFirstLastEverDates()
+        {
+            var parameters = new Dictionary<string, object>();
+            return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_FirstLastEverDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the giving analytics person summary.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="minAmount">The minimum amount.</param>
+        /// <param name="maxAmount">The maximum amount.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use non-static GetGivingAnalyticsPersonSummaryDataSet() instead. " )]
+        public static DataSet GetGivingAnalyticsPersonSummary( DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
+            List<int> accountIds, List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> transactionTypeIds )
+        {
+            var parameters = GetGivingAnalyticsParameters( start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceTypeIds, transactionTypeIds );
+            return DbService.GetDataSet( "spFinance_GivingAnalyticsQuery_PersonSummary", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        #endregion Obsolete
+    }
 }

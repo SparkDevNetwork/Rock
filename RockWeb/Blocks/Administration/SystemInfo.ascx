@@ -93,6 +93,11 @@
         </p>
 
         <p>
+            <strong>Rock Application Start Time:</strong><br />
+            <asp:Literal ID="lRockApplicationStartTime" runat="server" />
+        </p>
+
+        <p>
             <strong>Executing Location:</strong><br />
              <asp:Literal ID="lExecLocation" runat="server"></asp:Literal>
         </p>

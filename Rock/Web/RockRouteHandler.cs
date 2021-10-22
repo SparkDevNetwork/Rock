@@ -23,9 +23,9 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
-using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -271,7 +271,7 @@ namespace Rock.Web
                         if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
                             Rock.Model.ExceptionLogService.LogException(
-                                new Exception( $"404 Error: {routeHttpRequest.Url.AbsoluteUri}" ),
+                                new Exception( $"404 Error: {routeHttpRequest.UrlProxySafe().AbsoluteUri}" ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 
@@ -394,6 +394,7 @@ namespace Rock.Web
         {
             RemoveRockPageRoutes();
             RegisterRoutes();
+            PageRouteWasUpdatedMessage.Publish();
         }
 
         /// <summary>

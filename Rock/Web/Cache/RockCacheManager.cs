@@ -16,10 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+
 using CacheManager.Core;
 using CacheManager.Core.Internal;
-using Rock.Bus.Message;
+
 using Rock.Bus;
+using Rock.Bus.Message;
+using Rock.Logging;
 
 namespace Rock.Web.Cache
 {
@@ -301,6 +304,7 @@ namespace Rock.Web.Cache
             {
                 // We already took care of Clearing the cache for our instance, so
                 // we can ignore this message.
+                RockLogger.Log.Debug( RockLogDomains.Bus, $"Cache ClearMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
                 return;
             }
 
@@ -356,6 +360,7 @@ namespace Rock.Web.Cache
             {
                 // We already took care of Clearing the cache for our instance, so
                 // we can ignore this message.
+                RockLogger.Log.Debug( RockLogDomains.Bus, $"Cache RemoveMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
                 return;
             }
 

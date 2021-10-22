@@ -197,39 +197,7 @@ namespace Rock.Model
                 return false;
             }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is analytic supported.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead", true )]
-        public bool IsAnalyticSupported
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is analytic historical supported.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead", true )]
-        public bool IsAnalyticHistoricalSupported
-        {
-            get
-            {
-                return false;
-            }
-        }
-
+        
         /// <summary>
         /// Gets the name of the get index model.
         /// </summary>

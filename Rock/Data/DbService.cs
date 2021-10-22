@@ -18,6 +18,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#endif
+
 namespace Rock.Data
 {
     /// <summary>
@@ -25,11 +29,98 @@ namespace Rock.Data
     /// </summary>
     public class DbService
     {
+        private DbContext Context { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbService"/> class.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public DbService( DbContext dbContext )
+        {
+            this.Context = dbContext;
+        }
+
+        /// <summary>
+        /// Gets the data table from SQL command.
+        /// </summary>
+        /// <param name="commandText">The command text.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>DataTable.</returns>
+        public DataTable GetDataTableFromSqlCommand( string commandText, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            var dataSet = GetDataSetFromSqlCommand( commandText, commandType, parameters );
+
+            if ( dataSet.Tables.Count > 0 )
+            {
+                return dataSet.Tables[0];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the data set from a SQL command.
+        /// </summary>
+        /// <param name="commandText">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>DataSet.</returns>
+        public DataSet GetDataSetFromSqlCommand( string commandText, CommandType commandType, Dictionary<string, object> parameters )
+        {
+#if NET5_0_OR_GREATER
+            string connectionString = this.Context.Database.GetConnectionString();
+#else
+            string connectionString = this.Context.Database.Connection.ConnectionString;
+#endif
+            if ( !string.IsNullOrWhiteSpace( connectionString ) )
+            {
+                using ( SqlConnection con = new SqlConnection( connectionString ) )
+                {
+                    con.Open();
+
+                    using ( SqlCommand sqlCommand = new SqlCommand( commandText, con ) )
+                    {
+#if NET5_0_OR_GREATER
+                        if ( Context.Database.GetCommandTimeout().HasValue )
+                        {
+                            sqlCommand.CommandTimeout = Context.Database.GetCommandTimeout().Value;
+                        }
+#else
+                        if ( Context.Database.CommandTimeout.HasValue )
+                        {
+                            sqlCommand.CommandTimeout = Context.Database.CommandTimeout.Value;
+                        }
+#endif
+
+                        sqlCommand.CommandType = commandType;
+
+                        if ( parameters != null )
+                        {
+                            foreach ( var parameter in parameters )
+                            {
+                                SqlParameter sqlParam = new SqlParameter();
+                                sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                                sqlParam.Value = parameter.Value;
+                                sqlCommand.Parameters.Add( sqlParam );
+                            }
+                        }
+
+                        SqlDataAdapter adapter = new SqlDataAdapter( sqlCommand );
+                        DataSet dataSet = new DataSet( "rockDs" );
+                        adapter.Fill( dataSet );
+                        return dataSet;
+                    }
+                }
+            }
+
+            return null;
+        }
 
         #region Methods
 
         /// <summary>
-        /// Gets a data reader.
+        /// Gets a data reader
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
@@ -37,7 +128,7 @@ namespace Rock.Data
         /// <returns></returns>
         public static IDataReader GetDataReader( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            string connectionString = GetConnectionString();
+            string connectionString = GetRockContextConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
                 SqlConnection con = new SqlConnection( connectionString );
@@ -64,7 +155,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets a data table.
+        /// Static method to get a data table. See also <seealso cref="GetDataTableFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
@@ -83,7 +174,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets a data table.
+        /// Static method to get a data table. See also <seealso cref="GetDataTableFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
@@ -95,7 +186,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets a data set.
+        /// Static method to get a data set. See also <seealso cref="GetDataSetFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
@@ -128,10 +219,10 @@ namespace Rock.Data
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
         /// <param name="schemaOnly">if set to <c>true</c> [schema only].</param>
-        /// <returns></returns>
+        /// <returns>DataSet.</returns>
         private static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null, bool schemaOnly = false )
         {
-            string connectionString = GetConnectionString();
+            string connectionString = GetRockContextConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
                 using ( SqlConnection con = new SqlConnection( connectionString ) )
@@ -186,7 +277,7 @@ namespace Rock.Data
         /// <exception cref="System.NotImplementedException"></exception>
         public static int ExecuteCommand( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null )
         {
-            string connectionString = GetConnectionString();
+            string connectionString = GetRockContextConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
                 using ( SqlConnection con = new SqlConnection( connectionString ) )
@@ -208,7 +299,7 @@ namespace Rock.Data
                             }
                         }
 
-                        if (commandTimeout.HasValue)
+                        if ( commandTimeout.HasValue )
                         {
                             sqlCommand.CommandTimeout = commandTimeout.Value;
                         }
@@ -231,7 +322,7 @@ namespace Rock.Data
         /// <returns></returns>
         public static object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
         {
-            string connectionString = GetConnectionString();
+            string connectionString = GetRockContextConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
                 using ( SqlConnection con = new SqlConnection( connectionString ) )
@@ -261,7 +352,11 @@ namespace Rock.Data
             return null;
         }
 
-        private static string GetConnectionString()
+        /// <summary>
+        /// Gets the ConnectionString using the 'RockContext' specified in web.ConnectionStrings.config.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private static string GetRockContextConnectionString()
         {
             var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
             if ( connectionString != null )

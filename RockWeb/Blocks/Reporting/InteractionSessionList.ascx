@@ -9,7 +9,7 @@
                     <i class="fa fa-desktop"></i>
                     Interactions Session List
                 </h1>
-                <div class="form-inline pull-right clearfix hidden-xs">
+                <div class="form-inline panel-labels d-none d-sm-flex align-items-center pull-right">
                     <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                     <Rock:DateRangePicker ID="drpDateFilter" runat="server" Label="Date Filter" />
                     <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action btn-xs" OnClick="btnFilter_Click" />

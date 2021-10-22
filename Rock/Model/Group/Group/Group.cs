@@ -28,6 +28,8 @@ using Rock.UniversalSearch;
 using Rock.Web.Cache;
 using Rock.Lava;
 
+using Rock.Utility.Enums;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -121,15 +123,24 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if this Group is a Security Role. This value is required.
+        /// Indicates this Group is a Security Role even though it isn't a SecurityRole Group Type.
+        /// Note: Don't use this alone to determine if a Group is a security role group. Use <see cref="IsSecurityRoleOrSecurityGroupType()"/> to see if a Group is for a Security Role.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Group is a security role, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
         public bool IsSecurityRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the elevated security level. This setting is used to determine the group member's Account Protection Profile.
+        /// </summary>
+        /// <value>
+        /// The elevated security level.
+        /// </value>
+        [DataMember()]
+        public ElevatedSecurityLevel ElevatedSecurityLevel { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this is an active group. This value is required.

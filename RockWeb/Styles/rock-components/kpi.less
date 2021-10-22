@@ -44,6 +44,7 @@
 }
 
 .kpi {
+  position: relative;
   display: flex;
   flex-basis: 100%;
   flex-grow: 1;
@@ -65,11 +66,16 @@
   flex: 1 1 0;
   align-self: flex-start;
   min-width: 0;
-  padding: 8px 16px;
+  padding: 8px 0;
   overflow: hidden;
 
   .kpi-icon + & {
     align-self: center;
+    padding: 8px 16px;
+  }
+
+  .kpi-card & {
+    padding: 8px 16px;
   }
 }
 
@@ -89,7 +95,7 @@
 .kpi-label,
 .kpi-secondary-label {
   display: block;
-  font-size: .538em;
+  font-size: .53846em;
   line-height: 1.1;
   color: @text-muted;
 }
@@ -235,9 +241,9 @@
   }
 }
 
-.stat-value-lg {
-  display: block;
-  font-size: 45px;
+.stat-value {
+  display: inline-block;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1;
 }

@@ -162,6 +162,55 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            bool? boolValue = value.AsBooleanOrNull();
+
+            if ( !boolValue.HasValue )
+            {
+                return string.Empty;
+            }
+
+            if ( boolValue.Value )
+            {
+                if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
+                {
+                    return configurationValues[ConfigurationKey.TrueText].Value;
+                }
+                else
+                {
+                    return "Yes";
+                }
+            }
+            else
+            {
+                if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
+                {
+                    return configurationValues[ConfigurationKey.FalseText].Value;
+                }
+                else
+                {
+                    return "No";
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            bool? boolValue = value.AsBooleanOrNull();
+
+            if ( !boolValue.HasValue )
+            {
+                return string.Empty;
+            }
+
+            // A condensed boolean value simply returns "Y" or "N" regardless
+            // of the other configuration values.
+            return boolValue.Value ? "Y" : "N";
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -172,52 +221,14 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-            bool? boolValue = value.AsBooleanOrNull();
-
-            if ( boolValue.HasValue )
+            if ( !condensed )
             {
-                if ( boolValue.Value )
-                {
-                    if ( condensed )
-                    {
-                        formattedValue = "Y";
-                    }
-                    else
-                    {
-                        if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
-                        {
-                            formattedValue = configurationValues[ConfigurationKey.TrueText].Value;
-                        }
-                        else
-                        {
-                            formattedValue = "Yes";
-                        }
-                    }
-                }
-                else
-                {
-                    if ( condensed )
-                    {
-                        formattedValue = "N";
-                    }
-                    else
-                    {
-                        if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
-                        {
-                            formattedValue = configurationValues[ConfigurationKey.FalseText].Value;
-                        }
-                        else
-                        {
-                            formattedValue = "No";
-                        }
-                    }
-                }
-
-                return base.FormatValue( parentControl, formattedValue, null, condensed );
+                return GetTextValue( value, configurationValues );
             }
-
-            return string.Empty;
+            else
+            {
+                return GetCondensedTextValue( value, configurationValues );
+            }
         }
 
         /// <summary>

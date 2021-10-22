@@ -31,6 +31,7 @@ using System.Web;
 using Rock.Web.UI.Controls;
 using System.Text;
 using Rock.Web;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Core
 {
@@ -245,6 +246,9 @@ namespace RockWeb.Blocks.Core
             }
 
             valSummaryTop.ValidationGroup = this.BlockValidationGroup;
+
+            // Set the validation group on any custom settings providers.
+            SetValidationGroup( CustomSettingsProviders.Values.ToArray(), this.BlockValidationGroup );
 
             int? blockId = PageParameter( "BlockId" ).AsIntegerOrNull();
             if ( !blockId.HasValue )
@@ -503,11 +507,21 @@ namespace RockWeb.Blocks.Core
                 rockContext.SaveChanges();
                 block.SaveAttributeValues( rockContext );
 
-                // If this is a page menu block then we need to also flush the LavaTemplateCache for the block ID
+                // If this is a PageMenu block then we need to also flush the lava template cache for the block here.
+                // Changes to the PageMenu block configuration will handle this in the PageMenu_BlockUpdated event handler,
+                // but here we address the situation where child pages are modified using the "CMS Configuration | Pages" menu option.
                 if ( block.BlockType.Guid == Rock.SystemGuid.BlockType.PAGE_MENU.AsGuid() )
                 {
                     var cacheKey = string.Format( "Rock:PageMenu:{0}", block.Id );
-                    LavaTemplateCache.Remove( cacheKey );
+
+                    if ( LavaService.RockLiquidIsEnabled )
+                    {
+#pragma warning disable CS0618 // Type or member is obsolete
+                        LavaTemplateCache.Remove( cacheKey );
+#pragma warning restore CS0618 // Type or member is obsolete
+                    }
+
+                    LavaService.RemoveTemplateCacheEntry( cacheKey );
                 }
 
                 StringBuilder scriptBuilder = new StringBuilder();
@@ -568,21 +582,26 @@ namespace RockWeb.Blocks.Core
             var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() ).Reverse();
             foreach ( var provider in providers )
             {
-                var control = provider.GetCustomSettingsControl( block, phCustomSettings );
-                control.Visible = false;
+                // Place the custom controls in a naming container to avoid
+                // ID collisions.
+                var controlContainer = new CompositePlaceHolder();
 
                 if ( provider.CustomSettingsTitle == "Basic Settings" )
                 {
-                    phCustomBasicSettings.Controls.Add( control );
+                    phCustomBasicSettings.Controls.Add( controlContainer );
                 }
                 else if ( provider.CustomSettingsTitle == "Advanced Settings" )
                 {
-                    phCustomAdvancedSettings.Controls.Add( control );
+                    phCustomAdvancedSettings.Controls.Add( controlContainer );
                 }
                 else
                 {
-                    phCustomSettings.Controls.Add( control );
+                    phCustomSettings.Controls.Add( controlContainer );
                 }
+
+                var control = provider.GetCustomSettingsControl( block, phCustomSettings );
+                control.Visible = false;
+                controlContainer.Controls.Add( control );
 
                 CustomSettingsProviders.Add( provider, control );
             }

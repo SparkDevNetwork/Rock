@@ -33,29 +33,6 @@ namespace Rock.Model
         #region Properties
 
         /// <summary>
-        /// Gets or sets an optional CSS class to include for the note
-        /// </summary>
-        /// <value>
-        /// The CSS class.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No Longer Supported", true )]
-        [NotMapped]
-        [LavaHidden]
-        public string CssClass
-        {
-            get
-            {
-                return null;
-            }
-
-            set
-            {
-                //
-            }
-        }
-
-        /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
         public override Dictionary<string, string> SupportedActions

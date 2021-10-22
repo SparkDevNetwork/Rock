@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 #else
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 #endif
 using System.Linq;
@@ -30,14 +31,13 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
+
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
-#if !NET5_0_OR_GREATER
-using Rock.Transactions;
-#endif
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
@@ -114,6 +114,14 @@ namespace Rock.Data
                 //.UseLazyLoadingProxies()
                 .ReplaceService<IMigrationsAssembly, CoreShims.RockMigrationsAssembly>()
                 .ReplaceService<IMigrationsSqlGenerator, CoreShims.RockSqlServerMigrationsSqlGenerator>();
+        }
+#endif
+
+#if !NET5_0_OR_GREATER
+        /// <inheritdoc />
+        internal protected DbContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
+            base( objectContext, dbContextOwnsObjectContext )
+        {
         }
 #endif
 
@@ -214,9 +222,9 @@ namespace Rock.Data
         /// when updating a large number of records at a time (e.g. importing records).</param>
         /// <returns></returns>
 #if NET5_0_OR_GREATER
-        public new int SaveChanges( bool disablePrePostProcessing )
+        public new virtual int SaveChanges( bool disablePrePostProcessing )
 #else
-        public int SaveChanges( bool disablePrePostProcessing )
+        public virtual int SaveChanges( bool disablePrePostProcessing )
 #endif
         {
             var result = SaveChanges( new SaveChangesArgs
@@ -235,7 +243,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="args">Arguments determining behavior of the save.</param>
         /// <returns></returns>
-        public SaveChangesResult SaveChanges( SaveChangesArgs args )
+        public virtual SaveChangesResult SaveChanges( SaveChangesArgs args )
         {
             var saveChangesResult = new SaveChangesResult();
 
@@ -1296,7 +1304,8 @@ namespace Rock.Data
 
             /// <summary>
             /// Gets or sets the collection of original entity values before the save occurs,
-            /// only valid when the entity-state is Modified.
+            /// only valid when the entity-state is <seealso cref="EntityState.Modified"/>
+            /// or <seealso cref="EntityState.Deleted"/>.
             /// </summary>
             /// <value>
             /// The original entity values.
@@ -1344,7 +1353,7 @@ namespace Rock.Data
                 PreSaveState = dbEntityEntry.State.ToEntityContextState();
                 PreSaveStateLegacy = dbEntityEntry.State;
 
-                if ( dbEntityEntry.State == EntityState.Modified )
+                if ( dbEntityEntry.State == EntityState.Modified || dbEntityEntry.State == EntityState.Deleted )
                 {
                     var originalValues = new Dictionary<string, object>();
 #if NET5_0_OR_GREATER

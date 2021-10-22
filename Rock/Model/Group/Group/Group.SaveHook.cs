@@ -74,22 +74,22 @@ namespace Rock.Model
 
                     case EntityContextState.Modified:
                         {
-                            var originalIsActive = OriginalValues["IsActive"].ToStringSafe().AsBoolean();
+                            var originalIsActive = OriginalValues[nameof( Group.IsActive )].ToStringSafe().AsBoolean();
                             DateTime? originalInactiveDateTime = OriginalValues["InactiveDateTime"].ToStringSafe().AsDateTime();
 
-                            var originalIsArchived = OriginalValues["IsArchived"].ToStringSafe().AsBoolean();
-                            DateTime? originalArchivedDateTime = OriginalValues["ArchivedDateTime"].ToStringSafe().AsDateTime();
+                            var originalIsArchived = OriginalValues[nameof( Group.IsArchived )].ToStringSafe().AsBoolean();
+                            DateTime? originalArchivedDateTime = OriginalValues[nameof( Group.ArchivedDateTime )].ToStringSafe().AsDateTime();
 
-                            History.EvaluateChange( HistoryChangeList, "Name", OriginalValues["Name"].ToStringSafe(), Entity.Name );
-                            History.EvaluateChange( HistoryChangeList, "Description", OriginalValues["Description"].ToStringSafe(), Entity.Description );
-                            History.EvaluateChange( HistoryChangeList, "Group Type", OriginalValues["GroupTypeId"].ToStringSafe().AsIntegerOrNull(), Entity.GroupType, Entity.GroupTypeId );
-                            History.EvaluateChange( HistoryChangeList, "Campus", OriginalValues["CampusId"].ToStringSafe().AsIntegerOrNull(), Entity.Campus, Entity.CampusId );
-                            History.EvaluateChange( HistoryChangeList, "Security Role", OriginalValues["IsSecurityRole"].ToStringSafe().AsBoolean(), Entity.IsSecurityRole );
+                            History.EvaluateChange( HistoryChangeList, "Name", OriginalValues[nameof( Group.Name )].ToStringSafe(), Entity.Name );
+                            History.EvaluateChange( HistoryChangeList, "Description", OriginalValues[nameof( Group.Description )].ToStringSafe(), Entity.Description );
+                            History.EvaluateChange( HistoryChangeList, "Group Type", OriginalValues[nameof( Group.GroupTypeId )].ToStringSafe().AsIntegerOrNull(), Entity.GroupType, Entity.GroupTypeId );
+                            History.EvaluateChange( HistoryChangeList, "Campus", OriginalValues[nameof( Group.CampusId )].ToStringSafe().AsIntegerOrNull(), Entity.Campus, Entity.CampusId );
+                            History.EvaluateChange( HistoryChangeList, "Security Role", OriginalValues[nameof( Group.IsSecurityRole )].ToStringSafe().AsBoolean(), Entity.IsSecurityRole );
                             History.EvaluateChange( HistoryChangeList, "Active", originalIsActive, Entity.IsActive );
-                            History.EvaluateChange( HistoryChangeList, "Allow Guests", OriginalValues["AllowGuests"].ToStringSafe().AsBooleanOrNull(), Entity.AllowGuests );
-                            History.EvaluateChange( HistoryChangeList, "Public", OriginalValues["IsPublic"].ToStringSafe().AsBoolean(), Entity.IsPublic );
-                            History.EvaluateChange( HistoryChangeList, "Group Capacity", OriginalValues["GroupCapacity"].ToStringSafe().AsIntegerOrNull(), Entity.GroupCapacity );
-                            History.EvaluateChange( HistoryChangeList, "Archived", OriginalValues["IsArchived"].ToStringSafe().AsBoolean(), Entity.IsArchived );
+                            History.EvaluateChange( HistoryChangeList, "Allow Guests", OriginalValues[nameof( Group.AllowGuests )].ToStringSafe().AsBooleanOrNull(), Entity.AllowGuests );
+                            History.EvaluateChange( HistoryChangeList, "Public", OriginalValues[nameof( Group.IsPublic )].ToStringSafe().AsBoolean(), Entity.IsPublic );
+                            History.EvaluateChange( HistoryChangeList, "Group Capacity", OriginalValues[nameof( Group.GroupCapacity )].ToStringSafe().AsIntegerOrNull(), Entity.GroupCapacity );
+                            History.EvaluateChange( HistoryChangeList, "Archived", OriginalValues[nameof( Group.IsArchived )].ToStringSafe().AsBoolean(), Entity.IsArchived );
 
                             // IsActive was modified, set the InactiveDateTime if it changed to Inactive, or set it to NULL if it changed to Active
                             if ( originalIsActive != Entity.IsActive )

@@ -1815,7 +1815,7 @@ namespace Rock.SystemGuid
         /// Gets the SMS Phone Numbers page guid
         /// ParentPage: Communications
         /// </summary>
-        [Obsolete( "Use SMS_PHONE_NUMBERS instead" )]
+        [Obsolete( "Use SMS_PHONE_NUMBERS instead", true )]
         [RockObsolete( "1.9" )]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
@@ -2107,5 +2107,10 @@ namespace Rock.SystemGuid
         /// The financial settings menu page on the internal Rock page
         /// </summary>
         public const string FINANCIAL_SETTINGS = "90723727-56EC-494D-9708-E188869D900C";
+
+        /// <summary>
+        /// The Contribution Statement Page on the stock external site
+        /// </summary>
+        public const string CONTRIBUTION_STATEMENT_PAGE = "98EBADAF-CCA9-4893-9DD3-D8201D8BD7FA";
     }
 }

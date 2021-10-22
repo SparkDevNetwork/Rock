@@ -171,6 +171,17 @@ namespace Rock.Model
 
             using ( var rockContext = new RockContext() )
             {
+                var person = personAlias.Person;
+                if ( person == null )
+                {
+                    person = new PersonService( rockContext ).Get( personAlias.PersonId );
+                }
+
+                if ( person == null || !person.IsPersonTokenUsageAllowed() )
+                {
+                    return null;
+                }
+
                 var token = Rock.Security.Encryption.GenerateUniqueToken();
 
                 PersonToken personToken = new PersonToken();

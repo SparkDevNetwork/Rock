@@ -27,6 +27,8 @@ namespace Rock.Tasks
     /// Launch a workflow using the Message Bus.
     /// Or to use the Transaction Queue, use <seealso cref="Rock.Transactions.LaunchWorkflowTransaction" />
     /// </summary>
+    [Obsolete( "This should not be used due to size limitations for BusStartedTask message. Use Rock.Transactions.LaunchWorkflowTransaction instead.")]
+    [RockObsolete( "1.13" )]
     public sealed class LaunchWorkflow : BusStartedTask<LaunchWorkflow.Message>
     {
         /// <summary>

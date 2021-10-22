@@ -1,0 +1,70 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+
+using System.Linq;
+using System.Runtime.Serialization;
+using Rock.Media;
+
+namespace Rock.Model
+{
+    public partial class MediaElement
+    {
+        #region Properties
+
+        /// <summary>
+        /// Gets the default file URL to use for media playback.
+        /// </summary>
+        /// <value>
+        /// The default file URL or an empty string if one is not available.
+        /// </value>
+        [DataMember]
+        public string DefaultFileUrl
+        {
+            get
+            {
+                // OrderByDescending is correct when doing a boolean, true > false.
+                return FileData.OrderByDescending( f => f.Quality == MediaElementQuality.HLS )
+                    .ThenByDescending( f => f.Quality == MediaElementQuality.UltraHD )
+                    .ThenByDescending( f => f.Quality == MediaElementQuality.HD )
+                    .ThenByDescending( f => f.Quality == MediaElementQuality.SD )
+                    .ThenByDescending( f => f.Quality == MediaElementQuality.Embed )
+                    .ThenByDescending( f => f.Quality == MediaElementQuality.Audio )
+                    .ThenByDescending( f => f.Width )
+                    .FirstOrDefault()?.Link ?? string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the default thumbnail URL.
+        /// </summary>
+        /// <value>
+        /// The default thumbnail URL or an empty string if one is not available.
+        /// </value>
+        [DataMember]
+        public string DefaultThumbnailUrl
+        {
+            get
+            {
+                return ThumbnailData.OrderByDescending( t => t.Width )
+                    .FirstOrDefault()?.Link ?? string.Empty;
+            }
+        }
+
+        #endregion
+    }
+}

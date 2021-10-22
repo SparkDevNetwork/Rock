@@ -42,12 +42,12 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Returns a message: "End Date cannot be earlier than Start Date"
+        /// Returns a message: "End Date cannot be earlier than Start Date".
         /// </summary>
         /// <returns></returns>
         public static string DateRangeEndDateBeforeStartDate()
         {
-            return string.Format( "End Date cannot be earlier than Start Date" );
+            return string.Format( "End Date cannot be earlier than Start Date." );
         }
 
         /// <summary>
@@ -61,14 +61,14 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Returns a message in the format: Invalid Length for {0}."
+        /// Returns a message requesting the person reduce the length of the item's text to fit the maximum length.
         /// </summary>
         /// <param name="itemFieldName">Name of the item field.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         public static string TextLengthInvalid( string itemFieldName, int maxLength )
         {
-            return string.Format( "Whoops. Would you mind reducing the length of your {0} to {1} characters?", itemFieldName.SplitCase().ToLower(), maxLength );
+            return string.Format( "Please reduce the length of {0} to {1} characters.", itemFieldName.SplitCase(), maxLength );
         }
     }
 
@@ -213,7 +213,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Nots the authorized to view.
+        /// Returns a message that the person is not authorized to view this item.
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item friendly.</param>
         /// <returns></returns>
@@ -223,9 +223,9 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Nots the authorized to edit.
+        /// Returns a message that the person is not authorized to edit this item.
         /// </summary>
-        /// <param name="itemFriendlyName">Name of the item friendly.</param>
+        /// <param name="itemFriendlyName">Friendly name of the item.</param>
         /// <returns></returns>
         public static string NotAuthorizedToEdit( string itemFriendlyName )
         {

@@ -22,6 +22,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Utility;
+using Rock.Utility.Settings;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -117,7 +119,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
         public void Where_WithMultipleConditions_ReturnsOnlyMatchingItems()
         {
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
@@ -159,7 +160,6 @@ Employer: Rock Solid Church <br>
         }
 
         [TestMethod]
-        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
         public void Where_WithSingleConditionNotEqual_ReturnsOnlyNotEqualValues()
         {
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
@@ -211,7 +211,6 @@ Employer:RockSolidChurch<br>
         }
 
         [TestMethod]
-        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
         public void Where_WithSingleConditionOnNestedProperty_ReturnsOnlyEqualValues()
         {
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
@@ -231,7 +230,38 @@ Home: (623)555-3322 <br>
         }
 
         [TestMethod]
-        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
+        public void Where_WithSingleConditionOnEnumProperty_ReturnsOnlyEqualValues()
+        {
+            var items = new List<TestWhereFilterCollectionItem>();
+
+            items.Add( new TestWhereFilterCollectionItem { Gender = Gender.Male, Name = "Ted Decker" } );
+            items.Add( new TestWhereFilterCollectionItem { Gender = Gender.Female, Name = "Cindy Decker" } );
+            items.Add( new TestWhereFilterCollectionItem { Gender = Gender.Female, Name = "Alex Decker" } );
+            items.Add( new TestWhereFilterCollectionItem { Gender = Gender.Male, Name = "Bill Marble" } );
+            items.Add( new TestWhereFilterCollectionItem { Gender = Gender.Female, Name = "Alisha Marble" } );
+
+            var mergeFields = new Dictionary<string, object> { { "Items", items }, { "FemaleId", ( int ) Gender.Female } };
+
+            var templateInput = @"
+{% assign matches = Items | Where:'Gender','Male' %}
+{% for match in matches %}
+    {{ match.Name }}<br>
+{% endfor %}
+{% assign matches = Items | Where:'Gender',FemaleId %}
+{% for match in matches %}
+    {{ match.Name }}<br>
+{% endfor %}
+";
+
+            var expectedOutput = @"
+Ted Decker<br>Bill Marble<br>
+Cindy Decker<br>Alex Decker<br>Alisha Marble<br>
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+        }
+
+        [TestMethod]
         public void Where_RepeatExecutions_ReturnsSameResult()
         {
             Debug.Write( "** Pass 1:" );
@@ -301,12 +331,6 @@ Home: (623)555-3322 <br>
             TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
-        private class TestWhereFilterCollectionItem
-        {
-            public string Id { get; set; }
-            public string Name { get; set; }
-        }
-
         private string GetWhereFilterTestTemplatePersonAttributes( string whereParameters )
         {
             var template = @"
@@ -332,6 +356,14 @@ Home: (623)555-3322 <br>
             Assert.That.IsNotNull( personTedDecker, "Test person not found in current database." );
 
             return personTedDecker;
+        }
+
+        private class TestWhereFilterCollectionItem : RockDynamic
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+
+            public Gender Gender { get; set; }
         }
 
         #endregion
@@ -391,7 +423,7 @@ Home: (623)555-3322 <br>
 
                     var cookie = GetExistingCookie( simulator, "cookie1" );
 
-                    Assert.That.AreProximate( cookie.Expires, RockDateTime.Now, new System.TimeSpan( 0, 35, 0 ) );
+                    Assert.That.AreProximate( cookie.Expires, RockInstanceConfig.SystemDateTime, new System.TimeSpan( 0, 35, 0 ) );
                 }
             } );
         }

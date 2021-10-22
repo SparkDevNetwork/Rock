@@ -55,6 +55,26 @@ namespace Rock.Field.Types
             return sb.ToString();
         }
 
+        /// <inheritdoc/>
+        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var ratingValue = new RatingClientValue
+            {
+                Value = value.AsInteger(),
+                MaxValue = GetMaxRating( configurationValues )
+            };
+
+            return ratingValue.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var ratingValue = clientValue.FromJsonOrNull<RatingClientValue>();
+
+            return ratingValue?.Value.ToString() ?? string.Empty;
+        }
+
         #endregion
 
         #region Configuration
@@ -377,5 +397,11 @@ namespace Rock.Field.Types
 
         #endregion
 
+        private class RatingClientValue
+        {
+            public int Value { get; set; }
+
+            public int MaxValue { get; set; }
+        }
     }
 }

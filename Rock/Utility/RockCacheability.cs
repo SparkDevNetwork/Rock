@@ -36,6 +36,7 @@ namespace Rock.Utility
         private const string MAX_SHARED_AGE_OPTION = "s-maxage";
 
         private readonly HashSet<string> _noAgeOptions = new HashSet<string>( new string[] { NO_CACHE_OPTION, NO_STORE_OPTION } );
+        private readonly HashSet<string> _noSharedOptions = new HashSet<string>( new string[] { PRIVATE_OPTION } );
         private readonly Dictionary<RockCacheablityType, string> _cacheabilityTypeOptionMap = new Dictionary<RockCacheablityType, string>
         {
                 { RockCacheablityType.Public, PUBLIC_OPTION },
@@ -115,6 +116,16 @@ namespace Rock.Utility
         public bool OptionSupportsAge( RockCacheablityType cacheablityType )
         {
             return !_noAgeOptions.Contains( _cacheabilityTypeOptionMap[cacheablityType] );
+        }
+
+        /// <summary>
+        /// Options the supports shared.
+        /// </summary>
+        /// <param name="cacheablityType">Type of the cacheablity.</param>
+        /// <returns></returns>
+        public bool OptionSupportsShared( RockCacheablityType cacheablityType )
+        {
+            return !_noSharedOptions.Contains( _cacheabilityTypeOptionMap[cacheablityType] );
         }
 
         /// <summary>

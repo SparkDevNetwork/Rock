@@ -82,7 +82,7 @@ namespace Rock.Tasks
                 // Launch workflow if configured
                 if ( alertType.WorkflowTypeId.HasValue )
                 {
-                    alert.LaunchWorkflow( alertType.WorkflowTypeId );
+                    alert.LaunchWorkflow( alertType.WorkflowTypeId, string.Empty, null, null );
                 }
 
                 // Add the person to a connection opportunity if configured

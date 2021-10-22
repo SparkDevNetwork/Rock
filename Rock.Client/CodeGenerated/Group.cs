@@ -59,6 +59,9 @@ namespace Rock.Client
         public bool DisableScheduling { get; set; }
 
         /// <summary />
+        public int /* ElevatedSecurityLevel*/ ElevatedSecurityLevel { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -176,6 +179,7 @@ namespace Rock.Client
             this.Description = source.Description;
             this.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
             this.DisableScheduling = source.DisableScheduling;
+            this.ElevatedSecurityLevel = source.ElevatedSecurityLevel;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupCapacity = source.GroupCapacity;

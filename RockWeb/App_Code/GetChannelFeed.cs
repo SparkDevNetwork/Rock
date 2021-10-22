@@ -149,17 +149,18 @@ namespace RockWeb
             // load merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             mergeFields.Add( "Channel", channel );
+            var safeProxyUrl = request.UrlProxySafe();
 
             Dictionary<string, object> requestObjects = new Dictionary<string, object>();
-            requestObjects.Add( "Scheme", request.Url.Scheme );
+            requestObjects.Add( "Scheme", safeProxyUrl.Scheme );
             requestObjects.Add( "Host", WebRequestHelper.GetHostNameFromRequest( context ) );
-            requestObjects.Add( "Authority", request.Url.Authority );
-            requestObjects.Add( "LocalPath", request.Url.LocalPath );
-            requestObjects.Add( "AbsoluteUri", request.Url.AbsoluteUri );
-            requestObjects.Add( "AbsolutePath", request.Url.AbsolutePath );
-            requestObjects.Add( "Port", request.Url.Port );
-            requestObjects.Add( "Query", request.Url.Query );
-            requestObjects.Add( "OriginalString", request.Url.OriginalString );
+            requestObjects.Add( "Authority", safeProxyUrl.Authority );
+            requestObjects.Add( "LocalPath", safeProxyUrl.LocalPath );
+            requestObjects.Add( "AbsoluteUri", safeProxyUrl.AbsoluteUri );
+            requestObjects.Add( "AbsolutePath", safeProxyUrl.AbsolutePath );
+            requestObjects.Add( "Port", safeProxyUrl.Port );
+            requestObjects.Add( "Query", safeProxyUrl.Query );
+            requestObjects.Add( "OriginalString", safeProxyUrl.OriginalString );
 
             mergeFields.Add( "Request", requestObjects );
 

@@ -39,7 +39,7 @@
     https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.2/hls.min.js
 
 
-    
+
     ========================================
     */
 
@@ -47,6 +47,7 @@
 // Fake it so TypeScript knows that Hls is a global variable.
 declare var Hls: any;
 
+/* eslint-disable @typescript-eslint/no-namespace */
 namespace Rock.UI {
     /**
      * The options that can be passed into the MediaPlayer
@@ -231,7 +232,7 @@ namespace Rock.UI {
         private options: Options;
 
         /** The identifier of the timer that is updating the watch map. */
-        private timerId: NodeJS.Timeout | null = null;
+        private timerId: number | null = null;
 
         /** The core player. */
         private player!: Plyr;
@@ -267,7 +268,7 @@ namespace Rock.UI {
         /**
          * Creates a new media player using the specified element identifier
          * as the placeholder for the player.
-         * 
+         *
          * @param elementSelector The identifier or CSS selector of the placeholder element. All contents will be replaced with the media player.
          * @param options The options to initialize this instance with.
          */
@@ -310,7 +311,7 @@ namespace Rock.UI {
 
         /**
          * Seek to the specified position in the video.
-         * 
+         *
          * @param positionInSeconds The position in seconds, this can be a floating point number.
          */
         public seek(positionInSeconds: number) {
@@ -320,7 +321,7 @@ namespace Rock.UI {
         /**
          * Configure the options that will be passed to the initializePlayer
          * function.
-         * 
+         *
          * @param mediaElement The media element that will be used during initialization.
          * @param plyrOptions The options that will be used during initialization.
          * @returns True if initializePlayer should be called, otherwise false.
@@ -331,6 +332,7 @@ namespace Rock.UI {
             const mediaElement: HTMLMediaElement = document.createElement(this.options.type === "audio" ? "audio" : "video");
             mediaElement.setAttribute("playsinline", "");
             mediaElement.setAttribute("controls", "");
+            mediaElement.setAttribute("style", "width: 100%;");
             this.element.appendChild(mediaElement);
 
             const plyrOptions: Plyr.Options = {
@@ -362,7 +364,7 @@ namespace Rock.UI {
                     hls.currentLevel = -1;
                 }
                 else {
-                    hls.levels.forEach((level, levelIndex) => {
+                    hls.levels.forEach((level: any, levelIndex: any) => {
                         if (level.height === newQuality) {
                             hls.currentLevel = levelIndex;
                         }
@@ -374,7 +376,7 @@ namespace Rock.UI {
             // can finish initializing the player.
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 // Transform available levels into an array of integers (height values).
-                const availableQualities = <number[]>hls.levels.map((l) => l.height);
+                const availableQualities = <number[]>hls.levels.map((l: any) => l.height);
 
                 // Add value for "auto".
                 availableQualities.unshift(0);
@@ -409,7 +411,7 @@ namespace Rock.UI {
 
         /**
          * Initialize the player object and prepares for playback.
-         * 
+         *
          * @param mediaElement The media element that will be used for the Plyr instance.
          * @param plyrOptions The options that will be passed to Plyr.
          */
@@ -450,7 +452,7 @@ namespace Rock.UI {
 
         /**
          * Extracts and returns just the filename from the given URL.
-         * 
+         *
          * @param url The URL to be parsed.
          * @returns The filename component of a URL.
          */
@@ -460,7 +462,7 @@ namespace Rock.UI {
 
         /**
          * Tests if the string ends with the specified search string.
-         * 
+         *
          * @param haystack The string to be tested.
          * @param needle The string that the haystack must end with.
          * @returns True if the haystack ends with the needle; otherwise false.
@@ -472,7 +474,7 @@ namespace Rock.UI {
         /**
          * Checks if the URL is for an audio stream. This is a best guess based
          * on the filename of the URL.
-         * 
+         *
          * @param url The URL to check.
          * @returns True if the URL likely specifies an audio stream; otherwise false;
          */
@@ -487,7 +489,7 @@ namespace Rock.UI {
 
         /**
          * Checks if the URL is for an HLS stream.
-         * 
+         *
          * @param url The URL to check.
          * @returns True if the URL specifies an HLS stream; otherwise false.
          */
@@ -499,7 +501,7 @@ namespace Rock.UI {
 
         /**
          * Checks if the URL is for a YouTube embed link.
-         * 
+         *
          * @param url The URL to check.
          * @returns True if the URL specifies a YouTube embed link; otherwise false.
          */
@@ -512,7 +514,7 @@ namespace Rock.UI {
 
         /**
          * Checks if the URL is for a Vimeo embed link.
-         * 
+         *
          * @param url The URL to check.
          * @returns True if the URL specifies a Vimeo embed link; otherwise false.
          */
@@ -528,7 +530,7 @@ namespace Rock.UI {
          * their embed versions. For example, if a user copies and pastes
          * a YouTube URL from their browser it will be translated into the
          * embed version of the URL.
-         * 
+         *
          * @param url The URL to be translated if we know what it is.
          * @returns A modified URL if it was translated or the original url if not.
          */
@@ -707,7 +709,7 @@ namespace Rock.UI {
 
         /**
          * Takes a RLE string and returns a plain number array.
-         * 
+         *
          * @param value The RLE string that contains the map data.
          */
         private static rleToArray(value: string) {
@@ -739,7 +741,7 @@ namespace Rock.UI {
 
         /**
          * Writes a message to the console if debug output has been enabled.
-         * 
+         *
          * @param message The message to be logged.
          */
         private writeDebugMessage(message: string) {
@@ -901,9 +903,9 @@ namespace Rock.UI {
 
         /**
          * Takes an array and returns the RLE string for it.
-         * 
+         *
          * @param value The value to be converted to an RLE string.
-         * 
+         *
          * @description RLE mapping is that segments are separated by commas.
          * The last character of the segment is the value.
          * Example:  1100011 = 21,30,21 (two ones, three zeros, two ones).
@@ -945,7 +947,7 @@ namespace Rock.UI {
 
         /**
          * Adds a new callback function to the specified event.
-         * 
+         *
          * @param event The name of the event.
          * @param fn The function to be called when the event occurs.
          * @returns The RockMediaPlayer instance.
@@ -968,7 +970,7 @@ namespace Rock.UI {
          * Removes callback function from the specified event. If no function is
          * specified then all functions are removed. If no event is specified then
          * all callbacks for all events are removed.
-         * 
+         *
          * @param event The name of the event.
          * @param fn The function to be removed.
          * @returns The RockMediaPlayer instance.
@@ -1014,7 +1016,7 @@ namespace Rock.UI {
 
         /**
          * Emits a named event with the given arguments.
-         * 
+         *
          * @param event The name of the event to emit.
          * @param args The arguments to pass to the event callbacks.
          */

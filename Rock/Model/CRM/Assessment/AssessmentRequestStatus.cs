@@ -14,10 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-
 namespace Rock.Model
 {
-    #region Enumerations
     /// <summary>
     /// Gets the status of the Assessment  (i.e. Pending, Complete)
     /// Complete should only be used if the Assessment was actually completed, everything else is pending.
@@ -34,6 +32,4 @@ namespace Rock.Model
         /// </summary>
         Complete = 1,
     }
-    #endregion
-
 }

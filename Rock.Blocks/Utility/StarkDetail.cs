@@ -101,7 +101,7 @@ namespace Rock.Blocks.Utility
         {
             var message = $"This is a value that came from the server via AJAX after the Vue component mounted. The client sent: {paramFromClient}";
 
-            return new BlockActionResult( HttpStatusCode.OK, new
+            return ActionOk( new
             {
                 Message = message
             } );

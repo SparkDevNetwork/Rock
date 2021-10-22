@@ -182,9 +182,11 @@ public class LaunchWorkflow : IHttpHandler
     {
         var dictionary = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
         var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+        var proxySafeUri = httpContext.Request.UrlProxySafe();
+
         // Set the standard values to be used.
-        dictionary.Add( "Url", "/" + string.Join( "", httpContext.Request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() ) );
-        dictionary.Add( "RawUrl", httpContext.Request.Url.AbsoluteUri );
+        dictionary.Add( "Url", "/" + string.Join( "", proxySafeUri.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() ) );
+        dictionary.Add( "RawUrl", proxySafeUri.AbsoluteUri );
         dictionary.Add( "Method", httpContext.Request.HttpMethod );
         dictionary.Add( "QueryString", httpContext.Request.QueryString.Cast<string>().ToDictionary( q => q, q => httpContext.Request.QueryString[q] ) );
         dictionary.Add( "RemoteAddress", httpContext.Request.UserHostAddress );

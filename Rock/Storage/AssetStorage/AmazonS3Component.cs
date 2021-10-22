@@ -575,7 +575,7 @@ namespace Rock.Storage.AssetStorage
                 {
                     BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ),
                     Key = asset.Key,
-                    Expires = RockDateTime.Now.AddMinutes( GetAttributeValue( assetStorageProvider, AttributeKeys.Expiration ).AsDouble() )
+                    Expires = RockInstanceConfig.SystemDateTime.AddMinutes( GetAttributeValue( assetStorageProvider, AttributeKeys.Expiration ).AsDouble() )
                 };
 
                 url = client.GetPreSignedURL( request );

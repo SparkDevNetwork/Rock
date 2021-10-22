@@ -11,7 +11,7 @@
                 <Content>
                     <asp:UpdatePanel runat="server" ID="upnlEditSettings">
                         <ContentTemplate>
-                            <Rock:RockListBox ID="lbDevices" runat="server" Label="Enabled Devices" Help="Set devices to consider when determining the device type, or leave blank for all." AutoPostBack="true" OnSelectedIndexChanged="lbDevices_SelectedIndexChanged" />
+                            <Rock:RockListBox ID="lbDevices" runat="server" Label="Enabled Devices" Help="The devices to consider when determining a matching device kiosk, or leave blank for all. Typically the selection should include only one device kiosk for each geo-fenced area / campus." AutoPostBack="true" OnSelectedIndexChanged="lbDevices_SelectedIndexChanged" />
 
                             <Rock:RockDropDownList ID="ddlTheme" runat="server" Label="Theme" />
                             <Rock:RockDropDownList ID="ddlCheckinType" runat="server" Label="Check-in Configuration" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" AutoPostBack="true" />

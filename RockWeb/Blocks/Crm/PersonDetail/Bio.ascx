@@ -32,7 +32,7 @@
             </div>
 
             <div class="row">
-                <div class="col-sm-3 col-md-2 xs-text-center">
+                <div class="col-sm-3 col-md-2 text-center sm-text-left">
                     <div class="photo">
                         <asp:Literal ID="lImage" runat="server" />  
                         <asp:Panel ID="pnlFollow" runat="server" CssClass="following-status"><i class="fa fa-star"></i></asp:Panel>
@@ -47,11 +47,12 @@
 
                 
                 </div>
-                <div class="col-sm-9 col-md-10 xs-text-center">
+                <div class="col-sm-9 col-md-10 text-center sm-text-left">
 
                     <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
                 
                     <Rock:BadgeListControl ID="blStatus" runat="server" />
+                    <Rock:HighlightLabel ID="hlAccountProtectionLevel" runat="server" Visible="false" LabelType="Warning" Text="Protection Profile: " />
 
                     <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
 

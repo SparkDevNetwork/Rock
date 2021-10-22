@@ -251,7 +251,9 @@ namespace Rock.WebFarm
                     if ( _hasDetectedOverlappedRecycling )
                     {
                         Debug( "Detected that this process may be overlapped for recycling" );
-                        AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Availability, "Detected that this process may be overlapped for recycling" );
+
+                        // JME 8/26/2021 remove writing this message to the cluster log as it is noise
+                        // AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Availability, "Detected that this process may be overlapped for recycling" );
                     }
 
                     rockContext.SaveChanges();

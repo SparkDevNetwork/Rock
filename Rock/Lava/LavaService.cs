@@ -16,21 +16,27 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Lava
 {
     /// <summary>
-    /// Provides access to core functions for Rock Lava using the global instance of the Lava engine.
+    /// Provides access to core functions for Rock Lava using a global instance of the Lava engine in a web application context.
+    /// This service is a wrapper for the LavaEngine component, with the following extensions:
+    /// * Implements web-specific template caching, particularly to segregate the caching of assets for different Rock themes.
     /// </summary>
     public static class LavaService
     {
         private static LavaServiceProvider _serviceProvider = new LavaServiceProvider();
-        private static ILavaEngine _engine = null;        
+        private static ILavaEngine _engine = null;
 
         private static object _initializationLock = new object();
         private static bool _rockLiquidIsEnabled = true;
-        
+
         /// <summary>
         /// A flag indicating if RockLiquid Lava processing is enabled.
         /// RockLiquid is the Rock-specific fork of the DotLiquid framework that provides Lava rendering for Rock v12 or below.
@@ -425,23 +431,22 @@ namespace Rock.Lava
         /// The rendered output of the template.
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
+        /// <remarks>This render method is compatible with the legacy DotLiquid implementation.</remarks>
         public static LavaRenderResult RenderTemplate( string inputTemplate )
         {
-            return RenderTemplate( inputTemplate, LavaRenderParameters.Default() );
-        }
+            LavaRenderResult result;
 
-        /// <summary>
-        /// Render the provided template in a new context with the specified merge fields.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
-        /// <returns>
-        /// The rendered output of the template.
-        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( string inputTemplate, ILavaDataDictionary mergeFields )
-        {
-            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+            if ( _engine == null && _rockLiquidIsEnabled )
+            {
+                // If a Lava engine is not initialized, fall back to legacy DotLiquid.
+                result = new LavaRenderResult();
+
+                result.Text = inputTemplate.ResolveMergeFields( new Dictionary<string, object>() );
+
+                return result;
+            }
+
+            result = RenderTemplate( inputTemplate, LavaRenderParameters.Default() );
 
             return result;
         }
@@ -455,7 +460,37 @@ namespace Rock.Lava
         /// The rendered output of the template.
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
+        /// <remarks>This render method is compatible with the legacy DotLiquid implementation.</remarks>
         public static LavaRenderResult RenderTemplate( string inputTemplate, IDictionary<string, object> mergeFields )
+        {
+            LavaRenderResult result;
+
+            if ( _engine == null && _rockLiquidIsEnabled )
+            {
+                // If a Lava engine is not initialized, fall back to legacy DotLiquid.
+                // This allows developers to use a single method for basic template rendering that is backward-compatible with the RockLiquid implementation.
+                result = new LavaRenderResult();
+
+                result.Text = inputTemplate.ResolveMergeFields( mergeFields );
+
+                return result;
+            }
+
+            result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( string inputTemplate, ILavaDataDictionary mergeFields )
         {
             var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
 
@@ -477,6 +512,31 @@ namespace Rock.Lava
                 return null;
             }
 
+            // If this template is being rendered as part of a web page handler, ensure that the cache key includes a reference
+            // to the associated Rock theme. This is necessary because Lava templates that include references
+            // to theme assets may appear identical, but will render differently if the asset content is different for each theme.
+            // For example, the template "{% include '~~/Assets/Lava/template.lava' %} will produce different output if the content
+            // of the "template.lava" file is different for each theme.
+#if !NET5_0_OR_GREATER
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            if ( page != null )
+            {
+                string cacheKey;
+
+                if ( string.IsNullOrEmpty( parameters.CacheKey ) )
+                {
+                    cacheKey = _engine.TemplateCacheService.GetCacheKeyForTemplate( inputTemplate );
+                }
+                else
+                {
+                    cacheKey = parameters.CacheKey;
+                }
+
+                parameters.CacheKey = GetWebTemplateCacheKey( cacheKey, page.Site?.Theme );
+            }
+#endif
+
             return _engine.RenderTemplate( inputTemplate, parameters );
         }
 
@@ -490,6 +550,40 @@ namespace Rock.Lava
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
         public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaDataDictionary mergeFields )
+        {
+            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified parameters.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="context">The settings applied to the rendering process.</param>
+        /// <returns>
+        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaRenderContext context )
+        {
+            if ( _engine == null )
+            {
+                return null;
+            }
+
+            return RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( context ) );
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, IDictionary<string, object> mergeFields )
         {
             var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
 
@@ -515,37 +609,85 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Render the provided template in a new context with the specified parameters.
+        /// Removes an entry from the cache.
         /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="context">The settings applied to the rendering process.</param>
-        /// <returns>
-        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaRenderContext context )
+        /// <param name="cacheKey"></param>
+        public static void RemoveTemplateCacheEntry( string cacheKey )
         {
-            if ( _engine == null )
+            var cacheService = _engine?.TemplateCacheService;
+
+            if ( cacheService == null )
+            {
+                return;
+            }
+
+            // Remove the item associated with the specified cache key, if it exists.
+            cacheService.RemoveKey( cacheKey );
+
+            // If Lava is generated for a specific page it is cached according to the page theme,
+            // so remove instances of the template associated with any active theme.
+            var themes = SiteCache.All()
+                .Where( x => x.Theme != null )
+                .Select( x => x.Theme )
+                .Distinct()
+                .ToList();
+
+            foreach ( var theme in themes )
+            {
+                var internalKey = GetWebTemplateCacheKey( cacheKey, theme );
+
+                cacheService.RemoveKey( internalKey );
+            }
+        }
+
+        /// <summary>
+        /// Generates an internal cache key for a lava template that uniquely identifies it in the context of the Rock web application.
+        /// </summary>
+        /// <param name="baseCacheKey">The cache key used to identify the template in standard processing.</param>
+        /// <param name="themeName">The name of the theme with which the template is associated.</param>
+        /// <returns></returns>
+        private static string GetWebTemplateCacheKey( string baseCacheKey, string themeName )
+        {
+            if ( string.IsNullOrEmpty( baseCacheKey ) )
             {
                 return null;
             }
 
-            return _engine.RenderTemplate( inputTemplate, context );
-        }
+            // If this template is being rendered as part of a web page handler, ensure that the cache key includes a reference
+            // to the associated Rock theme. This is needed because identical Lava templates that include references
+            // to theme assets should render different output according to the current theme.
+            // For example, the template "{% include '~~/Assets/Lava/template.lava' %} will produce different output when used
+            // on pages with different themes if the content of the "template.lava" file is not the identical for those themes.
+            if ( string.IsNullOrEmpty( themeName ) )
+            {
+#if NET5_0_OR_GREATER
+                return baseCacheKey;
+#else
+                var page = HttpContext.Current?.Handler as RockPage;
 
-        /// <summary>
-        /// Render the provided template in a new context with the specified merge fields.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
-        /// <returns>
-        /// The rendered output of the template.
-        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, IDictionary<string, object> mergeFields )
-        {
-            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+                if ( page == null )
+                {
+                    return baseCacheKey;
+                }
 
-            return result;
+                themeName = page?.Site?.Theme;
+#endif
+            }
+
+            string internalCacheKey;
+
+            if ( string.IsNullOrEmpty( themeName ) )
+            {
+                internalCacheKey = "*";
+            }
+            else
+            {
+                internalCacheKey = themeName.Replace( " ", string.Empty );
+            }
+
+            internalCacheKey = $"{internalCacheKey}@{baseCacheKey}";
+
+            return internalCacheKey;
         }
 
         /// <summary>

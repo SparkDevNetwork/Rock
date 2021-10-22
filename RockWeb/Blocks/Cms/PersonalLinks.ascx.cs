@@ -13,19 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
+
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -44,7 +46,6 @@ namespace RockWeb.Blocks.Cms
     #endregion Block Attributes
     public partial class PersonalLinks : Rock.Web.UI.RockBlock
     {
-
         #region Attribute Keys
 
         private static class AttributeKey
@@ -54,21 +55,18 @@ namespace RockWeb.Blocks.Cms
 
         #endregion Attribute Keys
 
-        #region Fields
+        #region Data Attribute Keys
 
-        // Used for private variables.
+        private static class DataAttributeKey
+        {
+            public const string LastSharedLinkUpdateDateTime = "data-last-shared-link-update-rock-date-time";
+            public const string QuickLinksLocalStorageKey = "data-quick-links-local-storage-key";
+            public const string PersonalLinksModificationHash = "data-personal-links-modification-hash";
+        }
 
-        #endregion
-
-        #region Properties
-
-        // Used for public / protected properties.
-
-        #endregion
+        #endregion Attribute Keys
 
         #region Base Control Methods
-
-        // Overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -77,6 +75,10 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // We don't bundle personalLinks.js, we'll only add it as needed.
+            // We only need it on this block, and for any page that uses RockFilters.AddQuickReturn lava filter.
+            RockPage.AddScriptLink( "~/Scripts/Rock/Controls/PersonalLinks/personalLinks.js" );
 
             // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
             this.BlockUpdated += Block_BlockUpdated;
@@ -91,21 +93,27 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            SetDataAttributes();
+
             if ( !Page.IsPostBack )
             {
                 if ( CurrentPersonAliasId.HasValue )
                 {
                     lbBookmark.Visible = true;
-                    BindView();
+                    ShowView();
                 }
             }
+        }
+
+        protected override void OnPreRender( EventArgs e )
+        {
+            // update this on every load in pre-render since it could change due to other blocks
+            SetDataAttributes();
         }
 
         #endregion
 
         #region Events
-
-        // Handlers called by the controls on your block.
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -114,25 +122,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptPersonalLinkSection control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptPersonalLinkSection_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            if ( e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem )
-            {
-                return;
-            }
-
-            var rptLinks = e.Item.FindControl( "rptLinks" ) as Repeater;
-            var section = e.Item.DataItem as PersonalLinkSection;
-            rptLinks.DataSource = section.PersonalLinks.OrderBy( a => a.Order );
-            rptLinks.DataBind();
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -151,7 +141,6 @@ namespace RockWeb.Blocks.Cms
             pnlView.Visible = false;
             pnlAddSection.Visible = true;
             pnlAddLink.Visible = false;
-            //pnlView.AddCssClass( "d-none" );
             tbSectionName.Text = string.Empty;
         }
 
@@ -163,9 +152,8 @@ namespace RockWeb.Blocks.Cms
             pnlView.Visible = false;
             pnlAddSection.Visible = false;
             pnlAddLink.Visible = true;
-            //pnlView.AddCssClass( "d-none" );
             tbLinkName.Text = RockPage.Title;
-            urlLink.Text = Page.Request.Url.ToString();
+            urlLink.Text = Page.Request.UrlProxySafe().ToString();
             BindSectionDropdown();
         }
 
@@ -175,7 +163,7 @@ namespace RockWeb.Blocks.Cms
         protected void btnSectionSave_Click( object sender, EventArgs e )
         {
             SaveSection( tbSectionName.Text );
-            BindView();
+            ShowView();
             pnlView.Visible = true;
         }
 
@@ -205,7 +193,8 @@ namespace RockWeb.Blocks.Cms
 
                 personalLinkService.Add( personalLink );
                 rockContext.SaveChanges();
-                BindView();
+
+                ShowView();
                 pnlView.Visible = true;
             }
         }
@@ -226,17 +215,23 @@ namespace RockWeb.Blocks.Cms
         #region Methods
 
         /// <summary>
-        /// Binds the connection types repeater.
+        /// Sets the data attributes.
         /// </summary>
-        private void BindView()
+        private void SetDataAttributes()
+        {
+            divPersonalLinks.Attributes[DataAttributeKey.LastSharedLinkUpdateDateTime] = SharedPersonalLinkSectionCache.LastModifiedDateTime.ToISO8601DateString();
+            divPersonalLinks.Attributes[DataAttributeKey.QuickLinksLocalStorageKey] = PersonalLinkService.GetQuickLinksLocalStorageKey( this.CurrentPerson );
+            divPersonalLinks.Attributes[DataAttributeKey.PersonalLinksModificationHash] = PersonalLinkService.GetPersonalLinksModificationHash( this.CurrentPerson );
+            upnlContent.Update();
+        }
+
+        /// <summary>
+        /// Sets View mode
+        /// </summary>
+        private void ShowView()
         {
             pnlAddSection.Visible = false;
             pnlAddLink.Visible = false;
-            var rockContext = new RockContext();
-            var personalLinkSections = GetPersonalLinkSections( rockContext, true );
-            var personalLinkSectionOrders = GetPersonalLinkSectionOrders( rockContext );
-            rptPersonalLinkSection.DataSource = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders, false );
-            rptPersonalLinkSection.DataBind();
         }
 
         /// <summary>
@@ -256,6 +251,7 @@ namespace RockWeb.Blocks.Cms
 
             personalLinkSectionService.Add( personalLinkSection );
             rockContext.SaveChanges();
+
             personalLinkSection.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
             personalLinkSection.MakePrivate( Authorization.EDIT, CurrentPerson, rockContext );
             personalLinkSection.MakePrivate( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
@@ -268,91 +264,31 @@ namespace RockWeb.Blocks.Cms
         private void BindSectionDropdown()
         {
             var rockContext = new RockContext();
-            var personalLinkSections = GetPersonalLinkSections( rockContext, false );
-            var personalLinkSectionOrders = GetPersonalLinkSectionOrders( rockContext );
-            var orderedPersonalLinkSection = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders, true );
+            var personalLinkService = new PersonalLinkService( rockContext );
+            var sectionsQuery = personalLinkService.GetOrderedPersonalLinkSectionsQuery( this.CurrentPerson );
 
-            ddlSection.DataSource = orderedPersonalLinkSection;
+            // limit to ones that are non-shared
+            var orderedPersonalLinkSections = sectionsQuery
+                .AsNoTracking()
+                .ToList()
+                .Where( a => a.PersonAliasId.HasValue && a.PersonAlias.PersonId == this.CurrentPersonId )
+                .ToList();
+
+            ddlSection.DataSource = orderedPersonalLinkSections;
             ddlSection.DataTextField = "Name";
             ddlSection.DataValueField = "Id";
             ddlSection.DataBind();
-            if ( personalLinkSections.Any() )
+            if ( orderedPersonalLinkSections.Any() )
             {
                 ddlSection.Items.Insert( 0, new ListItem() );
                 ddlSection.Required = true;
             }
             else
             {
+                // if there aren't any link sections, use a section called 'Links' as a default
                 ddlSection.Items.Insert( 0, new ListItem( "Links" ) );
                 ddlSection.Required = false;
             }
-        }
-
-        /// <summary>
-        /// Gets the personal link sections.
-        /// </summary>
-        /// <returns></returns>
-        private List<PersonalLinkSection> GetPersonalLinkSections( RockContext rockContext, bool isView )
-        {
-            rockContext = rockContext ?? new RockContext();
-            var personalLinkSections = new List<PersonalLinkSection>();
-            var qry = new PersonalLinkSectionService( rockContext )
-                .Queryable()
-                .Include( a => a.PersonalLinks )
-                .AsNoTracking()
-                .Where( a => a.IsShared || a.PersonAliasId == CurrentPersonAliasId.Value );
-
-
-            foreach ( var personalLinkSection in qry.ToList() )
-            {
-                bool isViewable = false;
-                if ( isView )
-                {
-                    isViewable = !personalLinkSection.IsShared || ( personalLinkSection.IsShared && personalLinkSection.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
-                }
-                else
-                {
-                    isViewable = !personalLinkSection.IsShared || ( personalLinkSection.IsShared && personalLinkSection.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
-                }
-
-                if ( isViewable )
-                {
-                    personalLinkSections.Add( personalLinkSection );
-                }
-            }
-
-            return personalLinkSections;
-        }
-
-        /// <summary>
-        /// Gets the personal link section orders.
-        /// </summary>
-        /// <returns></returns>
-        private List<PersonalLinkSectionOrder> GetPersonalLinkSectionOrders( RockContext rockContext )
-        {
-            rockContext = rockContext ?? new RockContext();
-
-            var qry = new PersonalLinkSectionOrderService( rockContext )
-                .Queryable();
-
-            qry = qry.Where( a => a.PersonAliasId == CurrentPersonAliasId );
-
-            return qry.ToList();
-        }
-
-        private IEnumerable<PersonalLinkSection> GetOrderedPersonalLinkSection( List<PersonalLinkSection> personalLinkSections, List<PersonalLinkSectionOrder> personalLinkSectionOrders, bool includeSectionsWithoutPersonalLinks )
-        {
-            return personalLinkSections
-                .Where( a => a.PersonalLinks.Any() || includeSectionsWithoutPersonalLinks )
-                .Select( a => new
-                {
-                    PersonalLinkSection = a,
-                    Order = personalLinkSectionOrders.Where( b => b.SectionId == a.Id ).Select( b => b.Order ).DefaultIfEmpty().FirstOrDefault()
-                } )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.PersonalLinkSection.Name )
-                .Select( a => a.PersonalLinkSection )
-                .ToList();
         }
 
         #endregion

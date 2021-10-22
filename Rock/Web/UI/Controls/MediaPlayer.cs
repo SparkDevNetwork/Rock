@@ -736,7 +736,6 @@ namespace Rock.Web.UI.Controls
             // Render the container for the media player control.
             writer.AddAttribute( HtmlTextWriterAttribute.Id, $"{ClientID}_player" );
             writer.AddStyleAttribute( "--plyr-color-main", PrimaryColor );
-            writer.AddStyleAttribute( "width", "100%" );
             if ( MaxVideoWidth.IsNotNullOrWhiteSpace() )
             {
                 writer.AddStyleAttribute( "max-width", MaxVideoWidth );
