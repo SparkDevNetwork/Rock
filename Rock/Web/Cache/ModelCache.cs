@@ -61,6 +61,14 @@ namespace Rock.Web.Cache
         {
             base.SetFromEntity( entity );
 
+            // If this is an actual IModel, get the Date properties
+            var modelModel = entity as IModel;
+            if ( modelModel != null )
+            {
+                CreatedDateTime = modelModel.CreatedDateTime;
+                ModifiedDateTime = modelModel.ModifiedDateTime;
+            }
+
             // If this model implements ISecured, set up those properties
             var secureModel = entity as ISecured;
             if ( secureModel != null )
@@ -72,7 +80,10 @@ namespace Rock.Web.Cache
 
             // If this model implements IHasAttributes
             var attributeModel = entity as IHasAttributes;
-            if ( attributeModel == null ) return;
+            if ( attributeModel == null )
+            {
+                return;
+            }
 
             if ( attributeModel.Attributes == null )
             {
@@ -103,6 +114,24 @@ namespace Rock.Web.Cache
         [DataMember]
         [LavaIgnore]
         public virtual string TypeName { get; private set; }
+
+        /// <summary>
+        /// Gets the created date time.
+        /// </summary>
+        /// <value>
+        /// The created date time.
+        /// </value>
+        [DataMember]
+        public virtual DateTime? CreatedDateTime { get; protected set; }
+
+        /// <summary>
+        /// Gets the modified date time.
+        /// </summary>
+        /// <value>
+        /// The modified date time.
+        /// </value>
+        [DataMember]
+        public virtual DateTime? ModifiedDateTime { get; protected set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
