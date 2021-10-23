@@ -743,6 +743,7 @@
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
     <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
+    <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />
     <Compile Include="Model\Connection\ConnectionRequestActivity\ConnectionRequestActivity.SaveHook.cs" />

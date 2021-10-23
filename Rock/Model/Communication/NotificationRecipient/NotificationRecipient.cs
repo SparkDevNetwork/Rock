@@ -18,7 +18,6 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -67,7 +66,7 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ReadDateTime { get; set; }
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person" /> who is receiving the <see cref="Rock.Model.Communication" />.
@@ -87,7 +86,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Notification Notification { get; set; }
 
-        #endregion       
+        #endregion Navigation Properties  
     }
 
     #region Entity Configuration
@@ -105,7 +104,6 @@ namespace Rock.Model
             this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Notification ).WithMany( c => c.Recipients ).HasForeignKey( r => r.NotificationId ).WillCascadeOnDelete( true );
         }
-
     }
 
     #endregion
