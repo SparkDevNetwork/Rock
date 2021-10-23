@@ -144,7 +144,8 @@ namespace Rock.Lava.Fluid
             {
                 if ( value is DateTime dt )
                 {
-                    return new LavaDateTimeValue( new DateTimeOffset( dt ) );
+                    // Assume that the DateTime is expressed in Rock time.
+                    return new LavaDateTimeValue( LavaDateTime.NewDateTimeOffset( dt.Ticks ) );
                 }
                 else if ( value is DateTimeOffset dto )
                 {

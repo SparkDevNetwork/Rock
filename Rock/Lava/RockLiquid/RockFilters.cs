@@ -1231,6 +1231,7 @@ namespace Rock.Lava
                 else
                 {
                     // The input date kind is local or unspecified, so assume it is expressed in Rock time.
+                    dt = DateTime.SpecifyKind( dt, DateTimeKind.Unspecified );
                     var rockDateTime = new DateTimeOffset( dt, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dt ) );
 
                     return rockDateTime.ToString( format ).Trim();
