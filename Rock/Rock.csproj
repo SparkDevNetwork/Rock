@@ -2352,8 +2352,8 @@
     <Compile Include="Model\Event\EventItemOccurrence\EventItemOccurrence.cs" />
     <Compile Include="Model\Event\EventItemOccurrenceChannelItem\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="Model\Event\EventItemOccurrenceGroupMap\EventItemOccurrenceGroupMap.cs" />
-    <Compile Include="Model\ExceptionLog.cs" />
-    <Compile Include="Model\ExceptionLogService.Partial.cs" />
+    <Compile Include="Model\Core\ExceptionLog\ExceptionLog.cs" />
+    <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.Partial.cs" />
     <Compile Include="Model\FieldType.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.cs" />
