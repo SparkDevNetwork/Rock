@@ -258,14 +258,14 @@ namespace RockWeb.Blocks.Crm
                     selectedPersonIds = personIdList.SplitDelimitedValues().AsIntegerList();
                 }
 
-                foreach ( var personId in selectedPersonIds )
-                {
-                    PersonService.UpdateAccountProtectionProfileForPerson( personId, new RockContext() );
-                }
-
                 // Load the set of people specified by query string parameters.
                 if ( selectedPersonIds != null )
                 {
+                    foreach ( var personId in selectedPersonIds )
+                    {
+                        PersonService.UpdateAccountProtectionProfileForPerson( personId, new RockContext() );
+                    }
+
                     if ( selectedPersonIds.Count == 0 )
                     {
                         ScriptManager.RegisterStartupScript( this, this.GetType(), "goBack", "history.go(-1);", true );
