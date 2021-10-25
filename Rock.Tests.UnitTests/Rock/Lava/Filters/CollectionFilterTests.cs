@@ -153,7 +153,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
 
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
-            TestHelper.AssertTemplateOutput( "Total:15", lavaTemplate, null, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( "Total:15", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
         }
 
         #endregion
@@ -169,7 +169,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
         {{ dict | AllKeysFromDictionary }}
 ";
 
-            TestHelper.AssertTemplateOutput( "key1key2key3", lavaTemplate, null, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( "key1key2key3", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -181,7 +181,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
 {{ dict | AllKeysFromDictionary }}
 ";
 
-            TestHelper.AssertTemplateOutput( "key1key3", lavaTemplate, null, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( "key1key3", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -192,7 +192,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
 {{ dict | AllKeysFromDictionary }}
 ";
 
-            TestHelper.AssertTemplateOutput( "key1key2key3", lavaTemplate, null, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( "key1key2key3", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
         }
 
         #endregion

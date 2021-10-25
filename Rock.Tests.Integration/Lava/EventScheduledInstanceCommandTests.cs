@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
@@ -334,29 +336,23 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [Ignore( "In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop." )]
-        // This bug may be fixed, included in the next release: https://github.com/sebastienros/fluid/issues/317
         public void EventScheduledInstanceCommand_EventWithMultipleSchedules_ReturnsMultipleEventItemEntries()
         {
             var template = @"
 {% eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' %}
     {% for occurrence in EventItems %}
         <b>Series {{forloop.index}}</b><br>
-
         {% for item in occurrence %}
             {% if forloop.first %}
                 {{ item.Name }}
                 <b>{{ item.DateTime | Date:'dddd' }} Series</b><br>
                 <ol>
             {% endif %}
-
             <li>{{ item.DateTime | Date:'MMM d, yyyy' }} in {{ item.LocationDescription }}</li>
-
             {% if forloop.last %}
                 </ol>
             {% endif %}
         {% endfor %}
-
     {% endfor %}
 {% endeventscheduledinstance %}
 ";

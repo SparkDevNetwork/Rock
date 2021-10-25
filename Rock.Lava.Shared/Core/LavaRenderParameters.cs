@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Globalization;
 
 namespace Rock.Lava
 {
@@ -35,13 +36,18 @@ namespace Rock.Lava
             return new LavaRenderParameters { Context = context };
         }
 
+        private static readonly LavaRenderParameters _defaultValue = new LavaRenderParameters();
+
         /// <summary>
         /// Create a new default instance.
         /// </summary>
         /// <returns></returns>
-        public static LavaRenderParameters Default()
+        public static LavaRenderParameters Default
         {
-            return new LavaRenderParameters();
+            get
+            {
+                return _defaultValue;
+            }
         }
 
         #endregion
@@ -67,5 +73,31 @@ namespace Rock.Lava
         /// </summary>
         public ExceptionHandlingStrategySpecifier? ExceptionHandlingStrategy { get; set; }
 
+        /// <summary>
+        /// Gets or sets the culture with which to render the template.
+        /// </summary>
+        public CultureInfo Culture { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timezone for rendering dates and times.
+        /// </summary>
+        public TimeZoneInfo TimeZone { get; set; }
+
+        /// <summary>
+        /// Returns a new object with the same properties as the current object.
+        /// </summary>
+        /// <returns></returns>
+        public LavaRenderParameters Clone()
+        {
+            var clone = new LavaRenderParameters();
+            clone.CacheKey = CacheKey;
+            clone.Context = Context;
+            clone.Culture = Culture;
+            clone.ExceptionHandlingStrategy = ExceptionHandlingStrategy;
+            clone.ShouldEncodeStringsAsXml = ShouldEncodeStringsAsXml;
+            clone.TimeZone = TimeZone;
+
+            return clone;
+        }
     }
 }

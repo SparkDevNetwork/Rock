@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Rock.Lava
 {
@@ -24,6 +25,16 @@ namespace Rock.Lava
     /// </summary>
     public class LavaEngineConfigurationOptions
     {
+        /// <summary>
+        /// Gets or sets the default culture.
+        /// </summary>
+        public CultureInfo Culture { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default timezone.
+        /// </summary>
+        public TimeZoneInfo TimeZone { get; set; }
+
         /// <summary>
         /// Gets or sets the component that provides environment-specific caching for the Lava Engine.
         /// </summary>
