@@ -53,6 +53,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool IncludeNonPublicRequests { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; } = true;
 
         /// <summary />
@@ -114,6 +117,7 @@ namespace Rock.Client
             this.FollowedEntityTypeId = source.FollowedEntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IncludeNonPublicRequests = source.IncludeNonPublicRequests;
             this.IsActive = source.IsActive;
             this.IsNoticeRequired = source.IsNoticeRequired;
             this.LastCheckDateTime = source.LastCheckDateTime;
