@@ -305,8 +305,7 @@ namespace Rock.Lava
                 if ( rockTimeZone.SupportsDaylightSavingTime )
                 {
                     var utcOffset = rockTimeZone.GetUtcOffset( dto );
-
-                    var dstOffsetString = ( utcOffset.Hours < 0 ? "-" : "+" ) + ( utcOffset.Hours > 9 ? "" : "0" ) + utcOffset.Hours + ":" + ( utcOffset.Minutes > 9 ? "" : "0" ) + utcOffset.Minutes;
+                    var dstOffsetString = ( utcOffset.Hours < 0 ? "-" : "+" ) + ( utcOffset.Hours > 9 ? "" : "0" ) + Math.Abs( utcOffset.Hours ) + ":" + ( utcOffset.Minutes > 9 ? "" : "0" ) + Math.Abs( utcOffset.Minutes );
 
                     isParsed = DateTimeOffset.TryParse( stringValue + " " + dstOffsetString, out dto );
                 }
