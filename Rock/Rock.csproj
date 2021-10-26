@@ -777,6 +777,7 @@
     <Compile Include="Model\Core\FollowingSuggestionType\FollowingSuggestionType.Logic.cs" />
     <Compile Include="Model\Core\NoteAttachment\NoteAttachment.SaveHook.cs" />
     <Compile Include="Model\Core\NoteWatch\NoteWatch.Logic.cs" />
+    <Compile Include="Model\Core\Note\Note.WebForms.cs" />
     <Compile Include="Model\Core\Note\Note.Logic.cs" />
     <Compile Include="Model\Core\Note\Note.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteApprovalStatus.cs" />
