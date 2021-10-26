@@ -227,7 +227,6 @@ namespace Rock.Model
 
             // If there is a payment without a transaction, but has one of the following status, don't report it as a 'unmatched' transaction.
             // If they have one of these statuses, and can't be matched, the user probably closed the browser or walked away before completing the transaction.
-            // Include both spellings of 'cancelled/canceled',
             string[] ignorableUnMatchedStatuses = new string[2] { "in_progress", "abandoned" };
 
             List<Payment> paymentsWithoutTransaction = new List<Payment>();
