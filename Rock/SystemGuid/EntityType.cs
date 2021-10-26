@@ -442,6 +442,11 @@ namespace Rock.SystemGuid
         public const string PERSON_GET_CAMPUS_TEAM_MEMBER = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E";
 
         /// <summary>
+        /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity
+        /// </summary>
+        public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
+
+        /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity
         /// </summary>
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";
