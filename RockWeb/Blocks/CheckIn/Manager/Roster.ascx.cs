@@ -915,13 +915,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Only one schedule to pick from so hide the options and set the wording on the prompt.
                 var singleSchedule = sortedScheduleList[0];
 
-                lConfirmStayingPromptText.Text = string.Format( "Would you like to this person to stay for {0}?", singleSchedule.Name );
+                lConfirmStayingPromptText.Text = string.Format( "Would you like this person to stay for {0}?", singleSchedule.Name );
                 rblScheduleStayingFor.SetValue( singleSchedule.Id );
                 rblScheduleStayingFor.Visible = false;
             }
             else
             {
-                lConfirmStayingPromptText.Text = "Which schedule would you like to this person to stay for:";
+                lConfirmStayingPromptText.Text = "Which schedule would you like this person to stay for:";
                 rblScheduleStayingFor.Visible = true;
             }
 
@@ -1030,7 +1030,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     var singleSchedule = sortedScheduleList[0];
 
                     // Only one schedule to pick from so hide the options and set the wording on the prompt.
-                    lConfirmCheckoutAll.Text = string.Format( "Would you like checkout all for {0}?", singleSchedule.Name );
+                    lConfirmCheckoutAll.Text = string.Format( "Would you like to checkout all for {0}?", singleSchedule.Name );
                     cblSchedulesCheckoutAll.SetValue( singleSchedule.Id );
                     cblSchedulesCheckoutAll.Visible = false;
                 }
