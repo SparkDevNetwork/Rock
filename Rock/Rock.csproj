@@ -771,6 +771,7 @@
     <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
+    <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.WebForms.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.Logic.cs" />
     <Compile Include="Model\Core\FollowingEventType\FollowingEventType.Logic.cs" />
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedStatus.cs" />
@@ -2354,7 +2355,7 @@
     <Compile Include="Model\Event\EventItemOccurrenceChannelItem\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="Model\Event\EventItemOccurrenceGroupMap\EventItemOccurrenceGroupMap.cs" />
     <Compile Include="Model\Core\ExceptionLog\ExceptionLog.cs" />
-    <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.Partial.cs" />
+    <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.cs" />
     <Compile Include="Model\FieldType.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.cs" />
