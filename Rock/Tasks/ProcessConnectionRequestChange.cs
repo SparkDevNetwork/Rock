@@ -243,6 +243,8 @@ namespace Rock.Tasks
 
                     var workflow = Rock.Model.Workflow.Activate( workflowType, name );
 
+                    workflow.InitiatorPersonAliasId = message.InitiatorPersonAliasId;
+
                     List<string> workflowErrors;
                     new WorkflowService( rockContext ).Process( workflow, connectionRequest, out workflowErrors );
                     if ( workflow.Id != 0 )
@@ -334,6 +336,11 @@ namespace Rock.Tasks
             /// Gets or sets the previous assigned group identifier.
             /// </summary>
             public int? PreviousAssignedGroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the initiator person alias identifier.
+            /// </summary>
+            public int? InitiatorPersonAliasId { get; set; }
         }
     }
 }
