@@ -39,30 +39,25 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
 
-    [LinkedPage( "Person Profile Page",
-        Description = "The page used to view the details of a business contact",
-        Key = AttributeKey.PersonProfilePage,
-        Order = 0 )]
-
     [LinkedPage( "Communication Page",
         Description = "The communication page to use for when the business email address is clicked. Leave this blank to use the default.",
         Key = AttributeKey.CommunicationPage,
         IsRequired = false,
-        Order = 1 )]
+        Order = 0 )]
 
     [BadgesField(
         "Badges",
         Key = AttributeKey.Badges,
         Description = "The label badges to display in this block.",
         IsRequired = false,
-        Order = 2 )]
+        Order = 1 )]
 
     [BooleanField(
         "Display Tags",
         Description = "Should tags be displayed?",
         Key = AttributeKey.DisplayTags,
         DefaultBooleanValue = true,
-        Order = 3 )]
+        Order = 2 )]
 
     [CategoryField(
         "Tag Category",
@@ -71,7 +66,7 @@ namespace RockWeb.Blocks.Finance
         AllowMultiple = false,
         EntityType = typeof( Rock.Model.Tag ),
         IsRequired = false,
-        Order = 4 )]
+        Order = 3 )]
 
     [CustomEnhancedListField(
         "Search Key Types",
@@ -79,7 +74,7 @@ namespace RockWeb.Blocks.Finance
         Description = "Optional list of search key types to limit the display in search keys grid. No selection will show all.",
         ListSource = ListSource.SearchKeyTypes,
         IsRequired = false,
-        Order = 5 )]
+        Order = 4 )]
 
     [AttributeField(
         "Business Attributes",
@@ -88,7 +83,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The person attributes that should be displayed / edited for adults.",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 6 )]
+        Order = 5 )]
 
     public partial class BusinessDetail : ContextEntityBlock, IDetailBlock
     {
@@ -98,7 +93,6 @@ namespace RockWeb.Blocks.Finance
             public const string BusinessAttributes = "BusinessAttributes";
             public const string CommunicationPage = "CommunicationPage";
             public const string DisplayTags = "DisplayTags";
-            public const string PersonProfilePage = "PersonProfilePage";
             public const string SearchKeyTypes = "SearchKeyTypes";
             public const string TagCategory = "TagCategory";
         }
@@ -148,17 +142,6 @@ namespace RockWeb.Blocks.Finance
             dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
             dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
 
-            bool canEdit = IsUserAuthorized( Authorization.EDIT );
-
-            gContactList.DataKeyNames = new string[] { "Id" };
-            gContactList.Actions.ShowAdd = canEdit;
-            gContactList.Actions.AddClick += gContactList_AddClick;
-            gContactList.GridRebind += gContactList_GridRebind;
-            gContactList.IsDeleteEnabled = canEdit;
-
-            mdAddContact.SaveClick += mdAddContact_SaveClick;
-            mdAddContact.OnCancelScript = string.Format( "$('#{0}').val('');", hfModalOpen.ClientID );
-
             gSearchKeys.Actions.ShowAdd = true;
             gSearchKeys.Actions.AddClick += gSearchKeys_AddClick;
         }
@@ -171,11 +154,6 @@ namespace RockWeb.Blocks.Finance
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "BusinessId" ).AsInteger() );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( hfModalOpen.Value ) )
-            {
-                mdAddContact.Show();
             }
         }
 
@@ -434,18 +412,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the gContactList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gContactList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "PersonId", e.RowKeyId.ToString() );
-            NavigateToLinkedPage( AttributeKey.PersonProfilePage, queryParams );
-        }
-
-        /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlRecordStatus control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -453,103 +419,6 @@ namespace RockWeb.Blocks.Finance
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
             dvpReason.Visible = dvpRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-        }
-
-        /// <summary>
-        /// Handles the AddClick event of the gContactList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gContactList_AddClick( object sender, EventArgs e )
-        {
-            ppContact.SetValue( null );
-            hfModalOpen.Value = "Yes";
-            mdAddContact.Show();
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gContactList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gContactList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            int? businessId = hfBusinessId.Value.AsIntegerOrNull();
-            if ( businessId.HasValue )
-            {
-                var businessContactId = e.RowKeyId;
-
-                var rockContext = new RockContext();
-                var groupMemberService = new GroupMemberService( rockContext );
-
-                Guid businessContact = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid();
-                Guid business = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
-                Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
-                foreach ( var groupMember in groupMemberService.Queryable()
-                    .Where( m =>
-                        (
-                            // The contact person in the business's known relationships
-                            m.PersonId == businessContactId &&
-                            m.GroupRole.Guid.Equals( businessContact ) &&
-                            m.Group.Members.Any( o =>
-                                o.PersonId == businessId &&
-                                o.GroupRole.Guid.Equals( ownerGuid ) )
-                        ) ||
-                        (
-                            // The business in the person's know relationships
-                            m.PersonId == businessId &&
-                            m.GroupRole.Guid.Equals( business ) &&
-                            m.Group.Members.Any( o =>
-                                o.PersonId == businessContactId &&
-                                o.GroupRole.Guid.Equals( ownerGuid ) )
-                        )
-                        ) )
-                {
-                    groupMemberService.Delete( groupMember );
-                }
-
-                rockContext.SaveChanges();
-
-                BindContactListGrid( new PersonService( rockContext ).Get( businessId.Value ) );
-            }
-
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the mdAddContact control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void mdAddContact_SaveClick( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-            var groupService = new GroupService( rockContext );
-            var groupMemberService = new GroupMemberService( rockContext );
-            var business = personService.Get( int.Parse( hfBusinessId.Value ) );
-            int? contactId = ppContact.PersonId;
-            
-            if ( contactId.HasValue && contactId.Value > 0 )
-            {
-                personService.AddContactToBusiness( business.Id, contactId.Value );
-                rockContext.SaveChanges();
-            }
-
-            mdAddContact.Hide();
-            hfModalOpen.Value = string.Empty;
-            BindContactListGrid( business );
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gContactList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gContactList_GridRebind( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            var business = new PersonService( rockContext ).Get( int.Parse( hfBusinessId.Value ) );
-            BindContactListGrid( business );
         }
 
         /// <summary>
@@ -676,8 +545,6 @@ namespace RockWeb.Blocks.Finance
                     ShowEditDetails( business );
                 }
             }
-
-            BindContactListGrid( business );
         }
 
         /// <summary>
@@ -891,28 +758,7 @@ namespace RockWeb.Blocks.Finance
         {
             pnlEditDetails.Visible = editable;
             pnlViewDetails.Visible = !editable;
-            gContactList.Visible = !editable;
-            pnlContactList.Visible = !editable;
             this.HideSecondaryBlocks( editable );
-        }
-
-        /// <summary>
-        /// Binds the contact list grid.
-        /// </summary>
-        /// <param name="business">The business.</param>
-        private void BindContactListGrid( Person business )
-        {
-            var personList = new GroupMemberService( new RockContext() ).Queryable()
-                .Where( g =>
-                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
-                    g.PersonId == business.Id )
-                .SelectMany( g => g.Group.Members
-                    .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( m => m.Person ) )
-                .ToList();
-
-            gContactList.DataSource = personList;
-            gContactList.DataBind();
         }
 
         /// <summary>
