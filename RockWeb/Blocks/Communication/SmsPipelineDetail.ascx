@@ -62,7 +62,7 @@
 
                 <div class="panel-labels">
                     <a href="#" class="btn btn-xs btn-square btn-default" onclick="$('.js-test-results').slideToggle( function () { $('#hfIsTestingDrawerOpen').val( $('#divTestingDrawer').css('display') !== 'none' ) } )">
-                        <i class='fa fa-tools'></i>
+                        <i class='fa fa-cog'></i>
                     </a>
                 </div>
             </div>
