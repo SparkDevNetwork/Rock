@@ -312,15 +312,21 @@ namespace RockWeb.Blocks.Security
 
                 lChange.Text = string.Format( LABEL_MARKUP, authAuditLog.ChangeType, changeLabelStr );
 
-                string accessStr = GetAccessString( authAuditLog.PreAllowOrDeny );
-                accessStr += RIGHT_ARROW_INDICATOR;
-                accessStr += GetAccessString( authAuditLog.PostAllowOrDeny );
-                lAccess.Text = accessStr;
+                if ( authAuditLog.PreAllowOrDeny != authAuditLog.PostAllowOrDeny )
+                {
+                    string accessStr = GetAccessString( authAuditLog.PreAllowOrDeny );
+                    accessStr += RIGHT_ARROW_INDICATOR;
+                    accessStr += GetAccessString( authAuditLog.PostAllowOrDeny );
+                    lAccess.Text = accessStr;
+                }
 
-                var orderStr = authAuditLog.PreOrder.HasValue ? authAuditLog.PreOrder.ToString() : string.Empty;
-                orderStr += RIGHT_ARROW_INDICATOR;
-                orderStr += authAuditLog.PostOrder.HasValue ? authAuditLog.PostOrder.ToString() : string.Empty;
-                lOrder.Text = orderStr;
+                if ( authAuditLog.PreOrder != authAuditLog.PostOrder )
+                {
+                    var orderStr = authAuditLog.PreOrder.HasValue ? authAuditLog.PreOrder.ToString() : string.Empty;
+                    orderStr += RIGHT_ARROW_INDICATOR;
+                    orderStr += authAuditLog.PostOrder.HasValue ? authAuditLog.PostOrder.ToString() : string.Empty;
+                    lOrder.Text = orderStr;
+                }
             }
         }
 
