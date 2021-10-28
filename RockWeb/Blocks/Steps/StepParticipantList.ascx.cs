@@ -621,11 +621,13 @@ namespace RockWeb.Blocks.Steps
             gSteps.ExportSource = ExcelExportSource.DataSource;
             gSteps.ShowConfirmDeleteDialog = true;
 
-            // Allow Edit if authorized to edit the block or the Step Type.
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+            /*
+             Block Authorization is removed once the parent authority for Step is Set as Step Type.
+            */
+            bool canEdit = _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
 
-            gSteps.Actions.ShowAdd = canEditBlock;
-            gSteps.IsDeleteEnabled = canEditBlock;
+            gSteps.Actions.ShowAdd = canEdit;
+            gSteps.IsDeleteEnabled = canEdit;
 
             if ( _stepType != null )
             {
