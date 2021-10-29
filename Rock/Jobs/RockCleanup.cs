@@ -258,9 +258,11 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update account protection profile", () => UpdatePersonAccountProtectionProfile() );
 
-            RunCleanupTask( "remove expired registration sessions", () => RemoveExpiredRegistrationSessions() );
+            RunCleanupTask( "expired registration session", () => RemoveExpiredRegistrationSessions() );
 
-            RunCleanupTask( "remove expired saved accounts", () => RemoveExpiredSavedAccounts( dataMap ) );
+            RunCleanupTask( "expired sms action", () => RemoveExpiredSmsActions() );
+
+            RunCleanupTask( "expired saved account", () => RemoveExpiredSavedAccounts( dataMap ) );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
@@ -315,6 +317,7 @@ namespace Rock.Jobs
 
                 rowsUpdated += rockContext.BulkUpdate( groupMembersToUpdate, p => new GroupMember { CommunicationPreference = CommunicationType.RecipientPreference } );
             }
+
             return rowsUpdated;
         }
 
@@ -343,6 +346,33 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Removes the expired SMS actions.
+        /// </summary>
+        /// <returns></returns>
+        private int RemoveExpiredSmsActions()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+                var smsActionService = new SmsActionService( rockContext );
+
+                // Sets current date as the date value of the 'RockDateTime.Now'
+                // so that an expire date of 2021-10-31 will be deleted when it is past the current date (e.g. 2021-11-01).
+                var currentDate = RockDateTime.Now.Date;
+
+                var actionsToDeleteQuery = smsActionService
+                    .Queryable()
+                    .Where( sas => sas.ExpireDate < currentDate );
+
+                var count = actionsToDeleteQuery.Count();
+                smsActionService.DeleteRange( actionsToDeleteQuery );
+
+                rockContext.SaveChanges();
+                return count;
+            }
+        }
+
+        /// <summary>
         /// Updates the person account protection profile.
         /// </summary>
         /// <returns></returns>
@@ -358,6 +388,7 @@ namespace Rock.Jobs
 
             return rowsUpdated;
         }
+
         /// <summary>
         /// Get a cleanup job result as a formatted string
         /// </summary>

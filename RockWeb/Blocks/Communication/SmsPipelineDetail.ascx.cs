@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Communication
             if ( !Page.IsPostBack )
             {
                 BindComponents();
+                InitializeAdvancedSettingsToggle();
 
                 int? smsPipelineId = GetSmsPipelineId();
                 SmsPipeline smsPipeline = null;
@@ -90,10 +91,8 @@ namespace RockWeb.Blocks.Communication
 
                 BindActions( smsPipeline );
 
-                //
                 // This must come after BindComponents so that the SmsActionContainer will
                 // have been initialized already and any new attributes created.
-                //
                 var attributes = AttributeCache.AllForEntityType<SmsAction>()
                     .Where( a => a.Key == "Order" || a.Key == "Active" );
                 avcAttributes.ExcludedAttributes = attributes.ToArray();
@@ -270,6 +269,24 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Initializes the advanced settings toggle.
+        /// </summary>
+        private void InitializeAdvancedSettingsToggle()
+        {
+            var doShow = hfShowAdvancedSettings.Value.ToLower() == "true";
+            divAdvanced.Visible = doShow;
+            lbToggleAdvancedSettings.Text = doShow ? "Hide Advanced Settings" : "Advanced Settings";
+        }
+
+        private void ShowAdvancedSettings()
+        {
+            var doShow = hfShowAdvancedSettings.Value.ToLower() != "true";
+            hfShowAdvancedSettings.Value = doShow ? "true" : string.Empty;
+
+            InitializeAdvancedSettingsToggle();
+        }
+
+        /// <summary>
         /// Processes the drag events.
         /// </summary>
         private void ProcessDragEvents()
@@ -300,9 +317,7 @@ namespace RockWeb.Blocks.Communication
                     actions[i].Order = i;
                 }
 
-                //
                 // Check for the event to add a new action.
-                //
                 if ( segments[0] == "add-action" )
                 {
                     var actionComponent = SmsActionContainer.GetComponent( segments[1] );
@@ -324,13 +339,10 @@ namespace RockWeb.Blocks.Communication
 
                     smsActionService.Add( action );
                 }
-                //
-                // Check for the event to drag-reorder actions.
-                //
                 else if ( segments[0] == "reorder-action" )
                 {
+                    // Check for the event to drag-reorder actions.
                     smsActionService.Reorder( actions, segments[1].AsInteger(), segments[2].AsInteger() );
-
                 }
 
                 rockContext.SaveChanges();
@@ -371,6 +383,7 @@ namespace RockWeb.Blocks.Communication
                 tbName.Text = action.Name;
                 cbActive.Checked = action.IsActive;
                 cbContinue.Checked = action.ContinueAfterProcessing;
+                dpExpireDate.SelectedDate = action.ExpireDate;
 
                 avcFilters.AddEditControls( action );
                 avcAttributes.AddEditControls( action );
@@ -394,6 +407,7 @@ namespace RockWeb.Blocks.Communication
             action.Name = tbName.Text;
             action.IsActive = cbActive.Checked;
             action.ContinueAfterProcessing = cbContinue.Checked;
+            action.ExpireDate = dpExpireDate.SelectedDate;
 
             avcFilters.GetEditValues( action );
             avcAttributes.GetEditValues( action );
@@ -546,6 +560,16 @@ namespace RockWeb.Blocks.Communication
 
             hfEditActionId.Value = string.Empty;
             BindActions();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbToggleAdvancedSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbToggleAdvancedSettings_Click( object sender, EventArgs e )
+        {
+            ShowAdvancedSettings();
         }
 
         #endregion
