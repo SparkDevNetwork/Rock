@@ -200,6 +200,7 @@
 						<div class="pull-left">
 							{% comment %}
 								2020-10-09 - Gerry Miller Added to display and attendance indicator.
+								2021-10-28 - Gerry Miller Added to display waiver status
 							{% endcomment %}
 							{% assign thisGroupType = Group | Property:'GroupTypeId' | AsString %}
 							{% assign lastAttended = member.Person | LastAttendedGroupOfType:thisGroupType %}
@@ -218,12 +219,29 @@
     							<i style='color:#cc0605;' class="fas fa-check-square" data-toggle="tooltip" data-placement="top" title="No {{ Group.GroupType.Name }} attendance in the past 30 days." ></i>
     						{% endcapture %}
 							{% endif %}
+
+							{% if Group.GroupTypeId == 39 or Group.GroupTypeId == 40 %}
+    							{% document where:'EntityId == {{member.Person.Id}} && DocumentTypeId == 2 && Expiration <= "2021-10-28"' count:'true' %}
+        							{% assign DocumentCount = count %}
+    							{% enddocument %}
+    							{% if DocumentCount == 0 %}
+        							{% capture WaiverIcon %}
+            							<a href="https://my.lcbcchurch.com/WorkflowEntry/1389?WaiverPerson={{ member.Person.PrimaryAlias.Guid }}"><i style='color:orange;' class="fas fa-file-plus"></i></a>
+        							{% endcapture %}
+    							{% else %}
+        							{% capture WaiverIcon %}
+            							<i style='color:green;' class="fas fa-file-check"></i>
+        							{% endcapture %}
+    							{% endif %}
+							{% endif %}
+
 							{% comment %}
-								End 2020-10-09 - Gerry Miller Added to display and attendance indicator.
+								2020-10-09 - Gerry Miller Added to display and attendance indicator.
+								2021-10-28 - Gerry Miller Added to display waiver indicator
 							{% endcomment %}
 
 							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name }}){{- attendanceCheck -}}</small>
+							<small>({{ member.GroupRole.Name }}){{- attendanceCheck -}}{{ WaiverIcon }}</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
 							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
