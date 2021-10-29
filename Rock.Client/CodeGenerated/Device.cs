@@ -59,6 +59,9 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
+        public Rock.Client.Enums.KioskType KioskType { get; set; }
+
+        /// <summary />
         public int? LocationId { get; set; }
 
         /// <summary>
@@ -119,6 +122,7 @@ namespace Rock.Client
             this.HasCamera = source.HasCamera;
             this.IPAddress = source.IPAddress;
             this.IsActive = source.IsActive;
+            this.KioskType = source.KioskType;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;

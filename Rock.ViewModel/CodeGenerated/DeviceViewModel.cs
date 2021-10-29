@@ -80,6 +80,14 @@ namespace Rock.ViewModel
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets the KioskType.
+        /// </summary>
+        /// <value>
+        /// The KioskType.
+        /// </value>
+        public int KioskType { get; set; }
+
+        /// <summary>
         /// Gets or sets the LocationId.
         /// </summary>
         /// <value>

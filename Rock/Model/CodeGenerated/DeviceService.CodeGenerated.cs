@@ -112,6 +112,7 @@ namespace Rock.Model
                 HasCamera = model.HasCamera,
                 IPAddress = model.IPAddress,
                 IsActive = model.IsActive,
+                KioskType = ( int ) model.KioskType,
                 LocationId = model.LocationId,
                 Name = model.Name,
                 PrinterDeviceId = model.PrinterDeviceId,
@@ -194,6 +195,7 @@ namespace Rock.Model
             target.HasCamera = source.HasCamera;
             target.IPAddress = source.IPAddress;
             target.IsActive = source.IsActive;
+            target.KioskType = source.KioskType;
             target.LocationId = source.LocationId;
             target.Name = source.Name;
             target.PrinterDeviceId = source.PrinterDeviceId;
