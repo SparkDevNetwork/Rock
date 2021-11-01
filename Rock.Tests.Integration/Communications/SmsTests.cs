@@ -174,7 +174,7 @@ namespace Rock.Tests.Integration.Communications.Sms
             // Get Known SMS Recipient.
             var smsSenderValue = DefinedValueCache.Get( TestGuids.Communications.TestSmsSenderGuid );
 
-            message.ToNumber = smsSenderValue.Description;
+            message.ToNumber = smsSenderValue.Value;
 
             message.FromNumber = fromNumber;
 
