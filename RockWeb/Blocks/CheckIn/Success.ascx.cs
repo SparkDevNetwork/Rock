@@ -263,6 +263,15 @@ namespace RockWeb.Blocks.CheckIn
                 lMessages.Text = sbMessages.ToString();
             }
 
+            if ( lbAnother.Visible )
+            {
+                var bodyTag = this.Page.Master.FindControl( "body" ) as HtmlGenericControl;
+                if ( bodyTag != null )
+                {
+                    bodyTag.AddCssClass( "checkin-anotherperson" );
+                }
+            }
+
             GenerateQRCodes();
 
             RenderCheckinResults( checkinResultList, mergeFields, successLavaTemplateDisplayMode );

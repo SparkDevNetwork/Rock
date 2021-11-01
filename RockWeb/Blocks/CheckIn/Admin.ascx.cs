@@ -966,10 +966,5 @@ tryGeoLocation();
         }
 
         #endregion
-
-        protected void ddlCameras_SelectedIndexChanged( object sender, EventArgs e )
-        {
-
-        }
     }
 }

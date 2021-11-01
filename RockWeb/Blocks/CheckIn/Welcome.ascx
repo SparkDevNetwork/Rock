@@ -472,8 +472,6 @@
                         <div class="start-button-container js-start-button-container">
                             <asp:Literal ID="lStartButtonHtml" runat="server" />
                         </div>
-
-
                     </div>
                 </div>
             </div>
