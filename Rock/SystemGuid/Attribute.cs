@@ -676,6 +676,15 @@ namespace Rock.SystemGuid
 
         #endregion Workflow Action Attributes
 
+        #region Workflow Entry Block Attributes
+
+        /// <summary>
+        /// The Workflow Entry Block Attribute that disables passing the WorkflowTypeID.
+        /// </summary>
+        public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWTYPEID = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB";
+
+        #endregion Workflow Entry Block Attributes
+
         /// <summary>
         /// The defined value logging domains to log
         /// </summary>
@@ -761,6 +770,7 @@ namespace Rock.SystemGuid
         /// The attendance type label
         /// </summary>
         public const string ATTENDANCE_TYPE_LABEL = "6916359C-C168-4DBA-A893-365526C9F4C4";
+
         /// <summary>
         /// The configured attendance types
         /// </summary>

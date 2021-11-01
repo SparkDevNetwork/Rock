@@ -79,16 +79,26 @@ namespace RockWeb.Blocks.WorkFlow
         )]
 
     [BooleanField(
+        "Disable Passing WorkflowTypeId",
+        Description = "If set, it prevents the use of a Workflow Type Id (WorkflowTypeId=) from being passed in and only accepts a WorkflowTypeGuid.  " +
+        "To use this block setting on your external site, you will need to create a new page and add the Workflow Entry block to it.  " +
+        "You may also add a new route so that URLs are in the pattern www.yourorganization.com/{PageRoute}/{WorkflowTypeGuid}.  " +
+        "If your workflow uses a form, you will also need to adjust email content to ensure that your URLs are correct.",
+        Key = AttributeKey.DisablePassingWorkflowTypeId,
+        DefaultBooleanValue = false,
+        Order = 5 )]
+
+    [BooleanField(
         "Log Interaction when Form is Viewed",
         Key = AttributeKey.LogInteractionOnView,
         DefaultBooleanValue = false,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField(
         "Log Interaction when Form is Completed",
         Key = AttributeKey.LogInteractionOnCompletion,
         DefaultBooleanValue = false,
-        Order = 6 )]
+        Order = 7 )]
 
     #endregion Block Attributes
 
@@ -106,6 +116,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string BlockTitleTemplate = "BlockTitleTemplate";
             public const string BlockTitleIconCssClass = "BlockTitleIconCssClass";
             public const string DisablePassingWorkflowId = "DisablePassingWorkflowId";
+            public const string DisablePassingWorkflowTypeId = "DisablePassingWorkflowTypeId";
             public const string LogInteractionOnView = "LogInteractionOnView";
             public const string LogInteractionOnCompletion = "LogInteractionOnCompletion";
         }
@@ -123,8 +134,8 @@ namespace RockWeb.Blocks.WorkFlow
             public const string WorkflowGuid = "WorkflowGuid";
             public const string WorkflowName = "WorkflowName";
             public const string ActionId = "ActionId";
-
             public const string WorkflowTypeId = "WorkflowTypeId";
+            public const string WorkflowTypeGuid = "WorkflowTypeGuid";
             public const string Command = "Command";
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
@@ -135,7 +146,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private static class ViewStateKey
         {
-            public const string WorkflowTypeId = "WorkflowTypeId";
+            public const string WorkflowTypeGuid = "WorkflowTypeGuid";
             public const string ActionTypeId = "ActionTypeId";
             public const string WorkflowId = "WorkflowId";
             public const string WorkflowTypeDeterminedByBlockAttribute = "WorkflowTypeDeterminedByBlockAttribute";
@@ -159,15 +170,15 @@ namespace RockWeb.Blocks.WorkFlow
         #region Properties
 
         /// <summary>
-        /// Gets or sets the workflow type identifier.
+        /// Gets or sets the workflow type guid.
         /// </summary>
         /// <value>
-        /// The workflow type identifier.
+        /// The workflow type guid.
         /// </value>
-        public int? WorkflowTypeId
+        public string WorkflowTypeGuid
         {
-            get { return ViewState[ViewStateKey.WorkflowTypeId] as int?; }
-            set { ViewState[ViewStateKey.WorkflowTypeId] = value; }
+            get { return ViewState[ViewStateKey.WorkflowTypeGuid] as string; }
+            set { ViewState[ViewStateKey.WorkflowTypeGuid] = value; }
         }
 
         /// <summary>
@@ -359,10 +370,16 @@ namespace RockWeb.Blocks.WorkFlow
                 ncWorkflowNotes.NoteOptions.SetNoteTypes( noteTypes );
             }
 
+            // Get the block setting to disable passing WorkflowTypeID set.
+            bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
+
             if ( workflowType == null )
             {
                 ShowNotes( false );
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly." );
+
+                // Include an additional message if the block setting to 'disable passing WorkflowTypeId' is true.
+                string additionalMessage = allowPassingWorkflowTypeId ? string.Empty : "  Please verify the block settings for this Workflow Entry.";
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly." + additionalMessage );
                 return false;
             }
 
@@ -630,40 +647,62 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private WorkflowTypeCache GetWorkflowType()
         {
-            // Get the workflow type id (initial page request)
-            if ( !WorkflowTypeId.HasValue )
+            // Get the block setting to disable passing WorkflowTypeID.
+            bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
+            WorkflowTypeCache _workflowType = null;
+
+            // If the ViewState value for WorkflowTypeGuid is empty, try to set it.
+            if ( WorkflowTypeGuid.AsGuid().IsEmpty() )
             {
-                // Get workflow type set by attribute value
-                Guid workflowTypeguid = GetAttributeValue( AttributeKey.WorkflowType ).AsGuid();
+                // Get workflow type set by attribute value of this block.
+                Guid workflowTypeGuidFromAttribute = GetAttributeValue( AttributeKey.WorkflowType ).AsGuid();
 
-                WorkflowTypeCache _workflowType = null;
-                if ( !workflowTypeguid.IsEmpty() )
+                if ( !workflowTypeGuidFromAttribute.IsEmpty() )
                 {
-                    _workflowType = WorkflowTypeCache.Get( workflowTypeguid );
-                }
-
-                // If an attribute value was not provided, check for query/route value
-                if ( _workflowType != null )
-                {
-                    WorkflowTypeId = _workflowType.Id;
+                    _workflowType = WorkflowTypeCache.Get( workflowTypeGuidFromAttribute );
                     WorkflowTypeDeterminedByBlockAttribute = true;
                 }
-                else
+
+                if ( _workflowType.IsNull() )
                 {
-                    WorkflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+                    // If an attribute value was not provided, check for query parameter or route value.
                     WorkflowTypeDeterminedByBlockAttribute = false;
+                    if ( allowPassingWorkflowTypeId )
+                    {
+                        // Try to find a WorkflowTypeID from either the query or route, via the PageParameter.
+                        int? workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+                        if ( workflowTypeId.HasValue )
+                        {
+                            _workflowType = WorkflowTypeCache.Get( workflowTypeId.Value );
+                        }
+                    }
+
+                    if ( _workflowType.IsNull() )
+                    {
+                        // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
+                        var workflowTypeGuidFromURL = PageParameter( PageParameterKey.WorkflowTypeGuid ).AsGuid();
+                        WorkflowTypeGuid = PageParameter( PageParameterKey.WorkflowTypeGuid );
+                        if ( !workflowTypeGuidFromURL.IsEmpty() )
+                        {
+                            _workflowType = WorkflowTypeCache.Get( workflowTypeGuidFromURL );
+                        }
+                    }
                 }
             }
 
-            // Get the workflow type
-            if ( WorkflowTypeId.HasValue )
+            // If the ViewState WorkflowTypeGuid is still empty
+            if ( WorkflowTypeGuid.IsNull() )
             {
-                return WorkflowTypeCache.Get( WorkflowTypeId.Value );
+                // If the workflowType is not set, set the ViewState WorkflowTypeGuid to empty, otherwise set it to the Guid of the workflowType.
+                WorkflowTypeGuid = _workflowType.IsNull() ? string.Empty : _workflowType.Guid.ToString();
             }
             else
             {
-                return null;
+                // Get the WorkflowType via the ViewState WorkflowTypeGuid.
+                _workflowType = WorkflowTypeCache.Get( WorkflowTypeGuid );
             }
+
+            return _workflowType;
         }
 
         /// <summary>
@@ -1384,12 +1423,12 @@ namespace RockWeb.Blocks.WorkFlow
                     Special Logic if AutoFill CurrentPerson is enabled, but the Person Name fields were changed:
 
                     If the existing person (the one that used to auto-fill the fields) changed the FirstName or LastName PersonEditor,
-                    then then assume they mean they mean to create (or match) a new person. Note that if this happens, this matched or new person won't
+                    then assume they mean they mean to create (or match) a new person. Note that if this happens, this matched or new person won't
                     be added to Ted Decker's family. PersonEntry isn't smart enough to figure that out and isn't intended to be a family editor. Here are a few examples
                     to clarify what this means:
 
                     Example 1: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Noah Decker, then we'll see if we have enough to make a match
-                    to the existing Noah Decker. Howver, a match to the existing Noah Decker would need to match Noah's email and/or cell phone too, so it could easily create a new Noah Decker.
+                    to the existing Noah Decker. However, a match to the existing Noah Decker would need to match Noah's email and/or cell phone too, so it could easily create a new Noah Decker.
 
                     Example 2: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to NewBaby Decker, we'll have to do the same thing as Example 1
                     even though Ted might be thinking he is adding his new baby to the family. So NewBaby Decker will probably be a new person in a new family.
