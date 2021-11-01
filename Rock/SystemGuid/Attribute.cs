@@ -469,6 +469,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Communication Medium Attributes
+
+        /// <summary>
+        /// The communication medium Email CSS Inlining Enabled Attribute Guid
+        /// </summary>
+        public const string COMMUNICATION_MEDIUM_EMAIL_CSS_INLINING_ENABLED = "1D5E06A4-79BD-4554-AB63-DD6F1F815594";
+
+        #endregion
+
         #region DefinedType Attributes
 
         /// <summary>
