@@ -517,12 +517,16 @@ namespace Rock.Jobs
                 rockContext.BulkUpdate( familiesWithoutNames, g => new Group { Name = "Family" } );
             }
 
-            // Get list of all Families.
-            // We'll recalculate all their GroupSalutions to make sure they are correct.
-            // This will take care of incorrect ones which could have happened as a result being
-            // externally edited (or ones that are incorrect due to a bug ).
+            // Calculate any missing GroupSalutation values on Family Groups.
+
+            /* 11-01-2021  MDP
+              GroupSalutationCleanup only fills in any missing GroupSalutions. Families added by Rock will get the GroupSalutations calculated
+              on Save, but Families (Groups) that might have been added thru a plugin or direct SQL might have missing GroupSalutations.
+              Not that cleanup job doesn't attempt to fix any salutations that might be incorrect.
+              This is mostly because it can take a long time (300,000 families would take around 30 minutes every time that RockCleanup is done).
+            */
             var familyIdList = new GroupService( rockContext )
-                .Queryable().Where( a => a.GroupTypeId == familyGroupTypeId )
+                .Queryable().Where( a => a.GroupTypeId == familyGroupTypeId && ( string.IsNullOrEmpty( a.GroupSalutation ) || string.IsNullOrEmpty( a.GroupSalutationFull ) ) )
                 .Select( a => a.Id ).ToList();
 
             var recordsUpdated = 0;
@@ -534,7 +538,6 @@ namespace Rock.Jobs
                     if ( GroupService.UpdateGroupSalutations( familyId, rockContextUpdate ) )
                     {
                         recordsUpdated++;
-                        rockContext.SaveChanges();
                     }
                 }
             }
