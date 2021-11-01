@@ -11,26 +11,26 @@
 
         <div class="panel panel-block">
 
-            <div class="panel-heading ">
+            <div class="panel-heading">
                 <div class="pull-left">
                     <h1 class="panel-title"><i class="fa fa-play-circle"></i>
                         <asp:Literal ID="lActionTitle" runat="server" /></h1>
                 </div>
 
-                <div class="pull-right">
-                    <asp:LinkButton ID="lbMediaFiles" runat="server" OnClick="lbMediaFiles_Click" Visible="false">
-                        <span class="label label-default"><i class="fas fa-file-text"></i> Media Files</span>
+                <div class="panel-labels">
+                    <asp:LinkButton ID="lbMediaFiles" runat="server" CssClass="btn btn-default btn-xs" OnClick="lbMediaFiles_Click" Visible="false">
+                        <i class="fas fa-file-text"></i> Media Files
                     </asp:LinkButton>
 
-                    <asp:LinkButton ID="lbMediaAnalytics" runat="server" OnClick="lbMediaAnalytics_Click" Visible="false">
-                        <span class="label label-default"><i class="fas fa-line-chart"></i> Media Analytics</span>
+                    <asp:LinkButton ID="lbMediaAnalytics" runat="server" CssClass="btn btn-default btn-xs" OnClick="lbMediaAnalytics_Click" Visible="false">
+                        <i class="fas fa-line-chart"></i> Media Analytics
                     </asp:LinkButton>
                 </div>
             </div>
 
             <asp:Panel ID="pnlViewAnalytics" runat="server" CssClass="panel-body">
-                <div class="row">
-                    <div class="col-md-6">
+                <div class="row d-flex flex-wrap">
+                    <div class="col-xs-12 col-md-6 align-self-center">
                         <asp:Panel ID="pnlChart" runat="server">
                             <div class="video-container">
                                 <div class="chart-container">
@@ -43,8 +43,10 @@
                         </asp:Panel>
                     </div>
 
-                    <div class="col-md-6">
-                        <asp:Panel ID="pnlAllTimeDetails" runat="server" CssClass="tab-pane">
+                    <div class="col-xs-12 col-md-6">
+                        <asp:Panel ID="pnlAllTimeDetails" runat="server">
+                            <hr class="d-block d-md-none mb-3" />
+                            <strong>Rock Media Analytics</strong>
                             <asp:Literal ID="lAllTimeContent" runat="server" />
                         </asp:Panel>
                     </div>
@@ -53,23 +55,19 @@
                 <Rock:NotificationBox ID="nbNoData" runat="server" NotificationBoxType="Info" Visible="false" Text="No statistical data is available yet." CssClass="margin-t-md" />
 
                 <asp:Panel ID="pnlAnalytics" runat="server">
-                    <hr />
+                    <hr class="my-3" />
                     <asp:HiddenField ID="hfAllTimeVideoData" runat="server" Value="" />
                     <asp:HiddenField ID="hfLast12MonthsVideoData" runat="server" Value="" />
                     <asp:HiddenField ID="hfLast90DaysVideoData" runat="server" Value="" />
 
-                    <div class="row">
-                        <div class="col-md-10">
-                            <strong>
-                                <asp:Label ID="lblChartTitle" runat="server">Plays Per Day</asp:Label>
-                            </strong>
-                        </div>
-                        <div class="col-md-2">
-                            <Rock:RockDropDownList ID="rddlTileFrame" runat="server" AutoPostBack="true" OnSelectedIndexChanged="rddlTileFrame_SelectedIndexChanged">
-                                <asp:ListItem Text="Last 90 Days" Value="90Days" Selected="True" />
-                                <asp:ListItem Text="Last 12 Months" Value="12Months" />
-                            </Rock:RockDropDownList>
-                        </div>
+                    <div class="d-flex flex-wrap align-items-center my-3">
+                        <strong>
+                            <asp:Label ID="lblChartTitle" runat="server">Plays Per Day</asp:Label>
+                        </strong>
+                        <Rock:RockDropDownList ID="rddlTileFrame" CssClass="ml-auto input-width-lg" runat="server" AutoPostBack="true" OnSelectedIndexChanged="rddlTileFrame_SelectedIndexChanged">
+                            <asp:ListItem Text="Last 90 Days" Value="90Days" Selected="True" />
+                            <asp:ListItem Text="Last 12 Months" Value="12Months" />
+                        </Rock:RockDropDownList>
                     </div>
 
                     <asp:Panel ID="pnlLast90DaysDetails" runat="server" Visible="true">
@@ -81,12 +79,13 @@
                     </asp:Panel>
                 </asp:Panel>
 
-                <p class="margin-t-lg">
-                    <strong>Individual Plays</strong>
-                </p>
+
 
                 <asp:Panel ID="pnlIndividualPlays" runat="server">
-                    <hr />
+                    <hr class="my-3" />
+                    <p class="my-3 py-1">
+                        <strong>Individual Plays</strong>
+                    </p>
                     <div class="text-center">
                         <button class="js-load-more btn btn-primary mt-2">Load More</button>
                     </div>

@@ -785,7 +785,7 @@ namespace RockWeb.Blocks.Cms
                 .Select( i => $"[[ dataitem label:'{i.Count} plays {periodTitle} {i.Date.ToShortDateString()}' value:'{i.Count}']][[ enddataitem ]]" )
                 .ToList();
 
-            return $"<br />{{[trendchart]}}" + string.Join( "", playCount ) + "{[endtrendchart]}";
+            return $"{{[trendchart]}}" + string.Join( "", playCount ) + "{[endtrendchart]}";
         }
 
         /// <summary>
