@@ -622,6 +622,8 @@
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
+    <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
     <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
     <Compile Include="Plugin\HotFixes\142_AddMobileGroupFinderBlock.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
