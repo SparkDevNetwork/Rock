@@ -2289,7 +2289,7 @@ END" );
         }
 
         /// <summary>
-        /// Adds the entity attribute if missing. This method will not do anything if the attribute already exists.
+        /// Adds the entity attribute if missing. Use this method if an attribute needs to be inserted but not overwritten in case one already exists with different values (e.g. a default value) and you do not wish to undo this change. This method will not do anything if the attribute already exists.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
