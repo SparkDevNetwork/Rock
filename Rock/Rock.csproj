@@ -622,6 +622,7 @@
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
     <Compile Include="Plugin\HotFixes\142_AddMobileGroupFinderBlock.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
