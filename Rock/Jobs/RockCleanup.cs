@@ -1865,7 +1865,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                             {
                                 hasDifferentValues = namelessPersonEditedAttributeValues
                                     .Any( av => !existingPersonEditedAttributeValues
-                                        .Any( eav => eav.Key == av.Key && eav.Value.Value.Equals( av.Value.Value, StringComparison.OrdinalIgnoreCase ) ) );
+                                        .Any( eav => eav.Key == av.Key && ( eav.Value?.Value ?? "" ).Equals( ( av.Value?.Value ?? "" ), StringComparison.OrdinalIgnoreCase ) ) );
                             }
 
                             if ( !hasMissingAttributes && !hasDifferentValues )
