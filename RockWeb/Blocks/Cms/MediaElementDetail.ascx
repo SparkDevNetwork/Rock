@@ -9,32 +9,105 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+        <div class="panel panel-block">
 
             <div class="panel-heading ">
-                <h1 class="panel-title"><i class="fa fa-play-circle"></i>
-                    <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <div class="pull-left">
+                    <h1 class="panel-title"><i class="fa fa-play-circle"></i>
+                        <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                </div>
+
+                <div class="pull-right">
+                    <asp:LinkButton ID="lbMediaFiles" runat="server" OnClick="lbMediaFiles_Click" Visible="false">
+                        <span class="label label-default"><i class="fas fa-file-text"></i> Media Files</span>
+                    </asp:LinkButton>
+
+                    <asp:LinkButton ID="lbMediaAnalytics" runat="server" OnClick="lbMediaAnalytics_Click" Visible="false">
+                        <span class="label label-default"><i class="fas fa-line-chart"></i> Media Analytics</span>
+                    </asp:LinkButton>
+                </div>
             </div>
 
-            <div class="panel-body">
+            <asp:Panel ID="pnlViewAnalytics" runat="server" CssClass="panel-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:Panel ID="pnlChart" runat="server">
+                            <div class="video-container">
+                                <div class="chart-container">
+                                    <canvas id="cChart" runat="server" class="chart-canvas"></canvas>
+                                </div>
+
+                                <asp:Panel ID="pnlMediaPlayer" runat="server" />
+                                <Rock:MediaPlayer Visible="false" ID="mpMedia" runat="server" ClickToPlay="false" PlayerControls="" AutoResumeInDays="0" CombinePlayStatisticsInDays="0" TrackSession="false" />
+                            </div>
+                        </asp:Panel>
+                    </div>
+
+                    <div class="col-md-6">
+                        <asp:Panel ID="pnlAllTimeDetails" runat="server" CssClass="tab-pane">
+                            <asp:Literal ID="lAllTimeContent" runat="server" />
+                        </asp:Panel>
+                    </div>
+                </div>
+
+                <Rock:NotificationBox ID="nbNoData" runat="server" NotificationBoxType="Info" Visible="false" Text="No statistical data is available yet." CssClass="margin-t-md" />
+
+                <asp:Panel ID="pnlAnalytics" runat="server">
+                    <hr />
+                    <asp:HiddenField ID="hfAllTimeVideoData" runat="server" Value="" />
+                    <asp:HiddenField ID="hfLast12MonthsVideoData" runat="server" Value="" />
+                    <asp:HiddenField ID="hfLast90DaysVideoData" runat="server" Value="" />
+
+                    <div class="row">
+                        <div class="col-md-10">
+                            <strong>
+                                <asp:Label ID="lblChartTitle" runat="server">Plays Per Day</asp:Label>
+                            </strong>
+                        </div>
+                        <div class="col-md-2">
+                            <Rock:RockDropDownList ID="rddlTileFrame" runat="server" AutoPostBack="true" OnSelectedIndexChanged="rddlTileFrame_SelectedIndexChanged">
+                                <asp:ListItem Text="Last 90 Days" Value="90Days" Selected="True" />
+                                <asp:ListItem Text="Last 12 Months" Value="12Months" />
+                            </Rock:RockDropDownList>
+                        </div>
+                    </div>
+
+                    <asp:Panel ID="pnlLast90DaysDetails" runat="server" Visible="true">
+                        <asp:Literal ID="lLast90DaysContent" runat="server" />
+                    </asp:Panel>
+
+                    <asp:Panel ID="pnlLast12MonthsDetails" runat="server" Visible="false">
+                        <asp:Literal ID="lLast12MonthsContent" runat="server" />
+                    </asp:Panel>
+                </asp:Panel>
+
+                <p class="margin-t-lg">
+                    <strong>Individual Plays</strong>
+                </p>
+
+                <asp:Panel ID="pnlIndividualPlays" runat="server">
+                    <hr />
+                    <div class="text-center">
+                        <button class="js-load-more btn btn-primary mt-2">Load More</button>
+                    </div>
+                </asp:Panel>
+
+            </asp:Panel>
+
+            <asp:Panel ID="pnlViewFile" runat="server" CssClass="panel-body" Visible="false">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <asp:HiddenField ID="hfId" runat="server" />
                 <asp:HiddenField ID="hfMediaFolderId" runat="server" />
                 <asp:HiddenField ID="hfDisallowManualEntry" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
-                <div id="pnlViewDetails" runat="server">
-                    <div class="row">
-                        <div class="col-sm-6 col-md-7 col-lg-8">
-                            <asp:Literal ID="lDescription" runat="server" />
-                        </div>
-                        <div class="col-sm-6 col-md-5 col-lg-4">
-                            <asp:Literal ID="lMetricData" runat="server" />
-                        </div>
+                <div id="pnlViewFileDetails" runat="server">
+                    <div>
+                        <asp:Literal ID="lDescription" runat="server" />
                     </div>
 
                     <div class="form-group">
-                        <label  class="control-label">Media Files</label>
+                        <label class="control-label">Media Files</label>
                         <Rock:Grid ID="gViewMediaFiles" runat="server" EmptyDataText="No Media Files" DisplayType="Light" ShowHeader="true" >
                             <Columns>
                                 <Rock:RockBoundField DataField="Quality" HeaderText="Quality" />
@@ -106,8 +179,15 @@
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
                 </div>
-            </div>
-        </asp:Panel>
+            </asp:Panel>
+
+            <asp:Panel ID="pnlNoFolder" runat="server" CssClass="panel-body" Visible="false">
+                <Rock:NotificationBox ID="nbNoMediaFolder" runat="server" NotificationBoxType="Danger">
+                    Cannot create a new media element because no media folder was specified.
+                </Rock:NotificationBox>
+            </asp:Panel>
+        </div>
+
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
         <Rock:ModalDialog ID="mdMediaFile" runat="server" Title="File Info" OnSaveClick="mdMediaFile_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="MediaFile">
             <Content>
