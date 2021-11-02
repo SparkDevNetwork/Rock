@@ -537,6 +537,11 @@ namespace Rock.SystemGuid
         public const string WORKFLOW = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowActivity"/>
+        /// </summary>
+        public const string WORKFLOW_ACTIVITY = "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowType"/>
         /// </summary>
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";

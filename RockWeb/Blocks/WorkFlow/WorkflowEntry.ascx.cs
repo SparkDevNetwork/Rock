@@ -760,14 +760,18 @@ namespace RockWeb.Blocks.WorkFlow
                 var attribute = AttributeCache.Get( formAttribute.AttributeId );
                 var value = attribute.DefaultValue;
 
-                if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
+                // Get the identifiers for both Workflow and WorkflowActivity EntityTypes.
+                var workflowEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW.AsGuid() );
+                var workflowActivityEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW_ACTIVITY.AsGuid() );
+
+                if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null && attribute.EntityTypeId == workflowEntityTypeId )
                 {
-                    // if the key is in the workflow's attributes get the value from that
+                    // If the key is in the Workflow's Attributes, get the value from that.
                     value = _workflow.AttributeValues[attribute.Key].Value;
                 }
-                else if ( _activity != null && _activity.AttributeValues.ContainsKey( attribute.Key ) && _activity.AttributeValues[attribute.Key] != null )
+                else if ( _activity != null && _activity.AttributeValues.ContainsKey( attribute.Key ) && _activity.AttributeValues[attribute.Key] != null && attribute.EntityTypeId == workflowActivityEntityTypeId )
                 {
-                    // if the key is in the activity's attributes get the value from that
+                    // If the key is in the Workflow Activity's Attributes, get the value from that.
                     value = _activity.AttributeValues[attribute.Key].Value;
                 }
 
