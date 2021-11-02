@@ -60,11 +60,13 @@
                     <asp:HiddenField ID="hfLast12MonthsVideoData" runat="server" Value="" />
                     <asp:HiddenField ID="hfLast90DaysVideoData" runat="server" Value="" />
 
-                    <div class="d-flex flex-wrap align-items-center my-3">
-                        <strong>
-                            <asp:Label ID="lblChartTitle" runat="server">Plays Per Day</asp:Label>
-                        </strong>
-                        <Rock:RockDropDownList ID="rddlTileFrame" CssClass="ml-auto input-width-lg" runat="server" AutoPostBack="true" OnSelectedIndexChanged="rddlTileFrame_SelectedIndexChanged">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between my-3">
+                        <span class="mb-2 mb-sm-0">
+                            <strong>
+                                <asp:Label ID="lblChartTitle" runat="server">Plays Per Day</asp:Label>
+                            </strong>
+                        </span>
+                        <Rock:RockDropDownList ID="rddlTileFrame" CssClass="input-width-lg" runat="server" AutoPostBack="true" OnSelectedIndexChanged="rddlTileFrame_SelectedIndexChanged">
                             <asp:ListItem Text="Last 90 Days" Value="90Days" Selected="True" />
                             <asp:ListItem Text="Last 12 Months" Value="12Months" />
                         </Rock:RockDropDownList>
@@ -86,9 +88,8 @@
                     <p class="my-3 py-1">
                         <strong>Individual Plays</strong>
                     </p>
-                    <div class="text-center">
-                        <button class="js-load-more btn btn-primary mt-2">Load More</button>
-                    </div>
+
+                    <button class="js-load-more btn btn-primary mt-2">Load More</button>
                 </asp:Panel>
 
             </asp:Panel>
