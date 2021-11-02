@@ -103,18 +103,24 @@ namespace RockWeb.Blocks.Communication
         private const string _communicationItemLavaTemplate = @"
 <div class='communication-item pt-3 d-flex flex-row cursor-default'>
     <div class='d-none d-sm-block pt-1 pl-2 pr-3'>
-        <div class='avatar avatar-lg avatar-icon'>
         {% case Communication.CommunicationType %}
             {% when 'Email' %}
-                <i class='fa fa-envelope'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-email'>
+                    <i class='fa fa-envelope'></i>
+                </div>
             {% when 'SMS' %}
-                <i class='fa fa-comment-alt'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-sms'>
+                    <i class='fa fa-comment-alt'></i>
+                </div>
             {% when 'PushNotification' %}
-                <i class='fa fa-mobile-alt'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-push'>
+                    <i class='fa fa-mobile-alt'></i>
+                </div>
             {% else %}
-                <i class='fa fa-question-circle'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-othercomm'>
+                    <i class='fa fa-question-circle'></i>
+                </div>
         {% endcase %}
-        </div>
     </div>
     <div class='flex-grow-1'>
         <div class='d-flex flex-row align-items-top align-items-sm-center pb-3'>
