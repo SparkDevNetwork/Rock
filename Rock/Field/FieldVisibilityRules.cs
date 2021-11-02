@@ -99,7 +99,13 @@ namespace Rock.Field
                         fieldVisibilityRule.ComparedToValue = fieldVisibilityRule.ComparedToValue?.ToLower();
                     }
 
-                    filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToString( false ) );
+                    var comparisonTypeValue = fieldVisibilityRule.ComparisonType.ConvertToString( false );
+                    if ( comparisonTypeValue != null )
+                    {
+                        // only add the comparisonTypeValue if it is specified, just like the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
+                        filterValues.Add( comparisonTypeValue );
+                    }                    
+
                     filterValues.Add( fieldVisibilityRule.ComparedToValue );
                     Expression entityCondition;
 

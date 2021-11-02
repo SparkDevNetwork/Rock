@@ -351,7 +351,12 @@ namespace RockWeb.Blocks.Steps
             gStepType.ExportFilename = _program.Name;
 
             // Initialize Grid: Secured actions
-            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT ) || _program.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+            /*
+             SK - 10/28/2021
+
+             Block Authorization is removed after Step Type parent authority is set to Step Program.
+             */
+            bool canAddEditDelete = _program.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
             bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             gStepType.Actions.ShowAdd = canAddEditDelete;

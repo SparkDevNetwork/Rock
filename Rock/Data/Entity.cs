@@ -528,6 +528,7 @@ namespace Rock.Data
                 {
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
 
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
@@ -562,6 +563,7 @@ namespace Rock.Data
                 {
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
 
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }

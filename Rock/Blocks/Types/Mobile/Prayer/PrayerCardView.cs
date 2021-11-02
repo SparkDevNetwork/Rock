@@ -294,7 +294,6 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         {
             using ( var rockContext = new RockContext() )
             {
-
                 //
                 // Indicate that we are a dynamic content providing block.
                 //
@@ -376,6 +375,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             IEnumerable<PrayerRequest> prayerRequests = prayerRequestService.GetPrayerRequests( new PrayerRequestQueryOptions
             {
                 IncludeNonPublic = !PublicOnly,
+                IncludeEmptyCampus = true,
                 Campuses = campusGuid.HasValue ? new List<Guid> { campusGuid.Value } : null,
                 Categories = new List<Guid> { CategoryGuid ?? Guid.Empty }
             } );

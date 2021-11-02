@@ -118,7 +118,6 @@ input[type="text"],
 textarea,
 .form-control {
   background-clip: padding-box;
-  -webkit-box-shadow: none;
   box-shadow: none;
 }
 
@@ -237,6 +236,11 @@ textarea,
     background-color: @btn-danger-bg;
     border-color: @btn-danger-border;
   }
+}
+
+// Override Filter Toggle Font Weight
+.filter-dropdown-toggle {
+  font-weight: @font-weight-base;
 }
 
 .label.btn-label {
@@ -1850,6 +1854,21 @@ body.navbar-side-open {
 .debug-timings {
   // width: ~"calc(100% - 140px)" !important;
   margin-left: 115px;
+}
+
+.avatar-email {
+  color: #0079b0 !important;
+  background-color: #d9f2fe !important;
+}
+
+.avatar-sms {
+  color: darken(#ee7725, 10%) !important;
+  background-color: mix(lighten(#ee7725, 4%), #fff, 15%) !important;
+}
+
+.avatar-push {
+  color: darken(@brand-success, 10%) !important;
+  background-color: mix(lighten(@brand-success, 4%), #fff, 15%) !important;
 }
 
 /* #endregion */

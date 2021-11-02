@@ -503,6 +503,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum KioskType
+    {
+        IPad = 0x0,
+        WindowsApp = 0x1,
+        Browser = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum MatchFlag
     {
         None = 0x0,

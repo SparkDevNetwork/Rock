@@ -177,7 +177,7 @@ namespace Rock.Model
             // Filter by campus if we have been given any.
             if ( options.Campuses != null && options.Campuses.Any() )
             {
-                if ( options.IncludeNullableCampus )
+                if ( options.IncludeEmptyCampus )
                 {
                     qryPrayerRequests = qryPrayerRequests
                         .Include( r => r.Campus )

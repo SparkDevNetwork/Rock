@@ -35,56 +35,88 @@ namespace Rock.Lava.Filters
             return result.ToStringSafe();
         }
 
+        /* [2021-07-31] DL
+         * 
+         * Lava Date filters may return DateTime, DateTimeOffset, or string values according to their purpose.
+         * Where possible, a filter should return a DateTime value specified in UTC, or a DateTimeOffset.
+         * Local DateTime values may give unexpected results if the Rock timezone setting is different from the server timezone.
+         * Where a date string is accepted as an input parameter, the Rock timezone is implied unless a timezone is specified.
+         */
+
         /// <summary>
         /// Formats a date using a .NET date format string
         /// </summary>
         /// <param name="input"></param>
         /// <param name="format"></param>
         /// <returns></returns>
-        public static string Date( object input, string format )
+        public static string Date( object input, string format = null )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            if ( input.ToString() == "Now" )
+            string output;
+
+            // If input is "now", use the current Rock date/time as the input value.
+            if ( input.ToString().ToLower() == "now" )
             {
-                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
+                // To correctly include the Rock configured timezone, we need to use a DateTimeOffset.
+                // The DateTime object can only represent local server time or UTC time.
+                input = LavaDateTime.NowOffset;
             }
 
+            // Use the General Short Date/Long Time format by default.
             if ( string.IsNullOrWhiteSpace( format ) )
             {
-                return input.ToString();
+                format = "G";
             }
-
-            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
-            if ( format.Length == 1 )
+            // Consider special 'Standard Date' and 'Standard Time' formats.
+            else if ( format == "sd" )
+            {
+                format = "d";
+            }
+            else if ( format == "st" )
+            {
+                format = "t";
+            }
+            // If the format string is a single character, add a space to produce a valid custom format string.
+            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
+            else if ( format.Length == 1 )
             {
                 format = " " + format;
             }
 
-            var inputDateTime = input.ToString().AsDateTime();
-
-            // Check for invalid date
-            if ( !inputDateTime.HasValue )
+            if ( input is DateTimeOffset inputDateTimeOffset )
             {
-                return input.ToString().Trim();
+                // Preserve the value of the specified offset and return the formatted datetime value.
+                output = inputDateTimeOffset.ToString( format ).Trim();
             }
-
-            // Consider special 'Standard Date' format
-            if ( format == "sd" )
+            else
             {
-                return inputDateTime.Value.ToShortDateString();
-            }
+                // Convert the input to a valid Rock DateTimeOffset if possible.
+                DateTimeOffset? inputDateTime;
 
-            // Consider special 'Standard Time' format
-            if ( format == "st" )
-            {
-                return inputDateTime.Value.ToShortTimeString();
-            }
+                if ( input is DateTime dt )
+                {
+                    inputDateTime = LavaDateTime.ConvertToRockOffset( dt );
+                }
+                else
+                {
+                    inputDateTime = LavaDateTime.ParseToOffset( input.ToString(), null );
+                }
 
-            return inputDateTime.Value.ToString( format ).Trim();
+                if ( !inputDateTime.HasValue )
+                {
+                    // Not a valid date, so return the input unformatted.
+                    output = input.ToString().Trim();
+                }
+                else
+                {
+                    output = LavaDateTime.ToString( inputDateTime.Value, format ).Trim();
+                }
+            }
+            return output;
         }
 
         /// <summary>

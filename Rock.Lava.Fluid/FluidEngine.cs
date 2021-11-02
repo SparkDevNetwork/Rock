@@ -83,30 +83,7 @@ namespace Rock.Lava.Fluid
         /// </summary>
         public override void OnSetConfiguration( LavaEngineConfigurationOptions options )
         {
-            var templateOptions = GetTemplateOptions();
-
-            // Re-register the basic Liquid filters implemented by Fluid using CamelCase rather than the default snakecase.
-            HideSnakeCaseFilters( templateOptions );
-            RegisterBaseFilters( templateOptions );
-
-            // Set the default strategy for locating object properties to our custom implementation that adds
-            // the ability to resolve properties of nested anonymous Types using Reflection.
-            templateOptions.MemberAccessStrategy = new LavaObjectMemberAccessStrategy();
-
-            // Register value converters for Types that are not natively handled by Fluid.
-            RegisterValueConverters();
-
-            // Register all Types that implement LavaDataDictionary interfaces as safe to render.
-            RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionary ) );
-            RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionarySource ) );
-
-            // Set the file provider to resolve included file references.
-            if ( options.FileSystem == null )
-            {
-                options.FileSystem = new LavaNullFileSystem();
-            }
-
-            templateOptions.FileProvider = new FluidFileSystem( options.FileSystem );
+            ApplyEngineConfigurationOptions( options );
         }
 
         /// <summary>
@@ -144,7 +121,8 @@ namespace Rock.Lava.Fluid
             {
                 if ( value is DateTime dt )
                 {
-                    return new LavaDateTimeValue( new DateTimeOffset( dt ) );
+                    // Assume that the DateTime is expressed in Rock time.
+                    return new LavaDateTimeValue( LavaDateTime.NewDateTimeOffset( dt.Ticks ) );
                 }
                 else if ( value is DateTimeOffset dto )
                 {
@@ -202,19 +180,50 @@ namespace Rock.Lava.Fluid
             } );
         }
 
+        /// <summary>
+        /// Apply Lava Engine configuration options to the Fluid engine.  
+        /// </summary>
+        /// <param name="options"></param>
+        private void ApplyEngineConfigurationOptions( LavaEngineConfigurationOptions options )
+        {
+            var templateOptions = GetTemplateOptions();
+
+            // Set Fluid to use the local server culture for formatting dates, times and currencies.
+            templateOptions.CultureInfo = options.Culture ?? CultureInfo.CurrentCulture;
+
+            // Set Fluid to use the Rock Organization timezone.
+            templateOptions.TimeZone = options.TimeZone ?? RockDateTime.OrgTimeZoneInfo;
+
+            TemplateOptions.Default.TimeZone = templateOptions.TimeZone;
+
+            if ( options.FileSystem == null )
+            {
+                options.FileSystem = new LavaNullFileSystem();
+            }
+
+            templateOptions.FileProvider = new FluidFileSystem( options.FileSystem );
+        }
+
         private TemplateOptions GetTemplateOptions()
         {
             if ( _templateOptions == null )
             {
                 _templateOptions = new TemplateOptions();
 
-                // Set Fluid to use the local server culture for formatting dates, times and currencies.
-                _templateOptions.CultureInfo = CultureInfo.CurrentCulture;
+                // Re-register the basic Liquid filters implemented by Fluid using CamelCase rather than the default snakecase.
+                HideSnakeCaseFilters( _templateOptions );
+                RegisterBaseFilters( _templateOptions );
 
-                // Set Fluid to use the Rock Organization timezone.
-                _templateOptions.TimeZone = RockDateTime.OrgTimeZoneInfo;
+                // Set the default strategy for locating object properties to our custom implementation that adds
+                // the ability to resolve properties of nested anonymous Types using Reflection.
+                _templateOptions.MemberAccessStrategy = new LavaObjectMemberAccessStrategy();
 
-                TemplateOptions.Default.TimeZone = RockDateTime.OrgTimeZoneInfo;
+                // Register value converters for Types that are not natively handled by Fluid.
+                RegisterValueConverters();
+
+                // Register all Types that implement LavaDataDictionary interfaces as safe to render.
+                RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionary ) );
+                RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionarySource ) );
             }
 
             return _templateOptions;
@@ -434,9 +443,24 @@ namespace Rock.Lava.Fluid
                     }
                 }
 
-                var result = lavaFilterMethod.Invoke( null, lavaFilterMethodArguments );
+                try
+                {
+                    var result = lavaFilterMethod.Invoke( null, lavaFilterMethodArguments );
 
-                return FluidValue.Create( result, templateOptions );
+                    return FluidValue.Create( result, templateOptions );
+                }
+                catch ( TargetInvocationException ex )
+                {
+                    // Any exceptions thrown from the filter method are wrapped in a TargetInvocationException by the .NET framework.
+                    if ( ex.InnerException is LavaInterruptException )
+                    {
+                        // This exception is intentionally thrown by a component to abort the render process, so ensure it propagates to the caller.
+                        throw ex.InnerException;
+                    }
+
+                    // Rethrow the actual exception thrown by the filter, where possible.
+                    throw ex.InnerException ?? ex;
+                }
             }
 
             templateOptions.Filters.AddFilter( filterName, fluidFilterFunction );
@@ -583,14 +607,17 @@ namespace Rock.Lava.Fluid
             var sb = new StringBuilder();
             var writer = new StringWriter( sb );
 
-            try
+            // Set the render options for culture and timezone if they are specified.
+            if ( parameters.Culture != null )
             {
-                template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
+                templateContext.FluidContext.Options.CultureInfo = parameters.Culture;
             }
-            catch ( LavaInterruptException )
+            if ( parameters.TimeZone != null )
             {
-                // Ignore this exception, it is thrown by custom Lava components to terminate the render process prematurely.
+                templateContext.FluidContext.Options.TimeZone = parameters.TimeZone;
             }
+
+            template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
 
             writer.Flush();
 

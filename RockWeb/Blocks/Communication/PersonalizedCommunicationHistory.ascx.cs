@@ -103,18 +103,24 @@ namespace RockWeb.Blocks.Communication
         private const string _communicationItemLavaTemplate = @"
 <div class='communication-item pt-3 d-flex flex-row cursor-default'>
     <div class='d-none d-sm-block pt-1 pl-2 pr-3'>
-        <div class='avatar avatar-lg avatar-icon'>
         {% case Communication.CommunicationType %}
             {% when 'Email' %}
-                <i class='fa fa-envelope'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-email'>
+                    <i class='fa fa-envelope'></i>
+                </div>
             {% when 'SMS' %}
-                <i class='fa fa-comment-alt'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-sms'>
+                    <i class='fa fa-comment-alt'></i>
+                </div>
             {% when 'PushNotification' %}
-                <i class='fa fa-mobile-alt'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-push'>
+                    <i class='fa fa-mobile-alt'></i>
+                </div>
             {% else %}
-                <i class='fa fa-question-circle'></i>
+                <div class='avatar avatar-lg avatar-icon avatar-othercomm'>
+                    <i class='fa fa-question-circle'></i>
+                </div>
         {% endcase %}
-        </div>
     </div>
     <div class='flex-grow-1'>
         <div class='d-flex flex-row align-items-top align-items-sm-center pb-3'>
@@ -246,13 +252,18 @@ namespace RockWeb.Blocks.Communication
                                             <div class='push-msg'>
                                                 <div class='push-msg-header'>
                                                     <div class='push-msg-icon'></div>
-                                                    <div class='push-msg-app-name'>{{ Communication.ApplicationName }}</div>
+                                                    <div class='push-msg-app-name'>{{ Communication.Detail.ApplicationName }}</div>
                                                 </div>
                                                 <div class='push-msg-body'>
                                                     <span class='push-msg-title'>{{ Communication.Title }}</span>
                                                     <span class='push-summary'>{{ Communication.Detail.Message }}</span>
                                                 </div>
                                             </div>
+                                            {% for attachmentUrl in Communication.Detail.Attachments %}
+                                                <div class='sms-image'>
+                                                    <img src='{{ attachmentUrl }}' alt='' class='w-100'>
+                                                </div>
+                                            {% endfor %}
                                         </div>
                                     </div>
                                 {% else %}
@@ -298,11 +309,11 @@ namespace RockWeb.Blocks.Communication
                                                 <td>
                                                     {{ item.Name }}
                                                     {% if item.Name == 'Click' %}
-                                                        <a class='help' href='#' tabindex='-1' data-toggle='tooltip' data-placement='auto' data-container='body' data-html='true' title='' data-original-title='Clicked {{ item.Details }}'><i class='fa fa-info-circle'></i></a>
+                                                        <a class='help' href='#' tabindex='-1' data-toggle='tooltip' data-placement='auto' data-container='body' data-html='true' title='' data-original-title='{{ item.Details }}'><i class='fa fa-info-circle'></i></a>
                                                     {% endif %}
                                                 </td>
                                                 {% if Communication.CommunicationType != 'PushNotification' %}
-                                                <td>{{ item.DeviceDescription }}</td>
+                                                <td class='wrap-contents'>{{ item.Details }}</td>
                                                 {% endif %}
                                                 <td class='w-1 text-nowrap'>{{ item.DateTime | Date }}</td>
                                             </tr>
@@ -317,12 +328,6 @@ namespace RockWeb.Blocks.Communication
 
         {% else %}
             <div id='details-{{ Communication.RowId }}' class='communication-details' style='display: none;'>
-                <div class='row pb-5'>
-                    <div class='col-md-12 mb-4'><div class='border-top border-panel'></div></div>
-                    <div class='col-md-12 text-center'>
-                        <span class='d-block text-sm text-muted mb-1'>Loading...</span>
-                    </div>
-                </div>
             </div>
         {% endif %}
     </div>
@@ -356,7 +361,14 @@ namespace RockWeb.Blocks.Communication
 
             gCommunication.RowDataBound += gCommunication_RowDataBound;
             gCommunication.GridRebind += gCommunication_GridRebind;
-            gCommunication.RowCreated += gCommunication_RowCreated;
+
+            // Reconfigure the full-page progress meter to prevent it from appearing immediately when loading the detail panel.
+            var updateProgress = ( UpdateProgress ) this.Page.Master.FindControl( "updateProgress" );
+
+            if ( updateProgress != null )
+            {
+                updateProgress.DisplayAfter = 5000;
+            }
         }
 
         /// <summary>
@@ -519,31 +531,6 @@ namespace RockWeb.Blocks.Communication
         #region Communication List Events
 
         /// <summary>
-        /// Handles the RowCreated event of the gCommunication control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        private void gCommunication_RowCreated( object sender, GridViewRowEventArgs e )
-        {
-            var communication = e.Row.DataItem as CommunicationListItem;
-
-            if ( communication == null )
-            {
-                return;
-            }
-
-            var lDetail = e.Row.FindControl( "lCommunicationDetailRow" ) as Literal;
-
-            if ( lDetail == null )
-            {
-                return;
-            }
-
-            lDetail.ClientIDMode = ClientIDMode.Static;
-            lDetail.ID = GetCommunicationDetailControlId( communication.Id );
-        }
-
-        /// <summary>
         /// Handles the RowDataBound event of the gCommunication control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -556,18 +543,13 @@ namespace RockWeb.Blocks.Communication
             }
 
             var communication = e.Row.DataItem as CommunicationListItem;
-
             if ( communication == null )
             {
                 return;
             }
 
-            var ctlName = GetCommunicationDetailControlId( communication.Id );
-
             var up = e.Row.FindControl( "upCommunicationItem" );
-
-            var lLava = e.Row.FindControl( ctlName ) as Literal;
-
+            var lLava = e.Row.FindControl( "lCommunicationDetailRow" ) as Literal;
             if ( lLava == null )
             {
                 return;
@@ -591,16 +573,6 @@ namespace RockWeb.Blocks.Communication
         #endregion
 
         #region Internal Methods
-
-        /// <summary>
-        /// Get a unique identifier for a communication list item detail panel control.
-        /// </summary>
-        /// <param name="communicationId"></param>
-        /// <returns></returns>
-        private string GetCommunicationDetailControlId( int communicationId )
-        {
-            return $"{ gCommunication.ID }-Detail-{ communicationId }";
-        }
 
         /// <summary>
         /// Initialize the Person whose Communication history will be displayed.
@@ -770,16 +742,20 @@ namespace RockWeb.Blocks.Communication
                 ddlTemplate.SelectedValue.AsIntegerOrNull(),
                 isBulk );
 
-            // Paginate the query
-            var totalCount = qryCommunications.Count();
+            // Get the total count of available Recipient records.
+            // Note that some Communications may have multiple recipient records for the same person.
+            var qryCommunicationRecipients = GetCommunicationListItemsQuery( rockContext, qryCommunications, personId );
 
+            var totalCount = qryCommunicationRecipients.Count();
+
+            // Paginate the query.
             qryCommunications = qryCommunications
                 .Skip( gCommunication.PageIndex * gCommunication.PageSize )
                 .Take( gCommunication.PageSize );
 
-            var items = GetCommunicationListItems( rockContext,
-                qryCommunications,
-                personId );
+            qryCommunicationRecipients = GetCommunicationListItemsQuery( rockContext, qryCommunications, personId );
+
+            var items = GetCommunicationListItems( rockContext, qryCommunicationRecipients );
 
             // Bind the grid data.
             InitializeDataBindingServices();
@@ -802,22 +778,29 @@ namespace RockWeb.Blocks.Communication
             _gridBinaryFileService = _gridBinaryFileService ?? new BinaryFileService( rockContext );
         }
 
-        /// <summary>
-        /// Gets a page of list items for the Communications List.
-        /// </summary>
-        /// <param name="rockContext"></param>
-        /// <param name="qryCommunications"></param>
-        /// <param name="personId"></param>
-        /// <returns></returns>
-        private List<CommunicationListItem> GetCommunicationListItems( RockContext rockContext, IQueryable<Rock.Model.Communication> qryCommunications, int personId )
+        private IQueryable<CommunicationRecipientListQueryItem> GetCommunicationListItemsQuery( RockContext rockContext, IQueryable<Rock.Model.Communication> qryCommunications, int personId )
         {
             // Get the set of Recipient records for the context person.
-            var recipientsQuery = new CommunicationRecipientService( rockContext ).Queryable()
+            var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable()
                 .Where( x => x.PersonAlias.PersonId == personId );
 
             // Get the set of list entries for the specified page.
             var queryListItems = qryCommunications
-                .Join( recipientsQuery, c => c.Id, r => r.CommunicationId, ( c, r ) => new { Communication = c, Recipient = r } )
+                .Join( qryRecipients, c => c.Id, r => r.CommunicationId, ( c, r ) => new CommunicationRecipientListQueryItem { Communication = c, Recipient = r } );
+
+
+            return queryListItems;
+        }
+
+        /// <summary>
+        /// Gets a page of list items for the Communications List.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <param name="qryCommunicationRecipients"></param>
+        /// <returns></returns>
+        private List<CommunicationListItem> GetCommunicationListItems( RockContext rockContext, IQueryable<CommunicationRecipientListQueryItem> qryCommunicationRecipients )
+        {
+            var qryListItems = qryCommunicationRecipients
                 .OrderByDescending( c => c.Communication.CreatedDateTime )
                 .AsNoTracking()
                 .Select( ciGroup =>
@@ -828,11 +811,11 @@ namespace RockWeb.Blocks.Communication
                         CommunicationType = ciGroup.Communication.CommunicationType,
                         CommunicationStatus = ciGroup.Communication.Status,
                         Title = ciGroup.Communication.CommunicationType == CommunicationType.Email ? ciGroup.Communication.Subject
-                            : ciGroup.Communication.CommunicationType == CommunicationType.SMS ? ciGroup.Communication.SMSMessage.Substring( 0, 100 )
+                            : ciGroup.Communication.CommunicationType == CommunicationType.SMS ? ciGroup.Communication.Name
                             : ciGroup.Communication.CommunicationType == CommunicationType.PushNotification ? ciGroup.Communication.PushTitle
                             : ciGroup.Communication.Name,
                         CreatedDateTime = ciGroup.Communication.CreatedDateTime,
-                        SendDateTime = ciGroup.Communication.SendDateTime ?? ciGroup.Communication.FutureSendDateTime,
+                        SendDateTime = ciGroup.Communication.SendDateTime ?? ciGroup.Communication.FutureSendDateTime ?? ciGroup.Communication.CreatedDateTime,
                         Sender = ciGroup.Communication.SenderPersonAlias != null ? ciGroup.Communication.SenderPersonAlias.Person : null,
                         RecipientStatus = ciGroup.Recipient.Status,
                         RecipientStatusNote = ciGroup.Recipient.StatusNote,
@@ -841,7 +824,7 @@ namespace RockWeb.Blocks.Communication
                         InternalCommunicationMediumId = ciGroup.Recipient.MediumEntityTypeId
                     } );
 
-            var items = queryListItems.ToList();
+            var items = qryListItems.ToList();
 
             GetAdditionalCommunicationListItemInfo( items );
 
@@ -858,15 +841,15 @@ namespace RockWeb.Blocks.Communication
         private CommunicationListItemDetail GetCommunicationListItemDetail( RockContext rockContext, int communicationId, int personId )
         {
             var communicationService = new CommunicationService( rockContext );
-            var communicationQuery = communicationService.Queryable().Where( x => x.Id == communicationId );
+            var qryCommunications = communicationService.Queryable().Where( x => x.Id == communicationId );
 
             // Get the set of Recipient records for the context person.
-            var recipientsQuery = new CommunicationRecipientService( rockContext ).Queryable()
+            var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable()
                 .Where( x => x.PersonAlias.PersonId == personId );
 
             // Get the details of the specific message sent to this Communication Recipient.
-            var query = communicationQuery
-                .Join( recipientsQuery, c => c.Id, r => r.CommunicationId, ( c, r ) => new { Communication = c, Recipient = r } )
+            var qryItems = qryCommunications
+                .Join( qryRecipients, c => c.Id, r => r.CommunicationId, ( c, r ) => new { Communication = c, Recipient = r } )
                 .Select( ciGroup =>
                         new CommunicationListItemDetail
                         {
@@ -881,6 +864,7 @@ namespace RockWeb.Blocks.Communication
                             InternalSenderSmsName = ciGroup.Communication.SMSFromDefinedValue.Description,
                             InternalSenderSmsNumber = ciGroup.Communication.SMSFromDefinedValue.Value,
                             InternalPushImageFileId = ciGroup.Communication.PushImageBinaryFileId,
+                            InternalPushData = ciGroup.Communication.PushData,
                             InternalAttachments = ciGroup.Communication.Attachments.Select( x => new CommunicationAttachmentInfo { BinaryFileId = x.BinaryFileId, CommunicationType = x.CommunicationType } ).ToList(),
                             RecipientName = ciGroup.Recipient.PersonAlias.Person.NickName + " " + ciGroup.Recipient.PersonAlias.Person.LastName,
                             RecipientAddress = ciGroup.Recipient.PersonAlias.Person.Email,
@@ -898,7 +882,7 @@ namespace RockWeb.Blocks.Communication
                         }
                     );
 
-            var item = query.FirstOrDefault();
+            var item = qryItems.FirstOrDefault();
 
             // Retrieve the interactions linked to this Communication Recipient record.
             // We need to be careful to take advantage of available indexes here, because this has the potential to be an expensive operation
@@ -917,9 +901,14 @@ namespace RockWeb.Blocks.Communication
                     DateTime = x.InteractionDateTime,
                     Name = x.Operation,
                     DeviceDescription = x.InteractionSession.DeviceType.DeviceTypeData,
-                    Details = x.InteractionData
+                    InternalInteraction = x
                 } )
                 .ToList();
+
+            foreach ( var interaction in interactions )
+            {
+                interaction.Details = CommunicationRecipient.GetInteractionDetails( interaction.InternalInteraction );
+            }
 
             item.Activities = interactions;
             item.PersonalInteractionCount = interactions.Count;
@@ -1176,7 +1165,7 @@ namespace RockWeb.Blocks.Communication
                 info.Detail.CommunicationSegments = segments;
             }
 
-            // Set additional details for each type of Communication.
+            // Set Sender details.
             if ( info.CommunicationType == CommunicationType.SMS )
             {
                 info.Detail.SenderName = info.Detail.InternalSenderSmsName;
@@ -1187,6 +1176,21 @@ namespace RockWeb.Blocks.Communication
                 info.Detail.SenderAddress = info.Detail.InternalSenderEmail;
             }
 
+            // Set the Application Name for a Push Notification.
+            // This is the name of the Rock site that generated the notification.
+            if ( info.CommunicationType == CommunicationType.PushNotification )
+            {
+                if ( !string.IsNullOrWhiteSpace( info.Detail.InternalPushData ) )
+                {
+                    var pushData = info.Detail.InternalPushData.FromJsonOrNull<Rock.Communication.PushData>();
+                    if ( pushData != null )
+                    {
+                        var site = SiteCache.Get( pushData.MobileApplicationId.GetValueOrDefault() );
+                        info.Detail.ApplicationName = site?.Name;
+                    }
+                }
+            }
+
             // Create URLs for attachments to be accessed via a web service call, to ensure that the content is accessible regardless of where it is stored.
             if ( info.CommunicationType == CommunicationType.PushNotification )
             {
@@ -1194,8 +1198,10 @@ namespace RockWeb.Blocks.Communication
                 if ( info.Detail.InternalPushImageFileId != null )
                 {
                     var file = _gridBinaryFileService.Get( info.Detail.InternalPushImageFileId.ToIntSafe( 0 ) );
-
-                    info.Detail.Attachments = new List<string>() { $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?id={ file.Id }" };
+                    if ( file != null )
+                    {
+                        info.Detail.Attachments = new List<string>() { $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?id={ file.Id }" };
+                    }
                 }
             }
             else
@@ -1208,8 +1214,10 @@ namespace RockWeb.Blocks.Communication
                     foreach ( var attachment in info.Detail.InternalAttachments.Where( x => x.CommunicationType == info.CommunicationType ) )
                     {
                         var file = _gridBinaryFileService.Get( attachment.BinaryFileId );
-
-                        info.Detail.Attachments.Add( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?id={ attachment.BinaryFileId }" );
+                        if ( file != null )
+                        {
+                            info.Detail.Attachments.Add( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?id={ file.Id }" );
+                        }
                     }
                 }
             }
@@ -1247,17 +1255,18 @@ namespace RockWeb.Blocks.Communication
                 var rockContext = new RockContext();
 
                 var communicationService = new CommunicationService( rockContext );
-                var communicationQuery = communicationService.Queryable()
+                var qryCommunication = communicationService.Queryable()
                     .Where( x => x.Id == communicationId );
 
+                var qryCommunicationRecipients = GetCommunicationListItemsQuery( rockContext, qryCommunication, _person.Id );
+
                 // Get the Communication List Item, then load the additional detail for the panel.
-                var communicationItem = GetCommunicationListItems( rockContext, communicationQuery, _person.Id )
+                var communicationItem = GetCommunicationListItems( rockContext, qryCommunicationRecipients )
                     .FirstOrDefault();
 
                 communicationItem.Detail = GetCommunicationListItemDetail( rockContext, communicationId.Value, _person.Id );
 
                 var ctlContainer = FindControlRecursive( gCommunication, args.DetailContainerControlId ) as UpdatePanel;
-                var ctlName = GetCommunicationDetailControlId( communicationId.Value );
 
                 var lr = FindControlRecursive( ctlContainer, "lCommunicationDetailRow" ) as Literal;
                 if ( lr != null )
@@ -1306,6 +1315,15 @@ namespace RockWeb.Blocks.Communication
         #endregion
 
         #region Support Classes
+
+        /// <summary>
+        /// Interim storage for a query result.
+        /// </summary>
+        private class CommunicationRecipientListQueryItem
+        {
+            public Rock.Model.Communication Communication;
+            public Rock.Model.CommunicationRecipient Recipient;
+        }
 
         /// <summary>
         /// Information about a Communication for a specific recipient that is intended for display in a list.
@@ -1500,6 +1518,8 @@ namespace RockWeb.Blocks.Communication
 
             internal int? InternalPushImageFileId { get; set; }
 
+            internal string InternalPushData { get; set; }
+
             internal List<CommunicationAttachmentInfo> InternalAttachments { get; set; }
 
             #endregion
@@ -1551,6 +1571,12 @@ namespace RockWeb.Blocks.Communication
             /// The date and time when the activity was performed.
             /// </summary>
             public DateTime? DateTime { get; set; }
+
+            #region Internal Fields used to store data for further processing.
+
+            internal Interaction InternalInteraction {get;set;}
+
+            #endregion
         }
 
         /// <summary>

@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( lScheduledTransactionTotalAmount != null )
             {
-                lScheduledTransactionTotalAmount.Text = financialScheduledTransaction.TotalAmount.FormatAsCurrency();
+                lScheduledTransactionTotalAmount.Text = financialScheduledTransaction.TotalAmount.FormatAsCurrency( financialScheduledTransaction.ForeignCurrencyCodeValueId );
             }
         }
 

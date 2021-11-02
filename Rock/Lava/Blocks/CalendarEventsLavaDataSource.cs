@@ -538,7 +538,6 @@ namespace Rock.Lava.Blocks
                     var eventOccurrenceDate = new EventOccurrenceDate
                     {
                         EventItemOccurrence = o
-
                     };
 
                     if ( o.Schedule != null )
@@ -561,13 +560,14 @@ namespace Rock.Lava.Blocks
             foreach ( var occurrenceDates in occurrencesWithDates )
             {
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
-
                 var eventItemOccurrenceSummaries = new List<EventOccurrenceSummary>();
 
                 foreach ( var scheduleOccurrence in occurrenceDates.ScheduleOccurrences )
                 {
-                    var datetime = scheduleOccurrence.Period.StartTime.Value;
-                    var occurrenceEndTime = scheduleOccurrence.Period.EndTime;
+                    // Ical.Net returns the occurrence datetime values marked as UTC because it is unaware of the timezone in which we are operating.
+                    // We need to specify that these values pertain to the Rock timezone, without attempting any conversion.
+                    var datetime = DateTime.SpecifyKind( scheduleOccurrence.Period.StartTime.Value, DateTimeKind.Unspecified );
+                    var occurrenceEndTime = DateTime.SpecifyKind( scheduleOccurrence.Period.EndTime.Value, DateTimeKind.Unspecified );
 
                     if ( datetime >= startDate
                          && ( endDate == null || datetime < endDate ) )
@@ -579,8 +579,8 @@ namespace Rock.Lava.Blocks
                             DateTime = datetime,
                             Date = datetime.ToShortDateString(),
                             Time = datetime.ToShortTimeString(),
-                            EndDate = occurrenceEndTime != null ? occurrenceEndTime.Value.ToShortDateString() : null,
-                            EndTime = occurrenceEndTime != null ? occurrenceEndTime.Value.ToShortTimeString() : null,
+                            EndDate = occurrenceEndTime != null ? occurrenceEndTime.ToShortDateString() : null,
+                            EndTime = occurrenceEndTime != null ? occurrenceEndTime.ToShortTimeString() : null,
                             Campus = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
                             Location = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
                             LocationDescription = eventItemOccurrence.Location,

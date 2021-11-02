@@ -570,8 +570,8 @@ namespace Rock
         /// This method takes a predicate that directs it to the TimeSpan
         /// value:
         /// <code>
-        /// var query = new GroupService( rockContext ).Queryable().Where( g => g.Scheudle.WeeklyTimeOfDay.HasValue );
-        /// query = qry.WhereTimePeriodIsOneOf( TimePeriodOfDay.Morning, g => g.Schedule.WeeklyTimeOfDay.Value );
+        /// var query = new GroupService( rockContext ).Queryable().Where( g => g.Schedule.WeeklyTimeOfDay.HasValue );
+        /// query = qry.WhereTimePeriodIs( TimePeriodOfDay.Morning, g => g.Schedule.WeeklyTimeOfDay.Value );
         /// </code>
         /// </example>
         public static IQueryable<T> WhereTimePeriodIs<T>( this IQueryable<T> source, TimePeriodOfDay timePeriod, Expression<Func<T, TimeSpan>> predicate )
@@ -587,15 +587,15 @@ namespace Rock
                     break;
 
                 case TimePeriodOfDay.Afternoon:
-                    // hour >= 12pm && hour < 6pm
+                    // hour >= 12pm && hour < 5pm
                     timePeriodExpression = Expression.And(
                         Expression.GreaterThanOrEqual( hourExpression, Expression.Constant( 12 ) ),
-                        Expression.LessThan( hourExpression, Expression.Constant( 18 ) ) );
+                        Expression.LessThan( hourExpression, Expression.Constant( 17 ) ) );
                     break;
 
                 case TimePeriodOfDay.Evening:
                     // hour >= 6pm
-                    timePeriodExpression = Expression.GreaterThanOrEqual( hourExpression, Expression.Constant( 18 ) );
+                    timePeriodExpression = Expression.GreaterThanOrEqual( hourExpression, Expression.Constant( 17 ) );
                     break;
 
                 default:
@@ -620,7 +620,7 @@ namespace Rock
         /// This method takes a predicate that directs it to the TimeSpan
         /// value:
         /// <code>
-        /// var query = new GroupService( rockContext ).Queryable().Where( g => g.Scheudle.WeeklyTimeOfDay.HasValue );
+        /// var query = new GroupService( rockContext ).Queryable().Where( g => g.Schedule.WeeklyTimeOfDay.HasValue );
         /// query = qry.WhereTimePeriodIsOneOf( new[] { TimePeriodOfDay.Morning }, g => g.Schedule.WeeklyTimeOfDay.Value )
         /// </code>
         /// </example>
@@ -641,15 +641,15 @@ namespace Rock
                         break;
 
                     case TimePeriodOfDay.Afternoon:
-                        // hour >= 12pm && hour < 6pm
+                        // hour >= 12pm && hour < 5pm
                         expr = Expression.And(
                             Expression.GreaterThanOrEqual( hourExpression, Expression.Constant( 12 ) ),
-                            Expression.LessThan( hourExpression, Expression.Constant( 18 ) ) );
+                            Expression.LessThan( hourExpression, Expression.Constant( 17 ) ) );
                         break;
 
                     case TimePeriodOfDay.Evening:
-                        // hour >= 6pm
-                        expr = Expression.GreaterThanOrEqual( hourExpression, Expression.Constant( 18 ) );
+                        // hour >= 5pm
+                        expr = Expression.GreaterThanOrEqual( hourExpression, Expression.Constant( 17 ) );
                         break;
 
                     default:

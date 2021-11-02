@@ -477,7 +477,7 @@ function ReviewFlag(elem) {
 
             IEnumerable<PrayerRequest> qryPrayerRequests = prayerRequestService.GetPrayerRequests( new PrayerRequestQueryOptions
             {
-                IncludeNullableCampus = true,
+                IncludeEmptyCampus = true,
                 IncludeUnapproved = !GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean(),
                 Campuses = campusGuids,
                 Categories = categoryGuid.HasValue ? new List<Guid> { categoryGuid.Value } : null
