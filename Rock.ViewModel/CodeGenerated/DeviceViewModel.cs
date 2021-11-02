@@ -85,7 +85,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The KioskType.
         /// </value>
-        public int KioskType { get; set; }
+        public int? KioskType { get; set; }
 
         /// <summary>
         /// Gets or sets the LocationId.

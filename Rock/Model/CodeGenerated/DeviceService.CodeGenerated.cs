@@ -112,7 +112,7 @@ namespace Rock.Model
                 HasCamera = model.HasCamera,
                 IPAddress = model.IPAddress,
                 IsActive = model.IsActive,
-                KioskType = ( int ) model.KioskType,
+                KioskType = ( int? ) model.KioskType,
                 LocationId = model.LocationId,
                 Name = model.Name,
                 PrinterDeviceId = model.PrinterDeviceId,

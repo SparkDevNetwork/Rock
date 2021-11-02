@@ -59,7 +59,7 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public Rock.Client.Enums.KioskType KioskType { get; set; }
+        public Rock.Client.Enums.KioskType? KioskType { get; set; }
 
         /// <summary />
         public int? LocationId { get; set; }
