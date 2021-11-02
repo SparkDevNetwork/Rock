@@ -328,12 +328,6 @@ namespace RockWeb.Blocks.Communication
 
         {% else %}
             <div id='details-{{ Communication.RowId }}' class='communication-details' style='display: none;'>
-                <div class='row pb-5'>
-                    <div class='col-md-12 mb-4'><div class='border-top border-panel'></div></div>
-                    <div class='col-md-12 text-center'>
-                        <span class='d-block text-sm text-muted mb-1'>Loading...</span>
-                    </div>
-                </div>
             </div>
         {% endif %}
     </div>
