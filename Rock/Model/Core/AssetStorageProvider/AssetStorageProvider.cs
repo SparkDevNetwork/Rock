@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Storage.AssetStorage;
 using Rock.Web.Cache;
@@ -25,8 +25,10 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Represents a local or cloud storage provider in Rock.  
     /// </summary>
+    [RockDomain( "Core" )]
+    [Table( "AssetStorageProvider" )]
     [DataContract]
     public partial class AssetStorageProvider : Model<AssetStorageProvider>, IHasActiveFlag
     {
@@ -82,7 +84,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -93,12 +95,7 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        #endregion Virtual Properties
-
-        #region Constructors
-
-
-        #endregion Constructors
+        #endregion Navigation Properties
 
         #region Public Methods
 

@@ -2070,7 +2070,7 @@
     <Compile Include="Model\Reporting\AnalyticsFactFinancialTransaction\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceFinancialTransaction\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProvider.cs" />
-    <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProviderService.Partial.cs" />
+    <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProviderService.cs" />
     <Compile Include="Model\CodeGenerated\AssetStorageProviderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.CodeGenerated.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionTypeService.cs" />
