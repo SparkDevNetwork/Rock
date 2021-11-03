@@ -585,6 +585,10 @@
     <Compile Include="Blocks\IRockObsidianBlockType.cs" />
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Connection\ConnectionOpportunityList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestDetail.cs" />
+    <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.WebForms.cs" />
