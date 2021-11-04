@@ -1146,10 +1146,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
+            var rockContext = ( RockContext ) dbContext;
+
+            var group = this.Group ?? new GroupService( rockContext ).GetNoTracking( this.GroupId );
             if ( group != null )
             {
-                var groupType = GroupTypeCache.Get( group.GroupTypeId, ( RockContext ) dbContext );
+                var groupType = GroupTypeCache.Get( group.GroupTypeId, rockContext );
                 if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
                 {
                     RoleCache.FlushItem( group.Id );
