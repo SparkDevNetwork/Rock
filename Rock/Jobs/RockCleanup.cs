@@ -211,6 +211,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "workflow log", () => CleanUpWorkflowLogs( dataMap ) );
 
+            RunCleanupTask( "workflow", () => EnsureWorkflowsStatus( dataMap ) );
+
             // Note run Workflow Log Cleanup before Workflow Cleanup to avoid timing out if a Workflow has lots of workflow logs (there is a cascade delete)
             RunCleanupTask( "workflow", () => CleanUpWorkflows( dataMap ) );
 
@@ -905,6 +907,33 @@ namespace Rock.Jobs
             }
 
             return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Mark workflows complete for Workflow Types that have a MaxWorkflowAgeDays where the workflows are older than that number of days.
+        /// </summary>
+        private int EnsureWorkflowsStatus( JobDataMap dataMap )
+        {
+            int rowsUpdated = 0;
+            var workflowContext = new RockContext();
+            workflowContext.Database.CommandTimeout = commandTimeout;
+
+            var workflowService = new WorkflowService( workflowContext );
+
+            var toBeMarkedCompletedWorkflows = workflowService.Queryable()
+                .Where( w => w.WorkflowType.MaxWorkflowAgeDays.HasValue && w.ActivatedDateTime.HasValue && !w.CompletedDateTime.HasValue && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.MaxWorkflowAgeDays ) )
+                .Take( batchAmount )
+                .ToList();
+
+
+            foreach ( var workflow in toBeMarkedCompletedWorkflows )
+            {
+                workflow.MarkComplete();
+                workflowContext.SaveChanges();
+                rowsUpdated++;
+            }
+
+            return rowsUpdated;
         }
 
         /// <summary>
