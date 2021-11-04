@@ -32,7 +32,9 @@ namespace Rock.Migrations
             UpdatePageRoutesToPascalCase();
             WistiaToVimeo();
             AddSecurityChangeAuditListUp();
-            AddCSSInliningEnabledDefault_Up();
+
+            // This is being removed due to the need to rewrite the migration as an update instead of a delete-then-add.
+            // AddCSSInliningEnabledDefault_Up();
             AddDisablePassingWorkflowTypeIdAttribute_Up();
             AddHasCutterAttribute();
             AddJobToRebuildGroupSalutations();
@@ -45,7 +47,9 @@ namespace Rock.Migrations
         public override void Down()
         {
             AddSecurityChangeAuditListDown();
-            AddCSSInliningEnabledDefault_Down();
+
+            // This is being removed due to the need to rewrite the migration as an update instead of only a delete.
+            // AddCSSInliningEnabledDefault_Down();
             AddDisablePassingWorkflowTypeIdAttribute_Down();
         }
 
