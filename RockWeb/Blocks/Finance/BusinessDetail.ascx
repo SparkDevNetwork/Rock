@@ -1,12 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BusinessDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BusinessDetail" %>
 
-<style type="text/css">
-    .taglist {
-        margin-top: 15px;
-    }
-
-</style>
-
 <asp:UpdatePanel ID="upnlBusinesses" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
@@ -123,9 +116,9 @@
 
                     <%-- View Only panel --%>
                     <div id="pnlViewDetails" runat="server">
-                        <h1 class="title name"><asp:Literal ID="lViewPanelBusinessName" runat="server" /></h1>
+                        <h1 class="title name mt-0"><asp:Literal ID="lViewPanelBusinessName" runat="server" /></h1>
                         <Rock:BadgeListControl ID="blStatus" runat="server" />
-                        <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix taglist" />
+                        <Rock:TagList ID="taglPersonTags" runat="server" CssClass="tag-list mt-3 mb-2 clearfix" />
 
                         <fieldset id="fieldsetViewSummary" runat="server">
                             <div class="row">
