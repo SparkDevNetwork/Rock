@@ -221,7 +221,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Personal Information Screen Subtitle",
         Description = "The text to display at the top of the Personal Information screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
-        DefaultValue = "The more we know the more we can taylor our ministry to you.",
+        DefaultValue = "The more we know the more we can tailor our ministry to you.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.PersonalInformationScreenSubtitle,
         Order = 7 )]
