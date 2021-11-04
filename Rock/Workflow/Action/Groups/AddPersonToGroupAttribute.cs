@@ -63,7 +63,7 @@ namespace Rock.Workflow.Action
         IsRequired = false,
         Order = 3 )]
 
-    [GroupField( "LimitToGroupsUnderSpecificParentGroup",
+    [GroupField( "Limit To Groups Under Specific Parent Group",
         Description = "When set, if the group given is not found under this parent group the action will not be marked as a success and an error will be logged.",
         Key = AttributeKey.LimitToGroupsUnderSpecificParentGroup,
         IsRequired = false,
