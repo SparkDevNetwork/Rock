@@ -148,7 +148,7 @@ namespace Rock.Migrations
                 "CSSInliningEnabled",
                 "Enable to move CSS styles to inline attributes. This can help maximize compatibility with email clients.",
                 4,
-                "True",
+                "False",
                 SystemGuid.Attribute.COMMUNICATION_MEDIUM_EMAIL_CSS_INLINING_ENABLED,
                 "CSSInliningEnabled"
                 );
