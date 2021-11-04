@@ -383,10 +383,11 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 rockContext.SaveChanges();
-                business.SaveAttributeValues();
 
                 hfBusinessId.Value = business.Id.ToString();
             } );
+
+            business.SaveAttributeValues();
 
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "BusinessId", hfBusinessId.Value );
@@ -766,7 +767,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindPersonSearchKeysGrid()
         {
-            var values = this.PersonSearchKeysState;
+            var values = this.PersonSearchKeysState ?? new List<PersonSearchKey>();
             var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {
