@@ -211,7 +211,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "workflow log", () => CleanUpWorkflowLogs( dataMap ) );
 
-            RunCleanupTask( "workflow", () => EnsureWorkflowsStatus( dataMap ) );
+            RunCleanupTask( "ensure workflows status", () => EnsureWorkflowsStatus( dataMap ) );
 
             // Note run Workflow Log Cleanup before Workflow Cleanup to avoid timing out if a Workflow has lots of workflow logs (there is a cascade delete)
             RunCleanupTask( "workflow", () => CleanUpWorkflows( dataMap ) );
