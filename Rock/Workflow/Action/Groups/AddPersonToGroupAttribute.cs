@@ -141,7 +141,7 @@ namespace Rock.Workflow.Action
 
                     if ( !limitToGroupTypeIds.Contains( group.GroupTypeId ) )
                     {
-                        errorMessages.Add( $"The group type for group \"{group.Name} is \"{group.GroupType.Name}\". This action is configured to only add persons to groups of type \"{limitToGroupType.Name}\" and it's child types." );
+                        errorMessages.Add( $"The group type for group \"{group.Name} is \"{group.GroupType.Name}\". This action is configured to only add persons to groups of type \"{limitToGroupType.Name}\" and its child types." );
                     }
                 }
 
