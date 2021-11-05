@@ -256,5 +256,13 @@ namespace Rock.Mobile
         ///   <c>true</c> if application should enable notifications automatically; otherwise, <c>false</c>.
         /// </value>
         public bool EnableNotificationsAutomatically { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating a push token update has been requested.
+        /// </summary>
+        /// <value>
+        /// A value indicating a push token update has been requested.
+        /// </value>
+        public string PushTokenUpdateValue { get; set; }
     }
 }

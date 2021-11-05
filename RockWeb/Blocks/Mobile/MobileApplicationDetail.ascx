@@ -294,6 +294,12 @@
                                 <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbEditPushTokenUpdateValue" runat="server" Label="Force Push Token Update" Help="Setting or changing this value will force all clients to update their push token. Use with caution." />
+                            </div>
+                        </div>
                     </Rock:PanelWidget>
 
                     <div class="actions margin-t-md">
