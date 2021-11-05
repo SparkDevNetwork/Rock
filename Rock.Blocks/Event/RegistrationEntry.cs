@@ -852,10 +852,20 @@ namespace Rock.Blocks.Event
             foreach ( var form in forms )
             {
                 var fields = form.Fields.Where( f =>
-                    ( f.ShowCurrentValue && !f.IsInternal ) ||
-                    f.PersonFieldType == RegistrationPersonFieldType.FirstName ||
-                    f.PersonFieldType == RegistrationPersonFieldType.LastName
-                );
+                {
+                    if ( f.ShowCurrentValue && !f.IsInternal )
+                    {
+                        return true;
+                    }
+
+                    if ( f.FieldSource == RegistrationFieldSource.PersonField )
+                    {
+                        return f.PersonFieldType == RegistrationPersonFieldType.FirstName
+                            || f.PersonFieldType == RegistrationPersonFieldType.LastName;
+                    }
+
+                    return false;
+                } );
 
                 foreach ( var field in fields )
                 {
