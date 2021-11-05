@@ -737,8 +737,9 @@ tryGeoLocation();
             // -- HasCamera is true
             // -- KioskType has been set (the HTML5 camera feature won't be enabled until they specifically set the KioskType)
             // -- The KioskType is not an IPad
+            // -- The current Theme supports the HTML5 Camera feature
             // Also, Javascript will hide this option if it detects this is running an on IPad, even though they didn't select Ipad as the KioskType
-            bool showHtml5CameraOptions = device.HasCamera && device.KioskType.HasValue && device?.KioskType != KioskType.IPad;
+            bool showHtml5CameraOptions = device.HasCamera && device.KioskType.HasValue && device?.KioskType != KioskType.IPad && this.CurrentThemeSupportsHTML5Camera();
             hfKioskType.Value = device?.KioskType?.ConvertToString( false );
             pnlHtml5CameraOptions.Visible = showHtml5CameraOptions;
         }
