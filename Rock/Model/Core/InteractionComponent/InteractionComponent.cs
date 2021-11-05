@@ -14,17 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -37,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class InteractionComponent : Model<InteractionComponent>, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -133,7 +129,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the channel.
@@ -146,105 +142,6 @@ namespace Rock.Model
 
         [NotMapped]
         private EntityState SaveState { get; set; }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            this.SaveState = entry.State;
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            if ( this.SaveState == EntityState.Added || this.SaveState == EntityState.Deleted )
-            {
-                var channel = InteractionChannelCache.Get( this.InteractionChannelId );
-                if ( channel != null )
-                {
-                    if ( this.SaveState == EntityState.Added )
-                    {
-                        channel.AddComponentId( this.Id );
-                    }
-                    else
-                    {
-                        channel.RemoveComponentId( this.Id );
-                    }
-                }
-            }
-
-            base.PostSaveChanges( dbContext );
-        }
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return InteractionComponentCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            InteractionComponentCache.UpdateCachedEntity( this.Id, this.SaveState );
-        }
-
-        #endregion
-
-        #region Obsolete Properties
-        
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that that is associated with this Component.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that this Component is associated with.
-        /// </value>
-        [LavaVisible]
-        [NotMapped]
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use InteractionChannelId instead", false )]
-        public int ChannelId
-        {
-            get { return InteractionChannelId; }
-            set { InteractionChannelId = value; }
-        }
-        
-        /// <summary>
-        /// Gets or sets the channel.
-        /// </summary>
-        /// <value>
-        /// The channel.
-        /// </value>
-        [LavaVisible]
-        [NotMapped]
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use InteractionChannel instead", false )]
-        public virtual InteractionChannel Channel
-        {
-            get { return InteractionChannel; }
-            set { InteractionChannel = value; }
-        }
 
         #endregion
     }

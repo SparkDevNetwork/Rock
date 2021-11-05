@@ -14,20 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Lava;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Represents a interaction <see cref="Rock.Model.Interaction"/>.
     /// </summary>
@@ -302,7 +299,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the interaction component.
@@ -393,38 +390,6 @@ namespace Rock.Model
         public virtual AnalyticsSourceDate InteractionSourceDate { get; set; }
 
         #endregion Virtual Properties
-
-        #region Public Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            _isDeleted = entry.State == EntityState.Deleted;
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        private bool _isDeleted = false;
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            if ( !_isDeleted )
-            {
-                // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
-            }
-
-            base.PostSaveChanges( dbContext );
-        }
-
-        #endregion Public Methods
     }
 
     #region Entity Configuration

@@ -14,18 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Represents a Interaction Channel. See notes on <seealso cref="ChannelEntityId"/>
     /// </summary>
@@ -35,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class InteractionChannel : Model<InteractionChannel>, IHasActiveFlag, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -147,7 +144,6 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM )]
         public int? ChannelTypeMediumValueId { get; set; }
-
 
         /// <summary>
         /// Gets or sets the retention days.
@@ -323,8 +319,8 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
-        
+        #region Navigation Properties
+
         /// <inheritdoc cref="ComponentEntityTypeId"/>
         [DataMember]
         public virtual Model.EntityType ComponentEntityType { get; set; }
@@ -336,42 +332,6 @@ namespace Rock.Model
         /// <inheritdoc cref="ChannelTypeMediumValueId"/>
         [DataMember]
         public virtual DefinedValue ChannelTypeMediumValue { get; set; }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            base.PostSaveChanges( dbContext );
-        }
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return InteractionChannelCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            InteractionChannelCache.UpdateCachedEntity( this.Id, entityState );
-        }
 
         #endregion
     }

@@ -14,18 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
-using System.ComponentModel;
 
 namespace Rock.Model
 {
@@ -161,7 +159,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the physical location or geographic fence for the device.
@@ -188,6 +186,7 @@ namespace Rock.Model
             get { return _locations ?? ( _locations = new Collection<Location>() ); }
             set { _locations = value; }
         }
+
         private ICollection<Location> _locations;
 
         /// <summary>
@@ -224,31 +223,6 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            Rock.CheckIn.KioskDevice.FlushItem( this.Id );
-        }
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
-
-        #endregion ICacheable
-
     }
 
     #region Entity Configuration
@@ -268,98 +242,6 @@ namespace Rock.Model
             this.HasOptional( d => d.PrinterDevice ).WithMany().HasForeignKey( d => d.PrinterDeviceId ).WillCascadeOnDelete( false );
             this.HasRequired( d => d.DeviceType ).WithMany().HasForeignKey( d => d.DeviceTypeValueId ).WillCascadeOnDelete( false );
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Where a label should be printed
-    /// </summary>
-    public enum PrintTo
-    {
-        /// <summary>
-        /// Print to the default printer
-        /// </summary>
-        Default = 0,
-
-        /// <summary>
-        /// Print to the printer associated with the selected kiosk
-        /// </summary>
-        Kiosk = 1,
-
-        /// <summary>
-        /// Print to the printer associated with the selected location
-        /// </summary>
-        Location = 2
-    }
-
-    /// <summary>
-    /// The application responsible for printing a label
-    /// </summary>
-    public enum PrintFrom
-    {
-        /// <summary>
-        /// The label will be printed by the kiosk
-        /// </summary>
-        Client = 0,
-
-        /// <summary>
-        /// The label will be printed by the server.
-        /// </summary>
-        Server = 1
-    }
-
-    /// <summary>
-    /// The Camera barcode configuration values.
-    /// </summary>
-    public enum CameraBarcodeConfiguration
-    {
-        /// <summary>
-        /// Off
-        /// </summary>
-        Off = 0,
-
-        /// <summary>
-        /// Available
-        /// </summary>
-        Available = 1,
-
-        /// <summary>
-        /// Always on
-        /// </summary>
-        AlwaysOn = 2,
-
-        /// <summary>
-        /// Passive
-        /// </summary>
-        Passive = 3
-    }
-
-    /// <summary>
-    /// The various types of checkin clients that a Check-in Kiosk could be using.
-    /// </summary>
-    public enum KioskType
-    {
-        /// <summary>
-        /// The Kiosk is using IPad iOS Checkin Client app.
-        /// </summary>
-        [Description( "iPad" )]
-        IPad = 0,
-
-        /// <summary>
-        /// The Kiosk is using Windows Checkin Client.
-        /// </summary>
-        [Description( "Windows App" )]
-        WindowsApp = 1,
-
-        /// <summary>
-        /// This kiosk is using a browser
-        /// </summary>
-        [Description( "Browser" )]
-        Browser = 2,
-
     }
 
     #endregion

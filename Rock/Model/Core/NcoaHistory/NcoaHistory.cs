@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -284,7 +284,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         // removed this to eliminate a hard link between the NCOA and the person alias, since this data leaves the system and comes
         // back at a later date it's best not to rely on the person alias being there
@@ -300,183 +300,6 @@ namespace Rock.Model
 
         #endregion
     }
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the move type for NCOA.
-    /// </summary>
-    public enum MoveType
-    {
-        /// <summary>
-        /// None
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Family
-        /// </summary>
-        Family = 1,
-
-        /// <summary>
-        /// Individual
-        /// </summary>
-        Individual = 2,
-
-        /// <summary>
-        /// Business
-        /// </summary>
-        Business = 3
-    }
-
-    /// <summary>
-    /// Represents the NCOA type.
-    /// </summary>
-    public enum NcoaType
-    {
-        /// <summary>
-        /// None
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// No Move
-        /// </summary>
-        NoMove = 1,
-
-        /// <summary>
-        /// 48 Month Move
-        /// </summary>
-        Month48Move = 2,
-
-        /// <summary>
-        /// Move
-        /// </summary>
-        Move = 3
-    }
-
-
-    /// <summary>
-    /// Represents the address statuses.
-    /// </summary>
-    public enum AddressStatus
-    {
-        /// <summary>
-        /// Invalid
-        /// </summary>
-        Invalid = 0,
-
-        /// <summary>
-        /// Valid
-        /// </summary>
-        Valid = 1
-    }
-
-    /// <summary>
-    /// Represents the Invalid Reason for address.
-    /// </summary>
-    public enum AddressInvalidReason
-    {
-        /// <summary>
-        /// None
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Not Found
-        /// </summary>
-        NotFound = 1,
-
-        /// <summary>
-        /// Vacant
-        /// </summary>
-        Vacant = 2
-    }
-
-    /// <summary>
-    /// Represents the type for Updated Address.
-    /// </summary>
-    public enum UpdatedAddressType
-    {
-        /// <summary>
-        /// None
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Not Found
-        /// </summary>
-        Residential = 1,
-
-        /// <summary>
-        /// Vacant
-        /// </summary>
-        Business = 2
-    }
-
-    /// <summary>
-    /// Represents the matching flag.
-    /// </summary>
-    public enum MatchFlag
-    {
-        /// <summary>
-        /// None
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Moved
-        /// </summary>
-        Moved = 1,
-
-        /// <summary>
-        /// PO Box Closed
-        /// </summary>
-        POBoxClosed = 2,
-
-        /// <summary>
-        /// Moved left no forwarding
-        /// </summary>
-        MovedNoForwarding = 3,
-
-        /// <summary>
-        /// Moved to foreign country
-        /// </summary>
-        MovedToForeignCountry = 4
-    }
-
-    /// <summary>
-    /// Represents the state of NCOA
-    /// </summary>
-    public enum Processed
-    {
-        /// <summary>
-        /// NotProcessed
-        /// </summary>
-        NotProcessed = 0,
-
-        /// <summary>
-        /// Complete
-        /// </summary>
-        Complete = 1,
-
-        /// <summary>
-        /// Manual Update Required
-        /// </summary>
-        ManualUpdateRequired = 2,
-
-        /// <summary>
-        /// Manual update required or not processed
-        /// </summary>
-        ManualUpdateRequiredOrNotProcessed = 3,
-
-        /// <summary>
-        /// All records
-        /// </summary>
-        All = 4
-    }
-
-    #endregion
 
     #region Entity Configuration
 

@@ -14,19 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Represents Session for <see cref="Rock.Model.Interaction">Interaction</see>
     /// </summary>
@@ -36,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class InteractionSession : Model<InteractionSession>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -79,7 +77,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the device type.
@@ -105,11 +103,6 @@ namespace Rock.Model
         private ICollection<Interaction> _interactions;
 
         #endregion
-
-        #region Public Methods
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -129,5 +122,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
