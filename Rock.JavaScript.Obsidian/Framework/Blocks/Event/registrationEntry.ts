@@ -76,6 +76,7 @@ export type RegistrationEntryState = {
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
+    ownFamilyGuid: Guid;
 };
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
@@ -212,7 +213,6 @@ export default defineComponent( {
                 lastName: "",
                 email: "",
                 updateEmail: true,
-                ownFamilyGuid: newGuid(),
                 familyGuid: null
             },
             gatewayToken: "",
@@ -222,7 +222,8 @@ export default defineComponent( {
             successViewModel: viewModel.successViewModel,
             amountToPayToday: 0,
             sessionExpirationDateMs: null,
-            registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid()
+            registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid(),
+            ownFamilyGuid: store.state.currentPerson?.primaryFamilyGuid || newGuid()
         } as RegistrationEntryState );
 
         provide( "registrationEntryState", registrationEntryState );
