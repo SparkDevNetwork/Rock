@@ -243,7 +243,7 @@ export default defineComponent( {
             }
         },
 
-        async "registrationEntryState.DiscountCode"(): Promise<void> {
+        async "registrationEntryState.discountCode"(): Promise<void> {
             await this.fetchData();
         }
     },

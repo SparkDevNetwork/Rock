@@ -2515,11 +2515,9 @@ namespace Rock.Blocks.Event
                 // Add the fees
                 foreach ( var fee in settings.Fees.Where( f => f.IsActive ) )
                 {
-                    var registrantFee = registrant.Fees.FirstOrDefault( f => f.RegistrationTemplateFeeId == fee.Id );
-
                     foreach ( var feeItem in fee.FeeItems.Where( f => f.IsActive ) )
                     {
-                        registrantFee = registrant.Fees.FirstOrDefault( f => f.RegistrationTemplateFeeItemId == feeItem.Id ) ?? registrantFee;
+                        var registrantFee = registrant.Fees.FirstOrDefault( f => f.RegistrationTemplateFeeItemId == feeItem.Id );
                         var quantity = registrantFee?.Quantity ?? 0;
                         registrantInfo.FeeItemQuantities[feeItem.Guid] = quantity;
                     }
