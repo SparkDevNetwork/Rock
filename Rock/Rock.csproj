@@ -2160,7 +2160,7 @@
     <Compile Include="Model\AttributeValue.cs" />
     <Compile Include="Model\AttributeValueService.Partial.cs" />
     <Compile Include="Model\Core\Audit\Audit.cs" />
-    <Compile Include="Model\AuditDetail.cs" />
+    <Compile Include="Model\Core\AuditDetail\AuditDetail.cs" />
     <Compile Include="Model\Core\Auth\Auth.cs" />
     <Compile Include="Model\Core\Auth\AuthService.cs" />
     <Compile Include="Model\CRM\BackgroundCheck\BackgroundCheck.cs" />
@@ -2504,9 +2504,9 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
-    <Compile Include="Model\ServiceJobHistory.cs" />
-    <Compile Include="Model\ServiceJobHistoryService.Partial.cs" />
-    <Compile Include="Model\SignalType.cs" />
+    <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.cs" />
+    <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.Partial.cs" />
+    <Compile Include="Model\Core\SignalType\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\PageShortLinkService.Partial.cs" />
@@ -2621,9 +2621,9 @@
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberAttributesFilter.cs" />
-    <Compile Include="Model\ServiceJob.cs" />
-    <Compile Include="Model\ServiceJobService.Partial.cs" />
-    <Compile Include="Model\ServiceLog.cs" />
+    <Compile Include="Model\Core\ServiceJob\ServiceJob.cs" />
+    <Compile Include="Model\Core\ServiceJob\ServiceJobService.Partial.cs" />
+    <Compile Include="Model\Core\ServiceLog\ServiceLog.cs" />
     <Compile Include="Model\SignatureDocument.cs" />
     <Compile Include="Model\SignatureDocumentService.Partial.cs" />
     <Compile Include="Model\SignatureDocumentTemplate.cs" />
