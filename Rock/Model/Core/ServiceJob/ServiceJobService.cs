@@ -14,16 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Compilation;
-
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-
 using Rock.Data;
 using Rock.Jobs;
 

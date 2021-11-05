@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -93,7 +93,7 @@ namespace Rock.Model
         public string StatusMessage { get; set; }
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the ServiceJob <see cref="Rock.Model.ServiceJob" /> that this ServiceJobHistory provides a History value for.
@@ -143,7 +143,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Job.

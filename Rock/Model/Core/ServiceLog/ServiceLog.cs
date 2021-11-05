@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -32,7 +32,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ServiceLog : Model<ServiceLog>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -95,7 +94,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -109,7 +108,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -128,5 +126,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

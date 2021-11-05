@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,9 +22,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using CronExpressionDescriptor;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -231,7 +230,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets the last status message as HTML.
@@ -275,7 +274,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Job.
@@ -308,36 +307,4 @@ namespace Rock.Model
     }
 
     #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// An enum that represents when a Job notification status should be sent.
-    /// </summary>
-    public enum JobNotificationStatus
-    {
-        /// <summary>
-        /// Notifications should be sent when a job completes with any notification status.
-        /// </summary>
-        All = 1,
-
-        /// <summary>
-        /// Notification should be sent when the job has completed successfully.
-        /// </summary>
-        /// 
-        Success = 2,
-
-        /// <summary>
-        /// Notification should be sent when the job has completed with an error status.
-        /// </summary>
-        Error = 3,
-
-        /// <summary>
-        /// Notifications should not be sent when this job completes with any status.
-        /// </summary>
-        None = 4
-    }
-
-    #endregion
-
 }

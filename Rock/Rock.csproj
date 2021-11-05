@@ -808,6 +808,8 @@
     <Compile Include="Model\Core\Note\Note.Logic.cs" />
     <Compile Include="Model\Core\Note\Note.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteApprovalStatus.cs" />
+    <Compile Include="Model\Core\ServiceJob\JobNotificationStatus.cs" />
+    <Compile Include="Model\Core\SignalType\SignalType.Logic.cs" />
     <Compile Include="Model\CRM\AssessmentType\AssessmentType.Logic.cs" />
     <Compile Include="Model\CRM\Assessment\AssessmentRequestStatus.cs" />
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCode.cs" />
@@ -2505,7 +2507,7 @@
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.cs" />
-    <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.Partial.cs" />
+    <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Core\SignalType\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
@@ -2622,7 +2624,7 @@
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberAttributesFilter.cs" />
     <Compile Include="Model\Core\ServiceJob\ServiceJob.cs" />
-    <Compile Include="Model\Core\ServiceJob\ServiceJobService.Partial.cs" />
+    <Compile Include="Model\Core\ServiceJob\ServiceJobService.cs" />
     <Compile Include="Model\Core\ServiceLog\ServiceLog.cs" />
     <Compile Include="Model\SignatureDocument.cs" />
     <Compile Include="Model\SignatureDocumentService.Partial.cs" />
