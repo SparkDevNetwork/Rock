@@ -255,17 +255,17 @@ namespace RockWeb.Blocks.Follow
             tbDescription.Text = followingEvent.Description;
             cpEventType.SetValue( followingEvent.EntityType != null ? followingEvent.EntityType.Guid.ToString().ToUpper() : string.Empty );
             cbSendOnFriday.Checked = !followingEvent.SendOnWeekends;
+            cbIncludeNonPublicRequests.Visible = false;
+            cbIncludeNonPublicRequests.Checked = false;
 
-            var eventEntityTypeGuid = EntityTypeCache.Get( followingEvent.EntityType.Id ).Guid.ToString();
-            if ( followingEvent.EntityType != null && string.Equals( eventEntityTypeGuid, Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST, StringComparison.OrdinalIgnoreCase ) )
+            if ( followingEvent.EntityType != null )
             {
-                cbIncludeNonPublicRequests.Visible = true;
-                cbIncludeNonPublicRequests.Checked = followingEvent.IncludeNonPublicRequests;
-            }
-            else
-            {
-                cbIncludeNonPublicRequests.Visible = false;
-                cbIncludeNonPublicRequests.Checked = false;
+                var eventEntityTypeGuid = EntityTypeCache.Get( followingEvent.EntityType.Id )?.Guid.ToString();
+                if ( string.Equals( eventEntityTypeGuid, Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    cbIncludeNonPublicRequests.Visible = true;
+                    cbIncludeNonPublicRequests.Checked = followingEvent.IncludeNonPublicRequests;
+                }
             }
 
             cbRequireNotification.Checked = followingEvent.IsNoticeRequired;
