@@ -375,7 +375,8 @@ namespace Rock.Mobile
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
                 HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic,
                 DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically,
-                TimeZone = timeZoneName
+                TimeZone = timeZoneName,
+                PushTokenUpdateValue = additionalSettings.PushTokenUpdateValue
             };
 
             //

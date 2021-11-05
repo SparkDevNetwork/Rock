@@ -819,6 +819,14 @@ namespace Rock.Blocks.Types.Mobile.Security
         public bool HideEmailIfKnown => GetAttributeValue( AttributeKeys.HideEmailIfKnown ).AsBoolean();
 
         /// <summary>
+        /// Gets a value indicating whether the notification screen should be shown.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the notification screen should be shown; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowNotificationsRequest => GetAttributeValue( AttributeKeys.ShowNotificationsRequest ).AsBoolean();
+
+        /// <summary>
         /// Gets a value indicating whether the campus field should be hidden if value is known.
         /// </summary>
         /// <value>
@@ -1042,7 +1050,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     BirthDateVisibility = BirthDateVisibility,
                     HideBirthDateIfKnown = HideBirthDateIfKnown,
                     Interests = GetInterests( rockContext ),
-                    RequestNotificationPermission = true,
+                    RequestNotificationPermission = ShowNotificationsRequest,
                     Campuses = GetDisplayCampuses( rockContext ),
                     OnlineCampusGuid = OnlineCampusGuid,
                     DoNotAttendCampusGuid = DoNotAttendCampusGuid,
