@@ -248,7 +248,7 @@ export default defineComponent( {
         }
     },
     watch: {
-        "currentRegistrant.FamilyGuid"(): void {
+        "currentRegistrant.familyGuid"(): void {
             // Clear the person guid if the family changes
             this.currentRegistrant.personGuid = "";
         },
