@@ -243,6 +243,9 @@ export default defineComponent( {
                             this.currentRegistrant.fieldValues[field.guid] = familyMemberValue;
                         }
                     }
+                    else {
+                        delete this.currentRegistrant.fieldValues[field.guid];
+                    }
                 }
             }
         }
