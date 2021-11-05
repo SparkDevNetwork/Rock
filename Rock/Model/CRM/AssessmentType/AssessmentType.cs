@@ -54,7 +54,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> for the Description.
         /// </value>
-        [MaxLength( 100 )]
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
