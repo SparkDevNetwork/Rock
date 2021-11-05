@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                         person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
 
-                        var phoneNumberTypeIds = new List<int>();
+                        var phoneNumbersScreen = new List<PhoneNumber>();
 
                         bool smsSelected = false;
 
@@ -431,7 +431,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     int phoneNumberTypeId;
                                     if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
                                     {
-                                        var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
+
+                                        var phoneTemp = new PhoneNumber
+                                        {
+                                            CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode ),
+                                            Number = PhoneNumber.CleanNumber( pnbPhone.Number )
+                                        };
+
+                                        var phoneNumber = person.PhoneNumbers
+                                            .Where( pn => pn.NumberTypeValueId == phoneNumberTypeId )
+                                            .Where( pn => pn.CountryCode == phoneTemp.CountryCode )
+                                            .Where( pn => pn.Number == phoneTemp.Number )
+                                            .FirstOrDefault();
+
                                         string oldPhoneNumber = string.Empty;
                                         if ( phoneNumber == null )
                                         {
@@ -458,17 +470,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         }
 
                                         phoneNumber.IsUnlisted = cbUnlisted.Checked;
-                                        phoneNumberTypeIds.Add( phoneNumberTypeId );
+                                        phoneNumbersScreen.Add( phoneNumber );
                                     }
                                 }
                             }
                         }
 
-                        // Remove any blank numbers
+                        // Remove any changed or removed numbers
                         var phoneNumberService = new PhoneNumberService( rockContext );
-                        foreach ( var phoneNumber in person.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
-                            .ToList() )
+                        var phoneNumbersToRemove = person.PhoneNumbers
+                            .Where( n => !phoneNumbersScreen.Any( n2 => n2.Number == n.Number && n2.NumberTypeValueId == n.NumberTypeValueId ) ).ToList();
+
+                        foreach ( var phoneNumber in phoneNumbersToRemove )
                         {
                             person.PhoneNumbers.Remove( phoneNumber );
                             phoneNumberService.Delete( phoneNumber );
@@ -831,27 +844,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var phoneNumbers = new List<PhoneNumber>();
             var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-            if ( phoneNumberTypes.DefinedValues.Any() )
+
+            if (phoneNumberTypes.DefinedValues.Any())
             {
-                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
+                foreach (var phoneNumberType in phoneNumberTypes.DefinedValues)
                 {
-                    var phoneNumber = Person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                    if ( phoneNumber == null )
+                    var phoneNumberList = Person.PhoneNumbers.Where(n => n.NumberTypeValueId == phoneNumberType.Id).ToList();
+                    if ( phoneNumberList.Count() == 0 )
                     {
                         var numberType = new DefinedValue();
                         numberType.Id = phoneNumberType.Id;
                         numberType.Value = phoneNumberType.Value;
 
-                        phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                        var phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
-                    }
-                    else
-                    {
-                        // Update number format, just in case it wasn't saved correctly
-                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
+                        phoneNumberList.Add( phoneNumber );
                     }
 
-                    phoneNumbers.Add( phoneNumber );
+                    foreach ( var phoneNumberTemp in phoneNumberList )
+                    {
+                        // Update number format, just in case it wasn't saved correctly
+                        phoneNumberTemp.NumberFormatted = PhoneNumber.FormattedNumber ( phoneNumberTemp.CountryCode, phoneNumberTemp.Number );
+                        phoneNumbers.Add( phoneNumberTemp );
+                    }
                 }
 
                 rContactInfo.DataSource = phoneNumbers;
