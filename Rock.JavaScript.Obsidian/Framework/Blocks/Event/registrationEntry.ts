@@ -102,7 +102,6 @@ export function getForcedFamilyGuid ( currentPerson: Person | null, viewModel: R
  */
 export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null ): RegistrantInfo {
     const forcedFamilyGuid = getForcedFamilyGuid( currentPerson, viewModel );
-    const ownFamilyGuid = newGuid();
 
     if ( forcedFamilyGuid ) {
         familyGuid = forcedFamilyGuid;
@@ -110,7 +109,7 @@ export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewMod
 
     // If the family is not specified, then assume the person is in their own family
     if ( !familyGuid ) {
-        familyGuid = ownFamilyGuid;
+        familyGuid = newGuid();
     }
 
     return {
@@ -119,8 +118,7 @@ export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewMod
         fieldValues: {},
         feeItemQuantities: {},
         guid: newGuid(),
-        personGuid: "",
-        ownFamilyGuid: ownFamilyGuid
+        personGuid: ""
     } as RegistrantInfo;
 }
 
