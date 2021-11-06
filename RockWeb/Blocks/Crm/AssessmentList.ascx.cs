@@ -203,6 +203,7 @@ namespace Rockweb.Blocks.Crm
                 .Select( t => new AssessmentTypeListItem
                 {
                     Title = t.Title,
+                    Description = t.Description,
                     AssessmentPath = t.AssessmentPath,
                     AssessmentResultsPath = t.AssessmentResultsPath,
                     AssessmentRetakeLinkButton = "",
@@ -302,6 +303,7 @@ namespace Rockweb.Blocks.Crm
         public class AssessmentTypeListItem : RockDynamic
         {
             public string Title { get; set; }
+            public string Description { get; set; }
             public string AssessmentPath { get; set; }
             public string AssessmentResultsPath { get; set; }
             public string AssessmentRetakeLinkButton { get; set; }
