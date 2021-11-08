@@ -1675,9 +1675,10 @@ namespace Rock.Blocks.Event
 
             // If the registration is existing, then add the args that describe it to the view model
             var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
+            var paymentToken = PageParameter( PageParameterKey.PaymentToken );
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
             var isUnauthorized = isExistingRegistration && session == null;
-            var wasRedirectedFromPayment = session != null && !isExistingRegistration;
+            var wasRedirectedFromPayment = session != null && paymentToken.IsNotNullOrWhiteSpace();
             RegistrationEntryBlockSuccessViewModel successViewModel = null;
 
             if ( wasRedirectedFromPayment )
@@ -1694,11 +1695,39 @@ namespace Rock.Blocks.Event
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
 
+                // Only populate the RegistrationGuid if this is an existing registration.
+                // Otherwise a security check on the current person will be performed
+                // which may throw an incorrect error since the current person may not
+                // match the person that was created as the registrar.
+                if ( isExistingRegistration )
+                {
+                    args.RegistrationGuid = session.RegistrationGuid;
+                }
+
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
 
-                // This is a redirect from a redirect gateway. The user was sent to another site, made payment, and has come back after completion
-                SubmitRegistration( rockContext, context, args, out errorMessage );
+                // This is a redirect from a redirect gateway. The user was sent to
+                // another site, made payment, and has come back after completion.
+                if ( !isExistingRegistration )
+                {
+                    SubmitRegistration( rockContext, context, args, out errorMessage );
+                }
+                else
+                {
+                    // Existing registration, but they are making another payment.
+                    var transactionGuid = ProcessPayment( rockContext, context, args, out errorMessage );
+
+                    if ( !errorMessage.IsNullOrWhiteSpace() )
+                    {
+                        throw new Exception( errorMessage );
+                    }
+
+                    if ( !transactionGuid.HasValue )
+                    {
+                        throw new Exception( "There was a problem with the payment" );
+                    }
+                }
 
                 successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
             }
@@ -2562,9 +2591,13 @@ namespace Rock.Blocks.Event
             }
 
             var context = registrationService.GetRegistrationContext( registrationInstanceId, args.RegistrationGuid, currentPerson, args.DiscountCode, out errorMessage );
+            if ( context == null )
+            {
+                return null;
+            }
 
             // Validate the amount to pay today
-            var cost = context.RegistrationSettings.PerRegistrantCost;
+            var amountDue = CalculateTotalAmountDue( rockContext, context, args );
 
             // Cannot pay less than 0
             if ( args.AmountToPayNow < 0 )
@@ -2573,17 +2606,19 @@ namespace Rock.Blocks.Event
             }
 
             // Cannot pay more than is owed
-            if ( args.AmountToPayNow > cost )
+            if ( args.AmountToPayNow > amountDue )
             {
-                args.AmountToPayNow = cost;
+                args.AmountToPayNow = amountDue;
             }
 
             var isNewRegistration = context.Registration == null;
 
             // Validate the charge amount is not too low according to the initial payment amount
-            if ( isNewRegistration && cost > 0 )
+            if ( isNewRegistration && amountDue > 0 )
             {
-                var minimumInitialPayment = context.RegistrationSettings.PerRegistrantMinInitialPayment ?? cost;
+                var minimumInitialPayment = context.RegistrationSettings.PerRegistrantMinInitialPayment.HasValue
+                    ? context.RegistrationSettings.PerRegistrantMinInitialPayment.Value * args.Registrants.Count
+                    : amountDue;
 
                 if ( args.AmountToPayNow < minimumInitialPayment )
                 {
@@ -2592,6 +2627,31 @@ namespace Rock.Blocks.Event
             }
 
             return context;
+        }
+
+        /// <summary>
+        /// Calculates the total amount still due on the registration. This takes
+        /// into account all costs, fees, discounts and payments already applied.
+        /// </summary>
+        /// <param name="rockContext">The Rock database context to operate in when loading data.</param>
+        /// <param name="context">The registration context that describes the registration details.</param>
+        /// <param name="args">The arguments that describe the current registration request.</param>
+        /// <returns>The amount still due in dollars and cents.</returns>
+        private static decimal CalculateTotalAmountDue( RockContext rockContext, RegistrationContext context, RegistrationEntryBlockArgs args )
+        {
+            var registrationService = new RegistrationService( rockContext );
+            var registrationInstanceService = new RegistrationInstanceService( rockContext );
+
+            var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args );
+            var totalDiscountedCost = costs.Sum( c => c.DiscountedCost );
+
+            if ( context.Registration != null )
+            {
+                var totalPayments = registrationService.GetTotalPayments( context.Registration.Id );
+                totalDiscountedCost -= totalPayments;
+            }
+
+            return totalDiscountedCost;
         }
 
         /// <summary>
