@@ -259,12 +259,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
     <Button StyleClass=""btn,btn-link"" Text=""Cancel"" ##CANCEL## />
 </StackLayout>";
 
+            var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
             var parameters = new Dictionary<string, string>();
             string fieldsContent;
 
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
                 var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
 
                 if ( member == null )
@@ -288,7 +288,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( MemberDetailPage.HasValue )
             {
-                content = content.Replace( "##CANCEL##", $"Command=\"{{Binding ReplacePage}}\" CommandParameter=\"{MemberDetailPage}\"" );
+                content = content.Replace( "##CANCEL##", $"Command=\"{{Binding ReplacePage}}\" CommandParameter=\"{MemberDetailPage}?GroupMemberGuid={groupMemberGuid}\"" );
             }
             else
             {
