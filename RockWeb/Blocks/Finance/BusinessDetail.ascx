@@ -43,7 +43,7 @@
                                     </div>
                                     <div class="panel-body">
                                         <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
-                                        <Rock:RockCheckBox ID="cbSaveFormerAddressAsPreviousAddress" runat="server" Text="Save former address as Previous address" />
+                                        <Rock:RockCheckBox ID="cbSaveFormerAddressAsPreviousAddress" runat="server" Text="Save Former Address As Previous Address" />
                                     </div>
                                 </div>
 
