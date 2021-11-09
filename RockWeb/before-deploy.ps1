@@ -26,6 +26,24 @@ If (Test-Path "$webroot\web.connectionstrings.config"){
 	Copy-Item "$webroot\web.connectionstrings.config" "$rootfolder\temp" -force
 }
 
+# backup RedirectorRules
+If (Test-Path "$webroot\App_Data\TriumphTech-WebAgility\RedirectorRules"){
+	Write-Host "Moving RedirectorRules to temp dir"
+	Copy-Item "$webroot\App_Data\TriumphTech-WebAgility\RedirectorRules" "$rootfolder\temp" -force
+}
+
+# backup RequestHeaderRules
+If (Test-Path "$webroot\App_Data\TriumphTech-WebAgility\RequestHeaderRules"){
+	Write-Host "Moving RequestHeaderRules to temp dir"
+	Copy-Item "$webroot\App_Data\TriumphTech-WebAgility\RequestHeaderRules" "$rootfolder\temp" -force
+}
+
+# backup ResponseHeaderRules
+If (Test-Path "$webroot\App_Data\TriumphTech-WebAgility\ResponseHeaderRules"){
+	Write-Host "Moving ResponseHeaderRules to temp dir"
+	Copy-Item "$webroot\App_Data\TriumphTech-WebAgility\ResponseHeaderRules" "$rootfolder\temp" -force
+}
+
 # backup css overrides for core Rock theme
 If (Test-Path "$webroot\Themes\Rock\Styles\_css-overrides.less"){
 	Write-Host "Moving _css-overrides.less to temp dir"

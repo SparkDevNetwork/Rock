@@ -71,6 +71,24 @@ If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
 	Copy-Item "$rootfolder\temp\web.connectionstrings.config" "$webroot" -force
 }
 
+# move RedirectorRules file back from temp
+If (Test-Path "$rootfolder\temp\RedirectorRules"){
+	Write-Host "Moving RedirectorRules from temp dir"
+	Copy-Item "$rootfolder\temp\RedirectorRules" "$webroot\App_Data\TriumphTech-WebAgility" -force
+}
+
+# move RequestHeaderRules file back from temp
+If (Test-Path "$rootfolder\temp\RequestHeaderRules"){
+	Write-Host "Moving RequestHeaderRules from temp dir"
+	Copy-Item "$rootfolder\temp\RequestHeaderRules" "$webroot\App_Data\TriumphTech-WebAgility" -force
+}
+
+# move ResponseHeaderRules file back from temp
+If (Test-Path "$rootfolder\temp\ResponseHeaderRules"){
+	Write-Host "Moving ResponseHeaderRules from temp dir"
+	Copy-Item "$rootfolder\temp\ResponseHeaderRules" "$webroot\App_Data\TriumphTech-WebAgility" -force
+}
+
 # move core Rock css overrides file back from temp
 If (Test-Path "$rootfolder\temp\_css-overrides.less"){
 	Write-Host "Moving _css-overrides.less from temp dir"
