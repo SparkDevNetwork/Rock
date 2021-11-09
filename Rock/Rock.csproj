@@ -419,6 +419,7 @@
     <Compile Include="Attribute\CheckinConfigurationTypeFieldAttribute.cs" />
     <Compile Include="Attribute\FinancialStatementTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\LocationListFieldAttribute.cs" />
+    <Compile Include="Attribute\MobileNavigationActionFieldAttribute.cs" />
     <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
@@ -622,6 +623,7 @@
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Field\Types\MobileNavigationActionFieldType.cs" />
     <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
@@ -882,6 +884,7 @@
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
+    <Compile Include="Web\UI\Controls\MobileNavigationActionEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
