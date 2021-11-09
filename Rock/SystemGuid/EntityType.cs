@@ -442,6 +442,11 @@ namespace Rock.SystemGuid
         public const string PERSON_GET_CAMPUS_TEAM_MEMBER = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E";
 
         /// <summary>
+        /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity
+        /// </summary>
+        public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
+
+        /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity
         /// </summary>
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";
@@ -530,6 +535,11 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.Workflow"/>
         /// </summary>
         public const string WORKFLOW = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowActivity"/>
+        /// </summary>
+        public const string WORKFLOW_ACTIVITY = "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowType"/>

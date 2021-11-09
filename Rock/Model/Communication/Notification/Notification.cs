@@ -21,7 +21,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -101,7 +100,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.NotificationRecipient">recipients</see>.
@@ -114,9 +113,10 @@ namespace Rock.Model
             get { return _recipients; }
             set { _recipients = value; }
         }
+
         private ICollection<NotificationRecipient> _recipients;
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -132,7 +132,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -148,36 +147,6 @@ namespace Rock.Model
         public NotificationConfiguration()
         {
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The classification of the notification (borrowed from Bootstrap)
-    /// </summary>
-    public enum NotificationClassification
-    {
-        /// <summary>
-        /// The success
-        /// </summary>
-        Success,
-
-        /// <summary>
-        /// The information
-        /// </summary>
-        Info,
-
-        /// <summary>
-        /// The warning
-        /// </summary>
-        Warning,
-
-        /// <summary>
-        /// The danger
-        /// </summary>
-        Danger
     }
 
     #endregion

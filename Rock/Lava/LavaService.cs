@@ -446,7 +446,7 @@ namespace Rock.Lava
                 return result;
             }
 
-            result = RenderTemplate( inputTemplate, LavaRenderParameters.Default() );
+            result = RenderTemplate( inputTemplate, LavaRenderParameters.Default );
 
             return result;
         }

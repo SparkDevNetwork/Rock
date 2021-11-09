@@ -265,6 +265,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<AuthAuditLog>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AuthAuditLog.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<AuthClaim>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AuthClaim.FriendlyTypeName );

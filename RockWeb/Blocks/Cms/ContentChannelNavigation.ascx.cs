@@ -712,6 +712,7 @@ namespace RockWeb.Blocks.Cms
                     i.ExpireDateTime,
                     i.Priority,
                     Status = DisplayStatus( i.Status ),
+                    DateStatus = DisplayDateStatus( i.StartDateTime ),
                     Tags = itemTags.GetValueOrNull( i.Guid ),
                     Occurrences = i.EventItemOccurrences.Any(),
                     CreatedByPersonName = i.CreatedByPersonAlias != null ? String.Format( "<a href={0}>{1}</a>", ResolveRockUrl( string.Format( "~/Person/{0}", i.CreatedByPersonAlias.PersonId ) ), i.CreatedByPersonName ) : String.Empty
@@ -815,6 +816,11 @@ namespace RockWeb.Blocks.Cms
             {
                 return items;
             }
+        }
+
+        protected string DisplayDateStatus( DateTime aDate )
+        {
+            return ( aDate > RockDateTime.Now ) ? "<i class='fa fa-clock'></i>" : string.Empty;
         }
 
         protected void BindAttributes( ContentChannel channel )
@@ -931,6 +937,12 @@ namespace RockWeb.Blocks.Cms
                     startDateTimeField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
                     startDateTimeField.SortExpression = "StartDateTime";
                     gContentChannelItems.Columns.Add( startDateTimeField );
+
+                    var dateStatusField = new BoundField();
+                    gContentChannelItems.Columns.Add( dateStatusField );
+                    dateStatusField.DataField = "DateStatus";
+                    dateStatusField.HeaderText = "";
+                    dateStatusField.HtmlEncode = false;
 
                     expireDateTimeField.DataField = "ExpireDateTime";
                     expireDateTimeField.HeaderText = "Expire";

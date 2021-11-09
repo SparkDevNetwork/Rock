@@ -44,7 +44,6 @@ namespace Rock.Model
                     authAuditLog.EntityId = auth.EntityId;
                     authAuditLog.Action = auth.Action;
                     authAuditLog.ChangeDateTime = RockDateTime.Now;
-                    authAuditLog.GroupId = auth.GroupId;
                     authAuditLog.SpecialRole = auth.SpecialRole;
                     var currentPersonAlias = rockContext.GetCurrentPersonAlias();
                     if ( currentPersonAlias != null )
@@ -56,14 +55,20 @@ namespace Rock.Model
 
                     if ( State == EntityContextState.Added )
                     {
+                        authAuditLog.GroupId = auth.GroupId;
+                        authAuditLog.PersonAliasId = auth.PersonAliasId;
                         authAuditLog.ChangeType = ChangeType.Add;
                     }
                     else if ( State == EntityContextState.Modified )
                     {
+                        authAuditLog.GroupId = auth.GroupId;
+                        authAuditLog.PersonAliasId = auth.PersonAliasId;
                         authAuditLog.ChangeType = ChangeType.Modify;
                     }
                     else
                     {
+                        authAuditLog.GroupId = this.Entry.OriginalValues[nameof( Auth.GroupId )] as int?;
+                        authAuditLog.PersonAliasId = this.Entry.OriginalValues[nameof( Auth.PersonAliasId )] as int?;
                         authAuditLog.ChangeType = ChangeType.Delete;
                     }
 

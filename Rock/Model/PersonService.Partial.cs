@@ -4460,57 +4460,36 @@ FROM (
         }
 
         /// <summary>
-        /// Updates the person's family's Group Solution fields and saves any changes to the database.
-        /// Returns number of records that were changed (either 1 or 0)
-        /// See <seealso cref="Group.GroupSalutation" /> and <seealso cref="Group.GroupSalutationFull" />
+        /// Updates the group salutations for person and <see cref="Data.DbContext.SaveChanges()">saves changes</see> to the database.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// System.Int32.
+        /// </returns>
         public static int UpdateGroupSalutations( int personId, RockContext rockContext )
         {
-            var person = new PersonService( rockContext ).GetInclude( personId, s => s.PrimaryFamily );
+            // use specified rockContext to person's PrimaryFamilyId because rockContext
+            // might be in a transaction that hasn't been committed yet
+            var primaryFamilyId = new PersonService( rockContext ).GetSelect( personId, s => s.PrimaryFamilyId );
 
-            try
+            if ( !primaryFamilyId.HasValue )
             {
-                // use specified rockContext to get Person and Family because rockContext might
-                // might be in a transaction that hasn't been committed yet
 
-                if ( !person.PrimaryFamilyId.HasValue )
-                {
-
-                    // if this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
-                    // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
-                    return 0;
-
-                }
-
-                var primaryFamily = person.PrimaryFamily ?? new GroupService( rockContext ).Get( person.PrimaryFamilyId.Value );
-
-                if ( primaryFamily == null )
-                {
-                    // if this is a new person, with a new family, the family might not be saved in the database yet. If so, the GroupMember.PostSaveChanges will take care of this instead.
-                    return 0;
-                }
-
-                var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) { RockContext = rockContext } ).Truncate( 250 );
-                var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = rockContext } ).Truncate( 250 );
-                if ( ( primaryFamily.GroupSalutation != groupSalutation ) || ( primaryFamily.GroupSalutationFull != groupSalutationFull ) )
-                {
-                    primaryFamily.GroupSalutation = groupSalutation;
-                    primaryFamily.GroupSalutationFull = groupSalutationFull;
-
-                    // save changes without pre/post processing so we don't get stuck in recursion
-                    rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
-                    return 1;
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( new Exception( $"Error running UpdateGroupSalutations for person {person.FullName}. Check that the Family group has a name.", ex ) );
+                // If this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
+                // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
+                return 0;
             }
 
-            return 0;
+            bool changesMade = GroupService.UpdateGroupSalutations( primaryFamilyId.Value, rockContext );
+            if ( changesMade )
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         /// <summary>
@@ -4700,7 +4679,7 @@ FROM (
         /// <summary>
         /// Gets or creates the anonymous giver person.
         /// </summary>
-        /// <returns>A <see cref="Person"/> that matches the ystemGuid.Person.GIVER_ANONYMOUS Guid value.</returns>
+        /// <returns>A <see cref="Person"/> that matches the SystemGuid.Person.GIVER_ANONYMOUS Guid value.</returns>
         public Person GetOrCreateAnonymousGiverPerson()
         {
             var anonymousGiver = Get( SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );

@@ -28,6 +28,7 @@ export type FollowingEventType = IEntity & {
     entityNotificationFormatLava?: string | null;
     entityTypeId?: number | null;
     followedEntityTypeId?: number | null;
+    includeNonPublicRequests?: boolean;
     isActive?: boolean;
     isNoticeRequired?: boolean;
     lastCheckDateTime?: string | null;

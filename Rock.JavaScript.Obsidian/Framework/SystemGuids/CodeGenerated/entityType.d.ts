@@ -192,6 +192,8 @@ export const enum EntityType {
     PersonAlias = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F",
     /** The guid for the Rock.Workflow.Action.PersonGetCampusTeamMember entity */
     PersonGetCampusTeamMember = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E",
+    /** The GUID for the Rock.Follow.Event.PersonPrayerRequest entity */
+    PersonPrayerRequest = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B",
     /** The guid for the Rock.Model.PersonSignal entity */
     PersonSignal = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F",
     /** The protect my ministry provider */
@@ -228,6 +230,8 @@ export const enum EntityType {
     StorageAssetstorageFilesystem = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A",
     /** The EntityType Guid for  */
     Workflow = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93",
+    /** The EntityType Guid for  */
+    WorkflowActivity = "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F",
     /** The EntityType Guid for  */
     WorkflowType = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE",
     /** The EntityType Guid for  */

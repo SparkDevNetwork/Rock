@@ -293,7 +293,8 @@ namespace Rock.Model
         {
             if ( this.IsActive )
             {
-                var endDate = currentDateTime.AddYears( 1 );
+                // Increase this from 1 to 2 years to catch events more than a year out. See github issue #4812.
+                var endDate = currentDateTime.AddYears( 2 );
 
                 var calEvent = GetICalEvent();
 
@@ -309,7 +310,7 @@ namespace Rock.Model
 
                 /* 2020-06-24 MP
                  * To improve performance, only go out a week (or so) if this is a weekly or daily schedule.
-                 * If this optimization fails to find a next scheduled date, fall back to looking out a full year
+                 * If this optimization fails to find a next scheduled date, fall back to looking out a full two years
                  */
 
                 if ( rrule?.Frequency == FrequencyType.Weekly )
@@ -325,11 +326,11 @@ namespace Rock.Model
 
                 var occurrences = GetScheduledStartTimes( currentDateTime, endDate );
                 var nextOccurrence = occurrences.Min( o => ( DateTime? ) o );
-                if ( nextOccurrence == null && endDate < currentDateTime.AddYears( 1 ) )
+                if ( nextOccurrence == null && endDate < currentDateTime.AddYears( 2 ) )
                 {
                     // if tried an earlier end date, but didn't get a next datetime,
-                    // use the regular way and see if there is a next schedule date within the next year
-                    endDate = currentDateTime.AddYears( 1 );
+                    // use the regular way and see if there is a next schedule date within the next two years
+                    endDate = currentDateTime.AddYears( 2 );
                     occurrences = GetScheduledStartTimes( currentDateTime, endDate );
                     nextOccurrence = occurrences.Min( o => ( DateTime? ) o );
                 }

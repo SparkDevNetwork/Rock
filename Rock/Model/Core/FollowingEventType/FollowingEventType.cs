@@ -125,6 +125,15 @@ namespace Rock.Model
         [DataMember]
         public string EntityNotificationFormatLava { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [include non public requests].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include non public requests]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IncludeNonPublicRequests { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

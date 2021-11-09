@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Steps
             var editAllowed = IsUserAuthorized( Authorization.EDIT );
             if ( !editAllowed && _program != null )
             {
-                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _program.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
             InitializeAttributesGrid( editAllowed );
         }
@@ -883,7 +883,8 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepProgram != null )
             {
-                if ( !stepProgram.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                // Earlier only Person with admin rights were allowed edit the block.That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+                if ( !stepProgram.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Information );
                     return;
@@ -1062,6 +1063,11 @@ namespace RockWeb.Blocks.Steps
                     stepProgram.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
                 }
 
+                if ( !stepProgram.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson ) )
+                {
+                    stepProgram.AllowPerson( Authorization.MANAGE_STEPS, CurrentPerson, rockContext );
+                }
+
                 if ( !stepProgram.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     stepProgram.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
@@ -1108,15 +1114,18 @@ namespace RockWeb.Blocks.Steps
                 pdAuditDetails.Visible = false;
             }
 
-            // Admin rights are required to edit a Step Program. Edit rights only allow adding/removing items.
-            bool adminAllowed = UserCanAdministrate || stepProgram.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            /*
+             SK - 10/28/2021
+             Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+             */
+            bool editAllowed = stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson );
             pnlDetails.Visible = true;
             hfStepProgramId.Value = stepProgram.Id.ToString();
             lIcon.Text = string.Format( "<i class='{0}'></i>", stepProgram.IconCssClass );
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !adminAllowed )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );

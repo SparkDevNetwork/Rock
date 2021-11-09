@@ -137,9 +137,12 @@ namespace Rock.Field.Types
                 ddl.Items.Add( new ListItem( gender.ConvertToString(), gender.ConvertToInt().ToString() ) );
             }
 
-            if ( configurationValues.ContainsKey( HIDE_UNKNOWN_GENDER_KEY ) && configurationValues[HIDE_UNKNOWN_GENDER_KEY].Value.AsBoolean() )
+            if ( configurationValues != null )
             {
-                ddl.Items.Remove( new ListItem( Gender.Unknown.ConvertToString(), Gender.Unknown.ConvertToInt().ToString() ) );
+                if ( configurationValues.ContainsKey( HIDE_UNKNOWN_GENDER_KEY ) && configurationValues[HIDE_UNKNOWN_GENDER_KEY].Value.AsBoolean() )
+                {
+                    ddl.Items.Remove( new ListItem( Gender.Unknown.ConvertToString(), Gender.Unknown.ConvertToInt().ToString() ) );
+                }
             }
 
             return ddl;

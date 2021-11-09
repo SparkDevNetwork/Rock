@@ -262,11 +262,11 @@
                         <span class="timeline-title">
                         {%- if byVerbPluralizeCount == 1 or first.CreatedByPersonId == last.CreatedByPersonId -%}
                             {%- assign primaryActor = true -%}
-                            {%- if CurrentPerson.Id == historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId -%}
+                            {% if CurrentPerson.Id == historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId %}
                                 <a href="/person/{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId }}">You</a>
-                            {%- else -%}
+                            {% else %}
                                 <a href="/person/{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId }}">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonName }}</a>
-                            {%- endif -%}
+                            {% endif %}
                         {%- endif -%}
                             {%- case historySummaryListByEntityTypeAndVerb.Verb -%}
                                 {%- when 'MODIFY' -%}
@@ -318,7 +318,7 @@
                                 {%- if showSummaryEntity -%}
                                     {%- if historySummary.EntityTypeName == 'Group Member' -%}{%- assign parsedGroupMemberHistoryPage = GroupMemberHistoryPage | Replace:'{GroupMemberId}',historySummary.EntityId -%}
                                         <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ parsedGroupMemberHistoryPage }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</a></span>
-                                    {%- endif -%}
+                                    {% endif -%}
                                 {%- endif -%}
                                 {% comment %} showHistoryDetails for complex sets of changes {% endcomment %}
                                 {%- if showHistoryDetails -%}
@@ -386,8 +386,8 @@
                                                         {%- endif -%}
                                                     {%- else -%}
                                                         {%- if history.NewValue -%}
-                                                            <span class='history-valuename'>{{ historyValueName }}</span> to
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
+                                                            <span class='history-valuename'>{{ historyValueName }}</span> to
                                                             <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>
                                                         {%- else -%}
                                                             removed the <span class='history-valuename'>{{ historyValueName }}</span>

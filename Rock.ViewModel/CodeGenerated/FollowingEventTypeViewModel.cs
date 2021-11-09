@@ -64,6 +64,14 @@ namespace Rock.ViewModel
         public int? FollowedEntityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the IncludeNonPublicRequests.
+        /// </summary>
+        /// <value>
+        /// The IncludeNonPublicRequests.
+        /// </value>
+        public bool IncludeNonPublicRequests { get; set; }
+
+        /// <summary>
         /// Gets or sets the IsActive.
         /// </summary>
         /// <value>

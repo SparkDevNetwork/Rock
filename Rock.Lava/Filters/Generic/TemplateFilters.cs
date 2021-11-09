@@ -19,7 +19,7 @@ using System;
 namespace Rock.Lava.Filters
 {
     /// <summary>
-    /// A set of functions that can be used to perform filter and transformation operations on a text stream.
+    /// A set of functions that can be used to perform filter and transformation operations for a Lava template.
     /// </summary>
     /// <remarks>
     /// These filters are intended to be used in the context of a text templating engine, however their implementation should be engine-agnostic.
@@ -27,9 +27,8 @@ namespace Rock.Lava.Filters
     /// If these filters are found to have more general application, they should be moved to the Rock.Common library.
     ///
     /// Template filters must have the following properties:
-    /// 1. The filter function must have a return type of string.
-    /// 2. Input parameters should be of type string or object. Any parameter conversion should be performed in the function itself.
-    /// 3. No optional parameters. Some Liquid templating frameworks do not handle these correctly, so use an explicit function overload to define different parameter sets.
+    /// 1. Input parameters should be of type string or object. Any necessary parameter type conversion should be performed in the function itself.
+    /// 2. No optional parameters. Some Liquid templating frameworks do not handle these correctly, so use an explicit function overload to define different parameter sets.
     /// </remarks>
     public static partial class TemplateFilters
     {

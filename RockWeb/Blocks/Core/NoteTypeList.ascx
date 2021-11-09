@@ -22,7 +22,6 @@
                                 <Rock:ReorderField />
                                 <asp:BoundField DataField="EntityTypeFriendlyName" HeaderText="Entity Type" />
                                 <Rock:RockBoundField DataField="NoteType.Name" HeaderText="Note Type" />
-                                <Rock:RockBoundField DataField="NoteType.CssClass" HeaderText="CSS Class" ColumnPriority="DesktopSmall" />
                                 <Rock:RockBoundField DataField="NoteType.IconCssClass" HeaderText="Icon CSS Class" ColumnPriority="DesktopSmall" />
                                 <Rock:BoolField DataField="NoteType.UserSelectable" HeaderText="User Selectable" ColumnPriority="Desktop" />
                                 <Rock:BoolField DataField="NoteType.RequiresApprovals" HeaderText="Requires Approvals" ColumnPriority="Desktop" />

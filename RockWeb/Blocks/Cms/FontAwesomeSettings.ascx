@@ -21,7 +21,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbFontAwesomeProKey" runat="server" Label="Font Awesome Pro Key" />
-                        <Rock:FileUploader ID="fupFontAwesomeProPackage" runat="server" Label="Font Awesome Pro Package Upload" />
+                        <Rock:FileUploader ID="fupFontAwesomeProPackage" runat="server" Label="Font Awesome 5 Pro Package Upload" Help="Rock does not support Font Awesome 6, please use Font Awesome 5 ZIP files to prevent errors." />
                     </div>
                 </div>
                 <Rock:NotificationBox ID="nbInstallSuccess" runat="server" NotificationBoxType="Success" Text="" />

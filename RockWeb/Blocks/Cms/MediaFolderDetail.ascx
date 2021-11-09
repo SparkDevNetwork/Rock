@@ -26,9 +26,7 @@
                 <div id="pnlViewDetails" runat="server">
                     <div class="row">
                         <div class="col-sm-6 col-md-7 col-lg-8">
-                            <div class="margin-b-lg">
-                                <asp:Literal ID="lDescription" runat="server" />
-                            </div>
+                            <asp:Literal ID="lDescription" runat="server" />
                         </div>
                         <div class="col-sm-6 col-md-5 col-lg-4">
                             <asp:Literal ID="lMetricData" runat="server" />

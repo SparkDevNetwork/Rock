@@ -52,7 +52,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         "Alert List Page",
         Description = "The page to see a list of alerts for the person.",
         Order = 1,
-        Key = AttributeKey.AlertListPage )]
+        Key = AttributeKey.AlertListPage,
+        DefaultValue = Rock.SystemGuid.Page.GIVING_ALERTS )]
 
     public partial class GivingOverview : Rock.Web.UI.PersonBlock
     {

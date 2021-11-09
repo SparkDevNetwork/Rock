@@ -35,20 +35,102 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Allows a user to start a session to pray for active, approved prayer requests." )]
 
-    [CodeEditorField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", CodeEditorMode.Html, height: 100, required: false, defaultValue: "<h2>Let’s get ready to pray...</h2>", order: 1 )]
-    [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
-    [BooleanField( "Enable Prayer Team Flagging", "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.", false, "Flagging", 3, "EnableCommunityFlagging" )]
-    [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.", false, 1, "Flagging", 4 )]
+    [CodeEditorField( "Welcome Introduction Text",
+        Description = "Some text (or HTML) to display on the first step.",
+        Key = AttributeKey.WelcomeIntroductionText,
+        EditorMode = CodeEditorMode.Html,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = "<h2>Let’s get ready to pray...</h2>",
+        Order = 0 )]
 
-    [CodeEditorField( "Prayer Person Lava", "The Lava Template for how the person details are shown in the header", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, order: 5, defaultValue:
-        @"
-{% if PrayerRequest.RequestedByPersonAlias %}
-<img src='{{ PrayerRequest.RequestedByPersonAlias.Person.PhotoUrl }}' class='pull-left margin-r-md img-thumbnail' width=50 />
-{% endif %}
-<span class='first-word'>{{ PrayerRequest.FirstName }}</span> {{ PrayerRequest.LastName }}
-" )]
-    [CodeEditorField( "Prayer Display Lava", "The Lava Template which will show the details of the Prayer Request", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, order: 5,
-        defaultValue: @"
+    [CategoryField( "Category",
+        Description = "A top level category. This controls which categories are shown when starting a prayer session.",
+        Key = AttributeKey.CategoryGuid,
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.PrayerRequest",
+        IsRequired = false,
+        Category = "Filtering",
+        Order = 1 )]
+
+    [BooleanField( "Enable Prayer Team Flagging",
+        Description = "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.",
+        Key = AttributeKey.EnableCommunityFlagging,
+        DefaultBooleanValue = false,
+        Category = "Flagging",
+        Order = 2 )]
+
+    [IntegerField( "Flag Limit",
+        Description = "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.",
+        Key = AttributeKey.FlagLimit,
+        DefaultIntegerValue = 1,
+        IsRequired = false,
+        Category = "Flagging",
+        Order = 3 )]
+
+    [CodeEditorField( "Prayer Person Lava",
+        Description = "The Lava Template for how the person details are shown in the header",
+        Key = AttributeKey.PrayerPersonLava,
+        DefaultValue = PrayerPersonLavaDefaultValue,
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        Order = 4 )]
+
+    [CodeEditorField( "Prayer Display Lava",
+        Description = "The Lava Template which will show the details of the Prayer Request",
+        Key = AttributeKey.PrayerDisplayLava,
+        DefaultValue = PrayerDisplayLavaDefaultValue,
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        Order = 5 )]
+
+    [BooleanField( "Display Campus",
+        Description = "Should the campus field be displayed? If there is only one active campus then the campus field will not show.",
+        Key = AttributeKey.DisplayCampus,
+        DefaultBooleanValue = true,
+        Category = "Filtering",
+        Order = 6 )]
+
+    [BooleanField( "Public Only",
+        Description = "If selected, all non-public prayer request will be excluded.",
+        Key = AttributeKey.PublicOnly,
+        DefaultBooleanValue = false,
+        Order = 7 )]
+
+    [BooleanField( "Create Interactions for Prayers",
+        Description = "If enabled then this block will record an Interaction whenever somebody prays for a prayer request.",
+        Key = AttributeKey.CreateInteractionsForPrayers,
+        DefaultBooleanValue = true,
+        IsRequired = true,
+        Order = 8 )]
+    public partial class PrayerSession : RockBlock
+    {
+        #region Keys
+
+        /// <summary>
+        /// Attribute keys for the <see cref="PrayerSession"/> block.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string CreateInteractionsForPrayers = "CreateInteractionsForPrayers";
+            public const string PublicOnly = "PublicOnly";
+            public const string DisplayCampus = "DisplayCampus";
+            public const string PrayerDisplayLava = "PrayerDisplayLava";
+            public const string PrayerPersonLava = "PrayerPersonLava";
+            public const string FlagLimit = "FlagLimit";
+            public const string EnableCommunityFlagging = "EnableCommunityFlagging";
+            public const string CategoryGuid = "CategoryGuid";
+            public const string WelcomeIntroductionText = "WelcomeIntroductionText";
+        }
+
+        #endregion
+
+        #region AttributeDefaultValues
+        private const string PrayerDisplayLavaDefaultValue = @"
 <div class='row'>
     <div class='col-md-6'>
         <strong>Prayer Request</strong>
@@ -79,31 +161,16 @@ namespace RockWeb.Blocks.Prayer
 </div>
 {% endif %}
 
-" )]
-    [BooleanField( "Display Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true,category: "Filtering", order: 6 )]
-    [BooleanField( "Public Only", "If selected, all non-public prayer request will be excluded.", false, "", 7 )]
-    [BooleanField( "Create Interactions for Prayers",
-        Description = "If enabled then this block will record an Interaction whenever somebody prays for a prayer request.",
-        DefaultBooleanValue = true,
-        IsRequired = true,
-        Key = AttributeKey.CreateInteractionsForPrayers,
-        Order = 8 )]
-    public partial class PrayerSession : RockBlock
-    {
-        #region Keys
+";
 
-        /// <summary>
-        /// Attribute keys for the <see cref="PrayerSession"/> block.
-        /// </summary>
-        private static class AttributeKey
-        {
-            /// <summary>
-            /// The create interactions for prayers key.
-            /// </summary>
-            public const string CreateInteractionsForPrayers = "CreateInteractionsForPrayers";
-        }
+        private const string PrayerPersonLavaDefaultValue = @"
+{% if PrayerRequest.RequestedByPersonAlias %}
+<img src='{{ PrayerRequest.RequestedByPersonAlias.Person.PhotoUrl }}' class='pull-left margin-r-md img-thumbnail' width=50 />
+{% endif %}
+<span class='first-word'>{{ PrayerRequest.FirstName }}</span> {{ PrayerRequest.LastName }}
+";
 
-        #endregion
+        #endregion AttributeDefaultValues
 
         #region Fields
 
@@ -168,11 +235,11 @@ namespace RockWeb.Blocks.Prayer
 
             mdFlag.SaveClick += mdFlag_SaveClick;
 
-            _flagLimit = GetAttributeValue( "FlagLimit" ).AsIntegerOrNull();
-            _categoryGuidString = GetAttributeValue( "CategoryGuid" );
-            _enableCommunityFlagging = GetAttributeValue( "EnableCommunityFlagging" ).AsBoolean();
-            lWelcomeInstructions.Text = GetAttributeValue( "WelcomeIntroductionText" );
-            cpCampus.Visible = GetAttributeValue( "DisplayCampus" ).AsBoolean();
+            _flagLimit = GetAttributeValue( AttributeKey.FlagLimit ).AsIntegerOrNull();
+            _categoryGuidString = GetAttributeValue( AttributeKey.CategoryGuid );
+            _enableCommunityFlagging = GetAttributeValue( AttributeKey.EnableCommunityFlagging ).AsBoolean();
+            lWelcomeInstructions.Text = GetAttributeValue( AttributeKey.WelcomeIntroductionText );
+            cpCampus.Visible = GetAttributeValue( AttributeKey.DisplayCampus ).AsBoolean();
         }
 
         /// <summary>
@@ -570,8 +637,8 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.AttributeValues = prayerRequest.AttributeValues.Where( av => !excludeForView.Contains( av.Key ) ).ToDictionary( k => k.Key, k => k.Value );
 
             mergeFields.Add( "PrayerRequest", prayerRequest );
-            string prayerPersonLava = this.GetAttributeValue( "PrayerPersonLava" );
-            string prayerDisplayLava = this.GetAttributeValue( "PrayerDisplayLava" );
+            string prayerPersonLava = this.GetAttributeValue( AttributeKey.PrayerPersonLava );
+            string prayerDisplayLava = this.GetAttributeValue( AttributeKey.PrayerDisplayLava );
             lPersonLavaOutput.Text = prayerPersonLava.ResolveMergeFields( mergeFields );
             lPrayerLavaOutput.Text = prayerDisplayLava.ResolveMergeFields( mergeFields );
 

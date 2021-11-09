@@ -51,19 +51,9 @@
   box-shadow: @x-axis @y-axis @blur rgba(0, 0, 0, @alpha);
 }
 .rounded(@radius: 2px) {
-  -webkit-border-radius: @radius;
-  -moz-border-radius: @radius;
   border-radius: @radius;
 }
 .border-radius(@topright: 0, @bottomright: 0, @bottomleft: 0, @topleft: 0) {
-  -webkit-border-top-right-radius: @topright;
-  -webkit-border-bottom-right-radius: @bottomright;
-  -webkit-border-bottom-left-radius: @bottomleft;
-  -webkit-border-top-left-radius: @topleft;
-  -moz-border-radius-topright: @topright;
-  -moz-border-radius-bottomright: @bottomright;
-  -moz-border-radius-bottomleft: @bottomleft;
-  -moz-border-radius-topleft: @topleft;
   border-top-right-radius: @topright;
   border-bottom-right-radius: @bottomright;
   border-bottom-left-radius: @bottomleft;
@@ -71,9 +61,6 @@
   .background-clip(padding-box);
 }
 .opacity(@opacity: 0.5) {
-  -webkit-opacity: @opacity;
-  -khtml-opacity: @opacity;
-  -moz-opacity: @opacity;
   opacity: @opacity;
   @opperc: @opacity * 100;
   -ms-filter: ~"progid:DXImageTransform.Microsoft.Alpha(opacity=@{opperc})";
@@ -101,7 +88,6 @@
 .transition(@duration:0.2s, @ease:ease-out) {
   -webkit-transition: all @duration @ease;
   -moz-transition: all @duration @ease;
-  -o-transition: all @duration @ease;
   transition: all @duration @ease;
 }
 .inner-shadow(@horizontal:0, @vertical:1px, @blur:2px, @alpha: 0.4) {

@@ -555,6 +555,7 @@ namespace RockWeb.Blocks.Cms
                 i.ExpireDateTime,
                 i.Priority,
                 Status = DisplayStatus( i.Status ),
+                DateStatus = DisplayDateStatus( i.StartDateTime ),
                 Occurrences = i.EventItemOccurrences.Any()
             } ).ToList();
 
@@ -565,6 +566,11 @@ namespace RockWeb.Blocks.Cms
 
             gItems.DataSource = gridList;
             gItems.DataBind();
+        }
+
+        protected string DisplayDateStatus( DateTime aDate )
+        {
+            return ( aDate > RockDateTime.Now ) ? "<i class='fa fa-clock'></i>" : string.Empty;
         }
 
         /// <summary>

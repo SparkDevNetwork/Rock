@@ -591,6 +591,8 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
+    <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistData.cs" />
@@ -724,6 +726,7 @@
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
     <Compile Include="Jobs\ConnectionRequestsAutomation.cs" />
     <Compile Include="Jobs\GivingAutomation.cs" />
+    <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Model\AuthAuditLog.cs" />
@@ -741,6 +744,7 @@
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
     <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
+    <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />
     <Compile Include="Model\Connection\ConnectionRequestActivity\ConnectionRequestActivity.SaveHook.cs" />
@@ -768,12 +772,14 @@
     <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
+    <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.WebForms.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.Logic.cs" />
     <Compile Include="Model\Core\FollowingEventType\FollowingEventType.Logic.cs" />
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedStatus.cs" />
     <Compile Include="Model\Core\FollowingSuggestionType\FollowingSuggestionType.Logic.cs" />
     <Compile Include="Model\Core\NoteAttachment\NoteAttachment.SaveHook.cs" />
     <Compile Include="Model\Core\NoteWatch\NoteWatch.Logic.cs" />
+    <Compile Include="Model\Core\Note\Note.WebForms.cs" />
     <Compile Include="Model\Core\Note\Note.Logic.cs" />
     <Compile Include="Model\Core\Note\Note.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteApprovalStatus.cs" />
@@ -981,6 +987,8 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.WebForms.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
+    <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
+    <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\AttendanceInPlacementGroup.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ConnectionOpportunityFilter.cs" />
@@ -1041,6 +1049,8 @@
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\CodeGenFeature.cs" />
+    <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
+    <Compile Include="Plugin\HotFixes\142_AddMobileGroupFinderBlock.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
@@ -1305,6 +1315,7 @@
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
+    <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
@@ -2347,8 +2358,8 @@
     <Compile Include="Model\Event\EventItemOccurrence\EventItemOccurrence.cs" />
     <Compile Include="Model\Event\EventItemOccurrenceChannelItem\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="Model\Event\EventItemOccurrenceGroupMap\EventItemOccurrenceGroupMap.cs" />
-    <Compile Include="Model\ExceptionLog.cs" />
-    <Compile Include="Model\ExceptionLogService.Partial.cs" />
+    <Compile Include="Model\Core\ExceptionLog\ExceptionLog.cs" />
+    <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.cs" />
     <Compile Include="Model\FieldType.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.cs" />
@@ -2417,8 +2428,8 @@
     <Compile Include="Model\Core\NoteType\NoteType.cs" />
     <Compile Include="Model\Core\NoteType\NoteTypeService.cs" />
     <Compile Include="Model\Core\NoteWatch\NoteWatch.cs" />
-    <Compile Include="Model\Notification.cs" />
-    <Compile Include="Model\NotificationRecipient.cs" />
+    <Compile Include="Model\Communication\Notification\Notification.cs" />
+    <Compile Include="Model\Communication\NotificationRecipient\NotificationRecipient.cs" />
     <Compile Include="Model\Page.cs" />
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageContextService.Partial.cs" />

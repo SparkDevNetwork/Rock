@@ -1132,7 +1132,7 @@ namespace Rock.WebStartup
             _debugTimingStopwatch.Stop();
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                Debug.WriteLine( $"[{_debugTimingStopwatch.Elapsed.TotalMilliseconds,5:#} ms] {message}" );
+                Debug.WriteLine( $"[{_debugTimingStopwatch.Elapsed.TotalMilliseconds,5:#0} ms] {message}" );
             }
 
             _debugTimingStopwatch.Restart();

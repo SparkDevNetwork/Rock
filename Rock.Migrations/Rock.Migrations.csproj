@@ -169,6 +169,42 @@
     <Compile Include="Migrations\202110191825213_CodeGenerated_20211019.Designer.cs">
       <DependentUpon>202110191825213_CodeGenerated_20211019.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202110210024023_FollowingEvent-IncludeNonPublicRequests.cs" />
+    <Compile Include="Migrations\202110210024023_FollowingEvent-IncludeNonPublicRequests.Designer.cs">
+      <DependentUpon>202110210024023_FollowingEvent-IncludeNonPublicRequests.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110261740212_UpdateBusinessDetailsPage.cs" />
+    <Compile Include="Migrations\202110261740212_UpdateBusinessDetailsPage.Designer.cs">
+      <DependentUpon>202110261740212_UpdateBusinessDetailsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110262138312_AddExpireDateToSmsAction.cs" />
+    <Compile Include="Migrations\202110262138312_AddExpireDateToSmsAction.Designer.cs">
+      <DependentUpon>202110262138312_AddExpireDateToSmsAction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110272222091_BusinessDetailsLayoutUpdate.cs" />
+    <Compile Include="Migrations\202110272222091_BusinessDetailsLayoutUpdate.Designer.cs">
+      <DependentUpon>202110272222091_BusinessDetailsLayoutUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110281648328_UpdateAuthAuditLog.cs" />
+    <Compile Include="Migrations\202110281648328_UpdateAuthAuditLog.Designer.cs">
+      <DependentUpon>202110281648328_UpdateAuthAuditLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110282124566_DeviceKioskType.cs" />
+    <Compile Include="Migrations\202110282124566_DeviceKioskType.Designer.cs">
+      <DependentUpon>202110282124566_DeviceKioskType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111011530328_RemoveMediaElementAnalyticsBlockTypes.cs" />
+    <Compile Include="Migrations\202111011530328_RemoveMediaElementAnalyticsBlockTypes.Designer.cs">
+      <DependentUpon>202111011530328_RemoveMediaElementAnalyticsBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111021845516_Rollup_20211102.cs" />
+    <Compile Include="Migrations\202111021845516_Rollup_20211102.Designer.cs">
+      <DependentUpon>202111021845516_Rollup_20211102.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111021951034_CodeGenerated_20211102.cs" />
+    <Compile Include="Migrations\202111021951034_CodeGenerated_20211102.Designer.cs">
+      <DependentUpon>202111021951034_CodeGenerated_20211102.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -855,6 +891,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202110191825213_CodeGenerated_20211019.resx">
       <DependentUpon>202110191825213_CodeGenerated_20211019.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110210024023_FollowingEvent-IncludeNonPublicRequests.resx">
+      <DependentUpon>202110210024023_FollowingEvent-IncludeNonPublicRequests.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110261740212_UpdateBusinessDetailsPage.resx">
+      <DependentUpon>202110261740212_UpdateBusinessDetailsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110262138312_AddExpireDateToSmsAction.resx">
+      <DependentUpon>202110262138312_AddExpireDateToSmsAction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110272222091_BusinessDetailsLayoutUpdate.resx">
+      <DependentUpon>202110272222091_BusinessDetailsLayoutUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110281648328_UpdateAuthAuditLog.resx">
+      <DependentUpon>202110281648328_UpdateAuthAuditLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110282124566_DeviceKioskType.resx">
+      <DependentUpon>202110282124566_DeviceKioskType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111011530328_RemoveMediaElementAnalyticsBlockTypes.resx">
+      <DependentUpon>202111011530328_RemoveMediaElementAnalyticsBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111021845516_Rollup_20211102.resx">
+      <DependentUpon>202111021845516_Rollup_20211102.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111021951034_CodeGenerated_20211102.resx">
+      <DependentUpon>202111021951034_CodeGenerated_20211102.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>

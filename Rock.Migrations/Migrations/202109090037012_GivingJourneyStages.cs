@@ -99,13 +99,17 @@ namespace Rock.Migrations
             /*   Attribute Value: 365 */
             RockMigrationHelper.AddBlockAttributeValue( "8A8806DB-78F8-42C5-9D09-3723A868D976", "5796A617-552F-4CCE-B40B-9A7162B6FE6D", @"365" );
 
+            /* 11-01-2021 MDP
+              This was incorrect in a prior commit. This fixes it. There will be a rollup migration that will fix it for people that already ran the old version of this migration. 
+            */
+
             // Add Block Attribute Value
             //   Block: Giving Overview
             //   BlockType: Giving Overview
             //   Block Location: Page=Contributions, Site=Rock RMS
             //   Attribute: Alert List Page
-            /*   Attribute Value: 490f8a53-85c5-42d1-b305-a531f4924dc6 */
-            RockMigrationHelper.AddBlockAttributeValue( "8A8806DB-78F8-42C5-9D09-3723A868D976", "3B85794D-E382-4F65-B931-AE44A789EFF6", @"490f8a53-85c5-42d1-b305-a531f4924dc6" );
+            /*   Attribute Value: Rock.SystemGuid.Page.GIVING_ALERTS */
+            RockMigrationHelper.AddBlockAttributeValue( "8A8806DB-78F8-42C5-9D09-3723A868D976", "3B85794D-E382-4F65-B931-AE44A789EFF6", Rock.SystemGuid.Page.GIVING_ALERTS );
         }
 
         /// <summary>

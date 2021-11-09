@@ -134,6 +134,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX = "DA54E879-44CE-433C-A472-54B57B11CB7B";
 
         /// <summary>
+        /// The Job to run Post v12.7 Data Migrations for Rebuild Group Salutation fields on Rock.Model.Group.
+        /// </summary>
+        public const string DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS = "FD32833A-6FC8-43E6-8D36-0C840DBE99F8";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";

@@ -165,6 +165,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Core\Blocks\LavaBlockInfo.cs" />
     <Compile Include="Core\ILiquidFrameworkDataObjectProxy.cs" />
+    <Compile Include="Core\LavaRenderContext.cs" />
     <Compile Include="Core\LavaSecurityHelper.cs" />
     <Compile Include="Core\Blocks\LavaBlockBase.cs" />
     <Compile Include="Core\LavaServiceProvider.cs" />
