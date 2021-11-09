@@ -202,6 +202,7 @@ namespace Rockweb.Blocks.Crm
                 .Where( x => x.IsActive == true )
                 .Select( t => new AssessmentTypeListItem
                 {
+                    Id = t.Id,
                     Title = t.Title,
                     Description = t.Description,
                     AssessmentPath = t.AssessmentPath,
@@ -302,6 +303,7 @@ namespace Rockweb.Blocks.Crm
 
         public class AssessmentTypeListItem : RockDynamic
         {
+            public int Id { get; set; }
             public string Title { get; set; }
             public string Description { get; set; }
             public string AssessmentPath { get; set; }
