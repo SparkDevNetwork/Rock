@@ -175,9 +175,14 @@ namespace Rock.Model
                     person = new PersonService( rockContext ).Get( personAlias.PersonId );
                 }
 
-                if ( person == null || !person.IsPersonTokenUsageAllowed() )
+                if ( person == null )
                 {
                     return null;
+                }
+                // If a token is disallowed by security settings, return an error message.
+                if ( !person.IsPersonTokenUsageAllowed() )
+                {
+                    return "TokenProhibited";
                 }
 
                 var token = Rock.Security.Encryption.GenerateUniqueToken();

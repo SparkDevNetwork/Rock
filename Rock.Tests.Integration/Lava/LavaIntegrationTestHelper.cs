@@ -764,7 +764,8 @@ namespace Rock.Tests.Integration.Lava
 
                     expectedOutput = Regex.Escape( expectedOutput );
 
-                    expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.*)" );
+                    // Require a match of 1 or more characters for a wildcard.
+                    expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
 
                     if ( options.OutputMatchType != LavaTestOutputMatchTypeSpecifier.RegEx )
                     {
