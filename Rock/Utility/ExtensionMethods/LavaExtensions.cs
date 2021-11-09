@@ -713,7 +713,7 @@ namespace Rock
 
             if ( encodeStrings )
             {
-                // if encodeStrings = true, we want any string values to be XML Encoded ( 
+                // if encodeStrings = true, we want any string values to be XML Encoded (
                 RenderParameters renderParameters = new RenderParameters();
                 renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
                 renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
