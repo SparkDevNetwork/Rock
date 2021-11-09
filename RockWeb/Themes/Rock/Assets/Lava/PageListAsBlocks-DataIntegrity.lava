@@ -18,7 +18,7 @@
                 </li>
             {%- endfor -%}
         </ul>
-        <div class="row d-flex flex-wrap align-items-center mt-4">
+        <div class="row d-flex flex-wrap align-items-center mt-5">
             <div class="col-xs-12 col-md-5 col-lg-7 mb-4 mb-md-0">
                 <h2 class="h3 mt-0 mb-2">Address Standardization Funded By</h2>
                 <p>The SmartyStreets address standardization service is generously funded by Triumph Tech for all churches in the Rock Community.</p>
