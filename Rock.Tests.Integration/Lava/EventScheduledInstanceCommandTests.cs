@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
@@ -334,29 +336,23 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [Ignore( "In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop." )]
-        // This bug may be fixed, included in the next release: https://github.com/sebastienros/fluid/issues/317
         public void EventScheduledInstanceCommand_EventWithMultipleSchedules_ReturnsMultipleEventItemEntries()
         {
             var template = @"
 {% eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' %}
     {% for occurrence in EventItems %}
         <b>Series {{forloop.index}}</b><br>
-
         {% for item in occurrence %}
             {% if forloop.first %}
                 {{ item.Name }}
                 <b>{{ item.DateTime | Date:'dddd' }} Series</b><br>
                 <ol>
             {% endif %}
-
             <li>{{ item.DateTime | Date:'MMM d, yyyy' }} in {{ item.LocationDescription }}</li>
-
             {% if forloop.last %}
                 </ol>
             {% endif %}
         {% endfor %}
-
     {% endfor %}
 {% endeventscheduledinstance %}
 ";
@@ -372,6 +368,33 @@ namespace Rock.Tests.Integration.Lava
                 Assert.That.Contains( output, "<b>Series 2</b>" );
                 Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
             } );
+        }
+
+        /// <summary>
+        /// Retrieve information about a known event that exists in the Rock sample data set, and verify the information is accurate.
+        /// </summary>
+        [TestMethod]
+        public void EventScheduledInstanceCommand_ForSampleDataKnownEvents_ReturnsExpectedEventData()
+        {
+            var input = @"
+{% eventscheduledinstance eventid:'Customs & Classics Car Show' startdate:'2018-4-1' maxoccurrences:1 %}
+    {% for item in EventScheduledInstances %}
+        Name={{ item.Name }}<br>
+        Date={{item.Date }}<br>
+        Time={{ item.Time }}<br>
+        DateTime={{ item.DateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}
+    {% endfor %}
+{% endeventscheduledinstance %}
+";
+
+            var rockTimeOffset = LavaDateTime.ConvertToRockDateTime( new DateTime( 2021, 9, 1, 0, 0, 0, DateTimeKind.Unspecified ) ).ToString( "zzz" );
+
+            var expectedOutput = @"
+Name=Customs & Classics Car Show<br>Date=16/04/2018<br>Time=9:24 AM<br>DateTime=2018-04-16T09:24:13<offset>
+";
+            expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]

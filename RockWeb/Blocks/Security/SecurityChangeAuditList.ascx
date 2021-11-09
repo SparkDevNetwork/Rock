@@ -7,7 +7,7 @@
             <Rock:ModalAlert ID="maGridWarning" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file"></i> Security Change Audit</h1>
+                <h1 class="panel-title"><i class="fa fa-user-secret"></i> Security Change Audit</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
@@ -27,6 +27,7 @@
                             <Rock:RockBoundField DataField="Action" HeaderText="Action" SortExpression="Action" />
                             <Rock:RockLiteralField ID="lAccess" HeaderText="Access" />
                             <Rock:RockBoundField DataField="Group.Name" HeaderText="Group" SortExpression="Group.Name" />
+                            <Rock:RockBoundField DataField="PersonAlias.Person" HeaderText="Individual" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:EnumField DataField="SpecialRole" SortExpression="SpecialRole" HeaderText="Special Role" />
                             <Rock:RockLiteralField ID="lOrder" HeaderText="Order" />
                             <Rock:RockLiteralField ID="lChange" HeaderText="Change" SortExpression="ChangeType" />

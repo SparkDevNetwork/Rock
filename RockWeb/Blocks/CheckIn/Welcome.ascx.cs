@@ -205,6 +205,8 @@ namespace RockWeb.Blocks.CheckIn
             // ZebraPrint is needed for client side label re-printing.
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
 
+            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/html5-qrcode.min.js" );
+
             if ( CurrentCheckInState == null )
             {
                 NavigateToPreviousPage();
@@ -213,11 +215,18 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js" );
             RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
-
-            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            
+            var bodyTag = this.Page.Master.FindControl( "body" ) as HtmlGenericControl;
             if ( bodyTag != null )
             {
-                bodyTag.AddCssClass( "checkin-welcome-bg" );
+                if ( CurrentCheckInState.Kiosk?.Device?.HasCamera == true )
+                {
+                    bodyTag.AddCssClass( "js-camera-available" );
+                }
+
+                var kioskType = CurrentCheckInState.Kiosk?.Device?.KioskType?.ConvertToString( false )?.ToLower();
+                var kioskTypeJsHook = $"js-kiosktype-{kioskType}";
+                bodyTag.AddCssClass( kioskTypeJsHook );
             }
         }
 
@@ -230,6 +239,7 @@ namespace RockWeb.Blocks.CheckIn
             base.OnLoad( e );
 
             hfLocalDeviceConfiguration.Value = this.LocalDeviceConfig.ToJson();
+            hfKioskType.Value = CurrentCheckInState?.Kiosk?.Device?.KioskType?.ConvertToString( false );
 
             if ( !Page.IsPostBack )
             {
@@ -451,7 +461,7 @@ namespace RockWeb.Blocks.CheckIn
             var cameraMode = CurrentCheckInState.Kiosk.Device.CameraBarcodeConfigurationType ?? blockCameraMode;
             cameraMode = deviceHasCamera ? cameraMode : CameraBarcodeConfiguration.Off;
 
-            hfCameraMode.Value = cameraMode.ToString();
+            hfIPadCameraMode.Value = cameraMode.ToString();
             if ( pnlActive.Visible && cameraMode != CameraBarcodeConfiguration.Off )
             {
                 var scanButtonText = GetAttributeValue( AttributeKey.ScanButtonText );

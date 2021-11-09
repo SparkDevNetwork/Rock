@@ -683,7 +683,7 @@ namespace Rock
             }
             catch ( System.Threading.ThreadAbortException )
             {
-                // Ignore abort error caused by Lava PageRedirect filter.
+                // Ignore abort errors that may be caused by previous implementations of the Lava PageRedirect filter.
                 return string.Empty;
             }
             catch ( Exception ex )

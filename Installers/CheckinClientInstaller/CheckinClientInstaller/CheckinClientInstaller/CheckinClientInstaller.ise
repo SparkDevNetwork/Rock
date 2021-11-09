@@ -4407,7 +4407,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]CheckinClient.Primary output</td><td/></row>
 		<row><td>ProductCode</td><td>{6AAB50D5-A63C-43F5-B3A4-A0573395B8FF}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Check-in Client</td><td/></row>
-		<row><td>ProductVersion</td><td>1.13.0.0</td><td/></row>
+		<row><td>ProductVersion</td><td>1.13.0.26</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>

@@ -75,7 +75,11 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// The list of values that SMS messages can be sent from.  Depending on provider, these may
-        /// be phone numbers or short codes
+        /// be phone numbers or short codes.
+        /// <br />
+        /// The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
+        /// <br />
+        /// The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
         /// </summary>
         public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
 

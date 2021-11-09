@@ -679,10 +679,16 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            // Update the dragged request to the new status
+            request.ConnectionStatusId = newStatusId;
+            rockContext.SaveChanges();
+
             // Reordering is only allowed when the cards are sorted by order
             if ( CurrentSortProperty == ConnectionRequestViewModelSortProperty.Order )
             {
-                var requestsOfStatus = service.Queryable()
+                if ( request.ConnectionStatusId == newStatusId )
+                {
+                    var requestsOfStatus = service.Queryable()
                     .Where( r =>
                         r.ConnectionStatusId == newStatusId &&
                         r.ConnectionOpportunityId == request.ConnectionOpportunityId )
@@ -691,44 +697,47 @@ namespace RockWeb.Blocks.Connection
                     .ThenBy( r => r.Id )
                     .ToList();
 
-                // There may be filters applied so we do not want to change what might have
-                // been 4, 9, 12 to 1, 2, 3.  Instead we want to keep 4, 9, 12, and reapply
-                // those order values to the requests in their new order. There could be a problem
-                // if some of the orders match (like initially they are all 0). So, we do a
-                // slight adjustment top ensure uniqueness in this set.
-                var orderValues = requestsOfStatus.Select( r => r.Order ).ToList();
-                var previousValue = -1;
+                    // There may be filters applied so we do not want to change what might have
+                    // been 4, 9, 12 to 1, 2, 3.  Instead we want to keep 4, 9, 12, and reapply
+                    // those order values to the requests in their new order. There could be a problem
+                    // if some of the orders match (like initially they are all 0). So, we do a
+                    // slight adjustment top ensure uniqueness in this set.
+                    var orderValues = requestsOfStatus.Select( r => r.Order ).ToList();
+                    var previousValue = -1;
 
-                for ( var i = 0; i < orderValues.Count; i++ )
-                {
-                    if ( orderValues[i] <= previousValue )
+                    for ( var i = 0; i < orderValues.Count; i++ )
                     {
-                        orderValues[i] = previousValue + 1;
+                        if ( orderValues[i] <= previousValue )
+                        {
+                            orderValues[i] = previousValue + 1;
+                        }
+
+                        previousValue = orderValues[i];
                     }
 
-                    previousValue = orderValues[i];
+                    requestsOfStatus.Remove( request );
+                    requestsOfStatus.Insert( newIndex, request );
+
+                    for ( var i = 0; i < orderValues.Count; i++ )
+                    {
+                        requestsOfStatus[i].Order = orderValues[i];
+                    }
+
+                    if ( orderValues.Count < requestsOfStatus.Count )
+                    {
+                        // This happens if the card came from another column. The remove did nothing, but
+                        // we added the new request. Therefore we need to set the last request to the
+                        // last order value + 1.
+                        requestsOfStatus.Last().Order = previousValue + 1;
+                    }
+
+                    rockContext.SaveChanges();
                 }
-
-                requestsOfStatus.Remove( request );
-                requestsOfStatus.Insert( newIndex, request );
-
-                for ( var i = 0; i < orderValues.Count; i++ )
+                else
                 {
-                    requestsOfStatus[i].Order = orderValues[i];
-                }
-
-                if ( orderValues.Count < requestsOfStatus.Count )
-                {
-                    // This happens if the card came from another column. The remove did nothing, but
-                    // we added the new request. Therefore we need to set the last request to the
-                    // last order value + 1.
-                    requestsOfStatus.Last().Order = previousValue + 1;
+                    RefreshRequestCard();
                 }
             }
-
-            // Update the dragged request to the new status
-            request.ConnectionStatusId = newStatusId;
-            rockContext.SaveChanges();
         }
 
         /// <summary>

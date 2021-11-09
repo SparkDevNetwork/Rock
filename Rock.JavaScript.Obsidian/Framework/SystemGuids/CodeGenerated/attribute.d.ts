@@ -188,6 +188,8 @@ export const enum Attribute {
     GroupmemberCommunicationListPreferredCommunicationMedium = "D7941908-1F65-CC9B-416C-CCFABE4221B9",
     /** The communication transport SMTP server Attribute Guid */
     CommunicationTransportSmtpServer = "6CFFDF99-E93A-49B8-B440-0EF93878A51F",
+    /** The communication medium Email CSS Inlining Enabled Attribute Guid */
+    CommunicationMediumEmailCssInliningEnabled = "1D5E06A4-79BD-4554-AB63-DD6F1F815594",
     /** The Template DefinedType &gt; TemplateBlock DefinedValue Attribute Guid */
     DefinedTypeTemplateTemplateBlock = "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D",
     /** The Template DefinedType &gt; Icon DefinedValue Attribute Guid */
@@ -258,6 +260,8 @@ export const enum Attribute {
     WorkflowActionSendEmailAttachmentThree = "A059767A-5592-4926-948A-1065AF4E9748",
     /** The Send Email workflow action attribute guid for SaveCommunicationHistory */
     WorkflowActionSendEmailSaveCommunicationHistory = "65E69B78-37D8-4A88-B8AC-71893D2F75EF",
+    /** The Workflow Entry Block Attribute that disables passing the WorkflowTypeID. */
+    WorkflowEntryBlockDisablePassingWorkflowtypeid = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB",
     /** The defined value logging domains to log */
     DefinedValueLoggingDomainsToLog = "9BEA544F-0636-485E-8772-B63180E529F9",
     /** The defined value log system settings */

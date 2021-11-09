@@ -18,7 +18,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -35,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ExceptionLog : Model<ExceptionLog>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -47,7 +45,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ParentId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that the exception occurred on. If this did not occur on a site (i.e. a job) this value will be null.
         /// </summary>
@@ -73,10 +71,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that will be <c>true</c> if the exception has an inner exception otherwise <c>false</c> or null.
         /// </value>
-        // TODO: Consider making non-nullable when reviewing migration flattening.
+        //// TODO: Consider making non-nullable when reviewing migration flattening.
         [DataMember]
         public bool? HasInnerException { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the StatusCode that was returned and describes the type of error.  
         /// </summary>
@@ -87,7 +85,7 @@ namespace Rock.Model
         [MaxLength( 10 )]
         [DataMember]
         public string StatusCode { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the type (exception class) of the exception that occurred. i.e. System.Data.SqlClient.SqlException
         /// </summary>
@@ -97,7 +95,7 @@ namespace Rock.Model
         [MaxLength( 150 )]
         [DataMember]
         public string ExceptionType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a message that describes the exception.
         /// </summary>
@@ -106,7 +104,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the application or the object that causes the error.
         /// </summary>
@@ -116,7 +114,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string Source { get; set; }
-        
+
         /// <summary>
         /// Gets a string representation of the immediate frames on the call stack.
         /// </summary>
@@ -125,7 +123,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string StackTrace { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the relative URL of the page that the exception occurred on.
         /// </summary>
@@ -135,7 +133,7 @@ namespace Rock.Model
         [MaxLength( 250 )]
         [DataMember]
         public string PageUrl { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a table of the ServerVariables at the time that the exception occurred.
         /// </summary>
@@ -144,7 +142,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ServerVariables { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the full query string from the page that the exception occurred on.
         /// </summary>
@@ -153,7 +151,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string QueryString { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a table containing all the form items from the page request where the exception occurred.
         /// </summary>
@@ -162,7 +160,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Form { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a table containing the session cookies from the client when the exception occurred.
         /// </summary>
@@ -174,7 +172,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Site"/> that the exception occurred on.
@@ -195,7 +193,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Rock.Model.Page Page { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -211,11 +209,10 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// Exception Log Configuration class.
     /// </summary>
@@ -232,5 +229,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

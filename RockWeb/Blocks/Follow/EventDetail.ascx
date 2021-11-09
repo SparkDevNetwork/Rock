@@ -62,6 +62,7 @@
                                 Help="Should any notices that would normally be sent on a weekend be sent on preceding Friday instead?" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIncludeNonPublicRequests" runat="server" Label="Include Non-Public Requests" Text="Yes" Visible="false" />
                             <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>

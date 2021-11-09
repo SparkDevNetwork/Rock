@@ -191,7 +191,7 @@ namespace Rock.Lava
                 context.SetEnabledCommands( enabledCommands );
             }
 
-            // Set a reference to the current Lava Engine.            
+            // Set a reference to the current Lava Engine.
             context.SetInternalField( LavaUtilityHelper.GetContextKeyFromType( typeof( ILavaEngine ) ), this );
         }
 
@@ -461,7 +461,7 @@ namespace Rock.Lava
         /// </returns>
         public LavaRenderResult RenderTemplate( string inputTemplate )
         {
-            return RenderTemplate( inputTemplate, LavaRenderParameters.Default() );
+            return RenderTemplate( inputTemplate, LavaRenderParameters.Default );
         }
 
         /// <summary>
@@ -492,18 +492,27 @@ namespace Rock.Lava
         public LavaRenderResult RenderTemplate( string inputTemplate, LavaRenderParameters parameters )
         {
             ILavaTemplate template;
-
-            parameters = parameters ?? new LavaRenderParameters();
+            LavaRenderParameters activeParameters;
+            
+            // Copy the render parameters so they can be altered without affecting the input object.
+            if ( parameters == null )
+            {
+                activeParameters = new LavaRenderParameters();
+            }
+            else
+            {
+                activeParameters = parameters.Clone();
+            }
 
             var renderResult = new LavaRenderResult();
 
-            var exceptionStrategy = parameters.ExceptionHandlingStrategy ?? this.ExceptionHandlingStrategy;
+            var exceptionStrategy = activeParameters.ExceptionHandlingStrategy ?? this.ExceptionHandlingStrategy;
 
             try
             {
                 if ( _cacheService != null )
                 {
-                    template = _cacheService.GetOrAddTemplate( this, inputTemplate, parameters.CacheKey );
+                    template = _cacheService.GetOrAddTemplate( this, inputTemplate, activeParameters.CacheKey );
                 }
                 else
                 {
@@ -524,16 +533,12 @@ namespace Rock.Lava
                     template = parseResult.Template;
                 }
 
-                if ( parameters.Context == null )
+                if ( activeParameters.Context == null )
                 {
-                    parameters.Context = NewRenderContext();
+                    activeParameters.Context = NewRenderContext();
                 }
 
-                renderResult = RenderTemplate( template, parameters );
-            }
-            catch ( ThreadAbortException )
-            {
-                // Ignore this exception, the calling thread is terminating.
+                renderResult = RenderTemplate( template, activeParameters );
             }
             catch ( Exception ex )
             {
@@ -587,28 +592,63 @@ namespace Rock.Lava
             parameters = parameters ?? new LavaRenderParameters();
 
             LavaRenderResult result;
+            LavaRenderParameters callParameters;
 
             try
             {
-                if ( parameters.Context == null )
+                if ( parameters == null )
                 {
-                    parameters.Context = NewRenderContext();
+                    callParameters = new LavaRenderParameters();
+                }
+                else if ( parameters.Context == null )
+                {
+                    callParameters = parameters.Clone();
+                    callParameters.Context = NewRenderContext();
+                }
+                else
+                {
+                    if ( parameters.Context.GetType() == typeof( LavaRenderContext ) )
+                    {
+                        callParameters = parameters.Clone();
+
+                        // Convert the default context to an engine-specific implementation.
+                        var engineContext = NewRenderContext();
+
+                        engineContext.SetInternalFields( parameters.Context.GetInternalFields() );
+                        engineContext.SetMergeFields( parameters.Context.GetMergeFields() );
+                        engineContext.SetEnabledCommands( parameters.Context.GetEnabledCommands() );
+
+                        // Create a copy of the parameters to ensure the input parameter remains unchanged.
+                        callParameters.Context = engineContext;
+                    }
+                    else
+                    {
+                        callParameters = parameters;
+                    }
                 }
 
-                result = OnRenderTemplate( template, parameters );
+                result = OnRenderTemplate( template, callParameters );
 
                 if ( result.Error != null )
                 {
                     result.Error = GetLavaRenderException( result.Error );
                 }
             }
-            catch ( ThreadAbortException )
+            catch ( LavaInterruptException )
             {
-                // Ignore this exception, the calling thread is terminating and no result is required.
-                result = null;
+                // This exception is intentionally thrown by a component to halt the render process.
+                result = new LavaRenderResult();
+
+                result.Text = string.Empty;
             }
             catch ( Exception ex )
             {
+                if ( ex is ThreadAbortException )
+                {
+                    // Ignore this exception, the calling thread is terminating and no result is required.
+                    return null;
+                }
+
                 result = new LavaRenderResult();
 
                 var lre = GetLavaRenderException( ex );

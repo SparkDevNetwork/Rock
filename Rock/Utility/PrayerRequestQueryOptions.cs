@@ -81,8 +81,8 @@ namespace Rock.Utility
         /// Gets or sets a value indicating whether to include nullable campus if campuses exists.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if nullable campus should be included if campuses exists; otherwise, <c>false</c>.
+        ///   <c>true</c> if prayer requests with an empty campus value should be included regardless of the contents of the <see cref="Campuses"/> values; otherwise, <c>false</c>.
         /// </value>
-        public bool IncludeNullableCampus { get; set; } = false;
+        public bool IncludeEmptyCampus { get; set; } = false;
     }
 }

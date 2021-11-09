@@ -86,6 +86,7 @@ namespace Rock.Model
                 EntityNotificationFormatLava = model.EntityNotificationFormatLava,
                 EntityTypeId = model.EntityTypeId,
                 FollowedEntityTypeId = model.FollowedEntityTypeId,
+                IncludeNonPublicRequests = model.IncludeNonPublicRequests,
                 IsActive = model.IsActive,
                 IsNoticeRequired = model.IsNoticeRequired,
                 LastCheckDateTime = model.LastCheckDateTime,
@@ -167,6 +168,7 @@ namespace Rock.Model
             target.FollowedEntityTypeId = source.FollowedEntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IncludeNonPublicRequests = source.IncludeNonPublicRequests;
             target.IsActive = source.IsActive;
             target.IsNoticeRequired = source.IsNoticeRequired;
             target.LastCheckDateTime = source.LastCheckDateTime;

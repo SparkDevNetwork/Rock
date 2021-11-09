@@ -83,6 +83,7 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 ContinueAfterProcessing = model.ContinueAfterProcessing,
+                ExpireDate = model.ExpireDate,
                 IsActive = model.IsActive,
                 Name = model.Name,
                 Order = model.Order,
@@ -158,6 +159,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ContinueAfterProcessing = source.ContinueAfterProcessing;
+            target.ExpireDate = source.ExpireDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;

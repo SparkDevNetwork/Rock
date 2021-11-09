@@ -75,12 +75,13 @@
                                     <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id"
                                         Help="The printer that this device should use for printing" EnhanceForLongLists="true" />
                                     <Rock:RockDropDownList ID="ddlPrintFrom" runat="server" Label="Print From" Required="false"
-                                        Help="When this device needs to print, where should the printing be initiated from?  Either the server running Rock, or from the actual client device? " />
+                                        Help="When this device needs to print, where should the printing be initiated from? Either the server running Rock, or from the actual client device? " />
                                 </div>
                             </asp:Panel>
 
-                            <Rock:RockCheckBox ID="cbHasCamera" runat="server" Label="Has Camera" Help="Determines if the device has a camera. This is currently only used for reading barcodes on iPads." />
-                            <Rock:RockDropDownList ID="ddlCameraBarcodeConfigurationType" runat="server" Label="Camera Barcode Configuration" Help="If set, this value will override any block setting for check-in." />
+                            <Rock:RockRadioButtonList ID="rblKioskType" runat="server" Label="Kiosk Type" RepeatDirection="Horizontal" AutoPostBack="true" Required="true" OnSelectedIndexChanged="rblKioskType_SelectedIndexChanged" />
+                            <Rock:RockCheckBox ID="cbHasCamera" runat="server" Label="Has Camera" Help="Determines if the device has a camera. This is currently only used for reading barcodes on kiosks." AutoPostBack="true" OnCheckedChanged="cbHasCamera_CheckedChanged" />
+                            <Rock:RockDropDownList ID="ddlIPadCameraBarcodeConfigurationType" runat="server" Label="iPad Camera Barcode Configuration" Help="If set, this value will override any block setting for check-in." />
                         </div>
                     </div>
 

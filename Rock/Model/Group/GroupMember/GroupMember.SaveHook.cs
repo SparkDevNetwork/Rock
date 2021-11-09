@@ -285,8 +285,12 @@ namespace Rock.Model
                     }
                 }
 
+                _preSaveChangesOldGroupId = oldGroupId;
+
                 base.PreSave();
             }
+
+            private int? _preSaveChangesOldGroupId = null;
 
             /// <summary>
             /// Called after the save operation has been executed
@@ -388,8 +392,14 @@ namespace Rock.Model
                         PersonService.UpdatePrimaryFamily( Entity.PersonId, rockContext );
                         PersonService.UpdateGivingLeaderId( Entity.PersonId, rockContext );
 
-                        // NOTE, make sure to do this after UpdatePrimaryFamily
-                        PersonService.UpdateGroupSalutations( Entity.PersonId, rockContext );
+
+                        GroupService.UpdateGroupSalutations( Entity.GroupId, rockContext );
+
+                        if ( _preSaveChangesOldGroupId.HasValue && _preSaveChangesOldGroupId.Value != Entity.GroupId )
+                        {
+                            // if person was moved to a different family, the old family will need its GroupSalutations updated
+                            GroupService.UpdateGroupSalutations( _preSaveChangesOldGroupId.Value, rockContext );
+                        }
                     }
                 }
 

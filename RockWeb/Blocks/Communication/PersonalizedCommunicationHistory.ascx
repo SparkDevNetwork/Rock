@@ -148,7 +148,7 @@
                     </asp:UpdatePanel>
                     <div class="communication-grid">
                         <Rock:Grid CssClass="communication-grid" ID="gCommunication" runat="server" AllowSorting="false" PageSizes="50,100"
-                            RowClickEnabled="false">
+                            RowClickEnabled="false" TableStriped="false">
                             <Columns>
                                 <Rock:RockTemplateField ItemStyle-CssClass="py-0">
                                     <ItemTemplate>

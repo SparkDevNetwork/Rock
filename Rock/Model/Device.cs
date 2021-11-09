@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
+using System.ComponentModel;
 
 namespace Rock.Model
 {
@@ -33,7 +34,7 @@ namespace Rock.Model
     /// displays, etc.
     /// </summary>
     [RockDomain( "Core" )]
-    [Table("Device")]
+    [Table( "Device" )]
     [DataContract]
     public partial class Device : Model<Device>, ICacheable
     {
@@ -50,7 +51,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a description of the device.
         /// </summary>
@@ -69,7 +70,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.DEVICE_TYPE )]
-        
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the IP address of the device.
         /// </value>
-        [MaxLength(45)]
+        [MaxLength( 45 )]
         [DataMember]
         public string IPAddress { get; set; }
 
@@ -133,6 +133,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has camera.
+        /// Only applies when <see cref="DeviceTypeValueId" /> is Checkin-Kiosk.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance has camera; otherwise, <c>false</c>.
@@ -142,12 +143,21 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the camera barcode configuration.
+        /// This is currently only used for reading barcodes on iPads.
         /// </summary>
         /// <value>
         /// The type of the camera barcode configuration.
         /// </value>
         [DataMember]
         public CameraBarcodeConfiguration? CameraBarcodeConfigurationType { get; set; }
+
+        /// <summary>
+        /// The type of checkin client this Check-in Kiosk could be using.
+        /// Only applies when <see cref="DeviceTypeValueId" /> is Checkin-Kiosk.
+        /// </summary>
+        /// <value>The type of the kiosk.</value>
+        [DataMember]
+        public KioskType? KioskType { get; set; }
 
         #endregion
 
@@ -310,20 +320,47 @@ namespace Rock.Model
         /// Off
         /// </summary>
         Off = 0,
+
         /// <summary>
         /// Available
         /// </summary>
         Available = 1,
+
         /// <summary>
         /// Always on
         /// </summary>
         AlwaysOn = 2,
+
         /// <summary>
         /// Passive
         /// </summary>
         Passive = 3
     }
 
-    #endregion
+    /// <summary>
+    /// The various types of checkin clients that a Check-in Kiosk could be using.
+    /// </summary>
+    public enum KioskType
+    {
+        /// <summary>
+        /// The Kiosk is using IPad iOS Checkin Client app.
+        /// </summary>
+        [Description( "iPad" )]
+        IPad = 0,
 
+        /// <summary>
+        /// The Kiosk is using Windows Checkin Client.
+        /// </summary>
+        [Description( "Windows App" )]
+        WindowsApp = 1,
+
+        /// <summary>
+        /// This kiosk is using a browser
+        /// </summary>
+        [Description( "Browser" )]
+        Browser = 2,
+
+    }
+
+    #endregion
 }

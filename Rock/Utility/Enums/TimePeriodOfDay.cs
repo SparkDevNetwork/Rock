@@ -24,16 +24,25 @@ namespace Rock.Utility
         /// <summary>
         /// The period of time is considered the morning.
         /// </summary>
+        /// <remarks>
+        /// This is defined as having an hour value &lt; 12pm.
+        /// </remarks>
         Morning = 0,
 
         /// <summary>
         /// The period of time is considered the afternoon.
         /// </summary>
+        /// <remarks>
+        /// This is defined as having an hour value &gt;= 12pm and &lt; 5pm.
+        /// </remarks>
         Afternoon = 1,
 
         /// <summary>
         /// The period of time is considered the evening.
         /// </summary>
+        /// <remarks>
+        /// This is defined as having an hour value &gt;= 5pm.
+        /// </remarks>
         Evening = 2
     }
 

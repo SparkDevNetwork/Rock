@@ -62,6 +62,9 @@ namespace Rock.Client
         public int? GroupId { get; set; }
 
         /// <summary />
+        public int? PersonAliasId { get; set; }
+
+        /// <summary />
         public string PostAllowOrDeny { get; set; }
 
         /// <summary />
@@ -98,6 +101,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
+            this.PersonAliasId = source.PersonAliasId;
             this.PostAllowOrDeny = source.PostAllowOrDeny;
             this.PostOrder = source.PostOrder;
             this.PreAllowOrDeny = source.PreAllowOrDeny;
