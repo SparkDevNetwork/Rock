@@ -266,6 +266,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "expired saved account", () => RemoveExpiredSavedAccounts( dataMap ) );
 
+            RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
+
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
             //// ***********************
@@ -2202,6 +2204,81 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             }
 
             return result.AccountsDeletedCount;
+        }
+
+        /// <summary>
+        /// Updates the NextDateTime property of Event Occurrences to correctly show the next occurrence after the current date.
+        /// </summary>
+        private int UpdateEventNextOccurrenceDates()
+        {
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            var updatedCount = UpdateEventNextOccurrenceDates( rockContext, RockDateTime.Now );
+
+            return updatedCount;
+        }
+
+        /// <summary>
+        /// Updates the NextDateTime property of Event Occurrences to correctly show the next occurrence after the supplied reference date.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <param name="referenceDateTime">The earliest date/time of an event that is considered to be a future occurrence.</param>
+        /// <returns></returns>
+        internal static int UpdateEventNextOccurrenceDates( RockContext rockContext, DateTime? referenceDateTime = null )
+        {
+            referenceDateTime = referenceDateTime ?? RockDateTime.Now;
+
+            var updateCount = 0;
+
+            // Recalculate the NextDate for all Event Occurrences, to be sure that any changes to either the Events or the Schedules
+            // are incorporated.
+            var eventOccurrenceService = new EventItemOccurrenceService( rockContext );
+            var scheduleService = new ScheduleService( rockContext );
+
+            // Set the NextDateTime to null for any Event Occurrences that are inactive because:
+            // 1. the parent Event Item is inactive; or
+            // 2. the Event Occurrence Schedule is inactive.
+            var inactiveScheduleIdList = scheduleService.Queryable().Where( x => !x.IsActive ).Select( x => x.Id ).ToList();
+
+            var inactiveOccurrences = eventOccurrenceService.Queryable()
+                .Where( x => x.NextStartDateTime != null
+                    && ( !x.EventItem.IsActive || x.ScheduleId == null || inactiveScheduleIdList.Contains( x.ScheduleId.Value ) ) );
+
+            foreach ( var inactiveOccurrence in inactiveOccurrences )
+            {
+                inactiveOccurrence.NextStartDateTime = null;
+                updateCount++;
+            }
+
+            // Save the changes, but disable post-processing to avoid re-evaluating NextDateTime unnecessarily.
+            rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+
+            // Set the NextDateTime for all Event Occurrences with an active schedule.
+            var activeScheduleIdList = scheduleService.Queryable().Where( x => x.IsActive ).Select( x => x.Id ).ToList();
+
+            var activeOccurrences = eventOccurrenceService.Queryable()
+                .Include( x=> x.Schedule )
+                .Where( x => x.EventItem.IsActive
+                    && x.ScheduleId != null && !inactiveScheduleIdList.Contains( x.ScheduleId.Value ) );
+
+            foreach ( var activeOccurrence in activeOccurrences )
+            {
+                var schedule = activeOccurrence.Schedule;
+                if ( schedule != null )
+                {
+                    var nextDate = schedule.GetNextStartDateTime( referenceDateTime.Value );
+                    if ( activeOccurrence.NextStartDateTime != nextDate )
+                    {
+                        activeOccurrence.NextStartDateTime = nextDate;
+                        updateCount++;
+                    }
+                }
+            }
+
+            rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+
+            return updateCount;
         }
 
         /// <summary>
