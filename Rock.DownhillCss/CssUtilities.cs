@@ -1061,6 +1061,54 @@ icon {
     background-color: transparent;
 }
 
+.btn.btn-link-secondary {
+    color: ?color-secondary;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-success {
+    color: ?color-success;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-danger {
+    color: ?color-danger;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-warning {
+    color: ?color-warning;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-info {
+    color: ?color-info;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-light {
+    color: ?color-text;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-dark {
+    color: ?color-dark;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-brand {
+    color: ?color-brand;
+    border-width: 0;
+    background-color: transparent;
+}
+
 .btn.btn-outline-primary {
     color: ?color-primary;
     border-color: ?color-primary;
@@ -1615,6 +1663,12 @@ formfield .required-indicator {
 
 .group-finder-container .group-more-icon {
     color: #999999;
+}
+
+
+/*** Group Member Edit block ***/
+.group-member-edit-layout .save-button {
+    margin: 0, 24, 0, 0;
 }
 ";
         #endregion
