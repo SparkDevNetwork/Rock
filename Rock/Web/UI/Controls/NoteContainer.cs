@@ -484,7 +484,18 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Page.IsPostBack )
             {
-                RouteAction();
+                var parentNoteControlId = this.Page.Request.Form["__EVENTTARGET"].Replace( "upNotes", "notesTimeline" );
+                if ( parentNoteControlId == this.ClientID )
+                {
+                    RouteAction();
+                }
+                else
+                {
+                    // The cancel button is pure js and does not update this value stored in the ViewState. So if this is not the
+                    // control that is performing the postback then set this to false so other note editors that might be on the page
+                    // do not show. It will be set correctly later if it is supposed to show.
+                    _noteEditor.IsEditing = false;
+                }
             }
         }
 
