@@ -17,10 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
 using Rock.Mobile;
@@ -87,6 +89,21 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.MemberDetailPage,
         Order = 5 )]
 
+    [BooleanField( "Enable Delete",
+        Description = "Will show or hide the delete button. This will either delete or archive the member depending on the group type configuration.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.EnableDelete,
+        Order = 6 )]
+
+    [MobileNavigationActionField( "Delete Navigation Action",
+        Description = "The action to perform after the group member is deleted from the group.",
+        IsRequired = false,
+        DefaultValue = MobileNavigationActionFieldAttribute.PopSinglePageValue,
+        Key = AttributeKeys.DeleteNavigationAction,
+        Order = 7 )]
+
     #endregion
 
     public class GroupMemberEdit : RockMobileBlockType
@@ -125,6 +142,16 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The member detail page
             /// </summary>
             public const string MemberDetailPage = "MemberDetailsPage";
+
+            /// <summary>
+            /// The enable delete attribute key.
+            /// </summary>
+            public const string EnableDelete = "EnableDelete";
+
+            /// <summary>
+            /// The delete navigation action attribute key.
+            /// </summary>
+            public const string DeleteNavigationAction = "DeleteNavigationAction";
         }
 
         /// <summary>
@@ -188,6 +215,18 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </value>
         protected Guid? MemberDetailPage => GetAttributeValue( AttributeKeys.MemberDetailPage ).AsGuidOrNull();
 
+        /// <summary>
+        /// Gets a value indicating whether the delete button should be shown.
+        /// </summary>
+        /// <value><c>true</c> if the delete button should be shown; otherwise, <c>false</c>.</value>
+        protected bool EnableDelete => GetAttributeValue( AttributeKeys.EnableDelete ).AsBoolean();
+
+        /// <summary>
+        /// Gets the delete navigation action.
+        /// </summary>
+        /// <value>The delete navigation action.</value>
+        internal Rock.Web.UI.Controls.MobileNavigationActionEditor.MobileNavigationAction DeleteNavigationAction => GetAttributeValue( AttributeKeys.DeleteNavigationAction ).FromJsonOrNull<Rock.Web.UI.Controls.MobileNavigationActionEditor.MobileNavigationAction>() ?? new Web.UI.Controls.MobileNavigationActionEditor.MobileNavigationAction();
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -219,14 +258,294 @@ namespace Rock.Blocks.Types.Mobile.Groups
             //
             // Indicate that we are a dynamic content providing block.
             //
-            return new Rock.Common.Mobile.Blocks.Content.Configuration
+            return new
             {
-                Content = null,
-                DynamicContent = true
+                // Rock Mobile Shell below v1.2.1
+                Content = ( string ) null,
+                DynamicContent = true,
+
+                // Rock Mobile Shell v1.2.1 and later
+                SupportedFeatures = new[] { "ClientLogic" },
+                AllowRoleChange,
+                AllowMemberStatusChange,
+                AllowNoteEdit,
+                MemberDetailPage,
+                DeleteNavigationAction
             };
         }
 
         #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the editable attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        private List<AttributeCache> GetEditableAttributes( IHasAttributes entity )
+        {
+            if ( AttributeCategory.HasValue )
+            {
+                var category = CategoryCache.Get( AttributeCategory.Value );
+
+                if ( category != null )
+                {
+                    return entity.Attributes.Values
+                        .Where( a => a.CategoryIds.Contains( category.Id ) )
+                        .Where( a => a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList();
+                }
+            }
+
+            return new List<AttributeCache>();
+        }
+
+        #endregion
+
+        #region Action Methods
+
+        /// <summary>
+        /// Gets the member data that describes the group member to be edited.
+        /// </summary>
+        /// <param name="groupMemberGuid">The group member unique identifier.</param>
+        /// <returns>The result of the action.</returns>
+        [BlockAction]
+        public BlockActionResult GetMemberData( Guid groupMemberGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var member = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .Include( m => m.Group.GroupType )
+                    .FirstOrDefault( m => m.Guid == groupMemberGuid );
+
+                if ( member == null )
+                {
+                    return ActionBadRequest( "We couldn't find that member." );
+                }
+                else if ( !member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "You are not authorized to edit members of this group." );
+                }
+
+                // Get the header content to send down.
+                string headerContent = ShowHeader
+                    ? "<StackLayout><Label StyleClass=\"h2\" Text=\"Group Member Edit\" /><Rock:Divider /></StackLayout>"
+                    : string.Empty;
+
+                // Get all the attribute fields.
+                member.LoadAttributes( rockContext );
+                var fields = GetEditableAttributes( member )
+                    .Select( a => new MobileField
+                    {
+                        AttributeGuid = a.Guid,
+                        Key = a.Key,
+                        Title = a.Name,
+                        IsRequired = a.IsRequired,
+                        ConfigurationValues = a.QualifierValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ),
+                        FieldTypeGuid = a.FieldType.Guid,
+#pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
+                        RockFieldType = a.FieldType.Class,
+#pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
+                        Value = member.GetAttributeValue( a.Key )
+                    } )
+                    .ToList();
+
+                // Get all the roles that can be set for this member.
+                var roles = GroupTypeCache.Get( member.Group.GroupTypeId )
+                    .Roles
+                    .OrderBy( r => r.Order )
+                    .Select( r => new ListItemViewModel
+                    {
+                        Value = r.Guid.ToString(),
+                        Text = r.Name
+                    } )
+                    .ToList();
+
+                // Configure the delete/archive options.
+                bool canDelete = EnableDelete;
+                bool canArchive = false;
+
+                if ( canDelete )
+                {
+                    var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+                    var roleIdsWithGroupSync = member.Group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList();
+
+                    if ( roleIdsWithGroupSync.Contains( member.GroupRoleId ) )
+                    {
+                        canDelete = false;
+                    }
+                    else if ( member.Group.GroupType.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == member.Id ) )
+                    {
+                        canDelete = false;
+                        canArchive = true;
+                    }
+                }
+
+                return ActionOk( new GetMemberDataResult
+                {
+                    HeaderContent = headerContent,
+                    Roles = roles,
+                    Fields = fields,
+                    CanDelete = canDelete,
+                    CanArchive = canArchive,
+                    Name = member.Person.FullName,
+                    RoleGuid = member.GroupRole.Guid,
+                    MemberStatus = member.GroupMemberStatus,
+                    Note = member.Note,
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Updates and saves the member with the data provided.
+        /// </summary>
+        /// <param name="groupMemberGuid">The group member unique identifier.</param>
+        /// <param name="groupMemberData">The group member data.</param>
+        /// <returns>Empty OK response if save was successful; otherwise returns an error code.</returns>
+        [BlockAction]
+        public BlockActionResult SaveMember( Guid groupMemberGuid, MemberDataViewModel groupMemberData )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
+
+                if ( member == null || ( !member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) ) )
+                {
+                    return ActionBadRequest( "You are not authorized to edit members of this group." );
+                }
+
+                member.LoadAttributes( rockContext );
+
+                // Verify and save the member role.
+                if ( AllowRoleChange )
+                {
+                    if ( !groupMemberData.RoleGuid.HasValue)
+                    {
+                        return ActionBadRequest( "Invalid data." );
+                    }
+
+                    var groupRole = GroupTypeCache.Get( member.Group.GroupTypeId )
+                        .Roles
+                        .FirstOrDefault( r => r.Guid == groupMemberData.RoleGuid.Value );
+
+                    if ( groupRole == null )
+                    {
+                        return ActionBadRequest( "Invalid data." );
+                    }
+
+                    member.GroupRoleId = groupRole.Id;
+                }
+
+                // Verify and save the member status.
+                if ( AllowMemberStatusChange )
+                {
+                    if ( !groupMemberData.MemberStatus.HasValue )
+                    {
+                        return ActionBadRequest( "Invalid data." );
+                    }
+
+                    member.GroupMemberStatus = groupMemberData.MemberStatus.Value;
+                }
+
+                // Verify and save the note.
+                if ( AllowNoteEdit )
+                {
+                    if ( groupMemberData.Note == null )
+                    {
+                        return ActionBadRequest( "Invalid data." );
+                    }
+
+                    member.Note = groupMemberData.Note;
+                }
+
+                // Save all the attribute values.
+                if ( groupMemberData.FieldValues != null )
+                {
+                    member.LoadAttributes();
+                    var attributes = GetEditableAttributes( member );
+                    foreach ( var attribute in attributes )
+                    {
+                        if ( !groupMemberData.FieldValues.TryGetValue( attribute.Key, out var value ) )
+                        {
+                            continue;
+                        }
+
+                        member.SetAttributeValue( attribute.Key, value );
+                    }
+                }
+
+                // Save all changes to database.
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    member.SaveAttributeValues( rockContext );
+                } );
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Removes the member from the group.
+        /// </summary>
+        /// <param name="groupMemberGuid">The group member unique identifier.</param>
+        /// <returns>A result that describes if the operation was successful or not.</returns>
+        [BlockAction]
+        public BlockActionResult RemoveMember( Guid groupMemberGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var member = groupMemberService.Queryable()
+                    .Include( m => m.Group.GroupType )
+                    .FirstOrDefault( m => m.Guid == groupMemberGuid );
+
+                if ( member == null || ( !member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) ) )
+                {
+                    return ActionBadRequest( "You are not authorized to edit members of this group." );
+                }
+
+                var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+                bool archive = false;
+
+                if ( member.Group.GroupType.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == member.Id ) )
+                {
+                    // if the group has GroupHistory enabled, and this group
+                    // member has group member history snapshots, then we only
+                    // archive.
+                    archive = true;
+                }
+                else if ( !groupMemberService.CanDelete( member, out var errorMessage ) )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
+                int groupId = member.GroupId;
+
+                if ( archive )
+                {
+                    // NOTE: Delete will AutoArchive, but since we know that we
+                    // need to archive, we can call .Archive directly
+                    groupMemberService.Archive( member, RequestContext.CurrentPerson?.PrimaryAliasId, true );
+                }
+                else
+                {
+                    groupMemberService.Delete( member, true );
+                }
+
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        #endregion
+
+        #region Legacy (Rock Shell < v1.2.1)
 
         #region Methods
 
@@ -435,31 +754,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
             }
         }
 
-        /// <summary>
-        /// Gets the editable attributes.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        private List<AttributeCache> GetEditableAttributes( IHasAttributes entity )
-        {
-            if ( AttributeCategory.HasValue )
-            {
-                var category = CategoryCache.Get( AttributeCategory.Value );
-
-                if ( category != null )
-                {
-                    return entity.Attributes.Values
-                        .Where( a => a.CategoryIds.Contains( category.Id ) )
-                        .Where( a => a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .ToList();
-                }
-            }
-
-            return new List<AttributeCache>();
-        }
-
         #endregion
 
         #region Action Methods
@@ -497,6 +791,83 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     Error = "Invalid command received."
                 };
             }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Action View Models
+
+        internal class GetMemberDataResult
+        {
+            public string HeaderContent { get; set; }
+
+            public List<ListItemViewModel> Roles { get; set; }
+
+            public bool CanDelete { get; set; }
+
+            public bool CanArchive { get; set; }
+
+            public List<MobileField> Fields { get; set; }
+
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the role unique identifier.
+            /// </summary>
+            /// <value>The role unique identifier.</value>
+            public Guid RoleGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the member status.
+            /// </summary>
+            /// <value>The member status.</value>
+            public GroupMemberStatus MemberStatus { get; set; }
+
+            /// <summary>
+            /// Gets or sets the note.
+            /// </summary>
+            /// <value>The note.</value>
+            public string Note { get; set; }
+        }
+
+        /// <summary>
+        /// Describes the member data to be saved.
+        /// </summary>
+        public class MemberDataViewModel
+        {
+            /// <summary>
+            /// Gets or sets the role unique identifier.
+            /// </summary>
+            /// <value>The role unique identifier.</value>
+            public Guid? RoleGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the member status.
+            /// </summary>
+            /// <value>The member status.</value>
+            public GroupMemberStatus? MemberStatus { get; set; }
+
+            /// <summary>
+            /// Gets or sets the note.
+            /// </summary>
+            /// <value>The note.</value>
+            public string Note { get; set; }
+
+            /// <summary>
+            /// Gets or sets the field values.
+            /// </summary>
+            /// <value>The field values.</value>
+            /// <remarks>This contains the legacy pre-v13 attribute values.</remarks>
+            public Dictionary<string, string> FieldValues { get; set; }
+        }
+
+        internal class ListItemViewModel
+        {
+            public string Value { get; set; }
+
+            public string Text { get; set; }
         }
 
         #endregion
