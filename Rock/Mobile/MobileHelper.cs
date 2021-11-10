@@ -504,7 +504,8 @@ namespace Rock.Mobile
                     CssStyles = additionalPageSettings.CssStyles,
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) ),
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
-                    ShowFullScreen = additionalPageSettings.ShowFullScreen
+                    ShowFullScreen = additionalPageSettings.ShowFullScreen,
+                    AutoRefresh = additionalPageSettings.AutoRefresh
                 };
 
                 package.Pages.Add( mobilePage );
