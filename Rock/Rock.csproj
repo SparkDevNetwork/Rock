@@ -885,6 +885,9 @@
     <Compile Include="Model\Event\Registration\RegistrationExtensionMethods.cs" />
     <Compile Include="Model\Event\Registration\RegistrationInfo.cs" />
     <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.Logic.cs" />
+    <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.cs" />
+    <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.cs" />
+    <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflowConfiguration.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />

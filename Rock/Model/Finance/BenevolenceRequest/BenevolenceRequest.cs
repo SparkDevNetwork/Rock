@@ -209,6 +209,17 @@ namespace Rock.Model
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.BENEVOLENCE_TYPE )]
+        public int? BenevolenceTypeId { get; set; }
+
         #endregion Entity Properties
 
         #region Constructors
