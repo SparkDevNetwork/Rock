@@ -88,6 +88,7 @@ namespace Rock.Model
                 ContactPhone = model.ContactPhone,
                 EventItemId = model.EventItemId,
                 Location = model.Location,
+                NextStartDateTime = model.NextStartDateTime,
                 Note = model.Note,
                 ScheduleId = model.ScheduleId,
                 CreatedDateTime = model.CreatedDateTime,
@@ -167,6 +168,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Location = source.Location;
+            target.NextStartDateTime = source.NextStartDateTime;
             target.Note = source.Note;
             target.ScheduleId = source.ScheduleId;
             target.CreatedDateTime = source.CreatedDateTime;
