@@ -4349,7 +4349,11 @@ namespace RockWeb.Blocks.Groups
         protected void cbIsSecurityRole_CheckedChanged( object sender, EventArgs e )
         {
             // Grouptype changed, so load up the new attributes and set controls to the default attribute values
-            CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+            if ( ddlGroupType.Visible )
+            {
+                CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+            }
+
             if ( CurrentGroupTypeId > 0 )
             {
                 var groupType = CurrentGroupTypeCache;
