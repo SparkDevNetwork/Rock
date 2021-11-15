@@ -452,12 +452,6 @@ namespace Rock.Lava.Fluid
                 catch ( TargetInvocationException ex )
                 {
                     // Any exceptions thrown from the filter method are wrapped in a TargetInvocationException by the .NET framework.
-                    if ( ex.InnerException is LavaInterruptException )
-                    {
-                        // This exception is intentionally thrown by a component to abort the render process, so ensure it propagates to the caller.
-                        throw ex.InnerException;
-                    }
-
                     // Rethrow the actual exception thrown by the filter, where possible.
                     throw ex.InnerException ?? ex;
                 }
@@ -592,20 +586,16 @@ namespace Rock.Lava.Fluid
         protected override LavaRenderResult OnRenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
         {
             var templateProxy = inputTemplate as FluidTemplateProxy;
-
             var template = templateProxy?.FluidTemplate;
 
             var templateContext = parameters.Context as FluidRenderContext;
-
             if ( templateContext == null )
             {
                 throw new LavaException( "Invalid LavaContext parameter. This context type is not compatible with the Fluid templating engine." );
             }
 
             var result = new LavaRenderResult();
-
             var sb = new StringBuilder();
-            var writer = new StringWriter( sb );
 
             // Set the render options for culture and timezone if they are specified.
             if ( parameters.Culture != null )
@@ -617,13 +607,26 @@ namespace Rock.Lava.Fluid
                 templateContext.FluidContext.Options.TimeZone = parameters.TimeZone;
             }
 
-            template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
+            var writer = new StringWriter( sb );
 
-            writer.Flush();
+            try
+            {
+                template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
 
-            result.Text = sb.ToString();
+                writer.Flush();
+                result.Text = sb.ToString();
 
-            writer.Dispose();
+            }
+            catch ( LavaInterruptException )
+            {
+                // The render was terminated intentionally, so return the current buffer content.
+                writer.Flush();
+                result.Text = sb.ToString();
+            }
+            finally
+            {
+                writer.Dispose();
+            }
 
             return result;
         }

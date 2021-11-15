@@ -150,13 +150,16 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
-        /// Referencing a non-existent property of an input object should return an empty string.
+        /// Referencing an unknown property of an input object that implements TryGetMembers should return the requested value.
         /// </summary>
         [TestMethod]
         public void LavaDataObjectType_WithCustomPropertyAccessor_ReturnsPropertyValue()
         {
-            var dynamicObject = LavaDataObjectWithCustomPropertyAccess.NewWithData();
-
+            var colorDictionary = new Dictionary<string, object>()
+            {
+                { "Color1", "red" }, {"Color2", "green" }, { "Color3", "blue" }
+            };
+            var dynamicObject = new LavaDataObjectWithDynamicPropertyAccess( colorDictionary );
             var mergeValues = new LavaDataDictionary { { "Colors", dynamicObject } };
 
             var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
@@ -166,22 +169,20 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
-        /// Referencing a non-existent property of an input object should return an empty string.
+        /// Serializing and deserializing a LavaDataObject with dynamic properties should correctly set all property values.
         /// </summary>
         [TestMethod]
         public void LavaDataObjectType_SerializeDeserialize_CanRoundtrip()
         {
-            var dynamicObject = LavaDataObjectWithCustomPropertyAccess.NewWithData();
+            var dynamicObject = new LavaDataObject();
+
+            dynamicObject["Color1"] = "red";
+            dynamicObject["Color2"] = "green";
+            dynamicObject["Color3"] = "blue";
 
             var json = JsonConvert.SerializeObject( dynamicObject );
+            var dynamicFromJson = JsonConvert.DeserializeObject<LavaDataObject>( json );
 
-            // TODO: json string is empty here - dynamic properties of wrapped object not serialized correctly.
-            // RockDynamic passes this test - but it does not implement IDictionary.
-            // JsonConvert favors processing the object as IDictionary, uses IDictionary.GetEnumerator()
-
-            var dynamicFromJson = JsonConvert.DeserializeObject<LavaDataObjectWithCustomPropertyAccess>( json );
-
-            // TODO: object not correctly popoulated from JSON string - check TrySetProperty
             var mergeValues = new LavaDataDictionary { { "Colors", dynamicFromJson } };
 
             var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
@@ -342,40 +343,37 @@ namespace Rock.Tests.UnitTests.Lava
 
         /// <summary>
         /// A class that is derived from LavaDataObject and implements a custom property value getter.
+        /// This class has no override for the AvailableKeys property, so the existence of the property
+        /// can only be discovered by attempting to retrieve it.
+        /// This behavior mimics the "on demand" property access provided by a Liquid Drop.
         /// </summary>
-        private class LavaDataObjectWithCustomPropertyAccess : LavaDataObject
+        private class LavaDataObjectWithDynamicPropertyAccess : LavaDataObject
         {
             private Dictionary<string, object> _internalDictionary = new Dictionary<string, object>();
 
-
-            public static LavaDataObjectWithCustomPropertyAccess NewWithData()
+            public LavaDataObjectWithDynamicPropertyAccess()
             {
-                var dynamicObject = new LavaDataObjectWithCustomPropertyAccess();
+                _internalDictionary = new Dictionary<string, object>();
+            }
 
-                dynamicObject["Color1"] = "red";
-                dynamicObject["Color2"] = "green";
-                dynamicObject["Color3"] = "blue";
-
-                return dynamicObject;
+            public LavaDataObjectWithDynamicPropertyAccess( Dictionary<string, object> internalMembers )
+            {
+                _internalDictionary = internalMembers;
             }
 
             protected override bool OnTryGetValue( string memberName, out object result )
             {
-                var exists = base.OnTryGetValue( memberName, out result );
+                // These member names are only known to the internal dictionary,
+                // they are not exposed via the AvailableKeys property.
+                var exists = _internalDictionary.ContainsKey( memberName );
 
-                if ( !exists )
+                if ( exists )
                 {
-                    exists = _internalDictionary.ContainsKey( memberName );
-
-                    if ( exists )
-                    {
-                        result = _internalDictionary[memberName];
-                    }
-
-                    if ( !exists )
-                    {
-                        result = null;
-                    }
+                    result = _internalDictionary[memberName];
+                }
+                else
+                {
+                    result = null;
                 }
 
                 return exists;

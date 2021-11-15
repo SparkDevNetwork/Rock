@@ -26,7 +26,7 @@ using System.Reflection;
 namespace Rock.Lava
 {
     /// <summary>
-    /// A container for exposing data that should be accessible to a Lava template.
+    /// A container for exposing data that is intended to be accessible to a Lava template.
     /// This Type can be used as a base class for a derived Type, as a proxy for an existing object, or
     /// as a dictionary of values populated dynamically at runtime.
     /// </summary>
@@ -37,9 +37,10 @@ namespace Rock.Lava
     [Serializable]
     public class LavaDataObject : ILavaDataDictionary, IDictionary, IDynamicMetaObjectProvider
     {
-        // The internal implementation of the DynamicObject that is used to manage access to the LavaDataObject properties.
-        // This class is implemented privately because it has a number of the public methods that are unnecessary or confusing
-        // for Lava developers seeking to implement a simple Lava data source.
+        // The LavaDataObject is a simple wrapper for LavaDataObjectInternal, with the purpose of hiding some public methods
+        // that are unnecessary or otherwise confusing for Lava developers seeking to implement a simple Lava data source.
+        // LavaDataObjectInternal is an extended implementation of DynamicObject.
+
         [NonSerialized]
         private LavaDataObjectInternal _lavaDataObjectInternal = null;
 
@@ -80,9 +81,12 @@ namespace Rock.Lava
         #endregion
 
         /// <summary>
-        /// Gets an internal implementation of the LavaDataObject, or instantiates a new instance if it has not been created.
+        /// Gets the LavaDataObjectInternal instance, or instantiates a new instance if it has not been created.
         /// Lazy instantiation of the internal helper object occurs if this instance is created by deserialization.
         /// </summary>
+        /// <remarks>
+        /// The LavaDataObjectInternal is an implementation of a DynamicObject.
+        /// </remarks>
         /// <returns></returns>
         private LavaDataObjectInternal GetLavaDataObjectInternal()
         {
@@ -122,7 +126,7 @@ namespace Rock.Lava
 
             var ldo = GetLavaDataObjectInternal();
 
-            return ldo.TryGetMemberInternal( key, out result, false );
+            return ldo.TryGetMember( key, out result, withCallback: false, includeDynamicMembers: true );
         }
 
         /// <summary>
@@ -168,15 +172,28 @@ namespace Rock.Lava
         /// <returns>True if a value is available for the specified key.</returns>
         public bool TryGetValue( string key, out object value )
         {
+            return TryGetValueInternal( key, out value );
+        }
+
+        /// <summary>
+        /// Try to get the value associated with the specified key.
+        /// </summary>
+        /// <param name="memberName"></param>
+        /// <param name="result"></param>
+        /// <param name="withCallback">A flag indicating if the internal callback function should be processed when attempting to retrieve the value.</param>
+        /// <param name="includeDynamicMembers"></param>
+        /// <returns></returns>
+        internal bool TryGetValueInternal( string memberName, out object result, bool withCallback = true, bool includeDynamicMembers = true )
+        {
             var ldo = GetLavaDataObjectInternal();
 
-            return ldo.TryGetMember( key, out value );
+            return ldo.TryGetMember( memberName, out result, withCallback, includeDynamicMembers );
         }
 
         #region ILavaDataDictionary
 
         /// <summary>
-        /// Gets the collection of available keys.
+        /// Gets the collection of available property keys.
         /// </summary>
         /// <value>
         /// The available keys.
@@ -199,17 +216,23 @@ namespace Rock.Lava
         /// <returns></returns>
         public bool ContainsKey( string key )
         {
-            // First, check if this is a defined member name or or an existing dictionary entry.
+            // First, check if this is a defined member name or dynamic property.
             if ( AvailableKeys.Contains( key ) )
             {
                 return true;
             }
 
             // As a fallback, see if a value can be retrieved for this key.
-            // This code will only execute if the property does not exist,
-            // or an override for OnTryGetValue exists without a corresponding override for AvailableKeys.
-            // In this situation, overriding the AvailableKeys method is a more efficient implementation.
-            return TryGetValue( key, out _ );
+            // This code will only execute if:
+            // 1. The property key is not valid for this object; or
+            // 2. An override for OnTryGetValue exists without a corresponding override for AvailableKeys.
+            //    In this case, it may be best to override the AvailableKeys method to expose the property key and improve
+            //    the efficiency of the implementation. However, this may not be possible in cases where
+            //     obtaining an exhaustive list of available keys is expensive or impractical, such as where
+            //     the property value is only created on request.
+            var ldo = GetLavaDataObjectInternal();
+
+            return ldo.TryGetMember( key, out _ );
         }
 
         /// <summary>
@@ -401,8 +424,11 @@ namespace Rock.Lava
         public delegate bool TrySetValueDelegate( string memberName, object memberValue );
 
         private Dictionary<string, object> _dynamicMembers = new Dictionary<string, object>();
+        private Dictionary<string, PropertyInfo> _instancePropertyInfoLookup;
 
         private object _targetObject;
+        private IDictionary _targetObjectAsDictionary = null;
+        private TypeConverter _targetDictionaryKeyConverter = null;
 
         #region Constructors
 
@@ -413,9 +439,22 @@ namespace Rock.Lava
         public LavaDataObjectInternal( object obj )
         {
             _targetObject = obj;
+
+            _targetObjectAsDictionary = _targetObject as IDictionary;
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the target object that is proxied by this dynamic object.
+        /// </summary>
+        public object TargetObject
+        {
+            get
+            {
+                return _targetObject;
+            }
+        }
 
         /// <summary>
         /// Gets the collection of the members defined at run-time for this instance.
@@ -454,7 +493,41 @@ namespace Rock.Lava
             return _instancePropertyInfoLookup;
         }
 
-        private Dictionary<string, PropertyInfo> _instancePropertyInfoLookup;
+        /// <summary>
+        /// Determines whether the data object has a definition for the specified property.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey( string key )
+        {
+            if ( _dynamicMembers.ContainsKey( key ) )
+            {
+                return true;
+            }
+
+            var properties = GetInstanceProperties();
+            if ( properties.ContainsKey( key ) )
+            {
+                return true;
+            }
+
+            if ( _targetObjectAsDictionary != null )
+            {
+                var converter = GetTargetDictionaryKeyConverter();
+
+                if ( converter != null )
+                {
+                    var typedKey = _targetDictionaryKeyConverter.ConvertFromString( key );
+                    return _targetObjectAsDictionary.Contains( typedKey );
+                }
+                else
+                {
+                    return _targetObjectAsDictionary.Contains( key );
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Return a string representation of the dynamic object.
@@ -499,31 +572,20 @@ namespace Rock.Lava
         /// </returns>
         public override bool TryGetMember( GetMemberBinder binder, out object result )
         {
-            return TryGetMemberInternal( binder.Name, out result, true );
+            return TryGetMember( binder.Name, out result );
         }
 
         /// <summary>
         /// Provides the implementation for operations that get member values.
         /// </summary>
-        /// <param name="binder">The name of the member on which the dynamic operation is performed.
-        /// <param name="result">The result of the get operation. For example, if the method is called for a property, you can assign the property value to <paramref name="result" />.</param>
+        /// <param name="memberName"></param>
+        /// <param name="result"></param>
+        /// <param name="withCallback"></param>
+        /// <param name="includeDynamicMembers"></param>
         /// <returns>
         /// true if the operation is successful; otherwise, false. If this method returns false, the run-time binder of the language determines the behavior. (In most cases, a run-time exception is thrown.)
         /// </returns>
-        public bool TryGetMember( string memberName, out object result )
-        {
-            return TryGetMemberInternal( memberName, out result, true );
-        }
-
-        /// <summary>
-        /// Provides the implementation for operations that get member values.
-        /// </summary>
-        /// <param name="binder">The name of the member on which the dynamic operation is performed.
-        /// <param name="result">The result of the get operation. For example, if the method is called for a property, you can assign the property value to <paramref name="result" />.</param>
-        /// <returns>
-        /// true if the operation is successful; otherwise, false. If this method returns false, the run-time binder of the language determines the behavior. (In most cases, a run-time exception is thrown.)
-        /// </returns>
-        internal bool TryGetMemberInternal( string memberName, out object result, bool withCallback )
+        public bool TryGetMember( string memberName, out object result, bool withCallback = true, bool includeDynamicMembers = true )
         {
             // If a custom member lookup is defined, try to get the member value from there first.
             // This feature is implemented as a delegate method here rather than simply allowing the user to override TryGetMember,
@@ -539,25 +601,8 @@ namespace Rock.Lava
                 }
             }
 
-            // Check the dynamic dictionary of values for the member.
-            if ( _dynamicMembers.Keys.Contains( memberName ) )
-            {
-                result = _dynamicMembers[memberName];
-                return true;
-            }
-
             // Check for public properties defined on the target object instance.
-            try
-            {
-                return GetPropertyValue( _targetObject, memberName, out result );
-            }
-            catch
-            {
-            }
-
-            // The member is not defined, so return nothing.
-            result = null;
-            return false;
+            return GetPropertyValue( memberName, includeDynamicMembers, out result );
         }
 
         /// <summary>
@@ -605,27 +650,68 @@ namespace Rock.Lava
             return true;
         }
 
-        /// <summary>
-        /// Gets the value of the specified target object property.
-        /// If the target object is a dictionary, retrieves the value associated with the matching key.
-        /// </summary>
-        /// <param name="propertyPathName"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public bool GetPropertyValue( string propertyPathName, out object result )
+        private TypeConverter GetTargetDictionaryKeyConverter()
         {
-            return GetPropertyValue( _targetObject, propertyPathName, out result );
+            // This value is set in the constructor if the target object is a dictionary.
+            // If it is, we collect some metadata about the dictionary to improve access efficiency.
+            if ( _targetObjectAsDictionary == null )
+            {
+                return null;
+            }
+
+            if ( _targetDictionaryKeyConverter == null )
+            {
+                var targetObjectType = _targetObject.GetType();
+                Type keyType;
+
+                if ( _targetObject is ILavaDataDictionary )
+                {
+                    keyType = typeof( string );
+                }
+                else if ( targetObjectType.IsGenericType )
+                {
+                    keyType = targetObjectType.GetGenericArguments()[0];
+                }
+                else
+                {
+                    keyType = typeof( object );
+                }
+
+                // If the key type is not a string, get a converter for the key value.
+                if ( keyType != typeof( string ) )
+                {
+                    try
+                    {
+                        _targetDictionaryKeyConverter = TypeDescriptor.GetConverter( keyType );
+                    }
+                    catch ( NotSupportedException )
+                    {
+                        // There is no way to convert a property path string to the same type as the dictionary key,
+                        // so we can only return values for property references.
+                        _targetDictionaryKeyConverter = null;
+                        _targetObjectAsDictionary = null;
+                    }
+                }
+            }
+
+            return _targetDictionaryKeyConverter;
         }
 
         /// <summary>
-        /// Gets the value of the specified target object property.
-        /// If the target object is a dictionary, retrieves the value associated with the matching key.
+        /// Gets the value of the specified property.
+        /// The property may refer to any of the following:
+        /// 1. An entry in the local property dictionary, added dynamically at runtime.
+        /// 2. If the target object is a dictionary, a value with a matching key.
+        /// 3. A member property of the target object.
         /// </summary>
-        /// <param name="rootObj">The root object that defines the base of the property reference.</param>
         /// <param name="propertyPathName">The named path to the property, which may include references to nested object properties in a dot-separated list.</param>
+        /// <param name="includeDynamicMembers">
+        /// If true, the search will include properties defined in the local or target object dictionaries; otherwise, only
+        /// properties of the target object will be searched.
+        /// </param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public bool GetPropertyValue( object rootObj, string propertyPathName, out object result )
+        private bool GetPropertyValue( string propertyPathName, bool includeDynamicMembers, out object result )
         {
             if ( string.IsNullOrWhiteSpace( propertyPathName ) )
             {
@@ -633,50 +719,68 @@ namespace Rock.Lava
                 return false;
             }
 
-            if ( rootObj == null )
+            /*
+             * Evaluation of the member reference should proceed from least to most expensive operations.
+             * Dictionary searches should be performed first, and operations involving Reflection should occur last.
+             */
+            if ( includeDynamicMembers )
             {
-                rootObj = this;
-            }
-
-            // First check if this is a reference to a dictionary key.
-            if ( rootObj is IDictionary dictionary )
-            {
-                var dictionaryType = dictionary.GetType();
-
-                Type keyType;
-
-                if ( dictionaryType.IsGenericType )
+                // First, try to resolve a reference to a dynamic member defined for this object instance.
+                if ( _dynamicMembers.ContainsKey( propertyPathName ) )
                 {
-                    keyType = dictionaryType.GetGenericArguments()[0];
-                }
-                else
-                {
-                    keyType = typeof( object );
+                    result = _dynamicMembers[propertyPathName];
+                    return true;
                 }
 
-                // Try to convert the property path to the same type as the dictionary key so we can attempt a lookup.
-                try
+                // If we have a proxied dictionary object, check if this is a reference to a key in that dictionary.
+                if ( _targetObjectAsDictionary != null )
                 {
-                    var keyValue = TypeDescriptor.GetConverter( keyType ).ConvertFromInvariantString( propertyPathName );
-
-                    if ( keyValue != null
-                         && dictionary.Contains( keyValue ) )
+                    if ( _targetObject is LavaDataObject ldo )
                     {
-                        result = dictionary[keyValue];
-                        return true;
+                        // Although the LavaDataObject implements ILavaDataDictionary, we can use a more efficient
+                        // access method here.
+                        return ldo.TryGetValueInternal( propertyPathName, out result, false, false );
+                    }
+                    else if ( _targetObject is ILavaDataDictionary ldd )
+                    {
+                        if ( ldd.ContainsKey( propertyPathName ) )
+                        {
+                            result = ldd.GetValue( propertyPathName );
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        var keyConverter = GetTargetDictionaryKeyConverter();
+
+                        if ( keyConverter != null )
+                        {
+                            // Convert the property path to the same type as the dictionary key and attempt a dictionary lookup.
+                            try
+                            {
+                                var keyValue = keyConverter.ConvertFromInvariantString( propertyPathName );
+
+                                if ( keyValue != null
+                                     && _targetObjectAsDictionary.Contains( keyValue ) )
+                                {
+                                    result = _targetObjectAsDictionary[keyValue];
+                                    return true;
+                                }
+                            }
+                            catch ( NotSupportedException )
+                            {
+                                // The property path can't be converted to the same type as the dictionary key.
+                                throw new Exception( "LavaDataObject internal error. The property path name is invalid." );
+                            }
+                        }
                     }
                 }
-                catch ( NotSupportedException )
-                {
-                    // The property path cannot be converted to the same type as the dictionary key,
-                    // so proceed to evaluate it as a class member reference instead.
-                }
             }
 
-            // Next, try to resolve the reference as a property path.
+            // Finally, try to resolve the reference as a property path.
             var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
-            object obj = rootObj;
+            object obj = _targetObject ?? this;
 
             while ( propPath.Any() && obj != null )
             {
@@ -698,7 +802,7 @@ namespace Rock.Lava
                 else if ( obj is LavaDataObjectInternal dataObject )
                 {
                     // Get the property value for the dynamic object.
-                    dataObject.GetPropertyValue( propName, out obj );
+                    dataObject.GetPropertyValue( propName, true, out obj );
                     prop = null;
                     getPropertyValue = false;
                 }
@@ -769,20 +873,12 @@ namespace Rock.Lava
         {
             get
             {
-                // try to get from properties collection first
-                if ( _dynamicMembers.ContainsKey( key ) )
-                {
-                    return _dynamicMembers[key];
-                }
-
-                // try reflection on instanceType
-                object result = null;
-                if ( GetPropertyValue( _targetObject, key, out result ) )
+                object result;
+                if ( GetPropertyValue( key, true, out result ) )
                 {
                     return result;
                 }
 
-                // nope doesn't exist
                 return null;
             }
 

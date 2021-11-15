@@ -119,6 +119,7 @@ namespace Rock.Tests.Integration.Lava
         #region Steps
 
         [TestMethod]
+        [Ignore("Requires additional sample test data.")]
         public void PersonSteps_WithDefaultParameters_ReturnsAllStepsForCurrentPerson()
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
@@ -140,6 +141,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        [Ignore( "Requires additional sample test data." )]
         public void PersonSteps_WithStepProgramParameter_ReturnsStepsForProgramOnly()
         {
             // Test with Step Program Guid
@@ -162,6 +164,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        [Ignore( "Requires additional sample test data." )]
         public void PersonSteps_WithStepTypeParameter_ReturnsStepsForStepTypeOnly()
         {
             // Test with Step Type Guid
@@ -184,6 +187,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        [Ignore( "Requires additional sample test data." )]
         public void PersonSteps_WithStatusParameter_ReturnsStepsHavingMatchingStatusOnly()
         {
             // Test with Status Name
