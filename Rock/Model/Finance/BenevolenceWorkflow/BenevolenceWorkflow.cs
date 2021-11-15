@@ -12,11 +12,12 @@
 // </copyright>
 //
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Lava;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -28,7 +29,7 @@ namespace Rock.Model
     public partial class BenevolenceWorkflow : Model<BenevolenceWorkflow>
     {
 
-        #region entity properties
+         #region Entity Properties
         /// <summary>
         /// Gets or sets the benevolence type identifier.
         /// </summary>
@@ -64,7 +65,36 @@ namespace Rock.Model
         /// The workflow qualifier.
         /// </value>
         [DataMember]
-        public String QualifierValue { get; set; }
+        public string QualifierValue { get; set; }
+        #endregion
+
+        #region Navigation Properties
+        /// <summary>
+        /// Gets or sets the benevolence type.
+        /// </summary>
+        /// <value>
+        /// The benevolence type.
+        /// </value>
+         [LavaVisible]
+        public virtual  Rock.Model.BenevolenceType BenevolenceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BenevolenceType"></see>.
+        /// </summary>
+        /// <value>
+        /// The benevolence type.
+        /// </value>
+       
+ 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType">type</see> of the workflow.
+        /// </summary>
+        /// <value>
+        /// The type of the workflow.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType WorkflowType { get; set; }
+
         #endregion
     }
 }

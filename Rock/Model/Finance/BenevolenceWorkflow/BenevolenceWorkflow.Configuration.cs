@@ -29,10 +29,8 @@ namespace Rock.Model
         /// </summary>
         public BenevolenceWorkflowConfiguration()
         {
-            this.HasRequired( p => p.BenevolenceTypeId ).WithMany( p => p.ConnectionWorkflows ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
-            //this.HasOptional( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionWorkflows ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
-            //this.HasRequired( p => p.WorkflowType ).WithMany().HasForeignKey( p => p.WorkflowTypeId ).WillCascadeOnDelete( true );
-
+            this.HasRequired(p => p.BenevolenceType).WithMany(p => p.BenevolenceWorkflows).HasForeignKey(p => p.BenevolenceTypeId).WillCascadeOnDelete(true);
+            this.HasRequired(p => p.WorkflowType).WithMany().HasForeignKey(p => p.WorkflowTypeId).WillCascadeOnDelete(true);
         }
     }
 }

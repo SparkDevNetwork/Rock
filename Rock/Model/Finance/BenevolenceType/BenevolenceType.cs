@@ -11,10 +11,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -68,10 +71,24 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String" /> containing the <see cref="RequestLavaTemplate"/>.
         /// </value>
-        [Required]
-        [DataMember(IsRequired = true)]
+        [DataMember]
         public string RequestLavaTemplate { get; set; }
         #endregion
 
+        #region Navigation Properties
+         /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
+        /// </value>
+        [LavaVisible]
+        public virtual ICollection<BenevolenceWorkflow> BenevolenceWorkflows
+        {
+            get { return _benevolenceWorkflows ?? ( _benevolenceWorkflows = new Collection<BenevolenceWorkflow>() ); }
+            set { _benevolenceWorkflows = value; }
+        }
+         private ICollection<BenevolenceWorkflow> _benevolenceWorkflows;
+        #endregion
     }
 }
