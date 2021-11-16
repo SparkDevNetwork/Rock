@@ -217,6 +217,14 @@
     <Compile Include="Migrations\202111101010388_AddEventItemOccurrenceNextStartDateTime.Designer.cs">
       <DependentUpon>202111101010388_AddEventItemOccurrenceNextStartDateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202111161800030_Rollup_20211116.cs" />
+    <Compile Include="Migrations\202111161800030_Rollup_20211116.Designer.cs">
+      <DependentUpon>202111161800030_Rollup_20211116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111161901354_CodeGenerated_20211116.cs" />
+    <Compile Include="Migrations\202111161901354_CodeGenerated_20211116.Designer.cs">
+      <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\202111152321576_AddPastoralCareCallLog_20211115.cs" />
     <Compile Include="Migrations\202111152321576_AddPastoralCareCallLog_20211115.Designer.cs">
       <DependentUpon>202111152321576_AddPastoralCareCallLog_20211115.cs</DependentUpon>
@@ -943,6 +951,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202111101010388_AddEventItemOccurrenceNextStartDateTime.resx">
       <DependentUpon>202111101010388_AddEventItemOccurrenceNextStartDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111161800030_Rollup_20211116.resx">
+      <DependentUpon>202111161800030_Rollup_20211116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111161901354_CodeGenerated_20211116.resx">
+      <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202111152321576_AddPastoralCareCallLog_20211115.resx">
       <DependentUpon>202111152321576_AddPastoralCareCallLog_20211115.cs</DependentUpon>
