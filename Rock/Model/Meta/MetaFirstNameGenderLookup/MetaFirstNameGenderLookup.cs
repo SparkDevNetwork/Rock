@@ -110,15 +110,6 @@ namespace Rock.Model
         public decimal? MalePercent { get; set; }
 
         #endregion
-
-        #region Virtual Properties
-
-        #endregion
-
-        #region Public Methods
-
-        #endregion
-
     }
 
     #region Entity Configuration

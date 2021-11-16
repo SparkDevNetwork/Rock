@@ -2156,9 +2156,9 @@
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccountService.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSync.cs" />
-    <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
-    <Compile Include="Model\MetaLastNameLookup.cs" />
-    <Compile Include="Model\MetaNickNameLookup.cs" />
+    <Compile Include="Model\Meta\MetaFirstNameGenderLookup\MetaFirstNameGenderLookup.cs" />
+    <Compile Include="Model\Meta\MetaLastNameLookup\MetaLastNameLookup.cs" />
+    <Compile Include="Model\Meta\MetaNickNameLookup\MetaNickNameLookup.cs" />
     <Compile Include="Model\Reporting\Metric\MetricService.cs" />
     <Compile Include="Model\Event\AttendanceCode\AttendanceCodeService.cs" />
     <Compile Include="Model\Event\Attendance\AttendanceService.cs" />
@@ -2447,7 +2447,7 @@
     <Compile Include="Model\Location.cs" />
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
-    <Compile Include="Model\Metaphone.cs" />
+    <Compile Include="Model\Core\Metaphone\Metaphone.cs" />
     <Compile Include="Model\Reporting\Metric\Metric.cs" />
     <Compile Include="Model\Reporting\MetricCategory\MetricCategory.cs" />
     <Compile Include="Model\Reporting\MetricPartition\MetricPartition.cs" />

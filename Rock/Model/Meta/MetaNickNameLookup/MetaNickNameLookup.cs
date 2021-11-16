@@ -24,25 +24,47 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a MetaLastNameLookup <see cref="Rock.Model.MetaLastNameLookup"/>. 
+    /// Represents entry to Look up on the basis of Nick Name <see cref="Rock.Model.MetaNickNameLookup"/>. 
     /// </summary>
     [RockDomain( "Meta" )]
-    [Table( "MetaLastNameLookup" )]
+    [Table( "MetaNickNameLookup" )]
     [DataContract]
-    public class MetaLastNameLookup : Entity<MetaLastNameLookup>
+    public class MetaNickNameLookup : Entity<MetaNickNameLookup>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the last name.
+        /// Gets or sets the first name.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing last name.
+        /// A <see cref="System.String"/> representing first name.
         /// </value>
         [Required]
-        [MaxLength( 100 )]
+        [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
-        public string LastName { get; set; }
+        public string FirstName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nick name.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing nick name.
+        /// </value>
+        [Required]
+        [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
+        public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gender.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing gender.
+        /// </value>
+        [MaxLength( 1 )]
+        [Column( TypeName = "char" )]
+        [DataMember]
+        public string Gender { get; set; }
 
         /// <summary>
         /// Gets or sets the Count.
@@ -53,46 +75,25 @@ namespace Rock.Model
         [DataMember]
         public int? Count { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Rank.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing Rank.
-        /// </value>
-        [DataMember]
-        public int? Rank { get; set; }
-
-        /// <summary>
-        /// Gets or sets the count in 100k.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Decimal"/> representing the count in 100k.
-        /// </value>
-        [DataMember]
-        public decimal? CountIn100k { get; set; }
-
-        #endregion
-
-        #region Virtual Properties
-
-        #endregion
-
-        #region Public Methods
-
         #endregion
     }
+
+    #region Entity Configuration
 
     /// <summary>
-    /// MetaLastNameLookup Configuration class.
+    /// MetaNickNameLookup Configuration class.
     /// </summary>
-    public partial class MetaLastNameLookupConfiguration : EntityTypeConfiguration<MetaLastNameLookup>
+    public partial class MetaNickNameLookupConfiguration : EntityTypeConfiguration<MetaNickNameLookup>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetaLastNameLookupConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="MetaNickNameLookupConfiguration" /> class.
         /// </summary>
-        public MetaLastNameLookupConfiguration()
+        public MetaNickNameLookupConfiguration()
         {
-
+         
         }
     }
+
+    #endregion
+
 }
