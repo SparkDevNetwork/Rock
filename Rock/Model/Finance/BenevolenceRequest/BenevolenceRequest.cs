@@ -215,7 +215,7 @@ namespace Rock.Model
         /// The campus identifier.
         /// </value>
         [HideFromReporting]
-        [DataMember]
+        [DataMember(IsRequired =true)]
         [FieldType( Rock.SystemGuid.FieldType.BENEVOLENCE_TYPE )]
         public int BenevolenceTypeId { get; set; }
 

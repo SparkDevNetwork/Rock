@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202111152025390_AddPastoralCareCallLog_20211115"; }
+            get { return "202111152321576_AddPastoralCareCallLog_20211115"; }
         }
         
         string IMigrationMetadata.Source

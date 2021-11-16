@@ -37,7 +37,7 @@ namespace Rock.Model
         /// The benevolence type identifier.
         /// </value>
         [Required]
-        [DataMember(IsRequired = true)]
+        [DataMember(IsRequired =true)]
         public int BenevolenceTypeId { get; set; }
 
         /// <summary>

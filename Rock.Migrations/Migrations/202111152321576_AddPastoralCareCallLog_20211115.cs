@@ -55,7 +55,7 @@ namespace Rock.Migrations
                 .Index(t => t.Guid, unique: true);
 
             //insert the default benevolence type with new GUID
-            Sql($"INSERT INTO dbo.BenevolenceType(Name,Description,IsActive,Guid,CreatedDateTime,ModifiedDateTime)"+
+            Sql($"INSERT INTO dbo.BenevolenceType(Name,Description,IsActive,Guid,CreatedDateTime,ModifiedDateTime)" +
                 $"VALUES('Benevolence','The default benevolence type.',1,'B4A7C50B-E399-452E-BA37-1ABD6B15482C','{RockDateTime.Now}','{RockDateTime.Now}')");
 
             CreateTable(
@@ -77,7 +77,7 @@ namespace Rock.Migrations
                     ForeignKey = c.String(maxLength: 100),
                 })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.BenevolenceType", t => t.BenevolenceTypeId, cascadeDelete: true)
+                .ForeignKey("dbo.BenevolenceType", t => t.BenevolenceTypeId)
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
                 .ForeignKey("dbo.WorkflowType", t => t.WorkflowTypeId, cascadeDelete: true)
@@ -87,14 +87,16 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
 
-            //Set the default benevolence type id for new or existing records
+
+            //Add column and default value for benevolence type id
             AddColumn("dbo.BenevolenceRequest", "BenevolenceTypeId", (c) =>
             {
-
                 var columnModel = c.Int(nullable: false);
                 columnModel.DefaultValue = 1;
                 return columnModel;
             });
+
+
             CreateIndex("dbo.BenevolenceRequest", "BenevolenceTypeId");
             AddForeignKey("dbo.BenevolenceRequest", "BenevolenceTypeId", "dbo.BenevolenceType", "Id");
         }
