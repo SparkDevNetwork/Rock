@@ -230,11 +230,7 @@ namespace Rock.Model
             : base()
         {
             _results = new Collection<BenevolenceResult>();
-            _documents = new Collection<BenevolenceRequestDocument>();
-
-            //defaults on new instances
-            Id = 0;
-            BenevolenceTypeId = 1; 
+            _documents = new Collection<BenevolenceRequestDocument>();                        
         }
 
         #endregion Constructors

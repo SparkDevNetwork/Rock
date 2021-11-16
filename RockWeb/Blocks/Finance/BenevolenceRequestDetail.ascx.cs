@@ -449,7 +449,7 @@ namespace RockWeb.Blocks.Finance
 
                 if (benevolenceRequest == null)
                 {
-                    benevolenceRequest = new BenevolenceRequest();
+                    benevolenceRequest = new BenevolenceRequest { Id = 0 };
                 }
 
                 benevolenceRequest.FirstName = dtbFirstName.Text;
