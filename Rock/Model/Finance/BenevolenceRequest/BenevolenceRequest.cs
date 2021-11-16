@@ -231,6 +231,10 @@ namespace Rock.Model
         {
             _results = new Collection<BenevolenceResult>();
             _documents = new Collection<BenevolenceRequestDocument>();
+
+            //defaults on new instances
+            Id = 0;
+            BenevolenceTypeId = 1; 
         }
 
         #endregion Constructors

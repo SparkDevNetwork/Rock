@@ -54,7 +54,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
 
-            //insert the default benevolence type with new GUID
+            //insert the default benevolence type with a new generated GUID
             Sql($"INSERT INTO dbo.BenevolenceType(Name,Description,IsActive,Guid,CreatedDateTime,ModifiedDateTime)" +
                 $"VALUES('Benevolence','The default benevolence type.',1,'B4A7C50B-E399-452E-BA37-1ABD6B15482C','{RockDateTime.Now}','{RockDateTime.Now}')");
 
@@ -88,7 +88,7 @@ namespace Rock.Migrations
                 .Index(t => t.Guid, unique: true);
 
 
-            //Add column and default value for benevolence type id
+            //Add the BenevolenceTypeId column and set a default value for existing benevolence types
             AddColumn("dbo.BenevolenceRequest", "BenevolenceTypeId", (c) =>
             {
                 var columnModel = c.Int(nullable: false);
