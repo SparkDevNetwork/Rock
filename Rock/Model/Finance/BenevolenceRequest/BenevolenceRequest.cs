@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 
@@ -209,6 +208,17 @@ namespace Rock.Model
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the benevolence type identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [HideFromReporting]
+        [DataMember(IsRequired =true)]
+        [FieldType( Rock.SystemGuid.FieldType.BENEVOLENCE_TYPE )]
+        public int BenevolenceTypeId { get; set; }
+
         #endregion Entity Properties
 
         #region Constructors
@@ -220,7 +230,7 @@ namespace Rock.Model
             : base()
         {
             _results = new Collection<BenevolenceResult>();
-            _documents = new Collection<BenevolenceRequestDocument>();
+            _documents = new Collection<BenevolenceRequestDocument>();                        
         }
 
         #endregion Constructors
@@ -304,6 +314,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate RequestSourceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence type.
+        /// </summary>
+        /// <value>
+        /// The benevolence type.
+        /// </value>
+        [DataMember]
+        public virtual  Rock.Model.BenevolenceType BenevolenceType { get; set; }
         #endregion Navigation Properties
 
         #region Public Methods
@@ -322,30 +341,4 @@ namespace Rock.Model
         #endregion Public Methods
     }
 
-    #region Entity Configuration
-
-    /// <summary>
-    /// BenevolenceRequest Configuration class.
-    /// </summary>
-    public partial class BenevolenceRequestConfiguration : EntityTypeConfiguration<BenevolenceRequest>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BenevolenceRequestConfiguration" /> class.
-        /// </summary>
-        public BenevolenceRequestConfiguration()
-        {
-            this.HasOptional( p => p.RequestedByPersonAlias ).WithMany().HasForeignKey( p => p.RequestedByPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.CaseWorkerPersonAlias ).WithMany().HasForeignKey( p => p.CaseWorkerPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.RequestStatusValue ).WithMany().HasForeignKey( p => p.RequestStatusValueId ).WillCascadeOnDelete( false );
-
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
-            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
-            this.HasRequired( r => r.RequestSourceDate ).WithMany().HasForeignKey( r => r.RequestDateKey ).WillCascadeOnDelete( false );
-        }
-    }
-
-    #endregion Entity Configuration
 }

@@ -2181,7 +2181,7 @@ namespace Rock.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             ContextHelper.AddConfigurations( modelBuilder );
-
+            
             try
             {
                 //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core

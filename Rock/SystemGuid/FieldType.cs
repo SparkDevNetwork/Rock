@@ -76,6 +76,11 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_REQUEST = "44EEC881-3C07-4A58-ACC4-0F21D873DBE0";
 
         /// <summary>
+        /// Benevolence type field type
+        /// </summary>
+        public const string BENEVOLENCE_TYPE = "FB6855EF-4AB3-4266-B4C6-556204C8E241";
+
+        /// <summary>
         /// Binary File field type
         /// </summary>
         public const string BINARY_FILE = "C403E219-A56B-439E-9D50-9302DFE760CF";
