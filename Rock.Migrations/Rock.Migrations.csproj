@@ -225,10 +225,6 @@
     <Compile Include="Migrations\202111161901354_CodeGenerated_20211116.Designer.cs">
       <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202111152321576_AddPastoralCareCallLog_20211115.cs" />
-    <Compile Include="Migrations\202111152321576_AddPastoralCareCallLog_20211115.Designer.cs">
-      <DependentUpon>202111152321576_AddPastoralCareCallLog_20211115.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -957,9 +953,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202111161901354_CodeGenerated_20211116.resx">
       <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202111152321576_AddPastoralCareCallLog_20211115.resx">
-      <DependentUpon>202111152321576_AddPastoralCareCallLog_20211115.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
