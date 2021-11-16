@@ -229,6 +229,7 @@ Update Family Status: {updateFamilyStatus}
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
 
+                    var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
                     // Get all the person ids with selected activity
                     personIds = GetPeopleWhoContributed( settings.IsLastContributionEnabled, settings.LastContributionPeriod, rockContext );
                     personIds.AddRange( GetPeopleWhoAttendedServiceGroup( settings.IsAttendanceInServiceGroupEnabled, settings.AttendanceInServiceGroupPeriod, rockContext ) );
@@ -236,7 +237,7 @@ Update Family Status: {updateFamilyStatus}
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsAttendanceInGroupTypeEnabled, settings.AttendanceInGroupType, null, settings.AttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsSiteLoginEnabled, settings.SiteLoginPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsPrayerRequestEnabled, settings.PrayerRequestPeriod, rockContext ) );
-                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, null, settings.PersonAttributesDays, rockContext ) );
+                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, excludeAttributeIds, settings.PersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsInteractionsEnabled, settings.Interactions, rockContext ) );
 
                     var dataViewQry = GetPeopleInDataViewQuery( settings.IsIncludeDataViewEnabled, settings.IncludeDataView, rockContext );
@@ -355,6 +356,25 @@ Update Family Status: {updateFamilyStatus}
             }
         }
 
+        /// <summary>
+        /// Get the ignored person attribute list
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<int> GetIgnoredPersonAttributeList( RockContext rockContext )
+        {
+            var excludeAttributeIds = new List<int>();
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.DATA_AUTOMATION_IGNORED_PERSON_ATTRIBUTES.AsGuid() );
+            if ( definedType != null )
+            {
+                var attributeKeys = definedType.DefinedValues.Select( a => a.Value ).ToList();
+                var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
+                excludeAttributeIds = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == personEntityTypeId && attributeKeys.Contains( a.Key ) ).Select( a => a.Id ).ToList();
+            }
+
+            return excludeAttributeIds;
+        }
+
         #endregion
 
         #region Inactivate People
@@ -416,6 +436,8 @@ Update Family Status: {updateFamilyStatus}
                 var personIds = new List<int>();
                 using ( var rockContext = new RockContext() )
                 {
+                    var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
+
                     // increase the timeout just in case.
                     rockContext.Database.CommandTimeout = 180;
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
@@ -426,7 +448,7 @@ Update Family Status: {updateFamilyStatus}
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsNoAttendanceInGroupTypeEnabled, null, settings.AttendanceInGroupType, settings.NoAttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsNoPrayerRequestEnabled, settings.NoPrayerRequestPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsNoSiteLoginEnabled, settings.NoSiteLoginPeriod, rockContext ) );
-                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsNoPersonAttributesEnabled, null, settings.PersonAttributes, settings.NoPersonAttributesDays, rockContext ) );
+                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsNoPersonAttributesEnabled, null, settings.PersonAttributes.Union( excludeAttributeIds ).ToList(), settings.NoPersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsNoInteractionsEnabled, settings.NoInteractions, rockContext ) );
 
                     // Get the distinct person ids

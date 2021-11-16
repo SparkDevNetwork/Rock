@@ -355,7 +355,7 @@ namespace Rock.Reporting
                 }
                 else if ( entityType == typeof( Note ) )
                 {
-                    // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
+                    // in the case of notes, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
                     cacheAttributeList = cacheAttributeList
                             .Where( a =>
                                 a.EntityTypeQualifierColumn == null ||

@@ -11,7 +11,7 @@
             <div class="panel-body">
 
 	            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-
+                <Rock:NotificationBox ID="nbNoOccurrencesSelected" runat="server" NotificationBoxType="Warning" Text="Please select at least one occurrence to accpt." Visible="false" />
                 <div class="grid grid-panel">
             	    <Rock:GridFilter ID="gfWorkflows" runat="server">
                 	    <Rock:RockTextBox ID="tbName" runat="server" Label="Name"></Rock:RockTextBox>
@@ -25,7 +25,7 @@
                         </Rock:RockCheckBoxList>
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
 	                </Rock:GridFilter>
-	                <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full" OnRowSelected="gWorkflows_Edit">
+	                <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full" OnRowSelected="gWorkflows_Edit" PageSizes="3">
 	                    <Columns>
                             <Rock:SelectField />
 	                        <Rock:RockBoundField DataField="WorkflowId" HeaderText="Id" SortExpression="WorkflowId" />
@@ -34,6 +34,7 @@
                             <Rock:ListDelimitedField DataField="Activities" HeaderText="Activities" HtmlEncode="false" Delimiter="," />
 	                    </Columns>
     	            </Rock:Grid>
+                    <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" CssClass="margin-b-none" Dismissable="true"></Rock:NotificationBox>
                 </div>
 
             </div> 

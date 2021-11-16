@@ -125,14 +125,24 @@ export default defineComponent({
             this.$emit("update:modelValue", this.internalValue);
         }
     },
+    methods: {
+        additionalClasses( fieldLabel: string): string {
+            if (fieldLabel !== "") {
+                return `margin-t-sm ${this.numberIncrementClasses}`;
+            }
+            else {
+                return this.numberIncrementClasses;
+            }
+        }
+    },
     template: `
 <RockFormField
     :modelValue="internalValue"
     formGroupClasses="number-up-down"
     name="numberupdown">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field, errors, disabled, fieldLabel}">
         <div class="control-wrapper">
-            <NumberUpDownInternal v-model="internalValue" :min="min" :max="max" :class="numberIncrementClasses" />
+            <NumberUpDownInternal v-model="internalValue" :min="min" :max="max" :class="additionalClasses(fieldLabel)" />
         </div>
     </template>
 </RockFormField>`

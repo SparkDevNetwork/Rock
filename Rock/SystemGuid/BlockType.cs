@@ -280,17 +280,37 @@ namespace Rock.SystemGuid
         #region Mobile Block Types
 
         /// <summary>
-        /// The mobile Groups > <see cref="Rock.Blocks.Types.Mobile.Groups.GroupRegistration">Group Registration</see> block type.
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList">Connection Type List</see> block type.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_TYPE_LIST = "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF";
+
+        /// <summary>
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList">Connection Opportunity List</see> block type.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST = "0015A574-C10A-4530-897C-F7B7C3D9393E";
+
+        /// <summary>
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList">Connection Request List</see> block type.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_REQUEST_LIST = "612E9E13-434F-4E47-958D-37E1C3EEF304";
+
+        /// <summary>
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail">Connection Request Detail</see> block type.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL = "EF537CC9-5E53-4832-A473-0D5EA439C296";
+
+        /// <summary>
+        /// The mobile Groups &gt; <see cref="Rock.Blocks.Types.Mobile.Groups.GroupRegistration">Group Registration</see> block type.
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_REGISTRATION = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912";
 
         /// <summary>
-        /// The mobile Groups > <see cref="Rock.Blocks.Types.Mobile.Groups.GroupFinder">Group Finder</see> block type.
+        /// The mobile Groups &gt; <see cref="Rock.Blocks.Types.Mobile.Groups.GroupFinder">Group Finder</see> block type.
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_FINDER = "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C";
 
         /// <summary>
-        /// The mobile Prayer > Prayer Card View block type.
+        /// The mobile Prayer &gt; Prayer Card View block type.
         /// </summary>
         public const string MOBILE_PRAYER_PRAYER_CARD_VIEW = "CA75C558-9345-47E7-99AF-D8191D31D00D";
 

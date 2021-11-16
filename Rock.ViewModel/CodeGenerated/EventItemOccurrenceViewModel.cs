@@ -80,6 +80,14 @@ namespace Rock.ViewModel
         public string Location { get; set; }
 
         /// <summary>
+        /// Gets or sets the NextStartDateTime.
+        /// </summary>
+        /// <value>
+        /// The NextStartDateTime.
+        /// </value>
+        public DateTime? NextStartDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the Note.
         /// </summary>
         /// <value>

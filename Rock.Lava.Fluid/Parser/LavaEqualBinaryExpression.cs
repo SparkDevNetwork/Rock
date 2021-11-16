@@ -121,19 +121,23 @@ namespace Rock.Lava.Fluid
                 }
             }
 
-            // If either value is numeric, perform a numeric comparison.
+            // If either value is numeric, and both values can be converted to a number, perform a numeric comparison.
             if ( leftValue is NumberValue || rightValue is NumberValue )
             {
-                var leftDecimal = leftValue.ToNumberValue();
-                var rightDecimal = rightValue.ToNumberValue();
+                decimal leftDecimal;
+                decimal rightDecimal;
 
-                if ( FailIfEqual )
+                if ( decimal.TryParse( leftValue.ToStringValue(), out leftDecimal )
+                    && decimal.TryParse( rightValue.ToStringValue(), out rightDecimal ) )
                 {
-                    return leftDecimal == rightDecimal ? BooleanValue.False : BooleanValue.True;
-                }
-                else
-                {
-                    return leftDecimal == rightDecimal ? BooleanValue.True : BooleanValue.False;
+                    if ( FailIfEqual )
+                    {
+                        return leftDecimal == rightDecimal ? BooleanValue.False : BooleanValue.True;
+                    }
+                    else
+                    {
+                        return leftDecimal == rightDecimal ? BooleanValue.True : BooleanValue.False;
+                    }
                 }
             }
 

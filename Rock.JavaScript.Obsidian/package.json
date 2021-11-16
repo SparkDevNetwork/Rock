@@ -39,7 +39,7 @@
     "luxon": "^2.0.2",
     "mitt": "^2.1.0",
     "systemjs": " ^6.8.3",
-    "vee-validate": "^4.2.2",
+    "vee-validate": "^4.5.5",
     "vue": "^3.0.7"
   }
 }

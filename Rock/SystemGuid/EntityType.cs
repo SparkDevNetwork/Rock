@@ -269,6 +269,26 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOBILE_CORE_NOTES_BLOCK_TYPE = "2FED71D1-4A60-4EB5-B971-530B5D1FC041";
 
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_TYPE_LIST_BLOCK_TYPE = "F30667AC-5FAA-429C-AD7F-D4B7C0C5C293";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST_BLOCK_TYPE = "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_REQUEST_LIST_BLOCK_TYPE = "E1C52624-898F-46EF-98B0-3C06B6D81654";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF";
+
 		/// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests"/>.
         /// </summary>

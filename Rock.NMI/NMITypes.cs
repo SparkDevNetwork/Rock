@@ -2581,6 +2581,7 @@ namespace Rock.NMI
 
         /// <summary>
         /// The friendly message map
+        /// These can be exact or partial matches of the error message.
         /// </summary>
         private static readonly Dictionary<string, string> FriendlyMessageMap = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
         {
@@ -2608,6 +2609,9 @@ namespace Rock.NMI
             // Partial Matches on ACH errors
             { "Check Account number must contain only digits", "Invalid Check Account Number" },
             { "ABA number must contain only digits", "Invalid Routing Number" },
+
+            // Address Verification.
+            { "AVS REJECTED", "Address verification failed. The billing address provided does not match the billing address registered with the card." },
 
             // Declined
             { "FAILED", "Declined" },

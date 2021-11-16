@@ -238,6 +238,147 @@ namespace Rock.Tests.Integration.Jobs
             }
         }
 
+        #region Cleanup Task: Update EventItemOccurrence.NextDateTime
+
+        private Guid testEvent1Guid = new Guid( "1DC19F1B-8FD1-41ED-80AE-6F112AEDBE8A" );
+        private Guid testEventOccurrence11Guid = new Guid( "A7FD20AD-0349-4125-8ABF-04437CEA31C0" );
+        private Guid testEventOccurrence12Guid = new Guid( "D9958C1F-F485-4147-87C9-A0523216A2B6" );
+        private Guid testEventOccurrence13Guid = new Guid( "37CA5E63-9464-4E44-9F9B-378D22DB8300" );
+        private Guid testScheduleGuid = new Guid( "8FF2529A-778F-4190-A7D8-6C0506D43D84" );
+        private Guid testEvent2Guid = new Guid( "75906B33-84F3-45DD-B79E-B31B1523E573" );
+        private Guid testEventOccurrence21Guid = new Guid( "96453FB1-1F8C-4E47-BFC1-C7B9DEC94446" );
+
+        [TestMethod]
+        public void RockCleanup_Execute_ShouldUpdateEventItemOccurrences()
+        {
+            var referenceDate = new DateTime( 2020, 1, 1 );
+
+            // Get the sample data schedule for Saturday 4:30pm.
+            var rockContext = new RockContext();
+
+            var scheduleService = new ScheduleService( rockContext );
+            var schedule = scheduleService.Get( TestGuids.Schedules.ScheduleSat1630Guid.AsGuid() );
+
+            // Create a new inactive schedule.
+            var scheduleInactive = scheduleService.Get( testScheduleGuid );
+            if ( scheduleInactive == null )
+            {
+                scheduleInactive = new Schedule();
+                scheduleService.Add( scheduleInactive );
+            }
+            scheduleInactive.Name = "Test Schedule";
+            scheduleInactive.Guid = testScheduleGuid;
+            scheduleInactive.IsActive = false;
+
+            rockContext.SaveChanges();
+
+            // Create the Test Events.
+            var eventItemService = new EventItemService( rockContext );
+
+            // Test Event 1 (active)
+            var testEvent1 = eventItemService.Get( testEvent1Guid );
+            if ( testEvent1 != null )
+            {
+                eventItemService.Delete( testEvent1 );
+                rockContext.SaveChanges();
+            }
+
+            testEvent1 = new EventItem();
+            testEvent1.Guid = testEvent1Guid;
+            testEvent1.Name = "Test Event 1";
+            eventItemService.Add( testEvent1 );
+
+            // Add an occurrence with a future schedule and no NextDateTime value.
+            // When the cleanup task executes, this should be updated to the next occurrence after the reference date.
+            var testOccurrence11 = new EventItemOccurrence();
+
+            testOccurrence11.ScheduleId = schedule.Id;
+            testOccurrence11.Guid = testEventOccurrence11Guid;
+            testOccurrence11.NextStartDateTime = null;
+            testEvent1.EventItemOccurrences.Add( testOccurrence11 );
+
+            // Add an occurrence with a NextDateTime that is prior to the reference date.
+            // When the cleanup task executes, this should be updated to the next occurrence after the reference date.
+            var testOccurrence12 = new EventItemOccurrence();
+            testOccurrence12.ScheduleId = schedule.Id;
+            testOccurrence12.Guid = testEventOccurrence12Guid;
+            testOccurrence12.NextStartDateTime = referenceDate.AddDays( -1 );
+            testEvent1.EventItemOccurrences.Add( testOccurrence12 );
+
+            // Add an occurrence with a NextDateTime and an inactive Schedule.
+            // When the cleanup task executes, the NextDateTime should be set to null.
+            var testOccurrence13 = new EventItemOccurrence();
+            testOccurrence13.ScheduleId = scheduleInactive.Id;
+            testOccurrence13.Guid = testEventOccurrence13Guid;
+            testOccurrence13.NextStartDateTime = referenceDate.AddDays( 7 );
+            testEvent1.EventItemOccurrences.Add( testOccurrence13 );
+
+            // Test Event 2 (inactive)
+            var testEvent2 = eventItemService.Get( testEvent2Guid );
+            if ( testEvent2 != null )
+            {
+                eventItemService.Delete( testEvent2 );
+                rockContext.SaveChanges();
+            }
+
+            testEvent2 = new EventItem();
+            testEvent2.Guid = testEvent2Guid;
+            testEvent2.Name = "Test Event 2";
+            testEvent2.IsActive = false;
+            eventItemService.Add( testEvent2 );
+
+            // Add an occurrence with a future schedule and a NextDateTime value.
+            // When the cleanup task executes, the NextDateTime should be set to null.
+            var testOccurrence21 = new EventItemOccurrence();
+
+            testOccurrence21.ScheduleId = schedule.Id;
+            testOccurrence21.Guid = testEventOccurrence21Guid;
+            testOccurrence21.NextStartDateTime = referenceDate;
+            testEvent2.EventItemOccurrences.Add( testOccurrence21 );
+
+            // Save changes without triggering the pre-save, to avoid updating the NextEventDate field.
+            rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+
+            // Run the cleanup task to verify the results for the reference date.
+            RunRockCleanupTaskUpdateEventNextOccurrenceDatesAndVerify( referenceDate );
+
+            // Re-run the task to verify that the results are adjusted for the current date.
+            RunRockCleanupTaskUpdateEventNextOccurrenceDatesAndVerify( RockDateTime.Now );
+        }
+
+        private void RunRockCleanupTaskUpdateEventNextOccurrenceDatesAndVerify( DateTime referenceDate )
+        {
+            // Execute the process to update the Event Occurrence next dates.
+            var rockContext = new RockContext();
+
+            Rock.Jobs.RockCleanup.UpdateEventNextOccurrenceDates( rockContext, referenceDate );
+
+            // Verify the results of the cleanup.
+            rockContext = new RockContext();
+
+            var eventOccurrenceService = new EventItemOccurrenceService( rockContext );
+
+            // Event 1.1 should be updated to the next occurrence after the reference date.
+            var event11 = eventOccurrenceService.Get( testEventOccurrence11Guid );
+            Assert.AreEqual( event11.NextStartDateTime, event11.Schedule.GetNextStartDateTime( referenceDate ) );
+
+            // Event 1.2 should be updated to the next occurrence after the reference date.
+            var event12 = eventOccurrenceService.Get( testEventOccurrence12Guid );
+            Assert.AreEqual( event12.NextStartDateTime, event12.Schedule.GetNextStartDateTime( referenceDate ) );
+
+            // Event 1.3 should be set to null because the schedule is inactive.
+            var event13 = eventOccurrenceService.Get( testEventOccurrence13Guid );
+            Assert.IsNull( event13.NextStartDateTime );
+
+            // Event 2.1 should be set to null because the Event is inactive.
+            var event21 = eventOccurrenceService.Get( testEventOccurrence21Guid );
+            Assert.IsNull( event21.NextStartDateTime );
+        }
+
+        #endregion
+
+        #region Create Test Data
+
         private Person CreateTestPerson()
         {
             var personGuid = Guid.NewGuid();
@@ -374,6 +515,8 @@ namespace Rock.Tests.Integration.Jobs
                 rockContext.Database.ExecuteSqlCommand( createGroupMemeberScript );
             }
         }
+
+        #endregion
 
         private void ExecuteRockCleanupJob()
         {

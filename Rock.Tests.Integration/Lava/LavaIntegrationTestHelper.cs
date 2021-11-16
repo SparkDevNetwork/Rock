@@ -731,6 +731,16 @@ namespace Rock.Tests.Integration.Lava
                 outputString = outputString.ToLower();
             }
 
+            var matchType = options.OutputMatchType;
+
+            if ( expectedOutputs.Count() > 1 )
+            {
+                if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                {
+                    matchType = LavaTestOutputMatchTypeSpecifier.Contains;
+                }
+            }
+
             foreach ( var expectedOutputString in expectedOutputs )
             {
                 var expectedOutput = expectedOutputString;
@@ -773,15 +783,15 @@ namespace Rock.Tests.Integration.Lava
                         expectedOutput = expectedOutput.ToLower();
                     }
 
-                    if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                    if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
                     {
                         Assert.That.Equal( expectedOutput, outputString );
                     }
-                    else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Contains )
+                    else if ( matchType == LavaTestOutputMatchTypeSpecifier.Contains )
                     {
                         Assert.That.Contains( outputString, expectedOutput );
                     }
-                    else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
+                    else if ( matchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
                     {
                         Assert.That.DoesNotContain( outputString, expectedOutput );
                     }

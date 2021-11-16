@@ -18,35 +18,57 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using Rock.Data;
 
 namespace Rock.Model
 {
     public partial class EventItemOccurrence
     {
-        #region Properties
+        #region Methods
 
         /// <summary>
-        /// Gets the next start date time.
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
-        /// <value>
-        /// The next start date time.
-        /// </value>
-        [NotMapped]
-        public virtual DateTime? NextStartDateTime
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The database entity entry.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            get
+            // Set the NextDateTime field to the datetime of the next occurrence, or null if there is no future occurrence.
+            if ( entry.State == EntityState.Added
+                 || entry.State == EntityState.Modified )
             {
-                if ( Schedule != null )
+                var rockContext = ( RockContext ) dbContext;
+                DateTime? nextDate = null;
+
+                // If the event has a schedule and both the schedule and the event are active, get the next occurrence date.
+                if ( ScheduleId != null )
                 {
-                    return Schedule.GetNextStartDateTime( RockDateTime.Now );
+                    if ( Schedule == null )
+                    {
+                        var scheduleService = new ScheduleService( rockContext );
+                        Schedule = scheduleService.Get( ScheduleId.Value );
+                    }
+                    if ( Schedule != null && Schedule.IsActive )
+                    {
+                        if ( EventItem == null )
+                        {
+                            var eventService = new EventItemService( rockContext );
+                            EventItem = eventService.Get( EventItemId );
+                        }
+                        if ( EventItem.IsActive )
+                        {
+                            nextDate = Schedule.GetNextStartDateTime( RockDateTime.Now );
+                        }
+                    }
                 }
 
-                return null;
+                entry.CurrentValues[nameof( NextStartDateTime )] = nextDate;
             }
-        }
 
-        #endregion
-        #region Methods
+            base.PreSaveChanges( dbContext, entry );
+        }
 
         /// <summary>
         /// Gets the start times.

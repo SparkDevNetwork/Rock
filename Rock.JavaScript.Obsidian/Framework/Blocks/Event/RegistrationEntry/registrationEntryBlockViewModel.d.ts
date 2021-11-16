@@ -186,8 +186,6 @@ export type RegistrantInfo = {
     fieldValues: Record<Guid, unknown>;
     feeItemQuantities: Record<Guid, number>;
 
-    /** If the person were in their own family, this would be that family's guid */
-    ownFamilyGuid: Guid;
     guid: Guid;
 };
 
@@ -197,7 +195,6 @@ export type RegistrarInfo = {
     email: string;
     updateEmail: boolean;
     familyGuid: Guid | null;
-    ownFamilyGuid: Guid
 };
 
 export type RegistrationEntryBlockSuccessViewModel = {
