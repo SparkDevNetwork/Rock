@@ -65,18 +65,15 @@ namespace Rock.Jobs
             var updatedResults = new ConcurrentBag<int>();
             var connectionTypeViews = GetConnectionTypeViewsWithOrderedStatuses();
 
-            // Loop through each connection type
-            Parallel.ForEach(
-                connectionTypeViews,
-                connectionTypeView =>
-                {
-                    ProcessConnectionType( connectionTypeView, updatedResults, out var errorsFromThisConnectionType );
+            foreach ( var connectionTypeView in connectionTypeViews )
+            {
+                ProcessConnectionType( connectionTypeView, updatedResults, out var errorsFromThisConnectionType );
 
-                    if ( errorsFromThisConnectionType != null && errorsFromThisConnectionType.Any() )
-                    {
-                        errorsFromThisConnectionType.ForEach( errors.Add );
-                    }
-                } );
+                if ( errorsFromThisConnectionType != null && errorsFromThisConnectionType.Any() )
+                {
+                    errorsFromThisConnectionType.ForEach( errors.Add );
+                }
+            }
 
             var totalUpdated = updatedResults.Sum();
             context.Result = $"{totalUpdated} Connection Request{( totalUpdated == 1 ? "" : "s" )} updated.";
