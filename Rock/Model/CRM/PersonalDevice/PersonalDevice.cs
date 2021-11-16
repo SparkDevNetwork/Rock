@@ -161,7 +161,7 @@ namespace Rock.Model
         public string Name { get; set; }
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the person alias.
@@ -189,6 +189,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Site Site { get; set; }
+
         #endregion
     }
 
