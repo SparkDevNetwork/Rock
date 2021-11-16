@@ -782,6 +782,8 @@
     <Compile Include="Model\Core\Auth\SpecialRole.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
+    <Compile Include="Model\Core\DefinedType\DefinedType.Logic.cs" />
+    <Compile Include="Model\Core\DefinedValue\DefinedValue.Logic.cs" />
     <Compile Include="Model\Core\Device\CameraBarcodeConfiguration.cs" />
     <Compile Include="Model\Core\Device\Device.Logic.cs" />
     <Compile Include="Model\Core\Device\DeviceService.cs" />
@@ -2378,10 +2380,10 @@
     <Compile Include="Model\DataViewFilter.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
-    <Compile Include="Model\DefinedType.cs" />
-    <Compile Include="Model\DefinedTypeService.Partial.cs" />
-    <Compile Include="Model\DefinedValue.cs" />
-    <Compile Include="Model\DefinedValueService.Partial.cs" />
+    <Compile Include="Model\Core\DefinedType\DefinedType.cs" />
+    <Compile Include="Model\Core\DefinedType\DefinedTypeService.cs" />
+    <Compile Include="Model\Core\DefinedValue\DefinedValue.cs" />
+    <Compile Include="Model\Core\DefinedValue\DefinedValueService.cs" />
     <Compile Include="Model\Core\Device\Device.cs" />
     <Compile Include="Model\DiscService.cs" />
     <Compile Include="Model\EntitySet.cs" />

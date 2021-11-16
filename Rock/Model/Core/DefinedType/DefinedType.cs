@@ -134,7 +134,7 @@ namespace Rock.Model
 
         #endregion 
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.DefinedValue">DefinedValues</see> that belong to this DefinedType.
@@ -180,39 +180,6 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return DefinedTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            var cachedDefinedValues = DefinedTypeCache.Get( this.Id, (RockContext)dbContext )?.DefinedValues;
-            if ( cachedDefinedValues?.Any() == true )
-            {
-                foreach ( var cachedDefinedValue in cachedDefinedValues )
-                {
-                    DefinedValueCache.UpdateCachedEntity( cachedDefinedValue.Id, EntityState.Detached );
-                }
-            }
-
-            DefinedTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration

@@ -100,7 +100,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the Defined Type that this DefinedValue belongs to.
@@ -116,20 +116,6 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the parent security authority for this DefinedValue.
-        /// </summary>
-        /// <value>
-        /// An entity that implements the <see cref="Rock.Security.ISecured"/> interface that this DefinedValue inherits security authority from.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get 
-            {
-                return this.DefinedType != null ? this.DefinedType : base.ParentAuthority;
-            }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this DefinedValue.
         /// </summary>
         /// <returns>
@@ -141,31 +127,6 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return DefinedValueCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            DefinedValueCache.UpdateCachedEntity( this.Id, entityState );
-            DefinedTypeCache.FlushItem( this.DefinedTypeId );
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
