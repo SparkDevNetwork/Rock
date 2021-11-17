@@ -76,7 +76,7 @@ export default defineComponent({
                 script.src = "https://sandbox.gotnpgateway.com/tokenizer/tokenizer.js"; // TODO - this should come from the gateway
                 document.getElementsByTagName("head")[ 0 ].appendChild(script);
 
-                const sleep = () => new Promise((resolve) => setTimeout(resolve, 20));
+                const sleep = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20));
 
                 while (!window[ <any>globalVarName ]) {
                     await sleep();

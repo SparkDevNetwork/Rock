@@ -731,7 +731,7 @@
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
-    <Compile Include="Financial\IObsidianFinancialGateway.cs" />
+    <Compile Include="Financial\IObsidianHostedGatewayComponent.cs" />
     <Compile Include="Jobs\ConnectionRequestsAutomation.cs" />
     <Compile Include="Jobs\GivingAutomation.cs" />
     <Compile Include="Field\Types\MobileNavigationActionFieldType.cs" />

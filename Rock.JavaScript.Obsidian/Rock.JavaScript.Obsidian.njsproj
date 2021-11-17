@@ -113,6 +113,8 @@
     <TypeScriptCompile Include="Framework\Controls\gridSelectColumn.ts" />
     <TypeScriptCompile Include="Framework\Controls\loading.ts" />
     <TypeScriptCompile Include="Framework\Controls\myWellGatewayControl.ts" />
+    <TypeScriptCompile Include="Framework\Controls\nmiGatewayControl.ts" />
+    <TypeScriptCompile Include="Framework\Controls\nmiGatewayControlTypes.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\pageDebugTimings.ts" />
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListField.ts" />

@@ -51,6 +51,24 @@ export function isValidGuid(guid: Guid | string): boolean {
 }
 
 /**
+ * Converts the string value to a Guid.
+ * 
+ * @param value The value to be converted.
+ * @returns A Guid value or null is the string could not be parsed as a Guid.
+ */
+export function toGuidOrNull(value: string | null | undefined): Guid | null {
+    if (value === null || value === undefined) {
+        return null;
+    }
+
+    if (!isValidGuid(value)) {
+        return null;
+    }
+
+    return value as Guid;
+}
+
+/**
  * Are the guids equal?
  * @param a
  * @param b

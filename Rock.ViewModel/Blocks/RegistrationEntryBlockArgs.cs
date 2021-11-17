@@ -136,6 +136,14 @@ namespace Rock.ViewModel.Blocks
         public string GatewayToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the saved account unique identifier.
+        /// </summary>
+        /// <value>
+        /// The saved account unique identifier.
+        /// </value>
+        public Guid? SavedAccountGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the discount code.
         /// </summary>
         /// <value>

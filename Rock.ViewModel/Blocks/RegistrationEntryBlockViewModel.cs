@@ -316,6 +316,22 @@ namespace Rock.ViewModel.Blocks
         /// The campuses available for the user to select.
         /// </value>
         public List<ListItemViewModel> Campuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the save account option should be available.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the save account option should be available; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableSaveAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the saved accounts that can be offered to use for payment.
+        /// </summary>
+        /// <value>
+        /// The saved accounts that can be offered to use for payment.
+        /// </value>
+        public List<ListItemViewModel> SavedAccounts { get; set; }
     }
 
     /// <summary>
