@@ -23,7 +23,7 @@ import { ValidationField } from "./gatewayControl";
 type Settings = {
 };
 
-export default defineComponent( {
+export default defineComponent({
     name: "TestGatewayControl",
     components: {
         LoadingIndicator,
@@ -47,32 +47,32 @@ export default defineComponent( {
     },
     watch: {
         async submit () {
-            if ( !this.submit || this.loading ) {
+            if (!this.submit || this.loading) {
                 return;
             }
 
             this.loading = true;
 
             // Simulate an AJAX call delay
-            await new Promise( resolve => setTimeout( resolve, 500 ) );
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Throw an error for a '0000'
-            if ( this.cardNumber === "0000" ) {
-                this.$emit( "error", "This is a serious problem with the gateway." );
+            if (this.cardNumber === "0000") {
+                this.$emit("error", "This is a serious problem with the gateway.");
                 this.loading = false;
                 return;
             }
 
             // Validate the card number is greater than 10 digits
-            if ( this.cardNumber.length <= 10 ) {
+            if (this.cardNumber.length <= 10) {
                 const validationFields: ValidationField[] = [ ValidationField.CardNumber ];
-                this.$emit( "validationRaw", validationFields );
+                this.$emit("validationRaw", validationFields);
                 this.loading = false;
                 return;
             }
 
-            const token = newGuid().replace( /-/g, "" );
-            this.$emit( "successRaw", token );
+            const token = newGuid().replace(/-/g, "");
+            this.$emit("successRaw", token);
             this.loading = false;
         }
     },
@@ -85,4 +85,4 @@ export default defineComponent( {
         <TextBox label="Credit Card" v-model="cardNumber" />
     </div>
 </div>`
-} );
+});

@@ -32,7 +32,7 @@ type LoginResponse = {
     authCookie: AuthCookie | null;
 };
 
-export default defineComponent( {
+export default defineComponent({
     name: "Security.Login",
     components: {
         TextBox,
@@ -42,7 +42,7 @@ export default defineComponent( {
     },
     setup () {
         return {
-            invokeBlockAction: inject( "invokeBlockAction" ) as InvokeBlockActionFunc
+            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
         };
     },
     data () {
@@ -55,10 +55,10 @@ export default defineComponent( {
         };
     },
     methods: {
-        setCookie ( cookie: AuthCookie ): void {
+        setCookie (cookie: AuthCookie): void {
             let expires = "";
 
-            if ( cookie.expires ) {
+            if (cookie.expires) {
                 const date = RockDateTime.parseHTTP(cookie.expires);
 
                 if (date === null || date < RockDateTime.now()) {
@@ -75,12 +75,12 @@ export default defineComponent( {
             document.cookie = `${cookie.name}=${cookie.value}${expires}; path=/`;
         },
         redirectAfterLogin (): void {
-            const urlParams = new URLSearchParams( window.location.search );
-            const returnUrl = urlParams.get( "returnurl" );
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnUrl = urlParams.get("returnurl");
 
-            if ( returnUrl ) {
+            if (returnUrl) {
                 // TODO make this force relative URLs (no absolute URLs)
-                window.location.href = decodeURIComponent( returnUrl );
+                window.location.href = decodeURIComponent(returnUrl);
             }
         },
         async onHelpClick (): Promise<void> {
@@ -88,17 +88,17 @@ export default defineComponent( {
             this.errorMessage = "";
 
             try {
-                const result = await this.invokeBlockAction<string>( "help", undefined );
+                const result = await this.invokeBlockAction<string>("help", undefined);
 
-                if ( result.isError ) {
+                if (result.isError) {
                     this.errorMessage = result.errorMessage || "An unknown error occurred communicating with the server";
                 }
-                else if ( result.data ) {
+                else if (result.data) {
                     // TODO make this force relative URLs (no absolute URLs)
                     window.location.href = result.data;
                 }
             }
-            catch ( e ) {
+            catch (e) {
                 this.errorMessage = `An exception occurred: ${e}`;
             }
             finally {
@@ -106,21 +106,21 @@ export default defineComponent( {
             }
         },
         async submitLogin (): Promise<void> {
-            if ( this.isLoading ) {
+            if (this.isLoading) {
                 return;
             }
 
             this.isLoading = true;
 
             try {
-                const result = await this.invokeBlockAction<LoginResponse>( "DoLogin", {
+                const result = await this.invokeBlockAction<LoginResponse>("DoLogin", {
                     username: this.username,
                     password: this.password,
                     rememberMe: this.rememberMe
-                } );
+                });
 
-                if ( result && !result.isError && result.data && result.data.authCookie ) {
-                    this.setCookie( result.data.authCookie );
+                if (result && !result.isError && result.data && result.data.authCookie) {
+                    this.setCookie(result.data.authCookie);
                     this.redirectAfterLogin();
                     return;
                 }
@@ -128,11 +128,11 @@ export default defineComponent( {
                 this.isLoading = false;
                 this.errorMessage = result.errorMessage || "An unknown error occurred communicating with the server";
             }
-            catch ( e ) {
+            catch (e) {
                 // ts-ignore-line
-                console.log( JSON.stringify( e.response, null, 2 ) );
+                console.log(JSON.stringify(e.response, null, 2));
 
-                if ( typeof e === "string" ) {
+                if (typeof e === "string") {
                     this.errorMessage = e;
                 }
                 else {
@@ -167,4 +167,4 @@ export default defineComponent( {
 
     </fieldset>
 </div>`
-} );
+});

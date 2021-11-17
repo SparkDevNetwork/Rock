@@ -49,7 +49,7 @@ function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValu
     return false;
 }
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.RegistrantAttributeField",
 
     components: {
@@ -113,4 +113,4 @@ export default defineComponent( {
     <RockField v-if="attribute" isEditMode :attributeValue="attribute" />
     <Alert v-else alertType="danger">Could not resolve attribute field</Alert>
 </template>`
-} );
+});

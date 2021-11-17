@@ -25,7 +25,7 @@ export type ProgressTrackerItem = {
     key: string;
 };
 
-const progressTrackerItem = defineComponent( {
+const progressTrackerItem = defineComponent({
     name: "ProgressTrackerItem",
     props: {
         isPast: {
@@ -81,11 +81,11 @@ const progressTrackerItem = defineComponent( {
     </div>
 </li>
 `
-} );
+});
 
 /** Displays a roadmap of successive steps that help the user understand where in a
  *  series of forms they currently are working. */
-const ProgressTracker = defineComponent( {
+const ProgressTracker = defineComponent({
     name: "ProgressTracker",
     components: {
         ProgressTrackerItem: progressTrackerItem
@@ -109,7 +109,7 @@ const ProgressTracker = defineComponent( {
     computed: {
         /** Is the given index collapsed? */
         isCollapsed (): (index: number) => boolean {
-            return ( index: number ) => this.collapsedIndexes.indexOf( index ) !== -1;
+            return (index: number) => this.collapsedIndexes.indexOf(index) !== -1;
         },
 
         /** A list of indexes that should not be collapsed. These are not guaranteed to be valid or unique
@@ -137,56 +137,56 @@ const ProgressTracker = defineComponent( {
         /** Expand all items and then collapse some to fit if needed */
         expandAndCollapseItemsBecauseOfWidth () {
             this.collapsedIndexes = [];
-            this.$nextTick( () => this.collapseItemsBecauseOfWidth() );
+            this.$nextTick(() => this.collapseItemsBecauseOfWidth());
         },
 
         /** Collapse some items if needed to make fit */
         collapseItemsBecauseOfWidth () {
             // Using the DOM query getElementById because Vue refs were not conveying the changing width
-            const progressTracker = document.getElementById( this.progressTrackerElementId );
-            const progressTrackerContainer = document.getElementById( this.progressTrackerContainerElementId );
+            const progressTracker = document.getElementById(this.progressTrackerElementId);
+            const progressTrackerContainer = document.getElementById(this.progressTrackerContainerElementId);
 
             const containerWidth = progressTrackerContainer?.clientWidth;
             const childWidth = progressTracker?.scrollWidth;
 
-            if ( !containerWidth || !childWidth || childWidth <= containerWidth ) {
+            if (!containerWidth || !childWidth || childWidth <= containerWidth) {
                 return;
             }
 
             // Collapse the furthest away index that can be collapsed
             const midPoint = this.lastIndex / 2;
 
-            if ( this.currentIndex > midPoint ) {
-                for ( let i = 0; i <= this.lastIndex; i++ ) {
-                    if ( this.doNotCollapseIndexes.indexOf( i ) !== -1 ) {
+            if (this.currentIndex > midPoint) {
+                for (let i = 0; i <= this.lastIndex; i++) {
+                    if (this.doNotCollapseIndexes.indexOf(i) !== -1) {
                         continue;
                     }
 
-                    if ( this.isCollapsed( i ) ) {
+                    if (this.isCollapsed(i)) {
                         continue;
                     }
 
                     // After collapsing the first index that can be, then wait for the DOM to update (nexttick) and
                     // collapse more if needed
-                    this.collapsedIndexes.push( i );
-                    this.$nextTick( () => this.collapseItemsBecauseOfWidth() );
+                    this.collapsedIndexes.push(i);
+                    this.$nextTick(() => this.collapseItemsBecauseOfWidth());
                     return;
                 }
             }
             else {
-                for ( let i = this.lastIndex; i >= 0; i-- ) {
-                    if ( this.doNotCollapseIndexes.indexOf( i ) !== -1 ) {
+                for (let i = this.lastIndex; i >= 0; i--) {
+                    if (this.doNotCollapseIndexes.indexOf(i) !== -1) {
                         continue;
                     }
 
-                    if ( this.isCollapsed( i ) ) {
+                    if (this.isCollapsed(i)) {
                         continue;
                     }
 
                     // After collapsing the first index that can be, then wait for the DOM to update (nexttick) and
                     // collapse more if needed
-                    this.collapsedIndexes.push( i );
-                    this.$nextTick( () => this.collapseItemsBecauseOfWidth() );
+                    this.collapsedIndexes.push(i);
+                    this.$nextTick(() => this.collapseItemsBecauseOfWidth());
                     return;
                 }
             }
@@ -227,6 +227,6 @@ const ProgressTracker = defineComponent( {
     </div>
     <slot name="aside" />
 </nav>`
-} );
+});
 
 export default ProgressTracker;

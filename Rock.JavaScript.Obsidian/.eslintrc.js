@@ -99,6 +99,9 @@ module.exports = {
         // Disable JavaScript brace-style in favor of TypeScript support. This
         // brace style matches our C# style.
         "brace-style": "off",
-        "@typescript-eslint/brace-style": ["warn", "stroustrup"]
+        "@typescript-eslint/brace-style": ["warn", "stroustrup"],
+
+        // Make unwanted white-space inside parenthesis an error.
+        "space-in-parens": ["error", "never"]
     }
 };

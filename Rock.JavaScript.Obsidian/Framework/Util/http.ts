@@ -52,9 +52,9 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
 * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
 * @param {any} data This will be the body of the request
 */
-export async function doApiCall<T>( method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined ): Promise<HttpResult<T>> {
+export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
     try {
-        const result = await doApiCallRaw( method, url, params, data );
+        const result = await doApiCallRaw(method, url, params, data);
 
         return {
             data: result.data as T,
@@ -64,8 +64,8 @@ export async function doApiCall<T>( method: HttpMethod, url: string, params: Htt
             errorMessage: null
         } as HttpResult<T>;
     }
-    catch ( e ) {
-        if ( e?.response?.data?.Message ?? e?.response?.data?.message ) {
+    catch (e) {
+        if (e?.response?.data?.Message ?? e?.response?.data?.message) {
             return {
                 data: null,
                 isError: true,

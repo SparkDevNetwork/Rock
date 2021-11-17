@@ -29,7 +29,7 @@ export enum AlertType {
 }
 
 /** Displays a bootstrap style alert box. */
-const Alert = defineComponent( {
+const Alert = defineComponent({
     name: "Alert",
     props: {
         dismissible: {
@@ -46,7 +46,7 @@ const Alert = defineComponent( {
     ],
     methods: {
         onDismiss: function () {
-            this.$emit( "dismiss" );
+            this.$emit("dismiss");
         }
     },
     computed: {
@@ -61,6 +61,6 @@ const Alert = defineComponent( {
     </button>
     <slot />
 </div>`
-} );
+});
 
 export default Alert;

@@ -61,19 +61,19 @@ export default defineComponent({
             this.isSuccess = true;
 
             // Add the component back to the DOM on the next DOM update cycle
-            this.$nextTick( () => {
+            this.$nextTick(() => {
                 this.isSuccess = false;
-                this.$emit( "reset" );
-            } );
+                this.$emit("reset");
+            });
         },
 
         /**
          * Intercept the success event, so that local state can reflect it.
          * @param token
          */
-        async onSuccess ( token: string ) {
+        async onSuccess (token: string) {
             this.isSuccess = true;
-            this.$emit( "success", token );
+            this.$emit("success", token);
         },
 
         /**

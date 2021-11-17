@@ -26,7 +26,7 @@ import { RegistrationEntryState } from "../registrationEntry";
 import { SessionRenewalResult } from "./registrationEntryBlockViewModel";
 import { RockDateTime } from "../../../Util/rockDateTime";
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.SessionRenewal",
     components: {
         Dialog,
@@ -41,8 +41,8 @@ export default defineComponent( {
     },
     setup () {
         return {
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState,
-            invokeBlockAction: inject( "invokeBlockAction" ) as InvokeBlockActionFunc
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState,
+            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
         };
     },
     data () {
@@ -65,22 +65,22 @@ export default defineComponent( {
 
         /** The number of registrants pushed to the waitlist */
         waitlistRegistrantCount (): number {
-            return this.registrationEntryState.registrants.filter( r => r.isOnWaitList ).length;
+            return this.registrationEntryState.registrants.filter(r => r.isOnWaitList).length;
         },
 
         /** The number of registrants pushed to the waitlist as a word (eg "one") */
         waitlistRegistrantCountWord (): string {
-            return toWord( this.waitlistRegistrantCount );
+            return toWord(this.waitlistRegistrantCount);
         },
 
         /** The number of registrants not on a waitlist */
         nonWaitlistRegistrantCount (): number {
-            return this.registrationEntryState.registrants.filter( r => !r.isOnWaitList ).length;
+            return this.registrationEntryState.registrants.filter(r => !r.isOnWaitList).length;
         },
 
         /** The number of registrants not on a waitlist as a word (eg "one") */
         nonWaitlistRegistrantCountWord (): string {
-            return toWord( this.nonWaitlistRegistrantCount );
+            return toWord(this.nonWaitlistRegistrantCount);
         }
     },
     methods: {
@@ -216,4 +216,4 @@ export default defineComponent( {
         </template>
     </template>
 </Dialog>`
-} );
+});

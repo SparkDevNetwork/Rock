@@ -59,11 +59,11 @@ const StarkDetailOptions = defineComponent({
 
         /** Fetch a message from the C# block action named "GetMessage". */
         async loadBlockActionMessage() {
-            const response = await this.invokeBlockAction<{ message: string; }>( "GetMessage", {
+            const response = await this.invokeBlockAction<{ message: string; }>("GetMessage", {
                 paramFromClient: "This is a value sent to the server from the client."
-            } );
+            });
 
-            if ( response.data ) {
+            if (response.data) {
                 this.blockActionMessage = response.data.message;
             }
             else {
@@ -133,6 +133,6 @@ const StarkDetailOptions = defineComponent({
         </div>
     </template>
 </PaneledBlockTemplate>`
-} );
+});
 
 export default StarkDetailOptions;

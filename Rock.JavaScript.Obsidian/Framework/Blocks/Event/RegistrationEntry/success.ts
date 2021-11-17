@@ -20,14 +20,14 @@ import SaveFinancialAccountForm from "../../../Controls/saveFinancialAccountForm
 import { Guid } from "../../../Util/guid";
 import { RegistrationEntryState } from "../registrationEntry";
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.Success",
     components: {
         SaveFinancialAccountForm
     },
     setup () {
         return {
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
     computed: {
@@ -67,4 +67,4 @@ export default defineComponent( {
         </template>
     </SaveFinancialAccountForm>
 </div>`
-} );
+});

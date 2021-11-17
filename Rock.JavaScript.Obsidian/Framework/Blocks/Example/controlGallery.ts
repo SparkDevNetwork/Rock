@@ -86,10 +86,10 @@ const GalleryAndResult = defineComponent({
         </div>
     </template>
 </PanelWidget>`
-} );
+});
 
 /** Demonstrates a phone number box */
-const phoneNumberBoxGallery = defineComponent( {
+const phoneNumberBoxGallery = defineComponent({
     name: "PhoneNumberBoxGallery",
     components: {
         GalleryAndResult,
@@ -113,10 +113,10 @@ const phoneNumberBoxGallery = defineComponent( {
         {{phoneNumber}}
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates a help block */
-const helpBlockGallery = defineComponent( {
+const helpBlockGallery = defineComponent({
     name: "HelpBlockGallery",
     components: {
         GalleryAndResult,
@@ -131,10 +131,10 @@ const helpBlockGallery = defineComponent( {
         <HelpBlock text="This is some helpful text that explains something." />
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates a drop down list */
-const dropDownListGallery = defineComponent( {
+const dropDownListGallery = defineComponent({
     name: "DropDownListGallery",
     components: {
         GalleryAndResult,
@@ -166,10 +166,10 @@ const dropDownListGallery = defineComponent( {
         {{value}}
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates a radio button list */
-const radioButtonListGallery = defineComponent( {
+const radioButtonListGallery = defineComponent({
     name: "RadioButtonListGallery",
     components: {
         GalleryAndResult,
@@ -208,10 +208,10 @@ const radioButtonListGallery = defineComponent( {
         Value: {{value}}
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates a checkbox */
-const checkBoxGallery = defineComponent( {
+const checkBoxGallery = defineComponent({
     name: "CheckBoxGallery",
     components: {
         GalleryAndResult,
@@ -238,10 +238,10 @@ const checkBoxGallery = defineComponent( {
         {{isChecked}}
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates a modal / dialog / pop-up */
-const dialogGallery = defineComponent( {
+const dialogGallery = defineComponent({
     name: "DialogGallery",
     components: {
         GalleryAndResult,
@@ -291,10 +291,10 @@ const dialogGallery = defineComponent( {
         </Dialog>
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates how rock forms work with rules to produce validation messages */
-const formRulesGallery = defineComponent( {
+const formRulesGallery = defineComponent({
     name: "FormRulesGallery",
     components: {
         GalleryAndResult,
@@ -325,7 +325,7 @@ const formRulesGallery = defineComponent( {
         </RockForm>
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates check box list */
 const checkBoxListGallery = defineComponent({
@@ -395,7 +395,7 @@ const listBoxGallery = defineComponent({
 });
 
 /** Demonstrates date pickers */
-const datePickerGallery = defineComponent( {
+const datePickerGallery = defineComponent({
     name: "DatePickerGallery",
     components: {
         GalleryAndResult,
@@ -424,7 +424,7 @@ const datePickerGallery = defineComponent( {
         Current Date: {{JSON.stringify(currentDate, null, 2)}}
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates date range pickers */
 const dateRangePickerGallery = defineComponent({
@@ -481,7 +481,7 @@ const dateTimePickerGallery = defineComponent({
 });
 
 /** Demonstrates date part pickers */
-const datePartsPickerGallery = defineComponent( {
+const datePartsPickerGallery = defineComponent({
     name: "DatePartsPickerGallery",
     components: {
         GalleryAndResult,
@@ -513,10 +513,10 @@ const datePartsPickerGallery = defineComponent( {
         <span>{{datePartsModel.month}} / {{datePartsModel.day}}</span><span v-if="showYear"> / {{datePartsModel.year}}</span>
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates a textbox */
-const textBoxGallery = defineComponent( {
+const textBoxGallery = defineComponent({
     name: "TextBoxGallery",
     components: {
         GalleryAndResult,
@@ -541,7 +541,7 @@ const textBoxGallery = defineComponent( {
         {{text}}
     </template>
 </GalleryAndResult>`
-} );
+});
 
 /** Demonstrates a color picker */
 const colorPickerGallery = defineComponent({
