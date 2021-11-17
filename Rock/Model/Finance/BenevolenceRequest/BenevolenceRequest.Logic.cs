@@ -32,10 +32,10 @@ namespace Rock.Model
         /// The request date key.
         /// </value>
         [DataMember]
-        [FieldType(Rock.SystemGuid.FieldType.DATE)]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
         public int RequestDateKey
         {
-            get => RequestDateTime.ToString("yyyyMMdd").AsInteger();
+            get => RequestDateTime.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
 
@@ -49,7 +49,7 @@ namespace Rock.Model
         {
             get
             {
-                return string.Format("{0} {1}", FirstName, LastName);
+                return string.Format( "{0} {1}", FirstName, LastName );
             }
         }
 
@@ -63,7 +63,7 @@ namespace Rock.Model
         {
             get
             {
-                return string.Format("{0}, {1}", LastName, FirstName);
+                return string.Format( "{0}, {1}", LastName, FirstName );
             }
         }
 
@@ -79,9 +79,9 @@ namespace Rock.Model
             get
             {
                 decimal totalAmount = 0;
-                foreach (BenevolenceResult result in BenevolenceResults)
+                foreach ( BenevolenceResult result in BenevolenceResults )
                 {
-                    if (result.Amount != null)
+                    if ( result.Amount != null )
                     {
                         totalAmount += result.Amount.Value;
                     }
@@ -100,7 +100,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<BenevolenceRequestDocument> Documents
         {
-            get { return _documents ?? (_documents = new Collection<BenevolenceRequestDocument>()); }
+            get { return _documents ?? ( _documents = new Collection<BenevolenceRequestDocument>() ); }
             set { _documents = value; }
         }
 
@@ -111,18 +111,18 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The database entity entry.</param>
-        public override void PreSaveChanges(Data.DbContext dbContext, DbEntityEntry entry)
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
             {
-                //If this is a new entry we need to make sure the benevolence type defaults to 1
-                if (entry.CurrentValues["BenevolenceTypeId"].Equals(0))
+                // If this is a new entry we need to make sure the benevolence type defaults to 1
+                if ( entry.CurrentValues["BenevolenceTypeId"].Equals( 0 ) )
                 {
                     entry.CurrentValues["BenevolenceTypeId"] = 1;
                 }
             }
 
-            base.PreSaveChanges(dbContext, entry);
+            base.PreSaveChanges( dbContext, entry );
         }
     }
 }
