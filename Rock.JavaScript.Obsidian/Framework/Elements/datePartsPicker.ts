@@ -121,22 +121,22 @@ export default defineComponent({
             return this.showYear && this.requireYear;
         },
         internalDateKey (): string {
-            if ( !this.modelValue.year && !this.computedRequireYear ) {
-                const dateKey = DateKey.toNoYearDateKey( this.modelValue.month, this.modelValue.day );
+            if (!this.modelValue.year && !this.computedRequireYear) {
+                const dateKey = DateKey.toNoYearDateKey(this.modelValue.month, this.modelValue.day);
                 return dateKey;
             }
 
-            const dateKey = DateKey.toDateKey( this.modelValue.year, this.modelValue.month, this.modelValue.day );
+            const dateKey = DateKey.toDateKey(this.modelValue.year, this.modelValue.month, this.modelValue.day);
             return dateKey;
         },
         computedRules (): string {
-            const rules = ruleStringToArray( this.rules );
+            const rules = ruleStringToArray(this.rules);
 
-            if ( rules.indexOf( "required" ) !== -1 && rules.indexOf( "datekey" ) === -1 ) {
-                rules.push( "datekey" );
+            if (rules.indexOf("required") !== -1 && rules.indexOf("datekey") === -1) {
+                rules.push("datekey");
             }
 
-            return ruleArrayToString( rules );
+            return ruleArrayToString(rules);
         },
         years (): string[] {
             const years: string[] = [];
@@ -242,4 +242,4 @@ export default defineComponent({
         </div>
     </template>
 </RockFormField>`
-} );
+});

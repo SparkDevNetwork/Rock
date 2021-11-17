@@ -40,7 +40,7 @@ export default defineComponent({
         };
     },
     methods: {
-        onRowClick ( rowContext: RowContext ): void {
+        onRowClick (rowContext: RowContext): void {
             this.rowContextClicked = rowContext;
             this.isRowClickedDialogOpen = true;
         }

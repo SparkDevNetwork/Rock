@@ -31,7 +31,7 @@ import Registrar from "./registrar";
 import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from "./registrationEntryBlockViewModel";
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.Summary",
     components: {
         RockButton,
@@ -47,9 +47,9 @@ export default defineComponent( {
     },
     setup () {
         return {
-            getRegistrationEntryBlockArgs: inject( "getRegistrationEntryBlockArgs" ) as () => RegistrationEntryBlockArgs,
-            invokeBlockAction: inject( "invokeBlockAction" ) as InvokeBlockActionFunc,
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState
+            getRegistrationEntryBlockArgs: inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs,
+            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc,
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
     data () {
@@ -83,7 +83,7 @@ export default defineComponent( {
 
         /** Info about the registrants made available by .FirstName instead of by field guid */
         registrantInfos (): RegistrantBasicInfo[] {
-            return this.registrationEntryState.registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.registrantForms ) );
+            return this.registrationEntryState.registrants.map(r => getRegistrantBasicInfo(r, this.viewModel.registrantForms));
         },
 
         /** The registrant term - plural if there are more than 1 */
@@ -98,13 +98,13 @@ export default defineComponent( {
 
         /** The text to be displayed on the "Finish" button */
         finishButtonText (): string {
-            return ( this.viewModel.isRedirectGateway && this.registrationEntryState.amountToPayToday ) ? "Pay" : "Finish";
+            return (this.viewModel.isRedirectGateway && this.registrationEntryState.amountToPayToday) ? "Pay" : "Finish";
         }
     },
     methods: {
         /** User clicked the "previous" button */
         onPrevious () {
-            this.$emit( "previous" );
+            this.$emit("previous");
         },
 
         /** User clicked the "finish" button */
@@ -112,12 +112,12 @@ export default defineComponent( {
             this.loading = true;
 
             // If there is a cost, then the gateway will need to be used to pay
-            if ( this.registrationEntryState.amountToPayToday ) {
+            if (this.registrationEntryState.amountToPayToday) {
                 // If this is a redirect gateway, then persist and redirect now
-                if ( this.viewModel.isRedirectGateway ) {
+                if (this.viewModel.isRedirectGateway) {
                     const redirectUrl = await this.getPaymentRedirect();
 
-                    if ( redirectUrl ) {
+                    if (redirectUrl) {
                         location.href = redirectUrl;
                     }
                     else {
@@ -136,8 +136,8 @@ export default defineComponent( {
                 const success = await this.submit();
                 this.loading = false;
 
-                if ( success ) {
-                    this.$emit( "next" );
+                if (success) {
+                    this.$emit("next");
                 }
             }
         },
@@ -146,13 +146,13 @@ export default defineComponent( {
          * The gateway indicated success and returned a token
          * @param token
          */
-        async onGatewayControlSuccess ( token: string ) {
+        async onGatewayControlSuccess (token: string) {
             this.registrationEntryState.gatewayToken = token;
             const success = await this.submit();
             this.loading = false;
 
-            if ( success ) {
-                this.$emit( "next" );
+            if (success) {
+                this.$emit("next");
             }
         },
 
@@ -166,7 +166,7 @@ export default defineComponent( {
          * The gateway indicated an error
          * @param message
          */
-        onGatewayControlError ( message: string ) {
+        onGatewayControlError (message: string) {
             this.doGatewayControlSubmit = false;
             this.loading = false;
             this.gatewayErrorMessage = message;
@@ -176,7 +176,7 @@ export default defineComponent( {
          * The gateway wants the user to fix some fields
          * @param invalidFields
          */
-        onGatewayControlValidation ( invalidFields: Record<string, string> ) {
+        onGatewayControlValidation (invalidFields: Record<string, string>) {
             this.doGatewayControlSubmit = false;
             this.loading = false;
             this.gatewayValidationFields = invalidFields;
@@ -184,11 +184,11 @@ export default defineComponent( {
 
         /** Submit the registration to the server */
         async submit (): Promise<boolean> {
-            const result = await this.invokeBlockAction<RegistrationEntryBlockSuccessViewModel>( "SubmitRegistration", {
+            const result = await this.invokeBlockAction<RegistrationEntryBlockSuccessViewModel>("SubmitRegistration", {
                 args: this.getRegistrationEntryBlockArgs()
-            } );
+            });
 
-            if ( result.isError || !result.data ) {
+            if (result.isError || !result.data) {
                 this.submitErrorMessage = result.errorMessage || "Unknown error";
             }
             else {
@@ -200,11 +200,11 @@ export default defineComponent( {
 
         /** Persist the args to the server so the user can be redirected for payment. Returns the redirect URL. */
         async getPaymentRedirect (): Promise<string> {
-            const result = await this.invokeBlockAction<string>( "GetPaymentRedirect", {
+            const result = await this.invokeBlockAction<string>("GetPaymentRedirect", {
                 args: this.getRegistrationEntryBlockArgs()
-            } );
+            });
 
-            if ( result.isError || !result.data ) {
+            if (result.isError || !result.data) {
                 this.submitErrorMessage = result.errorMessage || "Unknown error";
             }
 
@@ -259,4 +259,4 @@ export default defineComponent( {
         </div>
     </RockForm>
 </div>`
-} );
+});

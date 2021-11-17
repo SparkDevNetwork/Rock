@@ -29,7 +29,7 @@ type LogItem = {
 
 const store = useStore();
 
-export default defineComponent( {
+export default defineComponent({
     name: "RockBlock",
     props: {
         config: {
@@ -45,15 +45,15 @@ export default defineComponent( {
             required: true
         }
     },
-    setup( props ) {
-        const log: LogItem[] = reactive( [] );
+    setup(props) {
+        const log: LogItem[] = reactive([]);
 
-        const writeLog = ( method: HttpMethod, url: string ): void => {
-            log.push( {
+        const writeLog = (method: HttpMethod, url: string): void => {
+            log.push({
                 date: RockDateTime.now(),
                 method,
                 url
-            } );
+            });
         };
 
         const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> => {
@@ -80,9 +80,9 @@ export default defineComponent( {
 
         const blockHttp: BlockHttp = { get, post };
 
-        provide( "http", blockHttp );
-        provide( "invokeBlockAction", invokeBlockAction );
-        provide( "configurationValues", props.config.configurationValues );
+        provide("http", blockHttp);
+        provide("invokeBlockAction", invokeBlockAction);
+        provide("configurationValues", props.config.configurationValues);
     },
     data() {
         return {
@@ -98,7 +98,7 @@ export default defineComponent( {
     },
     computed: {
         renderTimeMs(): number | null {
-            if ( !this.finishTimeMs || !this.startTimeMs ) {
+            if (!this.finishTimeMs || !this.startTimeMs) {
                 return null;
             }
 
@@ -108,14 +108,14 @@ export default defineComponent( {
             return store.state.pageGuid;
         }
     },
-    errorCaptured( err: unknown ) {
+    errorCaptured(err: unknown) {
         const defaultMessage = "An unknown error was caught from the block.";
 
-        if ( err instanceof Error ) {
+        if (err instanceof Error) {
             this.error = err.message || defaultMessage;
         }
-        else if ( err ) {
-            this.error = JSON.stringify( err ) || defaultMessage;
+        else if (err) {
+            this.error = JSON.stringify(err) || defaultMessage;
         }
         else {
             this.error = defaultMessage;
@@ -124,10 +124,10 @@ export default defineComponent( {
     mounted() {
         this.finishTimeMs = RockDateTime.now().toMilliseconds();
         const componentName = this.blockComponent?.name || "";
-        const nameParts = componentName.split( "." );
+        const nameParts = componentName.split(".");
         let subtitle = nameParts[ 0 ] || "";
 
-        if ( subtitle && subtitle.indexOf( "(" ) !== 0 ) {
+        if (subtitle && subtitle.indexOf("(") !== 0) {
             subtitle = `(${subtitle})`;
         }
 
@@ -155,4 +155,4 @@ export default defineComponent( {
     </div>
     <component :is="blockComponent" />
 </div>`
-} );
+});

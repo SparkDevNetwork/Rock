@@ -24,7 +24,7 @@ type BlockActionGridResponse = {
     currentPageData: RowData[]
 };
 
-export default defineComponent( {
+export default defineComponent({
     name: "BlockActionSourcedGrid",
     components: {
         Grid
@@ -41,7 +41,7 @@ export default defineComponent( {
     },
     setup () {
         return {
-            invokeBlockAction: inject( "invokeBlockAction" ) as InvokeBlockActionFunc
+            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc
         };
     },
     data () {
@@ -65,7 +65,7 @@ export default defineComponent( {
     },
     methods: {
         async fetchData () {
-            if ( this.isLoading ) {
+            if (this.isLoading) {
                 return;
             }
 
@@ -73,15 +73,15 @@ export default defineComponent( {
             this.errorMessage = "";
 
             try {
-                const result = await this.invokeBlockAction<BlockActionGridResponse>( this.blockActionName, {
+                const result = await this.invokeBlockAction<BlockActionGridResponse>(this.blockActionName, {
                     filterOptions: {
                         take: this.pageSize,
                         skip: (this.currentPageIndex - 1) * this.pageSize
                     } as FilterOptions,
                     sortProperty: this.sortProperty
-                } );
+                });
 
-                if ( result.data && result.data.currentPageData ) {
+                if (result.data && result.data.currentPageData) {
                     this.currentPageData = result.data.currentPageData;
                     this.totalRowCount = result.data.totalCount;
                 }
@@ -89,7 +89,7 @@ export default defineComponent( {
                     this.currentPageData = [];
                 }
             }
-            catch ( e ) {
+            catch (e) {
                 this.errorMessage = `An exception occurred: ${e}`;
             }
             finally {
@@ -99,7 +99,7 @@ export default defineComponent( {
     },
     watch: {
         async pageSize () {
-            if ( this.currentPageIndex > 1 ) {
+            if (this.currentPageIndex > 1) {
                 this.currentPageIndex = 1;
             }
             else {
@@ -128,4 +128,4 @@ export default defineComponent( {
     :rowIdKey="rowIdKey">
     <slot v-bind="rowContext" />
 </Grid>`
-} );
+});

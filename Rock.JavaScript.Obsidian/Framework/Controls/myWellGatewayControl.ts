@@ -44,7 +44,7 @@ interface IValidationResponse extends IResponse {
     invalid: string[];
 }
 
-export default defineComponent( {
+export default defineComponent({
     name: "MyWellGatewayControl",
     components: {
         LoadingIndicator
@@ -70,84 +70,84 @@ export default defineComponent( {
             /* eslint-disable @typescript-eslint/no-explicit-any */
             const globalVarName = "Tokenizer";
 
-            if ( !window[ <any>globalVarName ] ) {
-                const script = document.createElement( "script" );
+            if (!window[ <any>globalVarName ]) {
+                const script = document.createElement("script");
                 script.type = "text/javascript";
                 script.src = "https://sandbox.gotnpgateway.com/tokenizer/tokenizer.js"; // TODO - this should come from the gateway
-                document.getElementsByTagName( "head" )[ 0 ].appendChild( script );
+                document.getElementsByTagName("head")[ 0 ].appendChild(script);
 
-                const sleep = () => new Promise( ( resolve ) => setTimeout( resolve, 20 ) );
+                const sleep = () => new Promise((resolve) => setTimeout(resolve, 20));
 
-                while ( !window[ <any>globalVarName ] ) {
+                while (!window[ <any>globalVarName ]) {
                     await sleep();
                 }
             }
 
             const settings = this.getTokenizerSettings();
-            this.tokenizer = new (<any>window[ <any>globalVarName ])( settings ) as Tokenizer;
+            this.tokenizer = new (<any>window[ <any>globalVarName ])(settings) as Tokenizer;
             this.tokenizer.create();
             /* eslint-enable @typescript-eslint/no-explicit-any */
         },
-        handleResponse ( response: IResponse | null | undefined ) {
+        handleResponse (response: IResponse | null | undefined) {
             this.loading = false;
 
-            if ( !response?.status || response.status === "error" ) {
-                const errorResponse = ( response as IErrorResponse | null ) || null;
-                this.$emit( "error", errorResponse?.message || "There was an unexpected problem communicating with the gateway." );
-                console.error( "MyWell response was errored:", JSON.stringify( response ) );
+            if (!response?.status || response.status === "error") {
+                const errorResponse = (response as IErrorResponse | null) || null;
+                this.$emit("error", errorResponse?.message || "There was an unexpected problem communicating with the gateway.");
+                console.error("MyWell response was errored:", JSON.stringify(response));
                 return;
             }
 
-            if ( response.status === "validation" ) {
-                const validationResponse = ( response as IValidationResponse | null ) || null;
+            if (response.status === "validation") {
+                const validationResponse = (response as IValidationResponse | null) || null;
 
-                if ( !validationResponse?.invalid?.length ) {
-                    this.$emit( "error", "There was a validation issue, but the invalid field was not specified." );
-                    console.error( "MyWell response was errored:", JSON.stringify( response ) );
+                if (!validationResponse?.invalid?.length) {
+                    this.$emit("error", "There was a validation issue, but the invalid field was not specified.");
+                    console.error("MyWell response was errored:", JSON.stringify(response));
                     return;
                 }
 
                 const validationFields: ValidationField[] = [];
 
-                for ( const myWellField of validationResponse.invalid ) {
-                    switch ( myWellField ) {
+                for (const myWellField of validationResponse.invalid) {
+                    switch (myWellField) {
                         case "cc":
-                            validationFields.push( ValidationField.CardNumber );
+                            validationFields.push(ValidationField.CardNumber);
                             break;
                         case "exp":
-                            validationFields.push( ValidationField.Expiry );
+                            validationFields.push(ValidationField.Expiry);
                             break;
                         default:
-                            console.error( "Unknown MyWell validation field", myWellField );
+                            console.error("Unknown MyWell validation field", myWellField);
                             break;
                     }
                 }
 
-                if ( !validationFields.length ) {
-                    this.$emit( "error", "There was a validation issue, but the invalid field could not be inferred." );
-                    console.error( "MyWell response contained unexpected values:", JSON.stringify( response ) );
+                if (!validationFields.length) {
+                    this.$emit("error", "There was a validation issue, but the invalid field could not be inferred.");
+                    console.error("MyWell response contained unexpected values:", JSON.stringify(response));
                     return;
                 }
 
-                this.$emit( "validationRaw", validationFields );
+                this.$emit("validationRaw", validationFields);
                 return;
             }
 
-            if ( response.status === "success" ) {
-                const successResponse = ( response as ISuccessResponse | null ) || null;
+            if (response.status === "success") {
+                const successResponse = (response as ISuccessResponse | null) || null;
 
-                if ( !successResponse?.token ) {
-                    this.$emit( "error", "There was an unexpected problem communicating with the gateway." );
-                    console.error( "MyWell response does not have the expected token:", JSON.stringify( response ) );
+                if (!successResponse?.token) {
+                    this.$emit("error", "There was an unexpected problem communicating with the gateway.");
+                    console.error("MyWell response does not have the expected token:", JSON.stringify(response));
                     return;
                 }
 
-                this.$emit( "successRaw", successResponse.token );
+                this.$emit("successRaw", successResponse.token);
                 return;
             }
 
-            this.$emit( "error", "There was an unexpected problem communicating with the gateway." );
-            console.error( "MyWell response has invalid status:", JSON.stringify( response ) );
+            this.$emit("error", "There was an unexpected problem communicating with the gateway.");
+            console.error("MyWell response has invalid status:", JSON.stringify(response));
         },
 
         /** Generates the tokenizer settings */
@@ -159,8 +159,8 @@ export default defineComponent( {
                 apikey: this.publicApiKey,
                 url: this.gatewayUrl,
                 container: this.$refs[ "container" ],
-                submission: ( resp: IResponse ) => {
-                    this.handleResponse( resp );
+                submission: (resp: IResponse) => {
+                    this.handleResponse(resp);
                 },
                 settings: {
                     payment: {
@@ -221,7 +221,7 @@ export default defineComponent( {
     },
     watch: {
         submit () {
-            if ( this.submit && this.tokenizer ) {
+            if (this.submit && this.tokenizer) {
                 this.loading = true;
                 this.tokenizer.submit();
             }
@@ -237,4 +237,4 @@ export default defineComponent( {
         <LoadingIndicator />
     </div>
 </div>`
-} );
+});
