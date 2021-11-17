@@ -76,19 +76,11 @@ namespace Rock.Model
         [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
-        #endregion Entity Properties
-
-        #region IHasActiveFlag
-
         /// <summary>
         /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
         [DataMember]
         public bool IsActive { get; set; } = true;
-
-        #endregion IHasActiveFlag
-
-        #region IOrdered
 
         /// <summary>
         /// Gets or sets the order.
@@ -96,9 +88,9 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
-        #endregion IOrdered
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the badge component <see cref="Rock.Model.EntityType"/>.
@@ -112,7 +104,7 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -126,10 +118,6 @@ namespace Rock.Model
         {
             return this.Name;
         }
-
-        #endregion
-
-        #region ICacheable
 
         /// <summary>
         /// Gets the cache object associated with this Entity
@@ -150,7 +138,7 @@ namespace Rock.Model
             BadgeCache.UpdateCachedEntity( this.Id, entityState );
         }
 
-        #endregion
+        #endregion Methods
     }
 
     #region Entity Configuration
