@@ -776,6 +776,7 @@
     <Compile Include="Model\Core\Audit\AuditType.cs" />
     <Compile Include="Model\Core\Auth\Auth.SaveHook.cs" />
     <Compile Include="Model\Core\Auth\SpecialRole.cs" />
+    <Compile Include="Model\Core\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
     <Compile Include="Model\Core\Device\CameraBarcodeConfiguration.cs" />
