@@ -3526,7 +3526,13 @@ namespace RockWeb.Blocks.Event
             PaymentInfo paymentInfo = null;
             if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
             {
-                var savedAccount = new FinancialPersonSavedAccountService( rockContext ).Get( rblSavedCC.SelectedValueAsId().Value );
+                var savedAccount = new FinancialPersonSavedAccountService( rockContext )
+                    .Queryable()
+                    .Where( a => a.Id == rblSavedCC.SelectedValueAsId().Value
+                        && a.PersonAlias.PersonId == CurrentPersonId )
+                    .AsNoTracking()
+                    .FirstOrDefault();
+
                 if ( savedAccount != null )
                 {
                     paymentInfo = savedAccount.GetReferencePayment();
