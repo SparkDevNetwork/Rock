@@ -129,7 +129,7 @@ namespace Rock.NMI
         IsRequired = false,
         DefaultValue = null,
         Order = 10 )]
-    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent
+    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent
     {
         #region Attribute Keys
 
@@ -2170,6 +2170,38 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         }
 
         #endregion IHostedGatewayComponent
+
+        #region IObsidianFinancialGateway
+
+        /// <inheritdoc/>
+        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        {
+            return "/Obsidian/Controls/nmiGatewayControl.js";
+        }
+
+        /// <inheritdoc/>
+        public object GetObsidianControlSettings( FinancialGateway financialGateway, HostedPaymentInfoControlOptions options )
+        {
+            List<int> enabledPaymentTypes = new List<int>();
+
+            if ( options?.EnableCreditCard ?? true )
+            {
+                enabledPaymentTypes.Add( ( int ) NMIPaymentType.card );
+            }
+
+            if ( options?.EnableACH ?? true )
+            {
+                enabledPaymentTypes.Add( ( int ) NMIPaymentType.ach );
+            }
+
+            return new
+            {
+                EnabledPaymentTypes = enabledPaymentTypes,
+                TokenizationKey = GetAttributeValue( financialGateway, AttributeKey.TokenizationKey )
+            };
+        }
+
+        #endregion
 
         #region IFeeCoverageGatewayComponent
 

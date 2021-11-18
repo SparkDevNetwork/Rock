@@ -21,7 +21,7 @@ import Alert from "../../../Elements/alert";
 import { Guid } from "../../../Util/guid";
 import { ComparisonType, FilterExpressionType, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./registrationEntryBlockViewModel";
 
-function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>) {
+function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>): boolean {
     const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
 
     if (typeof value !== "string") {

@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, ref } from "vue";
 import LoadingIndicator from "../Elements/loadingIndicator";
 import TextBox from "../Elements/textBox";
 import { newGuid } from "../Util/guid";
-import { ValidationField } from "./gatewayControl";
+import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
 
 type Settings = {
 };
@@ -39,50 +39,41 @@ export default defineComponent({
             required: true
         }
     },
-    data () {
-        return {
-            loading: false,
-            cardNumber: ""
-        };
-    },
-    watch: {
-        async submit () {
-            if (!this.submit || this.loading) {
-                return;
-            }
 
-            this.loading = true;
+    setup(props, { emit }) {
+        const cardNumber = ref("");
 
+        const submit = async (): Promise<void> => {
             // Simulate an AJAX call delay
             await new Promise(resolve => setTimeout(resolve, 500));
 
             // Throw an error for a '0000'
-            if (this.cardNumber === "0000") {
-                this.$emit("error", "This is a serious problem with the gateway.");
-                this.loading = false;
+            if (cardNumber.value === "0000") {
+                emit(GatewayEmitStrings.Error, "This is a serious problem with the gateway.");
                 return;
             }
 
             // Validate the card number is greater than 10 digits
-            if (this.cardNumber.length <= 10) {
-                const validationFields: ValidationField[] = [ ValidationField.CardNumber ];
-                this.$emit("validationRaw", validationFields);
-                this.loading = false;
+            if (cardNumber.value.length <= 10) {
+                emit(GatewayEmitStrings.Validation, {
+                    "Card Number": "Card number is invalid."
+                });
                 return;
             }
 
             const token = newGuid().replace(/-/g, "");
-            this.$emit("successRaw", token);
-            this.loading = false;
-        }
+            emit(GatewayEmitStrings.Success, token);
+        };
+
+        onSubmitPayment(submit);
+
+        return {
+            cardNumber
+        };
     },
+
     template: `
-<div>
-    <div v-if="loading" class="text-center">
-        <LoadingIndicator />
-    </div>
-    <div v-else>
-        <TextBox label="Credit Card" v-model="cardNumber" />
-    </div>
+<div style="max-width: 600px; margin-left: auto; margin-right: auto;">
+    <TextBox label="Credit Card" v-model="cardNumber" />
 </div>`
 });

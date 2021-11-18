@@ -1868,11 +1868,14 @@ namespace Rock.Blocks.Event
             // Force the registrar to update their email?
             var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
+            // Check if saved accounts should be enabled.
+            var enableSavedAccount = GetAttributeValue( AttributeKey.EnableSavedAccount ).AsBoolean();
+
             // Load the gateway control settings
             var financialGatewayId = context.RegistrationSettings.FinancialGatewayId;
             var financialGateway = financialGatewayId.HasValue ? new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId.Value ) : null;
             var gatewayComponent = financialGateway?.GetGatewayComponent();
-            var financialGatewayComponent = gatewayComponent as IObsidianFinancialGateway;
+            var financialGatewayComponent = gatewayComponent as IObsidianHostedGatewayComponent;
 
             // Determine if this is a redirect gateway and get the redirect URL
             var redirectGateway = gatewayComponent as IRedirectionGateway;
@@ -1896,6 +1899,123 @@ namespace Rock.Blocks.Event
                 if ( hasMetThreshold )
                 {
                     timeoutMinutes = context.RegistrationSettings.TimeoutMinutes.Value;
+                }
+            }
+
+            // If we are using saved accounts and have all the details that we
+            // need then attempt to load the current person's saved accounts.
+            List<ListItemViewModel> savedAccounts = null;
+            if ( enableSavedAccount && RequestContext.CurrentPerson != null && financialGatewayId.HasValue )
+            {
+                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+
+                var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+                var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+                var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+                var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+                var allowedCurrencyTypes = new List<DefinedValueCache>();
+
+                // Conditionally enable credit card.
+                if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
+                {
+                    allowedCurrencyTypes.Add( creditCardCurrency );
+                }
+
+                // Conditionally enable ACH.
+                if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
+                {
+                    allowedCurrencyTypes.Add( achCurrency );
+                }
+
+                int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
+
+                // Build the query to get all the matching saved accounts for
+                // the currently logged in person.
+                var savedAccountsQuery = financialPersonSavedAccountService
+                    .GetByPersonId( RequestContext.CurrentPerson.Id )
+                    .Where( a => a.FinancialGatewayId == financialGatewayId.Value
+                        && !a.IsSystem
+                        && a.FinancialPaymentDetail.CurrencyTypeValueId.HasValue
+                        && allowedCurrencyTypeIds.Contains( a.FinancialPaymentDetail.CurrencyTypeValueId.Value ) )
+                    .OrderBy( a => a.Name )
+                    .Select( a => new
+                    {
+                        a.Guid,
+                        a.Name,
+                        a.FinancialPaymentDetail.ExpirationMonth,
+                        a.FinancialPaymentDetail.ExpirationYear,
+                        a.FinancialPaymentDetail.AccountNumberMasked
+                    } );
+
+                // Translate the saved accounts into something that will be
+                // recognized by the client.
+                savedAccounts = savedAccountsQuery
+                    .ToList()
+                    .Select( a =>
+                    {
+                        string expirationDate = null;
+
+                        if ( a.ExpirationMonth.HasValue && a.ExpirationYear.HasValue )
+                        {
+                            // ExpirationYear returns 4 digits, but just in case,
+                            // check if it is 4 digits before just getting the last 2.
+                            string expireYY = a.ExpirationYear.Value.ToString();
+                            if ( expireYY.Length == 4 )
+                            {
+                                expireYY = expireYY.Substring( 2 );
+                            }
+
+                            expirationDate = $"{a.ExpirationMonth.Value:00}/{expireYY:00}";
+                        }
+
+                        return new ListItemViewModel
+                        {
+                            Value = a.Guid.ToString(),
+                            Text = expirationDate.IsNotNullOrWhiteSpace()
+                                    ? $"{a.Name} ({a.AccountNumberMasked} Expires: {expirationDate})"
+                                    : $"{a.Name} ({a.AccountNumberMasked})"
+                        };
+                    } )
+                    .ToList();
+            }
+
+            // If we don't have a session that means we are starting new. Create
+            // an empty session.
+            if ( session == null && currentPerson != null )
+            {
+                session = new RegistrationEntryBlockSession
+                {
+                    RegistrationSessionGuid = Guid.NewGuid()
+                };
+
+                session.Registrants = new List<ViewModel.Blocks.RegistrantInfo>();
+
+                if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
+                {
+                    // Fill in first registrant info as a member of the family.
+                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    {
+                        Guid = Guid.NewGuid(),
+                        FamilyGuid = currentPerson.PrimaryFamily.Guid,
+                        IsOnWaitList = false,
+                        PersonGuid = currentPerson.Guid,
+                        FeeItemQuantities = new Dictionary<Guid, int>(),
+                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, formModels )
+                    } );
+                }
+                else
+                {
+                    // Only fill in the first registrant with existing values
+                    // as a "new" person if family members are not shown.
+                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    {
+                        Guid = Guid.NewGuid(),
+                        FamilyGuid = Guid.NewGuid(),
+                        IsOnWaitList = false,
+                        PersonGuid = null,
+                        FeeItemQuantities = new Dictionary<Guid, int>(),
+                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, formModels )
+                    } );
                 }
             }
 
@@ -1928,7 +2048,7 @@ namespace Rock.Blocks.Event
                 GatewayControl = isRedirectGateway ? null : new GatewayControlViewModel
                 {
                     FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
-                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway ) ?? new object()
+                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
                 SpotsRemaining = context.SpotsRemaining,
@@ -1947,7 +2067,9 @@ namespace Rock.Blocks.Event
                 AllowRegistrationUpdates = allowRegistrationUpdates,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
-                Campuses = clientHelper.GetCampusesAsListItems()
+                Campuses = clientHelper.GetCampusesAsListItems(),
+                EnableSaveAccount = enableSavedAccount,
+                SavedAccounts = savedAccounts
             };
 
             return viewModel;
@@ -2054,7 +2176,7 @@ namespace Rock.Blocks.Event
             var financialAccountService = new FinancialAccountService( rockContext );
             var financialAccount = financialAccountService.Get( context.RegistrationSettings.FinancialAccountId ?? 0 );
 
-            if ( redirectGateway == null && financialAccount == null )
+            if ( financialAccount == null )
             {
                 errorMessage = "There was a problem with the financial account configuration for this registration instance";
                 return null;
@@ -2064,15 +2186,43 @@ namespace Rock.Blocks.Event
                 $"{context.RegistrationSettings.Name} ({financialAccount.GlCode})" :
                 context.RegistrationSettings.Name;
 
-            var paymentInfo = new ReferencePaymentInfo
+            ReferencePaymentInfo paymentInfo;
+
+            // Get the payment info from either the saved account or the gateway
+            // token when using a new payment method.
+            if ( args.SavedAccountGuid.HasValue && RequestContext.CurrentPerson != null )
             {
-                Amount = args.AmountToPayNow,
-                Email = args.Registrar.Email,
-                FirstName = args.Registrar.NickName,
-                LastName = args.Registrar.LastName,
-                ReferenceNumber = args.GatewayToken,
-                Comment1 = comment
-            };
+                var savedAccount = new FinancialPersonSavedAccountService( rockContext )
+                    .Queryable()
+                    .Where( a => a.Guid == args.SavedAccountGuid.Value
+                        && a.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                    .AsNoTracking()
+                    .FirstOrDefault();
+
+                if ( savedAccount != null )
+                {
+                    paymentInfo = savedAccount.GetReferencePayment();
+                }
+                else
+                {
+                    errorMessage = "There was a problem retrieving the saved account";
+                    return null;
+                }
+            }
+            else
+            {
+                paymentInfo = new ReferencePaymentInfo
+                {
+                    ReferenceNumber = args.GatewayToken,
+                };
+            }
+
+            // Update payment into with details about this payment.
+            paymentInfo.Amount = args.AmountToPayNow;
+            paymentInfo.Email = args.Registrar.Email;
+            paymentInfo.FirstName = args.Registrar.NickName;
+            paymentInfo.LastName = args.Registrar.LastName;
+            paymentInfo.Comment1 = comment;
 
             FinancialTransaction transaction;
 
@@ -2083,17 +2233,21 @@ namespace Rock.Blocks.Event
                 transaction = redirectionGateway.FetchTransaction( rockContext, financialGateway, fundId, args.GatewayToken );
                 paymentInfo.Amount = transaction.TotalAmount;
             }
-            else if ( gateway is IHostedGatewayComponent hostedGateway )
+            else if ( gateway is IObsidianHostedGatewayComponent obsidianGateway )
             {
-                var customerToken = hostedGateway.CreateCustomerAccount( financialGateway, paymentInfo, out errorMessage );
-
-                if ( !errorMessage.IsNullOrWhiteSpace() )
+                if ( paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
                 {
-                    return null;
+                    var customerToken = obsidianGateway.CreateCustomerAccount( financialGateway, paymentInfo, out errorMessage );
+
+                    if ( !errorMessage.IsNullOrWhiteSpace() )
+                    {
+                        return null;
+                    }
+
+                    paymentInfo.GatewayPersonIdentifier = customerToken;
                 }
 
                 // Charge a new payment with the tokenized payment method
-                paymentInfo.GatewayPersonIdentifier = customerToken;
                 transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )

@@ -148,7 +148,8 @@ export default defineComponent({
             }
 
             // Add the current person (registrant) if not already added
-            if (this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[ this.currentPerson.primaryFamilyGuid ]) {
+            if (this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[this.currentPerson.primaryFamilyGuid]) {
+                usedFamilyGuids[this.currentPerson.primaryFamilyGuid] = true;
                 options.push({
                     text: this.currentPerson.fullName,
                     value: this.currentPerson.primaryFamilyGuid
@@ -257,7 +258,7 @@ export default defineComponent({
     watch: {
         "currentRegistrant.familyGuid"(): void {
             // Clear the person guid if the family changes
-            this.currentRegistrant.personGuid = "";
+            this.currentRegistrant.personGuid = null;
         },
         familyMember: {
             handler(): void {

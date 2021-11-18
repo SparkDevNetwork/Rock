@@ -14,29 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Model;
+using System;
 
-namespace Rock.Bus.Queue
+namespace Rock.Financial
 {
     /// <summary>
-    /// Giving Event Queue
+    /// A Financial Gateway that uses a particular person search key.
+    /// Note:  This was added to Rock core to support Gift and ScheduledGift bus event messages
+    /// that were adapted from an external solution.  (See <see cref="Rock.Bus.Message.GiftWasGivenMessage"/>
+    /// and <see cref="Rock.Bus.Message.ScheduledGiftModifiedMessage"/>.)
     /// </summary>
-    public sealed class GivingEventQueue : PublishEventQueue
+    public interface ISearchKeyTiedGateway
     {
         /// <summary>
-        /// Gets the queue name. Each instance of Rock shares this name for this queue.
+        /// Gets the type of the person search key.
         /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public override string Name => "rock-giving-event-queue";
-
-        /// <summary>
-        /// Gets or sets the time to live seconds.
-        /// A setting of null or less than 1 means there is no expiration.
-        /// </summary>
-        /// <value>
-        /// The time to live seconds.
-        /// </value>
-        public override int? TimeToLiveSeconds => 604800; // 7 days 
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        Guid? GetPersonSearchKeyTypeGuid( FinancialGateway financialGateway );
     }
 }

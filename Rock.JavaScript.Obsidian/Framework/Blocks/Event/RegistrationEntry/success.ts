@@ -56,12 +56,20 @@ export default defineComponent({
         /** The token returned for the payment method */
         gatewayPersonIdentifier (): string {
             return this.registrationEntryState.successViewModel?.gatewayPersonIdentifier || "";
+        },
+
+        enableSaveAccount(): boolean {
+            return this.registrationEntryState.viewModel.enableSaveAccount && this.registrationEntryState.savedAccountGuid === null;
         }
     },
     template: `
 <div>
     <div v-html="messageHtml"></div>
-    <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier" :gatewayGuid="gatewayGuid" :transactionCode="transactionCode" :gatewayPersonIdentifier="gatewayPersonIdentifier" class="well">
+    <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && enableSaveAccount"
+        :gatewayGuid="gatewayGuid"
+        :transactionCode="transactionCode"
+        :gatewayPersonIdentifier="gatewayPersonIdentifier"
+        class="well">
         <template #header>
             <h3>Make Payments Even Easier</h3>
         </template>

@@ -15,30 +15,30 @@
 // </copyright>
 //
 
-import { defineComponent, inject, provide, reactive, ref } from "vue";
-import RockButton from "../../Elements/rockButton";
-import { Guid, newGuid } from "../../Util/guid";
-import RegistrationEntryIntro from "./RegistrationEntry/intro";
-import RegistrationEntryRegistrants from "./RegistrationEntry/registrants";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from "./RegistrationEntry/registrationEntryBlockViewModel";
-import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart";
-import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd";
-import RegistrationEntrySummary from "./RegistrationEntry/summary";
-import Registrants from "./RegistrationEntry/registrants";
-import ProgressTracker, { ProgressTrackerItem } from "../../Elements/progressTracker";
-import NumberFilter, { toWord } from "../../Services/number";
-import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "../../Services/string";
+import { defineComponent, provide, reactive, ref } from "vue";
 import Alert from "../../Elements/alert";
 import CountdownTimer from "../../Elements/countdownTimer";
-import RegistrationEntrySuccess from "./RegistrationEntry/success";
-import Page from "../../Util/page";
-import { RegistrationEntryBlockArgs } from "./RegistrationEntry/registrationEntryBlockArgs";
-import { InvokeBlockActionFunc } from "../../Util/block";
 import JavaScriptAnchor from "../../Elements/javaScriptAnchor";
-import { Person } from "../../ViewModels";
-import SessionRenewal from "./RegistrationEntry/sessionRenewal";
+import ProgressTracker, { ProgressTrackerItem } from "../../Elements/progressTracker";
+import RockButton from "../../Elements/rockButton";
+import NumberFilter, { toWord } from "../../Services/number";
+import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "../../Services/string";
 import { useStore } from "../../Store/index";
+import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
+import { Guid, newGuid } from "../../Util/guid";
+import { List } from "../../Util/linq";
+import Page from "../../Util/page";
 import { RockDateTime } from "../../Util/rockDateTime";
+import { Person } from "../../ViewModels";
+import RegistrationEntryIntro from "./RegistrationEntry/intro";
+import { default as RegistrationEntryRegistrants } from "./RegistrationEntry/registrants";
+import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd";
+import { RegistrationEntryBlockArgs } from "./RegistrationEntry/registrationEntryBlockArgs";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from "./RegistrationEntry/registrationEntryBlockViewModel";
+import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart";
+import SessionRenewal from "./RegistrationEntry/sessionRenewal";
+import RegistrationEntrySuccess from "./RegistrationEntry/success";
+import RegistrationEntrySummary from "./RegistrationEntry/summary";
 
 const store = useStore();
 
@@ -69,6 +69,7 @@ export type RegistrationEntryState = {
     registrationFieldValues: Record<Guid, unknown>;
     registrar: RegistrarInfo;
     gatewayToken: string;
+    savedAccountGuid: Guid | null;
     discountCode: string;
     discountAmount: number;
     discountPercentage: number;
@@ -118,7 +119,7 @@ export function getDefaultRegistrantInfo (currentPerson: Person | null, viewMode
         fieldValues: {},
         feeItemQuantities: {},
         guid: newGuid(),
-        personGuid: ""
+        personGuid: null
     } as RegistrantInfo;
 }
 
@@ -141,7 +142,6 @@ export default defineComponent({
     name: "Event.RegistrationEntry",
     components: {
         RockButton,
-        Registrants,
         RegistrationEntryIntro,
         RegistrationEntryRegistrants,
         RegistrationEntryRegistrationStart,
@@ -154,19 +154,19 @@ export default defineComponent({
         JavaScriptAnchor,
         SessionRenewal
     },
-    setup () {
+    setup() {
         const steps: Record<Step, Step> = {
-            [ Step.Intro ]: Step.Intro,
-            [ Step.RegistrationStartForm ]: Step.RegistrationStartForm,
-            [ Step.PerRegistrantForms ]: Step.PerRegistrantForms,
-            [ Step.RegistrationEndForm ]: Step.RegistrationEndForm,
-            [ Step.ReviewAndPayment ]: Step.ReviewAndPayment,
-            [ Step.Success ]: Step.Success
+            [Step.Intro]: Step.Intro,
+            [Step.RegistrationStartForm]: Step.RegistrationStartForm,
+            [Step.PerRegistrantForms]: Step.PerRegistrantForms,
+            [Step.RegistrationEndForm]: Step.RegistrationEndForm,
+            [Step.ReviewAndPayment]: Step.ReviewAndPayment,
+            [Step.Success]: Step.Success
         };
 
         const notFound = ref(false);
-        const viewModel = inject("configurationValues") as RegistrationEntryBlockViewModel | null;
-        const invokeBlockAction = inject("invokeBlockAction") as InvokeBlockActionFunc;
+        const viewModel = useConfigurationValues<RegistrationEntryBlockViewModel | null>();
+        const invokeBlockAction = useInvokeBlockAction();
 
         if (viewModel === null) {
             notFound.value = true;
@@ -197,14 +197,14 @@ export default defineComponent({
             currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
         }
 
-        const registrationEntryState = reactive({
+        const staticRegistrationEntryState: RegistrationEntryState = {
             steps: steps,
             viewModel: viewModel,
             firstStep: currentStep,
             currentStep: currentStep,
             currentRegistrantFormIndex: 0,
             currentRegistrantIndex: 0,
-            registrants: viewModel.session?.registrants || [ getDefaultRegistrantInfo(null, viewModel, null) ],
+            registrants: viewModel.session?.registrants || [getDefaultRegistrantInfo(null, viewModel, null)],
             registrationFieldValues: viewModel.session?.fieldValues || {},
             registrar: viewModel.session?.registrar || {
                 nickName: "",
@@ -214,6 +214,7 @@ export default defineComponent({
                 familyGuid: null
             },
             gatewayToken: "",
+            savedAccountGuid: null,
             discountCode: viewModel.session?.discountCode || "",
             discountAmount: viewModel.session?.discountAmount || 0,
             discountPercentage: viewModel.session?.discountPercentage || 0,
@@ -222,7 +223,8 @@ export default defineComponent({
             sessionExpirationDateMs: null,
             registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid(),
             ownFamilyGuid: store.state.currentPerson?.primaryFamilyGuid || newGuid()
-        } as RegistrationEntryState);
+        };
+        const registrationEntryState = reactive(staticRegistrationEntryState);
 
         provide("registrationEntryState", registrationEntryState);
 
@@ -231,6 +233,7 @@ export default defineComponent({
             return {
                 registrationSessionGuid: registrationEntryState.registrationSessionGuid,
                 gatewayToken: registrationEntryState.gatewayToken,
+                savedAccountGuid: registrationEntryState.savedAccountGuid,
                 discountCode: registrationEntryState.discountCode,
                 fieldValues: registrationEntryState.registrationFieldValues,
                 registrar: registrationEntryState.registrar,
@@ -270,7 +273,7 @@ export default defineComponent({
             persistSession
         };
     },
-    data () {
+    data() {
         return {
             secondsBeforeExpiration: -1,
             hasSessionRenewalSuccess: false
@@ -278,34 +281,34 @@ export default defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson (): Person | null {
+        currentPerson(): Person | null {
             return store.state.currentPerson;
         },
 
         /** Is the session expired? */
-        isSessionExpired (): boolean {
+        isSessionExpired(): boolean {
             return this.secondsBeforeExpiration === 0 && this.currentStep !== Step.Success;
         },
 
-        mustLogin (): boolean {
+        mustLogin(): boolean {
             return !store.state.currentPerson && this.viewModel != null && (this.viewModel.isUnauthorized || this.viewModel.loginRequiredToRegister);
         },
-        isUnauthorized (): boolean {
+        isUnauthorized(): boolean {
             return this.viewModel?.isUnauthorized ?? false;
         },
-        currentStep (): string {
+        currentStep(): string {
             return this.registrationEntryState?.currentStep ?? "";
         },
-        registrants (): RegistrantInfo[] {
+        registrants(): RegistrantInfo[] {
             return this.registrationEntryState?.registrants ?? [];
         },
-        hasPreAttributes (): boolean {
+        hasPreAttributes(): boolean {
             return (this.viewModel?.registrationAttributesStart?.length ?? 0) > 0;
         },
-        hasPostAttributes (): boolean {
+        hasPostAttributes(): boolean {
             return (this.viewModel?.registrationAttributesEnd?.length ?? 0) > 0;
         },
-        progressTrackerIndex (): number {
+        progressTrackerIndex(): number {
             if (this.currentStep === Step.Intro || this.registrationEntryState == null) {
                 return 0;
             }
@@ -334,10 +337,10 @@ export default defineComponent({
 
             return 0;
         },
-        uppercaseRegistrantTerm (): string {
+        uppercaseRegistrantTerm(): string {
             return StringFilter.toTitleCase(this.viewModel?.registrantTerm ?? "");
         },
-        currentRegistrantTitle (): string {
+        currentRegistrantTitle(): string {
             if (this.registrationEntryState == null) {
                 return "";
             }
@@ -354,7 +357,7 @@ export default defineComponent({
 
             return title;
         },
-        stepTitleHtml (): string {
+        stepTitleHtml(): string {
             if (this.currentStep === Step.RegistrationStartForm) {
                 return this.viewModel?.registrationAttributeTitleStart ?? "";
             }
@@ -379,7 +382,7 @@ export default defineComponent({
         },
 
         /** The items to display in the progress tracker */
-        progressTrackerItems (): ProgressTrackerItem[] {
+        progressTrackerItems(): ProgressTrackerItem[] {
             const items: ProgressTrackerItem[] = [];
 
             if (this.registrationEntryState == null) {
@@ -411,7 +414,7 @@ export default defineComponent({
             }
 
             for (let i = 0; i < this.registrationEntryState.registrants.length; i++) {
-                const registrant = this.registrationEntryState.registrants[ i ];
+                const registrant = this.registrationEntryState.registrants[i];
                 const info = getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
 
                 if (info?.firstName && info?.lastName) {
@@ -445,6 +448,30 @@ export default defineComponent({
             });
 
             return items;
+        },
+
+        /**
+         * Determines if there are any costs or fees on the registration and
+         * checks if we have a valid gateway.
+         */
+        isInvalidGateway() {
+            if (!this.viewModel) {
+                return false;
+            }
+
+            const hasCostFees = new List(this.viewModel.fees)
+                .any(f => new List(f.items).any(i => i.cost > 0));
+
+            // If no cost or fees, then no gateway will be needed.
+            if (this.viewModel.cost <= 0 && !hasCostFees) {
+                return false;
+            }
+
+            if (this.viewModel.isRedirectGateway || this.viewModel.gatewayControl.fileUrl) {
+                return false;
+            }
+
+            return true;
         }
     },
     methods: {
@@ -520,7 +547,7 @@ export default defineComponent({
     watch: {
         currentPerson: {
             immediate: true,
-            handler () {
+            handler() {
                 if (this.viewModel != null && this.registrationEntryState != null) {
                     const forcedFamilyGuid = getForcedFamilyGuid(this.currentPerson, this.viewModel);
 
@@ -534,7 +561,7 @@ export default defineComponent({
         },
         "registrationEntryState.sessionExpirationDateMs": {
             immediate: true,
-            handler () {
+            handler() {
                 if (!this.registrationEntryState?.sessionExpirationDateMs) {
                     this.secondsBeforeExpiration = -1;
                     return;
@@ -547,7 +574,7 @@ export default defineComponent({
             }
         }
     },
-    mounted () {
+    mounted() {
         if (this.viewModel?.loginRequiredToRegister && !store.state.currentPerson) {
             store.redirectToLogin();
         }
@@ -565,6 +592,10 @@ export default defineComponent({
     <Alert v-else-if="isUnauthorized" alertType="warning">
         <strong>Sorry</strong>
         <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
+    </Alert>
+    <Alert v-else-if="isInvalidGateway" alertType="warning">
+        <strong>Incorrect Configuration</strong>
+        <p>This registration has costs/fees associated with it but the configured payment gateway is not supported.</p>
     </Alert>
     <template v-else>
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>

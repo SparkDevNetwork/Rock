@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export type HttpUrlParams = Record<string, unknown> | undefined | null;
@@ -36,7 +36,7 @@ export type HttpResult<T> = {
  * @param params
  * @param data
  */
-async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData) {
+async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData): Promise<AxiosResponse<unknown>> {
     return await axios({
         method,
         url,

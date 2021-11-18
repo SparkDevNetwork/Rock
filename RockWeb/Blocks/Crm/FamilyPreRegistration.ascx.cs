@@ -258,6 +258,16 @@ namespace RockWeb.Blocks.Crm
         Category = CategoryKey.AdultFields,
         Order = 7 )]
 
+    [CustomDropdownListField(
+        "Address",
+        Key = AttributeKey.AdultAddress,
+        Description = "How should Address be displayed for adults?",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Optional",
+        Category = CategoryKey.AdultFields,
+        Order = 8 )]
+
     #endregion
 
     #region Child Category
@@ -407,6 +417,7 @@ namespace RockWeb.Blocks.Crm
             public const string AdultMobilePhone = "AdultMobilePhone";
             public const string AdultAttributeCategories = "AdultAttributeCategories";
             public const string AdultDisplayCommunicationPreference = "AdultDisplayCommunicationPreference";
+            public const string AdultAddress = "AdultAddress";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -420,8 +431,6 @@ namespace RockWeb.Blocks.Crm
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
             public const string CanCheckinRelationships = "CanCheckinRelationships";
-
-
         }
 
         private static class CategoryKey
@@ -802,6 +811,7 @@ namespace RockWeb.Blocks.Crm
                 var showChildMobilePhone = GetAttributeValue( AttributeKey.ChildMobilePhone ) != "Hide";
                 var showChildEmailAddress = GetAttributeValue( AttributeKey.ChildEmail ) != "Hide";
                 var showChildCommunicationPreference = GetAttributeValue( AttributeKey.ChildDisplayCommunicationPreference ) != "Hide";
+                var showAdultAddress = GetAttributeValue( AttributeKey.AdultAddress ) != "Hide";
 
                 // ...and some service objects
                 var personService = new PersonService( _rockContext );
@@ -895,43 +905,46 @@ namespace RockWeb.Blocks.Crm
                 }
 
                 // Save the family address
-                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                if ( homeLocationType != null )
+                if ( showAdultAddress )
                 {
-                    // Find a location record for the address that was entered
-                    var loc = new Location();
-                    acAddress.GetValues( loc );
-                    if ( acAddress.Street1.IsNotNullOrWhiteSpace() && loc.City.IsNotNullOrWhiteSpace() )
+                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    if ( homeLocationType != null )
                     {
-                        loc = new LocationService( _rockContext ).Get( loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, primaryFamily, true );
-                    }
-                    else
-                    {
-                        loc = null;
-                    }
-
-                    // Check to see if family has an existing home address
-                    var groupLocation = primaryFamily.GroupLocations.FirstOrDefault( l => l.GroupLocationTypeValueId.HasValue && l.GroupLocationTypeValueId.Value == homeLocationType.Id );
-
-                    if ( loc != null )
-                    {
-                        if ( groupLocation == null || groupLocation.LocationId != loc.Id )
+                        // Find a location record for the address that was entered
+                        var loc = new Location();
+                        acAddress.GetValues( loc );
+                        if ( acAddress.Street1.IsNotNullOrWhiteSpace() && loc.City.IsNotNullOrWhiteSpace() )
                         {
-                            // If family does not currently have a home address or it is different than the one entered, add a new address (move old address to prev)
-                            GroupService.AddNewGroupAddress( _rockContext, primaryFamily, homeLocationType.Guid.ToString(), loc, true, string.Empty, true, true );
+                            loc = new LocationService( _rockContext ).Get( loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, primaryFamily, true );
                         }
-                    }
-                    else
-                    {
-                        if ( groupLocation != null && saveEmptyValues )
+                        else
                         {
-                            // If an address was not entered, and family has one on record, update it to be a previous address
-                            var prevLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
-                            groupLocation.GroupLocationTypeValueId = prevLocationType != null ? prevLocationType.Id : groupLocation.GroupLocationTypeValueId;
+                            loc = null;
                         }
-                    }
 
-                    _rockContext.SaveChanges();
+                        // Check to see if family has an existing home address
+                        var groupLocation = primaryFamily.GroupLocations.FirstOrDefault( l => l.GroupLocationTypeValueId.HasValue && l.GroupLocationTypeValueId.Value == homeLocationType.Id );
+
+                        if ( loc != null )
+                        {
+                            if ( groupLocation == null || groupLocation.LocationId != loc.Id )
+                            {
+                                // If family does not currently have a home address or it is different than the one entered, add a new address (move old address to prev)
+                                GroupService.AddNewGroupAddress( _rockContext, primaryFamily, homeLocationType.Guid.ToString(), loc, true, string.Empty, true, true );
+                            }
+                        }
+                        else
+                        {
+                            if ( groupLocation != null && saveEmptyValues )
+                            {
+                                // If an address was not entered, and family has one on record, update it to be a previous address
+                                var prevLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                                groupLocation.GroupLocationTypeValueId = prevLocationType != null ? prevLocationType.Id : groupLocation.GroupLocationTypeValueId;
+                            }
+                        }
+
+                        _rockContext.SaveChanges();
+                    }
                 }
 
                 // Save any family attribute values
@@ -1320,6 +1333,10 @@ namespace RockWeb.Blocks.Crm
 
             // Adult Communication Preference
             SetControl( AttributeKey.AdultDisplayCommunicationPreference, pnlCommunicationPreference1, pnlCommunicationPreference2 );
+
+            // Adult Address
+            isRequired = SetControl( AttributeKey.AdultAddress, acAddress, null );
+            acAddress.Required = isRequired;
 
             // Check for Current Family
             SetCurrentFamilyValues();
