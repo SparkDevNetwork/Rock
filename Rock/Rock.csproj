@@ -888,11 +888,9 @@
     <Compile Include="Model\Event\Registration\RegistrationCostSummaryType.cs" />
     <Compile Include="Model\Event\Registration\RegistrationExtensionMethods.cs" />
     <Compile Include="Model\Event\Registration\RegistrationInfo.cs" />
-    <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.Configuration.cs" />
     <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.Logic.cs" />
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.cs" />
-    <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.Configuration.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
@@ -1048,6 +1046,7 @@
     <Compile Include="Security\SecuritySettings.cs" />
     <Compile Include="Security\SecuritySettingsService.cs" />
     <Compile Include="SystemGuid\AchievementType.cs" />
+    <Compile Include="SystemGuid\BenevolenceType.cs" />
     <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />

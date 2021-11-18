@@ -14,6 +14,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
@@ -23,13 +24,12 @@ namespace Rock.Model
     /// <summary>
     /// Represents a benevolence workflow that will be associated with a benevolence type.
     /// </summary>
-    [RockDomain("Finance")]
-    [Table("BenevolenceWorkflow")]
+    [RockDomain( "Finance" )]
+    [Table( "BenevolenceWorkflow" )]
     [DataContract]
     public partial class BenevolenceWorkflow : Model<BenevolenceWorkflow>
     {
-
-         #region Entity Properties
+        #region Entity Properties
         /// <summary>
         /// Gets or sets the benevolence type identifier.
         /// </summary>
@@ -37,7 +37,7 @@ namespace Rock.Model
         /// The benevolence type identifier.
         /// </value>
         [Required]
-        [DataMember(IsRequired =true)]
+        [DataMember( IsRequired = true )]
         public int BenevolenceTypeId { get; set; }
 
         /// <summary>
@@ -49,6 +49,7 @@ namespace Rock.Model
         [Required]
         [DataMember]
         public int WorkflowTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the type of the trigger.
         /// </summary>
@@ -70,22 +71,14 @@ namespace Rock.Model
 
         #region Navigation Properties
         /// <summary>
-        /// Gets or sets the benevolence type.
-        /// </summary>
-        /// <value>
-        /// The benevolence type.
-        /// </value>
-         [LavaVisible]
-        public virtual  Rock.Model.BenevolenceType BenevolenceType { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BenevolenceType"></see>.
         /// </summary>
         /// <value>
         /// The benevolence type.
         /// </value>
-       
- 
+        [LavaVisible]
+        public virtual Rock.Model.BenevolenceType BenevolenceType { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.WorkflowType">type</see> of the workflow.
         /// </summary>
@@ -97,4 +90,23 @@ namespace Rock.Model
 
         #endregion
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// BenevolenceWorkflow Configuration class.
+    /// </summary>
+    public partial class BenevolenceWorkflowConfiguration : EntityTypeConfiguration<BenevolenceWorkflow>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BenevolenceWorkflowConfiguration" /> class.
+        /// </summary>
+        public BenevolenceWorkflowConfiguration()
+        {
+            this.HasRequired( p => p.BenevolenceType ).WithMany( p => p.BenevolenceWorkflows ).HasForeignKey( p => p.BenevolenceTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.WorkflowType ).WithMany().HasForeignKey( p => p.WorkflowTypeId ).WillCascadeOnDelete( true );
+        }
+    }
+
+    #endregion
 }

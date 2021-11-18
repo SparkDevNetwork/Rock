@@ -102,6 +102,7 @@ namespace Rock.SystemGuid
         /// Guid for data automation ignored person attributes
         /// </summary>
         public const string DATA_AUTOMATION_IGNORED_PERSON_ATTRIBUTES = "886CDB4E-ED8B-48DD-A4CC-D615E032E622";
+
         /// <summary>
         /// Guid for Device Type
         /// </summary>
@@ -136,16 +137,16 @@ namespace Rock.SystemGuid
         /// Guid for Financial Currency Type
         /// </summary>
         public const string FINANCIAL_ACCOUNT_TYPE = "752DA126-471F-4221-8503-5297593C99FF";
-		
+
         /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
-        public const string FINANCIAL_CURRENCY_TYPE =  "1D1304DE-E83A-44AF-B11D-0C66DD600B81"; 
+        public const string FINANCIAL_CURRENCY_TYPE = "1D1304DE-E83A-44AF-B11D-0C66DD600B81";
 
         /// <summary>
         /// Guid for Financial Credit Card Type
         /// </summary>
-        public const string FINANCIAL_CREDIT_CARD_TYPE =  "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9";
+        public const string FINANCIAL_CREDIT_CARD_TYPE = "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9";
 
         /// <summary>
         /// Guid for Financial Frequency 
@@ -160,7 +161,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for Financial Source Type
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE =  "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
+        public const string FINANCIAL_SOURCE_TYPE = "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
 
         /// <summary>
         /// Guid for Financial Transaction Type
@@ -185,7 +186,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for the types of Group Locations (such as Home, Main Office, etc)
         /// </summary>
-        public const string GROUP_LOCATION_TYPE =  "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
+        public const string GROUP_LOCATION_TYPE = "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
 
         /// <summary>
         /// Guid for GroupType Purpose
@@ -235,7 +236,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for Content Channel Audience Type (formally called Marketing Campaign)
         /// </summary>
-        public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE =  "799301A3-2026-4977-994E-45DC68502559";
+        public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE = "799301A3-2026-4977-994E-45DC68502559";
 
         /// <summary>
         /// Metric Source Type
@@ -255,22 +256,22 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
         /// </summary>
-        public const string PERSON_RECORD_TYPE =  "26be73a6-a9c5-4e94-ae00-3afdcf8c9275";
+        public const string PERSON_RECORD_TYPE = "26be73a6-a9c5-4e94-ae00-3afdcf8c9275";
 
         /// <summary>
         /// Guid for the types of Person Record Statuses (such as active, inactive, pending, etc.)
         /// </summary>
-        public const string PERSON_RECORD_STATUS =  "8522badd-2871-45a5-81dd-c76da07e2e7e";
+        public const string PERSON_RECORD_STATUS = "8522badd-2871-45a5-81dd-c76da07e2e7e";
 
         /// <summary>
         /// Guid for the types of Person Record Status Reasons (such as deceased, moved, etc.)
         /// </summary>
-        public const string PERSON_RECORD_STATUS_REASON =  "e17d5988-0372-4792-82cf-9e37c79f7319";
+        public const string PERSON_RECORD_STATUS_REASON = "e17d5988-0372-4792-82cf-9e37c79f7319";
 
         /// <summary>
         /// Guid for the person's connection status (such as member, attendee, participant, etc.)
         /// </summary>
-        public const string PERSON_CONNECTION_STATUS =  "2e6540ea-63f0-40fe-be50-f2a84735e600";
+        public const string PERSON_CONNECTION_STATUS = "2e6540ea-63f0-40fe-be50-f2a84735e600";
 
         /// <summary>
         /// Guid for the reasons a person record needs to be reviewed
@@ -280,22 +281,22 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for the types of Person Titles (such as Mr., Mrs., Dr., etc.)
         /// </summary>
-        public const string PERSON_TITLE =  "4784cd23-518b-43ee-9b97-225bf6e07846";
+        public const string PERSON_TITLE = "4784cd23-518b-43ee-9b97-225bf6e07846";
 
         /// <summary>
         /// Guid for the types of Person Suffixes (such as Jr., Sr., etc.)
         /// </summary>
-        public const string PERSON_SUFFIX =  "16f85b3c-b3e8-434c-9094-f3d41f87a740";
+        public const string PERSON_SUFFIX = "16f85b3c-b3e8-434c-9094-f3d41f87a740";
 
         /// <summary>
         /// Guid for the types of Person Marital Statuses (such as Married, Single, Divorced, Widowed, etc.)
         /// </summary>
-        public const string PERSON_MARITAL_STATUS =  "b4b92c3f-a935-40e1-a00b-ba484ead613b";
+        public const string PERSON_MARITAL_STATUS = "b4b92c3f-a935-40e1-a00b-ba484ead613b";
 
         /// <summary>
         /// Guid for the types of Person phone numbers (such as Primary, Secondary, etc.)
         /// </summary>
-        public const string PERSON_PHONE_TYPE =  "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD";
+        public const string PERSON_PHONE_TYPE = "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD";
 
         /// <summary>
         /// Guid for the types of possible check-in system ability levels (such as Infant, Crawler, etc.)
@@ -326,7 +327,7 @@ namespace Rock.SystemGuid
         /// Protect My Ministry MVR jurisdiction codes
         /// </summary>
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
-        
+
         /// <summary>
         /// Template Block
         /// </summary>
@@ -373,9 +374,9 @@ namespace Rock.SystemGuid
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
 
         /// <summary>
-		/// The Spiritual Gifts
-		/// </summary>
-		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
+        /// The Spiritual Gifts
+        /// </summary>
+        public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
 
         /// <summary>
         /// Guid for Structured Content Editor Tools
@@ -440,8 +441,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
-        [Obsolete( "Use FinancialStatementTemplate instead" )]
-        [RockObsolete( "1.12.4" )]
+        [Obsolete("Use FinancialStatementTemplate instead")]
+        [RockObsolete("1.12.4")]
         public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
     }
 }

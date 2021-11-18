@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,21 +33,21 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Block for users to create, edit, and view benevolence requests.
     /// </summary>
-    [DisplayName("Benevolence Request Detail")]
-    [Category("Finance")]
-    [Description("Block for users to create, edit, and view benevolence requests.")]
+    [DisplayName( "Benevolence Request Detail" )]
+    [Category( "Finance" )]
+    [Description( "Block for users to create, edit, and view benevolence requests." )]
 
-    [SecurityRoleField("Case Worker Role",
+    [SecurityRoleField( "Case Worker Role",
         Description = "The security role to draw case workers from",
         IsRequired = false,
         Key = AttributeKey.CaseWorkerRole,
-        Order = 0)]
+        Order = 0 )]
 
-    [LinkedPage("Benevolence Request Statement Page",
+    [LinkedPage( "Benevolence Request Statement Page",
         Description = "The page which summarizes a benevolence request for printing",
         IsRequired = true,
         Key = AttributeKey.BenevolenceRequestStatementPage,
-        Order = 1)]
+        Order = 1 )]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -84,11 +84,12 @@ namespace RockWeb.Blocks.Finance
         {
             get
             {
-                if (_mocBenevolenceResult == null)
+                if ( _mocBenevolenceResult == null )
                 {
                     _mocBenevolenceResult = new BenevolenceResult();
                     _mocBenevolenceResult.LoadAttributes();
                 }
+
                 return _mocBenevolenceResult;
             }
         }
@@ -108,7 +109,7 @@ namespace RockWeb.Blocks.Finance
             get
             {
                 List<BenevolenceResultInfo> result = ViewState["BenevolenceResultInfoState"] as List<BenevolenceResultInfo>;
-                if (result == null)
+                if ( result == null )
                 {
                     result = new List<BenevolenceResultInfo>();
                 }
@@ -127,31 +128,31 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void AddDynamicColumns()
         {
-            var attributes = MockBenevolenceResult.Attributes.Select(a => a.Value).Where(a => a.IsGridColumn).ToList();
+            var attributes = MockBenevolenceResult.Attributes.Select( a => a.Value ).Where( a => a.IsGridColumn ).ToList();
 
-            foreach (var attribute in attributes)
+            foreach ( var attribute in attributes )
             {
-                bool columnExists = gResults.Columns.OfType<AttributeField>().FirstOrDefault(a => a.AttributeId == attribute.Id) != null;
-                if (!columnExists)
+                bool columnExists = gResults.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                if ( !columnExists )
                 {
                     AttributeField boundField = new AttributeField();
                     boundField.DataField = attribute.Key;
                     boundField.AttributeId = attribute.Id;
                     boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Get(attribute.Id);
-                    if (attributeCache != null)
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
+                    if ( attributeCache != null )
                     {
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                     }
 
-                    gResults.Columns.Add(boundField);
+                    gResults.Columns.Add( boundField );
                 }
             }
 
             // Add delete column
             var deleteField = new DeleteField();
-            gResults.Columns.Add(deleteField);
+            gResults.Columns.Add( deleteField );
             deleteField.Click += gResults_Delete;
         }
 
@@ -163,13 +164,13 @@ namespace RockWeb.Blocks.Finance
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
-            base.OnInit(e);
+            base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger(upnlContent);
+            this.AddConfigurationUpdateTrigger( upnlContent );
             gResults.DataKeyNames = new string[] { "TempGuid" };
             gResults.Actions.AddClick += gResults_AddClick;
             gResults.Actions.ShowAdd = true;
@@ -177,21 +178,21 @@ namespace RockWeb.Blocks.Finance
 
             // Gets any existing results and places them into the ViewState
             BenevolenceRequest benevolenceRequest = null;
-            int benevolenceRequestId = PageParameter(PageParameterKey.BenevolenceRequestId).AsInteger();
-            if (!benevolenceRequestId.Equals(0))
+            int benevolenceRequestId = PageParameter( PageParameterKey.BenevolenceRequestId ).AsInteger();
+            if ( !benevolenceRequestId.Equals( 0 ) )
             {
-                benevolenceRequest = new BenevolenceRequestService(new RockContext()).Get(benevolenceRequestId);
+                benevolenceRequest = new BenevolenceRequestService( new RockContext() ).Get( benevolenceRequestId );
             }
 
-            if (benevolenceRequest == null)
+            if ( benevolenceRequest == null )
             {
                 benevolenceRequest = new BenevolenceRequest { Id = 0 };
             }
 
-            if (ViewState["BenevolenceResultInfoState"] == null)
+            if ( ViewState["BenevolenceResultInfoState"] == null )
             {
                 List<BenevolenceResultInfo> brInfoList = new List<BenevolenceResultInfo>();
-                foreach (BenevolenceResult benevolenceResult in benevolenceRequest.BenevolenceResults)
+                foreach ( BenevolenceResult benevolenceResult in benevolenceRequest.BenevolenceResults )
                 {
                     BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
                     benevolenceResultInfo.ResultId = benevolenceResult.Id;
@@ -203,7 +204,7 @@ namespace RockWeb.Blocks.Finance
                     benevolenceResult.LoadAttributes();
                     benevolenceResultInfo.Attributes = benevolenceResult.Attributes;
                     benevolenceResultInfo.AttributeValues = benevolenceResult.AttributeValues;
-                    brInfoList.Add(benevolenceResultInfo);
+                    brInfoList.Add( benevolenceResultInfo );
                 }
 
                 BenevolenceResultsState = brInfoList;
@@ -211,56 +212,54 @@ namespace RockWeb.Blocks.Finance
 
             dlDocuments.ItemDataBound += DlDocuments_ItemDataBound;
 
-            _caseWorkerGroupGuid = GetAttributeValue(AttributeKey.CaseWorkerRole).AsGuidOrNull();
+            _caseWorkerGroupGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
 
             AddDynamicColumns();
         }
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad(EventArgs e)
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad(e);
+            base.OnLoad( e );
 
-            if (!Page.IsPostBack)
+            if ( !Page.IsPostBack )
             {
                 cpCampus.Campuses = CampusCache.All();
-                ShowDetail(PageParameter(PageParameterKey.BenevolenceRequestId).AsInteger());
+                ShowDetail( PageParameter( PageParameterKey.BenevolenceRequestId ).AsInteger() );
             }
             else
             {
                 var rockContext = new RockContext();
-                BenevolenceRequest item = new BenevolenceRequestService(rockContext).Get(hfBenevolenceRequestId.ValueAsInt());
-                if (item == null)
+                BenevolenceRequest item = new BenevolenceRequestService( rockContext ).Get( hfBenevolenceRequestId.ValueAsInt() );
+                if ( item == null )
                 {
                     item = new BenevolenceRequest();
                 }
+
                 item.LoadAttributes();
 
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls(item, phAttributes, false, BlockValidationGroup, 2);
+                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
 
-
-                Rock.Attribute.Helper.AddEditControls(MockBenevolenceResult, phResultAttributes, false, valResultsSummary.ValidationGroup, 2);
+                Rock.Attribute.Helper.AddEditControls( MockBenevolenceResult, phResultAttributes, false, valResultsSummary.ValidationGroup, 2 );
 
                 confirmExit.Enabled = true;
             }
         }
 
-
         /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState(object savedState)
+        protected override void LoadViewState( object savedState )
         {
-            base.LoadViewState(savedState);
+            base.LoadViewState( savedState );
 
             DocumentsState = ViewState["DocumentsState"] as List<int>;
-            if (DocumentsState == null)
+            if ( DocumentsState == null )
             {
                 DocumentsState = new List<int>();
             }
@@ -287,9 +286,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail(PageParameter(PageParameterKey.BenevolenceRequestId).AsInteger());
+            ShowDetail( PageParameter( PageParameterKey.BenevolenceRequestId ).AsInteger() );
         }
 
         /// <summary>
@@ -298,18 +297,18 @@ namespace RockWeb.Blocks.Finance
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gResults_AddClick(object sender, EventArgs e)
+        protected void gResults_AddClick( object sender, EventArgs e )
         {
             dvpResultType.Items.Clear();
             dvpResultType.AutoPostBack = false;
             dvpResultType.Required = true;
-            dvpResultType.DefinedTypeId = DefinedTypeCache.Get(new Guid(Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE)).Id;
+            dvpResultType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ).Id;
             dtbResultSummary.Text = string.Empty;
             dtbAmount.Value = null;
             hfInfoGuid.Value = Guid.NewGuid().ToString();
 
             phResultAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls(MockBenevolenceResult, phResultAttributes, true, valResultsSummary.ValidationGroup, 2);
+            Rock.Attribute.Helper.AddEditControls( MockBenevolenceResult, phResultAttributes, true, valResultsSummary.ValidationGroup, 2 );
 
             mdAddResult.SaveButtonText = "Add";
             mdAddResult.Show();
@@ -321,24 +320,24 @@ namespace RockWeb.Blocks.Finance
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gResults_RowSelected(object sender, RowEventArgs e)
+        protected void gResults_RowSelected( object sender, RowEventArgs e )
         {
             Guid? infoGuid = e.RowKeyValue as Guid?;
             List<BenevolenceResultInfo> resultList = BenevolenceResultsState;
-            var resultInfo = resultList.FirstOrDefault(r => r.TempGuid == infoGuid);
-            if (resultInfo != null)
+            var resultInfo = resultList.FirstOrDefault( r => r.TempGuid == infoGuid );
+            if ( resultInfo != null )
             {
                 dvpResultType.Items.Clear();
                 dvpResultType.AutoPostBack = false;
                 dvpResultType.Required = true;
-                dvpResultType.DefinedTypeId = DefinedTypeCache.Get(new Guid(Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE)).Id;
-                dvpResultType.SetValue(resultInfo.ResultTypeValueId);
+                dvpResultType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ).Id;
+                dvpResultType.SetValue( resultInfo.ResultTypeValueId );
                 dtbResultSummary.Text = resultInfo.ResultSummary;
                 dtbAmount.Value = resultInfo.Amount;
                 hfInfoGuid.Value = e.RowKeyValue.ToString();
 
                 phResultAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls(resultInfo, phResultAttributes, true, valResultsSummary.ValidationGroup, 2);
+                Rock.Attribute.Helper.AddEditControls( resultInfo, phResultAttributes, true, valResultsSummary.ValidationGroup, 2 );
 
                 mdAddResult.SaveButtonText = "Update";
                 mdAddResult.Show();
@@ -351,14 +350,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gResults_Delete(object sender, RowEventArgs e)
+        protected void gResults_Delete( object sender, RowEventArgs e )
         {
             Guid? infoGuid = e.RowKeyValue as Guid?;
             List<BenevolenceResultInfo> resultList = BenevolenceResultsState;
-            var resultInfo = resultList.FirstOrDefault(r => r.TempGuid == infoGuid);
-            if (resultInfo != null)
+            var resultInfo = resultList.FirstOrDefault( r => r.TempGuid == infoGuid );
+            if ( resultInfo != null )
             {
-                resultList.Remove(resultInfo);
+                resultList.Remove( resultInfo );
             }
 
             BenevolenceResultsState = resultList;
@@ -371,52 +370,52 @@ namespace RockWeb.Blocks.Finance
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void btnAddResults_Click(object sender, EventArgs e)
+        protected void btnAddResults_Click( object sender, EventArgs e )
         {
             int? resultType = dvpResultType.SelectedItem.Value.AsIntegerOrNull();
             List<BenevolenceResultInfo> benevolenceResultInfoViewStateList = BenevolenceResultsState;
             Guid? infoGuid = hfInfoGuid.Value.AsGuidOrNull();
 
-            if (infoGuid == null)
+            if ( infoGuid == null )
             {
                 infoGuid = Guid.NewGuid();
             }
-            var resultInfo = benevolenceResultInfoViewStateList.FirstOrDefault(r => r.TempGuid == infoGuid);
-            if (resultInfo != null)
+
+            var resultInfo = benevolenceResultInfoViewStateList.FirstOrDefault( r => r.TempGuid == infoGuid );
+
+            if ( resultInfo != null )
             {
                 resultInfo.Amount = dtbAmount.Value;
                 resultInfo.ResultSummary = dtbResultSummary.Text;
-                if (resultType != null)
+                if ( resultType != null )
                 {
                     resultInfo.ResultTypeValueId = resultType.Value;
                 }
 
                 resultInfo.ResultTypeName = dvpResultType.SelectedItem.Text;
-                Rock.Attribute.Helper.GetEditValues(phResultAttributes, resultInfo);
+                Rock.Attribute.Helper.GetEditValues( phResultAttributes, resultInfo );
             }
             else
             {
                 BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
 
-                //We need the attributes and values so that we can populate them later
-
+                // We need the attributes and values so that we can populate them later
                 benevolenceResultInfo.Attributes = MockBenevolenceResult.Attributes;
                 benevolenceResultInfo.AttributeValues = MockBenevolenceResult.AttributeValues;
 
                 benevolenceResultInfo.Amount = dtbAmount.Value;
 
                 benevolenceResultInfo.ResultSummary = dtbResultSummary.Text;
-                if (resultType != null)
+                if ( resultType != null )
                 {
                     benevolenceResultInfo.ResultTypeValueId = resultType.Value;
                 }
 
                 benevolenceResultInfo.ResultTypeName = dvpResultType.SelectedItem.Text;
                 benevolenceResultInfo.TempGuid = Guid.NewGuid();
-                Rock.Attribute.Helper.GetEditValues(phResultAttributes, benevolenceResultInfo);
-                benevolenceResultInfoViewStateList.Add(benevolenceResultInfo);
+                Rock.Attribute.Helper.GetEditValues( phResultAttributes, benevolenceResultInfo );
+                benevolenceResultInfoViewStateList.Add( benevolenceResultInfo );
             }
-
 
             BenevolenceResultsState = benevolenceResultInfoViewStateList;
 
@@ -431,23 +430,23 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSave_Click(object sender, EventArgs e)
+        protected void lbSave_Click( object sender, EventArgs e )
         {
-            if (Page.IsValid)
+            if ( Page.IsValid )
             {
                 RockContext rockContext = new RockContext();
-                BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService(rockContext);
-                BenevolenceResultService benevolenceResultService = new BenevolenceResultService(rockContext);
+                BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
+                BenevolenceResultService benevolenceResultService = new BenevolenceResultService( rockContext );
 
                 BenevolenceRequest benevolenceRequest = null;
-                int benevolenceRequestId = PageParameter(PageParameterKey.BenevolenceRequestId).AsInteger();
+                int benevolenceRequestId = PageParameter( PageParameterKey.BenevolenceRequestId ).AsInteger();
 
-                if (!benevolenceRequestId.Equals(0))
+                if ( !benevolenceRequestId.Equals( 0 ) )
                 {
-                    benevolenceRequest = benevolenceRequestService.Get(benevolenceRequestId);
+                    benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
                 }
 
-                if (benevolenceRequest == null)
+                if ( benevolenceRequest == null )
                 {
                     benevolenceRequest = new BenevolenceRequest { Id = 0 };
                 }
@@ -461,14 +460,14 @@ namespace RockWeb.Blocks.Finance
                 benevolenceRequest.ProvidedNextSteps = dtbProvidedNextSteps.Text;
                 benevolenceRequest.GovernmentId = dtbGovernmentId.Text;
 
-                if (lapAddress.Location != null)
+                if ( lapAddress.Location != null )
                 {
                     benevolenceRequest.LocationId = lapAddress.Location.Id;
                 }
 
                 benevolenceRequest.RequestedByPersonAliasId = ppPerson.PersonAliasId;
 
-                if (_caseWorkerGroupGuid.HasValue)
+                if ( _caseWorkerGroupGuid.HasValue )
                 {
                     benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedValue.AsIntegerOrNull();
                 }
@@ -480,7 +479,7 @@ namespace RockWeb.Blocks.Finance
                 benevolenceRequest.RequestStatusValueId = dvpRequestStatus.SelectedValue.AsIntegerOrNull();
                 benevolenceRequest.ConnectionStatusValueId = dvpConnectionStatus.SelectedValue.AsIntegerOrNull();
 
-                if (dpRequestDate.SelectedDate.HasValue)
+                if ( dpRequestDate.SelectedDate.HasValue )
                 {
                     benevolenceRequest.RequestDateTime = dpRequestDate.SelectedDate.Value;
                 }
@@ -493,25 +492,25 @@ namespace RockWeb.Blocks.Finance
                 var resultListDB = benevolenceRequest.BenevolenceResults.ToList();
 
                 // remove any Benevolence Results that were removed in the UI
-                foreach (BenevolenceResult resultDB in resultListDB)
+                foreach ( BenevolenceResult resultDB in resultListDB )
                 {
-                    if (!resultListUI.Any(r => r.ResultId == resultDB.Id))
+                    if ( !resultListUI.Any( r => r.ResultId == resultDB.Id ) )
                     {
-                        benevolenceRequest.BenevolenceResults.Remove(resultDB);
-                        benevolenceResultService.Delete(resultDB);
+                        benevolenceRequest.BenevolenceResults.Remove( resultDB );
+                        benevolenceResultService.Delete( resultDB );
                     }
                 }
 
                 // add any Benevolence Results that were added in the UI
-                foreach (BenevolenceResultInfo resultUI in resultListUI)
+                foreach ( BenevolenceResultInfo resultUI in resultListUI )
                 {
-                    var resultDB = resultListDB.FirstOrDefault(r => r.Guid == resultUI.TempGuid);
-                    if (resultDB == null)
+                    var resultDB = resultListDB.FirstOrDefault( r => r.Guid == resultUI.TempGuid );
+                    if ( resultDB == null )
                     {
                         resultDB = new BenevolenceResult();
                         resultDB.BenevolenceRequestId = benevolenceRequest.Id;
                         resultDB.Guid = resultUI.TempGuid;
-                        benevolenceRequest.BenevolenceResults.Add(resultDB);
+                        benevolenceRequest.BenevolenceResults.Add( resultDB );
                     }
 
                     resultDB.Amount = resultUI.Amount;
@@ -522,63 +521,64 @@ namespace RockWeb.Blocks.Finance
                     resultDB.AttributeValues = resultUI.AttributeValues;
                 }
 
-                if (benevolenceRequest.IsValid)
+                if ( benevolenceRequest.IsValid )
                 {
-                    if (benevolenceRequest.Id.Equals(0))
+                    if ( benevolenceRequest.Id.Equals( 0 ) )
                     {
-                        benevolenceRequestService.Add(benevolenceRequest);
+                        benevolenceRequestService.Add( benevolenceRequest );
                     }
 
                     // get attributes
                     benevolenceRequest.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues(phAttributes, benevolenceRequest);
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, benevolenceRequest );
 
-                    rockContext.WrapTransaction(() =>
-                   {
-                       rockContext.SaveChanges();
-                       benevolenceRequest.SaveAttributeValues(rockContext);
-                       benevolenceRequest.BenevolenceResults.ToList().ForEach(r => r.SaveAttributeValues(rockContext));
-                   });
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+                        benevolenceRequest.SaveAttributeValues( rockContext );
+                        benevolenceRequest.BenevolenceResults.ToList().ForEach( r => r.SaveAttributeValues( rockContext ) );
+                    } );
 
                     // update related documents
-                    var documentsService = new BenevolenceRequestDocumentService(rockContext);
-                    var binaryFileService = new BinaryFileService(rockContext);
+                    var documentsService = new BenevolenceRequestDocumentService( rockContext );
+                    var binaryFileService = new BinaryFileService( rockContext );
 
                     // delete any images that were removed
                     var orphanedBinaryFileIds = new List<int>();
-                    var documentsInDb = documentsService.Queryable().Where(b => b.BenevolenceRequestId == benevolenceRequest.Id).ToList();
+                    var documentsInDb = documentsService.Queryable().Where( b => b.BenevolenceRequestId == benevolenceRequest.Id ).ToList();
 
-                    foreach (var document in documentsInDb.Where(i => !DocumentsState.Contains(i.BinaryFileId)))
+                    foreach ( var document in documentsInDb.Where( i => !DocumentsState.Contains( i.BinaryFileId ) ) )
                     {
-                        orphanedBinaryFileIds.Add(document.BinaryFileId);
-                        documentsService.Delete(document);
+                        orphanedBinaryFileIds.Add( document.BinaryFileId );
+                        documentsService.Delete( document );
                     }
 
                     // save documents
                     int documentOrder = 0;
-                    foreach (var binaryFileId in DocumentsState)
+                    foreach ( var binaryFileId in DocumentsState )
                     {
                         // Add or Update the activity type
-                        var document = documentsInDb.FirstOrDefault(i => i.BinaryFileId == binaryFileId);
-                        if (document == null)
+                        var document = documentsInDb.FirstOrDefault( i => i.BinaryFileId == binaryFileId );
+                        if ( document == null )
                         {
                             document = new BenevolenceRequestDocument();
                             document.BenevolenceRequestId = benevolenceRequest.Id;
-                            benevolenceRequest.Documents.Add(document);
+                            benevolenceRequest.Documents.Add( document );
                         }
+
                         document.BinaryFileId = binaryFileId;
                         document.Order = documentOrder;
                         documentOrder++;
                     }
 
                     // Make sure updated binary files are not temporary
-                    foreach (var binaryFile in binaryFileService.Queryable().Where(f => DocumentsState.Contains(f.Id)))
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => DocumentsState.Contains( f.Id ) ) )
                     {
                         binaryFile.IsTemporary = false;
                     }
 
                     // Delete any orphaned images
-                    foreach (var binaryFile in binaryFileService.Queryable().Where(f => orphanedBinaryFileIds.Contains(f.Id)))
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => orphanedBinaryFileIds.Contains( f.Id ) ) )
                     {
                         binaryFile.IsTemporary = true;
                     }
@@ -586,14 +586,14 @@ namespace RockWeb.Blocks.Finance
                     rockContext.SaveChanges();
 
                     // redirect back to parent
-                    var personId = this.PageParameter("PersonId").AsIntegerOrNull();
+                    var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
                     var qryParams = new Dictionary<string, string>();
-                    if (personId.HasValue)
+                    if ( personId.HasValue )
                     {
-                        qryParams.Add("PersonId", personId.ToString());
+                        qryParams.Add( "PersonId", personId.ToString() );
                     }
 
-                    NavigateToParentPage(qryParams);
+                    NavigateToParentPage( qryParams );
                 }
             }
         }
@@ -603,16 +603,16 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click(object sender, EventArgs e)
+        protected void lbCancel_Click( object sender, EventArgs e )
         {
-            var personId = this.PageParameter("PersonId").AsIntegerOrNull();
+            var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
             var qryParams = new Dictionary<string, string>();
-            if (personId.HasValue)
+            if ( personId.HasValue )
             {
-                qryParams.Add("PersonId", personId.ToString());
+                qryParams.Add( "PersonId", personId.ToString() );
             }
 
-            NavigateToParentPage(qryParams);
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
@@ -620,12 +620,12 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbPrint_Click(object sender, EventArgs e)
+        protected void lbPrint_Click( object sender, EventArgs e )
         {
-            var benevolenceRequestId = this.PageParameter(PageParameterKey.BenevolenceRequestId).AsIntegerOrNull();
-            if (benevolenceRequestId.HasValue && !benevolenceRequestId.Equals(0) && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
+            var benevolenceRequestId = this.PageParameter( PageParameterKey.BenevolenceRequestId ).AsIntegerOrNull();
+            if ( benevolenceRequestId.HasValue && !benevolenceRequestId.Equals( 0 ) && !string.IsNullOrEmpty( GetAttributeValue( "BenevolenceRequestStatementPage" ) ) )
             {
-                NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { PageParameterKey.BenevolenceRequestId, benevolenceRequestId.ToString() } });
+                NavigateToLinkedPage( "BenevolenceRequestStatementPage", new Dictionary<string, string> { { PageParameterKey.BenevolenceRequestId, benevolenceRequestId.ToString() } } );
             }
         }
 
@@ -634,61 +634,61 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ppPerson_SelectPerson(object sender, EventArgs e)
+        protected void ppPerson_SelectPerson( object sender, EventArgs e )
         {
-            if (ppPerson.PersonId != null)
+            if ( ppPerson.PersonId != null )
             {
-                Person person = new PersonService(new RockContext()).Get(ppPerson.PersonId.Value);
-                if (person != null)
+                Person person = new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value );
+                if ( person != null )
                 {
                     // Make sure that the FirstName box gets either FirstName or NickName of person. 
-                    if (!string.IsNullOrWhiteSpace(person.FirstName))
+                    if ( !string.IsNullOrWhiteSpace( person.FirstName ) )
                     {
                         dtbFirstName.Text = person.FirstName;
                     }
-                    else if (!string.IsNullOrWhiteSpace(person.NickName))
+                    else if ( !string.IsNullOrWhiteSpace( person.NickName ) )
                     {
                         dtbFirstName.Text = person.NickName;
                     }
 
-                    //If both FirstName and NickName are blank, let them edit it manually
-                    dtbFirstName.Enabled = string.IsNullOrWhiteSpace(dtbFirstName.Text);
+                    // If both FirstName and NickName are blank, let them edit it manually
+                    dtbFirstName.Enabled = string.IsNullOrWhiteSpace( dtbFirstName.Text );
 
                     dtbLastName.Text = person.LastName;
-                    //If both LastName is blank, let them edit it manually
-                    dtbLastName.Enabled = string.IsNullOrWhiteSpace(dtbLastName.Text);
-                    ;
 
-                    dvpConnectionStatus.SetValue(person.ConnectionStatusValueId);
+                    // If both LastName is blank, let them edit it manually
+                    dtbLastName.Enabled = string.IsNullOrWhiteSpace( dtbLastName.Text );
+
+                    dvpConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     dvpConnectionStatus.Enabled = false;
 
-                    var homePhoneType = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid());
-                    if (homePhoneType != null)
+                    var homePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                    if ( homePhoneType != null )
                     {
-                        var homePhone = person.PhoneNumbers.FirstOrDefault(n => n.NumberTypeValueId == homePhoneType.Id);
-                        if (homePhone != null)
+                        var homePhone = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == homePhoneType.Id );
+                        if ( homePhone != null )
                         {
                             pnbHomePhone.Text = homePhone.NumberFormatted;
                             pnbHomePhone.Enabled = false;
                         }
                     }
 
-                    var mobilePhoneType = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid());
-                    if (mobilePhoneType != null)
+                    var mobilePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    if ( mobilePhoneType != null )
                     {
-                        var mobileNumber = person.PhoneNumbers.FirstOrDefault(n => n.NumberTypeValueId == mobilePhoneType.Id);
-                        if (mobileNumber != null)
+                        var mobileNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneType.Id );
+                        if ( mobileNumber != null )
                         {
                             pnbCellPhone.Text = mobileNumber.NumberFormatted;
                             pnbCellPhone.Enabled = false;
                         }
                     }
 
-                    var workPhoneType = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid());
-                    if (workPhoneType != null)
+                    var workPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                    if ( workPhoneType != null )
                     {
-                        var workPhone = person.PhoneNumbers.FirstOrDefault(n => n.NumberTypeValueId == workPhoneType.Id);
-                        if (workPhone != null)
+                        var workPhone = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == workPhoneType.Id );
+                        if ( workPhone != null )
                         {
                             pnbWorkPhone.Text = workPhone.NumberFormatted;
                             pnbWorkPhone.Enabled = false;
@@ -698,16 +698,16 @@ namespace RockWeb.Blocks.Finance
                     ebEmail.Text = person.Email;
                     ebEmail.Enabled = false;
 
-                    lapAddress.SetValue(person.GetHomeLocation());
+                    lapAddress.SetValue( person.GetHomeLocation() );
                     lapAddress.Enabled = false;
 
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
-                    int? requestId = PageParameter(PageParameterKey.BenevolenceRequestId).AsIntegerOrNull();
+                    int? requestId = PageParameter( PageParameterKey.BenevolenceRequestId ).AsIntegerOrNull();
 
-                    if (!cpCampus.SelectedCampusId.HasValue && (e != null || (requestId.HasValue && requestId == 0)))
+                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || ( requestId.HasValue && requestId == 0 ) ) )
                     {
                         var personCampus = person.GetCampus();
-                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : (int?)null;
+                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : ( int? ) null;
                     }
                 }
             }
@@ -724,14 +724,14 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        protected void fileUpDoc_FileUploaded(object sender, EventArgs e)
+        protected void fileUpDoc_FileUploaded( object sender, EventArgs e )
         {
-            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
+            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
 
-            if (fileUpDoc.BinaryFileId.HasValue)
+            if ( fileUpDoc.BinaryFileId.HasValue )
             {
-                DocumentsState.Add(fileUpDoc.BinaryFileId.Value);
-                BindDocuments(true);
+                DocumentsState.Add( fileUpDoc.BinaryFileId.Value );
+                BindDocuments( true );
             }
         }
 
@@ -740,13 +740,13 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
-        protected void fileUpDoc_FileRemoved(object sender, FileUploaderEventArgs e)
+        protected void fileUpDoc_FileRemoved( object sender, FileUploaderEventArgs e )
         {
-            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
-            if (e.BinaryFileId.HasValue)
+            var fileUpDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
+            if ( e.BinaryFileId.HasValue )
             {
-                DocumentsState.Remove(e.BinaryFileId.Value);
-                BindDocuments(true);
+                DocumentsState.Remove( e.BinaryFileId.Value );
+                BindDocuments( true );
             }
         }
 
@@ -755,16 +755,15 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="DataListItemEventArgs"/> instance containing the event data.</param>
-        private void DlDocuments_ItemDataBound(object sender, DataListItemEventArgs e)
+        private void DlDocuments_ItemDataBound( object sender, DataListItemEventArgs e )
         {
             Guid binaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS.AsGuid();
-            var fileupDoc = e.Item.FindControl("fileupDoc") as Rock.Web.UI.Controls.FileUploader;
-            if (fileupDoc != null)
+            var fileupDoc = e.Item.FindControl( "fileupDoc" ) as Rock.Web.UI.Controls.FileUploader;
+            if ( fileupDoc != null )
             {
                 fileupDoc.BinaryFileTypeGuid = binaryFileTypeGuid;
             }
         }
-
 
         #endregion
 
@@ -774,13 +773,13 @@ namespace RockWeb.Blocks.Finance
         /// Binds the documents.
         /// </summary>
         /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
-        private void BindDocuments(bool canEdit)
+        private void BindDocuments( bool canEdit )
         {
             var ds = DocumentsState.ToList();
 
-            if (ds.Count() < 6)
+            if ( ds.Count() < 6 )
             {
-                ds.Add(0);
+                ds.Add( 0 );
             }
 
             dlDocuments.DataSource = ds;
@@ -791,31 +790,32 @@ namespace RockWeb.Blocks.Finance
         /// Shows the detail.
         /// </summary>
         /// <param name="benevolenceRequestId">The benevolence request identifier</param>
-        public void ShowDetail(int benevolenceRequestId)
+        public void ShowDetail( int benevolenceRequestId )
         {
             BenevolenceRequest benevolenceRequest = null;
             var rockContext = new RockContext();
-            BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService(rockContext);
-            if (!benevolenceRequestId.Equals(0))
+            BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
+            if ( !benevolenceRequestId.Equals( 0 ) )
             {
-                benevolenceRequest = benevolenceRequestService.Get(benevolenceRequestId);
-                pdAuditDetails.SetEntity(benevolenceRequest, ResolveRockUrl("~"));
+                benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
+                pdAuditDetails.SetEntity( benevolenceRequest, ResolveRockUrl( "~" ) );
             }
 
-            if (benevolenceRequest == null)
+            if ( benevolenceRequest == null )
             {
                 benevolenceRequest = new BenevolenceRequest { Id = 0 };
                 benevolenceRequest.RequestDateTime = RockDateTime.Now;
-                var personId = this.PageParameter("PersonId").AsIntegerOrNull();
-                if (personId.HasValue)
+                var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
+                if ( personId.HasValue )
                 {
-                    var person = new PersonService(rockContext).Get(personId.Value);
-                    if (person != null)
+                    var person = new PersonService( rockContext ).Get( personId.Value );
+                    if ( person != null )
                     {
                         benevolenceRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
                         benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
                     }
                 }
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -829,7 +829,7 @@ namespace RockWeb.Blocks.Finance
             dtbProvidedNextSteps.Text = benevolenceRequest.ProvidedNextSteps;
             dpRequestDate.SelectedDate = benevolenceRequest.RequestDateTime;
 
-            if (benevolenceRequest.Campus != null)
+            if ( benevolenceRequest.Campus != null )
             {
                 cpCampus.SelectedCampusId = benevolenceRequest.CampusId;
             }
@@ -838,82 +838,82 @@ namespace RockWeb.Blocks.Finance
                 cpCampus.SelectedIndex = 0;
             }
 
-            if (benevolenceRequest.RequestedByPersonAlias != null)
+            if ( benevolenceRequest.RequestedByPersonAlias != null )
             {
-                ppPerson.SetValue(benevolenceRequest.RequestedByPersonAlias.Person);
+                ppPerson.SetValue( benevolenceRequest.RequestedByPersonAlias.Person );
             }
             else
             {
-                ppPerson.SetValue(null);
+                ppPerson.SetValue( null );
             }
 
-            if (benevolenceRequest.HomePhoneNumber != null)
+            if ( benevolenceRequest.HomePhoneNumber != null )
             {
                 pnbHomePhone.Text = benevolenceRequest.HomePhoneNumber;
             }
 
-            if (benevolenceRequest.CellPhoneNumber != null)
+            if ( benevolenceRequest.CellPhoneNumber != null )
             {
                 pnbCellPhone.Text = benevolenceRequest.CellPhoneNumber;
             }
 
-            if (benevolenceRequest.WorkPhoneNumber != null)
+            if ( benevolenceRequest.WorkPhoneNumber != null )
             {
                 pnbWorkPhone.Text = benevolenceRequest.WorkPhoneNumber;
             }
 
-            lapAddress.SetValue(benevolenceRequest.Location);
+            lapAddress.SetValue( benevolenceRequest.Location );
 
-            LoadDropDowns(benevolenceRequest);
+            LoadDropDowns( benevolenceRequest );
 
-            if (benevolenceRequest.RequestStatusValueId != null)
+            if ( benevolenceRequest.RequestStatusValueId != null )
             {
-                dvpRequestStatus.SetValue(benevolenceRequest.RequestStatusValueId);
+                dvpRequestStatus.SetValue( benevolenceRequest.RequestStatusValueId );
 
-                if (benevolenceRequest.RequestStatusValue.Value == "Approved")
+                if ( benevolenceRequest.RequestStatusValue.Value == "Approved" )
                 {
                     hlStatus.Text = "Approved";
                     hlStatus.LabelType = LabelType.Success;
                 }
 
-                if (benevolenceRequest.RequestStatusValue.Value == "Denied")
+                if ( benevolenceRequest.RequestStatusValue.Value == "Denied" )
                 {
                     hlStatus.Text = "Denied";
                     hlStatus.LabelType = LabelType.Danger;
                 }
             }
 
-            if (benevolenceRequest.ConnectionStatusValueId != null)
+            if ( benevolenceRequest.ConnectionStatusValueId != null )
             {
-                dvpConnectionStatus.SetValue(benevolenceRequest.ConnectionStatusValueId);
+                dvpConnectionStatus.SetValue( benevolenceRequest.ConnectionStatusValueId );
             }
 
-            if (_caseWorkerGroupGuid.HasValue)
+            if ( _caseWorkerGroupGuid.HasValue )
             {
-                ddlCaseWorker.SetValue(benevolenceRequest.CaseWorkerPersonAliasId);
+                ddlCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAliasId );
             }
             else
             {
-                if (benevolenceRequest.CaseWorkerPersonAlias != null)
+                if ( benevolenceRequest.CaseWorkerPersonAlias != null )
                 {
-                    ppCaseWorker.SetValue(benevolenceRequest.CaseWorkerPersonAlias.Person);
+                    ppCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAlias.Person );
                 }
                 else
                 {
-                    ppCaseWorker.SetValue(null);
+                    ppCaseWorker.SetValue( null );
                 }
             }
 
             BindGridFromViewState();
 
-            DocumentsState = benevolenceRequest.Documents.OrderBy(s => s.Order).Select(s => s.BinaryFileId).ToList();
-            BindDocuments(true);
+            DocumentsState = benevolenceRequest.Documents.OrderBy( s => s.Order ).Select( s => s.BinaryFileId ).ToList();
+            BindDocuments( true );
 
             benevolenceRequest.LoadAttributes();
-            Rock.Attribute.Helper.AddEditControls(benevolenceRequest, phAttributes, true, BlockValidationGroup, 2);
+            Rock.Attribute.Helper.AddEditControls( benevolenceRequest, phAttributes, true, BlockValidationGroup, 2 );
 
             // call the OnSelectPerson of the person picker which will update the UI based on the selected person
-            ppPerson_SelectPerson(null, null);
+            ppPerson_SelectPerson( null, null );
 
             hfBenevolenceRequestId.Value = benevolenceRequest.Id.ToString();
         }
@@ -931,32 +931,32 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns(BenevolenceRequest benevolenceRequest)
+        private void LoadDropDowns( BenevolenceRequest benevolenceRequest )
         {
-            dvpRequestStatus.DefinedTypeId = DefinedTypeCache.Get(new Guid(Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS)).Id;
-            dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get(new Guid(Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS)).Id;
+            dvpRequestStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ).Id;
+            dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
 
-            if (_caseWorkerGroupGuid.HasValue)
+            if ( _caseWorkerGroupGuid.HasValue )
             {
-                var personList = new GroupMemberService(new RockContext())
-                    .Queryable("Person, Group")
-                    .Where(gm => gm.Group.Guid == _caseWorkerGroupGuid.Value)
-                    .Select(gm => gm.Person)
+                var personList = new GroupMemberService( new RockContext() )
+                    .Queryable( "Person, Group" )
+                    .Where( gm => gm.Group.Guid == _caseWorkerGroupGuid.Value )
+                    .Select( gm => gm.Person )
                     .ToList();
 
                 string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
-                if (benevolenceRequest.CaseWorkerPersonAlias != null &&
+                if ( benevolenceRequest.CaseWorkerPersonAlias != null &&
                     benevolenceRequest.CaseWorkerPersonAlias.Person != null &&
-                    !personList.Select(p => p.Id).ToList().Contains(benevolenceRequest.CaseWorkerPersonAlias.Person.Id))
+                    !personList.Select( p => p.Id ).ToList().Contains( benevolenceRequest.CaseWorkerPersonAlias.Person.Id ) )
                 {
-                    personList.Add(benevolenceRequest.CaseWorkerPersonAlias.Person);
+                    personList.Add( benevolenceRequest.CaseWorkerPersonAlias.Person );
                 }
 
-                ddlCaseWorker.DataSource = personList.OrderBy(p => p.NickName).ThenBy(p => p.LastName).ToList();
+                ddlCaseWorker.DataSource = personList.OrderBy( p => p.NickName ).ThenBy( p => p.LastName ).ToList();
                 ddlCaseWorker.DataTextField = "FullName";
                 ddlCaseWorker.DataValueField = "PrimaryAliasId";
                 ddlCaseWorker.DataBind();
-                ddlCaseWorker.Items.Insert(0, new ListItem());
+                ddlCaseWorker.Items.Insert( 0, new ListItem() );
 
                 ppCaseWorker.Visible = false;
                 ddlCaseWorker.Visible = true;
@@ -1010,18 +1010,21 @@ namespace RockWeb.Blocks.Finance
             [DataMember]
             public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
-            public Dictionary<string, string> AttributeValueDefaults { get { return null; } }
-
-            public string GetAttributeValue(string key)
+            public Dictionary<string, string> AttributeValueDefaults
             {
-                if (this.AttributeValues != null &&
-                    this.AttributeValues.ContainsKey(key))
+                get { return null; }
+            }
+
+            public string GetAttributeValue( string key )
+            {
+                if ( this.AttributeValues != null &&
+                    this.AttributeValues.ContainsKey( key ) )
                 {
                     return this.AttributeValues[key].Value;
                 }
 
-                if (this.Attributes != null &&
-                    this.Attributes.ContainsKey(key))
+                if ( this.Attributes != null &&
+                    this.Attributes.ContainsKey( key ) )
                 {
                     return this.Attributes[key].DefaultValue;
                 }
@@ -1029,10 +1032,10 @@ namespace RockWeb.Blocks.Finance
                 return null;
             }
 
-            public List<string> GetAttributeValues(string key)
+            public List<string> GetAttributeValues( string key )
             {
-                string value = GetAttributeValue(key);
-                if (!string.IsNullOrWhiteSpace(value))
+                string value = GetAttributeValue( key );
+                if ( !string.IsNullOrWhiteSpace( value ) )
                 {
                     return value.SplitDelimitedValues().ToList();
                 }
@@ -1040,18 +1043,16 @@ namespace RockWeb.Blocks.Finance
                 return new List<string>();
             }
 
-            public void SetAttributeValue(string key, string value)
+            public void SetAttributeValue( string key, string value )
             {
-                if (this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey(key))
+                if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
                 {
                     this.AttributeValues[key].Value = value;
                 }
             }
         }
 
-        #endregion
-
-
+        #endregion BenevolenceResultInfo
     }
 }

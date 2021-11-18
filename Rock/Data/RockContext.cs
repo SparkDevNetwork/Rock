@@ -2181,7 +2181,7 @@ namespace Rock.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             ContextHelper.AddConfigurations( modelBuilder );
-            
+
             try
             {
                 //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
@@ -2244,10 +2244,12 @@ namespace Rock.Data
         /// No metrics will be captured (default)
         /// </summary>
         Off = 0,
+
         /// <summary>
         /// Just the number of queries will be captured.
         /// </summary>
         Count = 1,
+
         /// <summary>
         /// All metrics will the captured (count and a copy of the SQL)
         /// </summary>
