@@ -137,6 +137,8 @@
                         <hr />
 
                         <div class="row">
+                            <asp:HiddenField ID="hfAddressRequired" runat="server" />
+
                             <div class="<%= GetColumnStyle(6) %>">
                                 <Rock:AddressControl ID="acAddress" Label="Address" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                             </div>
