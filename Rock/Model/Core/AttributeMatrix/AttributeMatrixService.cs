@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Data Access/Service class for <see cref="AttributeMatrix"/> entities.
     /// </summary>
     public partial class AttributeMatrixService : Service<AttributeMatrix>
     {

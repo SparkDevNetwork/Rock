@@ -1621,7 +1621,7 @@
     <Compile Include="Model\Engagement\StepWorkflowTrigger\StepWorkflowTriggerService.cs" />
     <Compile Include="Badge\Component\StreakEngagement.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
-    <Compile Include="Model\AttributeMatrixService.Partial.cs" />
+    <Compile Include="Model\Core\AttributeMatrix\AttributeMatrixService.cs" />
     <Compile Include="Plugin\HotFixes\052_MigrationRollupsForV8_1.cs" />
     <Compile Include="Plugin\HotFixes\053_DuplicateDataIntegrityReports.cs" />
     <Compile Include="Plugin\HotFixes\054_MigrationRollupsForV8_2.cs" />
@@ -2113,9 +2113,9 @@
     <Compile Include="Model\Event\Attendance\Attendance.cs" />
     <Compile Include="Model\Event\AttendanceCode\AttendanceCode.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrenceService.cs" />
-    <Compile Include="Model\AttributeMatrix.cs" />
+    <Compile Include="Model\Core\AttributeMatrix\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
-    <Compile Include="Model\AttributeMatrixTemplate.cs" />
+    <Compile Include="Model\Core\AttributeMatrixTemplate\AttributeMatrixTemplate.cs" />
     <Compile Include="Model\AttributeValueHistorical.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimCampusService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyCurrentService.CodeGenerated.cs" />
@@ -2125,7 +2125,7 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceCampusService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.CodeGenerated.cs" />
-    <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
+    <Compile Include="Model\Core\AttributeMatrixTemplate\AttributeMatrixTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceOccurrenceService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AttributeValueHistoricalService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.CodeGenerated.cs" />
@@ -2451,7 +2451,7 @@
     <Compile Include="Model\Location.cs" />
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
-    <Compile Include="Model\Core\Metaphone\Metaphone.cs" />
+    <Compile Include="Model\Meta\Metaphone\Metaphone.cs" />
     <Compile Include="Model\Reporting\Metric\Metric.cs" />
     <Compile Include="Model\Reporting\MetricCategory\MetricCategory.cs" />
     <Compile Include="Model\Reporting\MetricPartition\MetricPartition.cs" />
