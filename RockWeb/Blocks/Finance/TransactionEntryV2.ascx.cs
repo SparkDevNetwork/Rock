@@ -18,11 +18,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Financial;
@@ -3070,6 +3072,8 @@ mission. We are so grateful for your commitment.</p>
             batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
             rockContext.SaveChanges();
 
+            Task.Run( () => GiftWasGivenMessage.PublishTransactionEvent( transaction.Id, GiftEventTypes.GiftSuccess ) );
+
             HistoryService.SaveChanges(
                 rockContext,
                 typeof( FinancialBatch ),
@@ -3229,6 +3233,8 @@ mission. We are so grateful for your commitment.</p>
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             financialScheduledTransactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
+
+            Task.Run( () => ScheduledGiftModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
 
             BindScheduledTransactions();
         }

@@ -1979,6 +1979,46 @@ namespace Rock.Blocks.Event
                     .ToList();
             }
 
+            // If we don't have a session that means we are starting new. Create
+            // an empty session.
+            if ( session == null && currentPerson != null )
+            {
+                session = new RegistrationEntryBlockSession
+                {
+                    RegistrationSessionGuid = Guid.NewGuid()
+                };
+
+                session.Registrants = new List<ViewModel.Blocks.RegistrantInfo>();
+
+                if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
+                {
+                    // Fill in first registrant info as a member of the family.
+                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    {
+                        Guid = Guid.NewGuid(),
+                        FamilyGuid = currentPerson.PrimaryFamily.Guid,
+                        IsOnWaitList = false,
+                        PersonGuid = currentPerson.Guid,
+                        FeeItemQuantities = new Dictionary<Guid, int>(),
+                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, formModels )
+                    } );
+                }
+                else
+                {
+                    // Only fill in the first registrant with existing values
+                    // as a "new" person if family members are not shown.
+                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    {
+                        Guid = Guid.NewGuid(),
+                        FamilyGuid = Guid.NewGuid(),
+                        IsOnWaitList = false,
+                        PersonGuid = null,
+                        FeeItemQuantities = new Dictionary<Guid, int>(),
+                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, formModels )
+                    } );
+                }
+            }
+
             // Determine the starting point
             var allowRegistrationUpdates = !isExistingRegistration || context.RegistrationSettings.AllowExternalRegistrationUpdates;
             var startAtBeginning = !isExistingRegistration ||

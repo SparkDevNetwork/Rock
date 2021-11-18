@@ -24,13 +24,12 @@ namespace Rock.Model
     /// <summary>
     /// Represents a benevolence type that will be associated with a benevolence request.
     /// </summary>
-    [RockDomain("Finance")]
-    [Table("BenevolenceType")]
+    [RockDomain( "Finance" )]
+    [Table( "BenevolenceType" )]
     [DataContract]
     public partial class BenevolenceType : Model<BenevolenceType>
     {
-
-        #region entity properties
+        #region Entity Properties
         /// <summary>
         /// Gets or sets the <see cref="Name"/> value on the <see cref="BenevolenceType"/>. This property is required.
         /// </summary>
@@ -38,8 +37,8 @@ namespace Rock.Model
         /// A <see cref="System.String" /> containing the <see cref="Name"/>.
         /// </value>
         [Required]
-        [MaxLength(50)]
-        [DataMember(IsRequired = true)]
+        [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
         [Previewable]
         public string Name { get; set; }
 
@@ -50,7 +49,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> containing the <see cref="Description"/>.
         /// </value>
         [Required]
-        [DataMember(IsRequired = true)]
+        [DataMember( IsRequired = true )]
         [Previewable]
         public string Description { get; set; }
 
@@ -61,7 +60,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean" /> containing the <see cref="IsActive"/>.
         /// </value>
         [Required]
-        [DataMember(IsRequired = true)]
+        [DataMember( IsRequired = true )]
         [Previewable]
         public bool IsActive { get; set; }
 
@@ -73,14 +72,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string RequestLavaTemplate { get; set; }
-        #endregion
+        #endregion Entity Properties
 
         #region Navigation Properties
-         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.BenevolenceWorkflow"></see> that is associated with a <see cref="Rock.Model.BenevolenceType"></see>.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
+        /// A collection of <see cref="Rock.Model.BenevolenceWorkflow"></see> that are associated with a <see cref="Rock.Model.BenevolenceType"></see>.
         /// </value>
         [LavaVisible]
         public virtual ICollection<BenevolenceWorkflow> BenevolenceWorkflows
@@ -88,7 +87,8 @@ namespace Rock.Model
             get { return _benevolenceWorkflows ?? ( _benevolenceWorkflows = new Collection<BenevolenceWorkflow>() ); }
             set { _benevolenceWorkflows = value; }
         }
-         private ICollection<BenevolenceWorkflow> _benevolenceWorkflows;
-        #endregion
+
+        private ICollection<BenevolenceWorkflow> _benevolenceWorkflows;
+        #endregion Navigation Properties
     }
 }

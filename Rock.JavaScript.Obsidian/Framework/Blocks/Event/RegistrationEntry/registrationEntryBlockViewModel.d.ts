@@ -183,7 +183,7 @@ export type RegistrantInfo = {
     familyGuid: Guid;
 
     /** If the person were an existing person, this is his/her guid */
-    personGuid: Guid;
+    personGuid: Guid | null;
     fieldValues: Record<Guid, unknown>;
     feeItemQuantities: Record<Guid, number>;
 

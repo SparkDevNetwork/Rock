@@ -31,7 +31,7 @@ import Page from "../../Util/page";
 import { RockDateTime } from "../../Util/rockDateTime";
 import { Person } from "../../ViewModels";
 import RegistrationEntryIntro from "./RegistrationEntry/intro";
-import { default as Registrants, default as RegistrationEntryRegistrants } from "./RegistrationEntry/registrants";
+import { default as RegistrationEntryRegistrants } from "./RegistrationEntry/registrants";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd";
 import { RegistrationEntryBlockArgs } from "./RegistrationEntry/registrationEntryBlockArgs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from "./RegistrationEntry/registrationEntryBlockViewModel";
@@ -119,7 +119,7 @@ export function getDefaultRegistrantInfo (currentPerson: Person | null, viewMode
         fieldValues: {},
         feeItemQuantities: {},
         guid: newGuid(),
-        personGuid: ""
+        personGuid: null
     } as RegistrantInfo;
 }
 
@@ -142,7 +142,6 @@ export default defineComponent({
     name: "Event.RegistrationEntry",
     components: {
         RockButton,
-        Registrants,
         RegistrationEntryIntro,
         RegistrationEntryRegistrants,
         RegistrationEntryRegistrationStart,

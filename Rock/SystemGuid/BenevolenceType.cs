@@ -14,23 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Data.Entity.ModelConfiguration;
-
-namespace Rock.Model
+namespace Rock.SystemGuid
 {
     /// <summary>
-    /// BenevolenceWorkflow Configuration class.
+    /// 
     /// </summary>
-    public partial class BenevolenceWorkflowConfiguration : EntityTypeConfiguration<BenevolenceWorkflow>
+    public static class BenevolenceType
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BenevolenceWorkflowConfiguration" /> class.
+        /// Benevolence - BenevolenceType Guid
         /// </summary>
-        public BenevolenceWorkflowConfiguration()
-        {
-            this.HasRequired(p => p.BenevolenceType).WithMany(p => p.BenevolenceWorkflows).HasForeignKey(p => p.BenevolenceTypeId).WillCascadeOnDelete(false);
-            this.HasRequired(p => p.WorkflowType).WithMany().HasForeignKey(p => p.WorkflowTypeId).WillCascadeOnDelete(true);
-        }
+        public const string BENEVOLENCE = "B4A7C50B-E399-452E-BA37-1ABD6B15482C";
     }
 }
