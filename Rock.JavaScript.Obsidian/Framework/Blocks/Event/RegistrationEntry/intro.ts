@@ -143,13 +143,6 @@ export default defineComponent({
                 this.registrationEntryState.registrants[i].isOnWaitList = true;
             }
 
-            // If there are family members, set the first registrant to be the first (feature parity with the original block)
-            if (availableFamilyMembers.length && this.registrationEntryState.registrants.length) {
-                const familyMember = availableFamilyMembers[0];
-                const registrant = this.registrationEntryState.registrants[0];
-                registrant.personGuid = familyMember.guid;
-            }
-
             this.$emit("next");
         },
     },
