@@ -1337,7 +1337,6 @@ namespace RockWeb.Blocks.Crm
             // Adult Address
             isRequired = SetControl( AttributeKey.AdultAddress, acAddress, null );
             acAddress.Required = isRequired;
-            hfAddressRequired.Value = isRequired.ToStringSafe();
 
             // Check for Current Family
             SetCurrentFamilyValues();
