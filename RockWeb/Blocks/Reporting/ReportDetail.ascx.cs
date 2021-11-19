@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         private const string _ViewStateKeyShowResults = "ShowResults";
-        private string _SettingKeyShowResults = "report-show-results-{blockId}";
+        private string _settingKeyShowResults = "report-show-results-{blockId}";
 
         protected bool ShowResults
         {
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     ViewState[_ViewStateKeyShowResults] = value;
 
-                    SetUserPreference( _SettingKeyShowResults, value.ToString() );
+                    SetUserPreference( _settingKeyShowResults, value.ToString() );
                 }
 
                 pnlResultsGrid.Visible = this.ShowResults;
@@ -141,7 +141,6 @@ namespace RockWeb.Blocks.Reporting
                 {
                     btnToggleResults.Text = "Hide Results <i class='fa fa-chevron-up'></i>";
                     btnToggleResults.ToolTip = "Hide Results";
-
                 }
                 else
                 {
@@ -181,7 +180,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             // Create unique user setting keys for this block.
-            _SettingKeyShowResults = _SettingKeyShowResults.Replace( "{blockId}", this.BlockId.ToString() );
+            _settingKeyShowResults = _settingKeyShowResults.Replace( "{blockId}", this.BlockId.ToString() );
 
             gReport.GridRebind += gReport_GridRebind;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
@@ -207,7 +206,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                this.ShowResults = GetUserPreference( _SettingKeyShowResults ).AsBoolean( true );
+                this.ShowResults = GetUserPreference( _settingKeyShowResults ).AsBoolean( true );
 
                 var reportId = GetReportId();
                 if ( reportId.HasValue )
@@ -560,10 +559,10 @@ namespace RockWeb.Blocks.Reporting
         protected void btnSave_Click( object sender, EventArgs e )
         {
             cvSecurityError.IsValid = true;
-            var AddAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
+            var addAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
             var rptCategory = CategoryCache.Get( cpCategory.SelectedValueAsInt( false ).Value );
 
-            if ( !AddAdminToCreator && !rptCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( !addAdminToCreator && !rptCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 cvSecurityError.IsValid = false;
                 cvSecurityError.ErrorMessage = string.Format( "You are not authorized to create or edit Reports for the Category '{0}'.", rptCategory.Name );
@@ -873,6 +872,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="entityTypeId">The entity type identifier.</param>
         private void UpdateControlsForEntityType( int? entityTypeId )
         {
+            // If the DataView picker already has a value, and it's not the same type as the entity type ID.
+            if ( dvpDataView.SelectedValueAsId().HasValue && dvpDataView.EntityTypeId != entityTypeId )
+            {
+                dvpDataView.SetValue( null );
+            }
+
             dvpDataView.EntityTypeId = entityTypeId;
             dvpDataView.Enabled = entityTypeId.HasValue;
             btnAddField.Enabled = entityTypeId.HasValue;
@@ -1036,7 +1041,8 @@ namespace RockWeb.Blocks.Reporting
             if ( report == null )
             {
                 report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
-                // hide the panel drawer that show created and last modified dates
+
+                // Hide the panel drawer that shows created and last modified dates.
                 pdAuditDetails.Visible = false;
             }
             else
@@ -1166,8 +1172,10 @@ namespace RockWeb.Blocks.Reporting
             var componentType = EntityTypeCache.Get( dataSelectComponentId, rockContext ).GetEntityType();
 
             if ( componentType == null )
+            {
                 return null;
-
+            }
+                
             string dataSelectComponentTypeName = componentType.FullName;
 
             return DataSelectContainer.GetComponent( dataSelectComponentTypeName );
@@ -1220,11 +1228,17 @@ namespace RockWeb.Blocks.Reporting
             etpEntityType.SelectedEntityTypeId = entityTypeId;
             UpdateControlsForEntityType( etpEntityType.SelectedEntityTypeId );
             dvpDataView.SetValue( dataViewId );
+            if ( dataViewId.HasValue )
+            {
+                // If the Data View has a value, then prevent the report admin from changing the entity type since it was decided by the Data View already.
+                // If the Data View is changed, then the page should reload the entire Edit control since options will change.
+                etpEntityType.Enabled = false;
+            }
+
             nbFetchTop.Text = report.FetchTop.ToString();
             tbQueryHint.Text = report.QueryHint;
 
             ReportFieldsDictionary = new List<ReportFieldInfo>();
-
 
             kvSortFields.CustomKeys = new Dictionary<string, string>();
             kvSortFields.CustomValues = new Dictionary<string, string>();
@@ -1257,7 +1271,6 @@ namespace RockWeb.Blocks.Reporting
                 ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportField.Guid, ReportFieldType = reportField.ReportFieldType, FieldSelection = fieldSelection } );
                 AddFieldPanelWidget( reportField.Guid, reportField.ReportFieldType, fieldSelection, false, rockContext, true, reportField );
             }
-
         }
 
         /// <summary>
