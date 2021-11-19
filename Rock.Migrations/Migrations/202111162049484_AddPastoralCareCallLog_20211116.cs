@@ -54,7 +54,7 @@ namespace Rock.Migrations
             // Inserts the default benevolence type with a new generated GUID
             Sql( $@"INSERT INTO [BenevolenceType] ([Name],[Description],[IsActive],[Guid],[CreatedDateTime],[ModifiedDateTime])
                 VALUES(
-                    'Benevolence','The default benevolence type.',1,'{SystemGuid.BenevolenceType.BENEVOLENCE}','{RockDateTime.Now}','{RockDateTime.Now}')" );
+                    'Benevolence','The default benevolence type.',1,'{SystemGuid.BenevolenceType.BENEVOLENCE}','{RockDateTime.Now:s}','{RockDateTime.Now:s}')" );
 
             CreateTable(
                 "dbo.BenevolenceWorkflow",
