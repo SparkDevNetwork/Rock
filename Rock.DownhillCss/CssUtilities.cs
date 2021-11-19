@@ -1231,7 +1231,7 @@ icon {
 }
 
 .noteeditor ^texteditor {
-    height: 100;
+    min-height: 100;
     color: ?color-text;
     margin: 0;
     font-size: small;
