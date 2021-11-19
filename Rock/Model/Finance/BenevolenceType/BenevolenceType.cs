@@ -89,6 +89,21 @@ namespace Rock.Model
         }
 
         private ICollection<BenevolenceWorkflow> _benevolenceWorkflows;
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.BenevolenceRequest"></see> that is associated with a <see cref="Rock.Model.BenevolenceType"></see>.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.BenevolenceRequest"></see> that are associated with a <see cref="Rock.Model.BenevolenceType"></see>.
+        /// </value>
+        [LavaVisible]
+        public virtual ICollection<BenevolenceRequest> BenevolenceRequests
+        {
+            get { return _benevolenceRequests ?? ( _benevolenceRequests = new Collection<BenevolenceRequest>() ); }
+            set { _benevolenceRequests = value; }
+        }
+
+        private ICollection<BenevolenceRequest> _benevolenceRequests;
         #endregion Navigation Properties
     }
 }
