@@ -359,7 +359,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( false );
 
-            this.HasRequired( p => p.BenevolenceType ).WithMany().HasForeignKey( p => p.BenevolenceTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.BenevolenceType ).WithMany( p => p.BenevolenceRequests ).HasForeignKey( p => p.BenevolenceTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.RequestStatusValue ).WithMany().HasForeignKey( p => p.RequestStatusValueId ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier RequestSourceDates that aren't in the AnalyticsSourceDate table
