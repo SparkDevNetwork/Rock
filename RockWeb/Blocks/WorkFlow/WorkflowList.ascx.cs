@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             deleteWorkflowsMsg.Send();
             BindGrid();
-            //mdGridWarning.Show( "The Workflow items are scheduled to be deleted.", ModalAlertType.Information );
+            mdGridWarning.Show( "The Workflow items are scheduled to be deleted.", ModalAlertType.Information );
         }
 
         #endregion
