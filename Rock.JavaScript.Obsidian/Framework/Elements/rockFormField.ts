@@ -103,6 +103,9 @@ export default defineComponent({
 
                 return Object.keys(errors).length ? "has-error" : "";
             };
+        },
+        fieldLabel(): string {
+            return this.validationTitle || this.label;
         }
     },
     watch: {
@@ -114,13 +117,13 @@ export default defineComponent({
         }
     },
     template: `
-<Field v-model="internalValue" :name="validationTitle || label" :rules="rules" #default="{field, errors}">
+<Field v-model="internalValue" :name="fieldLabel" :rules="rules" #default="{field, errors}">
     <slot name="pre" />
     <div class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses(formState, errors)]">
         <RockLabel v-if="label || help" :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>
-        <slot v-bind="{uniqueId, field, errors, disabled, inputGroupClasses, tabIndex}" />
+        <slot v-bind="{uniqueId, field, errors, disabled, inputGroupClasses, tabIndex, fieldLabel}" />
     </div>
     <slot name="post" />
 </Field>`

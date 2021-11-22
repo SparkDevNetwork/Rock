@@ -725,7 +725,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
-                    if ( this.Person.IsPersonTokenUsageAllowed() )
+                    if ( !this.Person.IsPersonTokenUsageAllowed() )
                     {
                         // we hide/disable the lbImpersonate in this situation, but prevent just in case
                         return;

@@ -13,26 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.Routing;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Services.NuGet;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -43,10 +37,24 @@ namespace RockWeb.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays a dialog for adding a short link to the current page." )]
 
-    [IntegerField( "Minimum Token Length", "The minimum number of characters for the token.", false, 7, "", 0 )]
+    #region Block Attributes
+
+    [IntegerField( "Minimum Token Length",
+        Key = AttributeKey.MinimumTokenLength,
+        Description = "The minimum number of characters for the token.",
+        IsRequired = false,
+        DefaultIntegerValue = 7,
+        Order = 0 )]
+
+    #endregion Block Attributes
     public partial class ShortLink : RockBlock
     {
         private int _minTokenLength = 7;
+
+        private static class AttributeKey
+        {
+            public const string MinimumTokenLength = "MinimumTokenLength";
+        }
 
         #region Base Control Methods
 
@@ -62,11 +70,11 @@ namespace RockWeb.Blocks.Administration
                 dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
             }
 
-            _minTokenLength = GetAttributeValue( "MinimumTokenLength" ).AsIntegerOrNull() ?? 7;
+            _minTokenLength = GetAttributeValue( AttributeKey.MinimumTokenLength ).AsIntegerOrNull() ?? 7;
 
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
-            string script = string.Format( @"
-    function updateClipboardText() {{
+            string script = string.Format(
+    @"function updateClipboardText() {{
         var scLink = $('#{0}').val() + $('#{1}').val();
         $('.js-copy-to-clipboard').attr('data-clipboard-text', scLink );
         $('.js-copy-to-clipboard').html(scLink);
@@ -81,7 +89,9 @@ namespace RockWeb.Blocks.Administration
 
     updateClipboardText();
 
-", hfSiteUrl.ClientID, tbToken.ClientID );
+",
+hfSiteUrl.ClientID,
+tbToken.ClientID );
             ScriptManager.RegisterStartupScript( tbToken, tbToken.GetType(), "save-short-link", script, true );
 
             base.OnInit( e );
@@ -243,6 +253,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-
     }
 }

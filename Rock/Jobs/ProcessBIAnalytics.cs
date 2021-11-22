@@ -29,6 +29,7 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Reporting;
@@ -514,47 +515,47 @@ namespace Rock.Jobs
                 foreach ( var attribute in modelAnalyticAttributes )
                 {
                     var columnName = attribute.Key.RemoveSpecialCharacters();
+                    var columnInfo = new ColumnInfo( attribute.FieldType.Field, columnName );
+
+                    var attributeValuesQry = attributeValueService.Queryable()
+                            .Where( a => a.AttributeId == attribute.Id )
+                            .Select( a => a.Value );
+
+                    // get all the unique possible values that are currently being used
+                    var modelAttributeValues = attributeValuesQry.Distinct().ToList();
+                    foreach ( var modelAttributeValue in modelAttributeValues )
                     {
-                        var attributeValuesQry = attributeValueService.Queryable()
-                                .Where( a => a.AttributeId == attribute.Id )
-                                .Select( a => a.Value );
-
-                        // get all the unique possible values that are currently being used
-                        var modelAttributeValues = attributeValuesQry.Distinct().ToList();
-                        foreach ( var modelAttributeValue in modelAttributeValues )
+                        object attributeValue;
+                        if ( UseFormatValueForUpdate( attribute ) )
                         {
-                            object attributeValue;
-                            if ( UseFormatValueForUpdate( attribute ) )
-                            {
-                                attributeValue = attribute.FieldType.Field.FormatValue( null, modelAttributeValue, attribute.QualifierValues, false );
-                            }
-                            else
-                            {
-                                attributeValue = attribute.FieldType.Field.ValueAsFieldType( null, modelAttributeValue, attribute.QualifierValues );
-                            }
+                            attributeValue = attribute.FieldType.Field.FormatValue( null, modelAttributeValue, attribute.QualifierValues, false );
+                        }
+                        else
+                        {
+                            attributeValue = attribute.FieldType.Field.ValueAsFieldType( null, modelAttributeValue, attribute.QualifierValues );
+                        }
 
-                            // mass update the value for the Attribute in the Analytics table records 
-                            // Note: Only update the *Current Records, even if it was just a Text change.  For example, if they changed DefinedValue "Member" to "Owner", 
-                            // have the historical records say "Member" even though it is the same definedvalue id
-                            var updateSql = $@"
+                        // mass update the value for the Attribute in the Analytics table records 
+                        // Note: Only update the *Current Records, even if it was just a Text change.  For example, if they changed DefinedValue "Member" to "Owner", 
+                        // have the historical records say "Member" even though it is the same definedvalue id
+                        var updateSql = $@"
 UPDATE [{analyticsTableName}] 
     SET [{columnName}] = @attributeValue 
     WHERE [{analyticsTableModelIdColumnName}] IN (SELECT [EntityId] FROM [AttributeValue] WHERE [AttributeId] = {attribute.Id} AND [Value] = @modelAttributeValue) 
-    AND isnull([{columnName}],'') != @attributeValue
+    AND isnull([{columnName}], {columnInfo.IsNullDefaultValue}) != isnull(@attributeValue, {columnInfo.IsNullDefaultValue})
     ";
 
-                            if ( hasCurrentRowIndicator )
-                            {
-                                updateSql += "AND [CurrentRowIndicator] = 1";
-                            }
-
-                            var parameters = new Dictionary<string, object>();
-                            parameters.Add( "@modelAttributeValue", modelAttributeValue );
-                            parameters.Add( "@attributeValue", attributeValue );
-
-                            modelJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
-                            modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                        if ( hasCurrentRowIndicator )
+                        {
+                            updateSql += "AND [CurrentRowIndicator] = 1";
                         }
+
+                        var parameters = new Dictionary<string, object>();
+                        parameters.Add( "@modelAttributeValue", modelAttributeValue ?? ( object ) DBNull.Value );
+                        parameters.Add( "@attributeValue", attributeValue ?? ( object ) DBNull.Value );
+
+                        modelJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                        modelJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
                     }
                 }
             }
@@ -658,46 +659,47 @@ UPDATE [{analyticsTableName}]
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
-                foreach ( var attribute in personAnalyticAttributes.Where( a => a.IsAnalyticHistory && UseFormatValueForUpdate( a ) ) )
+                var attributesToProcess = personAnalyticAttributes.Where( a => a.IsAnalyticHistory && UseFormatValueForUpdate( a ) );
+                foreach ( var attribute in attributesToProcess )
                 {
                     var columnName = attribute.Key.RemoveSpecialCharacters();
+                    var columnInfo = new ColumnInfo( attribute.FieldType.Field, columnName );
 
-                    if ( UseFormatValueForUpdate( attribute ) )
+                    var attributeValuesQry = attributeValueService.Queryable()
+                            .Where( a => a.AttributeId == attribute.Id )
+                            .Select( a => a.Value );
+
+                    // get all the unique possible values that are currently being used
+                    var personAttributeValues = attributeValuesQry.Distinct().ToList();
+                    foreach ( var personAttributeValue in personAttributeValues )
                     {
-                        var attributeValuesQry = attributeValueService.Queryable()
-                                .Where( a => a.AttributeId == attribute.Id )
-                                .Select( a => a.Value );
+                        var formattedValue = attribute.FieldType.Field.FormatValue( null, personAttributeValue, attribute.QualifierValues, false );
 
-                        // get all the unique possible values that are currently being used
-                        var personAttributeValues = attributeValuesQry.Distinct().ToList();
-                        foreach ( var personAttributeValue in personAttributeValues )
-                        {
-                            var formattedValue = attribute.FieldType.Field.FormatValue( null, personAttributeValue, attribute.QualifierValues, false );
-
-                            // mass update any AnalyticsSourcePersonHistorical records that need to be marked as History for this Attribute's Value
-                            var markAsHistorySQL = $@"
+                        // mass update any AnalyticsSourcePersonHistorical records that need to be marked as History for this Attribute's Value
+                        var markAsHistorySQL = $@"
 DECLARE 
     @EtlDate DATE = convert( DATE, SysDateTime() )
 
-UPDATE [AnalyticsSourcePersonHistorical] 
-    SET [CurrentRowIndicator] = 0, [ExpireDate] = @EtlDate 
-    WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue ) 
-    AND isnull([{columnName}],'') != @formattedValue AND [CurrentRowIndicator] = 1
-    AND PersonId NOT IN( --Ensure that there isn't already a History Record for the current EtlDate 
+UPDATE [AnalyticsSourcePersonHistorical]
+    SET [CurrentRowIndicator] = 0, [ExpireDate] = @EtlDate
+    WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue)
+    AND isnull([{columnName}],{columnInfo.IsNullDefaultValue}) != isnull(@formattedValue,{columnInfo.IsNullDefaultValue})
+    AND [CurrentRowIndicator] = 1
+    AND PersonId NOT IN( --Ensure that there isn't already a History Record for the current EtlDate
         SELECT PersonId
         FROM AnalyticsSourcePersonHistorical x
         WHERE CurrentRowIndicator = 0
         AND[ExpireDate] = @EtlDate
     )";
 
-                            var parameters = new Dictionary<string, object>();
-                            parameters.Add( "@personAttributeValue", personAttributeValue );
-                            parameters.Add( "@formattedValue", formattedValue );
 
-                            this._personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                        var parameters = new Dictionary<string, object>();
+                        parameters.Add( "@personAttributeValue", personAttributeValue ?? ( object ) DBNull.Value );
+                        parameters.Add( "@formattedValue", formattedValue ?? ( object ) DBNull.Value );
 
-                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
-                        }
+                        _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+
+                        _personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                     }
                 }
             }
@@ -718,53 +720,51 @@ UPDATE [AnalyticsSourcePersonHistorical]
                 foreach ( var attribute in personAnalyticAttributes.Where( a => UseFormatValueForUpdate( a ) ) )
                 {
                     var columnName = attribute.Key.RemoveSpecialCharacters();
+                    var columnInfo = new ColumnInfo( attribute.FieldType.Field, columnName );
 
-                    if ( UseFormatValueForUpdate( attribute ) )
+                    var attributeValuesQry = attributeValueService.Queryable()
+                            .Where( a => a.AttributeId == attribute.Id )
+                            .Select( a => a.Value );
+
+                    // get all the unique possible values that are currently being used
+                    var personAttributeValues = attributeValuesQry.Distinct().ToList();
+                    foreach ( var personAttributeValue in personAttributeValues )
                     {
-                        var attributeValuesQry = attributeValueService.Queryable()
-                                .Where( a => a.AttributeId == attribute.Id )
-                                .Select( a => a.Value );
+                        var formattedValue = attribute.FieldType.Field.FormatValue( null, personAttributeValue, attribute.QualifierValues, false );
 
-                        // get all the unique possible values that are currently being used
-                        var personAttributeValues = attributeValuesQry.Distinct().ToList();
-                        foreach ( var personAttributeValue in personAttributeValues )
+                        // unformatted values over this length are filtered out. Prevent truncated string SQL errors here by checking the formatted value against the max length.
+                        if ( formattedValue.Length > _maxAttributeValueLength )
                         {
-                            var formattedValue = attribute.FieldType.Field.FormatValue( null, personAttributeValue, attribute.QualifierValues, false );
+                            continue;
+                        }
 
-                            // unformatted values over this length are filtered out. Prevent truncated string SQL errors here by checking the formatted value against the max length.
-                            if ( formattedValue.Length > _maxAttributeValueLength )
-                            {
-                                continue;
-                            }
-
-                            // mass update the value for the Attribute in the AnalyticsSourcePersonHistorical records 
-                            // Don't update the Historical Records, even if it was just a Text change.  For example, 
-                            // if they changed DefinedValue "Member" to "Owner", have the historical records say "Member"
-                            // even though it is the same definedvalue id.
-                            var updateSql = $@"
+                        // mass update the value for the Attribute in the AnalyticsSourcePersonHistorical records 
+                        // Don't update the Historical Records, even if it was just a Text change.  For example, 
+                        // if they changed DefinedValue "Member" to "Owner", have the historical records say "Member"
+                        // even though it is the same definedvalue id.
+                        var updateSql = $@"
                                 UPDATE [AnalyticsSourcePersonHistorical] 
                                     SET [{columnName}] = @formattedValue 
                                     WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue) 
-                                        AND isnull([{columnName}],'') != @formattedValue
+                                        AND isnull([{columnName}],{columnInfo.IsNullDefaultValue}) != isnull(@formattedValue,{columnInfo.IsNullDefaultValue})
                                         AND [CurrentRowIndicator] = 1";
 
-                            var parameters = new Dictionary<string, object>();
-                            parameters.Add( "@personAttributeValue", personAttributeValue );
-                            parameters.Add( "@formattedValue", formattedValue );
+                        var parameters = new Dictionary<string, object>();
+                        parameters.Add( "@personAttributeValue", personAttributeValue );
+                        parameters.Add( "@formattedValue", formattedValue );
 
-                            _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
+                        _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
 
-                            try
-                            {
-                                _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
-                            }
-                            catch ( Exception ex )
-                            {
-                                ExceptionLogService.LogException( new Exception( $"Error inserting Person Analytics value {columnName}. Value: {personAttributeValue}, formatted value: {formattedValue}", ex ) );
+                        try
+                        {
+                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new Exception( $"Error inserting Person Analytics value {columnName}. Value: {personAttributeValue}, formatted value: {formattedValue}", ex ) );
 
-                                // Throw the exception since missing any data will not provide accurate analytics.
-                                throw;
-                            }
+                            // Throw the exception since missing any data will not provide accurate analytics.
+                            throw;
                         }
                     }
                 }
@@ -1128,6 +1128,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 foreach ( var attribute in familyAnalyticAttributes.Where( a => a.IsAnalyticHistory ) )
                 {
                     var columnName = attribute.Key.RemoveSpecialCharacters();
+                    var columnInfo = new ColumnInfo( attribute.FieldType.Field, columnName );
                     var attributeValuesQry = attributeValueService.Queryable()
                             .Where( a => a.AttributeId == attribute.Id )
                             .Select( a => a.Value );
@@ -1153,8 +1154,9 @@ DECLARE
 
 UPDATE [AnalyticsSourceFamilyHistorical] 
     SET [CurrentRowIndicator] = 0, [ExpireDate] = @EtlDate 
-    WHERE [FamilyId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @familyAttributeValue ) 
-    AND isnull([{columnName}],'') != @attributeValue AND [CurrentRowIndicator] = 1
+    WHERE [FamilyId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @familyAttributeValue )
+    AND isnull([{columnName}],{columnInfo.IsNullDefaultValue}) != isnull(@attributeValue,{columnInfo.IsNullDefaultValue})
+    AND [CurrentRowIndicator] = 1
     AND FamilyId NOT IN( --Ensure that there isn't already a History Record for the current EtlDate 
         SELECT FamilyId
         FROM AnalyticsSourceFamilyHistorical x
@@ -1163,11 +1165,11 @@ UPDATE [AnalyticsSourceFamilyHistorical]
     )";
 
                         var parameters = new Dictionary<string, object>();
-                        parameters.Add( "@familyAttributeValue", familyAttributeValue );
-                        parameters.Add( "@attributeValue", attributeValue );
-                        this._familyJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
+                        parameters.Add( "@familyAttributeValue", familyAttributeValue ?? ( object ) DBNull.Value );
+                        parameters.Add( "@attributeValue", attributeValue ?? ( object ) DBNull.Value );
+                        _familyJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
 
-                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
+                        _familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters, _commandTimeout );
                     }
                 }
             }
@@ -1414,6 +1416,32 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                 else
                 {
                     this.IsNullDefaultValue = "''";
+                }
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ColumnInfo"/> class.
+            /// </summary>
+            /// <param name="fieldType">The entity field.</param>
+            /// <param name="name">The entity field.</param>
+            public ColumnInfo( IFieldType fieldType, string name )
+            {
+                this.ColumnName = name;
+
+                switch ( fieldType.AttributeValueFieldName )
+                {
+                    case "ValueAsNumeric":
+                        IsNullDefaultValue = "0";
+                        break;
+                    case "ValueAsDateTime":
+                        IsNullDefaultValue = "DateFromParts( 9999, 1, 1 )";
+                        break;
+                    case "ValueAsBoolean":
+                        IsNullDefaultValue = "0";
+                        break;
+                    default:
+                        IsNullDefaultValue = "''";
+                        break;
                 }
             }
 

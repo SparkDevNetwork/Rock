@@ -87,14 +87,30 @@ namespace Rock
         /// <param name="indentOutput"><c>true</c> if the output should be indented for easy reading; otherwise <c>false</c>.</param>
         /// <param name="ignoreErrors">if set to <c>true</c> errors will be ignored.</param>
         /// <returns></returns>
-        /// <remarks>Marked as internal until there is decision on method name and parameters. -dsh</remarks>
+        /// <remarks>
+        /// This only converts POCO and anonymous object property names into
+        /// camel case. It will not convert Dictionary keys as those should be
+        /// preserved since they have specified the explicit key to use.
+        /// 
+        /// Marked as internal until there is decision on method name and parameters. -dsh
+        /// </remarks>
         internal static string ToCamelCaseJson( this object obj, bool indentOutput, bool ignoreErrors )
         {
             var settings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 Formatting = indentOutput ? Formatting.Indented : Formatting.None,
-                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+                ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver
+                {
+                    NamingStrategy = new Newtonsoft.Json.Serialization.CamelCaseNamingStrategy
+                    {
+                        // Do not process dictionaries, this messes up attribute keys
+                        // and generally with a dictionary they are specifying a specific
+                        // key that it should be anyway.
+                        ProcessDictionaryKeys = false,
+                        OverrideSpecifiedNames = true
+                    }
+                }
             };
 
             if ( ignoreErrors )

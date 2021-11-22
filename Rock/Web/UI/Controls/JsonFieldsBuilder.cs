@@ -229,24 +229,31 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-
-                return _rblFieldSource.ValidationGroup;
+                return ( string ) ViewState["ValidationGroup"];
             }
             set
             {
                 EnsureChildControls();
 
-                _rblFieldSource.ValidationGroup = value;
-                _ddlProperties.ValidationGroup = value;
-                _ddlAttributes.ValidationGroup = value;
-                _tbKey.ValidationGroup = value;
-                _rblAttributeFormatType.ValidationGroup = value;
-                _tbKey.ValidationGroup = value;
-                _rblFieldFormat.ValidationGroup = value;
-                _ceLavaExpression.ValidationGroup = value;
-                _lbApply.ValidationGroup = value;
-                _lbCancel.ValidationGroup = value;
+                // We need a custom validation group for our controls. Otherwise
+                // the page validator will complain that "tbKey" is required even
+                // though it isn't displayed on screen. This was preventing the
+                // Save button from being clicked when editing block settings.
+
+                var innerValidationGroup = ViewState["InnerValidationGroup"] as string ?? Guid.NewGuid().ToString();
+
+                ViewState["ValidationGroup"] = value;
+                ViewState["InnerValidationGroup"] = innerValidationGroup;
+
+                _rblFieldSource.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _ddlProperties.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _ddlAttributes.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _tbKey.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _rblAttributeFormatType.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _rblFieldFormat.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _ceLavaExpression.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _lbApply.ValidationGroup = $"{value}_{innerValidationGroup}";
+                _lbCancel.ValidationGroup = $"{value}_{innerValidationGroup}";
             }
         }
 

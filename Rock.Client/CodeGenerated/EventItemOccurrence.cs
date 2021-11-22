@@ -64,6 +64,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public DateTime? NextStartDateTime { get; set; }
+
+        /// <summary />
         public string Note { get; set; }
 
         /// <summary />
@@ -111,6 +114,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Location = source.Location;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.NextStartDateTime = source.NextStartDateTime;
             this.Note = source.Note;
             this.ScheduleId = source.ScheduleId;
             this.CreatedDateTime = source.CreatedDateTime;

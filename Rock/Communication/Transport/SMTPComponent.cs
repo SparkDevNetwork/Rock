@@ -221,11 +221,11 @@ namespace Rock.Communication.Transport
 
             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
             {
-                if ( rockEmailMessage.CssInliningEnabled )
-                {
-                    // Move styles inline to ensure compatibility with a wider range of email clients.
-                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
-                }
+                /*
+                 * 2021-11-04 Ethan Drotning
+                 * Do not check rockEmailMessage.CssInliningEnabled here. This is being taken care of in the parent abstract class EmailTransportComponent methods.
+                 * SMTP, SendGrid, MailGun and other child component classes don't have to worry about it unless they override the methods without calling the parent.
+                 */
 
                 var htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                 mailMessage.AlternateViews.Add( htmlView );

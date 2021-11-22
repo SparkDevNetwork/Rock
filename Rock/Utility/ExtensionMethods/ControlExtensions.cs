@@ -296,6 +296,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether the html control's CssClass includes the specified className
+        /// </summary>
+        /// <param name="htmlControl">The HTML control.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <returns><c>true</c> if [has CSS class] [the specified class name]; otherwise, <c>false</c>.</returns>
+        public static bool HasCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
+        {
+            if ( className.IsNullOrWhiteSpace() || htmlControl == null )
+            {
+                return false;
+            }
+
+            string css = htmlControl.Attributes["class"] ?? string.Empty;
+            string match = @"(^|\s+)" + className + @"($|\s+)";
+            return Regex.IsMatch( css, match, RegexOptions.IgnoreCase );
+        }
+
+        /// <summary>
         /// Removes a CSS class name from an html control.
         /// </summary>
         /// <param name="htmlControl">The html control.</param>

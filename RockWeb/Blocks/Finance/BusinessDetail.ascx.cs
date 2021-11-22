@@ -382,11 +382,31 @@ namespace RockWeb.Blocks.Finance
                     workLocation.IsMailingLocation = true;
                 }
 
+                var personSearchKeyService = new PersonSearchKeyService( rockContext );
+
+                var validSearchTypes = GetValidSearchKeyTypes();
+                var databaseSearchKeys = personSearchKeyService
+                    .Queryable()
+                    .Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) && a.PersonAlias.PersonId == business.Id )
+                    .ToList();
+
+                foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !PersonSearchKeysState.Any( p => p.Guid == a.Guid ) ) )
+                {
+                    personSearchKeyService.Delete( deletedSearchKey );
+                }
+
+                foreach ( var personSearchKey in PersonSearchKeysState.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
+                {
+                    personSearchKey.PersonAliasId = business.PrimaryAliasId.Value;
+                    personSearchKeyService.Add( personSearchKey );
+                }
+
                 rockContext.SaveChanges();
-                business.SaveAttributeValues();
 
                 hfBusinessId.Value = business.Id.ToString();
             } );
+
+            business.SaveAttributeValues();
 
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "BusinessId", hfBusinessId.Value );
@@ -745,6 +765,9 @@ namespace RockWeb.Blocks.Finance
                 lTitle.Text = ActionTitle.Add( "Business" ).FormatAsHtmlTitle();
             }
 
+            var validSearchTypes = GetValidSearchKeyTypes();
+            this.PersonSearchKeysState = business.GetPersonSearchKeys().Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) ).ToList();
+
             BindPersonSearchKeysGrid();
             SetEditMode( true );
             ShowEditAttributes( business );
@@ -766,7 +789,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindPersonSearchKeysGrid()
         {
-            var values = this.PersonSearchKeysState;
+            var values = this.PersonSearchKeysState ?? new List<PersonSearchKey>();
             var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {

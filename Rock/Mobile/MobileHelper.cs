@@ -375,7 +375,8 @@ namespace Rock.Mobile
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
                 HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic,
                 DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically,
-                TimeZone = timeZoneName
+                TimeZone = timeZoneName,
+                PushTokenUpdateValue = additionalSettings.PushTokenUpdateValue
             };
 
             //
@@ -554,7 +555,8 @@ namespace Rock.Mobile
                     CssStyles = additionalPageSettings.CssStyles,
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) ),
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
-                    ShowFullScreen = additionalPageSettings.ShowFullScreen
+                    ShowFullScreen = additionalPageSettings.ShowFullScreen,
+                    AutoRefresh = additionalPageSettings.AutoRefresh
                 };
 
                 package.Pages.Add( mobilePage );
