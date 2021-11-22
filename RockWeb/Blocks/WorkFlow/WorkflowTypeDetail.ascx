@@ -70,9 +70,15 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbMaximumWorkflowAge" runat="server" Label="Maximum Workflow Age (days)"
+                                    Help="Workflows older than this will be automatically marked completed." />
+                            </div>
+                            <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbCompletedRetention" runat="server" Label="Completed Workflow Retention Period (days)"
                                     Help="The minimum length of time, in days, that completed workflows should be retained for this workflow.  If blank, completed workflows will never be removed." />
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbLogRetention" runat="server" Label="Log Retention Period (days)"
                                     Help="The minimum length of time, in days, that the logs will be retained for this workflow. If blank, logs will never be removed." />

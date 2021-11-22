@@ -93,6 +93,11 @@ export default defineComponent( {
             value: props.fieldValues[props.field.guid] ?? props.field.attribute?.value ?? ""
         });
 
+        // Detect changes like switch from one person to another.
+        watch(() => props.fieldValues[props.field.guid], (value) => {
+            attribute.value = value;
+        });
+
         watch(() => attribute.value, (value) => {
             props.fieldValues[props.field.guid] = value;
         });

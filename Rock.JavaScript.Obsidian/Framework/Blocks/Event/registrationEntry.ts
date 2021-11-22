@@ -76,6 +76,7 @@ export type RegistrationEntryState = {
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
+    ownFamilyGuid: Guid;
 };
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
@@ -101,7 +102,6 @@ export function getForcedFamilyGuid ( currentPerson: Person | null, viewModel: R
  */
 export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null ): RegistrantInfo {
     const forcedFamilyGuid = getForcedFamilyGuid( currentPerson, viewModel );
-    const ownFamilyGuid = newGuid();
 
     if ( forcedFamilyGuid ) {
         familyGuid = forcedFamilyGuid;
@@ -109,7 +109,7 @@ export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewMod
 
     // If the family is not specified, then assume the person is in their own family
     if ( !familyGuid ) {
-        familyGuid = ownFamilyGuid;
+        familyGuid = newGuid();
     }
 
     return {
@@ -118,8 +118,7 @@ export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewMod
         fieldValues: {},
         feeItemQuantities: {},
         guid: newGuid(),
-        personGuid: "",
-        ownFamilyGuid: ownFamilyGuid
+        personGuid: ""
     } as RegistrantInfo;
 }
 
@@ -212,7 +211,6 @@ export default defineComponent( {
                 lastName: "",
                 email: "",
                 updateEmail: true,
-                ownFamilyGuid: newGuid(),
                 familyGuid: null
             },
             gatewayToken: "",
@@ -222,7 +220,8 @@ export default defineComponent( {
             successViewModel: viewModel.successViewModel,
             amountToPayToday: 0,
             sessionExpirationDateMs: null,
-            registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid()
+            registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid(),
+            ownFamilyGuid: store.state.currentPerson?.primaryFamilyGuid || newGuid()
         } as RegistrationEntryState );
 
         provide( "registrationEntryState", registrationEntryState );

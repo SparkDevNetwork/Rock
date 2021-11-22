@@ -124,17 +124,12 @@ export default defineComponent( {
             }
 
             // Add the current person (registrant) if not already added
-            if ( this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[ this.currentPerson.primaryFamilyGuid ] ) {
-                options.push( {
-                    text: this.currentPerson.fullName,
-                    value: this.currentPerson.primaryFamilyGuid
-                } );
+            if (!usedFamilyGuids[this.registrationEntryState.ownFamilyGuid]) {
+                options.push({
+                    text: "None",
+                    value: this.registrationEntryState.ownFamilyGuid
+                });
             }
-
-            options.push( {
-                text: "None of the above",
-                value: this.registrar.ownFamilyGuid
-            } );
 
             return options;
         },

@@ -447,6 +447,7 @@ namespace RockWeb.Blocks.Mobile
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
             ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
+            tbEditPushTokenUpdateValue.Text = additionalSettings.PushTokenUpdateValue;
 
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
 
@@ -780,6 +781,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
             additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
+            additionalSettings.PushTokenUpdateValue = tbEditPushTokenUpdateValue.Text;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();

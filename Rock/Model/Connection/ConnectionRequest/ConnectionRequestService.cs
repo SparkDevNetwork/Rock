@@ -59,6 +59,26 @@ namespace Rock.Model
         /// Determines whether this request can be connected.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can connect; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanConnect( ConnectionRequest request )
+        {
+            if ( request == null || ( !request.AssignedGroupId.HasValue && request.ConnectionOpportunity.ConnectionType.RequiresPlacementGroupToConnect ) )
+            {
+                return false;
+            }
+
+            return
+                request.ConnectionState != ConnectionState.Inactive &&
+                request.ConnectionState != ConnectionState.Connected &&
+                request.ConnectionOpportunity.ShowConnectButton;
+        }
+
+        /// <summary>
+        /// Determines whether this request can be connected.
+        /// </summary>
+        /// <param name="request">The request.</param>
         /// <param name="connectionOpportunity">The connection opportunity.</param>
         /// <param name="connectionType">Type of the connection.</param>
         /// <returns>
@@ -78,7 +98,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Doeses the status change cause workflows.
+        /// Checks if the status change would cause workflows to launch.
         /// </summary>
         /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
         /// <param name="fromStatusId">From status identifier.</param>

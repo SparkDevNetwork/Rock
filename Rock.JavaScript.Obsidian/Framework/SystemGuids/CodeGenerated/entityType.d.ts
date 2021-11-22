@@ -125,6 +125,14 @@ export const enum EntityType {
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes */
     MobileCoreNotesBlockType = "2FED71D1-4A60-4EB5-B971-530B5D1FC041",
     /** The GUID for the entity . */
+    MobileConnectionConnectionTypeListBlockType = "F30667AC-5FAA-429C-AD7F-D4B7C0C5C293",
+    /** The GUID for the entity . */
+    MobileConnectionConnectionOpportunityListBlockType = "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A",
+    /** The GUID for the entity . */
+    MobileConnectionConnectionRequestListBlockType = "E1C52624-898F-46EF-98B0-3C06B6D81654",
+    /** The GUID for the entity . */
+    MobileConnectionConnectionRequestDetailBlockType = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF",
+    /** The GUID for the entity . */
     MobileMyPrayerRequestsBlockType = "E644DE6A-44CA-48AC-BF33-5429DA8052C6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.ProfileDetails */
     MobileProfileDetailsBlockType = "A1ED4948-0778-4E13-B434-E97795DDB68B",

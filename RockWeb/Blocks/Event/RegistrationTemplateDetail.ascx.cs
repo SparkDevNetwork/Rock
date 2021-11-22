@@ -2775,11 +2775,18 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void LoadDropDowns( RockContext rockContext )
         {
+            /*
+                 11/16/2021 - SK
+
+                 Normally, we order by Order, but in this particular situation it was decided
+                 it would be better to order these by Name in the dropdown list.
+    
+                 Reason: To improve usability. 
+            */
             var groupTypeList = new GroupTypeService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( t => t.ShowInNavigation )
-                .OrderBy( t => t.Order )
-                .ThenBy( t => t.Name )
+                .OrderBy( t => t.Name )
                 .ToList();
 
             gtpGroupType.GroupTypes = groupTypeList;

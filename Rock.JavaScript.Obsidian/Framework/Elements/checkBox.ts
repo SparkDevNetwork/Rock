@@ -46,12 +46,7 @@ export default defineComponent({
     },
     methods: {
         toggle() {
-            if (!this.isRequired) {
-                this.internalValue = !this.internalValue;
-            }
-            else {
-                this.internalValue = true;
-            }
+            this.internalValue = !this.internalValue;
         }
     },
     computed: {
@@ -66,14 +61,6 @@ export default defineComponent({
         },
         internalValue() {
             this.$emit("update:modelValue", this.internalValue);
-        },
-        isRequired: {
-            immediate: true,
-            handler() {
-                if (this.isRequired) {
-                    this.internalValue = true;
-                }
-            }
         }
     },
     template: `
@@ -86,7 +73,7 @@ export default defineComponent({
 <div v-else class="form-group rock-check-box" :class="isRequired ? 'required' : ''">
     <label class="control-label" :for="uniqueId">{{label}}</label>
     <div class="control-wrapper">
-        <div class="rock-checkbox-icon" @click="toggle" :class="isRequired ? 'text-muted' : ''">
+        <div class="rock-checkbox-icon" @click="toggle">
             <i v-if="modelValue" class="fa fa-check-square-o fa-lg"></i>
             <i v-else class="fa fa-square-o fa-lg"></i>
         </div>

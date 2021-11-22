@@ -126,12 +126,28 @@ namespace Rock.Plugin
         /// <param name="columnsAction"> An action that specifies the columns to be included in the table. i.e. t => new { Id = t.Int(identity: true), Name = t.String() } </param>
         /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
         /// <returns> An object that allows further configuration of the table creation operation. </returns>
+        [Obsolete( "Use AddTable instead. Operations performed on the TableBuilder object returned from this function have no effect." )]
+        [RockObsolete( "1.13" )]
         public TableBuilder<TColumns> CreateTable<TColumns>( string name, Func<ColumnBuilder, TColumns> columnsAction, object anonymousArguments = null )
         {
             DbMigration dbMigration = new DbMigration();
             var table = dbMigration.CreateTable( name, columnsAction, anonymousArguments );
             Sql( dbMigration.GetMigrationSql( SqlConnection ) );
             return table;
+        }
+
+        /// <summary>
+        /// Adds an operation to create a new table.
+        /// </summary>
+        /// <typeparam name="TColumns"> The columns in this create table operation. You do not need to specify this type, it will be inferred from the columnsAction parameter you supply. </typeparam>
+        /// <param name="name"> The name of the table. Schema name is optional, if no schema is specified then dbo is assumed. </param>
+        /// <param name="columnsAction"> An action that specifies the columns to be included in the table. i.e. t => new { Id = t.Int(identity: true), Name = t.String() } </param>
+        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
+        public void AddTable<TColumns>( string name, Func<ColumnBuilder, TColumns> columnsAction, object anonymousArguments = null )
+        {
+            var dbMigration = new DbMigration();
+            dbMigration.CreateTable( name, columnsAction, anonymousArguments );
+            Sql( dbMigration.GetMigrationSql( SqlConnection ) );
         }
 
         /// <summary>
@@ -146,6 +162,130 @@ namespace Rock.Plugin
             DbMigration dbMigration = new DbMigration();
             dbMigration.AddColumn( table, name, columnAction, anonymousArguments );
             Sql( dbMigration.GetMigrationSql( SqlConnection ) );
+        }
+
+        /// <summary>
+        /// Adds an operation to create a new primary key.
+        /// </summary>
+        /// <param name="table">The table that contains the primary key column. Schema name is optional, if no
+        ///     schema is specified then dbo is assumed.</param>
+        /// <param name="columns">The primary key columns.</param>
+        /// <param name="name">The name of the primary key in the database. If no value is supplied a unique
+        ///     name will be generated.</param>
+        /// <param name="clustered">A value indicating whether or not this is a clustered primary key.</param>
+        /// <param name="anonymousArguments">Additional arguments that may be processed by providers. Use anonymous type syntax
+        ///     to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
+        public void AddPrimaryKey( string table, string[] columns, string name = null, bool clustered = true, object anonymousArguments = null )
+        {
+            DbMigration dbMigration = new DbMigration();
+            dbMigration.AddPrimaryKey( table, columns, name, clustered, anonymousArguments );
+            Sql( dbMigration.GetMigrationSql( SqlConnection ) );
+        }
+
+        /// <summary>
+        /// Adds an operation to create a new primary key.
+        /// </summary>
+        /// <param name="table">The table that contains the primary key column. Schema name is optional, if no
+        ///     schema is specified then dbo is assumed.</param>
+        /// <param name="column">The primary key column.</param>
+        /// <param name="name">The name of the primary key in the database. If no value is supplied a unique
+        ///     name will be generated.</param>
+        /// <param name="clustered">A value indicating whether or not this is a clustered primary key.</param>
+        /// <param name="anonymousArguments">Additional arguments that may be processed by providers. Use anonymous type syntax
+        ///     to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
+        public void AddPrimaryKey( string table, string column, string name = null, bool clustered = true, object anonymousArguments = null )
+        {
+            AddPrimaryKey( table, new string[] { column }, name, clustered, anonymousArguments );
+        }
+
+        /// <summary>
+        /// Adds an operation to create a new foreign key constraint.
+        /// attacks etc.
+        /// </summary>
+        /// <param name="dependentTable">The table that contains the foreign key column. Schema name is optional, if no
+        ///     schema is specified then dbo is assumed.</param>
+        /// <param name="dependentColumns">The foreign key columns.</param>
+        /// <param name="principalTable">The table that contains the column this foreign key references. Schema name is
+        ///     optional, if no schema is specified then dbo is assumed.</param>
+        /// <param name="principalColumns">The columns this foreign key references. If no value is supplied the primary key
+        ///     of the principal table will be referenced.</param>
+        /// <param name="cascadeDelete">A value indicating if cascade delete should be configured for the foreign key
+        ///     relationship. If no value is supplied, cascade delete will be off.</param>
+        /// <param name="name">The name of the foreign key constraint in the database. If no value is supplied
+        ///     a unique name will be generated.</param>
+        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax
+        ///     to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
+        public void AddForeignKey( string dependentTable, string[] dependentColumns, string principalTable, string[] principalColumns = null, bool cascadeDelete = false, string name = null, object anonymousArguments = null )
+        {
+            DbMigration dbMigration = new DbMigration();
+            dbMigration.AddForeignKey( dependentTable, dependentColumns, principalTable, principalColumns, cascadeDelete, name, anonymousArguments );
+            Sql( dbMigration.GetMigrationSql( SqlConnection ) );
+        }
+
+        /// <summary>
+        /// Adds an operation to create a new foreign key constraint.
+        /// attacks etc.
+        /// </summary>
+        /// <param name="dependentTable">The table that contains the foreign key column. Schema name is optional, if no
+        ///     schema is specified then dbo is assumed.</param>
+        /// <param name="dependentColumn">The foreign key column.</param>
+        /// <param name="principalTable">The table that contains the column this foreign key references. Schema name is
+        ///     optional, if no schema is specified then dbo is assumed.</param>
+        /// <param name="principalColumn">The column this foreign key references. If no value is supplied the primary key
+        ///     of the principal table will be referenced.</param>
+        /// <param name="cascadeDelete">A value indicating if cascade delete should be configured for the foreign key
+        ///     relationship. If no value is supplied, cascade delete will be off.</param>
+        /// <param name="name">The name of the foreign key constraint in the database. If no value is supplied
+        ///     a unique name will be generated.</param>
+        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax
+        ///     to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
+        public void AddForeignKey( string dependentTable, string dependentColumn, string principalTable, string principalColumn = null, bool cascadeDelete = false, string name = null, object anonymousArguments = null )
+        {
+            AddForeignKey( dependentTable,
+                dependentColumn == null ? null : new string[] { dependentColumn },
+                principalTable,
+                principalColumn == null ? null : new string[] { principalColumn },
+                cascadeDelete,
+                name,
+                anonymousArguments );
+        }
+
+        /// <summary>
+        /// Adds an operation to create an index.
+        /// </summary>
+        /// <param name="table">The name of the table to create the index on. Schema name is optional, if no
+        ///     schema is specified then dbo is assumed.</param>
+        /// <param name="columns">The names of the columns to create the index on.</param>
+        /// <param name="unique">A value indicating if this is a unique index. If no value is supplied a non-unique
+        ///     index will be created.</param>
+        /// <param name="name">The name to use for the index in the database. If no value is supplied a unique
+        ///     name will be generated.</param>
+        /// <param name="clustered">A value indicating whether or not this is a clustered index.</param>
+        /// <param name="anonymousArguments">Additional arguments that may be processed by providers. Use anonymous type syntax
+        ///     to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
+        public void AddIndex( string table, string[] columns, bool unique = false, string name = null, bool clustered = false, object anonymousArguments = null )
+        {
+            DbMigration dbMigration = new DbMigration();
+            dbMigration.CreateIndex( table, columns, unique, name, clustered, anonymousArguments );
+            Sql( dbMigration.GetMigrationSql( SqlConnection ) );
+        }
+
+        /// <summary>
+        /// Adds an operation to create an index.
+        /// </summary>
+        /// <param name="table">The name of the table to create the index on. Schema name is optional, if no
+        ///     schema is specified then dbo is assumed.</param>
+        /// <param name="column">The name of the column to create the index on.</param>
+        /// <param name="unique">A value indicating if this is a unique index. If no value is supplied a non-unique
+        ///     index will be created.</param>
+        /// <param name="name">The name to use for the index in the database. If no value is supplied a unique
+        ///     name will be generated.</param>
+        /// <param name="clustered">A value indicating whether or not this is a clustered index.</param>
+        /// <param name="anonymousArguments">Additional arguments that may be processed by providers. Use anonymous type syntax
+        ///     to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
+        public void AddIndex( string table, string column, bool unique = false, string name = null, bool clustered = false, object anonymousArguments = null )
+        {
+            AddIndex( table, new string[] { column }, unique, name, clustered, anonymousArguments );
         }
 
         /// <summary>
@@ -175,19 +315,6 @@ namespace Rock.Plugin
         }
 
         /// <summary>
-        ///     Adds an operation to drop a foreign key constraint based on its name.  This is a wrapper for the default DBMigration DropForeignKey.
-        /// </summary>
-        /// <param name="dependentTable"> The table that contains the foreign key column. Schema name is optional, if no schema is specified then dbo is assumed. </param>
-        /// <param name="name"> The name of the foreign key constraint in the database. </param>
-        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
-        public void DropForeignKey( string dependentTable, string name, object anonymousArguments = null )
-        {
-            DbMigration dbMigration = new DbMigration();
-            dbMigration.DropForeignKey( dependentTable, name, anonymousArguments );
-            Sql( dbMigration.GetMigrationSql( SqlConnection ) );
-        }
-
-        /// <summary>
         /// Adds an operation to drop an index based on its name.  This is a wrapper for the default DBMigration DropIndex.
         /// </summary>
         /// <param name="table">The name of the table to drop the index from. Schema name is optional, if no schema is specified then dbo is assumed.</param>
@@ -201,6 +328,46 @@ namespace Rock.Plugin
         }
 
         /// <summary>
+        /// Adds an operation to drop an existing primary key that was created with the default name.
+        /// </summary>
+        /// <param name="table">The table that contains the primary key column. Schema name is optional, if no schema is specified then dbo is assumed. </param>
+        /// <param name="anonymousArguments">Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
+        public void DropPrimaryKey( string table, object anonymousArguments = null )
+        {
+            DbMigration dbMigration = new DbMigration();
+            dbMigration.DropPrimaryKey( table, anonymousArguments );
+            Sql( dbMigration.GetMigrationSql( SqlConnection ) );
+        }
+
+        /// <summary>
+        /// Adds an operation to drop a foreign key constraint based on the column it targets.
+        /// </summary>
+        /// <param name="dependentTable">The table that contains the foreign key column. Schema name is optional, if no schema is specified then dbo is assumed.</param>
+        /// <param name="dependentColumns">The foreign key columns.</param>
+        /// <param name="principalTable">The table that contains the column this foreign key references. Schema name is
+        ///     optional, if no schema is specified then dbo is assumed.</param>
+        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
+        public void DropForeignKey( string dependentTable, string[] dependentColumns, string principalTable, object anonymousArguments = null )
+        {
+            DbMigration dbMigration = new DbMigration();
+            dbMigration.DropForeignKey( dependentTable, dependentColumns, principalTable, anonymousArguments );
+            Sql( dbMigration.GetMigrationSql( SqlConnection ) );
+        }
+
+        /// <summary>
+        /// Adds an operation to drop a foreign key constraint based on the column it targets.
+        /// </summary>
+        /// <param name="dependentTable">The table that contains the foreign key column. Schema name is optional, if no schema is specified then dbo is assumed.</param>
+        /// <param name="dependentColumn">The foreign key column.</param>
+        /// <param name="principalTable">The table that contains the column this foreign key references. Schema name is
+        ///     optional, if no schema is specified then dbo is assumed.</param>
+        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
+        public void DropForeignKey( string dependentTable, string dependentColumn, string principalTable, object anonymousArguments = null )
+        {
+            DropForeignKey( dependentTable, new string[] { dependentColumn }, principalTable, anonymousArguments );
+        }
+
+        /// <summary>
         /// Adds an operation to drop an index based on the columns it targets.  This is a wrapper for the default DBMigration DropTable.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -211,7 +378,7 @@ namespace Rock.Plugin
             dbMigration.DropTable( name, anonymousArguments );
             Sql( dbMigration.GetMigrationSql( SqlConnection ) );
         }
-        
+
         /// <summary>
         /// This is a private instance of DBMigration which exposes the base DBMigration methods for plugins to use.
         /// </summary>
@@ -239,6 +406,30 @@ namespace Rock.Plugin
             }
 
             /// <summary>
+            /// Wrapper for the base AddPrimaryKey method to expose it to the parent class.
+            /// </summary>
+            internal new void AddPrimaryKey( string table, string[] columns, string name = null, bool clustered = true, object anonymousArguments = null )
+            {
+                base.AddPrimaryKey( table, columns, name, clustered, anonymousArguments );
+            }
+
+            /// <summary>
+            /// Wrapper for the base AddForeignKey method to expose it to the parent class.
+            /// </summary>
+            internal new void AddForeignKey( string dependentTable, string[] dependentColumns, string principalTable, string[] principalColumns = null, bool cascadeDelete = false, string name = null, object anonymousArguments = null )
+            {
+                base.AddForeignKey( dependentTable, dependentColumns, principalTable, principalColumns, cascadeDelete, name, anonymousArguments );
+            }
+
+            /// <summary>
+            /// Wrapper for the base CreateIndex method to expose it to the parent class.
+            /// </summary>
+            internal new void CreateIndex( string table, string[] columns, bool unique = false, string name = null, bool clustered = false, object anonymousArguments = null )
+            {
+                base.CreateIndex( table, columns, unique, name, clustered, anonymousArguments );
+            }
+
+            /// <summary>
             /// Wrapper for the base DropColumn method to expose it to the parent class.
             /// </summary>
             internal new void DropColumn( string table, string name, object anonymousArguments = null )
@@ -247,11 +438,19 @@ namespace Rock.Plugin
             }
 
             /// <summary>
+            /// Wrapper for the base DropPrimaryKey method to expose it to the parent class.
+            /// </summary>
+            internal new void DropPrimaryKey( string table, object anonymousArguments = null )
+            {
+                base.DropPrimaryKey( table, anonymousArguments );
+            }
+
+            /// <summary>
             /// Wrapper for the base DropForeignKey method to expose it to the parent class.
             /// </summary>
-            internal new void DropForeignKey( string dependentTable, string name, object anonymousArguments = null )
+            internal new void DropForeignKey( string dependentTable, string[] dependentColumns, string principalTable, object anonymousArguments = null )
             {
-                base.DropForeignKey( dependentTable, name, anonymousArguments );
+                base.DropForeignKey( dependentTable, dependentColumns, principalTable, anonymousArguments );
             }
 
             /// <summary>

@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.CheckIn
     [GroupField(
         "Parent Group",
         Key = AttributeKey.ParentGroup,
-        Description = "If set, contrains the group picker to only list groups that are under this group.",
+        Description = "If set, constrains the group picker to only list groups that are under this group.",
         Category = "Attendance",
         IsRequired = false,
         Order = 2 )]

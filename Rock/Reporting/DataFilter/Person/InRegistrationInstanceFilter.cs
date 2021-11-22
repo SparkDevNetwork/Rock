@@ -199,7 +199,7 @@ function() {
             ddlOnWaitList.CssClass = "js-on-wait-list";
             ddlOnWaitList.ID = $"{filterControl.ID}_ddlOnWaitList";
             ddlOnWaitList.Label = "On Wait List";
-            ddlOnWaitList.Help = "Select 'Yes' to only show only people on the wait list. Select 'No' to only show people who are not on the wait list, or leave blank to ignore wait list status.";
+            ddlOnWaitList.Help = "Select 'Yes' to only show people on the wait list. Select 'No' to only show people who are not on the wait list, or leave blank to ignore wait list status.";
             ddlOnWaitList.Items.Add( new ListItem() );
             ddlOnWaitList.Items.Add( new ListItem( "Yes", "True" ) );
             ddlOnWaitList.Items.Add( new ListItem( "No", "False" ) );
