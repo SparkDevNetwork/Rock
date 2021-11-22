@@ -49,8 +49,8 @@
                                     </td>
                                     <td>
                                         <div class="actions">
-                                            <asp:LinkButton ID="btnConfirmAttending" runat="server" CssClass="btn btn-xs btn-success" Text="Attending" OnClick="btnConfirmAttending_Click" />
-                                            <asp:LinkButton ID="btnDeclineAttending" runat="server" CssClass="btn btn-xs btn-danger" Text="Decline" OnClick="btnDeclineAttending_Click" />
+                                            <asp:LinkButton ID="btnConfirmAttend" runat="server" CssClass="btn btn-xs btn-success" Text="Attend" OnClick="btnConfirmAttend_Click" />
+                                            <asp:LinkButton ID="btnDeclineAttend" runat="server" CssClass="btn btn-xs btn-danger" Text="Decline" OnClick="btnDeclineAttend_Click" />
                                         </div>
                                     </td>
                                 </tr>

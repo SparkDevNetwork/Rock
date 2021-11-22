@@ -209,7 +209,7 @@ namespace RockWeb.Blocks.Communication
                                         <dd>
                                             {% for segment in Communication.Detail.CommunicationSegments %}
                                                 {% if ListSegmentDetailUrlTemplate != empty %}
-                                                    <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'@SegmentId',segment.Id }}"">{{ segment.Name }}</a><br>
+                                                    <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'@segmentId',segment.Id }}"">{{ segment.Name }}</a><br>
                                                 {% else %}
                                                     {{ segment.Name }}<br>
                                                 {% endif %}

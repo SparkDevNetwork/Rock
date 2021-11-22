@@ -133,6 +133,7 @@
     <Compile Include="Rock\Utility\ExtensionMethods\DateTimeExtensionTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\DateKeyExtensionTests.cs" />
+    <Compile Include="Rock\Utility\ExtensionMethods\StringHtmlExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Rock\Communication\EmailAddressFieldValidatorTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\ICollectionExtensionTests.cs" />

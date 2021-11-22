@@ -71,10 +71,6 @@ export default defineComponent({
     },
     methods: {
         getOptionUniqueId(uniqueId: Guid, option: DropDownListOption): string {
-            if (option.value === undefined) {
-                option.value = "";
-            }
-
             const key = option.value.replace(" ", "-");
 
             return `${uniqueId}-${key}`;

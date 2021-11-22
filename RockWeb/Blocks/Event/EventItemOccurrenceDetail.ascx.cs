@@ -1170,7 +1170,9 @@ namespace RockWeb.Blocks.Event
                 {
                     foreach ( var instance in new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( i => i.RegistrationTemplateId == templateId.Value )
+                        .Where( i => i.RegistrationTemplateId == templateId.Value
+                            && i.RegistrationTemplate.IsActive == true
+                            && i.IsActive == true )
                         .OrderBy( i => i.Name )
                         )
                     {
@@ -1192,7 +1194,10 @@ namespace RockWeb.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
-                foreach ( var template in new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().OrderBy( t => t.Name ) )
+                foreach ( var template in new RegistrationTemplateService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( i => i.IsActive == true )
+                    .OrderBy( t => t.Name ) )
                 {
                     if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {

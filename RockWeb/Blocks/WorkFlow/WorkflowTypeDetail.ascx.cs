@@ -618,6 +618,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 workflowType.ProcessingIntervalSeconds = null;
             }
 
+            workflowType.MaxWorkflowAgeDays = tbMaximumWorkflowAge.Text.AsIntegerOrNull();
             workflowType.LogRetentionPeriod = tbLogRetention.Text.AsIntegerOrNull();
             workflowType.CompletedWorkflowRetentionPeriod = tbCompletedRetention.Text.AsIntegerOrNull();
             workflowType.IsPersisted = cbIsPersisted.Checked;
@@ -1442,6 +1443,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 tbProcessingInterval.Text = string.Empty;
             }
 
+            tbMaximumWorkflowAge.Text = workflowType.MaxWorkflowAgeDays.ToStringSafe();
             tbLogRetention.Text = workflowType.LogRetentionPeriod.ToStringSafe();
             tbCompletedRetention.Text = workflowType.CompletedWorkflowRetentionPeriod.ToStringSafe();
             cbIsPersisted.Checked = workflowType.IsPersisted;

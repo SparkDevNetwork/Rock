@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -89,7 +90,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.SCHEDULED_TRANSACTION,
         Order = 7 )]
-    public partial class GivingConfiguration : Rock.Web.UI.PersonBlock
+    public partial class GivingConfiguration : Rock.Web.UI.PersonBlock, ISecondaryBlock
     {
         #region Attribute Keys
 
@@ -671,6 +672,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #endregion Base Control Methods
 
         #region Internal Methods
+
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
 
         /// <summary>
         /// Shows the detail.

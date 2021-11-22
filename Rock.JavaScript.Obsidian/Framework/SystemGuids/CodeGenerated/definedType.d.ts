@@ -55,6 +55,8 @@ The DefinedValue.Description will just be any description, such as 'Rock Solid C
     ContentChannelAudienceType = "799301A3-2026-4977-994E-45DC68502559",
     /** Guid for check-in search type */
     CheckinSearchType = "1EBCDB30-A89A-4C14-8580-8289EC2C7742",
+    /** Guid for data automation ignored person attributes */
+    DataAutomationIgnoredPersonAttributes = "886CDB4E-ED8B-48DD-A4CC-D615E032E622",
     /** Guid for Device Type */
     DeviceType = "0368B637-327A-4F5E-80C2-832079E482EE",
     /** Guid for the DISC Results of personalities. */

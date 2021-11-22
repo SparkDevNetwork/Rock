@@ -52,7 +52,7 @@ export default defineComponent( {
     },
     methods: {
         getItemLabel( item: RegistrationEntryBlockFeeItemViewModel ): string {
-            const formattedCost = Number.asFormattedString( item.cost, 2 );
+            const formattedCost = Number.asFormattedString(item.cost, 2);
 
             if ( item.countRemaining ) {
                 const formattedRemaining = Number.asFormattedString( item.countRemaining, 0 );
@@ -64,9 +64,8 @@ export default defineComponent( {
     },
     computed: {
         label(): string {
-            if ( this.singleItem ) {
-                const formattedCost = Number.asFormattedString( this.singleItem.cost, 2 );
-                return `${this.fee.name} ($${formattedCost})`;
+            if (this.singleItem) {
+                return this.getItemLabel(this.singleItem);
             }
 
             return this.fee.name;

@@ -82,6 +82,12 @@ defineRule( "required", ( ( value: unknown, [ optionsJson ]: unknown[] ) => {
         return "is required";
     }
 
+    // Special case for booleans, required rule is ignored. Otherwise things
+    // like checkbox and toggle would always require a True value.
+    if (typeof value === "boolean") {
+        return true;
+    }
+
     if ( !value ) {
         return "is required";
     }

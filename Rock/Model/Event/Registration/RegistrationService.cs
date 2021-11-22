@@ -143,7 +143,7 @@ namespace Rock.Model
                 // Verify this registration is for the same person and instance.
                 if ( context.Registration != null )
                 {
-                    if ( context.Registration.PersonAliasId.HasValue && context.Registration.PersonAliasId.Value != currentPerson?.PrimaryAliasId )
+                    if ( context.Registration.PersonAliasId.HasValue && currentPerson?.Aliases.Any( a => a.Id == context.Registration.PersonAliasId.Value ) != true )
                     {
                         // This existing registration does not belong to this person
                         errorMessage = "Your existing registration was not found";

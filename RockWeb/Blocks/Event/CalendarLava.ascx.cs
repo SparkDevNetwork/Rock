@@ -69,6 +69,8 @@ namespace RockWeb.Blocks.Event
     [TextField( "Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "CategoryId", order: 20 )]
     [TextField( "Date Parameter Name", "The page parameter name that contains the selected date.", false, "Date", order: 21 )]
 
+    [CustomRadioListField( "Approval Status Filter", "Allows filtering events by their approval status.", "1^Approved, 2^Unapproved, 3^All", true, "1", key: "ApprovalStatusFilter", order: 22 )]
+
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -338,8 +340,19 @@ namespace RockWeb.Blocks.Event
                     .Queryable( "EventItem, EventItem.EventItemAudiences,Schedule" )
                     .Where( m =>
                         m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == _calendarId ) &&
-                        m.EventItem.IsActive &&
-                        m.EventItem.IsApproved );
+                        m.EventItem.IsActive );
+
+            // Add filters for approval status
+            var approvalFilterSettings = GetAttributeValue( "ApprovalStatusFilter" ).AsInteger(); // 1 = Approved, 2 = Unapproved, 3 = All
+
+            if ( approvalFilterSettings == 1 )
+            {
+                qry = qry.Where( m => m.EventItem.IsApproved == true );
+            }
+            else if (approvalFilterSettings == 2 )
+            {
+                qry = qry.Where( m => m.EventItem.IsApproved == false );
+            }
 
             // Filter by campus
             var campusGuidList = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();

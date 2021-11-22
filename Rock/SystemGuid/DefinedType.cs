@@ -99,6 +99,10 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
 
         /// <summary>
+        /// Guid for data automation ignored person attributes
+        /// </summary>
+        public const string DATA_AUTOMATION_IGNORED_PERSON_ATTRIBUTES = "886CDB4E-ED8B-48DD-A4CC-D615E032E622";
+        /// <summary>
         /// Guid for Device Type
         /// </summary>
         public const string DEVICE_TYPE = "0368B637-327A-4F5E-80C2-832079E482EE";

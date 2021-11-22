@@ -81,8 +81,6 @@
                 }
             }
 
-            
-
             Sys.Application.add_load(function () {
 
                 $('a.js-label-select').off('click').on('click', function () {
@@ -303,20 +301,23 @@
                             });
                     }, 0);
                 }
-                
+
                 var isIPadAppWithCamera = IsIpadAppWithCamera();
 
                 var $cameraButton = $('.js-camera-button');
+                var themeSupportsHtmlCamera = $('body').hasClass('js-camera-supported');
 
                 // handle click of scan button
-                $cameraButton.on('click', function (a) {
-                    a.preventDefault();
-                    if (isIPadAppWithCamera) {
-                        // Reset the swipe processing as it may have failed silently.
-                        swipeProcessing = false;
-                        window.RockCheckinNative.StartCamera(false);
-                    }
-                });
+                if (themeSupportsHtmlCamera) {
+                    $cameraButton.on('click', function (a) {
+                        a.preventDefault();
+                        if (isIPadAppWithCamera) {
+                            // Reset the swipe processing as it may have failed silently.
+                            swipeProcessing = false;
+                            window.RockCheckinNative.StartCamera(false);
+                        }
+                    });
+                }
 
                 // auto-show or auto-enable camera if configured to do so.
                 if (isIPadAppWithCamera) {
@@ -328,7 +329,7 @@
                         window.RockCheckinNative.StartCamera(true);
                     }
                 }
-                else if ($cameraButton.length > 0) {
+                else if (themeSupportsHtmlCamera && $cameraButton.length > 0) {
                     // using browser or windows checkin client
                     // Lava creates the js-camera-button html, but it probably doesn't
                     // have an id assigned to it, so set it if it isn't set

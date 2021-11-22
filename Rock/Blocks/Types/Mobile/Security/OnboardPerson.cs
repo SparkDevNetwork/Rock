@@ -221,7 +221,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Personal Information Screen Subtitle",
         Description = "The text to display at the top of the Personal Information screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
-        DefaultValue = "The more we know the more we can taylor our ministry to you.",
+        DefaultValue = "The more we know the more we can tailor our ministry to you.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.PersonalInformationScreenSubtitle,
         Order = 7 )]
@@ -819,6 +819,14 @@ namespace Rock.Blocks.Types.Mobile.Security
         public bool HideEmailIfKnown => GetAttributeValue( AttributeKeys.HideEmailIfKnown ).AsBoolean();
 
         /// <summary>
+        /// Gets a value indicating whether the notification screen should be shown.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the notification screen should be shown; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowNotificationsRequest => GetAttributeValue( AttributeKeys.ShowNotificationsRequest ).AsBoolean();
+
+        /// <summary>
         /// Gets a value indicating whether the campus field should be hidden if value is known.
         /// </summary>
         /// <value>
@@ -1042,7 +1050,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     BirthDateVisibility = BirthDateVisibility,
                     HideBirthDateIfKnown = HideBirthDateIfKnown,
                     Interests = GetInterests( rockContext ),
-                    RequestNotificationPermission = true,
+                    RequestNotificationPermission = ShowNotificationsRequest,
                     Campuses = GetDisplayCampuses( rockContext ),
                     OnlineCampusGuid = OnlineCampusGuid,
                     DoNotAttendCampusGuid = DoNotAttendCampusGuid,

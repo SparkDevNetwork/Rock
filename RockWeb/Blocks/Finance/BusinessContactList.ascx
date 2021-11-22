@@ -6,8 +6,8 @@
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-users"></i> Business Contacts</h1>
                 </div>
+                <asp:HiddenField ID="hfBusinessId" runat="server" />
                 <div class="panel-body">
-                    <asp:HiddenField ID="hfBusinessId" runat="server" />
                     <div class="grid grid-panel">
                         <Rock:Grid ID="gContactList" runat="server" RowItemText="Contact" EmptyDataText="No Contacts Found" AllowSorting="true" OnRowSelected="gContactList_RowSelected" ShowConfirmDeleteDialog="false">
                             <Columns>

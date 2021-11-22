@@ -150,7 +150,7 @@ namespace Rock.Model
         /// </summary>
         public RegistrationTemplatePlacementConfiguration()
         {
-            this.HasRequired( i => i.RegistrationTemplate ).WithMany( t => t.Placements ).HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( false );
+            this.HasRequired( i => i.RegistrationTemplate ).WithMany( t => t.Placements ).HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
         }
     }

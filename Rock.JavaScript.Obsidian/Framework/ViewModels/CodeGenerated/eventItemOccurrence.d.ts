@@ -30,6 +30,7 @@ export type EventItemOccurrence = IEntity & {
     contactPhone?: string | null;
     eventItemId?: number;
     location?: string | null;
+    nextStartDateTime?: string | null;
     note?: string | null;
     scheduleId?: number | null;
     createdDateTime?: string | null;
