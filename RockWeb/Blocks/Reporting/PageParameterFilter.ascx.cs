@@ -769,10 +769,12 @@ namespace RockWeb.Blocks.Reporting
                         if ( value.IsNotNullOrWhiteSpace() )
                         {
                             queryString.Set( attribute.Key, value );
+                            CurrentPageReference.Parameters.AddOrReplace( attribute.Key, value );
                         }
                         else
                         {
                             queryString.Remove( attribute.Key );
+                            CurrentPageReference.Parameters.Remove( attribute.Key );
                         }
                     }
                 }
@@ -798,24 +800,7 @@ namespace RockWeb.Blocks.Reporting
                 url = VirtualPathUtility.ToAbsolute( string.Format( "~/page/{0}", page.Id ) );
             }
 
-            if ( queryString.AllKeys.Any() )
-            {
-                // JE 2/19/2021
-                // Fixing to support routes. This should probably be in the GenerateQueryString() but it's difficult to understand
-                // the logic of that method. This is slightly slower, but a safer change. A re-write of the filter redirect may be in order.
-                var pageReference = CurrentPageReference;
-
-                foreach ( var key in queryString.AllKeys )
-                {
-                    pageReference.Parameters.AddOrReplace( key, queryString[key] );
-                }
-
-                return pageReference.BuildUrl();
-            }
-            else
-            {
-                return url;
-            }
+            return queryString.AllKeys.Any() ? $"{url}?{queryString}" : url;
         }
 
         /// <summary>
