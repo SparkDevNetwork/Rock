@@ -4762,6 +4762,45 @@ FROM (
 
             return mergeRequestQry;
         }
+
+        #region Configuration Settings
+
+        /// <summary>
+        /// Gets the current graduation date base on the GradeTransitionDate GlobalAttribute and current datetime.
+        /// For example, if the Grade Transition Date is June 1st and the current date is June 1st or earlier, it will return June 1st of the current year;
+        /// otherwise, it will return June 1st of next year
+        /// </summary>
+        /// <value>
+        /// The current graduation date.
+        /// </value>
+        public static DateTime GetCurrentGraduationDate()
+        {
+            /*
+             * Implemented as a method rather than a property to indicate to the caller that this is a calculated value
+             * and should be cached if it is to be used multiple times.
+             */
+            var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+            if ( graduationDateWithCurrentYear < RockDateTime.Today )
+            {
+                // if the graduation date already occurred this year, return next year' graduation date
+                return graduationDateWithCurrentYear.AddYears( 1 );
+            }
+
+            return graduationDateWithCurrentYear;
+        }
+
+        /// <summary>
+        /// Gets the current graduation year based on <see cref="GetCurrentGraduationDate"/>
+        /// </summary>
+        /// <value>
+        /// The current graduation year.
+        /// </value>
+        public static int GetCurrentGraduationYear()
+        {
+            return GetCurrentGraduationDate().Year;
+        }
+
+        #endregion
     }
 
     /// <summary>
