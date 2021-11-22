@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,7 +27,6 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-
 using Rock.Communication;
 using Rock.Data;
 using Rock.Utility;
@@ -1153,85 +1153,6 @@ namespace Rock.Model
             // the Migration will manually add a ON DELETE SET NULL for SystemCommunicationId
             this.HasOptional( r => r.SystemCommunication ).WithMany().HasForeignKey( r => r.SystemCommunicationId ).WillCascadeOnDelete( false );
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The status of a communication
-    /// </summary>
-    public enum CommunicationStatus
-    {
-        /// <summary>
-        /// Communication was created, but not yet edited by a user. (i.e. from data grid or report)
-        /// Transient communications more than a few hours old may be deleted by clean-up job.
-        /// </summary>
-        Transient = 0,
-
-        /// <summary>
-        /// Communication is currently being drafted
-        /// </summary>
-        Draft = 1,
-
-        /// <summary>
-        /// Communication has been submitted but not yet approved or denied
-        /// </summary>
-        PendingApproval = 2,
-
-        /// <summary>
-        /// Communication has been approved for sending
-        /// </summary>
-        Approved = 3,
-
-        /// <summary>
-        /// Communication has been denied
-        /// </summary>
-        Denied = 4,
-    }
-
-    /// <summary>
-    /// Type of communication
-    /// </summary>
-    public enum CommunicationType
-    {
-        /// <summary>
-        /// RecipientPreference
-        /// </summary>
-        [Display( Name = "No Preference" )]
-        RecipientPreference = 0,
-
-        /// <summary>
-        /// Email
-        /// </summary>
-        Email = 1,
-
-        /// <summary>
-        /// SMS
-        /// </summary>
-        SMS = 2,
-
-        /// <summary>
-        /// Push notification
-        /// </summary>
-        PushNotification = 3
-    }
-
-    /// <summary>
-    /// Flag indicating if communication is for all selected segments or any segments
-    /// </summary>
-    public enum SegmentCriteria
-    {
-        /// <summary>
-        /// All
-        /// </summary>
-        All = 0,
-
-        /// <summary>
-        /// Any
-        /// </summary>
-        Any = 1,
     }
 
     #endregion

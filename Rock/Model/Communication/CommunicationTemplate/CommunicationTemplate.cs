@@ -40,7 +40,6 @@ namespace Rock.Model
     [DataContract]
     public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails, ICampusFilterable
     {
-
         #region Entity Properties
 
         /// <summary>
