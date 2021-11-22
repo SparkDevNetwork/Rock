@@ -27,6 +27,7 @@ using Fluid;
 using Fluid.Ast;
 using Fluid.Parser;
 using Fluid.Values;
+using Parlot.Fluent;
 
 namespace Rock.Lava.Fluid
 {

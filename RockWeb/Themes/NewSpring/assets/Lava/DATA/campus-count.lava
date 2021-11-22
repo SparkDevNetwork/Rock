@@ -1,0 +1,6 @@
+{% capture campusCount %}
+{% assign count = 0 %}
+{% campus where:'IsActive == true && Public == "Yes"' sort:'Name, asc' iterator:'campuses' %}
+    {{ campuses | Size }}
+{% endcampus %}
+{% endcapture %}{{ campusCount | Trim }}

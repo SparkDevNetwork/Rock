@@ -1,0 +1,93 @@
+<style>
+  .group-attendance-detail .panel-heading {
+    display: none;
+  }
+
+  .group-attendance-detail .date-picker .input-group {
+    width: 100%;
+  }
+
+  .group-attendance-detail h4 {
+    margin-bottom: 15px;
+  }
+
+  .group-attendance-detail .js-members-label {
+    margin-bottom: 0;
+  }
+
+  .group-attendance-detail .checkbox {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .group-attendance-detail .group-member-photo {
+    position: absolute;
+    top: -2px;
+    left: 35px;
+  }
+  .group-attendance-detail .group-member-photo .ratio {
+    width: 30px;
+  }
+
+  .group-attendance-detail .js-roster .checkbox label {
+    padding-left: 75px;
+  }
+
+  .group-attendance-detail .checkbox .label-text:before {
+    top: -1px;
+  }
+
+  .group-attendance-detail .col-xs-1,
+  .group-attendance-detail .col-sm-1,
+  .group-attendance-detail .col-md-1,
+  .group-attendance-detail .col-lg-1,
+  .group-attendance-detail .col-xs-2,
+  .group-attendance-detail .col-sm-2,
+  .group-attendance-detail .col-md-2,
+  .group-attendance-detail .col-lg-2,
+  .group-attendance-detail .col-xs-3,
+  .group-attendance-detail .col-sm-3,
+  .group-attendance-detail .col-md-3,
+  .group-attendance-detail .col-lg-3,
+  .group-attendance-detail .col-xs-4,
+  .group-attendance-detail .col-sm-4,
+  .group-attendance-detail .col-md-4,
+  .group-attendance-detail .col-lg-4,
+  .group-attendance-detail .col-xs-5,
+  .group-attendance-detail .col-sm-5,
+  .group-attendance-detail .col-md-5,
+  .group-attendance-detail .col-lg-5,
+  .group-attendance-detail .col-xs-6,
+  .group-attendance-detail .col-sm-6,
+  .group-attendance-detail .col-md-6,
+  .group-attendance-detail .col-lg-6,
+  .group-attendance-detail .col-xs-7,
+  .group-attendance-detail .col-sm-7,
+  .group-attendance-detail .col-md-7,
+  .group-attendance-detail .col-lg-7,
+  .group-attendance-detail .col-xs-8,
+  .group-attendance-detail .col-sm-8,
+  .group-attendance-detail .col-md-8,
+  .group-attendance-detail .col-lg-8,
+  .group-attendance-detail .col-xs-9,
+  .group-attendance-detail .col-sm-9,
+  .group-attendance-detail .col-md-9,
+  .group-attendance-detail .col-lg-9,
+  .group-attendance-detail .col-xs-10,
+  .group-attendance-detail .col-sm-10,
+  .group-attendance-detail .col-md-10,
+  .group-attendance-detail .col-lg-10,
+  .group-attendance-detail .col-xs-11,
+  .group-attendance-detail .col-sm-11,
+  .group-attendance-detail .col-md-11,
+  .group-attendance-detail .col-lg-11,
+  .group-attendance-detail .col-xs-12,
+  .group-attendance-detail .col-sm-12,
+  .group-attendance-detail .col-md-12,
+  .group-attendance-detail .col-lg-12 {
+    float: left;
+  }
+</style>
+
+{% assign groupId = 'Global' | PageParameter:'GroupId' %}
+{[ groupsHeader groupid:groupId ]}
