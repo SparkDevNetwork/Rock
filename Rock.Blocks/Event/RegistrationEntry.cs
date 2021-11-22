@@ -2223,6 +2223,7 @@ namespace Rock.Blocks.Event
             paymentInfo.FirstName = args.Registrar.NickName;
             paymentInfo.LastName = args.Registrar.LastName;
             paymentInfo.Comment1 = comment;
+            paymentInfo.TransactionTypeValueId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) ).Id;
 
             FinancialTransaction transaction;
 

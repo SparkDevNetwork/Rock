@@ -1885,8 +1885,10 @@ namespace Rock.Blocks.Types.Mobile.Security
                         Person = mobilePerson
                     } );
                 }
-                catch
+                catch ( Exception ex )
                 {
+                    ExceptionLogService.LogException( ex );
+
                     return ActionOk( new CreatePersonResponse
                     {
                         IsSuccess = false,

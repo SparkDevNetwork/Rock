@@ -556,7 +556,9 @@ namespace Rock.Mobile
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) ),
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
                     ShowFullScreen = additionalPageSettings.ShowFullScreen,
-                    AutoRefresh = additionalPageSettings.AutoRefresh
+                    AutoRefresh = additionalPageSettings.AutoRefresh,
+                    PageType = additionalPageSettings.PageType,
+                    WebPageUrl = additionalPageSettings.WebPageUrl
                 };
 
                 package.Pages.Add( mobilePage );
@@ -838,7 +840,7 @@ namespace Rock.Mobile
         /// <returns></returns>
         public static string GetCheckBoxFieldXaml( string name, string label, bool isChecked )
         {
-            return $"<Rock:CheckBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"true\" IsChecked=\"{isChecked}\" />";
+            return $"<Rock:CheckBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"false\" IsChecked=\"{isChecked}\" />";
         }
 
         #endregion
