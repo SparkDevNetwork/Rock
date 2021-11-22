@@ -35,7 +35,7 @@
     "yup": "^0.32.9"
   },
   "dependencies": {
-    "axios": "^0.21.0",
+    "axios": "^0.21.2",
     "luxon": "^2.0.2",
     "mitt": "^2.1.0",
     "systemjs": " ^6.8.3",
