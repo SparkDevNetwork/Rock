@@ -792,7 +792,7 @@
     <Compile Include="Model\Core\Audit\AuditType.cs" />
     <Compile Include="Model\Core\Auth\Auth.SaveHook.cs" />
     <Compile Include="Model\Core\Auth\SpecialRole.cs" />
-    <Compile Include="Model\Core\Badge\Badge.Logic.cs" />
+    <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
     <Compile Include="Model\Core\DefinedType\DefinedType.Logic.cs" />
@@ -2494,8 +2494,8 @@
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDeviceService.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
-    <Compile Include="Model\Core\Badge\Badge.cs" />
-    <Compile Include="Model\Core\Badge\BadgeService.cs" />
+    <Compile Include="Model\CRM\Badge\Badge.cs" />
+    <Compile Include="Model\CRM\Badge\BadgeService.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonSearchKey.cs" />
