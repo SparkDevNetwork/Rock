@@ -16,7 +16,6 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -76,19 +75,11 @@ namespace Rock.Model
         [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
-        #endregion Entity Properties
-
-        #region IHasActiveFlag
-
         /// <summary>
         /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
         [DataMember]
         public bool IsActive { get; set; } = true;
-
-        #endregion IHasActiveFlag
-
-        #region IOrdered
 
         /// <summary>
         /// Gets or sets the order.
@@ -96,9 +87,9 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
-        #endregion IOrdered
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the badge component <see cref="Rock.Model.EntityType"/>.
@@ -112,7 +103,7 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -127,30 +118,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return BadgeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            BadgeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
+        #endregion Methods
     }
 
     #region Entity Configuration

@@ -23,6 +23,8 @@ namespace Rock.Model
 {
     public partial class BadgeService
     {
+        #region Methods
+
         /// <summary>
         /// Gets the Guid for the Badge that has the specified Id
         /// </summary>
@@ -92,5 +94,7 @@ namespace Rock.Model
             // Qualifiers match
             return true;
         }
+
+        #endregion Methods
     }
 }
