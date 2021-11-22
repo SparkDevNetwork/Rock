@@ -82,7 +82,7 @@
     transition-property: transform, -webkit-transform;
 
     @media (min-width: @screen-sm-min) {
-      opacity: .3;
+      opacity: .6;
       transition: opacity .3s ease-in-out;
       
       &.swiper-slide-active {
@@ -212,7 +212,7 @@
     cursor: pointer;
     background-color: @brand-primary;
     border-radius: 100px;
-    box-shadow: 0 0 25px rgba(0,0,0,.5);
+    box-shadow: 0 0 2px rgba(0,0,0,.5);
     outline: none;
     -webkit-transition: opacity 2s ease-in-out;
     transition: opacity .3s ease-in-out;
@@ -364,8 +364,18 @@
     height: 12px;
     display: inline-block;
     border-radius: 100%;
-    background: #fff;
+    background: #000;
     opacity: 0.2;
+
+    .bg-black &,
+    .bg-gray-darker &,
+    .bg-gray-dark &,
+    .bg-gray &,
+    .bg-primary &,
+    .bg-secondary &,
+    .bg-gray-tertiary & {
+        background: #fff;
+    }
 }
 
 button.swiper-pagination-bullet {
@@ -385,7 +395,7 @@ button.swiper-pagination-bullet {
 
 .swiper-pagination-bullet-active {
     opacity: 1;
-    background: #6bac43;
+    background: #6bac43 !important;
 }
 
 .swiper-container-vertical>.swiper-pagination-bullets {

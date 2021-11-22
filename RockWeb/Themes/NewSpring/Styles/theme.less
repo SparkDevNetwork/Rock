@@ -62,6 +62,24 @@ legend {
 	font-weight: 700;
 }
 
+.display-1 {
+	font-size: floor((@font-size-base * 2.4));
+	line-height: ceil((@line-height-computed * 2));
+	letter-spacing: -3.5px;
+}
+
+.display-2 {
+	font-size: floor((@font-size-base * 2));
+	line-height: ceil((@line-height-computed * 1.6));
+	letter-spacing: -2px;
+}
+
+.display-3 {
+	font-size: floor((@font-size-base * 1.6));
+	line-height: ceil((@line-height-computed * 1.5));
+	letter-spacing: -2px;
+}
+
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, p, ol, ul {
 	margin-bottom: @base-spacing-unit;
 }
@@ -84,6 +102,29 @@ h6, .h6 {
 		&:hover {
 			color: @brand-primary;
 			text-decoration: none;
+		}
+	}
+}
+
+a {
+	h1, .h1, 
+	h2, .h2, 
+	h3, .h3, 
+	h4, .h4, 
+	h5, .h5, 
+	h6, .h6 {
+		color: @gray-darker;
+		transition: all .1s ease-in-out;
+	}
+
+	&:hover {
+		h1, .h1, 
+		h2, .h2, 
+		h3, .h3, 
+		h4, .h4, 
+		h5, .h5, 
+		h6, .h6 {
+			color: @brand-primary;
 		}
 	}
 }

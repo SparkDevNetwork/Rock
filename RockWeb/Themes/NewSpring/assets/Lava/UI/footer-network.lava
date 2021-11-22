@@ -6,10 +6,10 @@
 </style>
 
 {% assign orgEmail = 'Global' | Attribute:'OrganizationEmailNetwork' %}
-{% assign orgPhone = 'Global' | Attribute:'OrganizationPhoneNetwork' %}
+{% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
 
 
-<footer class="position-relative shell soft-double xs-soft-double-ends bg-gray-dark rounded shadowed">
+<footer class="position-relative shell soft-double xs-soft-double-ends bg-gray-darker rounded-lg shadowed">
     <a href="#content" data-scroll title="Scroll to Top">
         <img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="NewSpring Network" class="position-absolute bottom-zero right-zero" style="max-width: 50px;">
     </a>
@@ -30,14 +30,16 @@
                 <li><a href="/questions">FAQs</a></li>
                 <li><a href="/resources">Resources</a></li>
                 <li><a href="/connect">Connect With Us</a></li>
+                <li><a href="https://newspring.cc/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=4">Technical Support</a></li>
             </ul>
         </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom xs-push-half-bottom">
             <h2 class="h5 text-white xs-text-center push-half-bottom">Resources</h2>
             <ul class="list-unstyled xs-text-center flush-bottom xs-push-half-bottom">
-                <li><a href="/resources/kids">Kids Series</a></li>
-                <li><a href="/resources/students">Student Series</a></li>
-                <li><a href="/resources/series">Sermon Series</a></li>
-                <li><a href="/resources/volunteers">Volunteers</a></li>
+                <li><a href="/resources/kids">Kids</a></li>
+                <li><a href="/resources/students">Students</a></li>
+                <li><a href="/resources/teaching">Teaching</a></li>
+                <li class="hidden"><a href="/resources/volunteers">Volunteers</a></li>
+                <li><a href="/resources/music">Music</a></li>
             </ul>
         </div><div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom">
             <h2 class="h5 text-white push-half-bottom">Social</h2>

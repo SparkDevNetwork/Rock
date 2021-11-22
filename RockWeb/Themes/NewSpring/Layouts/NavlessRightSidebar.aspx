@@ -8,7 +8,7 @@
     </Rock:Lava>
 
     <div class="soft xs-soft-half hard-bottom xs-hard-bottom clearfix">
-        
+
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error no-index" style="display:none">
             <p><strong>Error</strong></p>
@@ -17,17 +17,37 @@
 
         <Rock:Zone Name="Feature" runat="server" />
 
-        <div class="row">
-            <div class="col-xs-12 col-sm-7 col-md-8 col-lg-9">
-                <Rock:Zone Name="Main" runat="server" />
-            </div><div class="col-xs-12 col-sm-5 col-md-4 col-lg-3">
-                <Rock:Zone Name="Section A" runat="server" />
+        <Rock:Lava ID="PageConstrained" runat="server">
+            {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
+            {% if isPageConstrained == 'Yes' %}
+                <div class="page-constrained mx-auto">
+            {% endif %}
+        </Rock:Lava>
+
+            <div id="content" class="clearfix">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-7 col-md-8 col-lg-9">
+                        <Rock:Zone Name="Main" runat="server" />
+                    </div><div class="col-xs-12 col-sm-5 col-md-4 col-lg-3">
+                        <Rock:Zone Name="Section A" runat="server" />
+                    </div>
+                </div>
+
+                <Rock:Zone Name="Section B" runat="server" />
+                
+                <div class="page-constrained mx-auto">
+                    <Rock:Zone Name="Section C" runat="server" />
+                </div>
+
+                <Rock:Zone Name="Section D" runat="server" />
             </div>
-        </div>
-        
-        <Rock:Zone Name="Section B" runat="server" />
-        <Rock:Zone Name="Section C" runat="server" />
-        <Rock:Zone Name="Section D" runat="server" />
+
+        <Rock:Lava ID="PageConstrainedClose" runat="server">
+            {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
+            {% if isPageConstrained == 'Yes' %}
+                </div>
+            {% endif %}
+        </Rock:Lava>
 
     </div>
 
