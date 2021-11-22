@@ -757,6 +757,15 @@
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
     <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
+    <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.Logic.cs" />
+    <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientServiceExtensions.cs" />
+    <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientStatus.cs" />
+    <Compile Include="Model\Communication\CommunicationResponse\CommunicationRecipientResponse.cs" />
+    <Compile Include="Model\Communication\CommunicationTemplateAttachment\CommunicationTemplateAttachment.Savehook.cs" />
+    <Compile Include="Model\Communication\CommunicationTemplate\CommunicationTemplate.Logic.cs" />
+    <Compile Include="Model\Communication\Communication\Communication.Logic.cs" />
+    <Compile Include="Model\Communication\Communication\Communication.SaveHook.cs" />
+    <Compile Include="Model\Communication\Communication\CommunicationExtensionMethods.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationStatus.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
     <Compile Include="Model\Communication\Communication\SegmentCriteria.cs" />
@@ -1579,7 +1588,7 @@
     <Compile Include="Model\CodeGenerated\StepTypePrerequisiteService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\StepTypeService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationResponse\CommunicationResponse.cs" />
-    <Compile Include="Model\Communication\CommunicationResponse\CommunicationResponseService.partial.cs" />
+    <Compile Include="Model\Communication\CommunicationResponse\CommunicationResponseService.cs" />
     <Compile Include="Model\ConflictProfileService.cs" />
     <Compile Include="Model\EQInventoryService.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakType.cs" />
@@ -2360,8 +2369,8 @@
     <Compile Include="Model\CodeGenerated\WorkflowTypeService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\Communication\Communication.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.cs" />
-    <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientService.Partial.cs" />
-    <Compile Include="Model\Communication\Communication\CommunicationService.Partial.cs" />
+    <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientService.cs" />
+    <Compile Include="Model\Communication\Communication\CommunicationService.cs" />
     <Compile Include="Model\Communication\CommunicationTemplate\CommunicationTemplate.cs" />
     <Compile Include="Model\Connection\ConnectionActivityType\ConnectionActivityType.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunityGroupConfig\ConnectionOpportunityGroupConfig.cs" />

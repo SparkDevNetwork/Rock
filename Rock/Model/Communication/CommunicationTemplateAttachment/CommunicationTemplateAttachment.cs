@@ -14,13 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration;
-using System.Linq;
-using System.Runtime.Serialization;
 
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
 
@@ -66,7 +63,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
@@ -87,53 +84,6 @@ namespace Rock.Model
         public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
         #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var rockContext = ( RockContext ) dbContext;
-            BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
-            var binaryFile = binaryFileService.Get( BinaryFileId );
-            if ( binaryFile != null )
-            {
-
-                switch ( entry.State )
-                {
-                    case EntityState.Added:
-                    case EntityState.Modified:
-                        {
-
-                            binaryFile.IsTemporary = false;
-
-                            break;
-                        }
-
-                    case EntityState.Deleted:
-                        {
-                            var isAttachmentInUse = new CommunicationAttachmentService( ( RockContext ) dbContext )
-                                            .Queryable()
-                                            .Where( a => a.BinaryFileId == this.BinaryFileId )
-                                            .Any();
-                            if ( !isAttachmentInUse )
-                            {
-                                binaryFile.IsTemporary = true;
-                            }
-                            break;
-                        }
-                }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -154,6 +104,5 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
 

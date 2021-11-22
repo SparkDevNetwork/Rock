@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -31,7 +31,6 @@ namespace Rock.Model
     [DataContract]
     public partial class CommunicationAttachment : Model<CommunicationAttachment>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -62,8 +61,7 @@ namespace Rock.Model
         public CommunicationType CommunicationType { get; set; }
 
         #endregion
-
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
@@ -84,7 +82,6 @@ namespace Rock.Model
         public virtual Communication Communication { get; set; }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -105,6 +102,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
-

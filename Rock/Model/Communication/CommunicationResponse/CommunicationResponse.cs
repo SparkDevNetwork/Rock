@@ -14,15 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -36,6 +35,7 @@ namespace Rock.Model
     public partial class CommunicationResponse : Model<CommunicationResponse>
     {
         #region Entity Properties
+
         /// <summary>
         /// This is the address of the sender communication medium. e.g. A phone number or email address.
         /// It is used when an incoming message cannot be identified with a person, this can be used to
@@ -123,7 +123,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets from person alias.
@@ -186,16 +186,8 @@ namespace Rock.Model
         }
 
         private ICollection<CommunicationResponseAttachment> _attachments;
-        #endregion Virtual Properties
 
-        #region Public Methods
-
-        #endregion Public Methods
-
-        #region Static Methods
-
-        #endregion Static Methods
-
+        #endregion
     }
 
     #region Entity Configuration
@@ -218,5 +210,4 @@ namespace Rock.Model
         }
     }
     #endregion Entity Configuration
-
 }

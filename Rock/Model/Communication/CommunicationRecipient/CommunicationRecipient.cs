@@ -14,19 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-
-using Newtonsoft.Json.Linq;
-
 using Rock.Data;
-using Rock.Web.UI.Controls;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -39,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class CommunicationRecipient : Model<CommunicationRecipient>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -154,38 +148,6 @@ namespace Rock.Model
         public string ResponseCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the AdditionalMergeValues as a Json string.
-        /// </summary>
-        /// <value>
-        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient. 
-        /// </value>
-        [DataMember]
-        public string AdditionalMergeValuesJson
-        {
-            get
-            {
-                return AdditionalMergeValues.ToJson();
-            }
-
-            set
-            {
-                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, object>>() ?? new Dictionary<string, object>();
-
-                // Convert any objects to a dictionary so that they can be used by Lava
-                var objectKeys = AdditionalMergeValues
-                    .Where( m => m.Value != null && m.Value.GetType() == typeof( JObject ) )
-                    .Select( m => m.Key ).ToList();
-                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JObject ) AdditionalMergeValues[k] ).ToDictionary() );
-
-                // Convert any arrays to a list, and also check to see if it contains objects that need to be converted to a dictionary for Lava
-                var arrayKeys = AdditionalMergeValues
-                    .Where( m => m.Value != null && m.Value.GetType() == typeof( JArray ) )
-                    .Select( m => m.Key ).ToList();
-                arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JArray ) AdditionalMergeValues[k] ).ToObjectArray() );
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the message as it was sent to the recipient (i.e. after lava merge).
         /// </summary>
         /// <value>
@@ -201,9 +163,10 @@ namespace Rock.Model
         /// The personal device identifier.
         /// </value>
         public int? PersonalDeviceId { get; set; }
+
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
@@ -247,72 +210,6 @@ namespace Rock.Model
         private Dictionary<string, object> _additionalMergeValues = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets a list of activities.
-        /// </summary>
-        /// <value>
-        /// The activity list.
-        /// </value>
-        [NotMapped]
-        public virtual string ActivityList
-        {
-            get
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var interactions = this.GetInteractions( rockContext )
-                       .OrderBy( a => a.InteractionDateTime )
-                       .ToList();
-                    StringBuilder sb = new StringBuilder();
-                    foreach ( var interaction in interactions )
-                    {
-                        sb.AppendFormat( "{0} ({1} {2}): {3}<br/>",
-                            interaction.Operation,
-                            interaction.InteractionDateTime.ToShortDateString(),
-                            interaction.InteractionDateTime.ToShortTimeString(),
-                            GetInteractionDetails( interaction ) );
-                    }
-
-                    return sb.ToString();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets a list of activities.
-        /// </summary>
-        /// <value>
-        /// The activity list.
-        /// </value>
-        [NotMapped]
-        public virtual string ActivityListHtml
-        {
-            get
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var interactions = this.GetInteractions( rockContext )
-                        .OrderBy( a => a.InteractionDateTime )
-                        .ToList();
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append( "<ul>" );
-                    foreach ( var interaction in interactions )
-                    {
-                        sb.AppendFormat( "<li>{0} <small>({1} {2})</small>: {3}</li>",
-                            interaction.Operation,
-                            interaction.InteractionDateTime.ToShortDateString(),
-                            interaction.InteractionDateTime.ToShortTimeString(),
-                            GetInteractionDetails( interaction ) );
-                    }
-
-                    sb.Append( "</ul>" );
-
-                    return sb.ToString();
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the personal device.
         /// </summary>
         /// <value>
@@ -321,139 +218,6 @@ namespace Rock.Model
         public virtual PersonalDevice PersonalDevice { get; set; }
 
         #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Gets the interactions (Opened and Click activity)
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public virtual IQueryable<Interaction> GetInteractions( RockContext rockContext )
-        {
-            var interactionService = new InteractionService( rockContext );
-            var interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
-            var result = interactionService.Queryable()
-                .Where( a => a.InteractionComponent.InteractionChannel.Guid == interactionChannelGuid && a.InteractionComponentId == this.CommunicationId );
-            return result;
-        }
-
-        /// <summary>
-        /// Helper method to get recipient merge values for sending communication.
-        /// </summary>
-        /// <param name="globalConfigValues">The global configuration values.</param>
-        /// <returns></returns>
-        public Dictionary<string, object> CommunicationMergeValues( Dictionary<string, object> globalConfigValues )
-        {
-            Dictionary<string, object> mergeValues = new Dictionary<string, object>();
-
-            globalConfigValues.ToList().ForEach( v => mergeValues.Add( v.Key, v.Value ) );
-
-            if ( this.Communication != null )
-            {
-                mergeValues.Add( "Communication", this.Communication );
-            }
-
-            if ( this.PersonAlias != null && this.PersonAlias.Person != null )
-            {
-                mergeValues.Add( "Person", this.PersonAlias.Person );
-            }
-
-            // Add any additional merge fields created through a report
-            foreach ( var mergeField in this.AdditionalMergeValues )
-            {
-                if ( !mergeValues.ContainsKey( mergeField.Key ) )
-                {
-                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeField.Key );
-                    if ( entityTypeInfo?.EntityType != null )
-                    {
-                        // Merge Field is reference to an Entity record. So, get the Entity from the database and use that as a merge object
-                        var entityTypeType = entityTypeInfo.EntityType.GetEntityType();
-                        var entityIdString = mergeField.Value.ToString();
-                        IEntity mergeEntity = null;
-                        var entityId = entityIdString.AsIntegerOrNull();
-                        if ( entityId.HasValue )
-                        {
-                            mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityId.Value );
-                        }
-                        else
-                        {
-                            var entityGuid = entityIdString.AsGuidOrNull();
-                            if ( entityGuid.HasValue )
-                            {
-                                mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityGuid.Value );
-                            }
-                        }
-
-                        // Add Entity as Merge field. For example ("GroupMember", groupMember)
-                        mergeValues.Add( entityTypeType.Name, mergeEntity );
-                    }
-                    else
-                    {
-                        // regular mergefield value
-                        mergeValues.Add( mergeField.Key, mergeField.Value );
-                    }
-                }
-            }
-
-            return mergeValues;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            if ( this.PersonAlias != null && this.PersonAlias.Person != null )
-            {
-                return this.PersonAlias.Person.ToStringSafe();
-            }
-            else
-            {
-                return base.ToString();
-            }
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Gets the interaction details.
-        /// </summary>
-        /// <returns></returns>
-        public static string GetInteractionDetails( Interaction interaction )
-        {
-            string interactionDetails = string.Empty;
-            string ipAddress = interaction?.InteractionSession?.IpAddress ?? "'unknown'";
-
-            if ( interaction.Operation == "Opened" )
-            {
-                interactionDetails = $"Opened from {ipAddress}";
-            }
-            else if ( interaction.Operation == "Click" )
-            {
-                interactionDetails = $"Clicked the address {interaction?.InteractionData} from {ipAddress}";
-            }
-            else
-            {
-                interactionDetails = $"{interaction?.Operation}";
-            }
-
-            string deviceTypeDetails = $"{interaction?.InteractionSession?.DeviceType?.OperatingSystem} {interaction?.InteractionSession?.DeviceType?.DeviceTypeData} {interaction?.InteractionSession?.DeviceType?.Application} {interaction?.InteractionSession?.DeviceType?.ClientType}";
-            if ( deviceTypeDetails.IsNotNullOrWhiteSpace() )
-            {
-                interactionDetails += $" using {deviceTypeDetails}";
-            }
-
-            return interactionDetails;
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -476,41 +240,5 @@ namespace Rock.Model
     }
 
     #endregion
-
-    /// <summary>
-    /// The status of communication being sent to recipient
-    /// </summary>
-    public enum CommunicationRecipientStatus
-    {
-        /// <summary>
-        /// Communication has not yet been sent to recipient
-        /// </summary>
-        Pending = 0,
-
-        /// <summary>
-        /// Communication was successfully delivered to recipient's mail server
-        /// </summary>
-        Delivered = 1,
-
-        /// <summary>
-        /// Communication failed to be sent to recipient
-        /// </summary>
-        Failed = 2,
-
-        /// <summary>
-        /// Communication was cancelled prior to sending to the recipient
-        /// </summary>
-        Cancelled = 3,
-
-        /// <summary>
-        /// Communication was sent and opened (viewed) by the recipient
-        /// </summary>
-        Opened = 4,
-
-        /// <summary>
-        /// Temporary status used while sending ( to prevent transaction and job sending same record )
-        /// </summary>
-        Sending = 5
-    }
 }
 
