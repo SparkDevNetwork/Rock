@@ -594,6 +594,7 @@
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\Search.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.WebForms.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
@@ -742,6 +743,8 @@
     <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
+    <Compile Include="Mobile\MobileNavigationAction.cs" />
+    <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Model\AuthAuditLog.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.SaveHook.cs" />

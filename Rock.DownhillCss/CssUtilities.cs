@@ -1876,6 +1876,44 @@ formfield .required-indicator {
 .group-member-edit-layout .save-button {
     margin: 0, 24, 0, 0;
 }
+
+
+/*** Search block ***/
+.search-layout .search-field .search-button {
+    margin: 0, 4, 0, 12;
+    padding: 24, 0, 24, 0;
+}
+
+.search-layout .search-results {
+    margin: 0, 12, 0, 0;
+}
+
+.search-layout .search-result-content {
+    padding: 0, 8, 0, 8;
+}
+
+.search-layout .search-result-image {
+    width: 35;
+    margin: 0, 0, 10, 0;
+}
+
+.search-layout .search-result-name {
+    font-style: bold;
+}
+
+.search-layout .search-result-text {
+    font-size: ?shell-font-scale(14);
+}
+
+.search-layout .search-result-detail-arrow {
+    color: #a5a5a5;
+    font-size: ?shell-font-scale(20);
+    margin: 10, 0, 0, 0;
+}
+
+.search-layout .show-more-button {
+    margin: 0, 12, 0, 0;
+}
 ";
         #endregion
     }

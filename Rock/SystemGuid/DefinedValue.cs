@@ -66,6 +66,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL = "44538702-5157-489A-B256-217F5D1F53F4";
 
         /// <summary>
+        /// The block template for <see cref="Rock.Blocks.Types.Mobile.Core.Search"/> block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CORE_SEARCH = "CFEB7FA6-0F19-496B-8DCC-4D200AEEE866";
+
+        /// <summary>
         /// The block template mobile daily challenge entry
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_DAILY_CHALLENGE_ENTRY = "30ECA4B6-0869-4656-A4CD-B8729CB29E76";
