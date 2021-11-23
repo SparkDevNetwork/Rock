@@ -7953,7 +7953,7 @@ END
         #region Index Helpers
 
         /// <summary>
-        /// Creates the index if it doesn't exist. The index name is calculated from the keys.
+        /// Creates the index if it doesn't exist. The index name is calculated from the keys. Uses a default fill factor of 90%.
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
         /// <param name="keys">The keys.</param>
@@ -7965,7 +7965,7 @@ END
         }
 
         /// <summary>
-        /// Creates the index if it doesn't exist.
+        /// Creates the index if it doesn't exist. Uses a default fill factor of 90%.
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
         /// <param name="indexName">Name of the index.</param>
@@ -7974,6 +7974,20 @@ END
         public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes )
         {
             var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes );
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Creates the index if it doesn't exist.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="keys">The keys.</param>
+        /// <param name="includes">The includes.</param>
+        /// <param name="fillFactor">The percent fullness of the leaf-level pages of the index. Lower values will result in more physical space used. Higher values may result in frequent page allocations and fragmentation. Use 0 or 100+ to turn off.</param>        
+        public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes, byte fillFactor )
+        {
+            var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes, fillFactor );
             Migration.Sql( sql );
         }
 
