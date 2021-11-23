@@ -66,6 +66,9 @@
 			<li>
 			{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
 			</li>
+                {% if CurrentPerson.Id == member.Person.Id %}
+				   {% assign IsLeader = true %}
+			    {% endif %}
 			{% endif %}
 			{% endfor %}
 		</ul>
@@ -96,14 +99,15 @@
 				{% endif %}
 			{% endif %}
 
-			{% if AllowedActions.Edit == true and Group.GroupTypeId == 39 or Group.GroupTypeId == 40 %}
-                {% if CurrentPage.Id == 1272 %}
-                    <li role="presentation" class="active"><a href="/page/1272?GroupId={{ Group.Id }}">Leader Content</a></li>
+			{% if IsLeader == true %}
+                {% if Group.GroupTypeId == 39 or Group.GroupTypeId == 40 %}
+                    {% if CurrentPage.Id == 1272 %}
+                        <li role="presentation" class="active"><a href="/page/1272?GroupId={{ Group.Id }}">Leader Content</a></li>
                     {% else %}
-                    <li role="presentation"><a href="/page/1272?GroupId={{ Group.Id }}">Leader Content</a></li>
+                        <li role="presentation"><a href="/page/1272?GroupId={{ Group.Id }}">Leader Content</a></li>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
-
+             {% endif %}
 		</ul>
 	{% endif %}
 
