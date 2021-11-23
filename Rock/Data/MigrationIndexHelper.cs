@@ -48,7 +48,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Creates the index if it doesn't exist. Uses a default fill factor of 90%.
+        /// Creates the index if it doesn't exist.
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
         /// <param name="indexName">Name of the index.</param>
@@ -56,28 +56,13 @@ namespace Rock.Data
         /// <param name="includes">The includes.</param>
         public static string GenerateCreateIndexIfNotExistsSql( string tableName, string indexName, IEnumerable<string> keys, IEnumerable<string> includes )
         {
-            return GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes, 90 );
-        }
-
-        /// <summary>
-        /// Creates the index if it doesn't exist.
-        /// </summary>
-        /// <param name="tableName">Name of the table.</param>
-        /// <param name="indexName">Name of the index.</param>
-        /// <param name="keys">The keys.</param>
-        /// <param name="includes">The includes.</param>
-        /// <param name="fillFactor">The percent fullness of the leaf-level pages of the index. Lower values will result in more physical space used. Higher values may result in frequent page allocations and fragmentation. Use 0 or 100+ to turn off.</param>
-        public static string GenerateCreateIndexIfNotExistsSql( string tableName, string indexName, IEnumerable<string> keys, IEnumerable<string> includes, byte fillFactor )
-        {
-            // 23-Nov-2021 DMV: Fill factor 0 and 100 are essentially the same thing.
-            var isFillFactor0 = ( fillFactor >= 100 || fillFactor == 0 );
             return $@"
 
             IF NOT EXISTS( SELECT * FROM sys.indexes WHERE NAME = '{indexName}' AND object_id = OBJECT_ID( '{tableName}' ) )
             BEGIN
                 CREATE INDEX [{indexName}]
                 ON [{tableName}] ( {keys.JoinStrings( "," )} )
-                { ( includes.Any() ? $"INCLUDE ( {includes.JoinStrings( "," )} )" : "" ) } WITH (FILLFACTOR={ (isFillFactor0 ? 0 : fillFactor) }, PAD_INDEX={ (isFillFactor0 ? "OFF" : "ON") });
+                { ( includes.Any() ? $"INCLUDE ( {includes.JoinStrings( "," )} )" : "" ) };
             END";
         }
 

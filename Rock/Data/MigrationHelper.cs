@@ -7978,20 +7978,6 @@ END
         }
 
         /// <summary>
-        /// Creates the index if it doesn't exist.
-        /// </summary>
-        /// <param name="tableName">Name of the table.</param>
-        /// <param name="indexName">Name of the index.</param>
-        /// <param name="keys">The keys.</param>
-        /// <param name="includes">The includes.</param>
-        /// <param name="fillFactor">The percent fullness of the leaf-level pages of the index. Lower values will result in more physical space used. Higher values may result in frequent page allocations and fragmentation. Use 0 or 100+ to turn off.</param>        
-        public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes, byte fillFactor )
-        {
-            var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes, fillFactor );
-            Migration.Sql( sql );
-        }
-
-        /// <summary>
         /// Drops the index if it exists.
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
