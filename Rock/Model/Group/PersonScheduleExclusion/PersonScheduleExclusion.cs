@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +22,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -98,9 +98,9 @@ namespace Rock.Model
         [DataMember]
         public int? ParentPersonScheduleExclusionId { get; set; }
 
-        #endregion Entity Properties
+        #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the person alias of the Person that this exclusion is for
@@ -138,8 +138,10 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<PersonScheduleExclusion> ChildPersonScheduleExclusions { get; set; } = new Collection<PersonScheduleExclusion>();
 
-        #endregion Virtual Properties
+        #endregion
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// 
@@ -156,4 +158,6 @@ namespace Rock.Model
             this.HasOptional( a => a.ParentPersonScheduleExclusion ).WithMany( a => a.ChildPersonScheduleExclusions ).HasForeignKey( a => a.ParentPersonScheduleExclusionId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
 }

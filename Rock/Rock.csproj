@@ -792,6 +792,7 @@
     <Compile Include="Model\Core\Audit\AuditType.cs" />
     <Compile Include="Model\Core\Auth\Auth.SaveHook.cs" />
     <Compile Include="Model\Core\Auth\SpecialRole.cs" />
+    <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
@@ -840,6 +841,8 @@
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerification.cs" />
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerificationService.cs" />
+    <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKey.Logic.cs" />
+    <Compile Include="Model\CRM\PersonViewed\PersonViewed.Logic.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.Logic.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.SaveHook.cs" />
     <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.cs" />
@@ -2493,19 +2496,19 @@
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.cs" />
     <Compile Include="Model\CRM\PersonAlias\PersonAlias.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDeviceService.cs" />
-    <Compile Include="Model\CRM\PersonAlias\PersonAliasService.Partial.cs" />
+    <Compile Include="Model\CRM\PersonAlias\PersonAliasService.cs" />
     <Compile Include="Model\CRM\Badge\Badge.cs" />
     <Compile Include="Model\CRM\Badge\BadgeService.cs" />
     <Compile Include="Model\CRM\PersonDuplicate\PersonDuplicate.cs" />
     <Compile Include="Model\CRM\PersonPreviousName\PersonPreviousName.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKey.cs" />
-    <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKeyService.Partial.cs" />
+    <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKeyService.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonSignal.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.cs" />
-    <Compile Include="Model\Core\PersonToken\PersonTokenService.Partial.cs" />
+    <Compile Include="Model\Core\PersonToken\PersonTokenService.cs" />
     <Compile Include="Model\CRM\PersonViewed\PersonViewed.cs" />
-    <Compile Include="Model\CRM\PersonViewed\PersonViewedService.Partial.cs" />
+    <Compile Include="Model\CRM\PersonViewed\PersonViewedService.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
     <Compile Include="Model\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\PluginMigration.cs" />
@@ -3642,6 +3645,8 @@
     <Compile Include="Model\Event\RegistrationTemplateFee\RegistrationTemplateFeeService.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />
     <Compile Include="Model\Core\Auth\Auth.Logic.cs" />
+    <Compile Include="Model\CRM\PersonAlias\PersonAlias.Logic.cs" />
+    <Compile Include="Model\CRM\PersonPreviousName\PersonPreviousName.SaveHook.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

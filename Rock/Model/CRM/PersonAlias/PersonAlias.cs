@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -79,7 +79,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the person.
@@ -99,54 +99,7 @@ namespace Rock.Model
         /// </value>
         public virtual Person AliasPerson { internal get; set; }
 
-        /// <summary>
-        /// Gets the previous encrypted key for the <see cref="Rock.Model.Person"/>.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the previous encrypted key for the <see cref="Rock.Model.Person"/>.
-        /// </value>
-        [NotMapped]
-        public virtual string AliasEncryptedKey
-        {
-            get
-            {
-                if ( this.AliasPersonId.HasValue && this.AliasPersonGuid.HasValue )
-                {
-                    string identifier = this.AliasPersonId.ToString() + ">" + this.AliasPersonGuid.ToString();
-                    return Rock.Security.Encryption.EncryptString( identifier );
-                }
-
-                return null;
-            }
-        }
-
         #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            if (!string.IsNullOrWhiteSpace(Name))
-            {
-                return Name;
-            }
-
-            if (this.Person != null)
-            {
-                return this.Person.ToString();
-            }
-
-            return string.Format( "{0}->{1}", this.AliasPersonId, this.PersonId);
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration

@@ -235,7 +235,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<NoteAttachment> Attachments { get; set; } = new Collection<NoteAttachment>();
 
-        #endregion Navigation Properties
+        #endregion
     }
 
     #region Entity Configuration

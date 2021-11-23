@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -35,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class PersonViewed : Entity<PersonViewed>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -87,7 +86,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> entity of the viewer.
@@ -108,24 +107,6 @@ namespace Rock.Model
         public virtual PersonAlias TargetPersonAlias { get; set; }
 
         #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0} viewed ",
-                ( ( ViewerPersonAlias != null && ViewerPersonAlias.Person != null ) ? ViewerPersonAlias.Person.ToStringSafe() : ViewerPersonAliasId.ToString() ),
-                ( ( TargetPersonAlias != null && TargetPersonAlias.Person != null ) ? TargetPersonAlias.Person.ToStringSafe() : TargetPersonAliasId.ToString() ) );
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
