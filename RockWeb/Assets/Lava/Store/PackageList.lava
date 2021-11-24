@@ -16,11 +16,11 @@
                         <p class="vendor text-sm text-muted">{{ package.Vendor.Name }}</p>
                     </div>
 
-                    <div class="packagesummary-footer clearfix">
-                        <div class="rating text-warning pull-left">
+                    <div class="packagesummary-footer">
+                        <div class="rating text-warning">
                             {{ package.Rating | RatingMarkup }}
                         </div>
-                        <div class="cost text-color pull-right">
+                        <div class="cost text-color text-sm">
                             {% if package.IsFree == true %}
                                 Free
                             {% elseif package.Price != null %}
