@@ -18,19 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Drawing;
 using System.IO;
 using System.Runtime.Serialization;
 
-using ImageResizer;
-
 using Rock.Data;
+using Rock.Lava;
 using Rock.Storage;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -208,7 +203,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BinaryFileType"/> of the file.
@@ -247,29 +242,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Document Document { get; set; }
 
-        /// <summary>
-        /// Gets the URL.
-        /// </summary>
-        /// <value>
-        /// The URL.
-        /// </value>
-        [NotMapped]
-        [DataMember]
-        public virtual string Url
-        {
-            get
-            {
-                if ( StorageProvider != null )
-                {
-                    return StorageProvider.GetUrl( this );
-                }
-                else
-                {
-                    return Path;
-                }
-            }
-            private set { }
-        }
+        #endregion
 
         /// <summary>
         /// Gets or sets the content stream.
@@ -307,12 +280,12 @@ namespace Rock.Model
             set
             {
                 _stream = value;
-                _contentIsDirty = true;
+                ContentIsDirty = true;
                 ContentLastModified = RockDateTime.Now;
             }
         }
         private Stream _stream;
-        private bool _contentIsDirty = false;
+        internal bool ContentIsDirty = false;
 
         /// <summary>
         /// Gets the storage settings.
@@ -322,222 +295,12 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [HideFromReporting]
-        public virtual Dictionary<string,string> StorageSettings
+        public virtual Dictionary<string, string> StorageSettings
         {
             get
             {
                 return StorageEntitySettings.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
             }
-        }
-
-        #endregion
-
-        #region Methods
-
-
-        /// <summary>
-        /// Sets the type of the storage entity.
-        /// Should only be set by the BinaryFileService
-        /// </summary>
-        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
-        public void SetStorageEntityTypeId( int? storageEntityTypeId )
-        {
-            StorageEntityTypeId = storageEntityTypeId;
-        }
-
-        /// <summary>
-        /// Pres the save.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            if ( entry.State == EntityState.Deleted )
-            {
-                if ( StorageProvider != null )
-                {
-                    this.BinaryFileTypeId = entry.OriginalValues["BinaryFileTypeId"].ToString().AsInteger();
-
-                    try
-                    {
-                        StorageProvider.DeleteContent( this );
-                    }
-                    catch ( Exception ex )
-                    {
-                        // If an exception occurred while trying to delete provider's file, log the exception, but continue with the delete.
-                        ExceptionLogService.LogException( ex );
-                    }
-
-                    this.BinaryFileTypeId = null;
-                }
-            }
-            else
-            {
-                if ( BinaryFileType == null && BinaryFileTypeId.HasValue )
-                {
-                    BinaryFileType = new BinaryFileTypeService( ( RockContext ) dbContext ).Get( BinaryFileTypeId.Value );
-                }
-
-                if ( this.MimeType.StartsWith( "image/" ) )
-                {
-                    try
-                    {
-                        using ( Bitmap bm = new Bitmap( this.ContentStream ) )
-                        {
-                            if ( bm != null )
-                            {
-                                this.Width = bm.Width;
-                                this.Height = bm.Height;
-                            }
-                        }
-                        ContentStream.Seek( 0, SeekOrigin.Begin );
-
-                        if ( !IsTemporary )
-                        {
-                            if ( BinaryFileType.MaxHeight.HasValue &&
-                                BinaryFileType.MaxHeight != 0 &&
-                                BinaryFileType.MaxWidth.HasValue && 
-                                BinaryFileType.MaxWidth != 0 )
-                            {
-                                ResizeSettings settings = new ResizeSettings();
-                                MemoryStream resizedStream = new MemoryStream();
-                                if ( BinaryFileType.MaxWidth.Value < Width || BinaryFileType.MaxHeight < Height )
-                                {
-                                    settings.Add( "mode", "max" );
-                                    if ( BinaryFileType.MaxHeight < Height && BinaryFileType.MaxWidth < Width )
-                                    {
-                                        if ( BinaryFileType.MaxHeight >= BinaryFileType.MaxWidth )
-                                        {
-                                            settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
-                                        }
-                                        if ( BinaryFileType.MaxHeight <= BinaryFileType.MaxWidth )
-                                        {
-                                            settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
-                                        }
-                                    }
-                                    else if ( BinaryFileType.MaxHeight < Height )
-                                    {
-
-                                        settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
-                                    }
-                                    else
-                                    {
-                                        settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
-
-                                    }
-                                    ImageBuilder.Current.Build( this.ContentStream, resizedStream, settings );
-                                    ContentStream = resizedStream;
-
-                                    using ( Bitmap bm = new Bitmap( this.ContentStream ) )
-                                    {
-                                        if ( bm != null )
-                                        {
-                                            this.Width = bm.Width;
-                                            this.Height = bm.Height;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch ( Exception ) { } // if the file is an invalid photo keep moving
-                }
-
-                if ( entry.State == EntityState.Added )
-                {
-                    // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
-                    if ( BinaryFileType != null )
-                    {
-                        // Persist the storage type
-                        StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
-
-                        // Persist the storage type's settings specific to this binary file type
-                        var settings = new Dictionary<string, string>();
-                        if ( BinaryFileType.Attributes == null )
-                        {
-                            BinaryFileType.LoadAttributes();
-                        }
-                        foreach ( var attributeValue in BinaryFileType.AttributeValues )
-                        {
-                            settings.Add( attributeValue.Key, attributeValue.Value.Value );
-                        }
-                        StorageEntitySettings = settings.ToJson();
-
-                        if ( StorageProvider != null )
-                        {
-                            // save the file to the provider's new storage medium, and if the medium returns a filesize, save that value.
-                            long? outFileSize = null;
-                            StorageProvider.SaveContent( this, out outFileSize );
-                            if ( outFileSize.HasValue )
-                            {
-                                FileSize = outFileSize;
-                            }
-
-                            Path = StorageProvider.GetPath( this );
-                        }
-                    }
-                }
-
-
-                else if ( entry.State == EntityState.Modified )
-                {
-                    // when a file is saved (unless it is getting Deleted/Added), 
-                    // it should use the StorageEntityType that is associated with the BinaryFileType
-                    if ( BinaryFileType != null )
-                    {
-                        // if the storage provider changed, or any of its settings specific 
-                        // to the binary file type changed, delete the original provider's content
-                        if ( StorageEntityTypeId.HasValue && BinaryFileType.StorageEntityTypeId.HasValue )
-                        {
-                            var settings = new Dictionary<string, string>();
-                            if ( BinaryFileType.Attributes == null )
-                            {
-                                BinaryFileType.LoadAttributes();
-                            }
-                            foreach ( var attributeValue in BinaryFileType.AttributeValues )
-                            {
-                                settings.Add( attributeValue.Key, attributeValue.Value.Value );
-                            }
-                            string settingsJson = settings.ToJson();
-
-                            if ( StorageProvider != null && (
-                                StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
-                                StorageEntitySettings != settingsJson ) )
-                            {
-
-                                var ms = new MemoryStream();
-                                ContentStream.Position = 0;
-                                ContentStream.CopyTo( ms );
-                                ContentStream.Dispose();
-
-                                // Delete the current provider's storage
-                                StorageProvider.DeleteContent( this );
-
-                                // Set the new storage provider with its settings
-                                StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
-                                StorageEntitySettings = settingsJson;
-
-                                ContentStream = new MemoryStream();
-                                ms.Position = 0;
-                                ms.CopyTo( ContentStream );
-                                ContentStream.Position = 0;
-                                FileSize = ContentStream.Length;
-                            }
-                        }
-                    }
-
-                    if ( _contentIsDirty && StorageProvider != null )
-                    {
-                        long? fileSize = null;
-                        StorageProvider.SaveContent( this, out fileSize );
-
-                        FileSize = fileSize;
-                        Path = StorageProvider.GetPath( this );
-                    }
-                }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>
@@ -550,41 +313,6 @@ namespace Rock.Model
         {
             return this.FileName;
         }
-
-        /// <summary>
-        /// Reads the file's content stream and converts to a string.
-        /// </summary>
-        /// <returns></returns>
-        public string ContentsToString()
-        {
-            string contents = string.Empty;
-
-            using ( var stream = this.ContentStream )
-            {
-                using ( var reader = new StreamReader( stream ) )
-                {
-                    contents = reader.ReadToEnd();
-                }
-            }
-
-            return contents;
-        }
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.BinaryFileType != null ? this.BinaryFileType : base.ParentAuthority;
-            }
-        }
-
-        #endregion
     }
 
     #region Entity Configuration

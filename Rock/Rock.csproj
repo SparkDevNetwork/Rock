@@ -796,6 +796,13 @@
     <Compile Include="Model\Core\Audit\AuditType.cs" />
     <Compile Include="Model\Core\Auth\Auth.SaveHook.cs" />
     <Compile Include="Model\Core\Auth\SpecialRole.cs" />
+    <Compile Include="Model\Core\BinaryFileType\BinaryFileType.Logic.cs" />
+    <Compile Include="Model\Core\BinaryFileType\ColorDepth.cs" />
+    <Compile Include="Model\Core\BinaryFileType\Format.cs" />
+    <Compile Include="Model\Core\BinaryFileType\Resolution.cs" />
+    <Compile Include="Model\Core\BinaryFile\BinaryFile.Logic.cs" />
+    <Compile Include="Model\Core\BinaryFile\BinaryFile.SaveHook.cs" />
+    <Compile Include="Model\Core\BinaryFile\BinaryFileService.WebService.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />

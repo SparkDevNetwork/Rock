@@ -16,9 +16,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -35,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class BinaryFileType : Model<BinaryFileType>, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -238,38 +235,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
-
-        /// <summary>
-        /// Gets the count of <see cref="Rock.Model.BinaryFile" /> entities that are children of this <see cref="Rock.Model.BinaryFileType"/>.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the count of <see cref="Rock.Model.BinaryFile"/> entities that are children of this <see cref="Rock.Model.BinaryFileType"/>.
-        /// </value>
-        public virtual int FileCount
-        {
-            get
-            {
-                return FileQuery.Count();
-            }
-        }
-
-        /// <summary>
-        /// Gets a queryable collection of <see cref="Rock.Model.BinaryFile" /> entities that are children of this <see cref="Rock.Model.BinaryFileType"/>.
-        /// </summary>
-        /// <value>
-        /// A queryable collection of <see cref="Rock.Model.BinaryFile"/> entities that are children of this<see cref="Rock.Model.BinaryFileType"/>.
-        /// </value>
-        public virtual IQueryable<BinaryFile> FileQuery
-        {
-            get
-            {
-                var fileService = new BinaryFileService( new RockContext() );
-                var qry = fileService.Queryable()
-                    .Where( f => f.BinaryFileTypeId.HasValue && f.BinaryFileTypeId == this.Id );
-                return qry;
-            }
-        }
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the storage mode <see cref="Rock.Model.EntityType"/>.
@@ -294,27 +260,6 @@ namespace Rock.Model
         {
             return this.Name;
         }
-        #endregion
-
-        #region ICacheable
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            BinaryFileTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return BinaryFileTypeCache.Get( this.Id );
-        }
 
         #endregion
     }
@@ -332,128 +277,6 @@ namespace Rock.Model
         public BinaryFileTypeConfiguration()
         {
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the preferred format of the binary file type.
-    /// </summary>
-    public enum Format
-    {
-        /// <summary>
-        /// The undefined.
-        /// </summary>
-        Undefined = -1,
-
-        /// <summary>
-        /// The preferred format is as a .JPG file.
-        /// </summary>
-        JPG = 0,
-
-        /// <summary>
-        /// The preferred format is as a .GIF file.
-        /// </summary>
-        GIF = 1,
-
-        /// <summary>
-        /// The preferred format is as a .PNG file.
-        /// </summary>
-        PNG = 2,
-
-        /// <summary>
-        /// The preferred format is as a .PDF file.
-        /// </summary>
-        PDF = 3,
-
-        /// <summary>
-        /// The preferred format is as a Word document.
-        /// </summary>
-        Word = 4,
-
-        /// <summary>
-        /// The preferred format is as an Excel document.
-        /// </summary>
-        Excel = 5,
-
-        /// <summary>
-        /// The preferred format is as a text file.
-        /// </summary>
-        Text = 6,
-
-        /// <summary>
-        /// The preferred format is as an HTML document.
-        /// </summary>
-        HTML = 7
-    }
-
-    /// <summary>
-    /// Represents the preferred resolution of the binary file type.
-    /// </summary>
-    public enum Resolution
-    {
-        /// <summary>
-        /// The undefined.
-        /// </summary>
-        Undefined = -1,
-
-        /// <summary>
-        /// A preferred resolution of 72 DPI.
-        /// </summary>
-        DPI72 = 0,
-
-        /// <summary>
-        /// A preferred resolution of 150 DPI.
-        /// </summary>
-        DPI150 = 1,
-
-        /// <summary>
-        /// A preferred resolution of 300 DPI.
-        /// </summary>
-        DPI300 = 2,
-
-        /// <summary>
-        /// A preferred resolution of 600 DPI.
-        /// </summary>
-        DPI600 = 3
-    }
-
-    /// <summary>
-    /// Represents the preferred color depth of the binary file type.
-    /// </summary>
-    public enum ColorDepth
-    {
-        /// <summary>
-        /// An undefined color depth.
-        /// </summary>
-        Undefined = -1,
-
-        /// <summary>
-        /// A preferred color depth of Black and White.
-        /// </summary>
-        BlackWhite = 0,
-
-        /// <summary>
-        /// A preferred color depth of 8-bit Grayscale.
-        /// </summary>
-        Grayscale8bit = 1,
-
-        /// <summary>
-        /// A preferred color depth of 24-bit Grayscale.
-        /// </summary>
-        Grayscale24bit = 2,
-
-        /// <summary>
-        /// A preferred color depth of 8-bit Color.
-        /// </summary>
-        Color8bit = 3,
-
-        /// <summary>
-        /// A preferred color depth of 24-bit Color.
-        /// </summary>
-        Color24bit = 4
     }
 
     #endregion
