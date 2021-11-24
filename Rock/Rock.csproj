@@ -1023,7 +1023,16 @@
     <Compile Include="Model\Reporting\AnalyticsSourceFamilyBase\AnalyticsSourceFamilyBase.cs" />
     <Compile Include="Model\Reporting\AnalyticsBaseFinancialTransaction\AnalyticsBaseFinancialTransaction.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePersonBase\AnalyticsSourcePersonBase.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\ComparisonType.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.Logic.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\DataViewFilterOverride.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\DataViewFilterOverrides.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\FilterExpressionType.cs" />
     <Compile Include="Model\Reporting\DataViewPersistedValue\DataViewPersistedValue.cs" />
+    <Compile Include="Model\Reporting\DataView\DataView.Logic.cs" />
+    <Compile Include="Model\Reporting\DataView\DataView.SaveHook.cs" />
+    <Compile Include="Model\Reporting\DataView\DataView.WebForms.cs" />
+    <Compile Include="Model\Reporting\DataView\DataViewGetQueryArgs.cs" />
     <Compile Include="Model\Reporting\MetricCategory\MetricCategory.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValue\MetricValue.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValue\MetricValueType.cs" />
