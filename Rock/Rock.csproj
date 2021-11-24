@@ -1038,6 +1038,9 @@
     <Compile Include="Model\Reporting\MetricValue\MetricValueType.cs" />
     <Compile Include="Model\Reporting\Metric\Metric.Logic.cs" />
     <Compile Include="Model\Reporting\Metric\MetricNumericDataType.cs" />
+    <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
+    <Compile Include="Model\Reporting\Report\Report.Logic.cs" />
+    <Compile Include="Model\Reporting\ReportField\ReportFieldType.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.LiquidButton.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.Logic.cs" />

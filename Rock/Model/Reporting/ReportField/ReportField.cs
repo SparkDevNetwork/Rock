@@ -141,7 +141,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the report.
@@ -164,6 +164,8 @@ namespace Rock.Model
         #endregion
     }
 
+    #region Entity Configuration
+
     /// <summary>
     /// 
     /// </summary>
@@ -177,29 +179,6 @@ namespace Rock.Model
             this.HasRequired( p => p.Report ).WithMany( p => p.ReportFields ).HasForeignKey( p => p.ReportId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.DataSelectComponentEntityType ).WithMany().HasForeignKey( p => p.DataSelectComponentEntityTypeId ).WillCascadeOnDelete( true );
         }
-    }
-
-    #region Enumerations
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum ReportFieldType
-    {
-        /// <summary>
-        /// The field is one of the properties of the entity
-        /// </summary>
-        Property = 0,
-
-        /// <summary>
-        /// The field is one of the attributes of the entity
-        /// </summary>
-        Attribute = 1,
-
-        /// <summary>
-        /// The field(s) that result from a <see cref="Rock.Reporting.DataSelectComponent" />
-        /// </summary>
-        DataSelectComponent = 2
     }
 
     #endregion

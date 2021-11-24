@@ -44,7 +44,7 @@ namespace Rock.Model
             }
 
             // Deep-clone the Report and reset the properties that connect it to the permanent store.
-            var newReport = (Report)existingReport.Clone( true );
+            var newReport = ( Report ) existingReport.Clone( true );
 
             newReport.Id = 0;
             newReport.Guid = Guid.NewGuid();
