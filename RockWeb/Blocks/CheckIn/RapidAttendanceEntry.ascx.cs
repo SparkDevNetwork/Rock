@@ -2311,7 +2311,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 rblCommunicationPreference.Visible = false;
                 var isChildAllowEmailEdit = GetAttributeValue( AttributeKey.ChildAllowEmailEdit ).AsBoolean();
-                pnlEmail.Visible = pnlEmail.Visible;
+                pnlEmail.Visible = isChildAllowEmailEdit;
                 if ( isChildAllowEmailEdit )
                 {
                     tbEmail.Text = person.Email;
