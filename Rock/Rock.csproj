@@ -1023,6 +1023,7 @@
     <Compile Include="Model\Reporting\AnalyticsSourceFamilyBase\AnalyticsSourceFamilyBase.cs" />
     <Compile Include="Model\Reporting\AnalyticsBaseFinancialTransaction\AnalyticsBaseFinancialTransaction.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePersonBase\AnalyticsSourcePersonBase.cs" />
+    <Compile Include="Model\Reporting\DataViewPersistedValue\DataViewPersistedValue.cs" />
     <Compile Include="Model\Reporting\MetricCategory\MetricCategory.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValue\MetricValue.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValue\MetricValueType.cs" />
@@ -2180,7 +2181,6 @@
     <Compile Include="Model\CodeGenerated\PersonTokenService.CodeGenerated.cs" />
     <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlug.cs" />
     <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlugService.cs" />
-    <Compile Include="Model\DataViewPersistedValue.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemService.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccountService.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
@@ -2396,9 +2396,9 @@
     <Compile Include="Model\CMS\ContentChannel\ContentChannel.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.cs" />
     <Compile Include="Model\CMS\ContentChannelType\ContentChannelType.cs" />
-    <Compile Include="Model\DataView.cs" />
-    <Compile Include="Model\DataViewFilter.cs" />
-    <Compile Include="Model\DataViewService.Partial.cs" />
+    <Compile Include="Model\Reporting\DataView\DataView.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.cs" />
+    <Compile Include="Model\Reporting\DataView\DataViewService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
     <Compile Include="Model\Core\DefinedType\DefinedType.cs" />
     <Compile Include="Model\Core\DefinedType\DefinedTypeService.cs" />
