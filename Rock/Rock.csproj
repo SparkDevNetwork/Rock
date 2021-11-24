@@ -2541,10 +2541,10 @@
     <Compile Include="Model\Event\RegistrationTemplateDiscount\RegistrationTemplateDiscountService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateForm.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.cs" />
-    <Compile Include="Model\Report.cs" />
+    <Compile Include="Model\Reporting\Report\Report.cs" />
     <Compile Include="Model\ScheduleCategoryExclusion.cs" />
-    <Compile Include="Model\ReportField.cs" />
-    <Compile Include="Model\ReportService.partial.cs" />
+    <Compile Include="Model\Reporting\ReportField\ReportField.cs" />
+    <Compile Include="Model\Reporting\Report\ReportService.cs" />
     <Compile Include="Model\RestAction.cs" />
     <Compile Include="Model\RestActionService.partial.cs" />
     <Compile Include="Model\RestController.cs" />
