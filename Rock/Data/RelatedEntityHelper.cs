@@ -16,8 +16,10 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Model;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Data
@@ -44,8 +46,8 @@ namespace Rock.Data
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> related target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
-        /// <typeparam name="TT">The type of the Related Entities.</typeparam>
-        /// <param name="entityId">The entity identifier.</param>
+        /// <typeparam name="TT">The type of the Related (Target) Entities.</typeparam>
+        /// <param name="entityId">The (Source) entity identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
         /// <returns></returns>
         public IQueryable<TT> GetRelatedToSourceEntity<TT>( int entityId, string purposeKey ) where TT : IEntity
@@ -54,6 +56,22 @@ namespace Rock.Data
             var relatedEntities = GetRelatedToSourceEntity( entityId, relatedEntityTypeId.Value, purposeKey ).Cast<TT>();
 
             return relatedEntities;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="RelatedEntity.PurposeKey"/>s that are in the database where the SourceEntityType is T and has the specified Id.
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns>IQueryable&lt;System.String&gt;.</returns>
+        public IQueryable<string> GetUsedPurposeKeys( int entityId )
+        {
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>() ?? 0;
+
+            var usedPurposeKeys = new RelatedEntityService( this.Context as RockContext ).Queryable()
+                .Where( a => a.SourceEntityId == entityId && a.SourceEntityTypeId == sourceEntityTypeId ).Select( a => a.PurposeKey ).Distinct();
+
+            return usedPurposeKeys;
+
         }
 
         /// <summary>
@@ -398,18 +416,18 @@ namespace Rock.Data
         /// Sets the related target entities for the given source entity type, purpose key, and qualifier value. If qualifierValue then it is not used to filter the results.
         /// </summary>
         /// <param name="sourceEntityId">The source entity identifier.</param>
-        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">The related (Target) entity type identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
         /// <param name="qualifierValue">The qualifier value.</param>
         /// <returns></returns>
         public IQueryable<IEntity> GetRelatedToSourceEntity( int sourceEntityId, int relatedEntityTypeId, string purposeKey, string qualifierValue )
         {
             var rockContext = this.Context as RockContext;
-            var entityTypeId = EntityTypeCache.Get( typeof( T ), false, rockContext ).Id;
+            var sourceEntityTypeId = EntityTypeCache.Get( typeof( T ), false, rockContext ).Id;
 
             return qualifierValue.IsNotNullOrWhiteSpace()
-                ? new RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, entityTypeId, relatedEntityTypeId, purposeKey, qualifierValue )
-                : new RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, entityTypeId, relatedEntityTypeId, purposeKey );
+                ? new RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, sourceEntityTypeId, relatedEntityTypeId, purposeKey, qualifierValue )
+                : new RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, sourceEntityTypeId, relatedEntityTypeId, purposeKey );
         }
 
         /// <summary>

@@ -813,7 +813,7 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_PREFERRED_SOURCE = "0567B279-1F4D-4573-9AA7-927A7278443E";
 
         /// <summary>
-        /// Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
+        /// Frequency Label. See <seealso cref="FinancialGivingAnalyticsFrequencyLabel"/>.
         /// </summary>
         public const string PERSON_GIVING_FREQUENCY_LABEL = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5";
 
@@ -829,6 +829,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gift Amount: IQR - Currency
+        /// IQR = Interquartile Range calculated from the past 12 months of giving
         /// </summary>
         public const string PERSON_GIVING_AMOUNT_IQR = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7";
 

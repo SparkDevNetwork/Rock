@@ -312,7 +312,11 @@ export const enum Attribute {
     PersonGivingPercentScheduled = "98373264-0E65-4C79-B75B-4F8477AA647E",
     /** Gift Amount: Median - Currency */
     PersonGivingAmountMedian = "327F1CFF-A013-42B5-80A7-5922A40480EC",
-    /** Gift Amount: IQR - Currency */
+    /** Gift Amount: IQR - Currency
+IQR = Interquartile Range calculated from the past 12 months of giving
+Q1 = Lower Half
+Q2 (aka 
+Q3 = Upper Half */
     PersonGivingAmountIqr = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7",
     /** Gift Frequency Days: Mean -  Decimal */
     PersonGivingFrequencyMeanDays = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA",
