@@ -1,9 +1,9 @@
 <div class="panel panel-block">
     <div class="panel-body">
-        <div class="row">
+        <div class="row d-flex flex-wrap">
             {% for package in Packages %}
 
-            <div class="col-sm-3 col-xs-6">
+            <div class="col-lg-3 col-sm-4 col-xs-6 mb-4">
                 <div class="packagesummary">
 
                     <div class="packagesummary-image">
@@ -25,6 +25,8 @@
                                 Free
                             {% elseif package.Price != null %}
                                 ${{ package.Price }}
+                            {% else %}
+                                Paid
                             {% endif %}
                         </div>
                     </div>
