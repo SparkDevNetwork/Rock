@@ -624,8 +624,10 @@ namespace RockWeb.Blocks.WorkFlow
                     ShowMessage( NotificationBoxType.Warning, string.Empty, workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
                 }
             }
-
+           
+            // If we are returning False (Workflow is not active), make sure the form and notes are not shown
             ShowNotes( false );
+            pnlForm.Visible = false;
             return false;
         }
 
