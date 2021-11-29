@@ -83,8 +83,8 @@ export const prepareSubmitPayment = (): SubmitPaymentFunction => {
 export const onSubmitPayment = (callback: SubmitPaymentFunction): void => {
     const container = inject(submitPaymentCallbackSymbol);
 
-    if (!container || container.callback) {
-        throw "Submit payment callback already defined.";
+    if (!container) {
+        throw "Gateway control has not been properly initialized.";
     }
 
     container.callback = callback;
