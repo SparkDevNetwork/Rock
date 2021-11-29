@@ -164,6 +164,7 @@ namespace Rock.Model
             refundTransaction.FinancialGatewayId = transaction.FinancialGatewayId;
             refundTransaction.TransactionTypeValueId = transaction.TransactionTypeValueId;
             refundTransaction.SourceTypeValueId = transaction.SourceTypeValueId;
+            refundTransaction.ForeignCurrencyCodeValueId = transaction.ForeignCurrencyCodeValueId;
 
             if ( transaction.FinancialPaymentDetail != null )
             {
@@ -178,10 +179,14 @@ namespace Rock.Model
             }
 
             decimal remainingBalance = amount.Value;
+            decimal? foreignCurrencyAmount = transaction.TransactionDetails.Select( d => d.ForeignCurrencyAmount ).Sum();
+            decimal remainingForeignBalance = foreignCurrencyAmount ?? 0.0m;
+
             /*
              * If the refund is for a currency other then the Organization's currency it is up to the
              * gateway to return the correct transaction details.
              */
+
             if ( refundTransaction.TransactionDetails?.Any() != true )
             {
                 foreach ( var account in transaction.TransactionDetails.Where( a => a.Amount > 0 ) )
@@ -203,7 +208,21 @@ namespace Rock.Model
                         remainingBalance = 0.0m;
                     }
 
-                    if ( remainingBalance <= 0.0m )
+                    if ( account.ForeignCurrencyAmount.HasValue )
+                    {
+                        if ( remainingForeignBalance >= account.ForeignCurrencyAmount.Value )
+                        {
+                            transactionDetail.ForeignCurrencyAmount = 0 - account.ForeignCurrencyAmount.Value;
+                            remainingForeignBalance -= account.ForeignCurrencyAmount.Value;
+                        }
+                        else
+                        {
+                            transactionDetail.ForeignCurrencyAmount = 0 - remainingForeignBalance;
+                            remainingForeignBalance = 0.0m;
+                        }
+                    }
+
+                    if ( remainingBalance <= 0.0m && remainingForeignBalance <= 0.0m )
                     {
                         break;
                     }

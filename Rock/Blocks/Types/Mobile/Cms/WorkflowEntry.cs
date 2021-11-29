@@ -644,7 +644,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Title = attribute.Name,
                         IsRequired = formAttribute.IsRequired,
                         ConfigurationValues = attribute.QualifierValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ),
+                        FieldTypeGuid = attribute.FieldType.Guid,
+#pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         RockFieldType = attribute.FieldType.Class,
+#pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         Value = value
                     };
 
@@ -665,7 +668,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         }
 
                         mobileField.Value = formattedValue;
+                        mobileField.FieldTypeGuid = null;
+#pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         mobileField.RockFieldType = string.Empty;
+#pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
 
                         if ( formAttribute.HideLabel )
                         {

@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Crm
         private const string FAMILY_NAME = "FamilyName";
         private const string BUSINESS_ATTRIBUTES = "BusinessAttributes";
         private const string CAMPUS = "Campus";
-        private const string RESET_LOGIN_CONFIRMATION_DESCRIPTION = "When merging people that have different email addresses, should the logins for those people be updated to require a reconfirmation of the selected email address before being able to login? This is typically enabled as a precaution to prevent someone maliciously obtaining another person's login information simply by creating a duplicate account with same name but different login.";
+        private const string RESET_LOGIN_CONFIRMATION_DESCRIPTION = "When merging people with different emails, should their logins be updated to require reconfirmation of their email before allowing login? This is typically enabled to prevent someone from maliciously obtaining login credentials by creating an account with same name but different login.";
         private const string BUSINESS_INFORMATION = "BusinessInformation";
 
         #endregion Constants

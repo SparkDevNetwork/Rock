@@ -241,17 +241,19 @@ namespace Rock.StatementGenerator.Rest
         }
 
         /// <summary>
-        /// Render and return a giving statement for the specified person.
+        /// Render and return a giving statement for the specified person. If the person
+        /// uses combined giving, the statement will be for the person's giving group.
         /// </summary>
-        /// <param name="personId">The person that made the contributions. That person's entire
-        /// giving group is included, which is typically the family.</param>
+        /// <param name="personId">The person that the statement is for. If the person
+        /// uses combined giving, the statement will be for the person's giving group,
+        /// which is typically the family.</param>
         /// <param name="year">The contribution calendar year. ie 2019.  If not specified, the
         /// current year is assumed.</param>
         /// <param name="templateDefinedValueId">[Obsolete] The defined value ID that represents the statement
         /// lava. This defined value should be a part of the Statement Generator Lava Template defined
         /// type. If no ID is specified, then the default defined value for the Statement Generator Lava
         /// Template defined type is assumed.</param>
-        /// <param name="financialStatementTemplateId"></param>
+        /// <param name="financialStatementTemplateId">The Statement Template to use. This is required (unless the obsolete templateDefinedValueId is specified).</param>
         /// <param name="hideRefundedTransactions">if set to <c>true</c> transactions that have any
         /// refunds will be hidden.</param>
         /// <returns>
@@ -315,10 +317,26 @@ namespace Rock.StatementGenerator.Rest
                 StartDate = startDate,
             };
 
-            var financialStatementGeneratorRecipientRequest = new FinancialStatementGeneratorRecipientRequest( options )
+            var financialStatementGeneratorRecipientRequest = new FinancialStatementGeneratorRecipientRequest( options );
+            if ( person.GivingGroupId.HasValue )
             {
-                FinancialStatementGeneratorRecipient = new FinancialStatementGeneratorRecipient { GroupId = person.PrimaryFamilyId.Value, PersonId = person.Id }
-            };
+                // If person has a GivingGroupId get the combined statement for the GivingGroup
+                financialStatementGeneratorRecipientRequest.FinancialStatementGeneratorRecipient = new FinancialStatementGeneratorRecipient
+                {
+                    GroupId = person.GivingGroupId.Value,
+                    PersonId = null
+                };
+            }
+            else
+            {
+                // If person gives individually ( GivingGroupId is null) get the individual statement for the person
+                // and specify Group as the Primary Family so we know which Family to use for the address.
+                financialStatementGeneratorRecipientRequest.FinancialStatementGeneratorRecipient = new FinancialStatementGeneratorRecipient
+                {
+                    GroupId = person.PrimaryFamilyId.Value,
+                    PersonId = person.Id
+                };
+            }
 
             // Get the generator result
             FinancialStatementGeneratorRecipientResult result = FinancialStatementGeneratorHelper.GetStatementGeneratorRecipientResult( financialStatementGeneratorRecipientRequest, this.GetPerson() );

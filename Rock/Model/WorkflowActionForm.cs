@@ -576,14 +576,11 @@ namespace Rock.Model
         /// </remarks>
         public static List<WorkflowActionFormUserAction> FromUriEncodedString( string encodedString )
         {
-            Guid buttonCancelGuid = Rock.SystemGuid.DefinedValue.BUTTON_HTML_CANCEL.AsGuid();
-
             var buttons = new List<WorkflowActionFormUserAction>();
 
             var buttonList = Rock.Utility.RockSerializableList.FromUriEncodedString( encodedString, StringSplitOptions.RemoveEmptyEntries );
 
-            // Without any other way of determining this, assume that the built-in Cancel button is the only action that does not cause validation.
-            var nonValidationButtonList = new List<Guid> { buttonCancelGuid };
+            var cancelButtonList = GetCancelButtonGuidList();
 
             foreach ( var buttonDefinitionText in buttonList.List )
             {
@@ -605,18 +602,8 @@ namespace Rock.Model
                     button.ButtonTypeGuid = Rock.SystemGuid.DefinedValue.BUTTON_HTML_PRIMARY;
                 }
 
-                // Determine if the button causes form validation.                    
-                button.CausesValidation = !nonValidationButtonList.Contains( button.ButtonTypeGuid.AsGuid() );
-
-                if ( button.ButtonTypeGuid.AsGuid() == buttonCancelGuid )
-                {
-                    button.CausesValidation = false;
-                }
-                else
-                {
-                    // By default, assume that an action button triggers validation of the form.
-                    button.CausesValidation = true;
-                }
+                // If the button is not a Cancel button, flag it as causing form validation.
+                button.CausesValidation = !cancelButtonList.Contains( button.ButtonTypeGuid.AsGuid() );
 
                 // Button Activity
                 button.ActivateActivityTypeGuid = nameValueResponse.Length > 2 ? nameValueResponse[2] : string.Empty;
@@ -628,6 +615,41 @@ namespace Rock.Model
             }
 
             return buttons;
+        }
+
+        /// <summary>
+        /// Get the set of workflow action buttons that are configured to perform a cancel function.
+        /// </summary>
+        /// <returns></returns>
+        private static List<Guid> GetCancelButtonGuidList()
+        {
+            // Add the default Cancel button.
+            var cancelButtonList = new List<Guid> { Rock.SystemGuid.DefinedValue.BUTTON_HTML_CANCEL.AsGuid() };
+
+            // Add other buttons that have been configured to disable validation.
+            // In accordance with the Rock documentation, button validation can be disabled
+            // by replacing the text "{{ ButtonClick }}" with "return true;" in the Button HTML Attribute.
+            // Add any buttons with this configuration to the collection of Cancel buttons.
+            var buttonType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BUTTON_HTML );
+
+            foreach ( var buttonDefinedValue in buttonType.DefinedValues )
+            {
+                var buttonHtml = buttonDefinedValue.GetAttributeValue( "ButtonHTML" );
+
+                if ( !buttonHtml.IsNullOrWhiteSpace() )
+                {
+                    buttonHtml = buttonHtml.ToLower().Replace( " ", "" );
+
+                    if ( !buttonHtml.Contains( "{{buttonclick}}" )
+                         && buttonHtml.Contains( "onclick=\"returntrue;\"" ) )
+                    {
+                        cancelButtonList.Add( buttonDefinedValue.Guid );
+                    }
+                }
+            }
+
+            return cancelButtonList;
+
         }
     }
 

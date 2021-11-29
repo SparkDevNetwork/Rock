@@ -78,6 +78,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.EnableCampusFiltering,
         Order = 4 )]
 
+    [BooleanField( "Show Past Events",
+        Description = "When enabled past events will be included on the calendar, otherwise only future events will be shown.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.ShowPastEvents,
+        Order = 5 )]
+
     #endregion
 
     public class CalendarEventList : RockMobileBlockType
@@ -113,6 +121,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The enable campus filtering
             /// </summary>
             public const string EnableCampusFiltering = "EnableCampusFiltering";
+
+            /// <summary>
+            /// When enabled past events will be included on the calendar, otherwise only future events will be shown.
+            /// </summary>
+            public const string ShowPastEvents = "ShowPastEvents";
         }
 
         /// <summary>
@@ -185,6 +198,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// </value>
         protected bool EnableCampusFiltering => GetAttributeValue( AttributeKeys.EnableCampusFiltering ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether past events will be included on the calendar.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if past events will be included on the calendar, otherwise <c>false</c>.
+        /// </value>
+        protected bool ShowPastEvents => GetAttributeValue( AttributeKeys.ShowPastEvents ).AsBoolean();
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -223,7 +244,8 @@ namespace Rock.Blocks.Types.Mobile.Events
                 } ),
                 EventTemplate,
                 DayHeaderTemplate,
-                DetailPage
+                DetailPage,
+                HidePastEvents = !ShowPastEvents
             };
         }
 
