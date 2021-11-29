@@ -775,6 +775,7 @@
     <Compile Include="Model\Communication\Communication\SegmentCriteria.cs" />
     <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />
     <Compile Include="Model\Connection\ConnectionRequestActivity\ConnectionRequestActivity.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequest.Logic.cs" />
@@ -789,6 +790,7 @@
     <Compile Include="Model\Connection\ConnectionStatusAutomation\ConnectionStatusAutomation.cs" />
     <Compile Include="Model\Connection\ConnectionStatusAutomation\GroupRequirementsFilter.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionType.Logic.cs" />
+    <Compile Include="Model\Connection\ConnectionType\ConnectionType.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionTypeViewMode.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.SaveHook.cs" />
