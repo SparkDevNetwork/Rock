@@ -400,7 +400,17 @@ namespace RockWeb.Blocks.WorkFlow
 
             deleteWorkflowsMsg.Send();
             BindGrid();
-            mdGridWarning.Show( "The Workflow items are scheduled to be deleted.", ModalAlertType.Information );
+            mdAlert.Show();
+        }
+
+        /// <summary>
+        /// Handles the OkClick event of the mdAlert control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAlert_OkClick( object sender, EventArgs e )
+        {
+            Response.Redirect( Request.RawUrl );
         }
 
         #endregion
