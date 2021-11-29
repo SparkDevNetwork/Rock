@@ -914,11 +914,14 @@ ORDER BY [Text]",
                     if ( locationId.HasValue && group.GroupLocations.Select( l => l.LocationId == locationId ).Any() )
                     {
                         GroupLocation groupLocation = group.GroupLocations.Where( l => l.LocationId == locationId ).FirstOrDefault();
-                        var schedule = groupLocation.Schedules.Where( a => a.WasScheduleActive( campusCurrentDateTime ) ).FirstOrDefault();
-                        if ( schedule != null )
+                        if ( groupLocation != null )
                         {
-                            scheduleId = schedule.Id;
-                            attendanceGroup = group;
+                            var schedule = groupLocation.Schedules.Where( a => a.WasScheduleActive( campusCurrentDateTime ) ).FirstOrDefault();
+                            if ( schedule != null )
+                            {
+                                scheduleId = schedule.Id;
+                                attendanceGroup = group;
+                            }
                         }
                     }
 
