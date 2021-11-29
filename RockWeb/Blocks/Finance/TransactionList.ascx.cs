@@ -1799,7 +1799,7 @@ namespace RockWeb.Blocks.Finance
                 string transactionCode = gfTransactions.GetUserPreference( "Transaction Code" );
                 if ( !string.IsNullOrWhiteSpace( transactionCode ) )
                 {
-                    qry = qry.Where( t => t.TransactionCode == transactionCode.Trim() );
+                    qry = qry.Where( t => t.TransactionCode.Contains( transactionCode.Trim() ) );
                 }
 
                 // Foreign Key
