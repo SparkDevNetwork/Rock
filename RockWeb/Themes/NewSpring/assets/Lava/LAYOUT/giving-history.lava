@@ -37,7 +37,7 @@
     {% endif %}
 {% endif %}
 
-<div id="history" class="push-bottom xs-push-half-bottom xs-push-half-top">
+<section id="history" class="soft bg-gray-lighter xs-soft-half-sides soft-half-bottom clearfix flush">
     <h2>Giving History</h2>
 
     {%- comment -%}Setting up date range variables{%- endcomment -%}
@@ -122,8 +122,8 @@
 
         {% if businessId == null %}
             <p class="push-half-bottom">
-                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }}" class="btn btn-primary shadowed xs-btn-block push-half-bottom">{{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }} Contributions</a>
-                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | Date:'yyyy' }}" class="btn btn-primary shadowed xs-btn-block push-half-bottom">{{ 'Now' | Date:'yyyy' }} Contributions</a>
+                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block push-half-bottom">{{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }} Contributions</a>
+                <a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block push-half-bottom">{{ 'Now' | Date:'yyyy' }} Contributions</a>
             </p>
         {% endif %}
 
@@ -131,7 +131,7 @@
 
     {% for row in rows %}
         {% assign giver = row.PersonId | PersonById %}
-        <div class="bg-white soft push-half-bottom rounded shadowed">
+        <div class="bg-white soft push-half-bottom rounded-lg">
 
             <div class="row">
                 <div class="col-xs-12 col-sm-12 col-md-6">

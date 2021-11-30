@@ -125,6 +125,7 @@
     	</div>{% endfor -%}
 
     </div>
-</section>
 
 {[ pagination itemcount:'{{ itemcount }}' pagesize:'{{ pagesize }}' ]}
+
+</section>
