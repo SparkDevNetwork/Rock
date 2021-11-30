@@ -10,8 +10,7 @@
 {% assign serviceTimes = serviceTimes | Trim %}
 {% assign fuseServiceTimes = fuseServiceTimes | Trim %}
 
-<div class="bg-gray-lighter soft hard-bottom clearfix">
-    <div class="page-constrained mx-auto">
+    <div class="page-constrained mx-auto soft-sides xs-soft-half-sides">
         <div class="bg-white soft-double-ends soft-sides hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
             <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-hard-sides">
                 <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
@@ -78,7 +77,6 @@
             </div>
         </div>
     </div>
-</div>
 
 {% if servicetype != 'Fuse' %}
     {% assign placesId = campus.GooglePlacesId %}
