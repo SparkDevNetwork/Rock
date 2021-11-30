@@ -21,7 +21,6 @@
     {% endfor %}
 {% enddefinedvalue %}
 
-<section class="shell flush">
 <h3 class="xs-h4 push-half-bottom">Schedule #{{ ScheduledTransaction.Id }}</h3>
 
 <div class="row">
@@ -48,4 +47,3 @@
         {% endif %}
     </div>
 </div>
-</section>
