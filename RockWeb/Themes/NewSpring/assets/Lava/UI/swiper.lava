@@ -68,9 +68,8 @@
       navigation: {
         nextEl: '.swiper-next',
         prevEl: '.swiper-prev',
-      },
-      {% endif %}
-      {% if initialslide and initialslide != empty %},
+      }
+      {% endif %}{% if initialslide and initialslide != empty %},
         initialSlide: {{ initialslide }}
       {% endif %}
   });

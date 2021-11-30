@@ -28,6 +28,9 @@ $(document).ready(function(){
 		column.appendChild(blockWrapper);
 	}
 
+
+
+    
     // Dynamic Rows & Containers
     let jscolumns = $('[class*=js-col]'),
         elemsToMove = [],
@@ -54,7 +57,7 @@ $(document).ready(function(){
         elemsToMove.push(elem);
 
         // If last js col, or next item isn't a js column, dump elemsToMove into newrow, and clear it out
-        if(i == jscolumns.length || nextElem == null || !nextElem.classList.contains('js-col')) {
+        if( nextElem === undefined || i == (jscolumns.length-1) || nextElem.classList && !nextElem.classList.contains('js-col') ) {
 
             // loop through elemsToMove and dump them into row element
             for (let j = 0; j < elemsToMove.length; j++) {
@@ -82,8 +85,9 @@ $(document).ready(function(){
 		body = $('body'),
 		navWrapper = document.querySelector('#navigation-wrapper');
 		windowHeight = $(window).height(),
-		heroHeight = $('.hero').height();
-		navHeight = navWrapper.offsetHeight
+		heroHeight = $('.hero').height(),
+		navHeight = navWrapper.offsetHeight,
+        adminBarHeight = $('#cms-admin-footer').height(),
 		transparentNav = $('.js-classes').hasClass('nav-transparent');
 
 	if(!transparentNav) {

@@ -9,7 +9,7 @@
 {% assign orgAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
 {% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
 
-<footer class="position-relative soft-double xs-soft-double-ends bg-gray-darker">
+<footer id="footer" class="position-relative soft-double xs-soft-double-ends bg-gray-dark">
     <div class="soft xs-soft-half">
 
         <div class="row">

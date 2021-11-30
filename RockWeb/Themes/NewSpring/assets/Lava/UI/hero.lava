@@ -41,7 +41,7 @@
         {% if backgroundvideourl != null and backgroundvideourl != '' %}
 
             <!-- Background Video -->
-            <video class="video display-block full-screen width-full rounded {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; {% if imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}" width="1280" height="720" playsinline loop autoplay muted>
+            <video class="video display-block full-screen width-full {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; {% if imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}" width="1280" height="720" playsinline loop autoplay muted>
                 <source src="{{ backgroundvideourl }}" type="video/mp4">
             </video>
 
@@ -49,11 +49,11 @@
 
         <!-- Background Image -->
         {% if imageurl != null and imageurl != '' %}
-            <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+            <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
         {% endif %}
 
         {% if mobileimageurl != null and mobileimageurl != '' %}
-            <span class="hidden-md hidden-lg full-screen background-cover background-center rounded {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+            <span class="hidden-md hidden-lg full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
         {% endif %}
 
         {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}

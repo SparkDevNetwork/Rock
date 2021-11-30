@@ -31,7 +31,7 @@
                     {{ content }}
 
                     {% if url != empty %}
-                        <a href="{{ url }}" class="btn btn-primary flush" role="button">{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                        <a href="{{ url }}" class="btn btn-primary flush" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
                     {% endif %}
 
                     {% if lava and lava != empty %}

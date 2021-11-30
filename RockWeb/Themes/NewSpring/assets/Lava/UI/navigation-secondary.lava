@@ -1,11 +1,11 @@
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
 
 <!-- Secondary Nav -->
-<section class="nav-secondary bg-gray-darker hard flush shadowed hidden-xs hidden-sm">
+<section class="nav-secondary bg-gray-dark hard flush shadowed hidden-xs hidden-sm">
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
         <a href="{{ Page.Url }}" class="hidden-sm hidden-xs">
-            <h2 class="h4 text-white flush pull-left" style="position: relative; top: 4px;">{{ Page.Title }}</h2>
+            <h2 class="h4 text-white flush pull-left" style="position: relative; top: 6px;">{{ Page.Title }}</h2>
         </a>
 
         <ul class="list-inline flush">
