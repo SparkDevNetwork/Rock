@@ -28,7 +28,7 @@ import { useStore } from "../../../Store/index";
 
 const store = useStore();
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.Intro",
     components: {
         NumberUpDown,
@@ -36,7 +36,7 @@ export default defineComponent( {
         Alert
     },
     data () {
-        const registrationEntryState = inject( "registrationEntryState" ) as RegistrationEntryState;
+        const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
 
         return {
             /** The number of registrants that this registrar is going to input */
@@ -62,12 +62,12 @@ export default defineComponent( {
 
         /** The number of these registrants that will be placed on a waitlist because of capacity rules */
         numberToAddToWaitlist (): number {
-            if ( this.viewModel.spotsRemaining === null || !this.viewModel.waitListEnabled ) {
+            if (this.viewModel.spotsRemaining === null || !this.viewModel.waitListEnabled) {
                 // There is no waitlist or no cap on number of attendees
                 return 0;
             }
 
-            if ( this.viewModel.spotsRemaining >= this.numberOfRegistrants ) {
+            if (this.viewModel.spotsRemaining >= this.numberOfRegistrants) {
                 // There is enough capacity left for all of these registrants
                 return 0;
             }
@@ -80,16 +80,16 @@ export default defineComponent( {
         remainingCapacityPhrase (): string {
             const spots = this.viewModel.spotsRemaining;
 
-            if ( spots === null ) {
+            if (spots === null) {
                 return "";
             }
 
-            return pluralConditional( spots, `1 more ${this.registrantTerm}`, `${spots} more ${this.registrantTermPlural}` );
+            return pluralConditional(spots, `1 more ${this.registrantTerm}`, `${spots} more ${this.registrantTermPlural}`);
         },
 
         /** Is this instance full and no one else can register? */
         isFull (): boolean {
-            if ( this.viewModel.spotsRemaining === null ) {
+            if (this.viewModel.spotsRemaining === null) {
                 return false;
             }
 
@@ -98,19 +98,19 @@ export default defineComponent( {
 
         registrantTerm (): string {
             this.viewModel.instanceName;
-            return ( this.viewModel.registrantTerm || "registrant" ).toLowerCase();
+            return (this.viewModel.registrantTerm || "registrant").toLowerCase();
         },
         registrantTermPlural (): string {
-            return ( this.viewModel.pluralRegistrantTerm || "registrants" ).toLowerCase();
+            return (this.viewModel.pluralRegistrantTerm || "registrants").toLowerCase();
         },
         registrationTerm (): string {
-            return ( this.viewModel.registrationTerm || "registration" ).toLowerCase();
+            return (this.viewModel.registrationTerm || "registration").toLowerCase();
         },
         registrationTermPlural (): string {
-            return ( this.viewModel.pluralRegistrationTerm || "registrations" ).toLowerCase();
+            return (this.viewModel.pluralRegistrationTerm || "registrations").toLowerCase();
         },
         registrationTermTitleCase (): string {
-            return toTitleCase( this.registrationTerm );
+            return toTitleCase(this.registrationTerm);
         }
     },
     methods: {
@@ -141,13 +141,6 @@ export default defineComponent( {
 
             for (let i = firstWaitListIndex; i < this.numberOfRegistrants; i++) {
                 this.registrationEntryState.registrants[i].isOnWaitList = true;
-            }
-
-            // If there are family members, set the first registrant to be the first (feature parity with the original block)
-            if (availableFamilyMembers.length && this.registrationEntryState.registrants.length) {
-                const familyMember = availableFamilyMembers[0];
-                const registrant = this.registrationEntryState.registrants[0];
-                registrant.personGuid = familyMember.guid;
             }
 
             this.$emit("next");
@@ -204,4 +197,4 @@ export default defineComponent( {
         </RockButton>
     </div>
 </div>`
-} );
+});

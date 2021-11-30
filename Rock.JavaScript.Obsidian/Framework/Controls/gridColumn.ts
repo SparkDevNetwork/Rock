@@ -18,7 +18,7 @@ import JavaScriptAnchor from "../Elements/javaScriptAnchor";
 import { defineComponent, PropType, inject } from "vue";
 import { GridContext, RowContext, SortDirection, SortProperty } from "./grid";
 
-export default defineComponent( {
+export default defineComponent({
     name: "GridColumn",
     components: {
         JavaScriptAnchor
@@ -39,8 +39,8 @@ export default defineComponent( {
     },
     setup () {
         return {
-            gridContext: inject( "gridContext" ) as GridContext,
-            rowContext: inject( "rowContext" ) as RowContext
+            gridContext: inject("gridContext") as GridContext,
+            rowContext: inject("rowContext") as RowContext
         };
     },
     computed: {
@@ -65,10 +65,10 @@ export default defineComponent( {
     },
     methods: {
         onHeaderClick () {
-            this.$emit( "click:header", this.property );
+            this.$emit("click:header", this.property);
 
-            if ( this.mySortExpression && this.sortProperty ) {
-                if ( this.isCurrentlySortedAsc ) {
+            if (this.mySortExpression && this.sortProperty) {
+                if (this.isCurrentlySortedAsc) {
                     this.sortProperty.direction = SortDirection.Descending;
                 }
                 else {
@@ -100,4 +100,4 @@ export default defineComponent( {
         {{rowContext.rowData[property]}}
     </slot>
 </td>`
-} );
+});

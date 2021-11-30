@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class BenevolenceRequestViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the BenevolenceTypeId.
+        /// </summary>
+        /// <value>
+        /// The BenevolenceTypeId.
+        /// </value>
+        public int BenevolenceTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the CampusId.
         /// </summary>
         /// <value>

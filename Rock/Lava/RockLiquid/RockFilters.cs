@@ -4670,13 +4670,27 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current.Handler as RockPage;
 
             if ( page != null )
             {
-                HtmlLink imageLink = new HtmlLink();
+                // If the link already exists, do not add it again.
+                foreach ( var ctl in page.Header.Controls )
+                {
+                    if ( ctl is HtmlLink ctlLink )
+                    {
+                        if ( ctlLink.Attributes["href"] == input
+                             && ctlLink.Attributes[attributeName] == attributeValue )
+                        {
+                            return null;
+                        }
+                    }
+                }
+
+                var imageLink = new HtmlLink();
                 imageLink.Attributes.Add( attributeName, attributeValue );
                 imageLink.Attributes.Add( "href", input );
+
                 page.Header.Controls.Add( imageLink );
             }
 

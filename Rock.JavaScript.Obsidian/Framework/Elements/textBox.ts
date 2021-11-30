@@ -17,7 +17,7 @@
 import { defineComponent, PropType } from "vue";
 import RockFormField from "./rockFormField";
 
-export default defineComponent( {
+export default defineComponent({
     name: "TextBox",
     components: {
         RockFormField
@@ -72,11 +72,11 @@ export default defineComponent( {
             return this.maxLength - this.modelValue.length;
         },
         countdownClass (): string {
-            if ( this.charsRemaining >= 10 ) {
+            if (this.charsRemaining >= 10) {
                 return "badge-default";
             }
 
-            if ( this.charsRemaining >= 0 ) {
+            if (this.charsRemaining >= 0) {
                 return "badge-warning";
             }
 
@@ -85,7 +85,7 @@ export default defineComponent( {
     },
     watch: {
         internalValue () {
-            this.$emit( "update:modelValue", this.internalValue );
+            this.$emit("update:modelValue", this.internalValue);
         },
         modelValue () {
             this.internalValue = this.modelValue;
@@ -108,4 +108,4 @@ export default defineComponent( {
         </div>
     </template>
 </RockFormField>`
-} );
+});

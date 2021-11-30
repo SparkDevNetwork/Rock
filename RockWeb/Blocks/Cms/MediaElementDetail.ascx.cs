@@ -576,6 +576,7 @@ namespace RockWeb.Blocks.Cms
             {
                 nbNoData.Visible = true;
                 pnlAnalytics.Visible = false;
+                pnlAllTimeDetails.Visible = false;
             }
             else
             {

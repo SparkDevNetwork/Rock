@@ -225,6 +225,22 @@
     <Compile Include="Migrations\202111161901354_CodeGenerated_20211116.Designer.cs">
       <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202111162049484_AddPastoralCareCallLog_20211116.cs" />
+    <Compile Include="Migrations\202111162049484_AddPastoralCareCallLog_20211116.Designer.cs">
+      <DependentUpon>202111162049484_AddPastoralCareCallLog_20211116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111231715385_FinancialTransactionAlertTypeAccount.cs" />
+    <Compile Include="Migrations\202111231715385_FinancialTransactionAlertTypeAccount.Designer.cs">
+      <DependentUpon>202111231715385_FinancialTransactionAlertTypeAccount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111302149106_Rollup_20211130.cs" />
+    <Compile Include="Migrations\202111302149106_Rollup_20211130.Designer.cs">
+      <DependentUpon>202111302149106_Rollup_20211130.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111302202537_CodeGenerated_20211130.cs" />
+    <Compile Include="Migrations\202111302202537_CodeGenerated_20211130.Designer.cs">
+      <DependentUpon>202111302202537_CodeGenerated_20211130.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -953,6 +969,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202111161901354_CodeGenerated_20211116.resx">
       <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111162049484_AddPastoralCareCallLog_20211116.resx">
+      <DependentUpon>202111162049484_AddPastoralCareCallLog_20211116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111231715385_FinancialTransactionAlertTypeAccount.resx">
+      <DependentUpon>202111231715385_FinancialTransactionAlertTypeAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111302149106_Rollup_20211130.resx">
+      <DependentUpon>202111302149106_Rollup_20211130.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111302202537_CodeGenerated_20211130.resx">
+      <DependentUpon>202111302202537_CodeGenerated_20211130.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>

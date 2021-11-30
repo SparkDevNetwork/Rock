@@ -46,6 +46,8 @@
     <Compile Include="Blocks\RegistrationEntryBlockSuccessViewModel.cs" />
     <Compile Include="Blocks\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\RegistrationEntryBlockViewModel.cs" />
+    <Compile Include="CodeGenerated\BenevolenceTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\BenevolenceWorkflowViewModel.cs" />
     <Compile Include="CodeGenerated\ConnectionStatusAutomationViewModel.cs" />
     <Compile Include="NonEntities\ClientAttributeValueCategoryViewModel.cs" />
     <Compile Include="NonEntities\ClientEditableAttributeValueViewModel.cs" />

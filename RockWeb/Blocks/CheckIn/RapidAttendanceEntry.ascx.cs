@@ -2308,8 +2308,15 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     gpGradePicker.SelectedValue = null;
                 }
-                pnlEmail.Visible = GetAttributeValue( AttributeKey.ChildAllowEmailEdit ).AsBoolean();
+
                 rblCommunicationPreference.Visible = false;
+                var isChildAllowEmailEdit = GetAttributeValue( AttributeKey.ChildAllowEmailEdit ).AsBoolean();
+                pnlEmail.Visible = isChildAllowEmailEdit;
+                if ( isChildAllowEmailEdit )
+                {
+                    tbEmail.Text = person.Email;
+                    cbIsEmailActive.Checked = person.IsEmailActive;
+                }
             }
 
             BindPhoneNumbers( isAdult, person );

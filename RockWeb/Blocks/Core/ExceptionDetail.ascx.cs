@@ -306,11 +306,9 @@ namespace RockWeb.Blocks.Core
 
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
-            lFormData.Text = baseException.Form;
 
             btnShowCookies.Visible = !string.IsNullOrWhiteSpace( baseException.Cookies );
             btnShowVariables.Visible = !string.IsNullOrWhiteSpace( baseException.ServerVariables );
-            btnShowFormData.Visible = !string.IsNullOrWhiteSpace( baseException.Form );
 
             // Make sure we have a root-level exception so we can show the entire hierarchy.
             var rootException = GetOutermostException( baseException );

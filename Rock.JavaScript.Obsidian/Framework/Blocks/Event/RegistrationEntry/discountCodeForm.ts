@@ -31,7 +31,7 @@ type CheckDiscountCodeResult = {
     discountPercentage: number;
 };
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.DiscountCodeForm",
     components: {
         RockButton,
@@ -40,8 +40,8 @@ export default defineComponent( {
     },
     setup () {
         return {
-            invokeBlockAction: inject( "invokeBlockAction" ) as InvokeBlockActionFunc,
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState
+            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc,
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
     data () {
@@ -62,13 +62,13 @@ export default defineComponent( {
             const discountAmount = this.registrationEntryState.discountAmount;
             const discountPercent = this.registrationEntryState.discountPercentage;
 
-            if ( !discountPercent && !discountAmount ) {
+            if (!discountPercent && !discountAmount) {
                 return "";
             }
 
             const discountText = discountPercent ?
-                `${asFormattedString( discountPercent * 100, 0 )}%` :
-                `$${asFormattedString( discountAmount, 2 )}`;
+                `${asFormattedString(discountPercent * 100, 0)}%` :
+                `$${asFormattedString(discountAmount, 2)}`;
 
             return `Your ${discountText} discount code for all registrants was successfully applied.`;
         },
@@ -90,11 +90,11 @@ export default defineComponent( {
             this.loading = true;
 
             try {
-                const result = await this.invokeBlockAction<CheckDiscountCodeResult>( "CheckDiscountCode", {
+                const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
                     code: this.discountCodeInput
-                } );
+                });
 
-                if ( result.isError || !result.data ) {
+                if (result.isError || !result.data) {
                     this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
                 }
                 else {
@@ -131,4 +131,4 @@ export default defineComponent( {
         </div>
     </div>
 </div>`
-} );
+});

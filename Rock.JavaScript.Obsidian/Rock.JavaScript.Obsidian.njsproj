@@ -79,6 +79,7 @@
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\discountCodeForm.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\feeField.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\intro.ts" />
+    <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\payment.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\registrant.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\registrantAttributeField.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\registrantPersonField.ts" />
@@ -113,6 +114,8 @@
     <TypeScriptCompile Include="Framework\Controls\gridSelectColumn.ts" />
     <TypeScriptCompile Include="Framework\Controls\loading.ts" />
     <TypeScriptCompile Include="Framework\Controls\myWellGatewayControl.ts" />
+    <TypeScriptCompile Include="Framework\Controls\nmiGatewayControl.ts" />
+    <TypeScriptCompile Include="Framework\Controls\nmiGatewayControlTypes.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\pageDebugTimings.ts" />
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListField.ts" />

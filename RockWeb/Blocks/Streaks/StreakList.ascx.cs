@@ -626,7 +626,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// Represents an enrollment for a row in the grid
         /// </summary>
-        public class EnrollmentViewModel
+        public class EnrollmentViewModel : RockDynamic
         {
             public int Id { get; set; }
             public int PersonId { get; set; }

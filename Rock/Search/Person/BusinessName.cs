@@ -50,16 +50,35 @@ namespace Rock.Search.Person
         }
 
         /// <summary>
+        /// Gets the search result entity queryable that matches the search term.
+        /// </summary>
+        /// <param name="searchTerm">The search term used to find results.</param>
+        /// <returns>A queryable of entity objects that match the search term.</returns>
+        private IQueryable<Model.Person> GetSearchResults( string searchTerm )
+        {
+            var recordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+
+            return new PersonService( new RockContext() ).Queryable()
+                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.LastName.Contains( searchTerm ) );
+        }
+
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            return GetSearchResults( searchTerm )
+                .OrderBy( p => p.LastName );
+        }
+
+        /// <summary>
         /// Returns a list of matching businesses
         /// </summary>
         /// <param name="searchterm"></param>
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            var recordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            var searchQry = GetSearchResults( searchterm );
 
-            return new PersonService( new RockContext() ).Queryable()
-                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.LastName.Contains( searchterm ) )
+            return searchQry
                 .OrderBy( q => q.LastName )
                 .Select( b => b.LastName )
                 .Distinct();

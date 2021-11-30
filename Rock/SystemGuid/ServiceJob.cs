@@ -139,6 +139,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS = "FD32833A-6FC8-43E6-8D36-0C840DBE99F8";
 
         /// <summary>
+        /// The Job to run Post v13.0 Data Migrations for Add InteractionComponentId index to Interaction
+        /// </summary>
+        public const string DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX = "1D7FADEC-2A8A-46FD-898E-58544E7FD9F2";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";

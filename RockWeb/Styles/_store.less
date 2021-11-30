@@ -49,8 +49,8 @@
 .packagesummary {
   position: relative;
   max-width: 282px;
+  height: 100%;
   margin-right: auto;
-  margin-bottom: 24px;
   margin-left: auto;
   cursor: pointer;
   background-color: @white;
@@ -78,6 +78,10 @@
 }
 
 .packagesummary-footer {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: center;
   padding: @padding-base-vertical @padding-base-horizontal;
   background-color: @gray-50;
   border-top: 1px solid rgba(0,0,0,.125);

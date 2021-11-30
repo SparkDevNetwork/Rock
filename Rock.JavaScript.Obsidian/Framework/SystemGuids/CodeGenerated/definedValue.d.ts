@@ -38,6 +38,8 @@ export const enum DefinedValue {
     BlockTemplateMobileConnectionConnectionRequestList = "4A45926C-5571-414C-8C69-8203FDBF4AE7",
     /** The block template for the Mobile &gt; Connection &gt; Connection Request Detail block. */
     BlockTemplateMobileConnectionConnectionRequestDetail = "44538702-5157-489A-B256-217F5D1F53F4",
+    /** The block template for  block. */
+    BlockTemplateMobileCoreSearch = "CFEB7FA6-0F19-496B-8DCC-4D200AEEE866",
     /** The block template mobile daily challenge entry */
     BlockTemplateMobileDailyChallengeEntry = "30ECA4B6-0869-4656-A4CD-B8729CB29E76",
     /** The block template mobile event item occurrence list by audience */

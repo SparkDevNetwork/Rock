@@ -958,7 +958,7 @@ $@"Rock.controls.itemPicker.initialize({{
 
         /// <summary>
         /// Returns the value of the currently selected item.
-        /// It will return NULL if either <see cref="T:Rock.Constants.None"/> or <see cref="T:Rock.Constants.All"/> is selected. />
+        /// It will return NULL if either <see cref="T:Rock.Constants.None"/> or <see cref="T:Rock.Constants.All"/> is selected.
         /// </summary>
         /// <returns></returns>
         public int? SelectedValueAsId()
