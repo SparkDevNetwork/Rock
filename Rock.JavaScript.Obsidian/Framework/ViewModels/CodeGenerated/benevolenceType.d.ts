@@ -23,25 +23,11 @@
 
 import { IEntity } from "../entity";
 
-export type BenevolenceRequest = IEntity & {
-    benevolenceTypeId?: number;
-    campusId?: number | null;
-    caseWorkerPersonAliasId?: number | null;
-    cellPhoneNumber?: string | null;
-    connectionStatusValueId?: number | null;
-    email?: string | null;
-    firstName?: string | null;
-    governmentId?: string | null;
-    homePhoneNumber?: string | null;
-    lastName?: string | null;
-    locationId?: number | null;
-    providedNextSteps?: string | null;
-    requestDateTime?: string;
-    requestedByPersonAliasId?: number | null;
-    requestStatusValueId?: number | null;
-    requestText?: string | null;
-    resultSummary?: string | null;
-    workPhoneNumber?: string | null;
+export type BenevolenceType = IEntity & {
+    description?: string | null;
+    isActive?: boolean;
+    name?: string | null;
+    requestLavaTemplate?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

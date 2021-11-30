@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// BenevolenceRequest Service class
+    /// BenevolenceWorkflow Service class
     /// </summary>
-    public partial class BenevolenceRequestService : Service<BenevolenceRequest>
+    public partial class BenevolenceWorkflowService : Service<BenevolenceWorkflow>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BenevolenceRequestService"/> class
+        /// Initializes a new instance of the <see cref="BenevolenceWorkflowService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public BenevolenceRequestService(RockContext context) : base(context)
+        public BenevolenceWorkflowService(RockContext context) : base(context)
         {
         }
 
@@ -51,7 +51,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( BenevolenceRequest item, out string errorMessage )
+        public bool CanDelete( BenevolenceWorkflow item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -59,10 +59,10 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// BenevolenceRequest View Model Helper
+    /// BenevolenceWorkflow View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( BenevolenceRequest ) )]
-    public partial class BenevolenceRequestViewModelHelper : ViewModelHelper<BenevolenceRequest, Rock.ViewModel.BenevolenceRequestViewModel>
+    [DefaultViewModelHelper( typeof( BenevolenceWorkflow ) )]
+    public partial class BenevolenceWorkflowViewModelHelper : ViewModelHelper<BenevolenceWorkflow, Rock.ViewModel.BenevolenceWorkflowViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,35 +71,21 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.BenevolenceRequestViewModel CreateViewModel( BenevolenceRequest model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.BenevolenceWorkflowViewModel CreateViewModel( BenevolenceWorkflow model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.BenevolenceRequestViewModel
+            var viewModel = new Rock.ViewModel.BenevolenceWorkflowViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
                 BenevolenceTypeId = model.BenevolenceTypeId,
-                CampusId = model.CampusId,
-                CaseWorkerPersonAliasId = model.CaseWorkerPersonAliasId,
-                CellPhoneNumber = model.CellPhoneNumber,
-                ConnectionStatusValueId = model.ConnectionStatusValueId,
-                Email = model.Email,
-                FirstName = model.FirstName,
-                GovernmentId = model.GovernmentId,
-                HomePhoneNumber = model.HomePhoneNumber,
-                LastName = model.LastName,
-                LocationId = model.LocationId,
-                ProvidedNextSteps = model.ProvidedNextSteps,
-                RequestDateTime = model.RequestDateTime,
-                RequestedByPersonAliasId = model.RequestedByPersonAliasId,
-                RequestStatusValueId = model.RequestStatusValueId,
-                RequestText = model.RequestText,
-                ResultSummary = model.ResultSummary,
-                WorkPhoneNumber = model.WorkPhoneNumber,
+                QualifierValue = model.QualifierValue,
+                TriggerType = ( int ) model.TriggerType,
+                WorkflowTypeId = model.WorkflowTypeId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -116,36 +102,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class BenevolenceRequestExtensionMethods
+    public static partial class BenevolenceWorkflowExtensionMethods
     {
         /// <summary>
-        /// Clones this BenevolenceRequest object to a new BenevolenceRequest object
+        /// Clones this BenevolenceWorkflow object to a new BenevolenceWorkflow object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static BenevolenceRequest Clone( this BenevolenceRequest source, bool deepCopy )
+        public static BenevolenceWorkflow Clone( this BenevolenceWorkflow source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as BenevolenceRequest;
+                return source.Clone() as BenevolenceWorkflow;
             }
             else
             {
-                var target = new BenevolenceRequest();
+                var target = new BenevolenceWorkflow();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this BenevolenceRequest object to a new BenevolenceRequest object with default values for the properties in the Entity and Model base classes.
+        /// Clones this BenevolenceWorkflow object to a new BenevolenceWorkflow object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static BenevolenceRequest CloneWithoutIdentity( this BenevolenceRequest source )
+        public static BenevolenceWorkflow CloneWithoutIdentity( this BenevolenceWorkflow source )
         {
-            var target = new BenevolenceRequest();
+            var target = new BenevolenceWorkflow();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -162,33 +148,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another BenevolenceRequest object to this BenevolenceRequest object
+        /// Copies the properties from another BenevolenceWorkflow object to this BenevolenceWorkflow object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this BenevolenceRequest target, BenevolenceRequest source )
+        public static void CopyPropertiesFrom( this BenevolenceWorkflow target, BenevolenceWorkflow source )
         {
             target.Id = source.Id;
             target.BenevolenceTypeId = source.BenevolenceTypeId;
-            target.CampusId = source.CampusId;
-            target.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
-            target.CellPhoneNumber = source.CellPhoneNumber;
-            target.ConnectionStatusValueId = source.ConnectionStatusValueId;
-            target.Email = source.Email;
-            target.FirstName = source.FirstName;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GovernmentId = source.GovernmentId;
-            target.HomePhoneNumber = source.HomePhoneNumber;
-            target.LastName = source.LastName;
-            target.LocationId = source.LocationId;
-            target.ProvidedNextSteps = source.ProvidedNextSteps;
-            target.RequestDateTime = source.RequestDateTime;
-            target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
-            target.RequestStatusValueId = source.RequestStatusValueId;
-            target.RequestText = source.RequestText;
-            target.ResultSummary = source.ResultSummary;
-            target.WorkPhoneNumber = source.WorkPhoneNumber;
+            target.QualifierValue = source.QualifierValue;
+            target.TriggerType = source.TriggerType;
+            target.WorkflowTypeId = source.WorkflowTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -204,9 +176,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.BenevolenceRequestViewModel ToViewModel( this BenevolenceRequest model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.BenevolenceWorkflowViewModel ToViewModel( this BenevolenceWorkflow model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new BenevolenceRequestViewModelHelper();
+            var helper = new BenevolenceWorkflowViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }

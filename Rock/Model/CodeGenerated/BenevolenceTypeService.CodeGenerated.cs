@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// BenevolenceRequest Service class
+    /// BenevolenceType Service class
     /// </summary>
-    public partial class BenevolenceRequestService : Service<BenevolenceRequest>
+    public partial class BenevolenceTypeService : Service<BenevolenceType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BenevolenceRequestService"/> class
+        /// Initializes a new instance of the <see cref="BenevolenceTypeService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public BenevolenceRequestService(RockContext context) : base(context)
+        public BenevolenceTypeService(RockContext context) : base(context)
         {
         }
 
@@ -51,18 +51,30 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( BenevolenceRequest item, out string errorMessage )
+        public bool CanDelete( BenevolenceType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.BenevolenceTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BenevolenceType.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<BenevolenceWorkflow>( Context ).Queryable().Any( a => a.BenevolenceTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BenevolenceType.FriendlyTypeName, BenevolenceWorkflow.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
     /// <summary>
-    /// BenevolenceRequest View Model Helper
+    /// BenevolenceType View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( BenevolenceRequest ) )]
-    public partial class BenevolenceRequestViewModelHelper : ViewModelHelper<BenevolenceRequest, Rock.ViewModel.BenevolenceRequestViewModel>
+    [DefaultViewModelHelper( typeof( BenevolenceType ) )]
+    public partial class BenevolenceTypeViewModelHelper : ViewModelHelper<BenevolenceType, Rock.ViewModel.BenevolenceTypeViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,35 +83,21 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.BenevolenceRequestViewModel CreateViewModel( BenevolenceRequest model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.BenevolenceTypeViewModel CreateViewModel( BenevolenceType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.BenevolenceRequestViewModel
+            var viewModel = new Rock.ViewModel.BenevolenceTypeViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
-                BenevolenceTypeId = model.BenevolenceTypeId,
-                CampusId = model.CampusId,
-                CaseWorkerPersonAliasId = model.CaseWorkerPersonAliasId,
-                CellPhoneNumber = model.CellPhoneNumber,
-                ConnectionStatusValueId = model.ConnectionStatusValueId,
-                Email = model.Email,
-                FirstName = model.FirstName,
-                GovernmentId = model.GovernmentId,
-                HomePhoneNumber = model.HomePhoneNumber,
-                LastName = model.LastName,
-                LocationId = model.LocationId,
-                ProvidedNextSteps = model.ProvidedNextSteps,
-                RequestDateTime = model.RequestDateTime,
-                RequestedByPersonAliasId = model.RequestedByPersonAliasId,
-                RequestStatusValueId = model.RequestStatusValueId,
-                RequestText = model.RequestText,
-                ResultSummary = model.ResultSummary,
-                WorkPhoneNumber = model.WorkPhoneNumber,
+                Description = model.Description,
+                IsActive = model.IsActive,
+                Name = model.Name,
+                RequestLavaTemplate = model.RequestLavaTemplate,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -116,36 +114,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class BenevolenceRequestExtensionMethods
+    public static partial class BenevolenceTypeExtensionMethods
     {
         /// <summary>
-        /// Clones this BenevolenceRequest object to a new BenevolenceRequest object
+        /// Clones this BenevolenceType object to a new BenevolenceType object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static BenevolenceRequest Clone( this BenevolenceRequest source, bool deepCopy )
+        public static BenevolenceType Clone( this BenevolenceType source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as BenevolenceRequest;
+                return source.Clone() as BenevolenceType;
             }
             else
             {
-                var target = new BenevolenceRequest();
+                var target = new BenevolenceType();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this BenevolenceRequest object to a new BenevolenceRequest object with default values for the properties in the Entity and Model base classes.
+        /// Clones this BenevolenceType object to a new BenevolenceType object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static BenevolenceRequest CloneWithoutIdentity( this BenevolenceRequest source )
+        public static BenevolenceType CloneWithoutIdentity( this BenevolenceType source )
         {
-            var target = new BenevolenceRequest();
+            var target = new BenevolenceType();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -162,33 +160,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another BenevolenceRequest object to this BenevolenceRequest object
+        /// Copies the properties from another BenevolenceType object to this BenevolenceType object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this BenevolenceRequest target, BenevolenceRequest source )
+        public static void CopyPropertiesFrom( this BenevolenceType target, BenevolenceType source )
         {
             target.Id = source.Id;
-            target.BenevolenceTypeId = source.BenevolenceTypeId;
-            target.CampusId = source.CampusId;
-            target.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
-            target.CellPhoneNumber = source.CellPhoneNumber;
-            target.ConnectionStatusValueId = source.ConnectionStatusValueId;
-            target.Email = source.Email;
-            target.FirstName = source.FirstName;
+            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GovernmentId = source.GovernmentId;
-            target.HomePhoneNumber = source.HomePhoneNumber;
-            target.LastName = source.LastName;
-            target.LocationId = source.LocationId;
-            target.ProvidedNextSteps = source.ProvidedNextSteps;
-            target.RequestDateTime = source.RequestDateTime;
-            target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
-            target.RequestStatusValueId = source.RequestStatusValueId;
-            target.RequestText = source.RequestText;
-            target.ResultSummary = source.ResultSummary;
-            target.WorkPhoneNumber = source.WorkPhoneNumber;
+            target.IsActive = source.IsActive;
+            target.Name = source.Name;
+            target.RequestLavaTemplate = source.RequestLavaTemplate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -204,9 +188,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.BenevolenceRequestViewModel ToViewModel( this BenevolenceRequest model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.BenevolenceTypeViewModel ToViewModel( this BenevolenceType model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new BenevolenceRequestViewModelHelper();
+            var helper = new BenevolenceTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }
