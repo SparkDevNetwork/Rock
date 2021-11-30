@@ -129,7 +129,13 @@ export default defineComponent({
             return !this.hasSavedAccounts || this.selectedSavedAccount === "";
         },
 
-        amountToPay(): string {
+        /** The amount to pay in dollars and cents. */
+        amountToPay(): number {
+            return this.registrationEntryState.amountToPayToday;
+        },
+
+        /** The amount to pay as a friendly text string. */
+        amountToPayText(): string {
             return `$${this.registrationEntryState.amountToPayToday.toFixed(2)}`;
         }
     },
@@ -260,7 +266,7 @@ export default defineComponent({
     <RockForm @submit="onNext">
         <div class="amount-summary">
             <div class="amount-display">
-                <span>{{ amountToPay }}</span>
+                <span>{{ amountToPayText }}</span>
             </div>
         </div>
 
@@ -273,6 +279,7 @@ export default defineComponent({
                 <div class="hosted-payment-control">
                     <GatewayControl
                         :gatewayControlModel="gatewayControlModel"
+                        :amountToPay="amountToPay"
                         @success="onGatewayControlSuccess"
                         @error="onGatewayControlError"
                         @validation="onGatewayControlValidation" />
