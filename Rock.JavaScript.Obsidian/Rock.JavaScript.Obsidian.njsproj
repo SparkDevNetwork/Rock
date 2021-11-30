@@ -117,6 +117,7 @@
     <TypeScriptCompile Include="Framework\Controls\nmiGatewayControlTypes.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\pageDebugTimings.ts" />
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
+    <TypeScriptCompile Include="Framework\Controls\stripeGatewayControl.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListField.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\utils.ts" />
