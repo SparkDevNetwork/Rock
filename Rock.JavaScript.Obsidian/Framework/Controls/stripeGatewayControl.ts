@@ -29,12 +29,16 @@ type Settings = {
     publicKey?: string;
 };
 
+declare global {
+    /* eslint-disable-next-line */
+    var Stripe: any;
+}
 
 /**
  * Ensures the Stripe script is loaded into the browser.
  */
 async function loadStripeJSAsync(): Promise<boolean> {
-    if (window.CollectJS === undefined) {
+    if (window.Stripe === undefined) {
         const script = document.createElement("script");
         script.type = "text/javascript";
         script.src = "https://js.stripe.com/v3/";
@@ -64,6 +68,11 @@ export default defineComponent({
     props: {
         settings: {
             type: Object as PropType<Settings>,
+            required: true
+        },
+
+        amount: {
+            type: Number as PropType<number>,
             required: true
         }
     },
@@ -124,7 +133,7 @@ export default defineComponent({
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         gatewayGuid: props.settings.gatewayGuid,
-                        amount: 10
+                        amount: props.amount
                     })
                 });
 
