@@ -16,7 +16,7 @@
 
 {% assign linkurl = linkurl | Trim %}
 
-<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="bg-white soft hard-bottom sm-soft-half-bottom xs-soft-half-bottom position-relative rounded shadowed overflow-hidden push-bottom xs-push-half-bottom">
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="bg-white soft hard-bottom sm-soft-half-bottom xs-soft-half-bottom position-relative rounded-lg overflow-hidden push-bottom xs-push-half-bottom">
 
 <div class="row {% if imagealignment == 'Right' %}row-reverse{% endif %} floating floating-left">
     <div class="floating-item col-xs-12 col-sm-12 col-md-6 sm-hard xs-hard">
@@ -33,7 +33,7 @@
 
         {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
             <div class="position-relative ratio-square push-bottom overflow-hidden">
-                <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %} rounded" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
+                <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %} rounded-lg" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
             </div>
         {% if linkurl != empty %}</a>{% endif %}
     </div><div class="floating-item col-xs-12 col-sm-12 col-md-6">

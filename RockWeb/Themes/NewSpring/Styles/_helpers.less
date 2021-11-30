@@ -3,8 +3,8 @@
 .strong { font-weight: 500; }
 .stronger { font-weight: 700; }
 .strongest { font-weight: 900; }
-.serif { font-family: @font-family-serif; }
-.sans-serif { font-family: @font-family-sans-serif; }
+.serif { font-family: @font-family-serif !important; }
+.sans-serif { font-family: @font-family-sans-serif !important; }
 .italic { font-style: italic; }
 .no-breaks { white-space: nowrap; }
 .text-smaller { font-size: .8em; }
@@ -15,22 +15,23 @@
 	/* These are technically the same, but use both */
 	overflow-wrap: break-word;
 	word-wrap: break-word;
-  
+
 	-ms-word-break: break-all;
 	/* This is the dangerous one in WebKit, as it breaks things wherever */
 	word-break: break-all;
 	/* Instead use this non-standard one: */
 	word-break: break-word;
-  
+
 	/* Adds a hyphen where the word breaks, if supported (No Blink) */
 	-ms-hyphens: auto;
 	-moz-hyphens: auto;
 	-webkit-hyphens: auto;
 	hyphens: auto;
-  
+
   }
 .mx-auto { margin-left: auto; margin-right: auto; }
 .letter-spacing-condensed { letter-spacing: -.5px; }
+.letter-spacing-normal { letter-spacing: normal; }
 .clickable { cursor: pointer; }
 .no-break { white-space: nowrap; }
 
@@ -133,11 +134,11 @@
 	opacity: 1;
 }
 
-.full-screen { 
-	position: absolute; 
-	top: 0px; 
-	right: 0px; 
-	bottom: 0px; 
+.full-screen {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
 	left: 0px;
 }
 
@@ -149,8 +150,8 @@
 
 .bring-forward { position: relative; z-index: 1; }
 
-.overflow-hidden { 
-	overflow: hidden; 
+.overflow-hidden {
+	overflow: hidden;
 	-webkit-backface-visibility: hidden;
 	-moz-backface-visibility: hidden;
 	-webkit-transform: translate3d(0, 0, 0);
