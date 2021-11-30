@@ -20,35 +20,21 @@
 
         <Rock:Zone Name="Feature" runat="server" />
 
-        <Rock:Lava ID="PageConstrained" runat="server">
-            {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
-            {% if isPageConstrained == 'Yes' %}
-                <div class="page-constrained mx-auto">
-            {% endif %}
-        </Rock:Lava>
+        <div id="content" class="clearfix">
+            <Rock:Zone Name="Main" runat="server" />
 
-            <div id="content" class="clearfix">
-                <Rock:Zone Name="Main" runat="server" />
-
-                <div class="page-constrained mx-auto">
-                    <Rock:Zone Name="Section A" runat="server" />
-                </div>
-
-                <Rock:Zone Name="Section B" runat="server" />
-
-                <div class="page-constrained mx-auto">
-                    <Rock:Zone Name="Section C" runat="server" />
-                </div>
-                
-                <Rock:Zone Name="Section D" runat="server" />
+            <div class="page-constrained mx-auto">
+                <Rock:Zone Name="Section A" runat="server" />
             </div>
 
-        <Rock:Lava ID="PageConstrainedClose" runat="server">
-            {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
-            {% if isPageConstrained == 'Yes' %}
-                </div>
-            {% endif %}
-        </Rock:Lava>
+            <Rock:Zone Name="Section B" runat="server" />
+
+            <div class="page-constrained mx-auto">
+                <Rock:Zone Name="Section C" runat="server" />
+            </div>
+            
+            <Rock:Zone Name="Section D" runat="server" />
+        </div>
 
     </div>
 
