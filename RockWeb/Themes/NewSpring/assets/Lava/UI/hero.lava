@@ -48,11 +48,11 @@
         {% endif %}
 
         <!-- Background Image -->
-        {% if imageurl != null and imageurl != '' %}
+        {% if imageurl != null and imageurl != '' and backgroundvideourl == '' %}
             <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
         {% endif %}
 
-        {% if mobileimageurl != null and mobileimageurl != '' %}
+        {% if mobileimageurl != null and mobileimageurl != '' and backgroundvideourl == '' %}
             <span class="hidden-md hidden-lg full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
         {% endif %}
 
