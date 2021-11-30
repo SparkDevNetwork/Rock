@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -89,6 +90,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool ContinueAfterProcessing { get; set; }
+
+        /// <summary>
+        /// Gets or sets when to expire the <see cref="SmsAction"/>
+        /// </summary>
+        /// <value>
+        /// The expire date.
+        /// </value>
+        [DataMember]
+        public DateTime? ExpireDate { get; set; }
 
         #endregion
 

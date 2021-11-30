@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void PopulateEditDocumentTypeDropDownList( bool isNew = false )
         {
-            var filteredDocumentTypes = GetFilteredDocumentTypes( true );
+            var filteredDocumentTypes = GetFilteredDocumentTypes( false );
 
             /*
                SK 20120-10-10

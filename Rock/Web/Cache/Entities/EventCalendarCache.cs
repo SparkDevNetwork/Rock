@@ -30,22 +30,6 @@ namespace Rock.Web.Cache
     [DataContract]
     public class EventCalendarCache : ModelCache<EventCalendarCache, EventCalendar>
     {
-        #region Static Methods
-
-        /// <summary>
-        /// Gets the cache key for the selected event calendar id.
-        /// </summary>
-        /// <param name="id">The event calendar id.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed", true )]
-        public static string CacheKey( int id )
-        {
-            return string.Format( "Rock:EventCalendar:{0}", id );
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>

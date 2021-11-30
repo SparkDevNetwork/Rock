@@ -146,7 +146,7 @@ namespace Rock.Tests.UnitTests.Lava
             // Convert the input time to a Rock datetime string in General format.
             var localCultureTimeString = LavaDateTime.ToString( dateTimeInput, "G" );
 
-            // Verify that the default date output format matches the current culture General Date format.       
+            // Verify that the default date output format matches the current culture General Date format.
             TestHelper.AssertTemplateOutput( localCultureTimeString, "{{ '2018-05-01 10:00:00 AM' | AsDateTime }}" );
         }
 
@@ -328,25 +328,6 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
-        /// Using the Date filter to format a DateTimeOffset type should correctly account for the offset in the output.
-        /// </summary>
-        [TestMethod]
-        public void Date_WithDateTimeOffsetAsInput__PreservesTimeZone()
-        {
-            // Get an input time of 10:00 +04:00 in the test timezone.
-            var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 4, 0, 0 ) );
-
-            // Convert the input time to Rock time, which has a different UTC offset.
-            var expectedOutput = datetimeInput.ToString( "yyyy-MM-ddTHH:mm:sszzz" );
-
-            // Add the input DateTimeOffset object to the Lava context.
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
-
-            // Verify that the Lava Date filter formats the DateTimeOffset value, including the correct offset.
-            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
-        }
-
-        /// <summary>
         /// Using the Date filter to format a date string that contains timezone
         /// offset should preserve the original time zone. This allows the user
         /// to construct and display dates in any time zone they wish, such as a
@@ -386,7 +367,60 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
         }
 
-        /// <summary>
+        [TestMethod]
+        public void Date_WithDateTimeUnspecifiedKindAsInput_IsProcessedAsRockTime()
+        {
+            // Get an input time of 10:00am in the Rock timezone.
+            var dtoInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+
+            // Store the value as a DateTime, with Kind=Unspecified.
+            // The value should be interpreted as a Rock datetime by the Lava framework.
+            var datetimeInput = dtoInput.DateTime;
+
+            // Convert to a string that includes the Rock timezone so we can validate the offset.
+            var rockTimeString = dtoInput.ToString( "yyyy-MM-ddTHH:mm:sszzz" );
+
+            // Add the input DateTime object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                TimeZone = RockDateTime.OrgTimeZoneInfo
+            };
+
+            // Verify that the Lava Date filter formats the DateTime value as a Rock time, including the correct offset.
+            TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
+        }
+
+        [TestMethod]
+        public void Date_WithDateTimeLocalKindAsInput_IsProcessedAsRockTime()
+        {
+            LavaTestHelper.SetRockDateTimeToAlternateTimezone();
+
+            // Get a time of 10:00am in the Rock timezone.
+            var dtoInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+
+            // Get an input time of 10:00am in the local timezone.
+            // The value should be interpreted as a Rock datetime by the Lava framework.
+            var datetimeInput = new DateTime( 2020, 3, 30, 10, 0, 0, DateTimeKind.Local );
+
+            // Convert to a string that includes the Rock timezone so we can validate the offset.
+            var rockTimeString = dtoInput.ToString( "yyyy-MM-ddTHH:mm:sszzz" );
+
+            // Add the input DateTime object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                TimeZone = RockDateTime.OrgTimeZoneInfo
+            };
+
+            // Verify that the Lava Date filter formats the DateTime value as a Rock time, including the correct offset.
+            TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
+        }
+        /// <summary>  
         /// Create a DateTime for a specific timezone.
         /// </summary>
         public struct DateTimeWithZone
@@ -421,7 +455,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// Using the keyword 'Now' as input to the DateAdd filter should resolve to the current date.
         /// </summary>
         [TestMethod]
-        public void DateAdd_Now_ResolvesToCurrentDate()
+        public void DateAdd_WithNowAsInput_ResolvesToCurrentDate()
         {
             var expectedOutputDate = LavaDateTime.NowOffset.AddDays( 5 );
 
@@ -591,6 +625,33 @@ namespace Rock.Tests.UnitTests.Lava
         public void DateDiff_CompareEarlierDateInDays_YieldsNegativeInteger()
         {
             TestHelper.AssertTemplateOutput( "-32", "{{ '18-Mar-2011 11:30 AM' | DateDiff:'14-Feb-2011 8:00 AM','d' }}" );
+        }
+
+        /// <summary>
+        /// Requesting the difference between two dates in years should yield the result as multiples of 365.25 days.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_CompareDifferenceInYears_ReturnsWholeYearDifferenceOnly()
+        {
+            TestHelper.AssertTemplateOutput( "0", "{{ '31-Dec-2020' | DateDiff:'01-Jan-2021','Y' }}" );
+            TestHelper.AssertTemplateOutput( "10", "{{ '31-Dec-2010' | DateDiff:'31-Dec-2020','Y' }}" );
+            TestHelper.AssertTemplateOutput( "-10", "{{ '31-Dec-2020' | DateDiff:'31-Dec-2010','Y' }}" );
+        }
+
+        /// <summary>
+        /// Requesting the difference between two dates in years should yield the result as multiples of 365.25 days.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_CompareDifferenceWithInterveningLeapYears_ReturnsCorrectYearDifference()
+        {
+            // A period spanning 365 days that occurs during a non-leap year should return a difference of 1.
+            TestHelper.AssertTemplateOutput( "1", "{{ '2024-03-02' | DateDiff:'2025-03-02','Y' }}" );
+
+            // A period spanning 365 days that occurs during a leap year should return a difference of 0.
+            TestHelper.AssertTemplateOutput( "0", "{{ '2024-02-29' | DateDiff:'2025-02-27','Y' }}" );
+
+            // A period spanning 366 days that occurs during a leap year should return a difference of 1.
+            TestHelper.AssertTemplateOutput( "1", "{{ '2023-03-02' | DateDiff:'2024-03-02','Y' }}" );
         }
 
         /// <summary>
@@ -1451,6 +1512,35 @@ namespace Rock.Tests.UnitTests.Lava
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
             TestHelper.AssertTemplateOutput( "2018-05-01T00:00:00+02:00", "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+        }
+
+        #endregion
+
+        #region Filter Tests: SundayDate
+
+        /// <summary>
+        /// Applying the filter to a date/time string input returns the next Sunday date.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_WithDateTimeStringAsInput_YieldsNextSundayDate()
+        {
+            TestHelper.AssertTemplateOutput( "2021-10-17",
+                "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+        }
+
+        /// <summary>
+        /// Using a DateTimeOffset type as the filter input should return a correct result.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_WithDateTimeOffsetAsInput_YieldsNextSundayDate()
+        {
+            var datetimeInput = LavaDateTime.NewDateTimeOffset( 2021, 10, 11, 10, 0, 0 );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( "2021-10-17",
+                "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}", mergeValues );
         }
 
         #endregion

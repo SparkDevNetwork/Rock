@@ -30,6 +30,14 @@ export const enum DefinedValue {
     BlockTemplateMobileCalendarEventItemOccurrenceView = "128F7350-97FD-4ECA-9C79-D02DE0C434EB",
     /** The block template for the mobile communication view */
     BlockTemplateMobileCommunicationView = "0D588D84-111C-4350-98DE-460C194F5DE5",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Type List block. */
+    BlockTemplateMobileConnectionConnectionTypeList = "FECAD08A-570F-434E-BEED-412C4F2A3159",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Opportunity List block. */
+    BlockTemplateMobileConnectionConnectionOpportunityList = "167465D9-E8D2-413C-BA99-FDA529B14E6C",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Request List block. */
+    BlockTemplateMobileConnectionConnectionRequestList = "4A45926C-5571-414C-8C69-8203FDBF4AE7",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Request Detail block. */
+    BlockTemplateMobileConnectionConnectionRequestDetail = "44538702-5157-489A-B256-217F5D1F53F4",
     /** The block template mobile daily challenge entry */
     BlockTemplateMobileDailyChallengeEntry = "30ECA4B6-0869-4656-A4CD-B8729CB29E76",
     /** The block template mobile event item occurrence list by audience */
@@ -40,8 +48,12 @@ export const enum DefinedValue {
     BlockTemplateMobileGroupMemberView = "09053C7C-9374-4489-8A7B-71F02E3E7D89",
     /** The block template for the mobile group view. */
     BlockTemplateMobileGroupView = "559346FB-C684-42CF-8F4C-CF4A1C278AD6",
+    /** The block template for the mobile group finder. */
+    BlockTemplateMobileGroupsGroupFinder = "1B6D540A-2E40-44F6-8AE9-2857DE913459",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests = "198F3006-5F0F-48AB-9EA0-2FA56F633753",
+    /** The block template for Mobile &gt; Prayer &gt; Prayer Card View block. */
+    BlockTemplateMobilePrayerPrayerCardView = "DCFECA8C-CDF5-4863-851E-7EFEE6758EE9",
     /** The block template for the mobile prayer session block. */
     BlockTemplateMobilePrayerSession = "6F1F6BAB-B403-48D1-BF6A-52B16361279C",
     /** Button HTML - Primary  */
@@ -248,6 +260,8 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     PersonConnectionStatusVisitor = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2",
     /** Person Connection Status - Participant */
     PersonConnectionStatusParticipant = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061",
+    /** Person Connection Status - Prospect */
+    PersonConnectionStatusProspect = "368DD475-242C-49C4-A42C-7278BE690CC2",
     /** Person Connection Status - Web Prospect */
     PersonConnectionStatusWebProspect = "368DD475-242C-49C4-A42C-7278BE690CC2",
     /** Person needs review due to being Self-Inactivated */
@@ -263,7 +277,7 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     /** Android platform */
     PersonalDevicePlatformAndroid = "63464BB8-83E2-4914-B922-5075311758F9",
     /** Default Structure Content Editor */
-    StructureContentEditorDefault = "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
+    StructureContentEditorDefault = "09B25845-B879-4E69-87E9-003F9380B8DD",
     /** Google map style */
     MapStyleGoogle = "BFC46259-FB66-4427-BF05-2B030A582BEA",
     /** The standard Rock map style */

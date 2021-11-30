@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Net.Http;
 using System.ServiceModel.Channels;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Rest
 {
@@ -37,6 +43,27 @@ namespace Rock.Rest
     [ODataRouting]
     public class ApiControllerBase : ApiController
     {
+        /// <summary>
+        /// Gets the rock request context that describes the current request
+        /// being made.
+        /// </summary>
+        /// <value>
+        /// The rock request context that describes the current request
+        /// being made.
+        /// </value>
+        public RockRequestContext RockRequestContext => _rockRequestContext.Value;
+        private Lazy<RockRequestContext> _rockRequestContext;
+
+        /// <inheritdoc/>
+        public override Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
+        {
+            // Initialize as lazy since very few API calls use this yet. Once
+            // it becomes more common the lazy part can be removed.
+            _rockRequestContext = new Lazy<RockRequestContext>( () => new Net.RockRequestContext( controllerContext.Request ) );
+
+            return base.ExecuteAsync( controllerContext, cancellationToken );
+        }
+
         /// <summary>
         /// Gets the currently logged in Person
         /// </summary>

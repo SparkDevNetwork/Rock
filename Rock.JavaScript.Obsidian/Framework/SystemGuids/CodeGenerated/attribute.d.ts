@@ -150,8 +150,6 @@ export const enum Attribute {
     PersonMotivatorsIntellectualTheme = "592A5F89-5E8A-43D8-8843-760207D71699",
     /** The person attribute for the Motivator Positional Theme */
     PersonMotivatorPositionalTheme = "075FDF4D-DDEC-4106-B996-F48CD1EFC978",
-    /** The family attribute for storing a family's checkin identifiers */
-    FamilyCheckinIdentifiers = "8F528431-A438-4488-8DC3-CA42E66C1B37",
     /** The eRA Currently an eRA attribute */
     PersonEraCurrentlyAnEra = "CE5739C5-2156-E2AB-48E5-1337C38B935E",
     /** The eRA start date attribute */
@@ -190,6 +188,8 @@ export const enum Attribute {
     GroupmemberCommunicationListPreferredCommunicationMedium = "D7941908-1F65-CC9B-416C-CCFABE4221B9",
     /** The communication transport SMTP server Attribute Guid */
     CommunicationTransportSmtpServer = "6CFFDF99-E93A-49B8-B440-0EF93878A51F",
+    /** The communication medium Email CSS Inlining Enabled Attribute Guid */
+    CommunicationMediumEmailCssInliningEnabled = "1D5E06A4-79BD-4554-AB63-DD6F1F815594",
     /** The Template DefinedType &gt; TemplateBlock DefinedValue Attribute Guid */
     DefinedTypeTemplateTemplateBlock = "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D",
     /** The Template DefinedType &gt; Icon DefinedValue Attribute Guid */
@@ -260,6 +260,8 @@ export const enum Attribute {
     WorkflowActionSendEmailAttachmentThree = "A059767A-5592-4926-948A-1065AF4E9748",
     /** The Send Email workflow action attribute guid for SaveCommunicationHistory */
     WorkflowActionSendEmailSaveCommunicationHistory = "65E69B78-37D8-4A88-B8AC-71893D2F75EF",
+    /** The Workflow Entry Block Attribute that disables passing the WorkflowTypeID. */
+    WorkflowEntryBlockDisablePassingWorkflowtypeid = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB",
     /** The defined value logging domains to log */
     DefinedValueLoggingDomainsToLog = "9BEA544F-0636-485E-8772-B63180E529F9",
     /** The defined value log system settings */
@@ -306,19 +308,19 @@ export const enum Attribute {
     PersonGivingPreferredSource = "0567B279-1F4D-4573-9AA7-927A7278443E",
     /** Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined) */
     PersonGivingFrequencyLabel = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5",
-    /** Percent of Gifts Scheduled - Number */
+    /** Percent of Gifts Scheduled - Integer */
     PersonGivingPercentScheduled = "98373264-0E65-4C79-B75B-4F8477AA647E",
     /** Gift Amount: Median - Currency */
     PersonGivingAmountMedian = "327F1CFF-A013-42B5-80A7-5922A40480EC",
     /** Gift Amount: IQR - Currency */
     PersonGivingAmountIqr = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7",
-    /** Gift Frequency Days: Mean -  Number */
+    /** Gift Frequency Days: Mean -  Decimal */
     PersonGivingFrequencyMeanDays = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA",
-    /** Gift Frequency Days: Standard Deviation - Number */
+    /** Gift Frequency Days: Standard Deviation - Decimal */
     PersonGivingFrequencyStdDevDays = "1D5E4356-DC66-4067-BEF1-3560E61150BD",
-    /** Giving Bin - Number */
+    /** Giving Bin - Integer */
     PersonGivingBin = "7FBB63CC-F4FC-4F7E-A8C5-44DC3D0F0720",
-    /** Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15) */
+    /** Giving Percentile - Integer - This will be rounded to the nearest percent and stored as a whole number (15 vs .15) */
     PersonGivingPercentile = "D03ACAB8-EB0C-4835-A04C-4C357014D935",
     /** Next Expected Gift Date - Date */
     PersonGivingNextExpectedGiftDate = "65D7CF79-BD80-44B2-9F5F-96D81B9B4990",

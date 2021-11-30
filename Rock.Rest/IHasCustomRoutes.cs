@@ -23,7 +23,7 @@ namespace Rock.Rest
     /// api/{controller}/{id} route.
     /// </summary>
     [RockObsolete( "1.9" )]
-    [Obsolete( "Use IHasCustomHttpRoutes instead.", false )]
+    [Obsolete( "Use IHasCustomHttpRoutes instead.", true )]
     public interface IHasCustomRoutes
     {
         /// <summary>

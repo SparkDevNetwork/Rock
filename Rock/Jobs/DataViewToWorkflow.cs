@@ -18,11 +18,12 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -125,12 +126,10 @@ namespace Rock.Jobs
             // For each entity, create a new transaction to launch a workflow.
             foreach ( var entityId in entityIds )
             {
-                new Tasks.LaunchWorkflow.Message
-                {
-                    WorkflowTypeGuid = workflowTypeGuid.Value,
-                    EntityTypeId = entityTypeId,
-                    EntityId = entityId
-                }.Send();
+                var transaction = new LaunchEntityWorkflowTransaction( workflowTypeGuid.Value, string.Empty, entityTypeId, entityId );
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
 
                 workflowsLaunched++;
             }
@@ -141,8 +140,6 @@ namespace Rock.Jobs
         /// <summary>
         /// A transaction that launches a workflow for a specific entity.
         /// </summary>
-        [Obsolete( "Use LaunchWorkflow Task instead." )]
-        [RockObsolete( "1.13" )]
         private class LaunchEntityWorkflowTransaction : LaunchWorkflowTransaction
         {
             private int _EntityTypeId;

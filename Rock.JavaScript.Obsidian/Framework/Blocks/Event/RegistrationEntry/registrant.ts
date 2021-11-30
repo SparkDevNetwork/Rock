@@ -26,7 +26,7 @@ import RegistrantPersonField from "./registrantPersonField";
 import RegistrantAttributeField from "./registrantAttributeField";
 import Alert from "../../../Elements/alert";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./registrationEntryBlockViewModel";
-import { areEqual, Guid } from "../../../Util/guid";
+import { areEqual, Guid, newGuid } from "../../../Util/guid";
 import RockForm from "../../../Controls/rockForm";
 import FeeField from "./feeField";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "../../../Elements/itemsWithPreAndPostHtml";
@@ -124,7 +124,7 @@ export default defineComponent( {
 
         /** The radio options that are displayed to allow the user to pick another person that this
          *  registrant is part of a family. */
-        familyOptions (): DropDownListOption[] {
+        familyOptions(): DropDownListOption[] {
             const options: DropDownListOption[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
@@ -155,10 +155,14 @@ export default defineComponent( {
                 } );
             }
 
-            options.push( {
+            // Add the current person (registrant) if not already added
+            const familyGuid = usedFamilyGuids[this.currentRegistrant.familyGuid] == true
+                ? newGuid()
+                : this.currentRegistrant.familyGuid;
+            options.push({
                 text: "None of the above",
-                value: this.currentRegistrant.ownFamilyGuid
-            } );
+                value: familyGuid
+            });
 
             return options;
         },
@@ -243,12 +247,15 @@ export default defineComponent( {
                             this.currentRegistrant.fieldValues[field.guid] = familyMemberValue;
                         }
                     }
+                    else {
+                        delete this.currentRegistrant.fieldValues[field.guid];
+                    }
                 }
             }
         }
     },
     watch: {
-        "currentRegistrant.FamilyGuid"(): void {
+        "currentRegistrant.familyGuid"(): void {
             // Clear the person guid if the family changes
             this.currentRegistrant.personGuid = "";
         },

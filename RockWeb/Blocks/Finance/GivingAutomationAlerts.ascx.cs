@@ -644,7 +644,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransactionAlertQry = financialTransactionAlertQry.Where( m => alertCategories.Contains( m.FinancialTransactionAlertType.AlertType ) );
             }
 
-            // Filter by person
+            // Filter by person's giving id
             var personId = GetPerson( rockContext );
             if ( !personId.HasValue && ppPerson.Visible )
             {
@@ -661,7 +661,11 @@ namespace RockWeb.Blocks.Finance
 
             if ( personId.HasValue )
             {
-                financialTransactionAlertQry = financialTransactionAlertQry.Where( a => a.PersonAlias.PersonId == personId.Value );
+                var personGivingId = new PersonService( rockContext ).GetSelect( personId.Value, s => s.GivingId );
+                if ( personGivingId.IsNotNullOrWhiteSpace() )
+                {
+                    financialTransactionAlertQry = financialTransactionAlertQry.Where( a => a.GivingId == personGivingId );
+                }
             }
 
             // Filter by transaction amount

@@ -145,6 +145,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ChangeType
+    {
+        Add = 0x0,
+        Modify = 0x1,
+        Delete = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ColorDepth
     {
         BlackWhite = 0x0,
@@ -429,6 +438,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum GroupRequirementsFilter
+    {
+        Ignore = 0x0,
+        MustMeet = 0x1,
+        DoesNotMeet = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum GroupSchedulerResourceListSourceType
     {
         GroupMembers = 0x0,
@@ -475,22 +493,21 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum IconCssWeight
-    {
-        Regular = 0x0,
-        Solid = 0x1,
-        Light = 0x2,
-        Thin = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum JobNotificationStatus
     {
         All = 0x1,
         Success = 0x2,
         Error = 0x3,
         None = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum KioskType
+    {
+        IPad = 0x0,
+        WindowsApp = 0x1,
+        Browser = 0x2,
     }
 
     /// <summary>
@@ -692,7 +709,7 @@ namespace Rock.Client.Enums
         GroupMemberAttribute = 0x2,
         RegistrantAttribute = 0x4,
 
-        [Obsolete( "Use RegistrantAttribute instead", false )]
+        [Obsolete( "Use RegistrantAttribute instead", true )]
         RegistrationAttribute = 0x4,
     }
 
@@ -874,6 +891,7 @@ namespace Rock.Client.Enums
     {
         Web = 0x0,
         Mobile = 0x1,
+        Tv = 0x2,
     }
 
     /// <summary>

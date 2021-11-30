@@ -35,56 +35,88 @@ namespace Rock.Lava.Filters
             return result.ToStringSafe();
         }
 
+        /* [2021-07-31] DL
+         * 
+         * Lava Date filters may return DateTime, DateTimeOffset, or string values according to their purpose.
+         * Where possible, a filter should return a DateTime value specified in UTC, or a DateTimeOffset.
+         * Local DateTime values may give unexpected results if the Rock timezone setting is different from the server timezone.
+         * Where a date string is accepted as an input parameter, the Rock timezone is implied unless a timezone is specified.
+         */
+
         /// <summary>
         /// Formats a date using a .NET date format string
         /// </summary>
         /// <param name="input"></param>
         /// <param name="format"></param>
         /// <returns></returns>
-        public static string Date( object input, string format )
+        public static string Date( object input, string format = null )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            if ( input.ToString() == "Now" )
+            string output;
+
+            // If input is "now", use the current Rock date/time as the input value.
+            if ( input.ToString().ToLower() == "now" )
             {
-                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
+                // To correctly include the Rock configured timezone, we need to use a DateTimeOffset.
+                // The DateTime object can only represent local server time or UTC time.
+                input = LavaDateTime.NowOffset;
             }
 
+            // Use the General Short Date/Long Time format by default.
             if ( string.IsNullOrWhiteSpace( format ) )
             {
-                return input.ToString();
+                format = "G";
             }
-
-            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
-            if ( format.Length == 1 )
+            // Consider special 'Standard Date' and 'Standard Time' formats.
+            else if ( format == "sd" )
+            {
+                format = "d";
+            }
+            else if ( format == "st" )
+            {
+                format = "t";
+            }
+            // If the format string is a single character, add a space to produce a valid custom format string.
+            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
+            else if ( format.Length == 1 )
             {
                 format = " " + format;
             }
 
-            var inputDateTime = input.ToString().AsDateTime();
-
-            // Check for invalid date
-            if ( !inputDateTime.HasValue )
+            if ( input is DateTimeOffset inputDateTimeOffset )
             {
-                return input.ToString().Trim();
+                // Preserve the value of the specified offset and return the formatted datetime value.
+                output = inputDateTimeOffset.ToString( format ).Trim();
             }
-
-            // Consider special 'Standard Date' format
-            if ( format == "sd" )
+            else
             {
-                return inputDateTime.Value.ToShortDateString();
-            }
+                // Convert the input to a valid Rock DateTimeOffset if possible.
+                DateTimeOffset? inputDateTime;
 
-            // Consider special 'Standard Time' format
-            if ( format == "st" )
-            {
-                return inputDateTime.Value.ToShortTimeString();
-            }
+                if ( input is DateTime dt )
+                {
+                    inputDateTime = LavaDateTime.ConvertToRockOffset( dt );
+                }
+                else
+                {
+                    inputDateTime = LavaDateTime.ParseToOffset( input.ToString(), null );
+                }
 
-            return inputDateTime.Value.ToString( format ).Trim();
+                if ( !inputDateTime.HasValue )
+                {
+                    // Not a valid date, so return the input unformatted.
+                    output = input.ToString().Trim();
+                }
+                else
+                {
+                    output = LavaDateTime.ToString( inputDateTime.Value, format ).Trim();
+                }
+            }
+            return output;
         }
 
         /// <summary>
@@ -159,13 +191,12 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static Int64? DateDiff( object startDate, object endDate, string interval )
         {
-            var startDateTime = GetDateFromObject( startDate );
-            var endDateTime = GetDateFromObject( endDate );
+            var startDto = GetDateTimeOffsetFromInputParameter( startDate, null );
+            var endDto = GetDateTimeOffsetFromInputParameter( endDate, null );
 
-            if ( startDateTime != DateTime.MinValue
-                 && endDateTime != DateTime.MinValue )
+            if ( startDto != null && endDto != null )
             {
-                var difference = endDateTime - startDateTime;
+                var difference = endDto.Value - startDto.Value;
 
                 switch ( interval )
                 {
@@ -176,9 +207,11 @@ namespace Rock.Lava.Filters
                     case "m":
                         return ( Int64 ) difference.TotalMinutes;
                     case "M":
-                        return ( Int64 ) GetMonthsBetween( startDateTime, endDateTime );
+                        return ( Int64 ) GetMonthsBetween( startDto.Value, endDto.Value );
                     case "Y":
-                        return ( Int64 ) ( endDateTime.Year - startDateTime.Year );
+                        // Return the difference between the dates as the number of whole years.
+                        var years = LavaDateTime.ConvertToRockDateTime( endDto.Value ).TotalYears( LavaDateTime.ConvertToRockDateTime( startDto.Value ) );
+                        return years;
                     case "s":
                         return ( Int64 ) difference.TotalSeconds;
                     default:
@@ -715,12 +748,62 @@ namespace Rock.Lava.Filters
         }
 
         /// <summary>
+        /// Converts an input value to a DateTimeOffset.
+        /// </summary>
+        /// <param name="input">The date.</param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        private static DateTimeOffset? GetDateTimeOffsetFromInputParameter( object input, DateTimeOffset? defaultValue )
+        {
+            if ( input is String inputString )
+            {
+                if ( inputString.Trim().ToLower() == "now" )
+                {
+                    return LavaDateTime.NowOffset;
+                }
+                else
+                {
+                    return LavaDateTime.ParseToOffset( inputString, defaultValue );
+                }
+            }
+            else if ( input is DateTime dt )
+            {
+                return LavaDateTime.ConvertToDateTimeOffset( dt );
+            }
+            else if ( input is DateTimeOffset inputDateTimeOffset )
+            {
+                return inputDateTimeOffset;
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Get the number of months between two dates.
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
         private static int GetMonthsBetween( DateTime from, DateTime to )
+        {
+            if ( from > to )
+            {
+                return GetMonthsBetween( to, from );
+            }
+
+            var monthDiff = Math.Abs( ( to.Year * 12 + ( to.Month - 1 ) ) - ( from.Year * 12 + ( from.Month - 1 ) ) );
+
+            if ( from.AddMonths( monthDiff ) > to || to.Day < from.Day )
+            {
+                return monthDiff - 1;
+            }
+            else
+            {
+                return monthDiff;
+            }
+        }
+
+        private static int GetMonthsBetween( DateTimeOffset from, DateTimeOffset to )
         {
             if ( from > to )
             {

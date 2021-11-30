@@ -12,14 +12,14 @@
 
                 <div class="panel-labels hidden-xs">
                     <button id="btnHelp" runat="server"
-                        class="btn btn-link p-0 text-color focus-no-outline"
+                        class="btn btn-default btn-xs btn-square"
                         onclick="$('#filter-drawer').slideToggle();return false;">
                         <i class='fa fa-question'></i>
                     </button>
 
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="bottom" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
-                        class="btn btn-link p-0 btn-copy-to-clipboard text-color"
+                        class="btn btn-default btn-xs btn-square btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
@@ -444,7 +444,7 @@
                                                                     <asp:Panel ID="pnlStatusLabels" runat="server" CssClass="panel-labels">
                                                                         <div class="scheduling-status js-scheduling-status" data-placement="bottom">
                                                                             <div class="scheduling-status-progress">
-                                                                                <div class="progress js-scheduling-progress">
+                                                                                <div class="progress rounded-0 js-scheduling-progress">
                                                                                     <div class="progress-bar scheduling-progress-confirmed js-scheduling-progress-confirmed" style="width: 0%">
                                                                                         <span class="sr-only"><span class="js-progress-text-percent"></span>% Complete (confirmed)</span>
                                                                                     </div>

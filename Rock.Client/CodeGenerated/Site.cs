@@ -101,11 +101,6 @@ namespace Rock.Client
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.8"
-        [Obsolete( "Moved to Theme", true )]
-        public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
-
-        /// <summary />
         public string IndexStartingLocation { get; set; }
 
         /// <summary />

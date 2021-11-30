@@ -51,52 +51,6 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region Obsolete Properties
-
-        /// <summary>
-        /// Gets or sets the note types.
-        /// </summary>
-        /// <value>
-        /// The note types.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetNoteTypes instead", true )]
-        public List<Rock.Web.Cache.NoteTypeCache> NoteTypes
-        {
-            get
-            {
-                return NoteOptions?.NoteTypes.Select( a => Rock.Web.Cache.NoteTypeCache.Read( a.Id ) ).ToList();
-            }
-
-            set
-            {
-                NoteOptions.SetNoteTypes( value?.Select( a => NoteTypeCache.Get( a.Id ) ).ToList() );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the term.
-        /// </summary>
-        /// <value>
-        /// The term.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use NoteLabel instead", true )]
-        public string Term
-        {
-            get
-            {
-                return this.NoteOptions.NoteLabel;
-            }
-
-            set
-            {
-                this.NoteOptions.NoteLabel = value;
-            }
-        }
-
-        #endregion Obsolete Properties
-
         #region Note Options
 
         /// <summary>
@@ -530,7 +484,18 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Page.IsPostBack )
             {
-                RouteAction();
+                var parentNoteControlId = this.Page.Request.Form["__EVENTTARGET"].Replace( "upNotes", "notesTimeline" );
+                if ( parentNoteControlId == this.ClientID )
+                {
+                    RouteAction();
+                }
+                else
+                {
+                    // The cancel button is pure js and does not update this value stored in the ViewState. So if this is not the
+                    // control that is performing the postback then set this to false so other note editors that might be on the page
+                    // do not show. It will be set correctly later if it is supposed to show.
+                    _noteEditor.IsEditing = false;
+                }
             }
         }
 
@@ -988,28 +953,7 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Clears the rows.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Not Needed. Notes will be cleared and rebuilt automatically", true )]
-        public void ClearNotes()
-        {
-            //
-        }
-
-        /// <summary>
-        /// Rebuilds the notes.
-        /// </summary>
-        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Not Needed. Notes will be rebuilt automatically", true )]
-        public void RebuildNotes( bool setSelection )
-        {
-            //
-        }
-
+        
         /// <summary>
         /// Gets the List of root notes that the currentPerson is authorized to view for this EntityId and NoteTypes
         /// </summary>

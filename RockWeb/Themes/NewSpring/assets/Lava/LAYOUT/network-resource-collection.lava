@@ -76,64 +76,67 @@
     {% assign childChannelId = Item.ChildChannelId | AsInteger %}
     {% assign childType = Item.Children | Where:'ChannelId', childChannelId | First | Property:'Dataset' | PersistedDataset | First | Property:'ChannelName' | Split:' - ' | Last | Singularize %}
 
-    {[ swiper title:'{{ childType | Pluralize }} From This {{ parentType | Singularize }}' ]}
-        {% for child in Item.Children %}[[ item ]]
-            {% assign childId = child.Id | AsInteger %}
-            {% assign childItem = child.Dataset | PersistedDataset | Where:'Id', childId | First %}
+    <section class="shell bg-gray-lighter hard-sides rounded-lg">
 
-            {% assign id = childItem.Id %}
-            {% assign cciid = childItem.Id %}
-            {% assign imageurl = childItem.ImageLandscape %}
+        {[ swiper title:'{{ childType | Pluralize }} From This {{ parentType | Singularize }}' ]}
+            {% for child in Item.Children %}[[ item ]]
+                {% assign childId = child.Id | AsInteger %}
+                {% assign childItem = child.Dataset | PersistedDataset | Where:'Id', childId | First %}
 
-            {% if childItem.ChannelName contains 'Sermon' or childItem.ChannelName contains 'Lesson' %}
-                {% assign type = child.Index | Plus:1 | Prepend:'Week '  %}
-            {% else %}
-                {% assign type = childItem.ChannelName | Split:' - ' | Index:1 | Singularize %}
-            {% endif %}
+                {% assign id = childItem.Id %}
+                {% assign cciid = childItem.Id %}
+                {% assign imageurl = childItem.ImageLandscape %}
 
-            {% capture content %}
-                {% for video in childItem.Videos %}
-                    {% assign videoId = video.Video %}
-                    <span class="display-inline-block width-full push-half-bottom">{{ video.Title }}
+                {% if childItem.ChannelName contains 'Sermon' or childItem.ChannelName contains 'Lesson' %}
+                    {% assign type = child.Index | Plus:1 | Prepend:'Week '  %}
+                {% else %}
+                    {% assign type = childItem.ChannelName | Split:' - ' | Index:1 | Singularize %}
+                {% endif %}
 
-                        {% if CurrentPerson and CurrentPerson != empty %}
-                            <div class="pull-right">
-                                {[ wistiaButton id:'{{ videoId }}' buttontext:'' buttonclasses:'btn-xs' contentchannelitemid:'{{ cciid }}' entitytypeid:'' entityid:'' ]}
-                            </div>
-                        {% else %}
-                            <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
-                        {% endif %}
+                {% capture content %}
+                    {% for video in childItem.Videos %}
+                        {% assign videoId = video.Video %}
+                        <span class="display-inline-block width-full push-half-bottom">{{ video.Title }}
 
-                    </span>
-                {% endfor %}
-                {% for download in childItem.Downloads %}
+                            {% if CurrentPerson and CurrentPerson != empty %}
+                                <div class="pull-right">
+                                    {[ wistiaButton id:'{{ videoId }}' buttontext:'' buttonclasses:'btn-xs' contentchannelitemid:'{{ cciid }}' entitytypeid:'' entityid:'' ]}
+                                </div>
+                            {% else %}
+                                <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
+                            {% endif %}
 
-                    {%- capture downloadlink -%}
-                        {%- if download.Link and download.Link != empty -%}
-                            {{ download.Link }}
-                        {%- else -%}
-                            /workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ childItem.Id }}&ResourceImage={{ Item.ImageSquare | WithFallback:'', Item.ImageLandscape }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }} - {{ childItem.Title | EscapeDataString }}&ResourceSummary={{ download.Title | EscapeDataString }}&ResourceUrl={{ download.File }}
-                        {%- endif -%}
-                    {%- endcapture -%}
+                        </span>
+                    {% endfor %}
+                    {% for download in childItem.Downloads %}
 
-                    <span class="display-inline-block width-full {% if forloop.last != true %}push-half-bottom{% endif %}">{{ download.Title }}
+                        {%- capture downloadlink -%}
+                            {%- if download.Link and download.Link != empty -%}
+                                {{ download.Link }}
+                            {%- else -%}
+                                /workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ childItem.Id }}&ResourceImage={{ Item.ImageSquare | WithFallback:'', Item.ImageLandscape }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }} - {{ childItem.Title | EscapeDataString }}&ResourceSummary={{ download.Title | EscapeDataString }}&ResourceUrl={{ download.File }}
+                            {%- endif -%}
+                        {%- endcapture -%}
 
-                        {% if CurrentPerson and CurrentPerson != empty %}
-                            <a href="{{ downloadlink }}" class="pull-right btn btn-xs btn-primary" target="_blank">Download</a>
-                        {% else %}
-                            <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
-                        {% endif %}
+                        <span class="display-inline-block width-full {% if forloop.last != true %}push-half-bottom{% endif %}">{{ download.Title }}
 
-                    </span>
-                {% endfor %}
-                <br><br>
-            {% endcapture %}
+                            {% if CurrentPerson and CurrentPerson != empty %}
+                                <a href="{{ downloadlink }}" class="pull-right btn btn-xs btn-primary" target="_blank">Download</a>
+                            {% else %}
+                                <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
+                            {% endif %}
 
-            {[ card cciid:'{{ cciid }}' title:'{{ childItem.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content | Escape }}' imageurl:'{{ imageurl }}' ]}
+                        </span>
+                    {% endfor %}
+                    <br><br>
+                {% endcapture %}
 
-        [[ enditem ]]{% endfor %}
+                {[ card cciid:'{{ cciid }}' title:'{{ childItem.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content | Escape }}' imageurl:'{{ imageurl }}' ]}
 
-    {[ endswiper ]}
+            [[ enditem ]]{% endfor %}
 
+        {[ endswiper ]}
+
+    </section>
 {% endif %}
 </div>

@@ -24,14 +24,6 @@
 // 1. Page Styles
 // -------------------------
 
-.personprofile {
-  // offset pageheader margin
-  small {
-    // lighten up small elements a bit
-    opacity: .7;
-  }
-}
-
 .personprofilebar-bio,
 .personprofilebar-badge,
 .personprofilebar-family,
@@ -55,27 +47,25 @@
     top: 0;
     right: 0;
     z-index: 401; // get this above the fluid-box photo
-    height: 39px;
+    display: flex;
+    height: 40px;
 
     .action {
       display: flex;
       align-items: center;
       justify-content: center;
-      float: left;
-      width: 45px;
-      height: 100%;
-      color: lighten(@persondetails-bio-color, 15%);
-      text-align: center;
-      cursor: pointer;
-      border-color: darken(@persondetails-bio-bg, @const-border-darken-amt);
-      border-style: solid;
+      width: 40px;
+      color: @persondetails-bio-color;
+      border: 0 solid darken(@persondetails-bio-bg, @const-border-darken-amt);
       border-width: 0 0 1px 1px;
     }
 
     .action-extended {
       width: auto;
       .dropdown {
-        padding: 6px 0 4px;
+        display: flex;
+        align-items: center;
+        height: 100%;
       }
 
       .dropdown-menu {
@@ -108,7 +98,7 @@
 
   .nav li .persondetails-actions {
     padding: 2px 15px 0;
-    color: lighten(@persondetails-bio-color, 15%);
+    color: inherit;
 
     &:hover,
     &:focus {
@@ -186,7 +176,6 @@
     text-align: center;
 
     .btn {
-      display: inline-block;
       font-size: @font-size-base;
       color: #fff;
       background-color: @gray;
@@ -195,21 +184,6 @@
 
       &:hover {
         opacity: .8;
-      }
-
-      &.btn-facebook {
-        color: #fff;
-        background-color: #44619d;
-      }
-
-      &.btn-twitter {
-        color: #fff;
-        background-color: #55acee;
-      }
-
-      &.btn-instagram {
-        color: #fff;
-        background-color: #39688f;
       }
 
       &:first-child {
@@ -398,7 +372,7 @@
 }
 
 .badge-baptism {
-  color: #23a5c5;
+  color: @badge-baptism-color;
 }
 
 .badge-era {
@@ -413,7 +387,7 @@
   }
 
   &.era-loss {
-    color: #ee7624;
+    color: @badge-era-loss-color;
   }
 
   span {
@@ -431,7 +405,7 @@
   font-size: var(--badge-size, 45px);
 
   &.badge-disabled {
-    color: #939393;
+    color: @badge-disabled-color;
     opacity: .2;
   }
 }
@@ -497,9 +471,6 @@
       border-radius: 2px 2px 0 0;
 
       .animate & {
-        -webkit-animation: bar-grow 1s ease-in-out;
-        -moz-animation: bar-grow 1s ease-in-out;
-        -o-animation: bar-grow 1s ease-in-out;
         animation: bar-grow 1s ease-in-out;
       }
     }
@@ -570,7 +541,7 @@
         display: block;
         width: .2222em;
         min-height: 2px;
-        background: lighten(#4f89bd, 20%);
+        background: lighten(@badge-disc-primary-color, 20%);
 
         @media screen and (-webkit-min-device-pixel-ratio: 0) {
           // needed for chrome but kills ie
@@ -581,13 +552,13 @@
 
       &.badge-disc-primary {
         span {
-          background: #4f89bd;
+          background: @badge-disc-primary-color;
         }
       }
 
       &.badge-disc-disabled {
         span {
-          background-color: #939393;
+          background-color: @badge-disc-disabled-color;
           opacity: .2;
         }
       }
@@ -600,7 +571,7 @@
     left: 12px;
     padding: 1px 5px;
     font-size: 24px;
-    background-color: #e3ded7;
+    background-color: @badge-disc-requested-color;
     border-radius: 99px;
     opacity: .8;
   }
@@ -609,7 +580,6 @@
     ul.badge-disc-chart li span {
       -webkit-animation: bar-grow 1s ease-in-out;
       -moz-animation: bar-grow 1s ease-in-out;
-      -o-animation: bar-grow 1s ease-in-out;
       animation: bar-grow 1s ease-in-out;
     }
   }
@@ -621,22 +591,22 @@
 
   .duration-metric {
     position: relative;
-    color: #e5d24d;  // Default (.duration-weeks)
+    color: @badge-attending-weeks-color;  // Default (.duration-weeks)
     &::before {
       &:extend(.badge-background);
       border-radius: 50%;
     }
 
     &.duration-new {
-      color: #d25555;
+      color: @badge-attending-new-color;
     }
 
     &.duration-months {
-      color: #69ad5e;
+      color: @badge-attending-months-color;
     }
 
     &.duration-years {
-      color: #56789e;
+      color: @badge-attending-years-color;
     }
 
     .metric-value {
@@ -713,7 +683,7 @@
     position: relative;
     font-size: 40px;
     font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
-    color: #4f89bd;
+    color: @badge-lastvisitonsite-color;
 
     .badge-icon {
       font-size: inherit;
@@ -785,11 +755,11 @@
 
   // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
   &.not-requested {
-    color: @ui-4 !important;
+    color: fade(@badge-disabled-color, 20%) !important;
   }
 
   &.requested {
-    color: @ui-5 !important;
+    color: @persondetails-badge-color !important;
   }
 
   .fa-stack-1x {
@@ -815,13 +785,6 @@
   }
 }
 
-@-o-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-
 @keyframes bar-grow {
   0% {
     height: 0;
@@ -834,7 +797,7 @@
     position: relative;
     font-size: 40px;
     font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
-    color: #4f89bd;
+    color: @badge-personaldevice-color;
 
     .badge-icon {
       font-size: inherit;
@@ -1059,7 +1022,7 @@ span.field-value {
   }
 
   .table-groupmembers {
-    /* Hide table headers (but not display: none;, for accessibility) */
+    // Hide table headers (but not display: none;, for accessibility)
     thead tr {
       position: absolute;
       top: -9999px;
@@ -1117,7 +1080,7 @@ span.field-value {
       }
     }
 
-    /* Label the data */
+    // Label the data
     tbody {
       td::before {
         content: attr(data-label);
@@ -1160,7 +1123,7 @@ span.field-value {
   }
 
   .table-groupcontactinfo {
-    /* Hide table headers (but not display: none;, for accessibility) */
+    // Hide table headers (but not display: none;, for accessibility)
     thead tr {
       position: absolute;
       top: -9999px;
@@ -1184,7 +1147,7 @@ span.field-value {
       border-bottom: 1px solid @gray-lighter;
     }
 
-    /* Label the data */
+    // Label the data
     tbody {
       .person-name {
         /* Now like a table header */
@@ -1682,8 +1645,6 @@ tr.inactive {
     -ms-flex-direction: column;
     flex-direction: column;
     -ms-flex-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
     justify-content: center;
     height: 100%;
     padding: 12px;

@@ -243,7 +243,7 @@ export default defineComponent( {
             }
         },
 
-        async "registrationEntryState.DiscountCode"(): Promise<void> {
+        async "registrationEntryState.discountCode"(): Promise<void> {
             await this.fetchData();
         }
     },
@@ -318,7 +318,7 @@ export default defineComponent( {
                 </div>
                 <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" class="form-right" inputGroupClasses="input-width-md amount-to-pay" />
                 <div class="form-group static-control">
-                    <label class="control-label">Amount Remaining</label>
+                    <label class="control-label">Amount Remaining After Payment</label>
                     <div class="control-wrapper">
                         <div class="form-control-static">
                             {{amountRemainingFormatted}}

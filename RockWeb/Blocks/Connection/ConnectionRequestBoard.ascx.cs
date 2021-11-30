@@ -679,10 +679,16 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            // Update the dragged request to the new status
+            request.ConnectionStatusId = newStatusId;
+            rockContext.SaveChanges();
+
             // Reordering is only allowed when the cards are sorted by order
             if ( CurrentSortProperty == ConnectionRequestViewModelSortProperty.Order )
             {
-                var requestsOfStatus = service.Queryable()
+                if ( request.ConnectionStatusId == newStatusId )
+                {
+                    var requestsOfStatus = service.Queryable()
                     .Where( r =>
                         r.ConnectionStatusId == newStatusId &&
                         r.ConnectionOpportunityId == request.ConnectionOpportunityId )
@@ -691,44 +697,47 @@ namespace RockWeb.Blocks.Connection
                     .ThenBy( r => r.Id )
                     .ToList();
 
-                // There may be filters applied so we do not want to change what might have
-                // been 4, 9, 12 to 1, 2, 3.  Instead we want to keep 4, 9, 12, and reapply
-                // those order values to the requests in their new order. There could be a problem
-                // if some of the orders match (like initially they are all 0). So, we do a
-                // slight adjustment top ensure uniqueness in this set.
-                var orderValues = requestsOfStatus.Select( r => r.Order ).ToList();
-                var previousValue = -1;
+                    // There may be filters applied so we do not want to change what might have
+                    // been 4, 9, 12 to 1, 2, 3.  Instead we want to keep 4, 9, 12, and reapply
+                    // those order values to the requests in their new order. There could be a problem
+                    // if some of the orders match (like initially they are all 0). So, we do a
+                    // slight adjustment top ensure uniqueness in this set.
+                    var orderValues = requestsOfStatus.Select( r => r.Order ).ToList();
+                    var previousValue = -1;
 
-                for ( var i = 0; i < orderValues.Count; i++ )
-                {
-                    if ( orderValues[i] <= previousValue )
+                    for ( var i = 0; i < orderValues.Count; i++ )
                     {
-                        orderValues[i] = previousValue + 1;
+                        if ( orderValues[i] <= previousValue )
+                        {
+                            orderValues[i] = previousValue + 1;
+                        }
+
+                        previousValue = orderValues[i];
                     }
 
-                    previousValue = orderValues[i];
+                    requestsOfStatus.Remove( request );
+                    requestsOfStatus.Insert( newIndex, request );
+
+                    for ( var i = 0; i < orderValues.Count; i++ )
+                    {
+                        requestsOfStatus[i].Order = orderValues[i];
+                    }
+
+                    if ( orderValues.Count < requestsOfStatus.Count )
+                    {
+                        // This happens if the card came from another column. The remove did nothing, but
+                        // we added the new request. Therefore we need to set the last request to the
+                        // last order value + 1.
+                        requestsOfStatus.Last().Order = previousValue + 1;
+                    }
+
+                    rockContext.SaveChanges();
                 }
-
-                requestsOfStatus.Remove( request );
-                requestsOfStatus.Insert( newIndex, request );
-
-                for ( var i = 0; i < orderValues.Count; i++ )
+                else
                 {
-                    requestsOfStatus[i].Order = orderValues[i];
-                }
-
-                if ( orderValues.Count < requestsOfStatus.Count )
-                {
-                    // This happens if the card came from another column. The remove did nothing, but
-                    // we added the new request. Therefore we need to set the last request to the
-                    // last order value + 1.
-                    requestsOfStatus.Last().Order = previousValue + 1;
+                    RefreshRequestCard();
                 }
             }
-
-            // Update the dragged request to the new status
-            request.ConnectionStatusId = newStatusId;
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -981,7 +990,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     Value = at.Id,
                     Text = at.Name
-                } ).ToList();
+                } ).OrderBy( a => a.Text ).ToList();
                 ddlRequestModalViewModeAddActivityModeType.DataBind();
                 BindConnectorOptions( ddlRequestModalViewModeAddActivityModeConnector, true, viewModel.CampusId, connectorPersonAliasId );
 
@@ -1032,7 +1041,7 @@ namespace RockWeb.Blocks.Connection
                 ddlRequestModalViewModeTransferModeOpportunity.Items.Clear();
                 var opportunities = GetConnectionOpportunities();
 
-                foreach ( var opportunity in opportunities.OrderBy( o => o.Name ) )
+                foreach ( var opportunity in opportunities.OrderBy( o => o.Order ).ThenBy( o => o.Name ) )
                 {
                     ddlRequestModalViewModeTransferModeOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     hasOriginalOpportunity |= opportunity.Id == originalTargetOpportunityId;
@@ -4664,8 +4673,8 @@ namespace RockWeb.Blocks.Connection
                 .Where( co =>
                     co.IsActive &&
                     connectionTypeIds.Contains( co.ConnectionTypeId ) )
-                .OrderBy( co => co.PublicName )
-                .ThenBy( co => co.Id );
+                .OrderBy( co => co.Order )
+                .ThenBy( co => co.Name );
 
             _connectionOpportunity = ConnectionOpportunityId.HasValue ?
                 query.FirstOrDefault( co => co.Id == ConnectionOpportunityId.Value ) :
@@ -4714,6 +4723,8 @@ namespace RockWeb.Blocks.Connection
                         DaysUntilRequestIdle = ct.DaysUntilRequestIdle,
                         Order = ct.Order,
                         ConnectionOpportunities = ct.ConnectionOpportunities
+                            .OrderBy( co => co.Order )
+                            .ThenBy( co => co.Name )
                             .Where( co => co.IsActive )
                             .Select( co => new ConnectionOpportunityViewModel
                             {
@@ -4724,11 +4735,9 @@ namespace RockWeb.Blocks.Connection
                                 PhotoId = co.PhotoId,
                                 Description = co.Description,
                                 ConnectionTypeName = ct.Name,
+                                Order = co.Order,
                                 ConnectionOpportunityCampusIds = co.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList()
-                            } )
-                            .ToList()
-                            .OrderBy( co => co.PublicName )
-                            .ThenBy( co => co.Id )
+                            } ).OrderBy( o => o.Order ).ThenBy( o => o.Name )
                             .ToList()
                     } )
                     .ToList()
@@ -5096,7 +5105,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( requirementsResults != null )
                 {
-                    // Ignore notapplicable requirements
+                    // Ignore the NotApplicable requirements.
                     requirementsResults = requirementsResults.Where( r => r.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable );
                 }
             }
@@ -5395,6 +5404,11 @@ namespace RockWeb.Blocks.Connection
                     return ConnectionOpportunity.GetPhotoUrl( PhotoId );
                 }
             }
+
+            /// <summary>
+            /// Gets or sets the Order.
+            /// </summary>
+            public int Order { get; set; }
         }
 
         /// <summary>

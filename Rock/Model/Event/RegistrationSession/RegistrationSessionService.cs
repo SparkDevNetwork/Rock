@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Linq;
 
 using Rock.Data;
 
@@ -206,6 +207,29 @@ namespace Rock.Model
                 errorMessage = internalErrorMessage;
 
                 return errorMessage.IsNullOrWhiteSpace() ? registrationSession : null;
+            }
+        }
+
+        /// <summary>
+        /// Deletes the session(s) for the given GUID. Call this method when the Registion process has been completed.
+        /// </summary>
+        /// <param name="sessionGuid">The session unique identifier.</param>
+        public static void CloseAndRemoveSession( Guid sessionGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    var registrationSessionService = new RegistrationSessionService( rockContext );
+                    var sessionToDeleteQuery = registrationSessionService.Queryable().Where( s => s.Guid == sessionGuid );
+
+                    registrationSessionService.DeleteRange( sessionToDeleteQuery );
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception e )
+                {
+                    ExceptionLogService.LogException( e );
+                }
             }
         }
     }

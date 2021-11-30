@@ -289,11 +289,14 @@ namespace RockWeb.Blocks.Steps
             var stepGridRowViewModel = e.Row.DataItem as StepGridRowViewModel;
 
             // Allow Edit if authorized to edit the block or the Step Type.
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+            /*
+             Block Authorization is removed once the parent authority for Step is Set as Step Type.
+             */
+            bool canEdit = stepGridRowViewModel.Step.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
             var deleteFieldColumn = gStepList.ColumnsOfType<DeleteField>().FirstOrDefault();
             if ( deleteFieldColumn != null )
             {
-                deleteFieldColumn.Visible = canEditBlock;
+                deleteFieldColumn.Visible = canEdit;
             }
         }
 
@@ -567,7 +570,7 @@ namespace RockWeb.Blocks.Steps
             var lbCardAddStep = e.Item.FindControl( "lbCardAddStep" ) as LinkButton;
 
             lbCardAddStep.Visible = cardData.CanAddStep;
-            pnlPrereqs.Visible = UserCanEdit && !cardData.HasMetPrerequisites;
+            pnlPrereqs.Visible = cardData.CanEdit && !cardData.HasMetPrerequisites;
 
             // Existing step records panel
             var steps = GetPersonStepsOfType( stepTypeId );
@@ -577,12 +580,14 @@ namespace RockWeb.Blocks.Steps
             var data = steps.Select( s => new CardStepViewModel
             {
                 StepId = s.Id,
-                CanEdit = canEdit,
-                CanDelete = canDelete,
+                CanEdit = s.IsAuthorized( Authorization.EDIT, CurrentPerson ) || s.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson ),
                 StatusHtml = string.Format( "{0}<br /><small>{1}</small>",
                     s.StepStatus != null ? s.StepStatus.Name : string.Empty,
                     s.CompletedDateTime.HasValue ? s.CompletedDateTime.Value.ToShortDateString() : string.Empty )
-            } );
+            } ).ToList();
+
+
+            data.ForEach( a => a.CanDelete = a.CanEdit );
 
             var rSteps = e.Item.FindControl( "rSteps" ) as Repeater;
             rSteps.DataSource = data;
@@ -924,7 +929,8 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private bool CanAddStep( StepType stepType )
         {
-            if ( !stepType.AllowManualEditing || !UserCanEdit )
+            bool canEdit = CanEditStep( stepType );
+            if ( !stepType.AllowManualEditing || !canEdit )
             {
                 return false;
             }
@@ -941,6 +947,16 @@ namespace RockWeb.Blocks.Steps
 
             var exisitingSteps = GetPersonStepsOfType( stepType.Id );
             return !exisitingSteps.Any();
+        }
+
+        /// <summary>
+        /// Can a step of the given step type be edited for the person.
+        /// </summary>
+        /// <param name="stepType"></param>
+        /// <returns></returns>
+        private bool CanEditStep( StepType stepType )
+        {
+            return stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
         }
 
         /// <summary>
@@ -1098,6 +1114,7 @@ namespace RockWeb.Blocks.Steps
                 var latestStepStatus = latestStep == null ? null : latestStep.StepStatus;
                 var isComplete = personStepsOfType.Any( s => s.IsComplete );
                 var canAddStep = CanAddStep( stepType );
+                var canEditStep = CanEditStep( stepType );
                 var hasMetPrerequisites = HasMetPrerequisites( stepType.Id );
 
                 var rendered = stepType.CardLavaTemplate.ResolveMergeFields( new Dictionary<string, object> {
@@ -1145,6 +1162,7 @@ namespace RockWeb.Blocks.Steps
                     StepTerm = stepTerm,
                     CardCssClass = cardCssClasses.JoinStrings( " " ),
                     CanAddStep = canAddStep,
+                    CanEdit = canEditStep,
                     HasMetPrerequisites = hasMetPrerequisites
                 } );
             }
@@ -1514,6 +1532,14 @@ namespace RockWeb.Blocks.Steps
             ///   <c>true</c> if this instance can add step; otherwise, <c>false</c>.
             /// </value>
             public bool CanAddStep { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can be edited.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can be edited; otherwise, <c>false</c>.
+            /// </value>
+            public bool CanEdit { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether this instance has met prerequisites.

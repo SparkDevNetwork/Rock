@@ -646,6 +646,8 @@ namespace RockWeb.Blocks.WorkFlow
              * would be evaluated for every entity. Since this block has potential to display thousands of entities, I thought it best
              * to try to optimize this way.
              */
+            var hasName = theType.GetProperty( "Name" ) != null;
+            var hasTitle = theType.GetProperty( "Title" ) != null;
 
             if ( entityTypeCache.Id == EntityTypeCache.Get<Person>().Id || entityTypeCache.Id == EntityTypeCache.Get<Group>().Id )
             {
@@ -671,20 +673,14 @@ namespace RockWeb.Blocks.WorkFlow
                     Html = string.Format( twoLineTemplate, ( ( ConnectionRequest ) e ).PersonAlias.Person, ( ( ConnectionRequest ) e ).ConnectionOpportunity )
                 } );
             }
-            else if ( theType.GetProperty( "Name" ) != null )
+            else if ( hasName || hasTitle )
             {
-                // If there is a name property then use that
+                // In order of preference, use the Name, Title or Entity Type/Id properties.
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
-                    Html = e.GetPropertyValue( "Name" ).ToString()
-                } );
-            }
-            else if ( theType.GetProperty( "Title" ) != null )
-            {
-                // If there is a title property then use that
-                viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
-                {
-                    Html = e.GetPropertyValue( "Title" ).ToString()
+                    Html = ( ( hasName ? e.GetPropertyValue( "Name" ) : null )
+                           ?? ( hasTitle ? e.GetPropertyValue( "Title" ) : null )
+                           ?? string.Format( nameAndIdTemplate, entityTypeCache.FriendlyName, e.Id ) ).ToStringSafe()
                 } );
             }
             else if ( theType.GetProperty( "Person" ) != null )

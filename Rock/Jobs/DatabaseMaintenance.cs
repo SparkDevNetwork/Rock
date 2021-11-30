@@ -40,7 +40,7 @@ namespace Rock.Jobs
     [DisplayName( "Database Maintenance" )]
     [Description( "Performs routine SQL Server database maintenance." )]
 
-    [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.", true, order: 0 )]
+    [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.  (Integrity checks are never run on Azure SQL databases, because Azure manages its own data integrity.)", true, order: 0 )]
     [BooleanField( "Run Index Rebuild", "Determines if indexes should be rebuilt.", true, order: 1 )]
     [BooleanField( "Run Statistics Update", "Determines if the statistics should be updated.", true, order: 2 )]
     [TextField( "Alert Email", "Email address to send alerts to errors occur (multiple address delimited with comma).", true, order: 3 )]
@@ -94,7 +94,25 @@ namespace Rock.Jobs
             if ( RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
             {
                 runIntegrityCheck = false;
-                runStatisticsUpdate = false;
+
+                /* 10/25/2021 - Shaun Cummings
+                 * 
+                 * The original change to make this job compliant with AzureSql best practices disabled both
+                 * the integrity check and the update statistics tasks in this job (by setting
+                 * "runStatisticsUpdate = false" in this code block).  Further review has failed to locate 
+                 * the rationale for that decision and testing UPDATE STATISTICS on AzureSql databases 
+                 * indicates that the command functions as expected in an AzureSql environment.
+                 * 
+                 * Large Rock instances were noticed to have issues with out of date indexes causing smiple
+                 * queries to take an excessive amount of time to complete (in particular, updates to group
+                 * location schedules could cause the UpdateGroupLocationHistorical() portion of the Process
+                 * Group History job to timeout as the query processing time increased by two orders of
+                 * magnitude).
+                 * 
+                 * Reason:  UPDATE STATISTICS should still be run on AzureSql instances to maintain proper
+                 * index performance.
+                 * 
+                 * */
             }
 
             // run integrity check

@@ -75,7 +75,11 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// The list of values that SMS messages can be sent from.  Depending on provider, these may
-        /// be phone numbers or short codes
+        /// be phone numbers or short codes.
+        /// <br />
+        /// The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
+        /// <br />
+        /// The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
         /// </summary>
         public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
 
@@ -94,6 +98,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
 
+        /// <summary>
+        /// Guid for data automation ignored person attributes
+        /// </summary>
+        public const string DATA_AUTOMATION_IGNORED_PERSON_ATTRIBUTES = "886CDB4E-ED8B-48DD-A4CC-D615E032E622";
         /// <summary>
         /// Guid for Device Type
         /// </summary>
@@ -318,14 +326,7 @@ namespace Rock.SystemGuid
         /// Protect My Ministry MVR jurisdiction codes
         /// </summary>
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
-
-        /// <summary>
-        /// Protect My Ministry background package types
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead", true )]
-        public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
-
+        
         /// <summary>
         /// Template Block
         /// </summary>

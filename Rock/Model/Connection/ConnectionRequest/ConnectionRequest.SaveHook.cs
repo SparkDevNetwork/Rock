@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Tasks;
@@ -30,6 +32,7 @@ namespace Rock.Model
         internal class SaveHook : EntitySaveHook<ConnectionRequest>
         {
             private History.HistoryChangeList HistoryChangeList { get; set; }
+
             private History.HistoryChangeList PersonHistoryChangeList { get; set; }
 
             /// <summary>
@@ -37,10 +40,13 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
+                // Get the current person's alias ID from the current context.
+                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+
                 HistoryChangeList = new History.HistoryChangeList();
                 PersonHistoryChangeList = new History.HistoryChangeList();
                 var connectionRequest = this.Entity as ConnectionRequest;
-                var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest );
+                var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest, currentPersonAliasId );
                 processConnectionRequestChangeMessage.Send();
 
                 var rockContext = ( RockContext ) this.RockContext;
@@ -64,6 +70,7 @@ namespace Rock.Model
                             {
                                 PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
                             }
+
                             break;
                         }
 
@@ -133,6 +140,68 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
 
+                if ( Entity.ConnectionStatus.ConnectionStatusAutomations.Any() )
+                {
+                    foreach ( var connectionStatusAutomation in Entity.ConnectionStatus.ConnectionStatusAutomations )
+                    {
+                        bool isAutomationValid = true;
+                        if ( connectionStatusAutomation.DataViewId.HasValue )
+                        {
+                            // Get the dataview configured for the connection request
+                            var dataViewService = new DataViewService( rockContext );
+                            var dataview = dataViewService.Get( connectionStatusAutomation.DataViewId.Value );
+                            if ( dataview != null )
+                            {
+                                var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                                isAutomationValid = dataview.GetQuery( dataViewGetQueryArgs ).Any( a => a.Id == Entity.Id );
+                            }
+                        }
+
+                        if ( isAutomationValid && connectionStatusAutomation.GroupRequirementsFilter != GroupRequirementsFilter.Ignore )
+                        {
+                            // Group Requirement can't be meet when either placement group or placement group role id is missing
+                            if ( !Entity.AssignedGroupId.HasValue || !Entity.AssignedGroupMemberRoleId.HasValue )
+                            {
+                                isAutomationValid = false;
+                            }
+                            else
+                            {
+                                var isRequirementMeet = true;
+                                var group = new GroupService( rockContext ).Get( Entity.AssignedGroupId.Value );
+                                var hasGroupRequirement = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == group.GroupTypeId ) ).Any();
+                                if ( hasGroupRequirement )
+                                {
+                                    var requirementsResults = group.PersonMeetsGroupRequirements(
+                                        rockContext,
+                                        Entity.PersonAlias.PersonId,
+                                        Entity.AssignedGroupMemberRoleId.Value );
+
+                                    if ( requirementsResults != null && requirementsResults
+                                        .Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable )
+                                        .Any( r =>
+                                            r.MeetsGroupRequirement != MeetsGroupRequirement.Meets && r.MeetsGroupRequirement != MeetsGroupRequirement.MeetsWithWarning )
+                                        )
+                                    {
+                                        isRequirementMeet = false;
+                                    }
+                                }
+
+                                // connection request based on if group requirement is meet or not is added to list for status update
+                                isAutomationValid = ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.DoesNotMeet && !isRequirementMeet ) ||
+                                    ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.MustMeet && isRequirementMeet );
+                            }
+                        }
+
+                        if ( isAutomationValid )
+                        {
+                            Entity.ConnectionStatusId = connectionStatusAutomation.DestinationStatusId;
+
+                            // disabled pre post processing in order to prevent circular loop that may arise due to status change.
+                            rockContext.SaveChanges( true );
+                        }
+                    }
+                }
+
                 if ( HistoryChangeList?.Any() == true )
                 {
                     HistoryService.SaveChanges( rockContext, typeof( ConnectionRequest ), Rock.SystemGuid.Category.HISTORY_CONNECTION_REQUEST.AsGuid(), Entity.Id, HistoryChangeList, true, Entity.ModifiedByPersonAliasId );
@@ -158,51 +227,56 @@ namespace Rock.Model
                 base.PostSave();
             }
 
-            private ProcessConnectionRequestChange.Message GetProcessConnectionRequestChangeMessage( IEntitySaveEntry entry, ConnectionRequest connectionRequest )
+            private ProcessConnectionRequestChange.Message GetProcessConnectionRequestChangeMessage( IEntitySaveEntry entry, ConnectionRequest connectionRequest, int? currentPersonAliasId )
             {
-                var transaction = new ProcessConnectionRequestChange.Message();
-
+                var message = new ProcessConnectionRequestChange.Message();
                 if ( connectionRequest != null )
                 {
-                    transaction.State = entry.State;
+                    message.State = entry.State;
+
+                    // If the current person alias has a value, set that value for the message.
+                    if (currentPersonAliasId.HasValue)
+                    {
+                        message.InitiatorPersonAliasId = currentPersonAliasId;
+                    }
 
                     // If this isn't a deleted connection request, get the connection request guid
-                    if ( transaction.State != EntityContextState.Deleted )
+                    if ( message.State != EntityContextState.Deleted )
                     {
-                        transaction.ConnectionRequestGuid = connectionRequest.Guid;
+                        message.ConnectionRequestGuid = connectionRequest.Guid;
 
                         if ( connectionRequest.PersonAlias != null )
                         {
-                            transaction.PersonId = connectionRequest.PersonAlias.PersonId;
+                            message.PersonId = connectionRequest.PersonAlias.PersonId;
                         }
                         else if ( connectionRequest.PersonAliasId != default )
                         {
-                            transaction.PersonId = new PersonAliasService( new RockContext() ).GetPersonId( connectionRequest.PersonAliasId );
+                            message.PersonId = new PersonAliasService( new RockContext() ).GetPersonId( connectionRequest.PersonAliasId );
                         }
 
                         if ( connectionRequest.ConnectionOpportunity != null )
                         {
-                            transaction.ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
+                            message.ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
                         }
 
-                        transaction.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                        transaction.ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
-                        transaction.ConnectionState = connectionRequest.ConnectionState;
-                        transaction.ConnectionStatusId = connectionRequest.ConnectionStatusId;
-                        transaction.AssignedGroupId = connectionRequest.AssignedGroupId;
+                        message.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
+                        message.ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
+                        message.ConnectionState = connectionRequest.ConnectionState;
+                        message.ConnectionStatusId = connectionRequest.ConnectionStatusId;
+                        message.AssignedGroupId = connectionRequest.AssignedGroupId;
 
-                        if ( transaction.State == EntityContextState.Modified )
+                        if ( message.State == EntityContextState.Modified )
                         {
-                            transaction.PreviousConnectionOpportunityId = entry.OriginalValues[nameof( ConnectionRequest.ConnectionOpportunityId )].ToStringSafe().AsIntegerOrNull();
-                            transaction.PreviousConnectorPersonAliasId = entry.OriginalValues[nameof( ConnectionRequest.ConnectorPersonAliasId )].ToStringSafe().AsIntegerOrNull();
-                            transaction.ConnectionState = entry.OriginalValues[nameof( ConnectionRequest.ConnectionState )].ToStringSafe().ConvertToEnum<ConnectionState>();
-                            transaction.PreviousConnectionStatusId = entry.OriginalValues[nameof( ConnectionRequest.ConnectionStatusId )].ToStringSafe().AsInteger();
-                            transaction.PreviousAssignedGroupId = entry.OriginalValues[nameof( ConnectionRequest.AssignedGroupId )].ToStringSafe().AsIntegerOrNull();
+                            message.PreviousConnectionOpportunityId = entry.OriginalValues[nameof( ConnectionRequest.ConnectionOpportunityId )].ToStringSafe().AsIntegerOrNull();
+                            message.PreviousConnectorPersonAliasId = entry.OriginalValues[nameof( ConnectionRequest.ConnectorPersonAliasId )].ToStringSafe().AsIntegerOrNull();
+                            message.ConnectionState = entry.OriginalValues[nameof( ConnectionRequest.ConnectionState )].ToStringSafe().ConvertToEnum<ConnectionState>();
+                            message.PreviousConnectionStatusId = entry.OriginalValues[nameof( ConnectionRequest.ConnectionStatusId )].ToStringSafe().AsInteger();
+                            message.PreviousAssignedGroupId = entry.OriginalValues[nameof( ConnectionRequest.AssignedGroupId )].ToStringSafe().AsIntegerOrNull();
                         }
                     }
                 }
 
-                return transaction;
+                return message;
             }
         }
     }

@@ -96,6 +96,22 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     public class WorkflowEntry : RockMobileBlockType
     {
+        #region Feature Keys
+
+        /// <summary>
+        /// Features supported by both server and client.
+        /// </summary>
+        private static class FeatureKey
+        {
+            /// <summary>
+            /// Client values (i.e. values converted from Rock Database to Client Native)
+            /// are supported.
+            /// </summary>
+            public const string ClientValues = "clientValues";
+        }
+
+        #endregion
+
         #region Block Attributes
 
         /// <summary>
@@ -257,7 +273,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 foreach ( var field in fields )
                 {
-                    workflow.SetAttributeValue( field.Key, field.Value );
+                    workflow.SetClientAttributeValue( field.Key, field.Value, RequestContext.CurrentPerson, false );
                 }
             }
         }
@@ -344,7 +360,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                         if ( item != null )
                         {
-                            item.SetAttributeValue( attribute.Key, formField.Value );
+                            item.SetClientAttributeValue( attribute.Key, formField.Value, RequestContext.CurrentPerson, false );
                         }
                     }
                 }
@@ -594,11 +610,52 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return;
             }
 
+            // Nothing provided by the client, so nothing more we can do.
             if ( personEntryValues == null )
             {
                 return;
             }
 
+            // Check if the values entered match the existing person, this determines
+            // if we can use the existing person or not.
+            if ( existingPerson != null )
+            {
+                var firstNameMatchesExistingFirstOrNickName = personEntryValues.Person.FirstName.Equals( existingPerson.FirstName, StringComparison.OrdinalIgnoreCase )
+                        || personEntryValues.Person.FirstName.Equals( existingPerson.NickName, StringComparison.OrdinalIgnoreCase );
+                var lastNameMatchesExistingLastName = personEntryValues.Person.LastName.Equals( existingPerson.LastName, StringComparison.OrdinalIgnoreCase );
+
+                if ( !firstNameMatchesExistingFirstOrNickName || !lastNameMatchesExistingLastName )
+                {
+                    /*  10-07-2021 MDP
+
+                    Special Logic if AutoFill CurrentPerson is enabled, but the Person Name fields were changed:
+
+                    If the existing person (the one that used to auto-fill the fields) changed the FirstName or LastName PersonEditor,
+                    then assume they mean they mean to create (or match) a new person. Note that if this happens, this matched or new person won't
+                    be added to Ted Decker's family. PersonEntry isn't smart enough to figure that out and isn't intended to be a family editor. Here are a few examples
+                    to clarify what this means:
+
+                    Example 1: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Noah Decker, then we'll see if we have enough to make a match
+                    to the existing Noah Decker. However, a match to the existing Noah Decker would need to match Noah's email and/or cell phone too, so it could easily create a new Noah Decker.
+
+                    Example 2: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to NewBaby Decker, we'll have to do the same thing as Example 1
+                    even though Ted might be thinking he is adding his new baby to the family. So NewBaby Decker will probably be a new person in a new family.
+
+                    Example 3: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Bob Smith (Ted's Neighbor), we also do the same thing as Example 1. However,
+                    in this case, we are mostly doing what Ted expected to happen.
+
+                    Summary. PersonEntry is not a family editor, it just collects data to match or create a person (and spouse if enabled).
+
+                    Note: The logic for Spouse entry is slightly different. See notes below...
+
+                    */
+
+                    existingPerson = null;
+                    existingSpouse = null;
+                }
+            }
+
+            // Translate our Guid values into Id values.
             if ( personEntryValues.Person.CampusGuid.HasValue )
             {
                 campusId = CampusCache.Get( personEntryValues.Person.CampusGuid.Value )?.Id;
@@ -1025,11 +1082,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="formAction">The form action button that was pressed.</param>
         /// <param name="formFields">The form field values.</param>
         /// <param name="personEntryValues">The person entry values.</param>
+        /// <param name="supportedFeatures">The list of features that the client supports.</param>
         /// <returns>
         /// The data for the next form to be displayed.
         /// </returns>
         [BlockAction]
-        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null, WorkflowFormPersonEntryValues personEntryValues = null )
+        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null, WorkflowFormPersonEntryValues personEntryValues = null, List<string> supportedFeatures = null )
         {
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
@@ -1119,6 +1177,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 PersonEntry = GetPersonEntryDetails( rockContext, action, RequestContext.CurrentPerson?.Id, mergeFields )
             };
 
+            var useClientValues = supportedFeatures?.Contains( FeatureKey.ClientValues ) ?? false;
+
             //
             // Populate all the form fields that should be visible on the workflow.
             //
@@ -1147,9 +1207,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Key = attribute.Key,
                         Title = attribute.Name,
                         IsRequired = formAttribute.IsRequired,
-                        ConfigurationValues = attribute.QualifierValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ),
+                        ConfigurationValues = useClientValues
+                            ? attribute.FieldType.Field?.GetClientConfigurationValues( attribute.QualifierValues )
+                            : attribute.QualifierValues.ToDictionary( v => v.Key, v => v.Value.Value ),
+                        FieldTypeGuid = attribute.FieldType.Guid,
+#pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         RockFieldType = attribute.FieldType.Class,
-                        Value = value
+#pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
+                        Value = useClientValues
+                            ? attribute.FieldType.Field?.GetClientEditValue( value, attribute.QualifierValues )
+                            : value
                     };
 
                     if ( formAttribute.IsReadOnly )
@@ -1169,7 +1236,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         }
 
                         mobileField.Value = formattedValue;
+                        mobileField.FieldTypeGuid = null;
+#pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         mobileField.RockFieldType = string.Empty;
+#pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
 
                         if ( formAttribute.HideLabel )
                         {

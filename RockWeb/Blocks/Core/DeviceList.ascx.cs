@@ -101,6 +101,7 @@ namespace RockWeb.Blocks.Core
             fDevice.SaveUserPreference( "Name", tbName.Text );
             fDevice.SaveUserPreference( "Device Type", dvpDeviceType.SelectedValue );
             fDevice.SaveUserPreference( "IP Address", tbIPAddress.Text );
+            fDevice.SaveUserPreference( "Kiosk Type", ddlKioskType.SelectedValue );
             fDevice.SaveUserPreference( "Print To", ddlPrintTo.SelectedValue );
             fDevice.SaveUserPreference( "Printer", ddlPrinter.SelectedValue );
             fDevice.SaveUserPreference( "Print From", ddlPrintFrom.SelectedValue );
@@ -145,6 +146,10 @@ namespace RockWeb.Blocks.Core
                         }
                     }
 
+                    break;
+
+                case "Kiosk Type":
+                    e.Value = e.Value.ConvertToEnumOrNull<KioskType>()?.GetDescription();
                     break;
 
                 case "Print To":
@@ -312,6 +317,8 @@ namespace RockWeb.Blocks.Core
         {
             dvpDeviceType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ).Id;
 
+            ddlKioskType.BindToEnum<KioskType>( true );
+
             ddlPrintTo.BindToEnum<PrintTo>();
             ddlPrintTo.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
@@ -330,6 +337,7 @@ namespace RockWeb.Blocks.Core
                 tbName.Text = fDevice.GetUserPreference( "Name" );
                 dvpDeviceType.SetValue( fDevice.GetUserPreference( "Device Type" ) );
                 tbIPAddress.Text = fDevice.GetUserPreference( "IP Address" );
+                ddlKioskType.SetValue( fDevice.GetUserPreference( "Kiosk Type" ) );
                 ddlPrintTo.SetValue( fDevice.GetUserPreference( "Print To" ) );
                 ddlPrinter.SetValue( fDevice.GetUserPreference( "Printer" ) );
                 ddlPrintFrom.SetValue( fDevice.GetUserPreference( "Print From" ) );
@@ -362,6 +370,12 @@ namespace RockWeb.Blocks.Core
             if ( deviceTypeId.HasValue )
             {
                 queryable = queryable.Where( d => d.DeviceTypeValueId == deviceTypeId.Value );
+            }
+
+            KioskType? kioskTypeFilter = fDevice.GetUserPreference( "Kiosk Type" )?.ConvertToEnumOrNull<KioskType>();
+            if ( kioskTypeFilter.HasValue )
+            {
+                queryable = queryable.Where( d => d.KioskType == kioskTypeFilter.Value );
             }
 
             string ipAddress = fDevice.GetUserPreference( "IP Address" );
@@ -411,6 +425,8 @@ namespace RockWeb.Blocks.Core
                     Id = a.Id,
                     Name = a.Name,
                     DeviceTypeName = a.DeviceType.Value,
+                    DeviceTypeGuid = a.DeviceType.Guid,
+                    KioskType = a.KioskType,
                     IPAddress = a.IPAddress,
                     PrintToOverride = a.PrintToOverride,
                     PrintFrom = a.PrintFrom,
@@ -418,11 +434,11 @@ namespace RockWeb.Blocks.Core
                     PrinterDeviceTypeId = a.PrinterDeviceId,
                     DeviceTypeValueId = a.DeviceTypeValueId,
                     IsActive = a.IsActive
-                } );
+                } ).ToList();
 
             if ( sortProperty != null )
             {
-                gDevice.DataSource = gridList.Sort( sortProperty ).ToList();
+                gDevice.DataSource = gridList.AsQueryable().Sort( sortProperty ).ToList();
             }
             else
             {
@@ -445,6 +461,11 @@ namespace RockWeb.Blocks.Core
 
             public string DeviceTypeName { get; internal set; }
 
+            private bool IsCheckinKiosk()
+            {
+                return this.DeviceTypeGuid == Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid();
+            }
+
             public string IPAddress { get; internal set; }
 
             public PrintTo PrintToOverride { get; internal set; }
@@ -458,6 +479,25 @@ namespace RockWeb.Blocks.Core
             public int DeviceTypeValueId { get; internal set; }
 
             public bool IsActive { get; internal set; }
+
+            internal KioskType? KioskType { get; set; }
+
+            public string KioskTypeName
+            {
+                get
+                {
+
+                    if ( IsCheckinKiosk() )
+                    {
+                        return KioskType?.GetDescription();
+                    }
+
+                    return null;
+
+                }
+            }
+
+            internal Guid DeviceTypeGuid { get; set; }
         }
 
         #endregion Classes

@@ -123,7 +123,7 @@
                     <i class="fa fa-history"></i>
                     Group History
                 </h1>
-                <div class="pull-right">
+                <div class="panel-labels">
                   <a class="btn btn-xs btn-default btn-square" onclick="javascript: toggleOptions()">
                       <i title="Options" class="fa fa-gear"></i>
                   </a>

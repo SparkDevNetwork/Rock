@@ -40,6 +40,14 @@ namespace Rock.ViewModel
         public bool ContinueAfterProcessing { get; set; }
 
         /// <summary>
+        /// Gets or sets the ExpireDate.
+        /// </summary>
+        /// <value>
+        /// The ExpireDate.
+        /// </value>
+        public DateTime? ExpireDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the IsActive.
         /// </summary>
         /// <value>

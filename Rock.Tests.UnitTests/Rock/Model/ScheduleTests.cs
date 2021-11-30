@@ -258,7 +258,7 @@ namespace Rock.Tests.Rock.Model
             // Create a daily recurring calendar that has X occurrences, including today.
             var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime: null, occurrenceCount: occurrences );
 
-            Assert.That.AreEqualDate( DateTime.MaxValue, schedule.EffectiveEndDate );
+            Assert.That.AreEqualDate( null, schedule.EffectiveEndDate );
         }
 
         /// <summary>
@@ -272,7 +272,7 @@ namespace Rock.Tests.Rock.Model
 
             schedule.EnsureEffectiveStartEndDates();
 
-            Assert.That.AreEqualDate( DateTime.MaxValue, schedule.EffectiveEndDate );
+            Assert.That.AreEqualDate( null, schedule.EffectiveEndDate );
         }
 
         /// <summary>

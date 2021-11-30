@@ -127,6 +127,17 @@ namespace Rock.Lava
         /// <returns></returns>
         public object GetValue( string key )
         {
+            return GetValue( key, null );
+        }
+
+        /// <summary>
+        /// Get a value from the dictionary if it exists, or return the default value.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public object GetValue( string key, object defaultValue )
+        {
             if ( _dictionary.ContainsKey( key ) )
             {
                 return _dictionary[key];
@@ -137,7 +148,7 @@ namespace Rock.Lava
                 return _valueGetterFunction( this, key );
             }
 
-            return null;
+            return defaultValue;
         }
 
         /// <summary>

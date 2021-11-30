@@ -55,8 +55,8 @@
                                             </td>
                                             <td>
                                                 <div class="actions">
-                                                    <asp:LinkButton ID="btnConfirmAttending" runat="server" CssClass="btn btn-xs btn-success" Text="Attending" OnClick="btnConfirmAttending_Click" />
-                                                    <asp:LinkButton ID="btnDeclineAttending" runat="server" CssClass="btn btn-xs btn-danger" Text="Decline" OnClick="btnDeclineAttending_Click" />
+                                                    <asp:LinkButton ID="btnConfirmAttend" runat="server" CssClass="btn btn-xs btn-success" Text="Attend" OnClick="btnConfirmAttend_Click" />
+                                                    <asp:LinkButton ID="btnDeclineAttend" runat="server" CssClass="btn btn-xs btn-danger" Text="Decline" OnClick="btnDeclineAttend_Click" />
                                                 </div>
                                             </td>
                                         </tr>
@@ -74,7 +74,7 @@
                                 data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
                                 class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
                                 onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                                <i class="fa fa-calendar-alt"></i>Copy Calendar Link
+                                <i class="fa fa-calendar-alt"></i> Copy Calendar Link
                             </button>
                         </span>
                         <table class="table table-borderless">
@@ -89,7 +89,7 @@
                                                 <asp:Literal ID="lConfirmedOccurrenceTime" runat="server" />
                                             </td>
                                             <td>
-                                                <asp:LinkButton ID="btnCancelConfirmAttending" runat="server" CssClass="btn btn-xs btn-link text-danger" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttending_Click" />
+                                                <asp:LinkButton ID="btnCancelConfirmAttend" runat="server" CssClass="btn btn-xs btn-link text-danger" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttend_Click" />
                                             </td>
                                         </tr>
                                     </ItemTemplate>
@@ -218,7 +218,7 @@
 
                 <%-- Sign-up --%>
                 <asp:Panel ID="pnlSignup" CssClass="row" runat="server">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <asp:Literal ID="lSignupMsg" runat="server" />
                         <Rock:DynamicPlaceholder ID="phSignUpSchedules" runat="server" />
                     </div>

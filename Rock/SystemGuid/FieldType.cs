@@ -52,7 +52,7 @@ namespace Rock.SystemGuid
         /// Audio field type
         /// </summary>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use AUDIO_FILE or AUDIO_URL instead" )]
+        [Obsolete( "Use AUDIO_FILE or AUDIO_URL instead", true )]
         public const string AUDIO = "0D842975-7439-4D2E-BB94-BAD8DDF22260";
 
         /// <summary>
@@ -644,7 +644,7 @@ namespace Rock.SystemGuid
         /// Video field type
         /// </summary>
         [RockObsolete( "1.9" )]
-        [Obsolete("Use VIDEO_FILE or VIDEO_URL Instead")]
+        [Obsolete("Use VIDEO_FILE or VIDEO_URL Instead", true )]
         public const string VIDEO = "FA398F9D-5B01-41EA-9A93-112F910A277D";
 
         /// <summary>

@@ -19,11 +19,22 @@
         </div>
 
         <Rock:Zone Name="Feature" runat="server" />
-        <Rock:Zone Name="Main" runat="server" />
-        <Rock:Zone Name="Section A" runat="server" />
-        <Rock:Zone Name="Section B" runat="server" />
-        <Rock:Zone Name="Section C" runat="server" />
-        <Rock:Zone Name="Section D" runat="server" />
+
+        <div id="content" class="clearfix">
+            <Rock:Zone Name="Main" runat="server" />
+
+            <div class="page-constrained mx-auto">
+                <Rock:Zone Name="Section A" runat="server" />
+            </div>
+
+            <Rock:Zone Name="Section B" runat="server" />
+
+            <div class="page-constrained mx-auto">
+                <Rock:Zone Name="Section C" runat="server" />
+            </div>
+            
+            <Rock:Zone Name="Section D" runat="server" />
+        </div>
 
     </div>
 

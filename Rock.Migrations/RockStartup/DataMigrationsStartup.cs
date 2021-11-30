@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +38,29 @@ namespace Rock.Migrations.RockStartup
         /// </summary>
         public void OnStartup()
         {
+            /* 10-01-2021 MDP
+              
+            In multi-server/cluster/web-farm Rock environments, only one of the servers should be running
+            these DataMigrationsStartups. To make sure that multiple servers don't run these, we'll
+            check if this is the server with RunJobsInIISContext enabled.
+
+            If RunJobsInIISContext isn't enabled on this server, don't run these. However, if this 
+            is a developer environment, we'll want to run these regardless of the RunJobsInIISContext setting.
+            
+            */
+
+            bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+            if ( !runJobsInContext )
+            {
+                // RunJobsInIISContext isn't enabled on this server, so don't run these DataMigrationsStartups unless
+                // this is a developer environment
+                if ( !System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    // RunJobsInIISContext isn't enabled, and this isn't a developer environment so exit without running DataMigrationsStartups.
+                    return;
+                }
+            }
+
             List<Guid> runOnceJobGuids = new List<Guid>
             {
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_74.AsGuid(),
@@ -70,7 +94,8 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid()
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)

@@ -72,7 +72,12 @@ You can view an online version of this email here:
         /// <value>
         /// The type of the communication.
         /// </value>
-        public override CommunicationType CommunicationType { get { return CommunicationType.Email; } }
+        public override CommunicationType CommunicationType {
+            get
+            {
+                return CommunicationType.Email;
+            }
+        }
 
         /// <summary>
         /// Gets the control.

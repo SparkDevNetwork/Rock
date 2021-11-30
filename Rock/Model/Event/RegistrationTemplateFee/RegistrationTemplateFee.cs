@@ -20,7 +20,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
@@ -77,7 +76,7 @@ namespace Rock.Model
         [MaxLength( 400 )]
         [DataMember]
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use FeeItems instead" )]
+        [Obsolete( "Use FeeItems instead", true )]
         public string CostValue { get; set; }
 
         /// <summary>

@@ -96,14 +96,14 @@
 
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                        <div class="pull-right">
-                            <Rock:HighlightLabel ID="hlblFlaggedMessageRO" LabelType="warning" runat="server" Visible="false" IconCssClass="fa fa-flag" ToolTip="To clear the flags you'll have to re-approve this request." />
-                            <Rock:HighlightLabel ID="hlblUrgent" LabelType="Danger" runat="server" Visible="false" IconCssClass="fa fa-exclamation-circle" Text="Urgent" />
-                            <Rock:Badge ID="badgePrayerCount" runat="server"></Rock:Badge>
-                        </div>
-
                         <div class="row">
                             <div class="col-md-12">
+                                <div class="pull-right">
+                                    <Rock:HighlightLabel ID="hlblFlaggedMessageRO" LabelType="warning" runat="server" Visible="false" IconCssClass="fa fa-flag" ToolTip="To clear the flags you'll have to re-approve this request." />
+                                    <Rock:HighlightLabel ID="hlblUrgent" LabelType="Danger" runat="server" Visible="false" IconCssClass="fa fa-exclamation-circle" Text="Urgent" />
+                                    <Rock:Badge ID="badgePrayerCount" runat="server"></Rock:Badge>
+                                </div>
+
                                 <asp:Literal ID="lMainDetails" runat="server" />
 
                                 <asp:PlaceHolder ID="phDisplayAttributes" runat="server" />

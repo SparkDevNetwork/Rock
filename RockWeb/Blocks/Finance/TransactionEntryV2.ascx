@@ -34,8 +34,6 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlTransactionEntry" runat="server">
-            <asp:HiddenField ID="hfTargetPersonId" runat="server" />
-
             <div class="row">
                 <%-- Transaction Entry Panel --%>
                 <asp:Panel ID="pnlTransactionEntryPanel" runat="server" CssClass="col-xs-12 col-sm-8">
@@ -151,7 +149,9 @@
                                 <Rock:AddressControl ID="acAddressIndividual" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" Required="true" />
 
                                 <Rock:PhoneNumberBox ID="pnbPhoneIndividual" runat="server" Placeholder="Phone" CssClass="margin-b-sm" />
-                                <Rock:EmailBox ID="tbEmailIndividual" runat="server" Placeholder="Email" CssClass="margin-b-sm" />
+                                <div class="form-group">
+                                    <Rock:EmailBox ID="tbEmailIndividual" runat="server" Placeholder="Email" CssClass="margin-b-sm" Required="true"/>
+                                </div>
                                 <Rock:RockCheckBox ID="cbGiveAnonymouslyIndividual" runat="server" Text="Give Anonymously" />
                             </asp:Panel>
 
@@ -164,7 +164,9 @@
 
                                 <Rock:AddressControl ID="acAddressBusiness" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" Required="true" />
                                 <Rock:PhoneNumberBox ID="pnbPhoneBusiness" runat="server" Placeholder="Business Phone" CssClass="margin-b-sm" />
-                                <Rock:EmailBox ID="tbEmailBusiness" runat="server" Placeholder="Business Email" CssClass="margin-b-sm" />
+                                <div class="form-group">
+                                    <Rock:EmailBox ID="tbEmailBusiness" runat="server" Placeholder="Business Email" CssClass="margin-b-sm required" Required="true" />
+                                 </div>
                                 <Rock:RockCheckBox ID="cbGiveAnonymouslyBusiness" runat="server" Text="Give Anonymously" />
 
                                 <%-- If anonymous and giving as a new business, prompt for Contact information --%>
@@ -178,7 +180,9 @@
                                         <Rock:RockTextBox ID="tbBusinessContactLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" />
                                     </div>
                                     <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Placeholder="Phone" CssClass="margin-b-sm" />
-                                    <Rock:EmailBox ID="tbBusinessContactEmail" runat="server" Placeholder="Email" CssClass="margin-b-sm" />
+                                    <div class="form-group">
+                                        <Rock:EmailBox ID="tbBusinessContactEmail" runat="server" Placeholder="Email" CssClass="margin-b-sm" Required="true" />
+                                    </div>
                                 </asp:Panel>
                             </asp:Panel>
 

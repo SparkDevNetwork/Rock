@@ -103,20 +103,76 @@ namespace Rock.Tests.UnitTests.Lava
         /// </summary>
         public static void SetRockDateTimeToAlternateTimezone()
         {
+            var tz = GetTestTimeZoneAlternate();
+
+            RockDateTime.Initialize( tz );
+
+            // Re-initialize the lava engine options.
+            var options = GetCurrentEngineOptions();
+            _fluidEngine.Initialize( options );
+        }
+
+        /// <summary>
+        /// Gets a timezone that is different from the local timezone, suitable for testing an operating environment
+        /// in which the organization timezone does not match the local system timezone.
+        /// </summary>
+        public static TimeZoneInfo GetTestTimeZoneAlternate()
+        {
             TimeZoneInfo tz;
 
-            tz = TimeZoneInfo.FindSystemTimeZoneById( "AUS Eastern Standard Time" );
+            // Set to India Standard Time, or an alternative if that is the local timezone in the current environment.
+            tz = TimeZoneInfo.FindSystemTimeZoneById( "India Standard Time" );
 
-            Assert.That.IsNotNull( tz, "Timezone 'AEST' is not available in this environment." );
+            Assert.That.IsNotNull( tz, "Timezone 'IST' is not available in this environment." );
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
                 tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
 
-                  Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+                Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
             }
 
+            // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
+            // If a DST-affected timezone is used, some tests will fail when executed across DST boundary dates.
+            Assert.That.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
+
+            return tz;
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
+        /// in which the organization timezone supports daylight saving time.
+        /// </summary>
+        public static void SetRockDateTimeToDaylightSavingTimezone()
+        {
+            // Set to Mountain Standard Time (MST), a timezone that supports Daylight Saving Time (DST).
+            var tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+
+            Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+
+            Assert.That.IsTrue( tz.SupportsDaylightSavingTime, "Test Timezone should be configured for Daylight Saving Time (DST)." );
+
             RockDateTime.Initialize( tz );
+
+            // Re-initialize the lava engine options.
+            var options = GetCurrentEngineOptions();
+            _fluidEngine.Initialize( options );
+        }
+
+        /// <summary>
+        /// Get the Lava Engine configuration for the currenttest environment.
+        /// </summary>
+        /// <returns></returns>
+        private static LavaEngineConfigurationOptions GetCurrentEngineOptions()
+        {
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                FileSystem = new WebsiteLavaFileSystem(),
+                CacheService = new WebsiteLavaTemplateCacheService(),
+                TimeZone = RockDateTime.OrgTimeZoneInfo
+            };
+
+            return engineOptions;
         }
 
         private static void RegisterLavaEngines()
@@ -136,11 +192,7 @@ namespace Rock.Tests.UnitTests.Lava
             // Register the DotLiquid Engine.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
-                var engineOptions = new LavaEngineConfigurationOptions
-                {
-                    FileSystem = new WebsiteLavaFileSystem(),
-                    CacheService = new WebsiteLavaTemplateCacheService(),
-                };
+                var engineOptions = GetCurrentEngineOptions();
 
                 var dotLiquidEngine = new DotLiquidEngine();
 
@@ -152,11 +204,7 @@ namespace Rock.Tests.UnitTests.Lava
             // Register the Fluid Engine.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
-                var engineOptions = new LavaEngineConfigurationOptions
-                {
-                    FileSystem = new WebsiteLavaFileSystem(),
-                    CacheService = new WebsiteLavaTemplateCacheService(),
-                };
+                var engineOptions = GetCurrentEngineOptions();
 
                 var fluidEngine = new FluidEngine();
 
@@ -227,7 +275,24 @@ namespace Rock.Tests.UnitTests.Lava
 
             var context = engine.NewRenderContext( mergeValues );
 
-            var result = engine.RenderTemplate( inputTemplate.Trim(), new LavaRenderParameters { Context = context } );
+            return GetTemplateOutput( engine, inputTemplate, new LavaRenderParameters { Context = context } );
+        }
+
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public string GetTemplateOutput( ILavaEngine engine, string inputTemplate, LavaRenderParameters renderParameters )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            if ( engine == null )
+            {
+                throw new Exception( "Engine instance is required." );
+            }
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), renderParameters );
 
             if ( result.HasErrors )
             {
@@ -242,7 +307,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// </summary>
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
-        public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaDataDictionary mergeValues = null, bool ignoreWhitespace = false )
+        public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaRenderParameters parameters, bool ignoreWhitespace = false )
         {
             var engines = GetActiveTestEngines();
 
@@ -252,7 +317,7 @@ namespace Rock.Tests.UnitTests.Lava
             {
                 try
                 {
-                    AssertTemplateOutput( engine, expectedOutput, inputTemplate, mergeValues, ignoreWhitespace );
+                    AssertTemplateOutput( engine, expectedOutput, inputTemplate, parameters, ignoreWhitespace );
                 }
                 catch ( Exception ex )
                 {
@@ -266,6 +331,18 @@ namespace Rock.Tests.UnitTests.Lava
             {
                 throw new AggregateException( "At least one engine reported errors.", exceptions );
             }
+        }
+
+        /// <summary>
+        /// For each of the currently enabled Lava Engines, process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaDataDictionary mergeValues = null, bool ignoreWhitespace = false )
+        {
+            var parameters = LavaRenderParameters.WithContext( LavaRenderContext.FromMergeValues( mergeValues ) );
+
+            AssertTemplateOutput( expectedOutput, inputTemplate, parameters, ignoreWhitespace );
         }
 
         /// <summary>
@@ -345,13 +422,25 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
-        /// For each of the currently enabled Lava Engines, process the specified input template and verify against the expected output.
+        /// Process the specified input template and verify against the expected output.
         /// </summary>
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( ILavaEngine engine, string expectedOutput, string inputTemplate, LavaDataDictionary mergeValues = null, bool ignoreWhitespace = false )
         {
-            var outputString = GetTemplateOutput( engine, inputTemplate, mergeValues );
+            var context = engine.NewRenderContext( mergeValues );
+
+            AssertTemplateOutput( engine, expectedOutput, inputTemplate, LavaRenderParameters.WithContext( context ), ignoreWhitespace );
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( ILavaEngine engine, string expectedOutput, string inputTemplate, LavaRenderParameters renderParameters, bool ignoreWhitespace = false )
+        {
+            var outputString = GetTemplateOutput( engine, inputTemplate, renderParameters );
 
             var debugString = outputString;
 
@@ -456,13 +545,30 @@ namespace Rock.Tests.UnitTests.Lava
 
             Assert.That.IsNotNull( outputDateUtc, $"Template Output does not represent a valid DateTime. [Output=\"{ outputString }\"]" );
 
-            if ( maximumDelta != null )
+            try
             {
-                DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc, maximumDelta.Value );
+                if ( maximumDelta != null )
+                {
+                    DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc, maximumDelta.Value );
+                }
+                else
+                {
+                    DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc );
+                }
             }
-            else
+            catch ( Exception ex )
             {
-                DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc );
+                var info = $@"
+Test Environment:
+LavaEngine = { engine.EngineName },
+LocalDateTime = {DateTimeOffset.Now},
+LocalTimeZoneName = {TimeZoneInfo.Local.DisplayName},
+LocalTimeZoneOffset = { TimeZoneInfo.Local.BaseUtcOffset }
+RockDateTime = { LavaDateTime.NowOffset },
+RockTimeZoneName = { RockDateTime.OrgTimeZoneInfo.DisplayName },
+RockTimeZoneOffset = { RockDateTime.OrgTimeZoneInfo.BaseUtcOffset }
+";
+                throw new Exception( $"Lava Date/Time test failed.\n{ info }", ex );
             }
         }
 

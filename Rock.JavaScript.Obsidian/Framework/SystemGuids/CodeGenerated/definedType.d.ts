@@ -43,7 +43,11 @@ export const enum DefinedType {
     /** The domains that are safe to send from */
     CommunicationSafeSenderDomains = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED",
     /** The list of values that SMS messages can be sent from.  Depending on provider, these may
-be phone numbers or short codes */
+be phone numbers or short codes.
+
+The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
+
+The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'. */
     CommunicationSmsFrom = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE",
     /** The list of phone country code formats and how to format their numbers  */
     CommunicationPhoneCountryCode = "45E9EF7C-91C7-45AB-92C1-1D6219293847",
@@ -51,6 +55,8 @@ be phone numbers or short codes */
     ContentChannelAudienceType = "799301A3-2026-4977-994E-45DC68502559",
     /** Guid for check-in search type */
     CheckinSearchType = "1EBCDB30-A89A-4C14-8580-8289EC2C7742",
+    /** Guid for data automation ignored person attributes */
+    DataAutomationIgnoredPersonAttributes = "886CDB4E-ED8B-48DD-A4CC-D615E032E622",
     /** Guid for Device Type */
     DeviceType = "0368B637-327A-4F5E-80C2-832079E482EE",
     /** Guid for the DISC Results of personalities. */
@@ -141,8 +147,6 @@ be phone numbers or short codes */
     PowerbiAccounts = "497DE3E6-66BD-D4A1-4A41-78A2FED2D0DF",
     /** Protect My Ministry MVR jurisdiction codes */
     ProtectMyMinistryMvrJurisdictionCodes = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D",
-    /** Protect My Ministry background package types */
-    ProtectMyMinistryPackages = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF",
     /** Template Block */
     TemplateBlock = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183",
     /** Template */

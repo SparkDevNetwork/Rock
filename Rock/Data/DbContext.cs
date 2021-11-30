@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
@@ -28,7 +29,6 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
-using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
 
@@ -72,6 +72,12 @@ namespace Rock.Data
         /// </summary>
         /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
         public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
+
+        /// <inheritdoc />
+        internal protected DbContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
+            base( objectContext, dbContextOwnsObjectContext )
+        {
+        }
 
         /// <summary>
         /// Gets any error messages that occurred during a SaveChanges
@@ -169,7 +175,7 @@ namespace Rock.Data
         /// the Pre and Post processing from being run. This should only be disabled
         /// when updating a large number of records at a time (e.g. importing records).</param>
         /// <returns></returns>
-        public int SaveChanges( bool disablePrePostProcessing )
+        public virtual int SaveChanges( bool disablePrePostProcessing )
         {
             var result = SaveChanges( new SaveChangesArgs
             {
@@ -187,7 +193,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="args">Arguments determining behavior of the save.</param>
         /// <returns></returns>
-        public SaveChangesResult SaveChanges( SaveChangesArgs args )
+        public virtual SaveChangesResult SaveChanges( SaveChangesArgs args )
         {
             var saveChangesResult = new SaveChangesResult();
 

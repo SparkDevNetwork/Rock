@@ -14,7 +14,7 @@
         <div class="panel-body">
 
             <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-            <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
+            <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Validation" Visible="false" />
 
             <div id="pnlEditDetails" runat="server">
 

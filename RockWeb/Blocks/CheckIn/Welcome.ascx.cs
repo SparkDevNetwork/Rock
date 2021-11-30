@@ -205,6 +205,8 @@ namespace RockWeb.Blocks.CheckIn
             // ZebraPrint is needed for client side label re-printing.
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
 
+            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/html5-qrcode.min.js" );
+
             if ( CurrentCheckInState == null )
             {
                 NavigateToPreviousPage();
@@ -214,10 +216,17 @@ namespace RockWeb.Blocks.CheckIn
             RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js" );
             RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
-            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            var bodyTag = this.Page.Master.FindControl( "body" ) as HtmlGenericControl;
             if ( bodyTag != null )
             {
-                bodyTag.AddCssClass( "checkin-welcome-bg" );
+                if ( CurrentCheckInState.Kiosk?.Device?.HasCamera == true )
+                {
+                    bodyTag.AddCssClass( "js-camera-available" );
+                }
+
+                var kioskType = CurrentCheckInState.Kiosk?.Device?.KioskType?.ConvertToString( false )?.ToLower();
+                var kioskTypeJsHook = $"js-kiosktype-{kioskType}";
+                bodyTag.AddCssClass( kioskTypeJsHook );
             }
         }
 
@@ -230,6 +239,7 @@ namespace RockWeb.Blocks.CheckIn
             base.OnLoad( e );
 
             hfLocalDeviceConfiguration.Value = this.LocalDeviceConfig.ToJson();
+            hfKioskType.Value = CurrentCheckInState?.Kiosk?.Device?.KioskType?.ConvertToString( false );
 
             if ( !Page.IsPostBack )
             {
@@ -446,13 +456,20 @@ namespace RockWeb.Blocks.CheckIn
             //
             // Include the camera button if it is enabled and the device supports it.
             //
-            var blockCameraMode = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration ).ConvertToEnum<CameraBarcodeConfiguration>( CameraBarcodeConfiguration.Available );
-            var deviceHasCamera = CurrentCheckInState.Kiosk.Device.HasCamera;
-            var cameraMode = CurrentCheckInState.Kiosk.Device.CameraBarcodeConfigurationType ?? blockCameraMode;
-            cameraMode = deviceHasCamera ? cameraMode : CameraBarcodeConfiguration.Off;
+            var blockIPadCameraMode = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration ).ConvertToEnum<CameraBarcodeConfiguration>( CameraBarcodeConfiguration.Available );
+            var device = CurrentCheckInState.Kiosk.Device;
+            var deviceHasCamera = device.HasCamera;
+            var iPadCameraMode = device.CameraBarcodeConfigurationType ?? blockIPadCameraMode;
+            var isNotIPad = ( device?.KioskType != KioskType.IPad );
 
-            hfCameraMode.Value = cameraMode.ToString();
-            if ( pnlActive.Visible && cameraMode != CameraBarcodeConfiguration.Off )
+            bool html5CameraIsEnabled = device.HasCamera && device.KioskType.HasValue && device?.KioskType != KioskType.IPad && this.CurrentThemeSupportsHTML5Camera();
+            if ( html5CameraIsEnabled || isNotIPad || !deviceHasCamera )
+            {
+                iPadCameraMode = CameraBarcodeConfiguration.Off;
+            }
+
+            hfIPadCameraMode.Value = iPadCameraMode.ToString();
+            if ( pnlActive.Visible && ( html5CameraIsEnabled || iPadCameraMode != CameraBarcodeConfiguration.Off ) )
             {
                 var scanButtonText = GetAttributeValue( AttributeKey.ScanButtonText );
                 if ( scanButtonText.IsNullOrWhiteSpace() )

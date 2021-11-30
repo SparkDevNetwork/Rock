@@ -25,8 +25,8 @@ export const enum ConfigurationValueKey {
     DisplayDescription = "displaydescription",
     EnhancedSelection = "enhancedselection",
     IncludeInactive = "includeInactive",
-    AllowAddingNewValues = "allowAddingNewValues",
-    RepeatColumns = "repeatColumns"
+    AllowAddingNewValues = "AllowAddingNewValues",
+    RepeatColumns = "RepeatColumns"
 }
 
 export type ValueItem = {

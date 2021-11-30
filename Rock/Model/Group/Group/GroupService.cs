@@ -21,8 +21,10 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Text;
+
 using Rock.Data;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -84,13 +86,21 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> by their IsSecurityRole flag.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> by their IsSecurityRole flag. This is the same as calling
+        /// <seealso cref="GroupServiceExtensions.IsSecurityRoleOrSecurityRoleGroupType" /> or <seealso cref="GroupServiceExtensions.IsNotSecurityRoleOrSecurityRoleGroupType" />
         /// </summary>
         /// <param name="isSecurityRole">A <see cref="System.Boolean"/> representing the IsSecurityRole flag value to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that contains a IsSecurityRole flag that matches the provided value.</returns>
         public IQueryable<Group> GetByIsSecurityRole( bool isSecurityRole )
         {
-            return Queryable().Where( t => t.IsSecurityRole == isSecurityRole );
+            if ( isSecurityRole )
+            {
+                return Queryable().IsSecurityRoleOrSecurityRoleGroupType();
+            }
+            else
+            {
+                return Queryable().IsNotSecurityRoleOrSecurityRoleGroupType();
+            }
         }
 
         /// <summary>
@@ -462,7 +472,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
         /// </returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need" )]
+        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need", true )]
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
             return GetAllDescendentGroups( parentGroupId, true );
@@ -864,6 +874,225 @@ namespace Rock.Model
         }
 
         #endregion Group Requirement Queries
+
+        /// <summary>
+        /// Calculates the family salutation.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="calculateFamilySalutationArgs">The calculate family salutation arguments.</param>
+        /// <returns>
+        /// string.
+        /// </returns>
+        public static string CalculateFamilySalutation( Group group, Person.CalculateFamilySalutationArgs calculateFamilySalutationArgs )
+        {
+            calculateFamilySalutationArgs = calculateFamilySalutationArgs ?? new Person.CalculateFamilySalutationArgs( false );
+            var _familyType = GroupTypeCache.GetFamilyGroupType();
+            var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
+            var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+
+            var finalSeparator = calculateFamilySalutationArgs.FinalSeparator;
+            var separator = calculateFamilySalutationArgs.Separator;
+            var includeInactive = calculateFamilySalutationArgs.IncludeInactive;
+            var includeChildren = calculateFamilySalutationArgs.IncludeChildren;
+            var useFormalNames = calculateFamilySalutationArgs.UseFormalNames;
+            var limitToPersonIds = calculateFamilySalutationArgs.LimitToPersonIds;
+
+            // clean up the separators
+            finalSeparator = $" {finalSeparator} "; // add spaces before and after
+            if ( separator == "," )
+            {
+                separator = $"{separator} "; // add space after
+            }
+            else
+            {
+                separator = $" {separator} "; // add spaces before and after
+            }
+
+            List<string> familyMemberNames = new List<string>();
+            string primaryLastName = string.Empty;
+
+            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext );
+            var groupId = group.Id;
+
+            var familyMembersQry = groupMemberService.Queryable( false ).Where( a => a.GroupId == groupId );
+
+            if ( limitToPersonIds != null && limitToPersonIds.Length > 0 )
+            {
+                familyMembersQry = familyMembersQry.Where( m => limitToPersonIds.Contains( m.PersonId ) );
+            }
+
+            // just in case there are no active members of the family, have this query ready
+            var familyMembersQryIncludeInactive = familyMembersQry;
+
+            // Filter for inactive.
+            if ( !includeInactive )
+            {
+                var activeRecordStatusId = DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                if ( activeRecordStatusId.HasValue )
+                {
+                    familyMembersQry = familyMembersQry.Where( f => f.Person.RecordStatusValueId.HasValue && f.Person.RecordStatusValueId.Value == activeRecordStatusId.Value );
+                }
+            }
+
+            // just in case there are no Adults, have this query ready
+            var familyMembersIncludingChildrenQry = familyMembersQry;
+
+            // Filter out kids if not needed.
+            if ( !includeChildren )
+            {
+                familyMembersQry = familyMembersQry.Where( f => f.GroupRoleId == _adultRole.Id );
+            }
+
+            var familyMembersList = familyMembersQry.Select( s => new
+            {
+                LastName = s.Person.LastName,
+                NickName = s.Person.NickName,
+                FirstName = s.Person.FirstName,
+                Gender = s.Person.Gender,
+                s.Person.BirthDate,
+                GroupRoleId = s.GroupRoleId
+            } ).ToList();
+
+            //  There are a couple of cases where there would be no familyMembers
+            // 1) There are no adults in the family, and includeChildren=false .
+            // 2) All the members of the family are deceased/inactive.
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
+            if ( !familyMembersList.Any() )
+            {
+                familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
+                {
+                    LastName = s.Person.LastName,
+                    NickName = s.Person.NickName,
+                    FirstName = s.Person.FirstName,
+                    Gender = s.Person.Gender,
+                    s.Person.BirthDate,
+                    GroupRoleId = s.GroupRoleId
+                } ).ToList();
+
+                if ( !familyMembersList.Any() )
+                {
+                    // no active adults or children, so see if there is at least one member of the family, regardless active status
+                    familyMembersList = familyMembersQryIncludeInactive.Select( s => new
+                    {
+                        LastName = s.Person.LastName,
+                        NickName = s.Person.NickName,
+                        FirstName = s.Person.FirstName,
+                        Gender = s.Person.Gender,
+                        s.Person.BirthDate,
+                        GroupRoleId = s.GroupRoleId
+                    } ).ToList();
+                }
+
+                if ( !familyMembersList.Any() )
+                {
+                    // This should only happen if all members of the family are deceased.
+                    return group.Name;
+                }
+            }
+
+            // Determine if more than one last name is at play.
+            var multipleLastNamesExist = familyMembersList.Select( f => f.LastName ).Distinct().Count() > 1;
+
+            // Add adults and children separately as adults need to be sorted by gender and children by age.
+
+            // Adults:
+            var adults = familyMembersList.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Gender );
+
+            if ( adults.Count() > 0 )
+            {
+                primaryLastName = adults.First().LastName;
+
+                foreach ( var adult in adults )
+                {
+                    var firstName = adult.NickName;
+
+                    if ( useFormalNames )
+                    {
+                        firstName = adult.FirstName;
+                    }
+
+                    if ( !multipleLastNamesExist )
+                    {
+                        familyMemberNames.Add( firstName );
+                    }
+                    else
+                    {
+                        familyMemberNames.Add( $"{firstName} {adult.LastName}" );
+                    }
+                }
+            }
+
+            // Children:
+            if ( includeChildren || !adults.Any() )
+            {
+                var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
+
+                if ( children.Count() > 0 )
+                {
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().LastName;
+                    }
+
+                    foreach ( var child in children )
+                    {
+                        var firstName = child.NickName;
+
+                        if ( useFormalNames )
+                        {
+                            firstName = child.FirstName;
+                        }
+
+                        if ( !multipleLastNamesExist )
+                        {
+                            familyMemberNames.Add( firstName );
+                        }
+                        else
+                        {
+                            familyMemberNames.Add( $"{firstName} {child.LastName}" );
+                        }
+                    }
+                }
+            }
+
+            var familySalutation = string.Join( separator, familyMemberNames ).ReplaceLastOccurrence( separator, finalSeparator );
+
+            if ( !multipleLastNamesExist )
+            {
+                familySalutation = familySalutation + " " + primaryLastName;
+            }
+
+            return familySalutation;
+        }
+
+        /// <summary>
+        /// Updates the family's Group Solution fields and <see cref="Data.DbContext.SaveChanges()">saves changes</see> to the database.
+        /// Returns true if any changes were made.
+        /// See <seealso cref="Group.GroupSalutation" /> and <seealso cref="Group.GroupSalutationFull" />
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// System.Int32.
+        /// </returns>
+        public static bool UpdateGroupSalutations( int groupId, RockContext rockContext )
+        {
+            var group = new GroupService( rockContext ).Get( groupId );
+            var groupSalutation = GroupService.CalculateFamilySalutation( group, new Person.CalculateFamilySalutationArgs( false ) { RockContext = rockContext } ).Truncate( 250 );
+            var groupSalutationFull = GroupService.CalculateFamilySalutation( group, new Person.CalculateFamilySalutationArgs( true ) { RockContext = rockContext } ).Truncate( 250 );
+            if ( ( group.GroupSalutation != groupSalutation ) || ( group.GroupSalutationFull != groupSalutationFull ) )
+            {
+                group.GroupSalutation = groupSalutation;
+                group.GroupSalutationFull = groupSalutationFull;
+                group.ModifiedDateTime = RockDateTime.Now;
+
+                // save changes without pre/post processing so we don't get stuck in recursion
+                rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+                return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Saves the new family to the database
@@ -1381,7 +1610,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
-        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", false )]
+        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", true )]
         [RockObsolete( "1.9" )]
         public bool AllowsDuplicateMembers( Group group )
         {
@@ -1459,7 +1688,7 @@ namespace Rock.Model
         /// <param name="members">The members.</param>
         /// <param name="selector">The selector.</param>
         /// <returns></returns>
-        public static TResult GetHeadOfHousehold<TResult>( this IQueryable<GroupMember> members,System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
+        public static TResult GetHeadOfHousehold<TResult>( this IQueryable<GroupMember> members, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
         {
             return members
                 .OrderBy( m => m.GroupRole.Order )
@@ -1512,6 +1741,26 @@ namespace Rock.Model
                     .Where( g => g.Members.Any( m =>
                                     m.GroupMemberStatus == GroupMemberStatus.Active &&
                                     m.GroupRole.IsLeader ) );
+        }
+
+        /// <summary>
+        /// Returns a queryable of groups that are Security role based on either <see cref="Group.IsSecurityRole" />
+        /// or if <see cref="Group.GroupTypeId"/> is the Security Role Group Type.
+        /// </summary>
+        public static IQueryable<Group> IsSecurityRoleOrSecurityRoleGroupType( this IQueryable<Group> groupQuery )
+        {
+            var groupTypeIdSecurityRole = GroupTypeCache.GetSecurityRoleGroupType()?.Id ?? 0;
+            return groupQuery.Where( g => g.IsSecurityRole || g.GroupTypeId == groupTypeIdSecurityRole );
+        }
+
+        /// <summary>
+        /// Returns a queryable of groups that are not Security role based on either <see cref="Group.IsSecurityRole" />
+        /// or if <see cref="Group.GroupTypeId"/> is the Security Role Group Type.
+        /// </summary>
+        public static IQueryable<Group> IsNotSecurityRoleOrSecurityRoleGroupType( this IQueryable<Group> groupQuery )
+        {
+            var groupTypeIdSecurityRole = GroupTypeCache.GetSecurityRoleGroupType()?.Id ?? 0;
+            return groupQuery.Where( g => !g.IsSecurityRole && g.GroupTypeId != groupTypeIdSecurityRole );
         }
 
         /// <summary>

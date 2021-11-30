@@ -35,6 +35,13 @@ namespace Rock.Lava.Fluid
         public FluidRenderContext( TemplateContext context )
         {
             _context = context;
+
+            // By default, built-in keywords are case-sensitive.
+            // For ease of use, add these upper/lower case entries.
+            _context.SetValue( "Blank", BlankValue.Instance );
+            _context.SetValue( "blank", BlankValue.Instance );
+            _context.SetValue( "Empty", EmptyValue.Instance );
+            _context.SetValue( "empty", EmptyValue.Instance );
         }
 
         #endregion
@@ -126,7 +133,13 @@ namespace Rock.Lava.Fluid
         {
             var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
 
-            var dictionary = new LavaDataDictionary( this.GetScopeAggregatedValues( localScope ) );
+            var dictionary = new LavaDataDictionary( GetScopeAggregatedValues( localScope ) );
+
+            // Remove fields that were added for internal use.
+            dictionary.Remove( "Blank" );
+            dictionary.Remove( "blank" );
+            dictionary.Remove( "Empty" );
+            dictionary.Remove( "empty" );
 
             return dictionary;
         }
@@ -229,7 +242,7 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         private Dictionary<string, object> GetScopeAggregatedValues( Scope scope )
         {
-            var dictionary = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+            var dictionary = new Dictionary<string, object>();
 
             while ( scope != null )
             {
@@ -253,22 +266,11 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         private Dictionary<string, object> GetScopeDefinedValues( Scope scope )
         {
-            var dictionary = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+            var dictionary = new Dictionary<string, object>();
 
-            // Fluid does not provide access to the key collection for the scope, so we need to use Reflection to get the underlying dictionary.
-            var propertiesField = scope.GetType().GetField( "_properties", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
-
-            if ( propertiesField != null )
+            foreach ( var key in scope.Properties )
             {
-                var properties = propertiesField.GetValue( scope ) as Dictionary<string, FluidValue>;
-
-                if ( properties != null )
-                {
-                    foreach ( var key in properties.Keys )
-                    {
-                        dictionary.AddOrReplace( key, properties[key].ToRealObjectValue() );
-                    }
-                }
+                dictionary.AddOrReplace( key, scope.GetValue( key ).ToRealObjectValue() );
             }
 
             return dictionary;

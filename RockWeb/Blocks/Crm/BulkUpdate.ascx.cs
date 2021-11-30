@@ -2470,21 +2470,11 @@ namespace RockWeb.Blocks.Crm
                         int? intValue = value.AsIntegerOrNull();
                         if ( intValue.HasValue )
                         {
-                            var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                             // Queue a transaction to launch workflow
-                            var msg = new LaunchWorkflows.Message
-                            {
-                                WorkflowTypeId = intValue.Value,
-                                InitiatorPersonAliasId = _currentPersonAliasId
-                            };
-                            msg.WorkflowDetails = people
-                                .Select( p => new LaunchWorkflows.WorkflowDetail
-                                {
-                                    EntityId = p.Id,
-                                    EntityTypeId = p.TypeId
-                                } ).ToList();
-
-                            msg.Send();
+                            var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
+                            var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
+                            launchWorkflowsTxn.InitiatorPersonAliasId = _currentPersonAliasId;
+                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                         }
                     }
                 }

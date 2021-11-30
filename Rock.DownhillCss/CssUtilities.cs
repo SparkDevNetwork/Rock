@@ -1061,6 +1061,54 @@ icon {
     background-color: transparent;
 }
 
+.btn.btn-link-secondary {
+    color: ?color-secondary;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-success {
+    color: ?color-success;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-danger {
+    color: ?color-danger;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-warning {
+    color: ?color-warning;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-info {
+    color: ?color-info;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-light {
+    color: ?color-text;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-dark {
+    color: ?color-dark;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-brand {
+    color: ?color-brand;
+    border-width: 0;
+    background-color: transparent;
+}
+
 .btn.btn-outline-primary {
     color: ?color-primary;
     border-color: ?color-primary;
@@ -1533,6 +1581,300 @@ formfield .required-indicator {
 /* RadioButton */
 ^radiobutton {
   color: ?color-text;
+}
+
+
+/*** Prayer Card Block ***/
+.prayer-card-container {
+    border-color: #a6a6a6;
+    border-radius: 0;
+    padding: 12 24;
+    margin: 0 0 18 0;
+}
+
+.prayer-card-container .prayer-card-name {
+    font-size: ?shell-font-scale(24);
+    font-style: bold;
+    color: #1d1d1d;
+}
+
+.prayer-card-container .prayer-card-category {
+    background-color: #009ce3;
+    padding: 5;
+}
+    .prayer-card-container .prayer-card-category Label {
+        font-size: ?shell-font-scale(12);
+        color: #ffffff;
+    }
+
+.prayer-card-container .prayer-card-text {
+    margin: 12 0 0 0;
+}
+
+
+/*** Group Finder Block ***/
+.group-finder-container {
+    -xf-spacing: 0;
+}
+
+.group-finder-container .group-finder-search-button {
+    margin: 0 0 30 0;
+}
+
+.group-finder-container .group-finder-filter-button {
+    padding: 4 12;
+    background-color: #f5f5f5;
+    color: #767676;
+    border-color: #b9b9b9;
+    border-width: 1;
+    border-radius: 4;
+}
+
+.group-finder-container .group-finder-filter-button.active {
+    background-color: #007acc;
+    color: #fff;
+}
+
+.group-finder-container .group-primary-content {
+    -xf-spacing: 3;
+}
+
+.group-finder-container .group-meeting-day {
+    color: #007aff;
+}
+
+.group-finder-container .group-name {
+    font-size: ?shell-font-scale(24);
+    font-style: bold;
+    color: #1d1d1d;
+}
+
+.group-finder-container .group-meeting-time {
+    color: #999999;
+}
+
+.group-finder-container .group-topic {
+    color: #999999;
+}
+
+.group-finder-container .group-distance {
+    color: #999999;
+}
+
+.group-finder-container .group-more-icon {
+    color: #999999;
+}
+
+
+/*** Connection Type List block ***/
+.connection-type-list-layout .connection-type {
+    border-color: #e7e7e7;
+    border-radius: ?radius-base;
+    padding: 12;
+    margin: 0, 0, 0, 12;
+}
+
+.connection-type-list-layout .connection-type-icon {
+    font-size: 36;
+    margin: 0, 0, 10, 0;
+}
+
+.connection-type-list-layout .connection-type-name {
+    font-style: bold;
+}
+
+
+
+
+/*** Connection Opportunity List block ***/
+.connection-opportunity-list-layout .connection-opportunities {
+    margin: 0, 12, 0, 0;
+}
+
+.connection-opportunity-list-layout .connection-opportunity {
+    border-color: #e7e7e7;
+    border-radius: ?radius-base;
+    padding: 12;
+    margin: 0, 0, 0, 12;
+}
+
+.connection-opportunity-list-layout .connection-opportunity-icon {
+    font-size: 36;
+    margin: 0, 0, 10, 0;
+}
+
+.connection-opportunity-list-layout .connection-opportunity-name {
+    font-style: bold;
+}
+
+.connection-opportunity-list-layout .filter-button {
+    padding: 4 12;
+    background-color: #f5f5f5;
+    color: #767676;
+    border-color: #b9b9b9;
+    border-width: 1;
+    border-radius: 4;
+}
+
+.connection-opportunity-list-layout .filter-button.active {
+    background-color: #007acc;
+    color: #fff;
+}
+
+
+/*** Connection Request List block ***/
+.connection-request-list-layout .connection-requests {
+    margin: 0, 12, 0, 0;
+}
+
+.connection-request-list-layout .connection-request {
+    border-color: #e7e7e7;
+    border-radius: ?radius-base;
+    padding: 12;
+    margin: 0, 0, 0, 12;
+}
+
+.connection-request-list-layout .connection-request-image {
+    width: 35;
+    margin: 0, 0, 10, 0;
+}
+
+.connection-request-list-layout .connection-request-name {
+    font-style: bold;
+}
+
+.connection-request-list-layout .connection-request-date {
+    font-size: ?shell-font-scale(12);
+}
+
+.connection-request-list-layout .filter-button {
+    padding: 4 12;
+    background-color: #f5f5f5;
+    color: #767676;
+    border-color: #b9b9b9;
+    border-width: 1;
+    border-radius: 4;
+}
+
+.connection-request-list-layout .filter-button.active {
+    background-color: #007acc;
+    color: #fff;
+}
+
+/*** Connection Request Detail Block ***/
+.connection-request-detail-content {
+    -xf-spacing: 0;
+}
+
+.connection-request-detail-content .status-pill-layout {
+    margin: 0, 0, 0, 20;
+}
+
+.connection-request-detail-content .status-pill-layout ^tag {
+    margin: 0, 0, 6, 0;
+}
+
+.connection-request-detail-content .person-photo {
+    width: 80;
+    height: 80;
+    margin: 0, 0, 12, 0;
+}
+
+.connection-request-detail-content .person-name {
+    font-style: bold;
+    font-size: 22;
+}
+
+.connection-request-detail-content .person-detail {
+    margin: 0, 0, 0, 20;
+}
+
+.connection-request-detail-content .person-contact-buttons {
+    margin: 0, 8, 0, 0;
+}
+
+.connection-request-detail-content .contact-button {
+    border-radius: 6;
+    width: 50;
+    background-color: #e3e3e3;
+    padding: 4;
+}
+
+.connection-request-detail-content .contact-button-icon {
+    font-size: 14;
+}
+
+.connection-request-detail-content .contact-button-text {
+    font-size: 11;
+}
+
+.connection-request-detail-content .request-details {
+    margin: 0, 0, 0, 0;
+}
+
+.connection-request-detail-content .request-attributes {
+}
+
+.connection-request-detail-content .workflow-actions {
+    margin: 0, 0, 0, 4;
+}
+
+.connection-request-detail-content .workflow-action-button {
+    font-size: 12;
+    color: ?color-text;
+    padding: 12, 0, 12, 0;
+    margin: 0, 0, 8, 8;
+    height: 24;
+    border-width: 1;
+    border-radius: 12;
+    border-color: #999999;
+    background-color: transparent;
+}
+
+.connection-request-detail-content .group-requirements {
+    margin: 0, 0, 0, 0;
+}
+
+.connection-request-detail-content .group-manual-requirement {
+    margin: 0, 0, 0, 8;
+}
+
+.connection-request-detail-content .request-activities > ^Divider {
+    margin: 0, 12, 0, 0;
+}
+
+.connection-request-detail-content .request-activities > .title {
+    margin: 0, 6, 0, 6;
+}
+
+.connection-request-detail-content .request-activity {
+    border-color: #e7e7e7;
+    border-radius: ?radius-base;
+    padding: 12;
+    margin: 0, 0, 0, 12;
+}
+
+.connection-request-detail-content .request-activity.related-activity {
+    background-color: #e0e0e0;
+    opacity: 0.7;
+}
+
+.connection-request-detail-content .activity-image {
+    width: 35;
+}
+
+.connection-request-detail-content .activity-connector-name {
+    font-style: bold;
+}
+
+.connection-request-detail-content .activity-date {
+    font-size: ?shell-font-scale(12);
+}
+
+
+/*** Group Member Edit block ***/
+.group-member-edit-layout .save-button {
+    margin: 0, 24, 0, 0;
 }
 ";
         #endregion

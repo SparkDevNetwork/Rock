@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -89,7 +90,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.SCHEDULED_TRANSACTION,
         Order = 7 )]
-    public partial class GivingConfiguration : Rock.Web.UI.PersonBlock
+    public partial class GivingConfiguration : Rock.Web.UI.PersonBlock, ISecondaryBlock
     {
         #region Attribute Keys
 
@@ -135,10 +136,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var addTransactionPage = new Rock.Web.PageReference( this.GetAttributeValue( AttributeKey.AddTransactionPage ) );
             if ( addTransactionPage != null )
             {
+                if ( !this.Person.IsPersonTokenUsageAllowed() )
+                { 
+                    mdWarningAlert.Show( $"Due to their protection profile level you cannot add a transaction on behalf of this person.", ModalAlertType.Warning );
+                    return;
+                }
+
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addTransactionPage.PageId );
-                addTransactionPage.QueryString["Person"] = personKey;
-                Response.Redirect( addTransactionPage.BuildUrl() );
+                var personKey = this.Person.GetImpersonationToken(
+                        RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ),
+                        this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(),
+                        addTransactionPage.PageId );
+
+                if ( personKey.IsNotNullOrWhiteSpace() )
+                {
+                    addTransactionPage.QueryString["Person"] = personKey;
+                    Response.Redirect( addTransactionPage.BuildUrl() );
+                }
             }
         }
 
@@ -174,7 +188,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             lPledgeAccountName.Text = financialPledge.Account?.Name;
             lPledgeTotalAmount.Text = financialPledge.TotalAmount.FormatAsCurrency();
-            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ): string.Empty;
+            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ) : string.Empty;
             btnPledgeEdit.CommandArgument = financialPledge.Guid.ToString();
             btnPledgeDelete.CommandArgument = financialPledge.Guid.ToString();
 
@@ -222,7 +236,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
             btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
-            
+
 
             if ( financialScheduledTransaction.IsActive )
             {
@@ -243,6 +257,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var lScheduledTransactionExpiration = e.Item.FindControl( "lScheduledTransactionExpiration" ) as Literal;
             var lScheduledTransactionSavedAccountName = e.Item.FindControl( "lScheduledTransactionSavedAccountName" ) as Literal;
             var lScheduledTransactionStatusHtml = e.Item.FindControl( "lScheduledTransactionStatusHtml" ) as Literal;
+            var pnlCreditCardInfo = e.Item.FindControl( "pnlScheduledTransactionCreditCardInfo" ) as Panel;
+            var lOtherCurrencyTypeInfo = e.Item.FindControl( "lScheduledTransactionOtherCurrencyTypeInfo" ) as Literal;
 
             string creditCardType = null;
             string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
@@ -251,17 +267,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 creditCardType = DefinedValueCache.GetValue( financialPaymentDetail.CreditCardTypeValueId.Value );
             }
 
-            if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+            var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+
+
+            if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
-                var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
-                lScheduledTransactionCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                pnlCreditCardInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Visible = false;
+                if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+                {
+                    var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
+                    lScheduledTransactionCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                }
+                else
+                {
+                    lScheduledTransactionCardTypeLast4.Text = creditCardType;
+                }
+
+                lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
             }
             else
             {
-                lScheduledTransactionCardTypeLast4.Text = creditCardType;
+                pnlCreditCardInfo.Visible = false;
+                lOtherCurrencyTypeInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Text = financialPaymentDetail?.CurrencyTypeValue?.Value;
             }
-
-            lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
 
             if ( financialPaymentDetail?.FinancialPersonSavedAccount != null )
             {
@@ -311,7 +341,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( lScheduledTransactionTotalAmount != null )
             {
-                lScheduledTransactionTotalAmount.Text = financialScheduledTransaction.TotalAmount.FormatAsCurrency();
+                lScheduledTransactionTotalAmount.Text = financialScheduledTransaction.TotalAmount.FormatAsCurrency( financialScheduledTransaction.ForeignCurrencyCodeValueId );
             }
         }
 
@@ -376,7 +406,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string errorMessage;
                 if ( !financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out errorMessage ) )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    mdWarningAlert.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
@@ -401,6 +431,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             var lSavedAccountName = e.Item.FindControl( "lSavedAccountName" ) as Literal;
+
+            var pnlCreditCardInfo = e.Item.FindControl( "pnlSavedAccountCreditCardInfo" ) as Panel;
+            var lOtherCurrencyTypeInfo = e.Item.FindControl( "lSavedAccountOtherCurrencyTypeInfo" ) as Literal;
+
             var lSavedAccountCardTypeLast4 = e.Item.FindControl( "lSavedAccountCardTypeLast4" ) as Literal;
             var lSavedAccountExpiration = e.Item.FindControl( "lSavedAccountExpiration" ) as Literal;
             var lSavedAccountInUseStatusHtml = e.Item.FindControl( "lSavedAccountInUseStatusHtml" ) as Literal;
@@ -416,25 +450,41 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 creditCardType = DefinedValueCache.GetValue( financialPaymentDetail.CreditCardTypeValueId.Value );
             }
 
-            if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+            var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+
+            if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
-                var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
-                lSavedAccountCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                pnlCreditCardInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Visible = false;
+
+                if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+                {
+                    var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
+                    lSavedAccountCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                }
+                else
+                {
+                    lSavedAccountCardTypeLast4.Text = creditCardType;
+                }
+
+                lSavedAccountExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
             }
             else
             {
-                lSavedAccountCardTypeLast4.Text = creditCardType;
+                pnlCreditCardInfo.Visible = false;
+                lOtherCurrencyTypeInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Text = financialPaymentDetail?.CurrencyTypeValue?.Value;
             }
-
-            lSavedAccountExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
 
             var cardIsExpired = financialPaymentDetail.CardExpirationDate.HasValue && financialPaymentDetail.CardExpirationDate.Value < RockDateTime.Now;
 
             var cardInUse = new FinancialScheduledTransactionService( new RockContext() ).Queryable().Where( a => a.FinancialPaymentDetailId.HasValue
+                && a.IsActive
                 && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.HasValue
                 && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.Value == financialPersonSavedAccount.Id ).Any();
 
             btnSavedAccountDelete.Visible = !cardInUse;
+            btnSavedAccountDelete.CommandArgument = financialPersonSavedAccount.Guid.ToString();
 
             if ( cardIsExpired )
             {
@@ -529,7 +579,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                mdWarningAlert.Show( errorMessage, ModalAlertType.Information );
             }
 
             ShowDetail();
@@ -609,7 +659,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( !pledgeService.CanDelete( pledge, out errorMessage ) )
             {
-                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                mdWarningAlert.Show( errorMessage, ModalAlertType.Information );
                 return;
             }
 
@@ -622,6 +672,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #endregion Base Control Methods
 
         #region Internal Methods
+
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
 
         /// <summary>
         /// Shows the detail.
@@ -652,7 +707,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
 
-            
+
 
             if ( Person.GivingGroupId.HasValue )
             {

@@ -105,6 +105,126 @@
     <Compile Include="Migrations\202109212253216_CodeGenerated_20210921.Designer.cs">
       <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202109292108441_RestoreDeletedAttributes.cs" />
+    <Compile Include="Migrations\202109292108441_RestoreDeletedAttributes.Designer.cs">
+      <DependentUpon>202109292108441_RestoreDeletedAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110011220239_UpdateWebProspectToProspect.cs" />
+    <Compile Include="Migrations\202110011220239_UpdateWebProspectToProspect.Designer.cs">
+      <DependentUpon>202110011220239_UpdateWebProspectToProspect.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110012332586_RemoveObsoleteV8Fields.cs" />
+    <Compile Include="Migrations\202110012332586_RemoveObsoleteV8Fields.Designer.cs">
+      <DependentUpon>202110012332586_RemoveObsoleteV8Fields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110021016356_AddConnectionStatusAutomation.cs" />
+    <Compile Include="Migrations\202110021016356_AddConnectionStatusAutomation.Designer.cs">
+      <DependentUpon>202110021016356_AddConnectionStatusAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.cs" />
+    <Compile Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.Designer.cs">
+      <DependentUpon>202110031055066_UpdateConnectionStatusAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110041858310_ElevatedPrivilege.cs" />
+    <Compile Include="Migrations\202110041858310_ElevatedPrivilege.Designer.cs">
+      <DependentUpon>202110041858310_ElevatedPrivilege.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110051957189_Rollup_20211005.cs" />
+    <Compile Include="Migrations\202110051957189_Rollup_20211005.Designer.cs">
+      <DependentUpon>202110051957189_Rollup_20211005.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110052025475_CodeGenerated_20211005.cs" />
+    <Compile Include="Migrations\202110052025475_CodeGenerated_20211005.Designer.cs">
+      <DependentUpon>202110052025475_CodeGenerated_20211005.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.cs" />
+    <Compile Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.Designer.cs">
+      <DependentUpon>202110062117275_MigrateFieldVisibilityRulesJSONData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110121721547_AddMaxWorkflowAgeDaysToWorkflowType.cs" />
+    <Compile Include="Migrations\202110121721547_AddMaxWorkflowAgeDaysToWorkflowType.Designer.cs">
+      <DependentUpon>202110121721547_AddMaxWorkflowAgeDaysToWorkflowType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110122244170_AddMobileGroupFinderBlock.cs" />
+    <Compile Include="Migrations\202110122244170_AddMobileGroupFinderBlock.Designer.cs">
+      <DependentUpon>202110122244170_AddMobileGroupFinderBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110131733017_UpdateRockMapTheme.cs" />
+    <Compile Include="Migrations\202110131733017_UpdateRockMapTheme.Designer.cs">
+      <DependentUpon>202110131733017_UpdateRockMapTheme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110150908214_UpdateConnectionRequestAutomation.cs" />
+    <Compile Include="Migrations\202110150908214_UpdateConnectionRequestAutomation.Designer.cs">
+      <DependentUpon>202110150908214_UpdateConnectionRequestAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110151452129_AddAuthAuditLog.cs" />
+    <Compile Include="Migrations\202110151452129_AddAuthAuditLog.Designer.cs">
+      <DependentUpon>202110151452129_AddAuthAuditLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110191808345_Rollup_20211019.cs" />
+    <Compile Include="Migrations\202110191808345_Rollup_20211019.Designer.cs">
+      <DependentUpon>202110191808345_Rollup_20211019.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110191825213_CodeGenerated_20211019.cs" />
+    <Compile Include="Migrations\202110191825213_CodeGenerated_20211019.Designer.cs">
+      <DependentUpon>202110191825213_CodeGenerated_20211019.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110210024023_FollowingEvent-IncludeNonPublicRequests.cs" />
+    <Compile Include="Migrations\202110210024023_FollowingEvent-IncludeNonPublicRequests.Designer.cs">
+      <DependentUpon>202110210024023_FollowingEvent-IncludeNonPublicRequests.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110261740212_UpdateBusinessDetailsPage.cs" />
+    <Compile Include="Migrations\202110261740212_UpdateBusinessDetailsPage.Designer.cs">
+      <DependentUpon>202110261740212_UpdateBusinessDetailsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110262138312_AddExpireDateToSmsAction.cs" />
+    <Compile Include="Migrations\202110262138312_AddExpireDateToSmsAction.Designer.cs">
+      <DependentUpon>202110262138312_AddExpireDateToSmsAction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110272222091_BusinessDetailsLayoutUpdate.cs" />
+    <Compile Include="Migrations\202110272222091_BusinessDetailsLayoutUpdate.Designer.cs">
+      <DependentUpon>202110272222091_BusinessDetailsLayoutUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110281648328_UpdateAuthAuditLog.cs" />
+    <Compile Include="Migrations\202110281648328_UpdateAuthAuditLog.Designer.cs">
+      <DependentUpon>202110281648328_UpdateAuthAuditLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110282124566_DeviceKioskType.cs" />
+    <Compile Include="Migrations\202110282124566_DeviceKioskType.Designer.cs">
+      <DependentUpon>202110282124566_DeviceKioskType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111011530328_RemoveMediaElementAnalyticsBlockTypes.cs" />
+    <Compile Include="Migrations\202111011530328_RemoveMediaElementAnalyticsBlockTypes.Designer.cs">
+      <DependentUpon>202111011530328_RemoveMediaElementAnalyticsBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111021845516_Rollup_20211102.cs" />
+    <Compile Include="Migrations\202111021845516_Rollup_20211102.Designer.cs">
+      <DependentUpon>202111021845516_Rollup_20211102.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111021951034_CodeGenerated_20211102.cs" />
+    <Compile Include="Migrations\202111021951034_CodeGenerated_20211102.Designer.cs">
+      <DependentUpon>202111021951034_CodeGenerated_20211102.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111052333470_AssessmentType_Description.cs" />
+    <Compile Include="Migrations\202111052333470_AssessmentType_Description.Designer.cs">
+      <DependentUpon>202111052333470_AssessmentType_Description.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111060046488_UpdateRegistrationTemplatePlacement.cs" />
+    <Compile Include="Migrations\202111060046488_UpdateRegistrationTemplatePlacement.Designer.cs">
+      <DependentUpon>202111060046488_UpdateRegistrationTemplatePlacement.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111101010388_AddEventItemOccurrenceNextStartDateTime.cs" />
+    <Compile Include="Migrations\202111101010388_AddEventItemOccurrenceNextStartDateTime.Designer.cs">
+      <DependentUpon>202111101010388_AddEventItemOccurrenceNextStartDateTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111161800030_Rollup_20211116.cs" />
+    <Compile Include="Migrations\202111161800030_Rollup_20211116.Designer.cs">
+      <DependentUpon>202111161800030_Rollup_20211116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111161901354_CodeGenerated_20211116.cs" />
+    <Compile Include="Migrations\202111161901354_CodeGenerated_20211116.Designer.cs">
+      <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -743,6 +863,96 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202109212253216_CodeGenerated_20210921.resx">
       <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109292108441_RestoreDeletedAttributes.resx">
+      <DependentUpon>202109292108441_RestoreDeletedAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110011220239_UpdateWebProspectToProspect.resx">
+      <DependentUpon>202110011220239_UpdateWebProspectToProspect.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110012332586_RemoveObsoleteV8Fields.resx">
+      <DependentUpon>202110012332586_RemoveObsoleteV8Fields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110021016356_AddConnectionStatusAutomation.resx">
+      <DependentUpon>202110021016356_AddConnectionStatusAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.resx">
+      <DependentUpon>202110031055066_UpdateConnectionStatusAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110041858310_ElevatedPrivilege.resx">
+      <DependentUpon>202110041858310_ElevatedPrivilege.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110051957189_Rollup_20211005.resx">
+      <DependentUpon>202110051957189_Rollup_20211005.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110052025475_CodeGenerated_20211005.resx">
+      <DependentUpon>202110052025475_CodeGenerated_20211005.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.resx">
+      <DependentUpon>202110062117275_MigrateFieldVisibilityRulesJSONData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110121721547_AddMaxWorkflowAgeDaysToWorkflowType.resx">
+      <DependentUpon>202110121721547_AddMaxWorkflowAgeDaysToWorkflowType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110122244170_AddMobileGroupFinderBlock.resx">
+      <DependentUpon>202110122244170_AddMobileGroupFinderBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110131733017_UpdateRockMapTheme.resx">
+      <DependentUpon>202110131733017_UpdateRockMapTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110150908214_UpdateConnectionRequestAutomation.resx">
+      <DependentUpon>202110150908214_UpdateConnectionRequestAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110151452129_AddAuthAuditLog.resx">
+      <DependentUpon>202110151452129_AddAuthAuditLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110191808345_Rollup_20211019.resx">
+      <DependentUpon>202110191808345_Rollup_20211019.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110191825213_CodeGenerated_20211019.resx">
+      <DependentUpon>202110191825213_CodeGenerated_20211019.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110210024023_FollowingEvent-IncludeNonPublicRequests.resx">
+      <DependentUpon>202110210024023_FollowingEvent-IncludeNonPublicRequests.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110261740212_UpdateBusinessDetailsPage.resx">
+      <DependentUpon>202110261740212_UpdateBusinessDetailsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110262138312_AddExpireDateToSmsAction.resx">
+      <DependentUpon>202110262138312_AddExpireDateToSmsAction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110272222091_BusinessDetailsLayoutUpdate.resx">
+      <DependentUpon>202110272222091_BusinessDetailsLayoutUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110281648328_UpdateAuthAuditLog.resx">
+      <DependentUpon>202110281648328_UpdateAuthAuditLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110282124566_DeviceKioskType.resx">
+      <DependentUpon>202110282124566_DeviceKioskType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111011530328_RemoveMediaElementAnalyticsBlockTypes.resx">
+      <DependentUpon>202111011530328_RemoveMediaElementAnalyticsBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111021845516_Rollup_20211102.resx">
+      <DependentUpon>202111021845516_Rollup_20211102.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111021951034_CodeGenerated_20211102.resx">
+      <DependentUpon>202111021951034_CodeGenerated_20211102.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111052333470_AssessmentType_Description.resx">
+      <DependentUpon>202111052333470_AssessmentType_Description.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111060046488_UpdateRegistrationTemplatePlacement.resx">
+      <DependentUpon>202111060046488_UpdateRegistrationTemplatePlacement.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111101010388_AddEventItemOccurrenceNextStartDateTime.resx">
+      <DependentUpon>202111101010388_AddEventItemOccurrenceNextStartDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111161800030_Rollup_20211116.resx">
+      <DependentUpon>202111161800030_Rollup_20211116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111161901354_CodeGenerated_20211116.resx">
+      <DependentUpon>202111161901354_CodeGenerated_20211116.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>

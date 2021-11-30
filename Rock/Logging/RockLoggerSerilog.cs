@@ -33,7 +33,7 @@ namespace Rock.Logging
     {
         private const string DEFAULT_DOMAIN = "OTHER";
         private DateTime _ConfigurationLastLoaded;
-        private ILogger _logger;
+        private ILogger _logger = null;
         private HashSet<string> _domains;
         private readonly string _rockLogDirectory;
         private readonly string _searchPattern;
@@ -86,10 +86,18 @@ namespace Rock.Logging
         /// </summary>
         public void Close()
         {
-            if ( _logger != null )
+            /* 
+                When reading log files, we have to Dispose to get all the buffered data to get flushed.
+                While we are waiting for the flush, we'll set the logger to Serilog.Core.Logger.None to help avoid
+                a threading issue (like trying to read and write from different threads at the exact same time).
+
+                The next WriteToLog will re-enable logging 
+            */
+
+            if ( _logger != null && _logger != Serilog.Core.Logger.None )
             {
-                ( ( IDisposable ) _logger ).Dispose();
-                _logger = null;
+                ( _logger as IDisposable )?.Dispose();
+                _logger = Serilog.Core.Logger.None;
             }
         }
 
@@ -145,7 +153,21 @@ namespace Rock.Logging
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            _logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
+            if ( _logger != null && _logger != Serilog.Core.Logger.None )
+            {
+                _logger?.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
+                if ( _logger == null || _logger == Serilog.Core.Logger.None )
+                {
+                    // It is possible that it wrote depending on exact timing, but 
+                    // this could happen if there are Reads (From the Rock Logs block) and writes happening at *exactly* the same time
+                    System.Diagnostics.Debug.WriteLine( $"Might not have written to _logger due to read/write conflict." );
+                }
+            }
+            else
+            {
+                // This could happen if there are Reads (From the Rock Logs block) and writes happening at exactly the same time
+                System.Diagnostics.Debug.WriteLine( $"Didn't write to _logger due to read/write conflict." );
+            }
         }
 
         /// <summary>
@@ -819,7 +841,7 @@ namespace Rock.Logging
         /// </summary>
         private void EnsureLoggerExistsAndUpdated()
         {
-            if ( _ConfigurationLastLoaded < LogConfiguration.LastUpdated || _logger == null )
+            if ( _ConfigurationLastLoaded < LogConfiguration.LastUpdated || _logger == null || _logger == Serilog.Core.Logger.None )
             {
                 Close();
                 LoadConfiguration( LogConfiguration );

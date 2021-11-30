@@ -134,7 +134,7 @@ namespace Rock.Jobs
                                             foreach( var person in qry.ToList() )
                                             {
                                                 var iPerson = ( Person ) person;
-                                                int campusId = iPerson.GetCampus().Id;
+                                                var campusId = iPerson.GetCampus()?.Id ?? -1;
                                                 campusPartitionValues.TryGetValue( campusId, out var currentCount );
                                                 campusPartitionValues[campusId] = currentCount + 1;
                                             }
@@ -149,10 +149,16 @@ namespace Rock.Jobs
                                                     Value = campusPartitionValue.Value
                                                 };
 
+                                                int? entityId = campusPartitionValue.Key;
+                                                if ( entityId == -1 )
+                                                {
+                                                    entityId = null;
+                                                }
+
                                                 resultValue.Partitions.Add( new ResultValuePartition
                                                 {
                                                     PartitionPosition = 0,
-                                                    EntityId = campusPartitionValue.Key
+                                                    EntityId = entityId
                                                 } );
 
                                                 resultValues.Add( resultValue );

@@ -25,6 +25,7 @@ using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
+using System.Collections.Generic;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -353,7 +354,7 @@ namespace Rock.Tests.Integration.Lava
 
             var template = @"
 {%- person where:'Guid == ""<benJonesGuid>"" || Guid == ""<billMarbleGuid>"" || Guid == ""<alishaMarbleGuid>""' iterator:'People' -%}
-  {%- assign followedItems = People | AppendFollowing -%}
+  {%- assign followedItems = People | AppendFollowing | Sort:'FullName' -%}
 <ul>
   {%- for item in followedItems -%}
     <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
@@ -366,11 +367,14 @@ namespace Rock.Tests.Integration.Lava
                 .Replace( "<billMarbleGuid>", TestGuids.TestPeople.BillMarble )
                 .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
 
-            var outputExpected = @"
-<ul><li>Ben Jones - true</li><li>Alisha Marble - false</li><li>Bill Marble - true</li></ul>
-";
+            var expectedOutputs = new List<string>()
+            {
+                "<li>Alisha Marble - false</li>",
+                "<li>Ben Jones - true</li>",
+                "<li>Bill Marble - true</li>"
+            };
 
-            TestHelper.AssertTemplateOutput( outputExpected,
+            TestHelper.AssertTemplateOutput( expectedOutputs,
                 template,
                 options );
         }
@@ -379,7 +383,7 @@ namespace Rock.Tests.Integration.Lava
         public void AppendFollowing_ForPersistedDataset_ShowsCorrectFollowingStatus()
         {
             var template = @"
-{% assign followedItems = 'persons' | PersistedDataset | AppendFollowing %}
+{% assign followedItems = 'persons' | PersistedDataset | AppendFollowing | Sort:'FullName' %}
 <ul>
   {%- for item in followedItems -%}
     <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
@@ -389,7 +393,7 @@ namespace Rock.Tests.Integration.Lava
 ";
 
             var outputExpected = @"
-<ul><li>Ben Jones - true</li><li>Alisha Marble - false</li><li>Bill Marble - true</li></ul>
+<ul><li>Alisha Marble - false</li><li>Ben Jones - true</li><li>Bill Marble - true</li></ul>
 ";
             var values = AddPersonTedDeckerToMergeDictionary();
 
@@ -413,7 +417,7 @@ namespace Rock.Tests.Integration.Lava
 
             var template = @"
 {%- person where:'Guid == ""<benJonesGuid>"" || Guid == ""<billMarbleGuid>"" || Guid == ""<alishaMarbleGuid>""' iterator:'People' -%}
-  {%- assign followedItems = People | AppendFollowing | FilterFollowed -%}
+  {%- assign followedItems = People | AppendFollowing | FilterFollowed | Sort:'FullName' -%}
 <ul>
   {%- for item in followedItems -%}
     <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
@@ -426,11 +430,13 @@ namespace Rock.Tests.Integration.Lava
                 .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
 
             // Alisha Marble should be excluded because she is not followed by Ted.
-            var outputExpected = @"
-<ul><li>Ben Jones - true</li><li>Bill Marble - true</li></ul>
-";
+            var expectedOutputs = new List<string>()
+            {
+                "<li>Ben Jones - true</li>",
+                "<li>Bill Marble - true</li>"
+            };
 
-            TestHelper.AssertTemplateOutput( outputExpected,
+            TestHelper.AssertTemplateOutput( expectedOutputs,
                 template,
                 options );
         }

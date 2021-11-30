@@ -18,6 +18,11 @@ using System;
 
 namespace Rock.Tests.Shared
 {
+    /// <summary>
+    /// Well-known Guids that can be used to identify specific test records.
+    /// Values should be declared as string types where possible.
+    /// Some Guid entries have been imported from previous code.
+    /// </summary>
     public static class TestGuids
     {
         public static class Category
@@ -106,6 +111,13 @@ namespace Rock.Tests.Shared
 
             public const string BenJonesComment1 = "7C5173DF-B11B-4EF2-8CCB-30DC53A4522B";
             public const string BenJonesComment2 = "4619DEFF-DA42-4A75-AA24-77A7F3292EBA";
+        }
+
+        public static class Schedules
+        {
+
+            public const string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
+            public const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
         }
 
         public static class Steps

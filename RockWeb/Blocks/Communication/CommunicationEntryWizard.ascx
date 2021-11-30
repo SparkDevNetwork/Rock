@@ -337,9 +337,6 @@
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" CssClass="js-navigation-panel emaileditor-wrapper d-flex flex-column h-100 " runat="server" Visible="false">
 
-
-
-
                         <section id="emaileditor" class="panel-fill-body position-relative flex-fill styled-scroll">
                             <div id="emaileditor-designer" style="visibility:hidden;opacity: 0;">
                                 <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
@@ -1159,7 +1156,7 @@
                             </div>
                         </div>
 
-                    <div class="actions clearfix">
+                    <div class="actions clearfix mt-0">
                         <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
                         <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>
@@ -1173,8 +1170,8 @@
                                 <Content>
                                     <div class="text-center margin-v-md">
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-default js-preview-desktop"><i class="fa fa-desktop"></i>Desktop</button>
-                                            <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i>Mobile</button>
+                                            <button type="button" class="btn btn-default js-preview-desktop"><i class="fa fa-desktop"></i> Desktop</button>
+                                            <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i> Mobile</button>
                                         </div>
                                     </div>
                                     <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview device-browser center-block">

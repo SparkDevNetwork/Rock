@@ -58,12 +58,8 @@ export const enum GroupRole {
     GrouproleKnownRelationshipsBusinessContact = "102E6AF5-62C2-4767-B473-C9C228D75FB6",
     /** A role to identify the business a person owns. */
     GrouproleKnownRelationshipsBusiness = "7FC58BB2-7C1E-4C5C-B2B3-4738258A0BE0",
-    /** Gets the Implied Relationships owner role. */
-    GrouproleImpliedRelationshipsOwner = "CB9A0E14-6FCF-4C07-A49A-D7873F45E196",
     /** Gets the Peer Network owner role. */
     GrouprolePeerNetworkOwner = "CB9A0E14-6FCF-4C07-A49A-D7873F45E196",
-    /** Gets the Implied Relationships related role. */
-    GrouproleImpliedRelationshipsRelated = "FEA75948-97CB-4DE9-8A0D-43FA2646F55B",
     /** Gets the Peer Network related role. */
     GrouprolePeerNetworkRelated = "FEA75948-97CB-4DE9-8A0D-43FA2646F55B",
     /** Gets the security group member role. */

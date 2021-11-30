@@ -203,7 +203,7 @@ namespace Rock.Web.UI.Controls
         #region MergeField Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="Rock.Web.UI.Controls.RowEventArgs" />
         public class MergePersonFieldRowEventArgs : RowEventArgs
@@ -260,7 +260,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum SelectionControlType
         {
@@ -281,7 +281,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ContentDisplayType
         {
@@ -297,7 +297,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="System.Web.UI.ITemplate" />
         public class MergePersonSelectFieldTemplate : ITemplate
@@ -410,7 +410,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class MergePersonFieldHeaderTemplate : ITemplate
         {
@@ -428,7 +428,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var lbDelete = new LinkButton();
                         lbDelete.CausesValidation = false;
-                        lbDelete.CssClass = "btn btn-danger btn-xs pull-right";
+                        lbDelete.CssClass = "btn btn-danger btn-xs btn-square mr-2 pull-right";
                         lbDelete.ToolTip = "Remove Person";
                         cell.Controls.Add( lbDelete );
 
@@ -518,7 +518,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class PropertySelection
         {

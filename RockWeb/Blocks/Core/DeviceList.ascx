@@ -15,6 +15,7 @@
                     <Rock:GridFilter ID="fDevice" runat="server">
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
                         <Rock:DefinedValuePicker ID="dvpDeviceType" runat="server" Label="Device Type" />
+                        <Rock:RockDropDownList ID="ddlKioskType" runat="server" Label="Kiosk Type" />
                         <Rock:RockTextBox ID="tbIPAddress" runat="server" Label="IP Address" />
                         <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print To" />
                         <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" EnhanceForLongLists="true" />
@@ -30,6 +31,7 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="DeviceTypeName" HeaderText="Device Type" SortExpression="DeviceTypeName" />
+                            <Rock:RockBoundField DataField="KioskTypeName" HeaderText="Kiosk Type" SortExpression="KioskTypeName" />
                             <Rock:RockBoundField DataField="IPAddress" HeaderText="IP Address / Hostname" SortExpression="IPAddress"/>
                             <Rock:RockLiteralField ID="lPrintToOverride" HeaderText="Print To" SortExpression="PrintToOverride" />
                             <Rock:RockLiteralField ID="lPrintFrom" HeaderText="Print From" SortExpression="PrintFrom" />

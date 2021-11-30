@@ -1311,11 +1311,7 @@ namespace RockWeb.Blocks.Finance
         private void BindDefinedTypeDropdown( DefinedValuePicker dvpControl, Guid definedTypeGuid, string userPreferenceKey )
         {
             dvpControl.DefinedTypeId = DefinedTypeCache.Get( definedTypeGuid ).Id;
-
-            if ( !string.IsNullOrWhiteSpace( gfTransactions.GetUserPreference( userPreferenceKey ) ) )
-            {
-                dvpControl.SelectedValue = gfTransactions.GetUserPreference( userPreferenceKey );
-            }
+            dvpControl.SelectedValue = gfTransactions.GetUserPreference( userPreferenceKey );
         }
 
         /// <summary>

@@ -199,7 +199,7 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets a summary of the scheduled transaction.
+        /// Gets or sets a summary of the scheduled transaction. This would store any comments made.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing a summary of the scheduled transaction.
@@ -363,17 +363,6 @@ namespace Rock.Model
         {
             get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }
         }
-
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList", true )]
-        public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
         /// Gets or sets the history change list.

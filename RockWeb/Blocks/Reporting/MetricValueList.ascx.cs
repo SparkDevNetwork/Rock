@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.Reporting
 
             var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
 
-            var entityTypeEntityFilters = new Dictionary<int, int?>();
+            var entityTypeEntityFilters = new List<string>();
             foreach ( var metricPartition in metric.MetricPartitions )
             {
                 var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
@@ -273,16 +273,11 @@ namespace RockWeb.Blocks.Reporting
                 {
                     entityId = ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
 
-                    entityTypeEntityFilters.AddOrIgnore( metricPartitionEntityType.Id, entityId );
+                    entityTypeEntityFilters.Add( $"{metricPartitionEntityType.Id}|{entityId}" );
                 }
             }
 
-            var entityTypeEntityUserPreferenceValue = entityTypeEntityFilters
-                .Select( a => new { EntityTypeId = a.Key, EntityId = a.Value } )
-                .Select( a => string.Format( "{0}|{1}", a.EntityTypeId, a.EntityId ) )
-                .ToList().AsDelimited( "," );
-
-            gfMetricValues.SaveUserPreference( this.EntityTypeEntityPreferenceKey, entityTypeEntityUserPreferenceValue );
+            gfMetricValues.SaveUserPreference( this.EntityTypeEntityPreferenceKey, entityTypeEntityFilters.AsDelimited( "," ) );
 
             BindGrid();
         }

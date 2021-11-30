@@ -257,7 +257,8 @@ namespace Rock
         {
             try
             {
-                var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" );
+                var rockHtmlMarkupFormatter = new Rock.Utility.RockHtmlMarkupFormatter();
+                var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore", null, false, false, rockHtmlMarkupFormatter );
                 return result.Html;
             }
             catch

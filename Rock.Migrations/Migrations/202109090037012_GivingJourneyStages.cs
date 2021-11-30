@@ -38,8 +38,6 @@ namespace Rock.Migrations
 
             AddGivingJourneyPersonAttributes();
 
-            CatchupPagesBlocks_Up();
-
             PagesBlocks_Up();
         }
 
@@ -101,13 +99,17 @@ namespace Rock.Migrations
             /*   Attribute Value: 365 */
             RockMigrationHelper.AddBlockAttributeValue( "8A8806DB-78F8-42C5-9D09-3723A868D976", "5796A617-552F-4CCE-B40B-9A7162B6FE6D", @"365" );
 
+            /* 11-01-2021 MDP
+              This was incorrect in a prior commit. This fixes it. There will be a rollup migration that will fix it for people that already ran the old version of this migration. 
+            */
+
             // Add Block Attribute Value
             //   Block: Giving Overview
             //   BlockType: Giving Overview
             //   Block Location: Page=Contributions, Site=Rock RMS
             //   Attribute: Alert List Page
-            /*   Attribute Value: 490f8a53-85c5-42d1-b305-a531f4924dc6 */
-            RockMigrationHelper.AddBlockAttributeValue( "8A8806DB-78F8-42C5-9D09-3723A868D976", "3B85794D-E382-4F65-B931-AE44A789EFF6", @"490f8a53-85c5-42d1-b305-a531f4924dc6" );
+            /*   Attribute Value: Rock.SystemGuid.Page.GIVING_ALERTS */
+            RockMigrationHelper.AddBlockAttributeValue( "8A8806DB-78F8-42C5-9D09-3723A868D976", "3B85794D-E382-4F65-B931-AE44A789EFF6", Rock.SystemGuid.Page.GIVING_ALERTS );
         }
 
         /// <summary>
@@ -117,63 +119,6 @@ namespace Rock.Migrations
         {
             AlterContributionTabBlocksDown();
             JobDown();
-        }
-
-        /// <summary>
-        /// Some unrelated Pages/Blocks migrations that hadn't been done yet
-        /// </summary>
-        private void CatchupPagesBlocks_Up()
-        {
-            // Attribute for BlockType: Contribution Statement List Lava:Use Person Context
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "22BF5B51-6511-4D31-8A48-4978A454C386", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Use Person Context", "UsePersonContext", "Use Person Context", @"Determines if the person context should be used instead of the CurrentPerson.", 5, @"False", "556EF546-1DDC-4776-8398-1F81F9870FDE" );
-
-            // Attribute for BlockType: Scheduled Transaction List:Person Token Expire Minutes
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "694FF260-8C6F-4A59-93C9-CF3793FE30E6", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Person Token Expire Minutes", "PersonTokenExpireMinutes", "Person Token Expire Minutes", @"When adding a new scheduled transaction from a person detail page, the number of minutes the person token for the transaction is valid after it is issued.", 3, @"60", "087B2B3B-0DD6-489F-8428-6FD6D23D30CE" );
-
-            // Attribute for BlockType: Scheduled Transaction List:Person Token Usage Limit
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "694FF260-8C6F-4A59-93C9-CF3793FE30E6", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Person Token Usage Limit", "PersonTokenUsageLimit", "Person Token Usage Limit", @"When adding a new scheduled transaction from a person detail page, the maximum number of times the person token for the transaction can be used.", 4, @"1", "43008627-ADB7-455B-8DAD-22B8E473A947" );
-
-            // Attribute for BlockType: Contribution Statement List Lava:Max Years To Display
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "22BF5B51-6511-4D31-8A48-4978A454C386", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Max Years To Display", "MaxYearsToDisplay", "Max Years To Display", @"The maximum number of years to display (including the current year).", 1, @"3", "95593340-4780-4F82-9B32-4C65B0E6B65C" );
-
-            // Attribute for BlockType: Scheduled Transaction List:View Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "694FF260-8C6F-4A59-93C9-CF3793FE30E6", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "View Page", "ViewPage", "View Page", @"", 0, @"", "A4F00EB2-FFCD-4911-AB98-113BEE43AC9A" );
-
-            // Attribute for BlockType: Scheduled Transaction List:Add Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "694FF260-8C6F-4A59-93C9-CF3793FE30E6", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Add Page", "AddPage", "Add Page", @"", 0, @"", "F061BDB2-B66A-4BC3-8930-51B40A53CEB7" );
-
-            // Attribute for BlockType: Pledge List:Detail Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "Detail Page", @"", 0, @"", "8E77B224-F502-44F8-8C5F-F7C007EF58DB" );
-
-            // Attribute for BlockType: Contribution Statement List Lava:Detail Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "22BF5B51-6511-4D31-8A48-4978A454C386", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "Detail Page", @"The statement detail page.", 2, @"", "D4C47D9E-ECD9-4D5A-93EA-46BF9C687361" );
-
-            // Attribute for BlockType: Scheduled Transaction List:Entity Type
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "694FF260-8C6F-4A59-93C9-CF3793FE30E6", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "ContextEntityType", "Entity Type", @"The type of entity that will provide context for this block", 0, @"", "6B73846B-448D-4DD6-A494-4183248DD2A5" );
-
-            // Attribute for BlockType: Pledge List:Entity Type
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "ContextEntityType", "Entity Type", @"The type of entity that will provide context for this block", 0, @"", "A9425EE2-3727-4A91-BA63-1499B0480158" );
-
-            // Attribute for BlockType: Contribution Statement List Lava:Entity Type
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "22BF5B51-6511-4D31-8A48-4978A454C386", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "ContextEntityType", "Entity Type", @"The type of entity that will provide context for this block", 0, @"", "C82E612D-C2E6-45EB-B027-1BCF8177E18A" );
-
-            // Attribute for BlockType: Contribution Statement List Lava:Accounts
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "22BF5B51-6511-4D31-8A48-4978A454C386", "17033CDD-EF97-4413-A483-7B85A787A87F", "Accounts", "Accounts", "Accounts", @"A selection of accounts to use for checking if transactions for the current user exist. If no accounts are provided then all tax-deductible accounts will be considered.", 0, @"", "ED45DB51-72D0-47C1-A223-713563763EB6" );
-
-            // Attribute for BlockType: Contribution Statement List Lava:Lava Template
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "22BF5B51-6511-4D31-8A48-4978A454C386", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Lava Template", "LavaTemplate", "Lava Template", @"The Lava template to use for the contribution statement.", 3, @"{% assign currentYear = 'Now' | Date:'yyyy' %}
-
-<h4>Available Contribution Statements</h4>
-
-<div class=""margin-b-md"">
-{% for statementyear in StatementYears %}
-    {% if currentYear == statementyear.Year %}
-        <a href=""{{ DetailPage }}?StatementYear={{ statementyear.Year }}"" class=""btn btn-primary"">{{ statementyear.Year }} <small>YTD</small></a>
-    {% else %}
-        <a href=""{{ DetailPage }}?StatementYear={{ statementyear.Year }}"" class=""btn btn-primary"">{{ statementyear.Year }}</a>
-    {% endif %}
-{% endfor %}
-</div>", "C1F27C66-3C58-4956-B9E8-9875EA3F22C9" );
         }
 
         private void AddGivingJourneyPersonAttributes()
@@ -288,40 +233,14 @@ END
         /// </summary>
         private void AlterContributionTabBlocksUp()
         {
-            RockMigrationHelper.DeleteAttribute( "A6B71434-FD9B-45EC-AA50-07AE5D6BA384" );
-            RockMigrationHelper.DeleteAttribute( "ADC80D72-976B-4DFD-B50C-5B2BAC3FFD17" );
-            RockMigrationHelper.DeleteAttribute( "375F7220-04C6-4E41-B99A-A2CE494FD74A" );
-            RockMigrationHelper.DeleteAttribute( "47B99CD1-FB63-44D7-8586-45BDCDF51137" );
-            RockMigrationHelper.DeleteAttribute( "9BCE3FD8-9014-4120-9DCC-06C4936284BA" );
             RockMigrationHelper.DeleteBlock( "B33DF8C4-29B2-4DC5-B182-61FC255B01C0" );
 
-            RockMigrationHelper.DeleteAttribute( "A6B71434-FD9B-45EC-AA50-07AE5D6BA384" );
-            RockMigrationHelper.DeleteAttribute( "ADC80D72-976B-4DFD-B50C-5B2BAC3FFD17" );
-            RockMigrationHelper.DeleteAttribute( "375F7220-04C6-4E41-B99A-A2CE494FD74A" );
-            RockMigrationHelper.DeleteAttribute( "47B99CD1-FB63-44D7-8586-45BDCDF51137" );
-            RockMigrationHelper.DeleteAttribute( "9BCE3FD8-9014-4120-9DCC-06C4936284BA" );
             RockMigrationHelper.DeleteBlock( "B33DF8C4-29B2-4DC5-B182-61FC255B01C0" );
 
-            RockMigrationHelper.DeleteAttribute( "3E26B7DF-7A7F-4829-987F-47304C0F845E" );
-            RockMigrationHelper.DeleteAttribute( "E9245CFD-4B11-4CE2-A120-BB3AC47C0974" );
             RockMigrationHelper.DeleteBlock( "212EB093-026A-4177-ACE4-25EA9E1DDD41" );
 
-            RockMigrationHelper.DeleteAttribute( "A20E6DB1-B830-4D41-9003-43A184E4C910" );
-            RockMigrationHelper.DeleteAttribute( "55FDABC3-22AE-4EE4-9883-8234E3298B99" );
-            RockMigrationHelper.DeleteAttribute( "8158A336-8129-4E82-8B61-8C0E883CB91A" );
-            RockMigrationHelper.DeleteAttribute( "9227E7D4-5725-49BD-A0B1-43B769E0A529" );
-            RockMigrationHelper.DeleteAttribute( "5C3A012C-19A2-4EC7-8440-7534FE175591" );
-            RockMigrationHelper.DeleteAttribute( "7825BDD3-E130-4D63-B0A6-79DB1F97EFD6" );
-            RockMigrationHelper.DeleteAttribute( "7B554631-3CD5-40C4-8E67-ECED56D4D7C1" );
-            RockMigrationHelper.DeleteAttribute( "AC1EF7F3-7B06-4978-84DD-B38025FC2E7B" );
-            RockMigrationHelper.DeleteAttribute( "346384B5-1ECE-4949-BFF4-712E1FAA4335" );
-            RockMigrationHelper.DeleteAttribute( "5B439A86-D2AD-4223-8D1E-A50FF883D7C2B" );
-            RockMigrationHelper.DeleteAttribute( "F37EB885-416A-4B70-B48E-8A25557C7B12" );
-            RockMigrationHelper.DeleteAttribute( "F9A168F1-3E59-4C5F-8019-7B17D00B94C9" );
             RockMigrationHelper.DeleteBlock( "96599B45-E080-44AE-8CB7-CCCCA4873398" );
 
-            RockMigrationHelper.DeleteAttribute( "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D" );
-            RockMigrationHelper.DeleteAttribute( "831403EB-262E-4BC5-8B5E-F16153493BF5" );
             RockMigrationHelper.DeleteBlock( "013ACB2A-48AD-4325-9566-6A6B821C8C21" );
 
             RockMigrationHelper.DeleteBlock( "EF8BB598-E991-421F-96A1-3019B3D855A6" );

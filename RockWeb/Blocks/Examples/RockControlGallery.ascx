@@ -43,7 +43,7 @@
             </div>
             <div class="panel-body">
             <div class="row">
-            <div class="col-lg-2 col-lg-offset-1 col-md-2" style="position:sticky;top:80px;"><nav id="toc"></nav></div>
+            <div class="d-none d-md-block col-lg-2 col-lg-offset-1 col-md-2" style="position:sticky;top:80px;"><nav id="toc"></nav></div>
             <div id="main-controls" class="col-md-9 col-lg-7">
                 <asp:Panel ID="pnlDetails" runat="server">
 
@@ -592,7 +592,7 @@
 
                     <a id="GeoPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:GeoPicker ID="geopExamplePoint" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA" />
+                        <Rock:GeoPicker ID="geopExamplePoint" runat="server" Label="Rock:GeoPicker (Point mode)"  DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA" />
                     </div>
 
                     <a id="GeoPickerPolygon"></a>

@@ -99,7 +99,13 @@ namespace Rock.Field
                         fieldVisibilityRule.ComparedToValue = fieldVisibilityRule.ComparedToValue?.ToLower();
                     }
 
-                    filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToString( false ) );
+                    var comparisonTypeValue = fieldVisibilityRule.ComparisonType.ConvertToString( false );
+                    if ( comparisonTypeValue != null )
+                    {
+                        // only add the comparisonTypeValue if it is specified, just like the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
+                        filterValues.Add( comparisonTypeValue );
+                    }                    
+
                     filterValues.Add( fieldVisibilityRule.ComparedToValue );
                     Expression entityCondition;
 
@@ -272,6 +278,29 @@ namespace Rock.Field
         /// </value>
         [DataMember]
         public Guid? ComparedToFormFieldGuid { get; set; }
+
+        /// <summary>
+        /// Obsolete. Use <see cref="ComparedToFormFieldGuid" /> instead.
+        /// </summary>
+        /// <value>The compared to registration template form field unique identifier.</value>
+        [DataMember]
+        [Obsolete( "Use ComparedToFormFieldGuid Instead" )]
+        [RockObsolete( "12.5" )]
+        public Guid? ComparedToRegistrationTemplateFormFieldGuid
+        {
+            /* 2021-10-06 MDP
+              
+               A Data Migration takes care of moving the data to the ComparedToFormFieldGuid field,
+               so it'll be safe to remove the ComparedToRegistrationTemplateFormFieldGuid property
+               when we delete the obsoleted ComparedToRegistrationTemplateFormFieldGuid field.
+
+               We'll keep the ComparedToRegistrationTemplateFormFieldGuid, but mark it obsolete just in
+               case plugin developers are using this field.
+            */
+
+            get => ComparedToFormFieldGuid;
+            set => ComparedToFormFieldGuid = value;
+        }
 
         /// <summary>
         /// Gets or sets the unique identifier.

@@ -77,7 +77,6 @@
         -webkit-transition: background-color 200ms linear, border-color 200ms linear;
         -moz-transition: background-color 200ms linear, border-color 200ms linear;
         -ms-transition: background-color 200ms linear, border-color 200ms linear;
-        -o-transition: background-color 200ms linear, border-color 200ms linear;
         transition: background-color 200ms linear, border-color 200ms linear;
 
         i {
@@ -88,6 +87,7 @@
 
         &:hover {
           color: @listasblocks-rollover-text-color;
+          text-decoration: none;
           background-color: @listasblocks-rollover-bg;
           border-color: @listasblocks-rollover-border-color;
 
@@ -102,7 +102,9 @@
           right: -6px;
 
           .label {
-            padding: 2px 6px;
+            padding: 2px 8px;
+            color: @white;
+            background: @label-danger-bg;
             border-radius: 36px;
           }
         }

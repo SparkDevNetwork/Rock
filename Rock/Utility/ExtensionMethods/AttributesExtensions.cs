@@ -337,7 +337,7 @@ namespace Rock
         /// </summary>
         /// <param name="attributeQuery">The attribute query.</param>
         /// <returns></returns>
-        [Obsolete( "Use ToAttributeCacheList instead" )]
+        [Obsolete( "Use ToAttributeCacheList instead", true )]
         [RockObsolete( "1.9" )]
         public static List<AttributeCache> ToCacheAttributeList( this IQueryable<Rock.Model.Attribute> attributeQuery )
         {

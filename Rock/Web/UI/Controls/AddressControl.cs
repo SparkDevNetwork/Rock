@@ -1338,9 +1338,17 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void SetCountryAndState( string selectedCountry = null, string selectedState = null )
         {
+            // After this method has been called, do not overwrite the specified values with default settings.
+            this.SetDefaultValues = false;
+
             if ( selectedCountry == null )
             {
                 selectedCountry = _ddlCountry.SelectedValue;
+            }
+
+            if ( selectedState == null )
+            {
+                selectedState = _ddlState.SelectedValue;
             }
 
             LoadCountryConfiguration( selectedCountry );

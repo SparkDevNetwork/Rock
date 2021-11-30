@@ -110,6 +110,12 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbAutoRefresh" runat="server" Label="Auto Refresh" Help="When enabled the page will automatically reload whenever it becomes visible." />
+                        </div>
+                    </div>
+
                     <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
                     <Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Page Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements on this page." />
@@ -233,9 +239,11 @@
         // Setup dragula to allow re-ordering within the actions.
         //
         var reorderOldIndex = -1;
+        var reorderOldZone = "";
         var reorderDrake = dragula(componentContainers, {
             moves: function (el, source, handle, sibling) {
                 reorderOldIndex = $(source).children().index(el);
+                reorderOldZone = $(el).closest('.js-block-zone').data('zone-name');
                 return $(handle).hasClass('js-reorder');
             },
             revertOnSpill: true
@@ -245,7 +253,7 @@
             var newIndex = $(target).children().index(el);
             var zone = $(el).closest('.js-block-zone').data('zone-name');
             var blockId = $(el).find('.js-block').data('block-id');
-            if (reorderOldIndex !== newIndex) {
+            if (reorderOldIndex !== newIndex || reorderOldZone !== zone) {
                 var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'reorder-block|" + zone + "|" + blockId + "|" + newIndex + "')";
                 window.location = postback;
             }

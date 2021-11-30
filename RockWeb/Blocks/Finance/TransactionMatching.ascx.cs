@@ -869,7 +869,7 @@ namespace RockWeb.Blocks.Finance
                         UpdateVisibleAccountBoxes();
                     }
 
-                    tbSummary.Text = transactionToMatch.Summary;
+                    tbComments.Text = transactionToMatch.Summary;
                     var primaryImage = GetPrimaryImage( transactionToMatch );
 
                     if ( primaryImage != null )
@@ -1362,7 +1362,7 @@ namespace RockWeb.Blocks.Finance
 
                 financialTransaction.TransactionCode = tbTransactionCode.Text;
 
-                financialTransaction.Summary = tbSummary.Text;
+                financialTransaction.Summary = tbComments.Text;
 
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
                 financialTransaction.ProcessedDateTime = RockDateTime.Now;

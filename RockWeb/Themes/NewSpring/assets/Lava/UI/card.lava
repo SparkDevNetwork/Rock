@@ -16,7 +16,7 @@
 
 {% assign cardlinkurl = cardlinkurl | Trim %}
 
-<div {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded">
+<div data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded-lg">
 
     {% if imageurl != null and imageurl != '' %}
         {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" class="panel-image" {% if target and target != empty %}target="{{ target }}"{% endif %}>{% else %}<div class="panel-image">{% endif %}

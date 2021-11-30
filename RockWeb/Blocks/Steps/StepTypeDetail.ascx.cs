@@ -184,6 +184,8 @@ namespace RockWeb.Blocks.Steps
 
         #region Private Variables
 
+        private StepType _stepType = null;
+        private StepProgram _program = null;
         private int _stepProgramId = 0;
         private int _stepTypeId = 0;
         private RockContext _dataContext = null;
@@ -220,7 +222,16 @@ namespace RockWeb.Blocks.Steps
             dvpAudience.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvpAudience.CategoryGuids = GetAttributeValue( AttributeKey.DataViewCategories ).SplitDelimitedValues().AsGuidList();
 
-            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
+            bool editAllowed = false;
+            if ( _stepType != null )
+            {
+                editAllowed = _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
+            else if ( _program != null )
+            {
+                // Till this point, Step Type may not be initialized. That is the reason we are looking for authorization for Step Program.
+                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
 
             InitializeAttributesGrid( editAllowed );
             InitializeWorkflowGrid( editAllowed );
@@ -1244,6 +1255,8 @@ namespace RockWeb.Blocks.Steps
         /// <returns>True, if the block context is valid.</returns>
         private bool InitializeBlockContext()
         {
+            _stepType = null;
+
             _stepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
             _stepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsInteger();
 
@@ -1253,6 +1266,18 @@ namespace RockWeb.Blocks.Steps
                 ShowNotification( "A new Step cannot be added because there is no Step Program available in this context.", NotificationBoxType.Danger, true );
 
                 return false;
+            }
+
+            var dataContext = this.GetDataContext();
+            if ( _stepTypeId != 0 )
+            {
+                var stepTypeService = new StepTypeService( dataContext );
+                _stepType = stepTypeService.Queryable().Where( g => g.Id == _stepTypeId ).FirstOrDefault();
+            }
+            else
+            {
+                var stepProgramService = new StepProgramService( dataContext );
+                _program = stepProgramService.Queryable().Where( g => g.Id == _stepProgramId ).FirstOrDefault();
             }
 
             return true;
@@ -1342,15 +1367,18 @@ namespace RockWeb.Blocks.Steps
                 pdAuditDetails.Visible = false;
             }
 
-            // Admin rights are required to edit a Step Type. Edit rights only allow adding/removing items.
-            bool adminAllowed = UserCanAdministrate || stepType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            /*
+             SK - 10/28/2021
+             Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+             */
+            bool editAllowed = stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
             pnlDetails.Visible = true;
             hfStepTypeId.Value = stepType.Id.ToString();
             lIcon.Text = string.Format( "<i class='{0}'></i>", stepType.IconCssClass );
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !adminAllowed )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
@@ -1419,7 +1447,7 @@ namespace RockWeb.Blocks.Steps
 
             LoadPrerequisiteStepsList();
             LoadWorkflowTriggerTypesSelectionList();
-            
+
             // General properties
             tbName.Text = stepType.Name;
             cbIsActive.Checked = stepType.IsActive;
@@ -1536,7 +1564,8 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepType != null )
             {
-                if ( !stepType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                // Earlier only Person with admin rights were allowed edit the block.That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+                if ( !stepType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Information );
                     return;

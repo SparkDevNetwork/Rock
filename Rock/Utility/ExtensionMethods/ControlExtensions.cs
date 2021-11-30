@@ -296,6 +296,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether the html control's CssClass includes the specified className
+        /// </summary>
+        /// <param name="htmlControl">The HTML control.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <returns><c>true</c> if [has CSS class] [the specified class name]; otherwise, <c>false</c>.</returns>
+        public static bool HasCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
+        {
+            if ( className.IsNullOrWhiteSpace() || htmlControl == null )
+            {
+                return false;
+            }
+
+            string css = htmlControl.Attributes["class"] ?? string.Empty;
+            string match = @"(^|\s+)" + className + @"($|\s+)";
+            return Regex.IsMatch( css, match, RegexOptions.IgnoreCase );
+        }
+
+        /// <summary>
         /// Removes a CSS class name from an html control.
         /// </summary>
         /// <param name="htmlControl">The html control.</param>
@@ -563,7 +581,7 @@ namespace Rock
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use DefinedValuePicker instead." )]
+        [Obsolete( "Use DefinedValuePicker instead.", true )]
         public static void BindToDefinedType( this ListControl listControl, DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             // For IDefinedValuePicker types: Before this section of code was added, BindToDefinedType did not update DefinedTypeId, because not all ListControls have it.

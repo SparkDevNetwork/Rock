@@ -43,19 +43,22 @@ namespace RockWeb.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
 
+    #region Block Attributes
     [BooleanField(
-        name: "Enable Full Edit Mode",
-        description: "Have the block initially show a readonly summary view, in a panel, with Edit and Delete buttons. Also include Save and Cancel buttons.",
-        defaultValue: false,
-        order: 1,
-        key: AttributeKey.EnableFullEditMode )]
+        "Enable Full Edit Mode",
+        Key = AttributeKey.EnableFullEditMode,
+        Description = "Have the block initially show a readonly summary view, in a panel, with Edit and Delete buttons. Also include Save and Cancel buttons.",
+        DefaultBooleanValue = false,
+        Order = 1 )]
 
     [LinkedPage(
-        name: "Median Time to Serve Detail Page",
-        description: "The page that shows details about about the median time to serve was calculated.",
-        defaultValue: Rock.SystemGuid.Page.PAGE_VIEWS,
-        order: 2,
-        key: AttributeKey.MedianTimeDetailPage )]
+        "Median Time to Serve Detail Page",
+        Key = AttributeKey.MedianTimeDetailPage,
+        Description = "The page that shows details about the median time to serve was calculated.",
+        DefaultValue = Rock.SystemGuid.Page.PAGE_VIEWS,
+        Order = 2 )]
+
+    #endregion Block Attributes
 
     public partial class PageProperties : RockBlock
     {
