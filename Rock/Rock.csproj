@@ -464,6 +464,7 @@
     <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
+    <Compile Include="Attribute\RockInternalAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelInteractionComponentFieldAttribute.cs" />
