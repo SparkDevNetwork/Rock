@@ -184,10 +184,10 @@ namespace Rock.Model
                 exceptionLog.ServerVariables = serverVars.ToString();
                 exceptionLog.QueryString = request.UrlProxySafe().Query;
                 /*
-                 SK - 11/24/2021
-                 We are commenting out below line as we have decided not to store form data from now on as it may contain sensative data.
+                     SK - 11/24/2021
+                     We are commenting out below line as we have decided not to store form data from now on as it may contain sensative data.
+                     exceptionLog.Form = formItems.ToString();
                 */
-                //exceptionLog.Form = formItems.ToString();
             }
             catch
             {
