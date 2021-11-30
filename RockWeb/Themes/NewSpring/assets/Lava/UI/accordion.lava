@@ -4,8 +4,8 @@
     {%- for item in items -%}
         {% if item.cssclasses and item.cssclasses != empty and item.cssclasses != '' %}<div class="{{ item.cssclasses }}">{% endif %}
             <div class="panel panel-primary">
-                <a id="heading-{{ wrapperId }}-{{ forloop.index }}" role="button" data-toggle="collapse" data-parent="#accordion-{{ wrapperId }}" href="#{{ wrapperId }}-{{ forloop.index }}" aria-expanded="true" aria-controls="{{ wrapperId }}-{{ forloop.index }}" class="panel-heading display-block sans-serif strong text-decoration-none text-white">
-                    {{ item.title }} <i class="far fa-chevron-down pull-right" style="position:relative;top:4px;"></i>
+                <a id="heading-{{ wrapperId }}-{{ forloop.index }}" role="button" data-toggle="collapse" data-parent="#accordion-{{ wrapperId }}" href="#{{ wrapperId }}-{{ forloop.index }}" aria-expanded="true" aria-controls="{{ wrapperId }}-{{ forloop.index }}" class="position-relative panel-heading display-block sans-serif strong text-decoration-none text-white soft-right">
+                    {{ item.title }} <i class="fal js-accordion-icon fa-plus pull-right" style="position:absolute; top:50%; right:15px; margin-top: -8px;"></i>
                 </a>
                 <div id="{{ wrapperId }}-{{ forloop.index }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{ wrapperId }}-{{ forloop.index }}">
                     <div class="panel-body text-gray-darker hard-bottom xs-soft xs-hard-bottom">
@@ -20,12 +20,13 @@
 
 <script>
 $('.accordion .panel-heading').on('click',function(){
-    var arrow = $(this).find('.fa-chevron-down');
-    if(arrow.hasClass('flip')) {
-        arrow.css('top',4 + 'px');
+    var arrow = $(this).find('.js-accordion-icon');
+    if(arrow.hasClass('fa-plus')) {
+        arrow.removeClass('fa-plus');
+        arrow.addClass('fa-minus');
     } else {
-        arrow.css('top',2 + 'px');
+        arrow.addClass('fa-plus');
+        arrow.removeClass('fa-minus');
     }
-    arrow.toggleClass('flip');
 });
 </script>
