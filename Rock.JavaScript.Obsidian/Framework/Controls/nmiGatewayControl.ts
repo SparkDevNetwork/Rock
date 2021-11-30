@@ -434,6 +434,8 @@ export default defineComponent({
         /** Reference to helper element that allows us to get invalid input CSS styles. */
         const inputInvalidStyleHook = ref<HTMLElement | null>(null);
 
+        const paymentInputs = ref<HTMLElement | null>(null);
+
         /** Contains all the field validation states. */
         const validationFieldStatus: Record<string, ValidationField> = {
             ccnumber: { field: getFieldFriendlyName("ccnumber"), status: false, message: "is required" },
@@ -579,6 +581,12 @@ export default defineComponent({
                 return;
             }
 
+            if (paymentInputs.value) {
+                paymentInputs.value.querySelectorAll(".iframe-input").forEach(el => {
+                    el.innerHTML = "";
+                });
+            }
+
             try {
                 const options = getCollectJSOptions(controlId, inputStyleHook.value, inputInvalidStyleHook.value);
 
@@ -613,7 +621,8 @@ export default defineComponent({
             activateCreditCard,
             activateBankAccount,
             inputStyleHook,
-            inputInvalidStyleHook
+            inputInvalidStyleHook,
+            paymentInputs
         };
     },
 
@@ -629,7 +638,7 @@ export default defineComponent({
             <a :class="bankAccountButtonClasses" @click.prevent="activateBankAccount">Bank Account</a>
         </div>
 
-        <div :id="controlId" class="nmi-payment-inputs">
+        <div :id="controlId" class="nmi-payment-inputs" ref="paymentInputs">
             <div v-if="hasCreditCardPaymentType" v-show="isCreditCardPaymentTypeActive" class="gateway-creditcard-container gateway-payment-container">
                 <div class="iframe-input credit-card-input js-credit-card-input"></div>
                 <div class="break"></div>
