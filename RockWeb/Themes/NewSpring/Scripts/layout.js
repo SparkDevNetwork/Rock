@@ -113,10 +113,10 @@ $(document).ready(function(){
 		if (transparentNav) {
 			if (a > heroHeight - b) {
 				// add white background
-				body.removeClass('nav-transparent');
+				$('.js-classes').removeClass('nav-transparent');
 			} else {
 				// remove white background
-				body.addClass('nav-transparent');
+				$('.js-classes').addClass('nav-transparent');
 			}
 		}
 

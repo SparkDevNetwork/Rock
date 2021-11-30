@@ -1,3 +1,3 @@
-<a href="{{ url }}" target="_blank" class="display-block soft-half bg-primary shadowed text-decoration-none text-center">
+<a id="live-bar" href="{{ url }}" target="_blank" class="display-block soft-half bg-primary text-decoration-none text-center overflow-hidden">
     <small class="sans-serif stronger letter-spacing-condensed text-white pulse-opacity flush">{{ text }}</small>
 </a>

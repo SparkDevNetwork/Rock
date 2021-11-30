@@ -106,6 +106,15 @@ h6, .h6 {
 	}
 }
 
+h1.italic, .h1.italic, 
+h2.italic, .h2.italic, 
+h3.italic, .h3.italic, 
+h4.italic, .h4.italic, 
+h5.italic, .h5.italic, 
+h6.italic, .h6.italic {
+	letter-spacing: -.5px;
+}
+
 a {
 	h1, .h1, 
 	h2, .h2, 
@@ -278,5 +287,6 @@ ul, ol {
 }
 
 .progress { margin-bottom: @base-spacing-unit; }
+.hidden { display: none !important; }
 
 @import '_breakpoints';

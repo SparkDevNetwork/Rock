@@ -2,8 +2,8 @@
 @media (min-width: @screen-sm-min) {
 	.nav-logo {
 		span {
-			top: 25px;
-			left: 75px;
+			top: 22px;
+			left: 70px;
 		}
 	}
 
@@ -241,19 +241,12 @@
 		font-size: 1.05em;
 	}
 
-	h1, .h1 { font-size: floor((@font-size-base * 1.9)); letter-spacing: -.7px !important; }
-	h2, .h2 { font-size: floor((@font-size-base * 1.65)); letter-spacing: -.7px !important; }
-	h3, .h3 { font-size: ceil((@font-size-base * 1.55)); }
-	h4, .h4 { font-size: ceil((@font-size-base * 1.35)); }
-	h5, .h5 { font-size: ceil((@font-size-base * 1.2)); }
-	h6, .h6 { font-size: @font-size-base; }
-
-	.xs-h1 { font-size: floor((@font-size-base * 1.9)); letter-spacing: -.7px !important; }
-	.xs-h2 { font-size: floor((@font-size-base * 1.65)); letter-spacing: -.7px !important; }
-	.xs-h3 { font-size: ceil((@font-size-base * 1.55)); }
-	.xs-h4 { font-size: ceil((@font-size-base * 1.35)); }
-	.xs-h5 { font-size: ceil((@font-size-base * 1.2)); }
-	.xs-h6 { font-size: @font-size-base; }
+	h1, .h1, .xs-h1 { font-size: floor((@font-size-base * 1.9)); letter-spacing: -.7px !important; }
+	h2, .h2, .xs-h2 { font-size: floor((@font-size-base * 1.65)); letter-spacing: -.7px !important; }
+	h3, .h3, .xs-h3 { font-size: ceil((@font-size-base * 1.55)); }
+	h4, .h4, .xs-h4 { font-size: ceil((@font-size-base * 1.35)); }
+	h5, .h5, .xs-h5 { font-size: ceil((@font-size-base * 1.2)); }
+	h6, .h6, .xs-h6 { font-size: @font-size-base; }
 
 	small {
 		font-size: 90%;

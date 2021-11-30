@@ -1,0 +1,51 @@
+<section class="soft-double-bottom">
+    <div>
+        <div class="text-center push-bottom">
+            <h3>Content By Topic</h3>
+        </div>
+
+        {% capture IdConditional %}Id == 166 || Id == 167 || Id == 173 || Id == 176 || Id == 177 || Id == 181 || Id == 188 {% endcapture %}
+
+        {% tag where:'{{ IdConditional }}' iterator:'tags' sort:'Name' %}
+            {[ swiper id:'topics' title:'Content By Topic' subtitle:'' loop:'true' ]}
+                {% for tag in tags %}
+                    [[ item data:'' ]]
+                        {% capture id %}{% endcapture %}
+                        {% capture title %}{{ tag.Name | Capitalize }}{% endcapture %}
+                        {% capture titlesize %}h3{% endcapture %}
+                        {% capture content %}{% endcapture %}
+                        {% capture textalignment %}{% endcapture %}
+                        {% capture label %}{% endcapture %}
+                        {% capture subtitle %}{% endcapture %}
+                        {% assign squareImage = tag | Attribute:'ImageSquare','Url' %}
+                        {% capture imageurl %}{{ tag | Attribute:'ImagePortrait','Url' | Default:squareImage }}{% endcapture %}
+                        {% capture imageoverlayurl %}{% endcapture %}
+                        {% capture imagealignment %}{% endcapture %}
+                        {% capture contentalignment %}end{% endcapture %}
+                        {% capture imageopacity %}{% endcapture %}
+                        {% capture imageflip %}{% endcapture %}
+                        {% capture imageblur %}{% endcapture %}
+                        {% capture grayscale %}{% endcapture %}
+                        {% capture backgroundvideourl %}{% endcapture %}
+                        {% capture lava %}{% endcapture %}
+                        {% capture video %}{% endcapture %}
+                        {% capture ratio %}portrait{% endcapture %}
+                        {% capture trimcopy %}{% endcapture %}
+                        {% capture linkcolor %}{% endcapture %}
+                        {% capture backgroundcolor %}#000{% endcapture %}
+                        {% capture foregroundcolor %}white{% endcapture %}
+                        {% capture linkurl %}/topics/{{ tag.Name | Replace:' ','-' | Downcase }}{% endcapture %}
+                        {% capture linktext %}Browse Topic{% endcapture %}
+                        {% capture hideforegroundelements %}{% endcapture %}
+                        {% capture blockwidth %}{% endcapture %}
+                        {% capture gradientamount %}75{% endcapture %}
+
+                        <span class="text-center">{[ image id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' contentalignment:'{{ contentalignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' foregroundcolor:'{{ foregroundcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' blockwidth:'{{ blockwidth }}' gradientamount:'{{ gradientamount }}' ]}</span>
+
+                    [[ enditem ]]
+                {% endfor %}
+            {[ endswiper ]}
+        {% endtag %}
+
+    </div>
+</section>
