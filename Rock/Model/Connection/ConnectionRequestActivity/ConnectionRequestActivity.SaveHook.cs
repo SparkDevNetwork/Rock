@@ -35,18 +35,8 @@ namespace Rock.Model
             {
                 if ( State == EntityContextState.Added )
                 {
-                    var connectionRequestActivity = this.Entity as ConnectionRequestActivity;
-                    if ( connectionRequestActivity != null )
-                    {
-                        var processConnectionRequestActivityChangeMsg = new ProcessConnectionRequestActivityChange.Message()
-                        {
-                            ConnectionRequestActivityGuid = connectionRequestActivity.Guid,
-                            ConnectionOpportunityId = connectionRequestActivity.ConnectionOpportunityId,
-                            ConnectionActivityTypeId = connectionRequestActivity.ConnectionActivityTypeId
-                        };
-
-                        processConnectionRequestActivityChangeMsg.Send();
-                    }
+                    var transaction = new Rock.Transactions.ConnectionRequestActivityChangeTransaction( this.Entity );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
 
                 base.PreSave();
