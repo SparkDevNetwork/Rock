@@ -46,7 +46,7 @@
 {% endif %}
 {% assign linkurl = linkurl | Trim %}
 
-    <section data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides soft-double-top xs-hard xs-push-half-bottom rounded-lg {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }} !important;"{% endif %}>
+    <section data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-top xs-hard-sides xs-push-half-bottom rounded-lg {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }} !important;"{% endif %}>
 
         {% if ratio and ratio != empty %}
         {% assign trimcopy = 'Yes' %}

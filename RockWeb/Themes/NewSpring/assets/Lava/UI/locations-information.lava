@@ -10,70 +10,73 @@
 {% assign serviceTimes = serviceTimes | Trim %}
 {% assign fuseServiceTimes = fuseServiceTimes | Trim %}
 
-{[ section title:'' ]}
-    <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-soft-half-sides xs-text-center sm-text-center">
-        <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
-            <h3 class="push-half-bottom">Sunday Gatherings</h3>
-            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
-            <p class="lead">{{ serviceTimes }}
-            {% if getDirections != empty %}
-                <a href="{{ getDirections }}" >Get Directions</a>
-            {% endif %}
-            </p>
-        </div>{% if fuseServiceTimes != empty and fuseServiceTimes != '' %}<div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype == 'Fuse' %}push-bottom{% endif %}">
-            <h3 class="push-half-bottom">Fuse Student Ministry</h3>
-            <p class="push-half-bottom" style="max-width: 400px;"><small>Fuse is happening in-person and online every Wednesday. Watch as a family or connect to a Fuse Group.<br><a href="/fuse?utm_source=newspring&utm_medium=text&utm_campaign=locations">Learn More</a></small></p>
-            <p class="lead">{{ fuseServiceTimes }}</p>
-        </div>{% endif %}
-    </div>
-{[ endsection ]}
-
-{[ section title:'' ]}
-    <div class="row soft-double-sides xs-soft-half-sides xs-text-center sm-text-center">
-        <div class="col-xs-12 col-sm-12 col-md-4">
-            {% if location != empty %}
-                <h3 class="push-half-bottom">Campus Address</h3>
-                <p class="lead">
-                    {{ campus.LocationStreet1 }}<br>
-                    {% if campus.LocationStreet2 != empty %}
-                        {{ campus.LocationStreet2 }}<br>
+    <div class="page-constrained mx-auto soft-sides xs-soft-half-sides">
+        <div class="bg-white soft-double-ends soft-sides hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
+            <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-hard-sides">
+                <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
+                    <h3 class="push-half-bottom">Sunday Gatherings</h3>
+                    <p class="push-half-bottom"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
+                    <p class="lead">{{ serviceTimes }}
+                    {% if getDirections != empty %}
+                        <a href="{{ getDirections }}" >Get Directions</a>
                     {% endif %}
-                    {{ campus.LocationCity }}, {{ campus.LocationState }} {{ campus.LocationPostalCode | Slice: 0, 5 }}
-                </p>
-            {% endif %}
+                    </p>
+                </div>{% if fuseServiceTimes != empty and fuseServiceTimes != '' %}<div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype == 'Fuse' %}push-bottom{% endif %}">
+                    <h3 class="push-half-bottom">Fuse Student Ministry</h3>
+                    <p class="push-half-bottom"><small>Fuse is happening in-person and online every Wednesday. Watch as a family or connect to a Fuse Group.<br><a href="/fuse?utm_source=newspring&utm_medium=text&utm_campaign=locations">Learn More</a></small></p>
+                    <p class="lead">{{ fuseServiceTimes }}</p>
+                </div>{% endif %}
+            </div>
+        </div>
 
-            {% if officeAddress.Street1 != null and officeAddress.Street1 != '' and officeAddress.Street1 != location.Street1 %}
-                <h3 class="push-half-bottom">Office Address</h3>
-                <p class="lead">
-                    {{ officeAddress.Street1 }}<br>
-                    {% if officeAddress.Street2 != empty %}
-                        {{ officeAddress.Street2 }}<br>
+
+        <div class="bg-white soft-double-ends soft-sides hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
+            <div class="row soft-double-sides xs-hard-sides">
+                <div class="col-xs-12 col-sm-12 col-md-4 push-bottom sm-flush-bottom xs-flush-bottom">
+                    {% if location != empty %}
+                        <h3 class="push-half-bottom">Campus Address</h3>
+                        <p class="lead">
+                            {{ campus.LocationStreet1 }}<br>
+                            {% if campus.LocationStreet2 != empty %}
+                                {{ campus.LocationStreet2 }}<br>
+                            {% endif %}
+                            {{ campus.LocationCity }}, {{ campus.LocationState }} {{ campus.LocationPostalCode | Slice: 0, 5 }}
+                        </p>
                     {% endif %}
-                    {{ officeAddress.City }}, {{ officeAddress.State }} {{ officeAddress.PostalCode | Slice: 0, 5 }}
-                </p>
-            {% endif %}
 
-            {% if mailingAddress.Street1 != null and mailingAddress.Street1 != '' and mailingAddress.Street1 != location.Street1 and mailingAddress.Street1 != officeAddress.Street1 %}
-                <h3 class="push-half-bottom">Mailing Address</h3>
-                <p class="lead">
-                    {{ mailingAddress.Street1 }}<br>
-                    {% if mailingAddress.Street2 != empty %}
-                        {{ mailingAddress.Street2 }}<br>
+                    {% if officeAddress.Street1 != null and officeAddress.Street1 != '' and officeAddress.Street1 != location.Street1 %}
+                        <h3 class="push-half-bottom">Office Address</h3>
+                        <p class="lead">
+                            {{ officeAddress.Street1 }}<br>
+                            {% if officeAddress.Street2 != empty %}
+                                {{ officeAddress.Street2 }}<br>
+                            {% endif %}
+                            {{ officeAddress.City }}, {{ officeAddress.State }} {{ officeAddress.PostalCode | Slice: 0, 5 }}
+                        </p>
                     {% endif %}
-                    {{ mailingAddress.City }}, {{ mailingAddress.State }} {{ mailingAddress.PostalCode | Slice: 0, 5 }}
-                </p>
-            {% endif %}
 
-        </div><div class="col-xs-12 col-sm-12 col-md-4">
-            <h3 class="push-half-bottom">Phone</h3>
-            {% assign phoneNumber = campus.PhoneNumber | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' %}
-            <p class="lead"><a href="tel:+1{{ phoneNumber }}">({{ phoneNumber | Slice:0,3 }}) {{ phoneNumber | Slice:3,3 }}-{{ phoneNumber | Slice:6,4 }}</a></p>
-        </div><div class="col-xs-12 col-sm-12 col-md-4">
-            <h3 class="push-half-bottom">Email</h3>
-            <p class="lead"><a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a></p>
+                    {% if mailingAddress.Street1 != null and mailingAddress.Street1 != '' and mailingAddress.Street1 != location.Street1 and mailingAddress.Street1 != officeAddress.Street1 %}
+                        <h3 class="push-half-bottom">Mailing Address</h3>
+                        <p class="lead">
+                            {{ mailingAddress.Street1 }}<br>
+                            {% if mailingAddress.Street2 != empty %}
+                                {{ mailingAddress.Street2 }}<br>
+                            {% endif %}
+                            {{ mailingAddress.City }}, {{ mailingAddress.State }} {{ mailingAddress.PostalCode | Slice: 0, 5 }}
+                        </p>
+                    {% endif %}
+
+                </div><div class="col-xs-12 col-sm-12 col-md-4">
+                    <h3 class="push-half-bottom">Phone</h3>
+                    {% assign phoneNumber = campus.PhoneNumber | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' %}
+                    <p class="lead"><a href="tel:+1{{ phoneNumber }}">({{ phoneNumber | Slice:0,3 }}) {{ phoneNumber | Slice:3,3 }}-{{ phoneNumber | Slice:6,4 }}</a></p>
+                </div><div class="col-xs-12 col-sm-12 col-md-4 push-bottom">
+                    <h3 class="push-half-bottom">Email</h3>
+                    <p class="lead"><a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a></p>
+                </div>
+            </div>
         </div>
     </div>
-{[ endsection ]}
 
 {% if servicetype != 'Fuse' %}
     {% assign placesId = campus.GooglePlacesId %}
@@ -82,7 +85,7 @@
 
         <script src="https://maps.googleapis.com/maps/api/js?v=3&key={{ 'Global' | Attribute:'GoogleAPIKey' }}&libraries=places"></script>
 
-        <div id="map-canvas" class="ratio ratio-landscape xs-ratio-square push-bottom xs-push-half-bottom rounded shadowed overflow-hidden"></div>
+        <div id="map-canvas" class="ratio ratio-landscape xs-ratio-square push-bottom xs-push-half-bottom overflow-hidden"></div>
 
         <script>
         function initialize() {
