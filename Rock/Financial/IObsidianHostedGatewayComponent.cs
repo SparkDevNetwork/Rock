@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Financial
@@ -22,6 +23,15 @@ namespace Rock.Financial
     /// <summary>
     /// A Financial Gateway that has an Obsidian control
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    [RockInternal]
     public interface IObsidianHostedGatewayComponent
     {
         /// <summary>
