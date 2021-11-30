@@ -18,29 +18,29 @@
 </script>
 
 <!--
- ######  ######    ##     ####                  
-   ##      ##      ##    ##                     
-   ##      ##       #     ####                  
-   ##      ##                ##                 
- ######    ##             ####                  
-                                                
-  ####   ##      ##                             
- ##  ##  ##      ##                             
- ######  ##      ##                             
- ##  ##  ##      ##                             
- ##  ##  ######  ######                         
-                                                
-  ####   #####    ####   ##  ##  ######         
- ##  ##  ##  ##  ##  ##  ##  ##    ##           
- ######  #####   ##  ##  ##  ##    ##           
- ##  ##  ##  ##  ##  ##  ##  ##    ##           
- ##  ##  #####    ####    ####     ##           
-                                                
- ######  ######   ####   ##  ##   ####          
-     ##  ##      ##      ##  ##  ##             
-     ##  ####     ####   ##  ##   ####          
- ##  ##  ##          ##  ##  ##      ##         
-  ####   ######   ####    ####    ####          
+ ######  ######    ##     ####
+   ##      ##      ##    ##
+   ##      ##       #     ####
+   ##      ##                ##
+ ######    ##             ####
+
+  ####   ##      ##
+ ##  ##  ##      ##
+ ######  ##      ##
+ ##  ##  ##      ##
+ ##  ##  ######  ######
+
+  ####   #####    ####   ##  ##  ######
+ ##  ##  ##  ##  ##  ##  ##  ##    ##
+ ######  #####   ##  ##  ##  ##    ##
+ ##  ##  ##  ##  ##  ##  ##  ##    ##
+ ##  ##  #####    ####    ####     ##
+
+ ######  ######   ####   ##  ##   ####
+     ##  ##      ##      ##  ##  ##
+     ##  ####     ####   ##  ##   ####
+ ##  ##  ##          ##  ##  ##      ##
+  ####   ######   ####    ####    ####
 -->
 
 <html class="no-js" lang="en">
@@ -56,6 +56,7 @@
         <!-- Libraries -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.0/js/swiper.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/cferdinandi/smooth-scroll@15/dist/smooth-scroll.polyfills.min.js"></script>
+
         <script src='<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>' ></script>
         <script src='<%# ResolveRockUrl("~~/Scripts/theme.js", true) %>' ></script>
 
@@ -67,39 +68,38 @@
 
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     </head>
-     
+
     <body runat="server" id="body">
 
         <form id="form1" runat="server">
 
-            <div id="navigation">
-                <Rock:Zone Name="Login" runat="server" />
-                <Rock:Zone Name="Navigation" runat="server" />
-            </div>
+            <Rock:Lava ID="AddClasses" runat="server">
+                {% assign hasRights = 'Global' | Page:'Id' | HasRightsTo:'Edit','Rock.Model.Page' %}
+                {% assign transparentNav = CurrentPage | Attribute:'TransparentNavigation','RawValue' %}
 
-            <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
-                <Rock:Zone Name="Header" runat="server" />
-            </div>
-
-            <Rock:Lava ID="PageConstrained" runat="server">
-                {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
-                {% if isPageConstrained == 'Yes' %}
-                    <div class="page-constrained mx-auto">
-                {% endif %}
+                <div class="js-classes
+                    {% if hasRights == 'True' %}is-admin{% endif %}
+                    {% if transparentNav == 'True' %}nav-transparent{% endif %}
+                ">
             </Rock:Lava>
 
-            <div id="content" class="clearfix">
+                <div id="navigation-wrapper">
+                    <div id="navigation">
+                        <Rock:Zone Name="Login" runat="server" />
+                        <Rock:Zone Name="Navigation" runat="server" />
+                    </div>
+
+                    <div id="navigation-secondary">
+                        <Rock:Zone Name="Header" runat="server" />
+                    </div>
+                </div>
+
                 <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
                 <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-                <Rock:Zone Name="Footer" runat="server" />                
-            </div>
 
-            <Rock:Lava ID="PageConstrainedClose" runat="server">
-                {% assign isPageConstrained = CurrentPage | Attribute:'PageConstrained' %}
-                {% if isPageConstrained == 'Yes' %}
-                    </div>
-                {% endif %}
-            </Rock:Lava>
+                <Rock:Zone Name="Footer" runat="server" />
+
+            </div>
 
             <%-- controls for scriptmanager and update panel --%>
             <asp:ScriptManager ID="sManager" runat="server"/>

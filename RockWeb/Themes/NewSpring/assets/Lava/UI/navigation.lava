@@ -7,13 +7,13 @@
 			<img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="{{ organizationname }}" class="nav-icon  nav-logo-regular">
 			<span>{{ organizationname }}</span>
 		</a>
-	</li><span class="pull-right xs-pull-none">{% if menu == 'true' %}<li>
+	</li><span class="pull-right">{% if menu == 'true' %}<li>
 	    {% assign navItemCount = navItemCount | Plus:1 %}
 		<a href="#" data-toggle="modal" data-target="#navigation-modal" title="Menu"><i class="fal fa-fw fa-lg fa-bars"></i></a>
-	</li>{% endif %}{% if locations == 'true' %}<li>
+	</li>{% endif %}{% if locations == 'true' %}<li class="hidden-xs">
 	    {% assign navItemCount = navItemCount | Plus:1 %}
-		<a href="/locations" title="Locations"><i class="fal fa-fw fa-lg fa-map-marker-alt"></i></a>
-	</li>{% endif %}{% if search == 'true' %}<li>
+		<a href="/locations?utm_source=newspring&utm_campaign=locations&utm_medium=main-nav" title="Locations"><i class="fal fa-fw fa-lg fa-map-marker-alt"></i></a>
+	</li>{% endif %}{% if search == 'true' %}<li class="hidden-xs">
 	    {% assign navItemCount = navItemCount | Plus:1 %}
 		<a href="/search" title="Search"><i class="fal fa-fw fa-lg fa-search"></i></a>
 	</li>{% endif %}{% if account == 'true' %}<li>
@@ -40,9 +40,7 @@
 {% assign navItemWidthMobile = 100 | DividedBy:navItemCountMobile,3 %}
 
 <style>
-.nav-primary li {
-    width: {{ navItemWidthDesk }}%;
-}
+
 
 @media (min-width: 669px) {
     .nav-primary li {

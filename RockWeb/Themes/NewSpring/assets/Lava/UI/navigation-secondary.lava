@@ -5,7 +5,7 @@
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
         <a href="{{ Page.Url }}" class="hidden-sm hidden-xs">
-            <h2 class="h4 text-white flush pull-left" style="position: relative; top: 4px;">{{ Page.Title }}</h2>
+            <h2 class="h4 text-white flush pull-left" style="position: relative; top: 6px;">{{ Page.Title }}</h2>
         </a>
 
         <ul class="list-inline flush">
@@ -33,7 +33,7 @@
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
         <a id="mobileSecondaryNavTrigger" class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left flush-bottom" role="button" data-toggle="collapse" data-parent="#accordion" href="#mobileSecondaryNav" aria-expanded="false" aria-controls="mobileSecondaryNav">
-                <span class="h5 display-inline-block flush" style="padding: 4px 0;">{{ Page.Title }}</span>
+                <span class="h5 text-white display-inline-block flush" style="padding: 4px 0;">{{ Page.Title }}</span>
             <i class="position-relative fas fa-angle-down fa-lg pull-right" style="top: 7px; font-size: 1.6em;"></i>
         </a>
 

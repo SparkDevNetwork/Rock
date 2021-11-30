@@ -1,4 +1,4 @@
-<section class="shell bg-gray-dark text-white soft xs-soft-half flush text-left sm-text-center xs-text-center shadowed">
+<section class="shell bg-gray-dark text-white soft xs-soft-half flush text-left sm-text-center xs-text-center">
 
     {% if preTitle != '' %}
         <p class="hidden sans-serif stronger letter-spacing-condensed push-half-bottom xs-push-bottom">{{ blockData.preTitle | safe }}</p>
@@ -9,7 +9,7 @@
     {% if subtitle != '' %}
         <p class="hidden sans-serif stronger letter-spacing-condensed push-half-top flush-bottom {% if pageHeaderColorHex %}{% else %}text-gray-dark{% endif %}"><small>{{ blockData.subtitle | safe }}</small></p>
     {% endif %}
-    
+
     {% if tagCount > 0 %}
         <p class="hidden tag-list sans-serif push-half-bottom">
             <small>{% for id, title in blockData.tags %}
@@ -17,11 +17,11 @@
             {% endfor %}</small>
         </p>
     {% endif %}
-    
+
     {% if copy != '' %}
         <div class="hidden text-constrained">
             {{ blockData.copy | safe }}
         </div>
     {% endif %}
-        
+
 </section>

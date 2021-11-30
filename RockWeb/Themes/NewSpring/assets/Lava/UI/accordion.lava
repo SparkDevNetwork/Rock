@@ -5,7 +5,7 @@
         {% if item.cssclasses and item.cssclasses != empty and item.cssclasses != '' %}<div class="{{ item.cssclasses }}">{% endif %}
             <div class="panel panel-primary">
                 <a id="heading-{{ wrapperId }}-{{ forloop.index }}" role="button" data-toggle="collapse" data-parent="#accordion-{{ wrapperId }}" href="#{{ wrapperId }}-{{ forloop.index }}" aria-expanded="true" aria-controls="{{ wrapperId }}-{{ forloop.index }}" class="panel-heading display-block sans-serif strong text-decoration-none text-white">
-                    {{ item.title }} <i class="fal fa-chevron-down pull-right" style="position:relative;top:4px;"></i>
+                    {{ item.title }} <i class="far fa-chevron-down pull-right" style="position:relative;top:4px;"></i>
                 </a>
                 <div id="{{ wrapperId }}-{{ forloop.index }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{ wrapperId }}-{{ forloop.index }}">
                     <div class="panel-body text-gray-darker hard-bottom xs-soft xs-hard-bottom">

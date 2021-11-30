@@ -23,7 +23,7 @@
 
 {% assign channelItemsName = Items | First | Property:'ChannelName' | Split:' - ' | Index:1 %}
 {% assign channelUrl = Items | First | Property:'ChannelUrl' %}
-<section class="bg-white soft xs-soft-half soft-half-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+<section class="clearfix push-bottom xs-push-half-bottom">
 <div class="row soft-half-top soft-bottom xs-text-center">
     <div class="col-xs-12 col-sm-6 col-md-6">
         <h2 class="flush xs-push-half-ends">Latest {{ channelItemsName }}</h2>

@@ -1,14 +1,14 @@
 {% if id and id != '' %}
 
 <div class="position-relative">
-    <div class="rounded shadowed overflow-hidden" style="width:{{ width }};">
+    <div class="rounded-lg shadowed overflow-hidden" style="width:{{ width }};">
         <div id="wistia_{{ id }}" class="wistia_embed">&nbsp;</div>
     </div>
 </div>
 
 {% assign personAliasId = CurrentPerson.PrimaryAliasId -%}
 {% if personAliasId == null -%}{% assign personAliasId = 0 -%}{% endif -%}
-{% if contentchannelitemid == null || contentchannelitemid == ' -%}{% assign contentchannelitemid = 0 -%}{% endif -%}
+{% if contentchannelitemid == null || contentchannelitemid == '' -%}{% assign contentchannelitemid = 0 -%}{% endif -%}
 {% if entitytypeid == null || entitytypeid == ' -%}{% assign entitytypeid = 0 -%}{% endif -%}
 {% if entityid == null || entityid == ' -%}{% assign entityid = 0 -%}{% endif -%}
 
@@ -35,6 +35,9 @@
         googleAnalytics: {{ enablegoogleanalytics }},
         settingsControl: {{ showsettingscontrol }},
         volumeControl: {{ showvolumecontrol }},
+        {% if time and time != empty %}
+        time: {{ time | ToJSON }},
+        {% endif %}
         smallPlayButton: {{ showsmallplaybutton }}
     });
 </script>
