@@ -22,7 +22,7 @@
 {% capture imageurl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
 {% capture imageoverlayurl %}{% endcapture %}
 {% capture imagealignment %}{% endcapture %}
-{% capture imageopacity %}.4{% endcapture %}
+{% capture imageopacity %}.7{% endcapture %}
 {% capture imageflip %}{% endcapture %}
 {% capture imageblur %}{% endcapture %}
 {% capture grayscale %}{% endcapture %}
@@ -37,4 +37,4 @@
 {% assign linktext = "" %}
 {% capture hideforegroundelements %}{% endcapture %}
 
-{[ hero id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' ]}
+{[ hero id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' contentalignment:'end' ]}
