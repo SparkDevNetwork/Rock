@@ -46,7 +46,8 @@
 {% endcomment %}
 {% assign members = members | Where:'ShowOnWebsite','Yes' | OrderBy:'Role,LastName,NickName' %}
 
-<div class="bg-white soft hard-bottom xs-soft-sides xs-hard-bottom push-bottom xs-push-half-bottom rounded shadowed xs-text-center clearfix">
+<section class="soft hard-bottom xs-soft-half-sides clearfix bg-gray-lighter">
+<div class="bg-white soft hard-bottom xs-soft-sides xs-hard-bottom push-bottom xs-push-half-bottom rounded-lg xs-text-center clearfix">
 
     <div class="row flush-sides push-bottom push-half-top text-left sm-text-center xs-text-center">
         <div class="col-xs-12 col-sm-12 col-md-6">
@@ -119,3 +120,4 @@
         </div>{% endfor %}
     </div>
 </div>
+</section>
