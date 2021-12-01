@@ -2201,6 +2201,27 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             };
         }
 
+        /// <inheritdoc/>
+        public bool TryGetPaymentTokenFromParameters( FinancialGateway financialGateway, IDictionary<string, string> parameters, out string paymentToken )
+        {
+            paymentToken = null;
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public bool IsPaymentTokenCharged( FinancialGateway financialGateway, string paymentToken )
+        {
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public FinancialTransaction FetchPaymentTokenTransaction( Data.RockContext rockContext, FinancialGateway financialGateway, int? fundId, string paymentToken )
+        {
+            // This method is not required in our implementation.
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region IFeeCoverageGatewayComponent

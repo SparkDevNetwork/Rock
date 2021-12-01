@@ -736,6 +736,7 @@
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianHostedGatewayComponent.cs" />
+    <Compile Include="Financial\IPaymentTokenGateway.cs" />
     <Compile Include="Financial\ISearchKeyTiedGateway.cs" />
     <Compile Include="Financial\IStatusProvidingGateway.cs" />
     <Compile Include="Jobs\ConnectionRequestsAutomation.cs" />
@@ -977,7 +978,7 @@
     <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplateService.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
-    <Compile Include="Financial\IRedirectionGateway.cs" />
+    <Compile Include="Financial\IRedirectionGatewayComponent.cs" />
     <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\LavaService.cs" />
@@ -1142,6 +1143,7 @@
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\NameValueCollectionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\ObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />

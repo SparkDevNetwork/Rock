@@ -137,6 +137,16 @@ export default defineComponent({
         /** The amount to pay as a friendly text string. */
         amountToPayText(): string {
             return `$${this.registrationEntryState.amountToPayToday.toFixed(2)}`;
+        },
+
+        /** The URL to return to if the gateway control needs to perform a redirect. */
+        redirectReturnUrl(): string {
+            if (window.location.href.includes("?")) {
+                return `${window.location.href}&sessionGuid=${this.registrationEntryState.viewModel.session?.registrationSessionGuid}`;
+            }
+            else {
+                return `${window.location.href}?sessionGuid=${this.registrationEntryState.viewModel.session?.registrationSessionGuid}`;
+            }
         }
     },
 
@@ -250,7 +260,8 @@ export default defineComponent({
         /** Persist the args to the server so the user can be redirected for payment. Returns the redirect URL. */
         async getPaymentRedirect(): Promise<string> {
             const result = await this.invokeBlockAction<string>("GetPaymentRedirect", {
-                args: this.getRegistrationEntryBlockArgs()
+                args: this.getRegistrationEntryBlockArgs(),
+                returnUrl: window.location.href
             });
 
             if (result.isError || !result.data) {
@@ -280,6 +291,7 @@ export default defineComponent({
                     <GatewayControl
                         :gatewayControlModel="gatewayControlModel"
                         :amountToPay="amountToPay"
+                        :returnUrl="redirectReturnUrl"
                         @success="onGatewayControlSuccess"
                         @error="onGatewayControlError"
                         @validation="onGatewayControlValidation" />
