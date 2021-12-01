@@ -113,7 +113,10 @@ namespace RockWeb.Blocks.CheckIn
         private const string PreSelectedOptionsFormatDefaultValue = @"
 <span class='auto-select-schedule'>{{ Schedule.Name }}:</span>
 <span class='auto-select-group'>{{ Group.Name }}</span>
-<span class='auto-select-location'>{{ Location.Name }}</span>
+<span class='auto-select-location'>{{ Location.Name }}</span
+{% if DisplayLocationCount == true %}
+<span class='auto-select-count'> Count: {{ LocationCount }}</span>
+{% endif %} 
 ";
 
 
@@ -297,16 +300,10 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         var selectedOptions = person.GetOptions( true, true );
 
-                        string format = GetAttributeValue( AttributeKey.OptionFormat );
                         foreach ( var option in selectedOptions )
                         {
-                            var mergeFields = new Dictionary<string, object> {
-                            { "GroupType", option.GroupType },
-                            { "Group", option.Group },
-                            { "Location", option.Location },
-                            { "Schedule", option.Schedule }
-                        };
-                            options.Add( format.ResolveMergeFields( mergeFields ) );
+                            var optionText = GetOptionText( option );
+                            options.Add( optionText );
                         }
 
                         var pnlPersonButton = e.Item.FindControl( "pnlPersonButton" ) as Panel;
@@ -357,6 +354,26 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the option text.
+        /// </summary>
+        private string GetOptionText( CheckInPersonSummary option )
+        {
+            var format = GetAttributeValue( AttributeKey.OptionFormat );
+            var mergeFields = new Dictionary<string, object>
+            {
+                { "GroupType", option.GroupType },
+                { "Group", option.Group },
+                { "Location", option.Location },
+                { "Schedule", option.Schedule },
+                { "DisplayLocationCount", CurrentCheckInState.CheckInType.DisplayLocationCount },
+                { "LocationCount", KioskLocationAttendance.Get( option.Location.Location.Id ).CurrentCount }
+            };
+
+            var optionText = format.ResolveMergeFields( mergeFields );
+            return optionText;
         }
 
         /// <summary>
@@ -564,16 +581,10 @@ namespace RockWeb.Blocks.CheckIn
                 var options = new List<string>();
                 if ( _autoCheckin && person.PreSelected )
                 {
-                    string format = GetAttributeValue( AttributeKey.OptionFormat );
                     foreach ( var option in person.GetOptions( true, true ) )
                     {
-                        var mergeFields = new Dictionary<string, object> {
-                            { "GroupType", option.GroupType },
-                            { "Group", option.Group },
-                            { "Location", option.Location },
-                            { "Schedule", option.Schedule }
-                        };
-                        options.Add( format.ResolveMergeFields( mergeFields ) );
+                        var optionText = GetOptionText( option );
+                        options.Add( optionText );
                     }
                 }
 
@@ -654,12 +665,16 @@ namespace RockWeb.Blocks.CheckIn
             if ( option != null )
             {
                 string format = GetAttributeValue( AttributeKey.OptionFormat );
-                var mergeFields = new Dictionary<string, object> {
-                            { "GroupType", option.GroupType },
-                            { "Group", option.Group },
-                            { "Location", option.Location },
-                            { "Schedule", option.Schedule }
-                        };
+                var mergeFields = new Dictionary<string, object>
+                {
+                    { "GroupType", option.GroupType },
+                    { "Group", option.Group },
+                    { "Location", option.Location },
+                    { "Schedule", option.Schedule },
+                    { "DisplayLocationCount", CurrentCheckInState.CheckInType.DisplayLocationCount },
+                    { "LocationCount", KioskLocationAttendance.Get( option.Location.Location.Id ).CurrentCount }
+                };
+
                 return format.ResolveMergeFields( mergeFields );
             }
 
