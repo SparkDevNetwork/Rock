@@ -142,10 +142,10 @@ export default defineComponent({
         /** The URL to return to if the gateway control needs to perform a redirect. */
         redirectReturnUrl(): string {
             if (window.location.href.includes("?")) {
-                return `${window.location.href}&sessionGuid=${this.registrationEntryState.viewModel.session?.registrationSessionGuid}`;
+                return `${window.location.href}&sessionGuid=${this.registrationEntryState.registrationSessionGuid}`;
             }
             else {
-                return `${window.location.href}?sessionGuid=${this.registrationEntryState.viewModel.session?.registrationSessionGuid}`;
+                return `${window.location.href}?sessionGuid=${this.registrationEntryState.registrationSessionGuid}`;
             }
         }
     },
@@ -162,19 +162,7 @@ export default defineComponent({
 
             // If there is a cost, then the gateway will need to be used to pay
             if (this.registrationEntryState.amountToPayToday) {
-                // If this is a redirect gateway, then persist and redirect now
-                if (this.viewModel.isRedirectGateway) {
-                    const redirectUrl = await this.getPaymentRedirect();
-
-                    if (redirectUrl) {
-                        location.href = redirectUrl;
-                    }
-                    else {
-                        // Error is shown by getPaymentRedirect method
-                        this.loading = false;
-                    }
-                }
-                else if (this.showGateway) {
+                if (this.showGateway) {
                     // Otherwise, this is a traditional gateway
                     this.gatewayErrorMessage = "";
                     this.gatewayValidationFields = {};
@@ -255,20 +243,6 @@ export default defineComponent({
             }
 
             return result.isSuccess;
-        },
-
-        /** Persist the args to the server so the user can be redirected for payment. Returns the redirect URL. */
-        async getPaymentRedirect(): Promise<string> {
-            const result = await this.invokeBlockAction<string>("GetPaymentRedirect", {
-                args: this.getRegistrationEntryBlockArgs(),
-                returnUrl: window.location.href
-            });
-
-            if (result.isError || !result.data) {
-                this.submitErrorMessage = result.errorMessage || "Unknown error";
-            }
-
-            return result.data || "";
         }
     },
 

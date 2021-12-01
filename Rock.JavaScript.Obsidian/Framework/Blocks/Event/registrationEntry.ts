@@ -274,7 +274,9 @@ export default defineComponent({
             steps,
             registrationEntryState,
             notFound,
-            persistSession
+            persistSession,
+            invokeBlockAction,
+            getRegistrationEntryBlockArgs
         };
     },
     data() {

@@ -118,6 +118,11 @@ export default defineComponent({
         amountToPay: {
             type: Number as PropType<number>,
             required: true
+        },
+
+        returnUrl: {
+            type: String as PropType<string>,
+            required: false
         }
     },
 
@@ -161,6 +166,7 @@ export default defineComponent({
             url,
             settings,
             amountToPay,
+            returnUrl: props.returnUrl,
             onSuccess,
             onValidation,
             onError
@@ -173,6 +179,7 @@ export default defineComponent({
     <ComponentFromUrl :url="url"
         :settings="settings"
         :amount="amountToPay"
+        :returnUrl="returnUrl"
         @validation="onValidation"
         @success="onSuccess"
         @error="onError" />
