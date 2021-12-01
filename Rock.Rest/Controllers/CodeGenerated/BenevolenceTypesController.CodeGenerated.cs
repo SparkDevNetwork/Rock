@@ -21,29 +21,18 @@
 // </copyright>
 //
 
-import { IEntity } from "../entity";
+using Rock.Model;
 
-export type BenevolenceRequest = IEntity & {
-    benevolenceTypeId?: number;
-    campusId?: number | null;
-    caseWorkerPersonAliasId?: number | null;
-    cellPhoneNumber?: string | null;
-    connectionStatusValueId?: number | null;
-    email?: string | null;
-    firstName?: string | null;
-    governmentId?: string | null;
-    homePhoneNumber?: string | null;
-    lastName?: string | null;
-    locationId?: number | null;
-    providedNextSteps?: string | null;
-    requestDateTime?: string;
-    requestedByPersonAliasId?: number | null;
-    requestStatusValueId?: number | null;
-    requestText?: string | null;
-    resultSummary?: string | null;
-    workPhoneNumber?: string | null;
-    createdDateTime?: string | null;
-    modifiedDateTime?: string | null;
-    createdByPersonAliasId?: number | null;
-    modifiedByPersonAliasId?: number | null;
-};
+namespace Rock.Rest.Controllers
+{
+    /// <summary>
+    /// BenevolenceTypes REST API
+    /// </summary>
+    public partial class BenevolenceTypesController : Rock.Rest.ApiController<Rock.Model.BenevolenceType>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BenevolenceTypesController"/> class.
+        /// </summary>
+        public BenevolenceTypesController() : base( new Rock.Model.BenevolenceTypeService( new Rock.Data.RockContext() ) ) { } 
+    }
+}

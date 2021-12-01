@@ -174,6 +174,7 @@
                                 <Rock:NumberBox ID="nbFollowupRepeatPreventionDuration" Label="Follow-up Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a follow-up alert from being triggered within the provided number of days from a previous alteration." />
                             </div>
                         </div>
+                        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                         <Rock:Grid ID="gAlerts" runat="server" OnRowDataBound="gAlerts_RowDataBound" OnRowSelected="gAlerts_Edit" DisplayType="Light">
                             <Columns>
                                 <Rock:ReorderField />

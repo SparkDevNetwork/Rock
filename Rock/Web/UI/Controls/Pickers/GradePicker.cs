@@ -145,7 +145,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public string GetJavascriptForYearPicker( YearPicker ypGraduationYear )
         {
-            DateTime currentGraduationDate = RockDateTime.CurrentGraduationDate;
+            DateTime currentGraduationDate = Rock.Model.PersonService.GetCurrentGraduationDate();
             DateTime gradeTransitionDate = new DateTime( RockDateTime.Now.Year, currentGraduationDate.Month, currentGraduationDate.Day );
 
             // add a year if the next graduation mm/dd won't happen until next year

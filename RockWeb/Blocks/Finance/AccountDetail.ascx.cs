@@ -186,6 +186,13 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
+            if ( accountId == 0 )
+            {
+                // just added, but we'll need an Id to set account participants
+                rockContext.SaveChanges();
+                accountId = new FinancialAccountService( new RockContext() ).GetId( account.Guid ) ?? 0;
+            }
+
             var accountParticipantsPersonAliasIdsByPurposeKey = AccountParticipantState.GroupBy( a => a.PurposeKey ).ToDictionary( k => k.Key, v => v.Select( x => x.PersonAliasId ).ToList() );
             foreach ( var purposeKey in accountParticipantsPersonAliasIdsByPurposeKey.Keys )
             {
@@ -465,7 +472,7 @@ namespace RockWeb.Blocks.Finance
             cpCampus.Campuses = CampusCache.All();
 
             ddlAccountParticipantPurposeKey.Items.Clear();
-            ddlAccountParticipantPurposeKey.Items.Add( new ListItem( RelatedEntityPurposeKey.GetPurposeKeyFriendlyName( RelatedEntityPurposeKey.FinancialAccountGivingAlert ), RelatedEntityPurposeKey.FinancialAccountGivingAlert ));
+            ddlAccountParticipantPurposeKey.Items.Add( new ListItem( RelatedEntityPurposeKey.GetPurposeKeyFriendlyName( RelatedEntityPurposeKey.FinancialAccountGivingAlert ), RelatedEntityPurposeKey.FinancialAccountGivingAlert ) );
         }
 
         #endregion
