@@ -26,7 +26,7 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
+                                <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" ValidateRequestMode="Disabled" />
                             </div>
 
                             <div class="col-md-6">
