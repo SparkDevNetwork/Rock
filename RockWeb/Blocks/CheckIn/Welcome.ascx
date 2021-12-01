@@ -308,7 +308,8 @@
                 var themeSupportsHtmlCamera = $('body').hasClass('js-camera-supported');
 
                 // handle click of scan button
-                if (themeSupportsHtmlCamera) {
+                // Limit HTML5 camera to theme support, but allow the IPad Camera to be used on any theme (since it would be full screen or passive)
+                if (themeSupportsHtmlCamera || isIPadAppWithCamera) {
                     $cameraButton.on('click', function (a) {
                         a.preventDefault();
                         if (isIPadAppWithCamera) {

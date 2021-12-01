@@ -460,11 +460,22 @@ namespace RockWeb.Blocks.CheckIn
             var device = CurrentCheckInState.Kiosk.Device;
             var deviceHasCamera = device.HasCamera;
             var iPadCameraMode = device.CameraBarcodeConfigurationType ?? blockIPadCameraMode;
-            var isNotIPad = ( device?.KioskType != KioskType.IPad );
+
+            // Determine if this device is specifically set to something besides IPad (null means we don't know for sure)
+            bool isNotIPad;
+            if ( device?.KioskType == null )
+            {
+                isNotIPad = false;
+            }
+            else
+            {
+                isNotIPad = ( device.KioskType.Value != KioskType.IPad );
+            }
 
             bool html5CameraIsEnabled = device.HasCamera && device.KioskType.HasValue && device?.KioskType != KioskType.IPad && this.CurrentThemeSupportsHTML5Camera();
             if ( html5CameraIsEnabled || isNotIPad || !deviceHasCamera )
             {
+                // Note that if the HTML5Camera is enabled (even if we are really an IPad), disable the IPadCamera and use the HTML5 camera instead
                 iPadCameraMode = CameraBarcodeConfiguration.Off;
             }
 

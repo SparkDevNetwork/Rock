@@ -66,7 +66,7 @@ namespace Rock.Model
         {
             if ( financialGateway != null )
             {
-                var redirectionGateway = financialGateway.GetGatewayComponent() as Rock.Financial.IRedirectionGateway;
+                var redirectionGateway = financialGateway.GetGatewayComponent() as Rock.Financial.IRedirectionGatewayComponent;
 
                 if ( redirectionGateway != null )
                 {

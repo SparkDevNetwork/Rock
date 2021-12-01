@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.WorkFlow
         "Disable Passing WorkflowTypeId",
         Description = "If set, it prevents the use of a Workflow Type Id (WorkflowTypeId=) from being passed in and only accepts a WorkflowTypeGuid.  " +
         "To use this block setting on your external site, you will need to create a new page and add the Workflow Entry block to it.  " +
-        "You may also add a new route so that URLs are in the pattern www.yourorganization.com/{PageRoute}/{WorkflowTypeGuid}.  " +
+        "You may also add a new route so that URLs are in the pattern .../{PageRoute}/{WorkflowTypeGuid}.  " +
         "If your workflow uses a form, you will also need to adjust email content to ensure that your URLs are correct.",
         Key = AttributeKey.DisablePassingWorkflowTypeId,
         DefaultBooleanValue = false,

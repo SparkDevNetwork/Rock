@@ -68,7 +68,7 @@
                                 <Rock:DefinedValuePicker ID="dvpSuffix1" runat="server" Label="Suffix" />
                             </asp:Panel>
                             <asp:Panel runat="server" ID="pnlBirthDate1">
-                                <Rock:BirthdayPicker ID="bpBirthDate1" runat="server" Label="Birthday" />
+                                <Rock:BirthdayPicker ID="bpBirthDate1" runat="server" Label="Birth Date" />
                             </asp:Panel>
                             <asp:Panel runat="server" ID="pnlMaritalStatus1">
                                 <Rock:DefinedValuePicker ID="dvpMaritalStatus1" runat="server" Label="Marital Status" />
@@ -113,7 +113,7 @@
                                     <Rock:DefinedValuePicker ID="dvpSuffix2" runat="server" Label="Suffix" />
                                 </asp:Panel>
                                 <asp:Panel runat="server" ID="pnlBirthDate2">
-                                    <Rock:BirthdayPicker ID="bpBirthDate2" runat="server" Label="Birthday" />
+                                    <Rock:BirthdayPicker ID="bpBirthDate2" runat="server" Label="Birth Date" />
                                 </asp:Panel>
                                 <asp:Panel runat="server" ID="pnlMaritalStatus2">
                                     <Rock:DefinedValuePicker ID="dvpMaritalStatus2" runat="server" Label="Marital Status" />

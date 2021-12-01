@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -24,7 +25,7 @@ namespace Rock.Financial
     /// <summary>
     /// Interface to implement if your gateway requires redirection.
     /// </summary>
-    public interface IRedirectionGateway
+    public interface IRedirectionGatewayComponent : IPaymentTokenGateway
     {
         /// <summary>
         /// Gets the merchant field label.
@@ -60,18 +61,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="fundId">The fund identifier.</param>
         /// <param name="amount">The amount.</param>
+        /// <param name="returnUrl">The URL the individual should be returned to after payment has completed.</param>
         /// <param name="metadata">The metadata.</param>
-        /// <returns></returns>
-        string GetEventRegistrationRedirectUrl( string fundId, decimal amount, Dictionary<string, string> metadata );
-
-        /// <summary>
-        /// Fetches the transaction from the database if it already exists or the API otherwise.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="fundId">The fund identifier.</param>
-        /// <param name="paymentToken">The payment token.</param>
-        /// <returns></returns>
-        FinancialTransaction FetchTransaction( RockContext rockContext, FinancialGateway financialGateway, string fundId, string paymentToken );
+        /// <returns>The URL the individual will be sent to in order to complete payment.</returns>
+        string GetPaymentRedirectUrl( int? fundId, decimal amount, string returnUrl, Dictionary<string, string> metadata );
     }
 }
