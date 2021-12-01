@@ -72,21 +72,21 @@ If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
 }
 
 # move RedirectorRules file back from temp
-If (Test-Path "$rootfolder\temp\RedirectorRules"){
-	Write-Host "Moving RedirectorRules from temp dir"
-	Copy-Item "$rootfolder\temp\RedirectorRules" "$webroot\App_Data\TriumphTech-WebAgility" -force
+If (Test-Path "$rootfolder\temp\RedirectorRules.json"){
+	Write-Host "Moving RedirectorRules.json from temp dir"
+	Copy-Item "$rootfolder\temp\RedirectorRules.json" "$webroot\App_Data\TriumphTech-WebAgility" -force
 }
 
 # move RequestHeaderRules file back from temp
-If (Test-Path "$rootfolder\temp\RequestHeaderRules"){
-	Write-Host "Moving RequestHeaderRules from temp dir"
-	Copy-Item "$rootfolder\temp\RequestHeaderRules" "$webroot\App_Data\TriumphTech-WebAgility" -force
+If (Test-Path "$rootfolder\temp\RequestHeaderRules.json"){
+	Write-Host "Moving RequestHeaderRules.json from temp dir"
+	Copy-Item "$rootfolder\temp\RequestHeaderRules.json" "$webroot\App_Data\TriumphTech-WebAgility" -force
 }
 
 # move ResponseHeaderRules file back from temp
-If (Test-Path "$rootfolder\temp\ResponseHeaderRules"){
-	Write-Host "Moving ResponseHeaderRules from temp dir"
-	Copy-Item "$rootfolder\temp\ResponseHeaderRules" "$webroot\App_Data\TriumphTech-WebAgility" -force
+If (Test-Path "$rootfolder\temp\ResponseHeaderRules.json"){
+	Write-Host "Moving ResponseHeaderRules.json from temp dir"
+	Copy-Item "$rootfolder\temp\ResponseHeaderRules.json" "$webroot\App_Data\TriumphTech-WebAgility" -force
 }
 
 # move core Rock css overrides file back from temp
