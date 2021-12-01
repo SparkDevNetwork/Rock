@@ -74,6 +74,11 @@ export default defineComponent({
         amount: {
             type: Number as PropType<number>,
             required: true
+        },
+
+        returnUrl: {
+            type: String as PropType<string>,
+            required: false
         }
     },
 
@@ -105,7 +110,7 @@ export default defineComponent({
                 const result = await stripeClient.confirmPayment({
                     elements: stripeElements,
                     confirmParams: {
-                        return_url: `${location.href}`
+                        return_url: props.returnUrl ?? ""
                     }
                 });
 

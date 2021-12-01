@@ -7,6 +7,8 @@ using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
 
+using Stripe;
+
 namespace Rock.Stripe
 {
     [DisplayName( "Stripe Gateway" )]
@@ -64,6 +66,34 @@ namespace Rock.Stripe
             errorMessage = null;
 
             return Guid.NewGuid().ToString();
+        }
+
+        /// <inheritdoc/>
+        public bool TryGetPaymentTokenFromParameters( FinancialGateway financialGateway, IDictionary<string, string> parameters, out string paymentToken )
+        {
+            return parameters.TryGetValue( "payment_intent", out paymentToken );
+        }
+
+        /// <inheritdoc/>
+        public bool IsPaymentTokenCharged( FinancialGateway financialGateway, string paymentToken )
+        {
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public FinancialTransaction FetchPaymentTokenTransaction( Data.RockContext rockContext, FinancialGateway financialGateway, int? fundId, string paymentToken )
+        {
+            if ( financialGateway.Attributes == null )
+            {
+                financialGateway.LoadAttributes( rockContext );
+            }
+
+            var client = new StripeClient( financialGateway.GetAttributeValue( AttributeKey.SecretKey ) );
+            var paymentIntentService = new PaymentIntentService( client );
+
+            var intent = paymentIntentService.Get( paymentToken );
+
+            throw new NotImplementedException();
         }
 
         public override FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
