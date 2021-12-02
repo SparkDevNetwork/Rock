@@ -28,6 +28,8 @@ namespace Rock.Tasks
     /// <summary>
     /// Launches a connection request change workflow
     /// </summary>
+    [Obsolete( "Use ConnectionRequestActivityChangeTransaction Transaction instead." )]
+    [RockObsolete( "1.13" )]
     public sealed class ProcessConnectionRequestActivityChange : BusStartedTask<ProcessConnectionRequestActivityChange.Message>
     {
         /// <summary>
