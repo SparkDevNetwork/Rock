@@ -424,7 +424,7 @@ namespace RockWeb.Blocks.Steps
                     Name = x.Name,
                     IconCssClass = x.IconCssClass,
                     Category = x.Category.Name,
-                    StepTypeCount = x.StepTypes.Count(m => m.IsActive),
+                    StepTypeCount = x.StepTypes.Count( m => m.IsActive ),
                     StepCompletedCount = completedStepsQry.Count( y => y.StepType.StepProgramId == x.Id )
                 } )
                 .ToList();

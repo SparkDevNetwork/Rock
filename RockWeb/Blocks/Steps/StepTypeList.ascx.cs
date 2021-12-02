@@ -603,7 +603,7 @@ namespace RockWeb.Blocks.Steps
             {
                 return ddlHasDurationFilter.SelectedValue;
             }
-            else if ( filterSettingName == FilterSettingName.ActiveStatus)
+            else if ( filterSettingName == FilterSettingName.ActiveStatus )
             {
                 return ddlActiveFilter.SelectedValue;
             }
@@ -661,13 +661,13 @@ namespace RockWeb.Blocks.Steps
             // Filter by: Active
             var activeFilter = rFilter.GetUserPreference( FilterSettingName.ActiveStatus ).ToUpperInvariant();
 
-            switch (activeFilter)
+            switch ( activeFilter )
             {
                 case "ACTIVE":
-                    stepTypesQry = stepTypesQry.Where(a => a.IsActive);
+                    stepTypesQry = stepTypesQry.Where( a => a.IsActive );
                     break;
                 case "INACTIVE":
-                    stepTypesQry = stepTypesQry.Where(a => !a.IsActive);
+                    stepTypesQry = stepTypesQry.Where( a => !a.IsActive );
                     break;
             }
 
