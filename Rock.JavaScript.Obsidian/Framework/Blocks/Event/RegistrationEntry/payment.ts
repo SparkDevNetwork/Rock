@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, inject, ref, h, VNode } from "vue";
+import { defineComponent, inject, ref } from "vue";
 import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "../../../Controls/gatewayControl";
 import RockForm from "../../../Controls/rockForm";
 import RockValidation from "../../../Controls/rockValidation";
@@ -297,8 +297,8 @@ export default defineComponent({
             margin-right: 10px;
         }
 
-        .payment-method .payment-method-entry {
-            margin-left: 28px;
+        .payment-method-options .payment-method-entry {
+            padding-left: 28px;
         }
     </v-style>
 
@@ -310,37 +310,35 @@ export default defineComponent({
 
         <hr/>
 
-        <div v-if="gatewayControlModel" class="well">
-            <div class="payment-method-options">
-                <h4>Payment Method</h4>
+        <div v-if="gatewayControlModel" class="payment-method-options">
+            <h4>Payment Method</h4>
 
-                <div v-if="hasSavedAccounts" v-for="savedAccount in savedAccountOptions" class="radio payment-method">
-                    <label :for="getOptionUniqueId(savedAccount)">
-                        <input :id="getOptionUniqueId(savedAccount)"
-                            :name="uniqueId"
-                            type="radio"
-                            :value="savedAccount.value"
-                            v-model="selectedSavedAccount" />
-                        <span class="label-text">
-                            <img v-if="getAccountImage(savedAccount)" class="payment-method-image" :src="getAccountImage(savedAccount)">
-                            <span class="payment-method-name" v-text="getAccountName(savedAccount)"></span>
-                            <span class="payment-method-description text-muted" v-text="getAccountDescription(savedAccount)"></span>
-                        </span>
-                    </label>
-                </div>
+            <div v-if="hasSavedAccounts" v-for="savedAccount in savedAccountOptions" class="radio payment-method">
+                <label :for="getOptionUniqueId(savedAccount)">
+                    <input :id="getOptionUniqueId(savedAccount)"
+                        :name="uniqueId"
+                        type="radio"
+                        :value="savedAccount.value"
+                        v-model="selectedSavedAccount" />
+                    <span class="label-text">
+                        <img v-if="getAccountImage(savedAccount)" class="payment-method-image" :src="getAccountImage(savedAccount)">
+                        <span class="payment-method-name" v-text="getAccountName(savedAccount)"></span>
+                        <span class="payment-method-description text-muted" v-text="getAccountDescription(savedAccount)"></span>
+                    </span>
+                </label>
+            </div>
 
-                <div v-show="showGateway" class="hosted-gateway-container payment-method-entry">
-                    <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
-                    <RockValidation :errors="gatewayValidationFields" />
-                    <div class="hosted-payment-control">
-                        <GatewayControl
-                            :gatewayControlModel="gatewayControlModel"
-                            :amountToPay="amountToPay"
-                            :returnUrl="redirectReturnUrl"
-                            @success="onGatewayControlSuccess"
-                            @error="onGatewayControlError"
-                            @validation="onGatewayControlValidation" />
-                    </div>
+            <div v-show="showGateway" class="hosted-gateway-container payment-method-entry">
+                <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+                <RockValidation :errors="gatewayValidationFields" />
+                <div class="hosted-payment-control">
+                    <GatewayControl
+                        :gatewayControlModel="gatewayControlModel"
+                        :amountToPay="amountToPay"
+                        :returnUrl="redirectReturnUrl"
+                        @success="onGatewayControlSuccess"
+                        @error="onGatewayControlError"
+                        @validation="onGatewayControlValidation" />
                 </div>
             </div>
         </div>
