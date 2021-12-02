@@ -218,6 +218,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 450 )]
+        public string CalendarMonthNameAbbreviated { get; set; }
+
+        /// <summary>
+        /// Gets or sets the calendar in month name abbreviated. Format: "MMM"
+        /// </summary>
+        /// <value>
+        /// The calendar in month name abbreviated.
+        /// </value>
+        [RockObsolete("1.13")]
+        [Obsolete("Use CalendarMonthNameAbbreviated instead", true)]
         public string CalendarMonthNameAbbrevated { get; set; }
 
         /// <summary>
@@ -305,6 +315,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 450 )]
+        public string FiscalMonthAbbreviated { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fiscal month abbreviated.
+        /// </summary>
+        /// <value>
+        /// The fiscal month abbreviated.
+        /// </value>
+        [RockObsolete("1.13")]
+        [Obsolete("Use FiscalMonthAbbreviated instead", true)]
         public string FiscalMonthAbbrevated { get; set; }
 
         /// <summary>
