@@ -348,7 +348,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( null != savedState )
             {
-                SelectedValue = LastSelectedValue = savedState.ToString();
+                LastSelectedValue = savedState.ToString();
             }
         }
 
