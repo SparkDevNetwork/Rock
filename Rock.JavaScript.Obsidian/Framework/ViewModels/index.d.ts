@@ -20,6 +20,7 @@ import { ClientAttributeValue } from "./clientAttributeValue";
 import { ClientEditableAttributeValue } from "./clientEditableAttributeValue";
 import { ClientAttributeValueCategory } from "./clientAttributeValueCategory";
 import { ListItem } from "./listItem";
+import { SavedFinancialAccountListItem } from "./savedFinancialAccountListItem";
 import { DebugTiming } from "./debugTiming";
 
 export * from "./CodeGenerated/generated-index";
@@ -30,5 +31,6 @@ export {
     ClientEditableAttributeValue,
     ClientAttributeValueCategory,
     DebugTiming,
-    ListItem
+    ListItem,
+    SavedFinancialAccountListItem
 };

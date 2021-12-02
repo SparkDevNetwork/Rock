@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Tasks;
 using Rock.ViewModel;
 using Rock.ViewModel.Blocks;
+using Rock.ViewModel.Client;
 using Rock.ViewModel.Controls;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
@@ -1933,81 +1934,22 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            // Initialize the helper to retrieve data in a way we can send
+            // to the client.
+            var clientHelper = new Rock.ViewModel.Client.ClientHelper( rockContext, RequestContext.CurrentPerson );
+
             // If we are using saved accounts and have all the details that we
             // need then attempt to load the current person's saved accounts.
-            List<ListItemViewModel> savedAccounts = null;
-            if ( enableSavedAccount && RequestContext.CurrentPerson != null && financialGatewayId.HasValue )
+            List<SavedFinancialAccountListItemViewModel> savedAccounts = null;
+            if ( enableSavedAccount && RequestContext.CurrentPerson != null && financialGateway != null )
             {
-                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
-
-                var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
-                var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
-                var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
-                var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
-                var allowedCurrencyTypes = new List<DefinedValueCache>();
-
-                // Conditionally enable credit card.
-                if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
+                var accountOptions = new SavedFinancialAccountOptions
                 {
-                    allowedCurrencyTypes.Add( creditCardCurrency );
-                }
+                    FinancialGatewayGuids = new List<Guid> { financialGateway.Guid },
+                    CurrencyTypeGuids = GetAllowedCurrencyTypes( gatewayComponent ).Select( a => a.Guid ).ToList()
+                };
 
-                // Conditionally enable ACH.
-                if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
-                {
-                    allowedCurrencyTypes.Add( achCurrency );
-                }
-
-                int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
-
-                // Build the query to get all the matching saved accounts for
-                // the currently logged in person.
-                var savedAccountsQuery = financialPersonSavedAccountService
-                    .GetByPersonId( RequestContext.CurrentPerson.Id )
-                    .Where( a => a.FinancialGatewayId == financialGatewayId.Value
-                        && !a.IsSystem
-                        && a.FinancialPaymentDetail.CurrencyTypeValueId.HasValue
-                        && allowedCurrencyTypeIds.Contains( a.FinancialPaymentDetail.CurrencyTypeValueId.Value ) )
-                    .OrderBy( a => a.Name )
-                    .Select( a => new
-                    {
-                        a.Guid,
-                        a.Name,
-                        a.FinancialPaymentDetail.ExpirationMonth,
-                        a.FinancialPaymentDetail.ExpirationYear,
-                        a.FinancialPaymentDetail.AccountNumberMasked
-                    } );
-
-                // Translate the saved accounts into something that will be
-                // recognized by the client.
-                savedAccounts = savedAccountsQuery
-                    .ToList()
-                    .Select( a =>
-                    {
-                        string expirationDate = null;
-
-                        if ( a.ExpirationMonth.HasValue && a.ExpirationYear.HasValue )
-                        {
-                            // ExpirationYear returns 4 digits, but just in case,
-                            // check if it is 4 digits before just getting the last 2.
-                            string expireYY = a.ExpirationYear.Value.ToString();
-                            if ( expireYY.Length == 4 )
-                            {
-                                expireYY = expireYY.Substring( 2 );
-                            }
-
-                            expirationDate = $"{a.ExpirationMonth.Value:00}/{expireYY:00}";
-                        }
-
-                        return new ListItemViewModel
-                        {
-                            Value = a.Guid.ToString(),
-                            Text = expirationDate.IsNotNullOrWhiteSpace()
-                                    ? $"{a.Name} ({a.AccountNumberMasked} Expires: {expirationDate})"
-                                    : $"{a.Name} ({a.AccountNumberMasked})"
-                        };
-                    } )
-                    .ToList();
+                savedAccounts = clientHelper.GetSavedFinancialAccountsAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
             }
 
             // If we don't have a session that means we are starting new. Create
@@ -2054,8 +1996,6 @@ namespace Rock.Blocks.Event
             var allowRegistrationUpdates = !isExistingRegistration || context.RegistrationSettings.AllowExternalRegistrationUpdates;
             var startAtBeginning = !isExistingRegistration ||
                 ( context.RegistrationSettings.AllowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
-
-            var clientHelper = new Rock.ViewModel.Client.ClientHelper( rockContext, RequestContext.CurrentPerson );
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
@@ -2523,6 +2463,35 @@ namespace Rock.Blocks.Event
             }
 
             return viewModel;
+        }
+
+        /// <summary>
+        /// Gets the allowed currency types supported by both the block and the
+        /// financial gateway.
+        /// </summary>
+        /// <param name="gatewayComponent">The gateway component that must support the currency types.</param>
+        /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
+        private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent )
+        {
+            var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+            var allowedCurrencyTypes = new List<DefinedValueCache>();
+
+            // Conditionally enable credit card.
+            if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
+            {
+                allowedCurrencyTypes.Add( creditCardCurrency );
+            }
+
+            // Conditionally enable ACH.
+            if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
+            {
+                allowedCurrencyTypes.Add( achCurrency );
+            }
+
+            return allowedCurrencyTypes;
         }
 
         /// <summary>

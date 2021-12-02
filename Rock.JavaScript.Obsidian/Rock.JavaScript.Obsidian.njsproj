@@ -502,6 +502,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\entity.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\index.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\listItem.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\savedFinancialAccountListItem.d.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean">

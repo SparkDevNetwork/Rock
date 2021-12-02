@@ -1094,6 +1094,7 @@
     <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\BenevolenceType.cs" />
     <Compile Include="SystemGuid\StreakType.cs" />
+    <Compile Include="SystemKey\CreditCardTypeAttributeKey.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
@@ -1380,6 +1381,7 @@
     <Compile Include="ViewModel\Client\CampusOptions.cs" />
     <Compile Include="ViewModel\Client\ClientHelper.cs" />
     <Compile Include="ViewModel\Client\DefinedValueOptions.cs" />
+    <Compile Include="ViewModel\Client\SavedFinancialAccountOptions.cs" />
     <Compile Include="ViewModel\DefaultViewModelHelperAttribute.cs" />
     <Compile Include="ViewModel\IViewModelHelper.cs" />
     <Compile Include="Utility\CodeGenExcludeAttribute.cs" />

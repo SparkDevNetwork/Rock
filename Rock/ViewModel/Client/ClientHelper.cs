@@ -50,6 +50,11 @@ namespace Rock.ViewModel.Client
         /// </summary>
         private static readonly CampusOptions DefaultCampusOptions = new CampusOptions();
 
+        /// <summary>
+        /// The default saved financial account options.
+        /// </summary>
+        private static readonly SavedFinancialAccountOptions DefaultSavedFinancialAccountOptions = new SavedFinancialAccountOptions();
+
         #endregion
 
         #region Properties
@@ -223,6 +228,108 @@ namespace Rock.ViewModel.Client
                     Value = c.Guid.ToString(),
                     Text = c.Name
                 } ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the saved financial accounts associated with the specified
+        /// person and returns the view models that represent those accounts.
+        /// </summary>
+        /// <param name="personId">The person identifier whose accounts should be retrieved.</param>
+        /// <param name="options">The options for filtering and limiting the results.</param>
+        /// <returns>A list of <see cref="SavedFinancialAccountListItemViewModel"/> objects that represent the accounts.</returns>
+        public List<SavedFinancialAccountListItemViewModel> GetSavedFinancialAccountsAsAccountListItems( int personId, SavedFinancialAccountOptions options = null )
+        {
+            var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( _rockContext );
+
+            options = options ?? DefaultSavedFinancialAccountOptions;
+
+            // Build the query to get all the matching saved accounts for
+            // the specified person.
+            var savedAccountsQuery = financialPersonSavedAccountService
+                .GetByPersonId( personId )
+                .Where( a => !a.IsSystem );
+
+            // If the options includes any financial gateways then we limit our
+            // results to only records that match one of those gateways.
+            if ( options.FinancialGatewayGuids?.Any() ?? false )
+            {
+                savedAccountsQuery = savedAccountsQuery
+                    .Where( a => a.FinancialGatewayId.HasValue
+                        && options.FinancialGatewayGuids.Contains( a.FinancialGateway.Guid ) );
+            }
+
+            // If the options includes any currency types then we limit our
+            // results to only records that match one of those currency types.
+            if ( options.CurrencyTypeGuids?.Any() ?? false )
+            {
+                savedAccountsQuery = savedAccountsQuery
+                    .Where( a => a.FinancialPaymentDetailId.HasValue
+                        && a.FinancialPaymentDetail.CurrencyTypeValueId.HasValue
+                        && options.CurrencyTypeGuids.Contains( a.FinancialPaymentDetail.CurrencyTypeValue.Guid ) );
+            }
+
+            // Get the data from the database, pulling in only the bits we need.
+            var savedAccounts = savedAccountsQuery
+                .Select( a => new
+                {
+                    a.Guid,
+                    a.Name,
+                    a.FinancialPaymentDetail.ExpirationMonth,
+                    a.FinancialPaymentDetail.ExpirationYear,
+                    a.FinancialPaymentDetail.AccountNumberMasked,
+                    a.FinancialPaymentDetail.CurrencyTypeValueId,
+                    a.FinancialPaymentDetail.CreditCardTypeValueId
+                } )
+                .ToList();
+
+            // Note: We don't perform a security check because saved accounts
+            // don't have explicit security. It is implied that the matching
+            // person identifier is enough security check.
+
+            // Translate the saved accounts into something that will be
+            // recognized by the client.
+            return savedAccounts
+                .Select( a =>
+                {
+                    string image = null;
+                    string expirationDate = null;
+
+                    if ( a.ExpirationMonth.HasValue && a.ExpirationYear.HasValue )
+                    {
+                        // ExpirationYear returns 4 digits, but just in case,
+                        // check if it is 4 digits before just getting the last 2.
+                        string expireYY = a.ExpirationYear.Value.ToString();
+                        if ( expireYY.Length == 4 )
+                        {
+                            expireYY = expireYY.Substring( 2 );
+                        }
+
+                        expirationDate = $"{a.ExpirationMonth.Value:00}/{expireYY:00}";
+                    }
+
+                    // Determine the descriptive text to associate with this account.
+                    string description = a.AccountNumberMasked != null && a.AccountNumberMasked.Length >= 4
+                        ? $"Ending in {a.AccountNumberMasked.Right( 4 )} and Expires {expirationDate}"
+                        : $"Expires {expirationDate}";
+
+                    // Determine the image to use for this account.
+                    if ( a.CreditCardTypeValueId.HasValue )
+                    {
+                        var creditCardTypeValueCache = DefinedValueCache.Get( a.CreditCardTypeValueId.Value );
+
+                        image = creditCardTypeValueCache?.GetAttributeValue( SystemKey.CreditCardTypeAttributeKey.IconImage );
+                    }
+
+                    return new SavedFinancialAccountListItemViewModel
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = a.Name,
+                        Description = description,
+                        Image = image
+                    };
+                } )
+                .OrderBy( a => a.Text )
+                .ToList();
         }
 
         #endregion
