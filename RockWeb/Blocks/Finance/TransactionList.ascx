@@ -62,8 +62,8 @@
                                 <Rock:RockLiteralField ID="lPersonId" HeaderText="Person Id" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockLiteralField ID="lPersonFullNameReversed" HeaderText="Person"
                                     SortExpression="_PERSONNAME_" />
-                                <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" DataFormatString="{0:d}" />
-                                <Rock:RockLiteralField ID="lDaysSinceLastTransaction" HeaderText="Days Since Last Transaction" />
+                                <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" />
+                                <Rock:RockLiteralField ID="lDaysSinceLastTransaction" HeaderText="Days Since Last Transaction" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                 <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
                                 <Rock:RockLiteralField ID="lForeignCurrencySymbol" HeaderText="Foreign Currency" />
                                 <Rock:RockLiteralField ID="lCurrencyType" HeaderText="Currency Type" />
