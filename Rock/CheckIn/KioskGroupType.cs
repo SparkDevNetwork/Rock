@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -36,6 +36,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the group.
         /// </value>
+        [LavaVisible]
         public GroupTypeCache GroupType => GroupTypeCache.Get( GroupTypeId );
 
         /// <summary>
