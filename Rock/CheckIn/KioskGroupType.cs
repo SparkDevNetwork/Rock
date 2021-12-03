@@ -36,7 +36,6 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the group.
         /// </value>
-        [DataMember]
         public GroupTypeCache GroupType => GroupTypeCache.Get( GroupTypeId );
 
         /// <summary>
@@ -45,6 +44,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The group type identifier.
         /// </value>
+        [DataMember]
         public int GroupTypeId { get; set; }
 
         /// <summary>
