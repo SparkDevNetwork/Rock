@@ -28,7 +28,15 @@ namespace Rock.Data
     /// See additional notes in <seealso cref="RockContextReadOnly"/>
     /// </para>
     /// </summary>
-    public class RockContextAnalytics : RockContextReadOnly
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal class</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public classes. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    internal class RockContextAnalytics : RockContextReadOnly
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContextAnalytics"/> class.

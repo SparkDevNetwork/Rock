@@ -34,7 +34,15 @@ namespace Rock.Data
     /// Operations that write to the database are not allowed.
     /// </para>
     /// </summary>
-    public class RockContextReadOnly : RockContext
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal class</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public classes. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    internal class RockContextReadOnly : RockContext
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContextReadOnly"/> class.
