@@ -228,6 +228,7 @@ namespace Rock.Model
         /// </value>
         [RockObsolete("1.13")]
         [Obsolete("Use CalendarMonthNameAbbreviated instead", true)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string CalendarMonthNameAbbrevated { get; set; }
 
         /// <summary>
@@ -325,6 +326,7 @@ namespace Rock.Model
         /// </value>
         [RockObsolete("1.13")]
         [Obsolete("Use FiscalMonthAbbreviated instead", true)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string FiscalMonthAbbrevated { get; set; }
 
         /// <summary>
