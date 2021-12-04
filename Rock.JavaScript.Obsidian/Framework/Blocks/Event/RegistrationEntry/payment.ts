@@ -287,18 +287,36 @@ export default defineComponent({
         }
 
         .payment-method .payment-method-image {
-            height: 22px;
-            margin-top: -6px;
-            margin-right: 10px;
+            height: 1.4em;
+            margin-right: 8px;
+        }
+
+        .payment-method-account {
+            display: inline-flex;
+            align-items: center;
         }
 
         .payment-method .payment-method-name {
             font-weight: 600;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
-        .payment-method-options .payment-method-entry {
-            padding-left: 28px;
+        .hosted-payment-control {
+            margin-bottom: 60px;
+        }
+
+        @media (min-width: 500px) {
+            .payment-method-options .payment-method-entry {
+                padding-left: 28px;
+            }
+        }
+        .slide-enter-active, .slide-leave-active {
+            transition: all .6s ease;
+        }
+
+        .slide-enter, .slide-leave-to {
+            transform: translateY(-100%);
+            opacity: 0;
         }
     </v-style>
 
@@ -311,8 +329,6 @@ export default defineComponent({
         <hr/>
 
         <div v-if="gatewayControlModel" class="payment-method-options">
-            <h4>Payment Method</h4>
-
             <div v-if="hasSavedAccounts" v-for="savedAccount in savedAccountOptions" class="radio payment-method">
                 <label :for="getOptionUniqueId(savedAccount)">
                     <input :id="getOptionUniqueId(savedAccount)"
@@ -320,7 +336,7 @@ export default defineComponent({
                         type="radio"
                         :value="savedAccount.value"
                         v-model="selectedSavedAccount" />
-                    <span class="label-text">
+                    <span class="label-text payment-method-account">
                         <img v-if="getAccountImage(savedAccount)" class="payment-method-image" :src="getAccountImage(savedAccount)">
                         <span class="payment-method-name" v-text="getAccountName(savedAccount)"></span>
                         <span class="payment-method-description text-muted" v-text="getAccountDescription(savedAccount)"></span>
@@ -328,18 +344,22 @@ export default defineComponent({
                 </label>
             </div>
 
-            <div v-show="showGateway" class="hosted-gateway-container payment-method-entry">
-                <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
-                <RockValidation :errors="gatewayValidationFields" />
-                <div class="hosted-payment-control">
-                    <GatewayControl
-                        :gatewayControlModel="gatewayControlModel"
-                        :amountToPay="amountToPay"
-                        :returnUrl="redirectReturnUrl"
-                        @success="onGatewayControlSuccess"
-                        @error="onGatewayControlError"
-                        @validation="onGatewayControlValidation" />
-                </div>
+            <div class="position-relative overflow-hidden">
+                <transition name="slide">
+                    <div v-if="showGateway" class="hosted-gateway-container payment-method-entry">
+                        <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+                        <RockValidation :errors="gatewayValidationFields" />
+                        <div class="hosted-payment-control">
+                            <GatewayControl
+                                :gatewayControlModel="gatewayControlModel"
+                                :amountToPay="amountToPay"
+                                :returnUrl="redirectReturnUrl"
+                                @success="onGatewayControlSuccess"
+                                @error="onGatewayControlError"
+                                @validation="onGatewayControlValidation" />
+                        </div>
+                    </div>
+                </transition>
             </div>
         </div>
 
