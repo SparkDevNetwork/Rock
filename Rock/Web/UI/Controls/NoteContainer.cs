@@ -968,10 +968,11 @@ namespace Rock.Web.UI.Controls
                 var viewableNoteTypeIds = viewableNoteTypes.Select( t => t.Id ).ToList();
 
                 // only show Viewable Note Types for this Entity and only show the Root Notes (the NoteControl will take care of child notes)
-                var qry = new NoteService( rockContext ).Queryable().Include( a => a.ChildNotes ).Include( a => a.CreatedByPersonAlias.Person )
+                var qry = new NoteService( rockContext ).Queryable()
+                    .Include( a => a.ChildNotes )
+                    .Include( a => a.CreatedByPersonAlias.Person )
                     .Where( n =>
-                        viewableNoteTypeIds.Contains( n.NoteTypeId )
-                        && n.EntityId == entityId.Value
+                        n.EntityId == entityId.Value
                         && n.ParentNoteId == null );
 
                 if ( SortDirection == ListSortDirection.Descending )
@@ -989,8 +990,16 @@ namespace Rock.Web.UI.Controls
 
                 NoteCount = noteList.Count();
 
+                /*
+                 * 3-DEC-2021 DMV
+                 * 
+                 * Moved the viewable note types here because granting
+                 * an individual rights to view an specific note gets lost
+                 * if the viewable types are in the query above.
+                 * 
+                 */
                 // only get notes they have auth to VIEW
-                var viewableNoteList = noteList.Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
+                var viewableNoteList = noteList.Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) || viewableNoteTypeIds.Contains( a.NoteTypeId ) ).ToList();
 
                 return viewableNoteList;
             }

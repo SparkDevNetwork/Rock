@@ -765,9 +765,11 @@ $@"Rock.controls.noteEditor.initialize({{
 
             if ( NoteOptions.DisplayType == NoteDisplayType.Full )
             {
-                if ( NoteOptions.ShowSecurityButton )
+                // Don't show the security button when adding because the ID is not set.
+                if ( NoteOptions.ShowSecurityButton && this.NoteId != 0)
                 {
                     _aSecurity.Attributes["data-title"] = this.Label;
+                    _aSecurity.Attributes["data-entity-id"] = this.NoteId.ToString();
                     _aSecurity.RenderControl( writer );
                 }
             }
