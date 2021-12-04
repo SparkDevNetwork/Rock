@@ -101,7 +101,7 @@
                                 return $( this ).attr( 'data-id' )
                             } ).get().join( ',' );
 
-                            $( '#hfInitialPageParentIds' ).val( expandedDataIds );
+                            $( '#<%=hfInitialPageParentIds.ClientID%>' ).val( expandedDataIds );
 
 
                             if ( $li.length > 1 )

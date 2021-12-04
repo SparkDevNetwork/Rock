@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Cms
         {
             public const string RootPage = "RootPage";
             public const string SiteType = "SiteType";
+            public const string DetailPage = "DetailPage";
         }
 
         #endregion Attribute Keys
@@ -96,7 +97,7 @@ namespace RockWeb.Blocks.Cms
             _pageId = PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
             _pageSearch = PageParameter( PageParameterKey.PageSearch );
 
-            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
+            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.DetailPage ) );
 
             // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )

@@ -44,7 +44,7 @@ namespace Rock.Rest.Controllers
             int? siteType = null,
             int rootPageId = 0)
         {
-            IQueryable<Page> qry = null;
+            IQueryable<Page> qry;
             if ( id == 0 )
             {
                 if ( rootPageId != 0 )
