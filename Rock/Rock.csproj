@@ -2689,10 +2689,10 @@
     <Compile Include="Model\Core\ServiceJob\ServiceJob.cs" />
     <Compile Include="Model\Core\ServiceJob\ServiceJobService.cs" />
     <Compile Include="Model\Core\ServiceLog\ServiceLog.cs" />
-    <Compile Include="Model\SignatureDocument.cs" />
-    <Compile Include="Model\SignatureDocumentService.Partial.cs" />
-    <Compile Include="Model\SignatureDocumentTemplate.cs" />
-    <Compile Include="Model\SignatureDocumentTemplateService.Partial.cs" />
+    <Compile Include="Model\Communication\SignatureDocument\SignatureDocument.cs" />
+    <Compile Include="Model\Communication\SignatureDocument\SignatureDocumentService.Partial.cs" />
+    <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplate.cs" />
+    <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplateService.Partial.cs" />
     <Compile Include="Model\Site.cs" />
     <Compile Include="Model\PageShortLink.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
