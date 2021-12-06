@@ -10,7 +10,7 @@ $(document).ready(function(){
 
         // If there are classes from the data-column attribute, add a js-col class
         if(columnClasses.length>0){
-		    columnClasses.push('js-col','js-col-' + i);
+		    columnClasses.push('js-col');
         }
 
         // Create new js column element
@@ -135,27 +135,5 @@ $(document).ready(function(){
 	if($(window).scrollTop() > 100) {
         navWrapper.style.marginTop = navWrapper.offsetHeight * -1 + 'px';
     }
-
-	// function calculateLayout() {
-	// 	var adminBar = document.querySelector('#cms-admin-footer');
-	// 	var navigation = document.querySelector('#navigation');
-	// 	var secondaryNavigation = document.querySelector('#navigation-secondary');
-	// 	var offsetHeight = navigation.offsetHeight + secondaryNavigation.offsetHeight;
-
-	// 	var firstRow = $('#navigation-secondary + .row');
-
-	// 	var featureZone = document.querySelector('#zone-feature');
-
-	// 	// featureZone.style.marginTop = offsetHeight + 'px';
-
-	// }
-
-	// // Initial setup layout
-	// calculateLayout();
-
-	// window.addEventListener("resize", function(){
-	// 	// Recalculate layout on window resize
-	// 	calculateLayout();
-	// });
 
 });
