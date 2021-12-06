@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-	// Dynamic Block Columns based on data-column attribute
+    // Dynamic Block Columns based on data-column attribute
 	let columns = $('[data-column]:not([data-column=""');
 
 	for (let i = 0; i < columns.length; i++) {
@@ -10,7 +10,7 @@ $(document).ready(function(){
 
         // If there are classes from the data-column attribute, add a js-col class
         if(columnClasses.length>0){
-		    columnClasses.push('js-col');
+		    columnClasses.push('js-col','js-col-' + i);
         }
 
         // Create new js column element
@@ -30,55 +30,59 @@ $(document).ready(function(){
 
 
 
-    
+
     // Dynamic Rows & Containers
     let jscolumns = $('[class*=js-col]'),
         elemsToMove = [],
         newRow = null;
 
+    // Loop through jscolumns
     for (let i = 0; i < jscolumns.length; i++) {
-        let elem = jscolumns[i],
-            prevElem = elem.previousSibling,
-            nextElem = elem.nextSibling,
-            parentDiv = elem.parentNode;
-
-        // If first iteration or prev element doesn't have js-col, add open row tag
-        if(i == 0 || !prevElem.classList.contains('js-col')) {
-            // Create new row element
-            newRow = document.createElement("div");
-            // Assign classes
-            newRow.classList.add('js-row','row','row-no-gutters');
-            // Insert it before current column
-            parentDiv.insertBefore(newRow, elem);
-            // newRow.appendChild(elem);
-        }
+        let elem = $(jscolumns[i]),
+            prev = elem.prevAll('.js-col'),
+            next = elem.nextAll('.js-col'),
+            parentDiv = elem.parent()[0];
 
         // Push current column element into array to be dumped into new row
         elemsToMove.push(elem);
 
-        // If last js col, or next item isn't a js column, dump elemsToMove into newrow, and clear it out
-        if( nextElem === undefined || nextElem == null || i == (jscolumns.length-1) || nextElem.classList && !nextElem.classList.contains('js-col') ) {
+        // If there is no next element, build the container/row and put it into the DOM
+        if(next.length === 0) {
 
-            // loop through elemsToMove and dump them into row element
-            for (let j = 0; j < elemsToMove.length; j++) {
-                // console.log(elemsToMove[j]);
-                newRow.appendChild(elemsToMove[j]);
-            };
+            // Create new row element
+            newRow = document.createElement("div");
+
+            // Assign row classes
+            newRow.classList.add('js-row','row','row-no-gutters');
 
             // Create new container element
-            newContainer = document.createElement("div");
-            // Assign classes
+            let newContainer = document.createElement("div");
+
+            // Assign container classes
             newContainer.classList.add('js-container','container-fluid','soft-sides','xs-soft-half-sides');
-            // Insert it before new row
-            newRow.parentNode.insertBefore(newContainer, newRow);
-            // Add new row as child of container
-            newContainer.appendChild(newRow);
 
-            // clear out elemsToMove to be used again
+            // Insert newRow into newContainer
+            newContainer.append(newRow);
+
+            // Insert newContainer back into DOM
+            parentDiv.insertBefore(newContainer, elemsToMove[0].get(0));
+
+            // Loop through elemsToMove and add them to newRow
+            for (let j = 0; j < elemsToMove.length; j++) {
+                let elemToMove = elemsToMove[j].get(0);
+                newRow.appendChild(elemToMove);
+            }
+
+            // Reset elemsToMove array and keep going
             elemsToMove = [];
-        }
 
+        }
     }
+
+
+
+
+
 
 	var c,
 		currentScrollTop = 0,
