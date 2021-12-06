@@ -36,7 +36,7 @@ namespace Rock.Data
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    internal class RockContextAnalytics : RockContextReadOnly
+    public class RockContextAnalytics : RockContextReadOnly
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContextAnalytics"/> class.
