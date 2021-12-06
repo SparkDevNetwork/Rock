@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [CodeEditorField( "Pre-Selected Options Format",
         Key = AttributeKey.OptionFormat,
-        Description = "The format to use when displaying auto-checkin options",
+        Description = "The format to use when displaying auto-checkin options. Merge fields include GroupType, Group, Location, Schedule, LocationCount and DisplayLocationCount (true/false).",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
@@ -664,18 +664,7 @@ namespace RockWeb.Blocks.CheckIn
             var option = dataItem as CheckInPersonSummary;
             if ( option != null )
             {
-                string format = GetAttributeValue( AttributeKey.OptionFormat );
-                var mergeFields = new Dictionary<string, object>
-                {
-                    { "GroupType", option.GroupType },
-                    { "Group", option.Group },
-                    { "Location", option.Location },
-                    { "Schedule", option.Schedule },
-                    { "DisplayLocationCount", CurrentCheckInState.CheckInType.DisplayLocationCount },
-                    { "LocationCount", KioskLocationAttendance.Get( option.Location.Location.Id ).CurrentCount }
-                };
-
-                return format.ResolveMergeFields( mergeFields );
+                return GetOptionText( option );
             }
 
             return string.Empty;
