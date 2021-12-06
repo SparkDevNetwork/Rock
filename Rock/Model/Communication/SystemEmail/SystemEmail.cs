@@ -34,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class SystemEmail : Model<SystemEmail>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -143,7 +142,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the category.

@@ -14,13 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -34,6 +34,7 @@ namespace Rock.Model
     public class SmsPipeline : Model<SmsPipeline>
     {
         #region Entity Properties
+
         /// <summary>
         /// Gets or sets the name of the pipeline.
         /// </summary>
@@ -62,9 +63,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsActive { get; set; }
+
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.SmsAction">SmsActions</see> which are associated with the SmsPipline.
@@ -74,6 +76,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<SmsAction> SmsActions { get; set; } = new Collection<SmsAction>();
+
         #endregion
     }
 

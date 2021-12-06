@@ -776,6 +776,7 @@
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
     <Compile Include="Model\Communication\Communication\SegmentCriteria.cs" />
     <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
+    <Compile Include="Model\Communication\SmsAction\SmsAction.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />
@@ -1629,7 +1630,7 @@
     <Compile Include="Model\Engagement\StreakType\StreakType.cs" />
     <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusion.cs" />
     <Compile Include="Model\Communication\SmsAction\SmsAction.cs" />
-    <Compile Include="Model\Communication\SmsAction\SmsActionService.Partial.cs" />
+    <Compile Include="Model\Communication\SmsAction\SmsActionService.cs" />
     <Compile Include="Model\MotivatorService.cs" />
     <Compile Include="Model\Core\NoteAttachment\NoteAttachment.cs" />
     <Compile Include="Model\Group\PersonScheduleExclusion\PersonScheduleExclusionService.Partial.cs" />

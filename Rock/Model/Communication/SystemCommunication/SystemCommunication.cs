@@ -269,7 +269,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the category.
@@ -335,5 +335,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
