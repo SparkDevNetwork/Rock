@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,7 +31,6 @@ namespace Rock.Model
     [Table( "SystemEmail" )]
     [Obsolete( "Use SystemCommunication instead." )]
     [RockObsolete( "1.10" )]
-
     [DataContract]
     public partial class SystemEmail : Model<SystemEmail>
     {

@@ -1484,14 +1484,14 @@
     <Compile Include="Model\Core\Document\Document.cs" />
     <Compile Include="Model\Core\DocumentType\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
-    <Compile Include="Model\SmsPipeline.cs" />
+    <Compile Include="Model\Communication\SmsPipeline\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\Engagement\StepType\StepTypeService.cs" />
     <Compile Include="Model\Engagement\Step\StepService.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementTypeService.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementType.cs" />
-    <Compile Include="Model\SystemCommunication.cs" />
+    <Compile Include="Model\Communication\SystemCommunication\SystemCommunication.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
     <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
@@ -1628,8 +1628,8 @@
     <Compile Include="Model\EQInventoryService.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakType.cs" />
     <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusion.cs" />
-    <Compile Include="Model\SmsAction.cs" />
-    <Compile Include="Model\SmsActionService.Partial.cs" />
+    <Compile Include="Model\Communication\SmsAction\SmsAction.cs" />
+    <Compile Include="Model\Communication\SmsAction\SmsActionService.Partial.cs" />
     <Compile Include="Model\MotivatorService.cs" />
     <Compile Include="Model\Core\NoteAttachment\NoteAttachment.cs" />
     <Compile Include="Model\Group\PersonScheduleExclusion\PersonScheduleExclusionService.Partial.cs" />
@@ -2388,7 +2388,7 @@
     <Compile Include="Model\CodeGenerated\SiteDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\SystemEmailService.CodeGenerated.cs" />
-    <Compile Include="Model\SystemEmailService.Partial.cs" />
+    <Compile Include="Model\Communication\SystemEmail\SystemEmailService.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\TagService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.CodeGenerated.cs" />
@@ -2696,7 +2696,7 @@
     <Compile Include="Model\PageShortLink.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
-    <Compile Include="Model\SystemEmail.cs" />
+    <Compile Include="Model\Communication\SystemEmail\SystemEmail.cs" />
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\TaggedItemService.Partial.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.cs" />
