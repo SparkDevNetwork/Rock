@@ -151,7 +151,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -215,7 +215,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this SignatureDocumentTemplate.
@@ -228,9 +228,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-
         #endregion
-
     }
 
     #region Entity Configuration
@@ -257,26 +255,5 @@ namespace Rock.Model
     }
 
     #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the type of signature
-    /// </summary>
-    public enum SignatureType
-    {
-        /// <summary>
-        /// Drawn
-        /// </summary>
-        Drawn = 0,
-
-        /// <summary>
-        /// Typed
-        /// </summary>
-        Typed = 1
-    }
-
-    #endregion
-
 }
 

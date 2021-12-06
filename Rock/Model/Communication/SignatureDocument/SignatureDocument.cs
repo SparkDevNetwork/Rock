@@ -33,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class SignatureDocument : Model<SignatureDocument>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -245,7 +244,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.SignatureDocumentTemplate"/> that is being executed in this persisted SignatureDocument instance.
@@ -317,7 +316,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -331,7 +330,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -356,40 +354,4 @@ namespace Rock.Model
     }
 
     #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The status of a signature document
-    /// </summary>
-    public enum SignatureDocumentStatus
-    {
-        /// <summary>
-        /// Document has not yet been sent
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Document has been sent but not yet signed
-        /// </summary>
-        Sent = 1,
-
-        /// <summary>
-        /// Document has been signed
-        /// </summary>
-        Signed = 2,
-
-        /// <summary>
-        /// Document was cancelled
-        /// </summary>
-        Cancelled = 3,
-
-        /// <summary>
-        /// Document Invite had expired
-        /// </summary>
-        Expired = 4
-    }
-
-    #endregion
-
 }
