@@ -69,7 +69,7 @@ namespace Rock.Migrations
         /// </summary>
         public void UpdatedPreSelectedOptionsFormatLava_Up()
         {
-            string newValue = "{{ Schedule.Name }} - {{ Group.Name }} - {{ Location.Name }} {% if DisplayLocationCount == true %} &nbsp;&nbsp;&nbsp; Count: {{ LocationCount }} {% endif %}".Replace( "'", "''" );
+            string newValue = "{{ Schedule.Name }} - {{ Group.Name }} - {{ Location.Name }} {% if DisplayLocationCount == true %} <span class='ml-3'>Count: {{ LocationCount }}</span> {% endif %}".Replace( "'", "''" );
             string oldValue = "{{ Schedule.Name }} - {{ Group.Name }} - {{ Location.Name }}".Replace( "'", "''" );
 
             // Use NormalizeColumnCRLF when attempting to do a WHERE clause or REPLACE using multi line strings!
@@ -78,7 +78,7 @@ namespace Rock.Migrations
             Sql( $@"DECLARE @attributeId INT = (SELECT [Id] FROM [dbo].[Attribute] WHERE [Guid] = '55580865-E792-469F-B45C-45713477D033')
 UPDATE [dbo].[AttributeValue] 
 SET [Value] = REPLACE({targetColumn}, '{oldValue}', '{newValue}')
-WHERE {targetColumn} LIKE '%{oldValue}%' AND [AttributeId] = @attributeId" );
+WHERE {targetColumn} NOT LIKE '%{newValue}%' AND [AttributeId] = @attributeId" );
         }
 
         /// <summary>
