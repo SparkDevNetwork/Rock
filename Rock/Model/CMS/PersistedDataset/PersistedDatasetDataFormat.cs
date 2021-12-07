@@ -14,32 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
-using System.Linq;
-using Rock.Chart;
-using Rock.Communication;
-using Rock.Data;
-
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Data format for serialization of the dataset
     /// </summary>
-    public partial class PersistedDatasetService
+    public enum PersistedDatasetDataFormat
     {
         /// <summary>
-        /// Gets from access key no tracking.
+        /// The json
         /// </summary>
-        /// <param name="accessKey">The access key.</param>
-        /// <returns></returns>
-        public PersistedDataset GetFromAccessKeyNoTracking( string accessKey )
-        {
-            return this.Queryable().Where( a => a.AccessKey == accessKey ).AsNoTracking().FirstOrDefault();
-        }
+        JSON
     }
 }

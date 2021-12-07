@@ -761,6 +761,9 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
+    <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.Logic.cs" />
+    <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetDataFormat.cs" />
+    <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetScriptType.cs" />
     <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.Logic.cs" />
@@ -1483,10 +1486,10 @@
     <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacement.cs" />
     <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\RelatedEntity.cs" />
-    <Compile Include="Model\PersistedDataset.cs" />
+    <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.cs" />
     <Compile Include="Model\Core\Document\Document.cs" />
     <Compile Include="Model\Core\DocumentType\DocumentType.cs" />
-    <Compile Include="Model\PersistedDatasetService.Partial.cs" />
+    <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetService.cs" />
     <Compile Include="Model\Communication\SmsPipeline\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\Engagement\StepType\StepTypeService.cs" />
