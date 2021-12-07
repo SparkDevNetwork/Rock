@@ -136,24 +136,6 @@ namespace Rock.Model
 
         #endregion
 
-        #region ICategorized
-
-        /// <summary>
-        /// Gets or sets the category id.
-        /// </summary>
-        /// <value>
-        /// The category id.
-        /// </value>
-        int? ICategorized.CategoryId
-        {
-            get
-            {
-                return this.CategoryId;
-            }
-        }
-
-        #endregion
-
         #region Public Methods
 
         /// <summary>
@@ -165,59 +147,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region ISecurity
-
-        /// <summary>
-        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
-        /// Over-riding this to ensure that a person can see only their own personal templates
-        /// regardless of security settings.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            if ( action == Security.Authorization.VIEW && PersonAlias != null )
-            {
-                if ( PersonAlias.PersonId == person.Id )
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return base.IsAuthorized( action, person );
-        }
-        #endregion
-
-        #region Private Methods
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Gets the MergeTemplateType MEF Component for the specified MergeTemplate
-        /// </summary>
-        /// <returns></returns>
-        public MergeTemplateType GetMergeTemplateType()
-        {
-            var mergeTemplateTypeEntityType = EntityTypeCache.Get( this.MergeTemplateTypeEntityTypeId );
-            if ( mergeTemplateTypeEntityType == null )
-            {
-                return null;
-            }
-
-            return MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
         }
 
         #endregion

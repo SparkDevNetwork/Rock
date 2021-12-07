@@ -1052,6 +1052,7 @@
     <Compile Include="Model\Reporting\DataView\DataView.SaveHook.cs" />
     <Compile Include="Model\Reporting\DataView\DataView.WebForms.cs" />
     <Compile Include="Model\Reporting\DataView\DataViewGetQueryArgs.cs" />
+    <Compile Include="Model\Reporting\MergeTemplate\MergeTemplate.Logic.cs" />
     <Compile Include="Model\Reporting\MetricCategory\MetricCategory.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValue\MetricValue.Logic.cs" />
     <Compile Include="Model\Reporting\MetricValue\MetricValueType.cs" />
@@ -2509,7 +2510,7 @@
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Location.cs" />
     <Compile Include="Model\LocationService.Partial.cs" />
-    <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\Reporting\MergeTemplate\MergeTemplate.cs" />
     <Compile Include="Model\Meta\Metaphone\Metaphone.cs" />
     <Compile Include="Model\Reporting\Metric\Metric.cs" />
     <Compile Include="Model\Reporting\MetricCategory\MetricCategory.cs" />
