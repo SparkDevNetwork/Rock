@@ -2225,7 +2225,7 @@ namespace RockWeb.Blocks.Groups
             {
                 hlElevatedSecurityLevel.Visible = true;
                 hlElevatedSecurityLevel.Text = $"Security Level: {group.ElevatedSecurityLevel.ConvertToString( true )}";
-                if ( group.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
+                if ( group.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
                 {
                     hlElevatedSecurityLevel.LabelType = LabelType.Danger;
                 }

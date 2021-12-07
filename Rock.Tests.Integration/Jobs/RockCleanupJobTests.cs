@@ -49,8 +49,8 @@ namespace Rock.Tests.Integration.Jobs
             var expectedHighSecurityGroupPerson = CreateTestPerson();
             var expectedLowGroupPerson = CreateTestPerson();
 
-            CreateTestSecurityGroupWithPersonAsMember( expectedHighSecurityGroupPerson.Id, ElevatedSecurityLevel.High );
-            CreateTestSecurityGroupWithPersonAsMember( expectedLowGroupPerson.Id, ElevatedSecurityLevel.Low );
+            CreateTestSecurityGroupWithPersonAsMember( expectedHighSecurityGroupPerson.Id, ElevatedSecurityLevel.Extreme );
+            CreateTestSecurityGroupWithPersonAsMember( expectedLowGroupPerson.Id, ElevatedSecurityLevel.High );
 
             ExecuteRockCleanupJob();
 
