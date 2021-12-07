@@ -157,7 +157,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                InitialItemParentIds = parentCategoryIds.AsDelimited( "," );
+                ExpandedCategoryIds = parentCategoryIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }
