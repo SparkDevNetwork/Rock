@@ -32,7 +32,6 @@ namespace Rock.Model
     [DataContract]
     public partial class TaggedItem : Model<TaggedItem>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the TagId of the <see cref="Rock.Model.Tag"/> that this TaggedItem is tagged with.
         /// </summary>
@@ -85,7 +84,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the Tag that this TaggedItem belongs to.
@@ -107,48 +106,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
-
-        /// <summary>
-        /// Gets the parent security authority for this TagItem
-        /// </summary>
-        /// <value>
-        /// An entity that implements the <see cref="Rock.Security.ISecured"/> interface that this TagItem inherits security authority from.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get 
-            {
-                return this.Tag != null ? this.Tag : base.ParentAuthority;
-            }
-        }
-
-        /// <summary>
-        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            
-            if ( this.Tag?.OwnerPersonAlias != null && person != null && this.Tag?.OwnerPersonAlias.PersonId == person.Id )
-            {
-                // always allow people to do anything with their own tags
-                return true;
-            }
-            else if ( this.Tag?.OwnerPersonAlias != null && person != null && this.Tag?.OwnerPersonAlias.PersonId != person.Id )
-            {
-                // always prevent people from doing anything with someone else's tags
-                return false;
-            }
-            else
-            {
-                return base.IsAuthorized( action, person );
-            }
-        }
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this TagItem.
@@ -162,13 +120,12 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// Attribute Value Configuration class.
+    /// <see cref="TaggedItem"/> Configuration class.
     /// </summary>
     public partial class TaggedItemConfiguration : EntityTypeConfiguration<TaggedItem>
     {

@@ -815,6 +815,7 @@
     <Compile Include="Model\Core\BinaryFile\BinaryFileService.WebService.cs" />
     <Compile Include="Model\Core\Category\Category.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
+    <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
@@ -2704,8 +2705,8 @@
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\Communication\SystemEmail\SystemEmail.cs" />
-    <Compile Include="Model\TaggedItem.cs" />
-    <Compile Include="Model\TaggedItemService.Partial.cs" />
+    <Compile Include="Model\Core\TaggedItem\TaggedItem.cs" />
+    <Compile Include="Model\Core\TaggedItem\TaggedItemService.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.cs" />
