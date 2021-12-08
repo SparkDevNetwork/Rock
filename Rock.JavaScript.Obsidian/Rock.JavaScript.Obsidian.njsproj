@@ -33,7 +33,7 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Core\.eslintrc.js" />
     <Content Include="Framework\.eslintrc.js" />
-    <Content Include="Framework\Tests\tsconfig.json" />
+    <Content Include="Tests\tsconfig.json" />
     <Content Include="Framework\tsconfig.json" />
     <Content Include="Framework\Util\aspDateFormat.ts" />
     <Content Include="webpack-eol-plugin.js" />
@@ -64,9 +64,9 @@
     <Folder Include="Framework\SystemGuids\" />
     <Folder Include="Framework\SystemGuids\CodeGenerated\" />
     <Folder Include="Framework\Templates\" />
-    <Folder Include="Framework\Tests\" />
-    <Folder Include="Framework\Tests\Elements\" />
-    <Folder Include="Framework\Tests\Services\" />
+    <Folder Include="Tests\" />
+    <Folder Include="Tests\Elements\" />
+    <Folder Include="Tests\Services\" />
     <Folder Include="Framework\Util\" />
     <Folder Include="Framework\ViewModels\" />
     <Folder Include="Framework\ViewModels\CodeGenerated\" />
@@ -272,9 +272,9 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\workflowType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\index.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\paneledBlockTemplate.ts" />
-    <TypeScriptCompile Include="Framework\Tests\Elements\rockFormField.spec.ignored.ts" />
-    <TypeScriptCompile Include="Framework\Tests\Elements\textBox.spec.ignored.ts" />
-    <TypeScriptCompile Include="Framework\Tests\Services\dateAspFormatTests.spec.ts" />
+    <TypeScriptCompile Include="Tests\Elements\rockFormFieldHelper.ts" />
+    <TypeScriptCompile Include="Tests\Elements\textBox.spec.ts" />
+    <TypeScriptCompile Include="Tests\Services\dateAspFormatTests.spec.ts" />
     <TypeScriptCompile Include="Framework\Util\block.ts" />
     <TypeScriptCompile Include="Framework\Util\bus.ts" />
     <TypeScriptCompile Include="Framework\Util\cache.ts" />
