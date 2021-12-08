@@ -49,7 +49,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// Scheduled Gift Event Message
     /// </summary>
-    public class ScheduledGiftModifiedMessage : ScheduledGiftModifiedMessageData, IEventMessage<GivingEventQueue>
+    public class ScheduledGiftWasModifiedMessage : ScheduledGiftWasModifiedMessageData, IEventMessage<GivingEventQueue>
     {
         /// <summary>
         /// Gets or sets the name of the sender node.
@@ -97,13 +97,13 @@ namespace Rock.Bus.Message
                 var gatewayComponent = gateway?.GetGatewayComponent();
                 var searchKeyTiedGateway = gatewayComponent as ISearchKeyTiedGateway;
                 var searchKeyTypeGuid = searchKeyTiedGateway?.GetPersonSearchKeyTypeGuid( gateway );
-                var data = GetScheduledGiftModifiedMessageData( rockContext, scheduledTransactionId, searchKeyTypeGuid, gatewaySupportedCardTypesDefinedValueGuid, gatewayCurrencyUnitMultiple );
+                var data = GetScheduledGiftWasModifiedMessageData( rockContext, scheduledTransactionId, searchKeyTypeGuid, gatewaySupportedCardTypesDefinedValueGuid, gatewayCurrencyUnitMultiple );
 
                 if ( data != null )
                 {
                     var statusGateway = gatewayComponent as IStatusProvidingGateway;
 
-                    var message = new ScheduledGiftModifiedMessage
+                    var message = new ScheduledGiftWasModifiedMessage
                     {
                         EventType = eventType,
                         Address = data.Address,
@@ -112,13 +112,13 @@ namespace Rock.Bus.Message
                         Time = RockDateTime.Now
                     };
 
-                    _ = RockMessageBus.PublishAsync<GivingEventQueue, ScheduledGiftModifiedMessage>( message );
+                    _ = RockMessageBus.PublishAsync<GivingEventQueue, ScheduledGiftWasModifiedMessage>( message );
                 }
             }
         }
 
         /// <summary>
-        /// Gets the message data for a <see cref="ScheduledGiftModifiedMessage"/>.
+        /// Gets the message data for a <see cref="ScheduledGiftWasModifiedMessage"/>.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
@@ -126,7 +126,7 @@ namespace Rock.Bus.Message
         /// <param name="gatewaySupportedCardTypesDefinedValueGuid">[Optional] The <see cref="Guid"/> of the <see cref="DefinedValue"/> that indicates the credit card types supported by the <see cref="FinancialGateway"/> for a specified currency.</param>
         /// <param name="gatewayCurrencyUnitMultiple">[Optional] The <see cref="Guid"/> of the <see cref="DefinedValue"/> that indicates the "unit multiple" (e.g., 100 for dollars) of the currency specified by the gatway.</param>
         /// <returns></returns>
-        private static ScheduledGiftModifiedMessageData GetScheduledGiftModifiedMessageData( RockContext rockContext, int scheduledTransactionId, Guid? personSearchKeyTypeGuid, Guid? gatewaySupportedCardTypesDefinedValueGuid, Guid? gatewayCurrencyUnitMultiple )
+        private static ScheduledGiftWasModifiedMessageData GetScheduledGiftWasModifiedMessageData( RockContext rockContext, int scheduledTransactionId, Guid? personSearchKeyTypeGuid, Guid? gatewaySupportedCardTypesDefinedValueGuid, Guid? gatewayCurrencyUnitMultiple )
         {
             var status = "success";
             var statusMessage = string.Empty;
@@ -137,7 +137,7 @@ namespace Rock.Bus.Message
                 .Where( s => s.Id == scheduledTransactionId )
                 .FirstOrDefault();
 
-            var data = new ScheduledGiftModifiedMessageData
+            var data = new ScheduledGiftWasModifiedMessageData
             {
                 Person = new TransactionPersonView
                 {
@@ -200,7 +200,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// Scheduled Gift Event Data
     /// </summary>
-    public class ScheduledGiftModifiedMessageData
+    public class ScheduledGiftWasModifiedMessageData
     {
         /// <summary>
         /// Gets or sets the financial transaction.

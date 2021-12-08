@@ -23,7 +23,7 @@ namespace Rock.Financial
     /// A Financial Gateway that uses a particular person search key.
     /// Note:  This was added to Rock core to support Gift and ScheduledGift bus event messages
     /// that were adapted from an external solution.  (See <see cref="Rock.Bus.Message.GiftWasGivenMessage"/>
-    /// and <see cref="Rock.Bus.Message.ScheduledGiftModifiedMessage"/>.)
+    /// and <see cref="Rock.Bus.Message.ScheduledGiftWasModifiedMessage"/>.)
     /// </summary>
     public interface ISearchKeyTiedGateway
     {

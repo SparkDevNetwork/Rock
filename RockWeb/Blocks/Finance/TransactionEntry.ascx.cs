@@ -3287,7 +3287,7 @@ namespace RockWeb.Blocks.Finance
             ScheduleId = scheduledTransaction.Id;
             TransactionCode = scheduledTransaction.TransactionCode;
 
-            Task.Run( () => ScheduledGiftModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
+            Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
         }
 
         private void DeleteOldTransaction( int scheduledTransactionId )
