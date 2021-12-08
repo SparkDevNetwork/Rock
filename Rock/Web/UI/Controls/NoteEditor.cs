@@ -611,6 +611,8 @@ namespace Rock.Web.UI.Controls
 
             _avcNoteAttributes.AddEditControls( tempNoteForNewAttributes, Authorization.EDIT, rockPage?.CurrentPerson );
             _hasAttributes = tempNoteForNewAttributes.Attributes.Any();
+
+            this.IsEditing = true;
         }
 
         /// <summary>

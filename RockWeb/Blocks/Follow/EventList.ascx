@@ -20,6 +20,7 @@
                                 <ItemTemplate><%# GetComponentName( Eval( "EntityType") )%></ItemTemplate>
                             </asp:TemplateField>
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
+                            <Rock:SecurityField />
                             <Rock:DeleteField OnClick="rGridEvent_Delete" />
                         </Columns>
                     </Rock:Grid>

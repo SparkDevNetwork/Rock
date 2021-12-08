@@ -739,6 +739,8 @@
     <Compile Include="Financial\IPaymentTokenGateway.cs" />
     <Compile Include="Financial\ISearchKeyTiedGateway.cs" />
     <Compile Include="Financial\IStatusProvidingGateway.cs" />
+    <Compile Include="Follow\Event\PersonNoteAdded.cs" />
+    <Compile Include="Follow\IEventComponentAdditionalMergeFields.cs" />
     <Compile Include="Jobs\ConnectionRequestsAutomation.cs" />
     <Compile Include="Jobs\GivingAutomation.cs" />
     <Compile Include="Field\Types\MobileNavigationActionFieldType.cs" />
@@ -1104,6 +1106,7 @@
     <Compile Include="Security\SecuritySettingsService.cs" />
     <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\BenevolenceType.cs" />
+    <Compile Include="SystemGuid\FollowingEventType.cs" />
     <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="SystemKey\CreditCardTypeAttributeKey.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
