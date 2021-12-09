@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.CheckIn
 <span class='auto-select-group'>{{ Group.Name }}</span>
 <span class='auto-select-location'>{{ Location.Name }}</span
 {% if DisplayLocationCount == true %}
-<span class='auto-select-count'> Count: {{ LocationCount }}</span>
+<span class='ml-3'>Count: {{ LocationCount }}</span>
 {% endif %} 
 ";
 
