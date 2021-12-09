@@ -1973,42 +1973,40 @@ namespace RockWeb.Blocks.Connection
             var workflowService = new WorkflowService( rockContext );
             List<string> workflowErrors;
 
-            if ( workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
+            // Process the workflow and exit if any errors occur.
+            if ( !workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
             {
-                if ( workflow.Id != 0 )
+                mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
+                return;
+            }
+
+            // If the workflow is persisted, create a link between the workflow and this connection request.
+            if ( workflow.Id != 0 )
+            {
+                new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
                 {
-                    new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
-                    {
-                        ConnectionRequestId = connectionRequest.Id,
-                        WorkflowId = workflow.Id,
-                        ConnectionWorkflowId = connectionWorkflow.Id,
-                        TriggerType = connectionWorkflow.TriggerType,
-                        TriggerQualifier = connectionWorkflow.QualifierValue
-                    } );
+                    ConnectionRequestId = connectionRequest.Id,
+                    WorkflowId = workflow.Id,
+                    ConnectionWorkflowId = connectionWorkflow.Id,
+                    TriggerType = connectionWorkflow.TriggerType,
+                    TriggerQualifier = connectionWorkflow.QualifierValue
+                } );
 
-                    rockContext.SaveChanges();
+                rockContext.SaveChanges();
+            }
 
-                    if ( workflow.HasActiveEntryForm( CurrentPerson ) )
-                    {
-                        var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
+            // Notify the user that the workflow has been processed.
+            // If the workflow has an active entry form, load the form in a separate browser window or tab.
+            if ( workflow.HasActiveEntryForm( CurrentPerson ) )
+            {
+                var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
 
-                        RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
-                    }
-                    else
-                    {
-                        var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
-                        mdWorkflowLaunched.Show( message, ModalAlertType.Information );
-                    }
-                }
-                else
-                {
-                    var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
-                    mdWorkflowLaunched.Show( message, ModalAlertType.Information );
-                }
+                RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
             }
             else
             {
-                mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
+                var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
+                mdWorkflowLaunched.Show( message, ModalAlertType.Information );
             }
         }
 
