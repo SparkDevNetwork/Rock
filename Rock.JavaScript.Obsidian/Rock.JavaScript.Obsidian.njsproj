@@ -36,6 +36,7 @@
     <Content Include="Tests\tsconfig.json" />
     <Content Include="Framework\tsconfig.json" />
     <Content Include="Framework\Util\aspDateFormat.ts" />
+    <Content Include="tsconfig.json" />
     <Content Include="webpack-eol-plugin.js" />
     <Content Include="webpack.config.js" />
     <None Include="Core\core.ts" />
@@ -64,6 +65,7 @@
     <Folder Include="Framework\SystemGuids\" />
     <Folder Include="Framework\SystemGuids\CodeGenerated\" />
     <Folder Include="Framework\Templates\" />
+    <Folder Include="Build\" />
     <Folder Include="Tests\" />
     <Folder Include="Tests\Elements\" />
     <Folder Include="Tests\Services\" />
@@ -72,6 +74,7 @@
     <Folder Include="Framework\ViewModels\CodeGenerated\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Build\build.ts" />
     <TypeScriptCompile Include="Core\vendor.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\registrationEntry.ts" />
