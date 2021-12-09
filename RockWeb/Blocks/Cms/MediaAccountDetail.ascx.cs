@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Edit details of a Media Account" )]
 
-    public partial class MediaAccountDetail : RockBlock, IDetailBlock
+    public partial class MediaAccountDetail : RockBlock
     {
         #region PageParameterKeys
 

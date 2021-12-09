@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Reporting
     /// Shows the details of the given data view.
     /// </summary>
     /// <seealso cref="Rock.Web.UI.RockBlock" />
-    /// <seealso cref="Rock.Web.UI.IDetailBlock" />
     [DisplayName( "Data View Detail" )]
     [Category( "Reporting" )]
     [Description( "Shows the details of the given data view." )]
@@ -80,7 +79,7 @@ namespace RockWeb.Blocks.Reporting
         DefaultIntegerValue = 180,
         Order = 4 )]
 
-    public partial class DataViewDetail : RockBlock, IDetailBlock
+    public partial class DataViewDetail : RockBlock
     {
         #region Attribute Keys
 

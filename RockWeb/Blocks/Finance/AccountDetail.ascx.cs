@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Account Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial account." )]
-    public partial class AccountDetail : RockBlock, IDetailBlock
+    public partial class AccountDetail : RockBlock
     {
         #region ViewStateKeys
 

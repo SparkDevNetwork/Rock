@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given exception." )]
 
-    public partial class ExceptionDetail : RockBlock, IDetailBlock
+    public partial class ExceptionDetail : RockBlock
     {
         #region Page Parameter Keys
 
@@ -360,8 +360,6 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        #region IDetailBlock implementation
-
         /// <summary>
         /// Show the block detail content.
         /// </summary>
@@ -370,8 +368,6 @@ namespace RockWeb.Blocks.Core
         {
             ShowReadonlyDetail( exceptionId );
         }
-
-        #endregion
 
         #endregion
     }

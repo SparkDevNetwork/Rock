@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Event
         Order = 1 )]
 
     #endregion Block Attributes
-    public partial class RegistrationInstanceDetail : RegistrationInstanceBlock, IDetailBlock
+    public partial class RegistrationInstanceDetail : RegistrationInstanceBlock
     {
         #region Attribute Keys
 

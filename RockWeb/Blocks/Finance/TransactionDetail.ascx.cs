@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Finance
         DefaultBooleanValue = false,
         Order = 6,
         Key = AttributeKey.EnableForeignCurrency )]
-    public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class TransactionDetail : Rock.Web.UI.RockBlock
     {
         #region Keys
 

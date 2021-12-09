@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Edit details of a Media Element" )]
 
-    public partial class MediaElementDetail : RockBlock, IRockBlockType, IDetailBlock
+    public partial class MediaElementDetail : RockBlock, IRockBlockType
     {
         #region Properties
 

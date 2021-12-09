@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group type for editing." )]
-    public partial class GroupTypeDetail : RockBlock, IDetailBlock
+    public partial class GroupTypeDetail : RockBlock
     {
         #region Properties
 

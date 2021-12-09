@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Follow
     [DisplayName( "Event Detail" )]
     [Category( "Follow" )]
     [Description( "Block for editing following event types." )]
-    public partial class EventDetail : RockBlock, IDetailBlock
+    public partial class EventDetail : RockBlock
     {
 
         #region Properties

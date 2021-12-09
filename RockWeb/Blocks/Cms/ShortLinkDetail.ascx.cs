@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Crm
         Order = 0)]
 
     #endregion Block Attributes
-    public partial class ShortLinkDetail : RockBlock, IDetailBlock
+    public partial class ShortLinkDetail : RockBlock
     {
         #region Attribute Keys
 

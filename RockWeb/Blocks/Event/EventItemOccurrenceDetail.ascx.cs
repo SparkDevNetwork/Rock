@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Event
         Order = 2,
         Key = AttributeKey.GroupDetailPage )]
 
-    public partial class EventItemOccurrenceDetail : RockBlock, IDetailBlock
+    public partial class EventItemOccurrenceDetail : RockBlock
     {
         #region Properties
 

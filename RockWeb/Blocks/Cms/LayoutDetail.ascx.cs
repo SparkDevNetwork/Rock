@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Crm
     [DisplayName("Layout Detail")]
     [Category("CMS")]
     [Description("Displays the details for a specific layout.")]
-    public partial class LayoutDetail : RockBlock, IDetailBlock
+    public partial class LayoutDetail : RockBlock
     {
 
         #region Fields
