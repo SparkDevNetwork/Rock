@@ -816,6 +816,7 @@
     <Compile Include="Model\Core\BinaryFile\BinaryFile.SaveHook.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFileService.WebService.cs" />
     <Compile Include="Model\Core\Category\Category.Logic.cs" />
+    <Compile Include="Model\Core\EntitySetItem\EntitySetItem.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
@@ -2446,10 +2447,10 @@
     <Compile Include="Model\Core\DefinedValue\DefinedValueService.cs" />
     <Compile Include="Model\Core\Device\Device.cs" />
     <Compile Include="Model\DiscService.cs" />
-    <Compile Include="Model\EntitySet.cs" />
-    <Compile Include="Model\EntitySetItem.cs" />
-    <Compile Include="Model\EntitySetItemService.Partial.cs" />
-    <Compile Include="Model\EntitySetService.Partial.cs" />
+    <Compile Include="Model\Core\EntitySet\EntitySet.cs" />
+    <Compile Include="Model\Core\EntitySetItem\EntitySetItem.cs" />
+    <Compile Include="Model\Core\EntitySetItem\EntitySetItemService.cs" />
+    <Compile Include="Model\Core\EntitySet\EntitySetService.cs" />
     <Compile Include="Model\EntityType.cs" />
     <Compile Include="Model\EntityTypeService.Partial.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendar.cs" />

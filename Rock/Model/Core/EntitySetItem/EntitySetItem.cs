@@ -87,7 +87,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets a dictionary containing the Additional Merge values for this EntitySet Item
@@ -111,21 +111,6 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual EntitySet EntitySet { get; set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get 
-            {
-                return this.EntitySet != null ? this.EntitySet : base.ParentAuthority;
-            }
-        }
 
         #endregion
     }

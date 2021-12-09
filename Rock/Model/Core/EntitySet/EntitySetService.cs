@@ -20,7 +20,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using Rock.Data;
-using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -52,7 +51,7 @@ namespace Rock.Model
 
             Add( entitySet );
 
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
 
             rockContext.SaveChanges();
 
