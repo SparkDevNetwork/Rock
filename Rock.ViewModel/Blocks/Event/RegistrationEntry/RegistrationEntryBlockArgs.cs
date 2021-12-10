@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.ViewModel.Blocks
+namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
 {
     /// <summary>
     /// RegistrationEntryBlockArgs Interface

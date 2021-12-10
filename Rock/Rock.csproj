@@ -606,6 +606,9 @@
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
+    <Compile Include="ClientService\ClientServiceBase.cs" />
+    <Compile Include="ClientService\Connection\ConnectionOpportunity\ConnectionOpportunityClientService.cs" />
+    <Compile Include="ClientService\Connection\ConnectionType\ConnectionTypeClientService.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistDataItem.cs" />
@@ -787,6 +790,8 @@
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />
+    <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunityService.cs" />
+    <Compile Include="Model\Connection\ConnectionOpportunity\Options\GetConnectionOpportunitiesOptions.cs" />
     <Compile Include="Model\Connection\ConnectionRequestActivity\ConnectionRequestActivity.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequest.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequest.SaveHook.cs" />
@@ -796,12 +801,14 @@
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelSortProperty.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionStatusViewModel.cs" />
+    <Compile Include="Model\Connection\ConnectionRequest\Options\GetConnectionRequestsOptions.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\WorkflowCheckViewModel.cs" />
     <Compile Include="Model\Connection\ConnectionStatusAutomation\ConnectionStatusAutomation.cs" />
     <Compile Include="Model\Connection\ConnectionStatusAutomation\GroupRequirementsFilter.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionType.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionType.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionTypeViewMode.cs" />
+    <Compile Include="Model\Connection\ConnectionType\Options\GetConnectionTypesOptions.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflowTriggerType.cs" />

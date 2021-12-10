@@ -41,14 +41,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blocks\SessionRenewalResult.cs" />
-    <Compile Include="Blocks\RegistrationEntryBlockSession.cs" />
-    <Compile Include="Blocks\RegistrationEntryBlockSuccessViewModel.cs" />
-    <Compile Include="Blocks\RegistrationEntryBlockArgs.cs" />
-    <Compile Include="Blocks\RegistrationEntryBlockViewModel.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResult.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
     <Compile Include="CodeGenerated\BenevolenceTypeViewModel.cs" />
     <Compile Include="CodeGenerated\BenevolenceWorkflowViewModel.cs" />
     <Compile Include="CodeGenerated\ConnectionStatusAutomationViewModel.cs" />
+    <Compile Include="Connection\ConnectionRequest\ConnectionRequestCountsViewModel.cs" />
     <Compile Include="NonEntities\ClientAttributeValueCategoryViewModel.cs" />
     <Compile Include="NonEntities\ClientEditableAttributeValueViewModel.cs" />
     <Compile Include="NonEntities\ClientAttributeValueViewModel.cs" />

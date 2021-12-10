@@ -15,29 +15,24 @@
 // </copyright>
 //
 
-using System;
-
-namespace Rock.ViewModel.Blocks
+namespace Rock.ViewModel.Connection.ConnectionRequest
 {
     /// <summary>
-    /// SessionRenewalResult
+    /// View model that contains the request counts that have been calculated.
     /// </summary>
-    public sealed class SessionRenewalResult : IViewModel
+    /// <remarks>
+    /// This currently only has one property but will be expanded to include
+    /// other counts, such as total, in the future.
+    /// </remarks>
+    public class ConnectionRequestCountsViewModel
     {
         /// <summary>
-        /// Gets or sets the spots secured.
+        /// Gets or sets the number of requests in the opportunity that
+        /// are assigned to the specified person.
         /// </summary>
         /// <value>
-        /// The spots secured.
+        /// The number of requests assigned to you.
         /// </value>
-        public int SpotsSecured { get; set; }
-
-        /// <summary>
-        /// Gets or sets the expiration date time.
-        /// </summary>
-        /// <value>
-        /// The expiration date time.
-        /// </value>
-        public DateTimeOffset ExpirationDateTime { get; set; }
+        public int AssignedToYouCount { get; set; }
     }
 }

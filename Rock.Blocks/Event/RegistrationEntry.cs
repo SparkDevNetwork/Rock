@@ -27,7 +27,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.ViewModel;
-using Rock.ViewModel.Blocks;
+using Rock.ViewModel.Blocks.Event.RegistrationEntry;
 using Rock.ViewModel.Client;
 using Rock.ViewModel.Controls;
 using Rock.ViewModel.NonEntities;
@@ -823,7 +823,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFirstName( RegistrationContext context, ViewModel.Blocks.RegistrantInfo registrantInfo )
+        private string GetRegistrantFirstName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.FirstName );
@@ -836,7 +836,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantLastName( RegistrationContext context, ViewModel.Blocks.RegistrantInfo registrantInfo )
+        private string GetRegistrantLastName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.LastName );
@@ -849,7 +849,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFullName( RegistrationContext context, ViewModel.Blocks.RegistrantInfo registrantInfo )
+        private string GetRegistrantFullName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var firstName = GetRegistrantFirstName( context, registrantInfo );
             var lastName = GetRegistrantLastName( context, registrantInfo );
@@ -1182,7 +1182,7 @@ namespace Rock.Blocks.Event
             RegistrationContext context,
             Person registrar,
             Guid registrarFamilyGuid,
-            ViewModel.Blocks.RegistrantInfo registrantInfo,
+            ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
@@ -1961,12 +1961,12 @@ namespace Rock.Blocks.Event
                     RegistrationSessionGuid = Guid.NewGuid()
                 };
 
-                session.Registrants = new List<ViewModel.Blocks.RegistrantInfo>();
+                session.Registrants = new List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo>();
 
                 if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
                 {
                     // Fill in first registrant info as a member of the family.
-                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    session.Registrants.Add( new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = currentPerson.PrimaryFamily.Guid,
@@ -1980,7 +1980,7 @@ namespace Rock.Blocks.Event
                 {
                     // Only fill in the first registrant with existing values
                     // as a "new" person if family members are not shown.
-                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    session.Registrants.Add( new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = Guid.NewGuid(),
@@ -2062,7 +2062,7 @@ namespace Rock.Blocks.Event
             RegistrationContext context,
             decimal amount,
             RegistrarInfo registrar,
-            List<ViewModel.Blocks.RegistrantInfo> registrants,
+            List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo> registrants,
             Guid registrationSessionGuid,
             string returnUrl )
         {
@@ -2684,7 +2684,7 @@ namespace Rock.Blocks.Event
                 DiscountPercentage = registration.DiscountPercentage,
                 FieldValues = new Dictionary<Guid, object>(),
                 GatewayToken = string.Empty,
-                Registrants = new List<ViewModel.Blocks.RegistrantInfo>(),
+                Registrants = new List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
                 Registrar = new RegistrarInfo(),
                 RegistrationGuid = registration.Guid,
                 PreviouslyPaid = alreadyPaid
@@ -2707,7 +2707,7 @@ namespace Rock.Blocks.Event
                 person.LoadAttributes( rockContext );
                 registrant.LoadAttributes( rockContext );
 
-                var registrantInfo = new ViewModel.Blocks.RegistrantInfo
+                var registrantInfo = new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
                 {
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,

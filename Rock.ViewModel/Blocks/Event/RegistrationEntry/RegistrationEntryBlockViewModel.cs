@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using Rock.ViewModel.Controls;
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.ViewModel.Blocks
+namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
 {
     /// <summary>
     /// RegistrationEntryBlockViewModel
