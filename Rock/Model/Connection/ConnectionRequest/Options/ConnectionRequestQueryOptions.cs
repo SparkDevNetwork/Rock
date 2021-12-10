@@ -18,40 +18,36 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.ViewModel.Client
+namespace Rock.Model.Connection.ConnectionRequest.Options
 {
     /// <summary>
-    /// Behavioral options for retrieving a list of campuses to be sent to
-    /// the client.
+    /// The filtering options when getting requests.
     /// </summary>
-    internal sealed class CampusOptions
+    public class ConnectionRequestQueryOptions
     {
         /// <summary>
-        /// Gets or sets a value indicating whether inactive campuses should be included.
+        /// Gets or sets the connection opportunity unique identifiers to limit results to.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if inactive campuses will be included; otherwise, <c>false</c>.
+        /// The connection opportunity unique identifiers to limit results to.
         /// </value>
-        public bool IncludeInactive { get; set; }
+        public List<Guid> ConnectionOpportunityGuids { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus types used for filtering. If this is not empty
-        /// then only campuses that match one of these campus types will be
-        /// included.
+        /// Gets or sets the connector person identifiers to limit the
+        /// results to.
         /// </summary>
         /// <value>
-        /// The campus types filter.
+        /// The connector person identifiers.
         /// </value>
-        public List<Guid> LimitCampusTypes { get; set; }
+        public List<int> ConnectorPersonIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus status used for filtering. If this is not
-        /// empty then only campuses that match one of these campus types will be
-        /// included.
+        /// Gets or sets the states that results will be limited to.
         /// </summary>
         /// <value>
-        /// The campus status filter.
+        /// The states that results will be limited to.
         /// </value>
-        public List<Guid> LimitCampusStatuses { get; set; }
+        public List<ConnectionState> ConnectionStates { get; set; }
     }
 }

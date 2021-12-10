@@ -38,7 +38,7 @@ namespace Rock.Model
         /// The default options to use if not specified. This saves a few
         /// CPU cycles from having to create a new one each time.
         /// </summary>
-        private static readonly GetConnectionRequestsOptions DefaultGetConnectionTypesOptions = new GetConnectionRequestsOptions();
+        private static readonly ConnectionRequestQueryOptions DefaultGetConnectionTypesOptions = new ConnectionRequestQueryOptions();
 
         #endregion
 
@@ -50,7 +50,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="options">The filter options to apply to the query.</param>
         /// <returns>A queryable of <see cref="ConnectionRequest"/> objects.</returns>
-        public IQueryable<ConnectionRequest> GetConnectionRequestsQuery( GetConnectionRequestsOptions options )
+        /// <exception cref="System.InvalidOperationException">Context is not a RockContext.</exception>
+        public IQueryable<ConnectionRequest> GetConnectionRequestsQuery( ConnectionRequestQueryOptions options = null )
         {
             if ( !( Context is RockContext rockContext ) )
             {

@@ -22,13 +22,15 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using Rock.Attribute;
+using Rock.ClientService.Core.Campus;
+using Rock.ClientService.Finance.FinancialPersonSavedAccount;
+using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.ViewModel;
 using Rock.ViewModel.Blocks.Event.RegistrationEntry;
-using Rock.ViewModel.Client;
 using Rock.ViewModel.Controls;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
@@ -1934,9 +1936,10 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            // Initialize the helper to retrieve data in a way we can send
+            // Initialize the client services to retrieve data in a way we can send
             // to the client.
-            var clientHelper = new Rock.ViewModel.Client.ClientHelper( rockContext, RequestContext.CurrentPerson );
+            var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
+            var savedAccountClientService = new FinancialPersonSavedAccountClientService( rockContext, RequestContext.CurrentPerson );
 
             // If we are using saved accounts and have all the details that we
             // need then attempt to load the current person's saved accounts.
@@ -1949,7 +1952,7 @@ namespace Rock.Blocks.Event
                     CurrencyTypeGuids = GetAllowedCurrencyTypes( gatewayComponent ).Select( a => a.Guid ).ToList()
                 };
 
-                savedAccounts = clientHelper.GetSavedFinancialAccountsAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
+                savedAccounts = savedAccountClientService.GetSavedFinancialAccountsForPersonAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
             }
 
             // If we don't have a session that means we are starting new. Create
@@ -2038,7 +2041,7 @@ namespace Rock.Blocks.Event
                 AllowRegistrationUpdates = allowRegistrationUpdates,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
-                Campuses = clientHelper.GetCampusesAsListItems(),
+                Campuses = campusClientService.GetCampusesAsListItems(),
                 EnableSaveAccount = enableSavedAccount,
                 SavedAccounts = savedAccounts
             };

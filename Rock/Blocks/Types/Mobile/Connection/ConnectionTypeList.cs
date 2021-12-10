@@ -137,7 +137,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             {
                 var connectionTypeService = new ConnectionTypeService( rockContext );
                 var clientTypeService = new ConnectionTypeClientService( rockContext, RequestContext.CurrentPerson );
-                var filterOptions = new GetConnectionTypesOptions
+                var filterOptions = new ConnectionTypeQueryOptions
                 {
                     IncludeInactive = true
                 };

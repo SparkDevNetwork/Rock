@@ -18,37 +18,40 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.Model.Connection.ConnectionOpportunity.Options
+namespace Rock.ClientService.Core.Campus.Options
 {
     /// <summary>
-    /// The filtering options when getting opportunities.
+    /// Behavioral options for retrieving a list of campuses to be sent to
+    /// the client.
     /// </summary>
-    public class GetConnectionOpportunitiesOptions
+    public class CampusOptions
     {
         /// <summary>
-        /// Gets or sets a value indicating whether inactive opportunities
-        /// should be included.
+        /// Gets or sets a value indicating whether inactive campuses should be included.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if inactive opportunities are included; otherwise, <c>false</c>.
+        ///   <c>true</c> if inactive campuses will be included; otherwise, <c>false</c>.
         /// </value>
         public bool IncludeInactive { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection type unique identifiers to limit results to.
-        /// </summary>
-        /// <value>The connection type unique identifiers to limit results to.</value>
-        public List<Guid> ConnectionTypeGuids { get; set; }
-
-        /// <summary>
-        /// Gets or sets the connector person identifiers to limit the
-        /// results to. If an opportunity does not have a non-connected
-        /// request that is assigned to one of these identifiers it will
-        /// not be included.
+        /// Gets or sets the campus types used for filtering. If this is not empty
+        /// then only campuses that match one of these campus types will be
+        /// included.
         /// </summary>
         /// <value>
-        /// The connector person identifiers.
+        /// The campus types filter.
         /// </value>
-        public List<int> ConnectorPersonIds { get; set; }
+        public List<Guid> LimitCampusTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus status used for filtering. If this is not
+        /// empty then only campuses that match one of these campus types will be
+        /// included.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        public List<Guid> LimitCampusStatuses { get; set; }
     }
 }

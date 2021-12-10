@@ -14,41 +14,33 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System;
 using System.Collections.Generic;
 
-namespace Rock.Model.Connection.ConnectionRequest.Options
+namespace Rock.Model.Connection.ConnectionType.Options
 {
     /// <summary>
-    /// The filtering options when getting requests.
+    /// The standard filtering options when getting connection types.
     /// </summary>
-    public class GetConnectionRequestsOptions
+    public class ConnectionTypeQueryOptions
     {
         /// <summary>
-        /// Gets or sets the connection opportunity unique identifiers to limit results to.
+        /// Gets or sets a value indicating whether inactive types
+        /// should be included.
         /// </summary>
         /// <value>
-        /// The connection opportunity unique identifiers to limit results to.
+        ///   <c>true</c> if inactive types are included; otherwise, <c>false</c>.
         /// </value>
-        public List<Guid> ConnectionOpportunityGuids { get; set; }
+        public bool IncludeInactive { get; set; }
 
         /// <summary>
         /// Gets or sets the connector person identifiers to limit the
-        /// results to.
+        /// results to. If an type does not have a non-connected
+        /// request that is assigned to one of these identifiers it will
+        /// not be included.
         /// </summary>
         /// <value>
         /// The connector person identifiers.
         /// </value>
         public List<int> ConnectorPersonIds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the states that results will be limited to.
-        /// </summary>
-        /// <value>
-        /// The states that results will be limited to.
-        /// </value>
-        public List<ConnectionState> ConnectionStates { get; set; }
     }
-
 }

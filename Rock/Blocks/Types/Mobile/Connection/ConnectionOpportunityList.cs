@@ -142,7 +142,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var opportunityClientService = new ConnectionOpportunityClientService( rockContext, RequestContext.CurrentPerson );
                 var connectionType = new ConnectionTypeService( rockContext ).GetNoTracking( connectionTypeGuid );
 
-                var filterOptions = new GetConnectionOpportunitiesOptions
+                var filterOptions = new ConnectionOpportunityQueryOptions
                 {
                     ConnectionTypeGuids = new List<Guid> { connectionTypeGuid },
                     IncludeInactive = true

@@ -167,7 +167,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 }
                 else
                 {
-                    var filterOptions = new GetConnectionRequestsOptions
+                    var filterOptions = new ConnectionRequestQueryOptions
                     {
                         ConnectionOpportunityGuids = new List<Guid> { connectionOpportunityGuid },
                         ConnectionStates = filterViewModel.ConnectionStates

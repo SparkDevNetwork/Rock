@@ -15,29 +15,29 @@
 // </copyright>
 //
 
-namespace Rock.ViewModel.Client
+using System;
+using System.Collections.Generic;
+
+namespace Rock.ClientService.Finance.FinancialPersonSavedAccount.Options
 {
     /// <summary>
-    /// Behavioral options for retrieving a list of defined values to be send
-    /// to the client.
+    /// The options that describe the saved financial account queries in
+    /// <see cref="FinancialPersonSavedAccountClientService"/>.
     /// </summary>
-    internal sealed class DefinedValueOptions
+    public class SavedFinancialAccountOptions
     {
         /// <summary>
-        /// Gets or sets a value indicating whether inactive values should be included.
+        /// Gets or sets the financial gateway unique identifiers to limit the
+        /// results to.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if inactive values should be included; otherwise, <c>false</c>.
-        /// </value>
-        public bool IncludeInactive { get; set; }
+        /// <value>The financial gateway unique identifiers.</value>
+        public List<Guid> FinancialGatewayGuids { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the description should be
-        /// used instead of the value text.
+        /// Gets or sets the currency type unique identifiers to limit the
+        /// results to.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if the description should be used; otherwise, <c>false</c>.
-        /// </value>
-        public bool UseDescription { get; set; }
+        /// <value>The currency type unique identifiers.</value>
+        public List<Guid> CurrencyTypeGuids { get; set; }
     }
 }
