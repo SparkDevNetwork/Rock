@@ -63,6 +63,8 @@ namespace RockWeb.Blocks.Cms
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", MediaAccount.FriendlyTypeName );
         }
 
         /// <summary>
@@ -139,7 +141,7 @@ namespace RockWeb.Blocks.Cms
 
             // reload page
             var qryParams = new Dictionary<string, string>();
-            NavigateToPage( RockPage.Guid, qryParams );
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
