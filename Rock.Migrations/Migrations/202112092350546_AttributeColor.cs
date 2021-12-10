@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,7 +29,14 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Attribute", "AttributeColor", c => c.String(nullable: false, maxLength: 100));
+            /* 12-10-2021 MDP 
+            The previous version of this migration had set AttributeColor as NOT NULL. But it should have been nullable.
+            This fixes that, and the next migration will make sure it get set back nullable just in case they previous version of this migration ran.
+            
+            */
+            AddColumn("dbo.Attribute", "AttributeColor", c => c.String(maxLength: 100));
+            
+            
             AddColumn("dbo.FinancialScheduledTransaction", "PreviousGatewayScheduleIdsJson", c => c.String());
         }
         

@@ -194,9 +194,8 @@ namespace Rock.Model
         /// The color to visually distinguish the attribute. For example, <see cref="AttributeColor"/> might be used to set the color for the <seealso cref="IconCssClass"/> of the icon.
         /// </summary>
         /// <value>The color of the attribute.</value>
-        [Required]
         [MaxLength( 100 )]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string AttributeColor { get; set; }
 
         /// <summary>
