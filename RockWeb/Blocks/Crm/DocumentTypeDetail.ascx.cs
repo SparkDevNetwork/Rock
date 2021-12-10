@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of the given Document Type for editing." )]
 
-    public partial class DocumentTypeDetail : RockBlock, IDetailBlock
+    public partial class DocumentTypeDetail : RockBlock
     {
         #region Keys
 
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )

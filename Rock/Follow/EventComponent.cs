@@ -28,7 +28,6 @@ namespace Rock.Follow
     /// </summary>
     public abstract class EventComponent : Component
     {
-
         /// <summary>
         /// Gets the attribute value defaults.
         /// </summary>
@@ -99,7 +98,7 @@ namespace Rock.Follow
         {
             get
             {
-                return true; ;
+                return true;
             }
         }
 
@@ -163,6 +162,5 @@ namespace Rock.Follow
         /// <param name="lastNotified">The last notified.</param>
         /// <returns></returns>
         public abstract bool HasEventHappened( FollowingEventType followingEvent, IEntity entity, DateTime? lastNotified );
-
     }
 }

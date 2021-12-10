@@ -29,8 +29,6 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a connection request change workflow
     /// </summary>
-    [Obsolete( "Use ProcessConnectionRequestActivityChange Task instead." )]
-    [RockObsolete( "1.13" )]
     public class ConnectionRequestActivityChangeTransaction : ITransaction
     {
         private Guid? ConnectionRequestActivityGuid;
@@ -46,6 +44,21 @@ namespace Rock.Transactions
         {
             // If entity was a connection request activity and state was added, save the values
             var connectionRequestActivity = entry.Entity as ConnectionRequestActivity;
+            if ( connectionRequestActivity != null )
+            {
+                ConnectionRequestActivityGuid = connectionRequestActivity.Guid;
+                ConnectionRequestId = connectionRequestActivity.ConnectionRequestId;
+                ConnectionOpportunityId = connectionRequestActivity.ConnectionOpportunityId;
+                ConnectionActivityTypeId = connectionRequestActivity.ConnectionActivityTypeId;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionRequestActivityChangeTransaction"/> class.
+        /// </summary>
+        /// <param name="connectionRequestActivity">The connectionRequestActivity.</param>
+        public ConnectionRequestActivityChangeTransaction( ConnectionRequestActivity connectionRequestActivity )
+        {
             if ( connectionRequestActivity != null )
             {
                 ConnectionRequestActivityGuid = connectionRequestActivity.Guid;

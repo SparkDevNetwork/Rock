@@ -33,9 +33,10 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Core\.eslintrc.js" />
     <Content Include="Framework\.eslintrc.js" />
-    <Content Include="Framework\Tests\tsconfig.json" />
+    <Content Include="Tests\tsconfig.json" />
     <Content Include="Framework\tsconfig.json" />
     <Content Include="Framework\Util\aspDateFormat.ts" />
+    <Content Include="tsconfig.json" />
     <Content Include="webpack-eol-plugin.js" />
     <Content Include="webpack.config.js" />
     <None Include="Core\core.ts" />
@@ -64,14 +65,16 @@
     <Folder Include="Framework\SystemGuids\" />
     <Folder Include="Framework\SystemGuids\CodeGenerated\" />
     <Folder Include="Framework\Templates\" />
-    <Folder Include="Framework\Tests\" />
-    <Folder Include="Framework\Tests\Elements\" />
-    <Folder Include="Framework\Tests\Services\" />
+    <Folder Include="Build\" />
+    <Folder Include="Tests\" />
+    <Folder Include="Tests\Elements\" />
+    <Folder Include="Tests\Services\" />
     <Folder Include="Framework\Util\" />
     <Folder Include="Framework\ViewModels\" />
     <Folder Include="Framework\ViewModels\CodeGenerated\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Build\build.ts" />
     <TypeScriptCompile Include="Core\vendor.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\registrationEntry.ts" />
@@ -79,6 +82,7 @@
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\discountCodeForm.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\feeField.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\intro.ts" />
+    <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\payment.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\registrant.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\registrantAttributeField.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\registrantPersonField.ts" />
@@ -271,9 +275,9 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\workflowType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\index.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\paneledBlockTemplate.ts" />
-    <TypeScriptCompile Include="Framework\Tests\Elements\rockFormField.spec.ignored.ts" />
-    <TypeScriptCompile Include="Framework\Tests\Elements\textBox.spec.ignored.ts" />
-    <TypeScriptCompile Include="Framework\Tests\Services\dateAspFormatTests.spec.ts" />
+    <TypeScriptCompile Include="Tests\Elements\rockFormFieldHelper.ts" />
+    <TypeScriptCompile Include="Tests\Elements\textBox.spec.ts" />
+    <TypeScriptCompile Include="Tests\Services\dateAspFormatTests.spec.ts" />
     <TypeScriptCompile Include="Framework\Util\block.ts" />
     <TypeScriptCompile Include="Framework\Util\bus.ts" />
     <TypeScriptCompile Include="Framework\Util\cache.ts" />
@@ -501,6 +505,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\entity.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\index.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\listItem.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\savedFinancialAccountListItem.d.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean">

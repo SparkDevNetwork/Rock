@@ -48,6 +48,14 @@ namespace Rock.ViewModel
         public bool AllowSearch { get; set; }
 
         /// <summary>
+        /// Gets or sets the AttributeColor.
+        /// </summary>
+        /// <value>
+        /// The AttributeColor.
+        /// </value>
+        public string AttributeColor { get; set; }
+
+        /// <summary>
         /// Gets or sets the DefaultValue.
         /// </summary>
         /// <value>

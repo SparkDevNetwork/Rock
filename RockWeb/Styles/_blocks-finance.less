@@ -15,7 +15,7 @@
   display: inline-block;
 
   &::first-letter {
-    font-size: 0.6em;
+    font-size: .6em;
     vertical-align: top;
   }
 }
@@ -327,6 +327,10 @@
 .percentile-giving {
   @media (min-width: @screen-sm) {
     border-left: 1px solid @panel-border;
+  }
+
+  @media (min-width: @screen-lg) {
+    padding-left: 6rem;
   }
 }
 

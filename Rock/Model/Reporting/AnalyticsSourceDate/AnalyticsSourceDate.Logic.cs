@@ -116,7 +116,7 @@ namespace Rock.Model
                 analyticsSourceDate.CalendarWeek = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek );
                 analyticsSourceDate.CalendarMonth = generateDate.Month;
                 analyticsSourceDate.CalendarMonthName = generateDate.ToString( "MMMM" );
-                analyticsSourceDate.CalendarMonthNameAbbrevated = generateDate.ToString( "MMM" );
+                analyticsSourceDate.CalendarMonthNameAbbreviated = generateDate.ToString( "MMM" );
 
                 analyticsSourceDate.CalendarYearMonth = generateDate.ToString( "yyyyMM" );
                 analyticsSourceDate.CalendarYearMonthName = generateDate.ToString( "yyyy MMM" );
@@ -145,7 +145,7 @@ namespace Rock.Model
                 analyticsSourceDate.FiscalWeek = fiscalWeek;
                 analyticsSourceDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
                 analyticsSourceDate.FiscalMonth = generateDate.ToString( "MMMM" );
-                analyticsSourceDate.FiscalMonthAbbrevated = generateDate.ToString( "MMM" );
+                analyticsSourceDate.FiscalMonthAbbreviated = generateDate.ToString( "MMM" );
                 analyticsSourceDate.FiscalMonthNumberInYear = generateDate.Month;
                 analyticsSourceDate.FiscalMonthYear = generateDate.ToString( "MM yyyy" );
                 analyticsSourceDate.FiscalQuarter = string.Format( "Q{0}", fiscalQuarter );

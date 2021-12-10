@@ -233,6 +233,34 @@
     <Compile Include="Migrations\202111231715385_FinancialTransactionAlertTypeAccount.Designer.cs">
       <DependentUpon>202111231715385_FinancialTransactionAlertTypeAccount.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202111302149106_Rollup_20211130.cs" />
+    <Compile Include="Migrations\202111302149106_Rollup_20211130.Designer.cs">
+      <DependentUpon>202111302149106_Rollup_20211130.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111302202537_CodeGenerated_20211130.cs" />
+    <Compile Include="Migrations\202111302202537_CodeGenerated_20211130.Designer.cs">
+      <DependentUpon>202111302202537_CodeGenerated_20211130.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112021510521_RenameColumnsOnAnalyticsSourceDate.cs" />
+    <Compile Include="Migrations\202112021510521_RenameColumnsOnAnalyticsSourceDate.Designer.cs">
+      <DependentUpon>202112021510521_RenameColumnsOnAnalyticsSourceDate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112032210274_Rollup_20211203.cs" />
+    <Compile Include="Migrations\202112032210274_Rollup_20211203.Designer.cs">
+      <DependentUpon>202112032210274_Rollup_20211203.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112061840184_AnalyticsSourceDate_Snapshot.cs" />
+    <Compile Include="Migrations\202112061840184_AnalyticsSourceDate_Snapshot.Designer.cs">
+      <DependentUpon>202112061840184_AnalyticsSourceDate_Snapshot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112092350546_AttributeColor.cs" />
+    <Compile Include="Migrations\202112092350546_AttributeColor.Designer.cs">
+      <DependentUpon>202112092350546_AttributeColor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112101731446_AttributeColorRollup.cs" />
+    <Compile Include="Migrations\202112101731446_AttributeColorRollup.Designer.cs">
+      <DependentUpon>202112101731446_AttributeColorRollup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -967,6 +995,27 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202111231715385_FinancialTransactionAlertTypeAccount.resx">
       <DependentUpon>202111231715385_FinancialTransactionAlertTypeAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111302149106_Rollup_20211130.resx">
+      <DependentUpon>202111302149106_Rollup_20211130.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111302202537_CodeGenerated_20211130.resx">
+      <DependentUpon>202111302202537_CodeGenerated_20211130.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112021510521_RenameColumnsOnAnalyticsSourceDate.resx">
+      <DependentUpon>202112021510521_RenameColumnsOnAnalyticsSourceDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112032210274_Rollup_20211203.resx">
+      <DependentUpon>202112032210274_Rollup_20211203.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112061840184_AnalyticsSourceDate_Snapshot.resx">
+      <DependentUpon>202112061840184_AnalyticsSourceDate_Snapshot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112092350546_AttributeColor.resx">
+      <DependentUpon>202112092350546_AttributeColor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112101731446_AttributeColorRollup.resx">
+      <DependentUpon>202112101731446_AttributeColorRollup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>

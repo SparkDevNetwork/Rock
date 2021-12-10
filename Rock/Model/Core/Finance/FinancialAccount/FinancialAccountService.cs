@@ -74,6 +74,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all descendent ids.
+        /// </summary>
+        /// <param name="parentAccountId">The parent account identifier.</param>
+        /// <returns>System.Collections.Generic.IEnumerable&lt;int&gt;.</returns>
+        public IEnumerable<int> GetAllDescendentIds( int parentAccountId )
+        {
+            return this.Context.Database.SqlQuery<int>(
+                @"
+                with CTE as (
+                select * from [FinancialAccount] where [ParentAccountId]={0}
+                union all
+                select [a].* from [FinancialAccount] [a]
+                inner join CTE pcte on pcte.Id = [a].[ParentAccountId]
+                )
+                select Id from CTE
+                ", parentAccountId );
+        }
+
+        /// <summary>
         /// Gets the entire FinancialAccount tree ordered by parent to child recursively
         /// </summary>
         /// <returns></returns>

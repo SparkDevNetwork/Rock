@@ -28,6 +28,8 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Security
@@ -101,6 +103,13 @@ namespace Rock.Blocks.Types.Mobile.Security
         DefaultIntegerValue = IdentityVerification.DefaultMaxFailedMatchAttemptCount,
         Key = AttributeKeys.ValidationCodeAttempts,
         Order = 7 )]
+
+    [EnumsField( "Disable Matching for the Following Protection Profiles",
+        Description = "This disables matching on people with one of the selected protection profiles. A person with a selected protection profile will be required to login by username and password.",
+        EnumSourceType = typeof( AccountProtectionProfile ),
+        DefaultValue = "2,3",
+        Key = AttributeKeys.DisableMatchingProtectionProfiles,
+        Order = 8 )]
 
     #region Campus Block Attributes
 
@@ -483,6 +492,11 @@ namespace Rock.Blocks.Types.Mobile.Security
             public const string ValidationCodeAttempts = "ValidationCodeAttempts";
 
             /// <summary>
+            /// The disable matching protection profiles key.
+            /// </summary>
+            public const string DisableMatchingProtectionProfiles = "DisableMatchingProtectionProfiles";
+
+            /// <summary>
             /// The display campus types key.
             /// </summary>
             public const string DisplayCampusTypes = "DisplayCampusTypes";
@@ -721,6 +735,12 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// The maximum validation code attempts.
         /// </value>
         public int ValidationCodeAttempts => GetAttributeValue( AttributeKeys.ValidationCodeAttempts ).AsInteger();
+
+        /// <summary>
+        /// Gets the protection profiles that will be used to prevent matching.
+        /// </summary>
+        /// <value>The protection profiles that will be used to prevent matching.</value>
+        public List<AccountProtectionProfile> DisableMatchingProtectionProfiles => GetAttributeValue( AttributeKeys.DisableMatchingProtectionProfiles ).SplitDelimitedValues().AsEnumList<AccountProtectionProfile>();
 
         /// <summary>
         /// Gets the display campus type guids.
@@ -1401,7 +1421,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             person.Email = details.Email;
 
             var familyGroup = person.GetFamily( rockContext );
-            if ( familyGroup != null )
+            if ( familyGroup != null && details.CampusGuid.HasValue )
             {
                 familyGroup.CampusId = CampusCache.Get( details.CampusGuid.Value ).Id;
             }
@@ -1633,6 +1653,16 @@ namespace Rock.Blocks.Types.Mobile.Security
                     return ActionBadRequest( "Missing required information to send code." );
                 }
 
+                // If we have a matching person, check if it is a protected
+                // profile account that must not be used.
+                if ( person != null )
+                {
+                    if ( DisableMatchingProtectionProfiles.Contains( person.AccountProtectionProfile ) )
+                    {
+                        return ActionBadRequest( "It appears you have an account in our system that has security access which requires you to login with a username and password." );
+                    }
+                }
+
                 // Generate the identify verification code that the user will need to enter.
                 var identityVerification = identityVerificationService.CreateIdentityVerificationRecord( RequestContext.ClientInformation.IpAddress, IPThrottleLimit, refNumber );
                 bool success = false;
@@ -1650,11 +1680,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // on in the event of an error.
                 if ( !success )
                 {
-                    return ActionOk( new SendCodeResponse
-                    {
-                        IsSuccess = false,
-                        Message = "Unable to send code."
-                    } );
+                    return ActionInternalServerError( "Unable to send code." );
                 }
 
                 // Create our encrypted state to track where we are in the process.
@@ -1844,6 +1870,16 @@ namespace Rock.Blocks.Types.Mobile.Security
                         {
                             CreateUser( person, request.Details.UserName, request.Details.Password, true, rockContext );
                         }
+                        else if ( username == null )
+                        {
+                            // No existing username, no manually created username.
+                            // We need to generate a user so that we can properly
+                            // log them in.
+                            var newPassword = Password.GeneratePassword();
+                            username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
+
+                            CreateUser( person, username, newPassword, true, rockContext );
+                        }
 
                         if ( request.Details.Interests.Any() )
                         {
@@ -1868,16 +1904,9 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                     var mobilePerson = MobileHelper.GetMobilePerson( person, siteCache );
 
-                    // Set the authentication token to either a normal token or
-                    // an impersonated token if we don't have a normal user name.
-                    if ( username.IsNotNullOrWhiteSpace() )
-                    {
-                        mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
-                    }
-                    else
-                    {
-                        mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( person.GetImpersonationParameter() );
-                    }
+                    // Set the authentication token to either a normal token so
+                    // they can login.
+                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
 
                     return ActionOk( new CreatePersonResponse
                     {
@@ -1915,6 +1944,12 @@ namespace Rock.Blocks.Types.Mobile.Security
             using ( var rockContext = new RockContext() )
             {
                 var person = new PersonService( rockContext ).Get( RequestContext.CurrentPerson.Id );
+                var username = RequestContext.CurrentUser.UserName;
+
+                if ( username == null )
+                {
+                    username = person.Users.FirstOrDefault( a => ( a.IsConfirmed ?? true ) && !( a.IsLockedOut ?? false ) )?.UserName;
+                }
 
                 rockContext.WrapTransaction( () =>
                 {
@@ -1947,21 +1982,23 @@ namespace Rock.Blocks.Types.Mobile.Security
                         }
                     }
 
+                    if ( username == null )
+                    {
+                        // No existing username. We need to generate a user
+                        // so that we can properly log them in.
+                        var newPassword = Password.GeneratePassword();
+                        username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
+
+                        CreateUser( person, username, newPassword, true, rockContext );
+                    }
+
                     rockContext.SaveChanges();
                 } );
 
                 var mobilePerson = MobileHelper.GetMobilePerson( person, PageCache.Layout.Site );
 
-                // Set the authentication token to either a normal token or
-                // an impersonated token if we don't have a normal user name.
-                if ( RequestContext.CurrentUser.Id != 0 )
-                {
-                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( RequestContext.CurrentUser.UserName );
-                }
-                else
-                {
-                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( person.GetImpersonationParameter() );
-                }
+                // Set the authentication token so they get/stay logged in.
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
 
                 return ActionOk( new
                 {

@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Metric Value Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular metric value." )]
-    public partial class MetricValueDetail : RockBlock, IDetailBlock
+    public partial class MetricValueDetail : RockBlock
     {
         #region Control Methods
 

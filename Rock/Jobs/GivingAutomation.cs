@@ -936,7 +936,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             var lastFollowUpAlerts = recentAlerts.Where( a => a.AlertType == AlertType.FollowUp );
-            if ( lastFollowUpAlerts.Any() )
+            if ( lastFollowUpAlerts?.Any() == true )
             {
                 var lastFollowUpAlertDate = lastFollowUpAlerts.Max( x => ( DateTime? ) x.AlertDateTime );
                 if ( FollowUpRepeatPreventionDays.HasValue && lastFollowUpAlertDate.HasValue )
@@ -982,7 +982,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
             var lastGratitudeAlerts = recentAlerts.Where( a => a.AlertType == AlertType.Gratitude );
 
-            if ( lastGratitudeAlerts.Any() )
+            if ( lastGratitudeAlerts?.Any() == true )
             {
                 var lastGratitudeAlertDate = lastGratitudeAlerts.Max( a => ( DateTime? ) a.AlertDateTime );
                 if ( GratitudeRepeatPreventionDays.HasValue && lastGratitudeAlertDate.HasValue )

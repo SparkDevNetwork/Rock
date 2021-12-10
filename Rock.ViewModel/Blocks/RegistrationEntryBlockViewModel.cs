@@ -331,7 +331,7 @@ namespace Rock.ViewModel.Blocks
         /// <value>
         /// The saved accounts that can be offered to use for payment.
         /// </value>
-        public List<ListItemViewModel> SavedAccounts { get; set; }
+        public List<SavedFinancialAccountListItemViewModel> SavedAccounts { get; set; }
     }
 
     /// <summary>

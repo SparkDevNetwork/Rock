@@ -113,6 +113,16 @@ export default defineComponent({
         gatewayControlModel: {
             type: Object as PropType<GatewayControlModel>,
             required: true
+        },
+
+        amountToPay: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        returnUrl: {
+            type: String as PropType<string>,
+            required: false
         }
     },
 
@@ -122,6 +132,9 @@ export default defineComponent({
 
         /** The settings that will be supplied to the gateway component. */
         const settings = computed((): Record<string, unknown> => props.gatewayControlModel.settings);
+
+        /** The amount to be charged to the payment method by the gateway. */
+        const amountToPay = computed((): number => props.amountToPay);
 
         /**
          * Intercept the success event, so that local state can reflect it.
@@ -152,6 +165,8 @@ export default defineComponent({
         return {
             url,
             settings,
+            amountToPay,
+            returnUrl: props.returnUrl,
             onSuccess,
             onValidation,
             onError
@@ -161,7 +176,13 @@ export default defineComponent({
     },
     template: `
 <div>
-    <ComponentFromUrl :url="url" :settings="settings" @validation="onValidation" @success="onSuccess" @error="onError" />
+    <ComponentFromUrl :url="url"
+        :settings="settings"
+        :amount="amountToPay"
+        :returnUrl="returnUrl"
+        @validation="onValidation"
+        @success="onSuccess"
+        @error="onError" />
 </div>
 `
 });

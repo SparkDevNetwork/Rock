@@ -39,7 +39,6 @@ namespace RockWeb.Blocks.Reporting
     /// Displays the details of the given report.
     /// </summary>
     /// <seealso cref="Rock.Web.UI.RockBlock" />
-    /// <seealso cref="Rock.Web.UI.IDetailBlock" />
     [DisplayName( "Report Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of the given report." )]
@@ -69,7 +68,7 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 3 )]
 
-    public partial class ReportDetail : RockBlock, IDetailBlock
+    public partial class ReportDetail : RockBlock
     {
         #region Attribute Keys
 

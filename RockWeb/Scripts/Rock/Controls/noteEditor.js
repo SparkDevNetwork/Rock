@@ -58,15 +58,16 @@
             /**  */
             initializeEventHandlers: function () {
                 // Initialize NoteEditor and NoteContainer events
-                $('.js-notecontainer .js-addnote,.js-editnote,.js-replynote').on('click', function (e) {
+                var self = this;
+                var $noteContainer = self.$noteEditor.closest('.js-notecontainer');
+
+                $('.js-addnote,.js-editnote,.js-replynote', $noteContainer).on('click', function (e) {
                     var addNote = $(this).hasClass('js-addnote');
                     var editNote = $(this).hasClass('js-editnote');
                     var replyNote = $(this).hasClass('js-replynote');
                     var cancelNote = $(this).hasClass('js-editnote-cancel');
                     var deleteNote = $(this).hasClass('js-removenote');
 
-
-                    var $noteContainer = $(this).closest('.js-notecontainer');
                     var sortDirection = $noteContainer.data('sortdirection');
                     var $noteEditor = $noteContainer.find('.js-note-editor');
                     var $currentNote = $(false);
@@ -82,41 +83,39 @@
                     $noteprivateInput.parent().show();
 
                     if (addNote) {
-                        var postBackControlId = $noteEditor.find('.js-postback-control-id').val();
-                        if (postBackControlId) {
-                            var jsPostback = "javascript:__doPostBack('" + postBackControlId + "','AddNote^" + currentNoteId + "');";
-                            window.location = jsPostback;
-                            return;
-                        }
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        var postbackJs = $noteContainer.find(".js-add-postback").attr('href');
+                        window.location = postbackJs;
+                        return;
                     }
                     else {
                         $currentNote = $(this).closest('.js-noteviewitem');
                         var currentNoteId = $currentNote.data('note-id');
 
                         if (replyNote) {
+                            $noteContainer.find('.js-currentnoteid').val(currentNoteId);
                             $noteEditor.find('.js-parentnoteid').val(currentNoteId);
 
-                            var postBackControlId = $noteEditor.find('.js-postback-control-id').val();
-                            if (postBackControlId) {
-                                var jsPostback = "javascript:__doPostBack('" + postBackControlId + "','ReplyToNote^" + currentNoteId + "');";
-                                window.location = jsPostback;
-                                return;
-                            }
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            var postbackJs = $noteContainer.find(".js-reply-to-postback").attr('href');
+                            window.location = postbackJs;
+                            return;
                         }
                         else if (editNote) {
-                            var postBackControlId = $noteEditor.find('.js-postback-control-id').val();
-                            if (postBackControlId) {
-                                var jsPostback = "javascript:__doPostBack('" + postBackControlId + "','EditNote^" + currentNoteId + "');";
-                                window.location = jsPostback;
-                                return;
-                            }
+                            $noteContainer.find('.js-currentnoteid').val(currentNoteId);
+
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            var postbackJs = $noteContainer.find(".js-edit-postback").attr('href');
+                            window.location = postbackJs;
+                            return;
                         }
                     }
-
-                    
                 });
 
-                $('.js-notecontainer .js-notesecurity').on('click', function (e) {
+                $('.js-notesecurity', $noteContainer).on('click', function (e) {
                     var $securityBtn = $(this);
                     var entityTypeId = $securityBtn.data('entitytype-id');
                     var title = $securityBtn.data('title');
@@ -125,8 +124,7 @@
                     Rock.controls.modal.show($securityBtn, securityUrl);
                 });
 
-                $('.js-notecontainer .js-editnote-cancel').on('click', function (e) {
-                    var $noteContainer = $(this).closest('.js-notecontainer');
+                $('.js-editnote-cancel', $noteContainer).on('click', function (e) {
                     var $noteEditor = $noteContainer.find('.js-note-editor');
                     $noteEditor.slideUp();
 
@@ -134,10 +132,9 @@
                     $noteEditor.parent().find('.js-noteviewitem').slideDown();
                 });
 
-                $('.js-notecontainer .js-removenote').on('click', function (e) {
+                $('.js-removenote', $noteContainer).on('click', function (e) {
                     var $currentNote = $(this).closest('.js-noteviewitem');
                     var currentNoteId = $currentNote.attr('data-note-id');
-                    var $noteContainer = $(this).closest('.js-notecontainer');
                     $noteContainer.find('.js-currentnoteid').val(currentNoteId);
 
                     e.preventDefault();
@@ -150,9 +147,7 @@
                     });
                 });
 
-                $('.js-expandreply').on('click', function (e) {
-                    var $noteContainer = $(this).closest('.js-notecontainer');
-
+                $('.js-expandreply', $noteContainer).on('click', function (e) {
                     var $currentNote = $(this).closest('.js-note');
                     var $childNotesContainer = $currentNote.find('.js-childnotes').first();
                     $childNotesContainer.slideToggle(function (x) {

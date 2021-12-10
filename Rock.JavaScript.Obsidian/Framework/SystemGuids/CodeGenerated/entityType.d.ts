@@ -144,6 +144,8 @@ export const enum EntityType {
     MobileCmsHeroBlockType = "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView */
     MobileCmsStructuredcontentviewBlockType = "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76",
+    /** The GUID for the entity . */
+    MobileCoreSearchBlockType = "F81015CD-EBA9-4358-B930-4F1AB29AF879",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList */
     MobileEventsCalendareventlistBlockType = "6FB9F1F4-5F24-4A22-A6EB-A7FA499179A9",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarView */

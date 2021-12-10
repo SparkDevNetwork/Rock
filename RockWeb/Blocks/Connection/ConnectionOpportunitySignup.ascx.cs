@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Connection
         Order = 10,
         Key = AttributeKey.ExcludeNonPublicAttributes )]
     #endregion Block Attributes
-    public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
+    public partial class ConnectionOpportunitySignup : RockBlock
     {
         #region Attribute Keys
 

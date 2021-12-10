@@ -337,6 +337,7 @@ namespace Rock.Model
         /// <value>
         /// The giver identifier.
         /// </value>
+        [MaxLength( 50 )]
         [DataMember]
         [Index( "IX_GivingId" )]
         public string GivingId { get; private set; }

@@ -387,14 +387,14 @@ export default defineComponent({
         /** The CSS classes to apply to the credit card payment type button. */
         const creditCardButtonClasses = computed((): string[] => {
             return isCreditCardPaymentTypeActive.value
-                ? ["btn", "btn-primary", "active", "payment-creditcard"]
+                ? ["btn", "btn-default", "active", "payment-creditcard"]
                 : ["btn", "btn-default", "payment-creditcard"];
         });
 
         /** The CSS classes to apply to the bank account (ACH) payment type button. */
         const bankAccountButtonClasses = computed((): string[] => {
             return isBankAccountPaymentTypeActive.value
-                ? ["btn", "btn-primary", "active", "payment-ach"]
+                ? ["btn", "btn-default", "active", "payment-ach"]
                 : ["btn", "btn-default", "payment-ach"];
         });
 
@@ -433,6 +433,8 @@ export default defineComponent({
 
         /** Reference to helper element that allows us to get invalid input CSS styles. */
         const inputInvalidStyleHook = ref<HTMLElement | null>(null);
+
+        const paymentInputs = ref<HTMLElement | null>(null);
 
         /** Contains all the field validation states. */
         const validationFieldStatus: Record<string, ValidationField> = {
@@ -579,6 +581,12 @@ export default defineComponent({
                 return;
             }
 
+            if (paymentInputs.value) {
+                paymentInputs.value.querySelectorAll(".iframe-input").forEach(el => {
+                    el.innerHTML = "";
+                });
+            }
+
             try {
                 const options = getCollectJSOptions(controlId, inputStyleHook.value, inputInvalidStyleHook.value);
 
@@ -613,7 +621,8 @@ export default defineComponent({
             activateCreditCard,
             activateBankAccount,
             inputStyleHook,
-            inputInvalidStyleHook
+            inputInvalidStyleHook,
+            paymentInputs
         };
     },
 
@@ -623,13 +632,13 @@ export default defineComponent({
         <LoadingIndicator />
     </div>
 
-    <div v-show="!loading && !failedToLoad" style="max-width: 600px; margin-left: auto; margin-right: auto;">
-        <div v-if="hasMultiplePaymentTypes" class="gateway-type-selector btn-group btn-group-justified" role="group">
+    <div v-show="!loading && !failedToLoad" style="max-width: 600px;">
+        <div v-if="hasMultiplePaymentTypes" class="gateway-type-selector btn-group btn-group-xs" role="group">
             <a :class="creditCardButtonClasses" @click.prevent="activateCreditCard">Card</a>
             <a :class="bankAccountButtonClasses" @click.prevent="activateBankAccount">Bank Account</a>
         </div>
 
-        <div :id="controlId" class="nmi-payment-inputs">
+        <div :id="controlId" class="nmi-payment-inputs" ref="paymentInputs">
             <div v-if="hasCreditCardPaymentType" v-show="isCreditCardPaymentTypeActive" class="gateway-creditcard-container gateway-payment-container">
                 <div class="iframe-input credit-card-input js-credit-card-input"></div>
                 <div class="break"></div>

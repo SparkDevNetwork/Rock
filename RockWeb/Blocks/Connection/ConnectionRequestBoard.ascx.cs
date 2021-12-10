@@ -1990,13 +1990,9 @@ namespace RockWeb.Blocks.Connection
 
                     if ( workflow.HasActiveEntryForm( CurrentPerson ) )
                     {
-                        NavigateToLinkedPage(
-                            AttributeKey.WorkflowEntryPage,
-                            new Dictionary<string, string>
-                            {
-                                { "WorkflowTypeId", workflowType.Id.ToString() },
-                                { "WorkflowGuid", workflow.Guid.ToString() }
-                            } );
+                        var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
+
+                        RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
                     }
                     else
                     {
@@ -2263,18 +2259,66 @@ namespace RockWeb.Blocks.Connection
 
             if ( requestWorkflow.Workflow.HasActiveEntryForm( CurrentPerson ) )
             {
-                var qryParam = new Dictionary<string, string>
-                {
-                    { "WorkflowTypeId", requestWorkflow.Workflow.WorkflowTypeId.ToString() },
-                    { "WorkflowGuid", requestWorkflow.Workflow.Guid.ToString() }
-                };
-
-                NavigateToLinkedPage( AttributeKey.WorkflowEntryPage, qryParam );
+                RegisterWorkflowDetailPageScript( requestWorkflow.Workflow.WorkflowTypeId, requestWorkflow.Workflow.Guid );
             }
             else
             {
                 NavigateToLinkedPage( AttributeKey.WorkflowDetailPage, PageParameterKey.WorkflowId, requestWorkflow.Workflow.Id );
             }
+        }
+
+        /// <summary>
+        /// Add a script to the client load event for the current page that will also open a new page for the workflow entry form.
+        /// </summary>
+        /// <param name="workflowTypeId"></param>
+        /// <param name="workflowGuid"></param>
+        private void RegisterWorkflowDetailPageScript( int workflowTypeId, Guid workflowGuid, string message = null )
+        {
+            var qryParam = new Dictionary<string, string>
+                {
+                    { "WorkflowTypeId", workflowTypeId.ToString() },
+                    { "WorkflowGuid", workflowGuid.ToString() }
+                };
+
+            var url = LinkedPageUrl( AttributeKey.WorkflowEntryPage, qryParam );
+
+            // When the script is executed, it is also removed from the client load event to ensure that it is only run once.
+            string script;
+
+            if ( string.IsNullOrEmpty( message ) )
+            {
+                // Open the workflow detail page.
+                script = $@"
+<script language='javascript' type='text/javascript'> 
+    Sys.Application.add_load(openWorkflowEntryPage);
+    function openWorkflowEntryPage() {{
+        Sys.Application.remove_load( openWorkflowEntryPage );
+        window.open('{url}');
+    }}
+</script>";
+            }
+            else
+            {
+                // Show a modal message dialog, and open the workflow detail page when the dialog is closed.
+                message = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
+                script = $@"
+<script language='javascript' type='text/javascript'> 
+    Sys.Application.add_load(openWorkflowEntryPage);
+    function openWorkflowEntryPage() {{
+        Sys.Application.remove_load( openWorkflowEntryPage );
+        bootbox.alert({{ message:'{message}',
+            callback: function() {{ window.open('{url}'); }}
+        }});
+    }}
+</script>
+";
+            }
+
+            ScriptManager.RegisterStartupScript( gRequestModalViewModeWorkflows,
+                gRequestModalViewModeWorkflows.GetType(),
+                "openWorkflowScript",
+                script,
+                false );
         }
 
         #endregion Request Modal (View Mode) Workflows

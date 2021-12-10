@@ -157,8 +157,7 @@
 
   .flex {
     display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap;
+    flex-flow: row nowrap !important;
     flex-shrink: 0;
     align-items: center;
     justify-content: space-between !important;
@@ -640,8 +639,15 @@
   }
 }
 
-.panel-toolbar .picker .picker-select-none {
-  display: none !important;
+.panel-toolbar .picker {
+  .picker-select-none {
+    display: none !important;
+  }
+
+  .picker-label {
+    width: 250px;
+    max-width: none;
+  }
 }
 
 .overflow-scroll {

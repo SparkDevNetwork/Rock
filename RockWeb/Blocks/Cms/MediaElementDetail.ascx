@@ -79,17 +79,15 @@
                     <asp:Panel ID="pnlLast12MonthsDetails" runat="server" Visible="false">
                         <asp:Literal ID="lLast12MonthsContent" runat="server" />
                     </asp:Panel>
-                </asp:Panel>
 
+                    <asp:Panel ID="pnlIndividualPlays" runat="server">
+                        <hr class="my-3" />
+                        <p class="my-3 py-1">
+                            <strong>Individual Plays</strong>
+                        </p>
 
-
-                <asp:Panel ID="pnlIndividualPlays" runat="server">
-                    <hr class="my-3" />
-                    <p class="my-3 py-1">
-                        <strong>Individual Plays</strong>
-                    </p>
-
-                    <button class="js-load-more btn btn-primary mt-2">Load More</button>
+                        <button class="js-load-more btn btn-primary mt-2">Load More</button>
+                    </asp:Panel>
                 </asp:Panel>
 
             </asp:Panel>

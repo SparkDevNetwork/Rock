@@ -17,7 +17,7 @@
 
 import { GatewayControlModel } from "../../../Controls/gatewayControl";
 import { Guid } from "../../../Util/guid";
-import { ClientEditableAttributeValue, ListItem } from "../../../ViewModels";
+import { ClientEditableAttributeValue, ListItem, SavedFinancialAccountListItem } from "../../../ViewModels";
 import { RegistrationEntryBlockSession } from "./registrationEntryBlockArgs";
 
 export const enum RegistrationPersonFieldType {
@@ -126,7 +126,7 @@ export type RegistrationEntryBlockViewModel = {
     gatewayGuid: Guid | null;
     campuses: ListItem[];
     enableSaveAccount: boolean;
-    savedAccounts: ListItem[] | null;
+    savedAccounts: SavedFinancialAccountListItem[] | null;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {

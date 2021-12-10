@@ -30,6 +30,15 @@ namespace Rock.ViewModel
     /// <summary>
     /// View Model Helper
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    [RockInternal]
     public static class ViewModelHelper
     {
         /// <summary>

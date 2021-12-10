@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the statement template." )]
 
-    public partial class FinancialStatementTemplateDetail : RockBlock, IDetailBlock
+    public partial class FinancialStatementTemplateDetail : RockBlock
     {
         #region Page Parameter Keys
 

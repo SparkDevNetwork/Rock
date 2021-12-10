@@ -2957,7 +2957,7 @@ END" );
                         AND [Key] = '{key}' )
                 BEGIN
                     UPDATE [Attribute] SET
-                        , [Name] = '{name}'
+                          [Name] = '{name}'
                         , [Description] = '{formattedDescription}'
                         , [Order] = {order}
                         , [DefaultValue] = '{defaultValue}'
@@ -2985,7 +2985,7 @@ END" );
                         , [IsMultiValue]
                         , [IsRequired]
                         , [Guid]
-                        , [AbbreviatdName])
+                        , [AbbreviatedName])
                     VALUES(
                           1
                         , @FieldTypeId

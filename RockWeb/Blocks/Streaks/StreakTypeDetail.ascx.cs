@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Streaks
         IsRequired = false,
         Order = 3 )]
 
-    public partial class StreakTypeDetail : RockBlock, IDetailBlock
+    public partial class StreakTypeDetail : RockBlock
     {
         #region Keys
 
@@ -486,7 +486,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )

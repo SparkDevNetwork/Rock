@@ -64,6 +64,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The workflow change log note
         /// </summary>
-        public const string WORKFLOW_CHANGE_LOG_NOTE = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6";        
+        public const string WORKFLOW_CHANGE_LOG_NOTE = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6";
+
+        /// <summary>
+        /// The pastoral note type.
+        /// </summary>
+        public const string PASTORAL_NOTE = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42";
     }
 }

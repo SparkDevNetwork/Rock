@@ -127,7 +127,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ExpandedCategoryIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemName = metric.Title;
             }
             else
@@ -172,7 +172,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ExpandedCategoryIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemIds = ids;
                 ItemNames = names;
             }

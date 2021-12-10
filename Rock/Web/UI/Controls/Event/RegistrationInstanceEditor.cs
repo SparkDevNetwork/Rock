@@ -726,7 +726,7 @@ namespace Rock.Web.UI.Controls
                 if ( instance.RegistrationTemplate.FinancialGateway.IsRedirectionGateway() )
                 {
                     GatewayEntityTypeId = instance.RegistrationTemplate.FinancialGateway.EntityTypeId;
-                    var gateway = instance.RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IRedirectionGateway;
+                    var gateway = instance.RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IRedirectionGatewayComponent;
                     _ddlGatewayMerchants.Label = gateway.MerchantFieldLabel;
                     _ddlGatewayMerchants.Visible = true;
                     _ddlGatewayMerchants.Items.Clear();
@@ -848,7 +848,7 @@ namespace Rock.Web.UI.Controls
                 instance.TimeoutThreshold = _nbTimeoutThreshold.IntegerValue;
 
                 var gateway = new FinancialGateway { EntityTypeId = GatewayEntityTypeId };
-                var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGateway;
+                var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGatewayComponent;
                 if ( gatewayComponent != null )
                 {
                     instance.ExternalGatewayMerchantId = _ddlGatewayMerchants.SelectedValue.AsIntegerOrNull();
@@ -1066,7 +1066,7 @@ namespace Rock.Web.UI.Controls
         private void _ddlGatewayMerchants_SelectedIndexChanged( object sender, EventArgs e )
         {
             var gateway = new FinancialGateway { EntityTypeId = GatewayEntityTypeId };
-            var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGateway;
+            var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGatewayComponent;
             if ( gatewayComponent != null )
             {
                 _ddlGatewayFunds.Items.Clear();

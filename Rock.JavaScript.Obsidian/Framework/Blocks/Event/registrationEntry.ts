@@ -38,6 +38,7 @@ import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrationEntry
 import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart";
 import SessionRenewal from "./RegistrationEntry/sessionRenewal";
 import RegistrationEntrySuccess from "./RegistrationEntry/success";
+import RegistrationEntryPayment from "./RegistrationEntry/payment";
 import RegistrationEntrySummary from "./RegistrationEntry/summary";
 
 const store = useStore();
@@ -47,7 +48,8 @@ const enum Step {
     RegistrationStartForm = "registrationStartForm",
     PerRegistrantForms = "perRegistrantForms",
     RegistrationEndForm = "registrationEndForm",
-    ReviewAndPayment = "reviewAndPayment",
+    Review = "review",
+    Payment = "payment",
     Success = "success"
 }
 
@@ -147,6 +149,7 @@ export default defineComponent({
         RegistrationEntryRegistrationStart,
         RegistrationEntryRegistrationEnd,
         RegistrationEntrySummary,
+        RegistrationEntryPayment,
         RegistrationEntrySuccess,
         ProgressTracker,
         Alert,
@@ -160,7 +163,8 @@ export default defineComponent({
             [Step.RegistrationStartForm]: Step.RegistrationStartForm,
             [Step.PerRegistrantForms]: Step.PerRegistrantForms,
             [Step.RegistrationEndForm]: Step.RegistrationEndForm,
-            [Step.ReviewAndPayment]: Step.ReviewAndPayment,
+            [Step.Review]: Step.Review,
+            [Step.Payment]: Step.Payment,
             [Step.Success]: Step.Success
         };
 
@@ -190,7 +194,7 @@ export default defineComponent({
         }
         else if (viewModel.session && !viewModel.startAtBeginning) {
             // This is an existing registration, start at the summary
-            currentStep = steps.reviewAndPayment;
+            currentStep = steps.review;
         }
         else if (viewModel.maxRegistrants === 1 && isNullOrWhiteSpace(viewModel.instructionsHtml)) {
             // There is no need to show the number of registrants selector or instructions. Start at the second page.
@@ -270,7 +274,9 @@ export default defineComponent({
             steps,
             registrationEntryState,
             notFound,
-            persistSession
+            persistSession,
+            invokeBlockAction,
+            getRegistrationEntryBlockArgs
         };
     },
     data() {
@@ -331,7 +337,11 @@ export default defineComponent({
                 return stepsToCompleteRegistrants;
             }
 
-            if (this.currentStep === Step.ReviewAndPayment) {
+            if (this.currentStep === Step.Review) {
+                return stepsToCompleteRegistrants + (this.hasPostAttributes ? 1 : 0);
+            }
+
+            if (this.currentStep === Step.Payment) {
                 return stepsToCompleteRegistrants + (this.hasPostAttributes ? 1 : 0);
             }
 
@@ -370,7 +380,7 @@ export default defineComponent({
                 return this.viewModel?.registrationAttributeTitleEnd ?? "";
             }
 
-            if (this.currentStep === Step.ReviewAndPayment) {
+            if (this.currentStep === Step.Review) {
                 return "Review Registration";
             }
 
@@ -512,7 +522,7 @@ export default defineComponent({
         async onRegistrantNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
-                this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.ReviewAndPayment;
+                this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
                 Page.smoothScrollToTop();
             }
         },
@@ -526,7 +536,7 @@ export default defineComponent({
         async onRegistrationEndNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
-                this.registrationEntryState.currentStep = Step.ReviewAndPayment;
+                this.registrationEntryState.currentStep = Step.Review;
                 Page.smoothScrollToTop();
             }
         },
@@ -538,6 +548,24 @@ export default defineComponent({
             }
         },
         async onSummaryNext(): Promise<void> {
+            if (this.persistSession && this.registrationEntryState) {
+                if (this.registrationEntryState.amountToPayToday) {
+                    this.registrationEntryState.currentStep = Step.Payment;
+                }
+                else {
+                    this.registrationEntryState.currentStep = Step.Success;
+                }
+                Page.smoothScrollToTop();
+            }
+        },
+        async onPaymentPrevious(): Promise<void> {
+            if (this.persistSession && this.registrationEntryState) {
+                await this.persistSession(false);
+                this.registrationEntryState.currentStep = Step.Review;
+                Page.smoothScrollToTop();
+            }
+        },
+        async onPaymentNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 this.registrationEntryState.currentStep = Step.Success;
                 Page.smoothScrollToTop();
@@ -616,7 +644,8 @@ export default defineComponent({
         <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
         <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
         <RegistrationEntryRegistrationEnd v-else-if="currentStep === steps.registrationEndForm" @next="onRegistrationEndNext" @previous="onRegistrationEndPrevious" />
-        <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" @next="onSummaryNext" @previous="onSummaryPrevious" />
+        <RegistrationEntrySummary v-else-if="currentStep === steps.review" @next="onSummaryNext" @previous="onSummaryPrevious" />
+        <RegistrationEntryPayment v-else-if="currentStep === steps.payment" @next="onPaymentNext" @previous="onPaymentPrevious" />
         <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
         <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
     </template>

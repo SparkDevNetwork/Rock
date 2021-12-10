@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Core
         Order = 1,
         Key = AttributeKey.DefaultInviteEmail )]
 
-    public partial class SignatureDocumentTemplateDetail : RockBlock, IDetailBlock
+    public partial class SignatureDocumentTemplateDetail : RockBlock
     {
         public static class AttributeKey
         {

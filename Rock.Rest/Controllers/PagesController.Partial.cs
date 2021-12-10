@@ -35,22 +35,33 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The id.</param>
         /// <param name="hidePageIds">List of pages that should not be included in results</param>
         /// <param name="siteType">Type of the site.</param>
+        /// <param name="rootPageId">The root group identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Pages/GetChildren/{id}" )]
-        public IQueryable<TreeViewItem> GetChildren( int id, string hidePageIds = null, int? siteType = null)
+        public IQueryable<TreeViewItem> GetChildren( int id,
+            string hidePageIds = null,
+            int? siteType = null,
+            int rootPageId = 0)
         {
             IQueryable<Page> qry;
             if ( id == 0 )
             {
-                qry = Get().Where( a => a.ParentPageId == null );
+                if ( rootPageId != 0 )
+                {
+                    qry = Get().Where( a => a.ParentPageId == rootPageId );
+                }
+                else
+                {
+                    qry = Get().Where( a => a.ParentPageId == null );
+                }
             }
             else
             {
                 qry = Get().Where( a => a.ParentPageId == id );
             }
 
-            if(siteType != null )
+            if ( siteType != null )
             {
                 qry = qry.Where( p => ( int ) p.Layout.Site.SiteType == siteType.Value );
             }

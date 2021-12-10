@@ -469,6 +469,18 @@ namespace Rock.Data
         public DbSet<BenevolenceResult> BenevolenceResults { get; set; }
 
         /// <summary>
+        /// Gets or sets the benevolence types.
+        /// </summary>
+        /// <value>The benevolence types.</value>
+        public DbSet<BenevolenceType> BenevolenceTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence workflows.
+        /// </summary>
+        /// <value>The benevolence workflows.</value>
+        public DbSet<BenevolenceWorkflow> BenevolenceWorkflows { get; set; }
+
+        /// <summary>
         /// Gets or sets the Files.
         /// </summary>
         /// <value>

@@ -195,10 +195,8 @@ html {
     .container();
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-direction: row;
-    flex-direction: row;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
+    -ms-flex-flow: row wrap;
+    flex-flow: row wrap;
 
     @media (min-width: @screen-sm-min) {
       padding: 0 (@scrollbar-width + @scroller-gutters);
@@ -290,14 +288,6 @@ html {
   }
 }
 
-.checkin-timelist.btn-group > .btn {
-  min-height: 48px;
-
-  @media (min-width: @screen-xs-min) {
-    min-height: 86px;
-  }
-}
-
 .photo-round.photo-round-md {
   width: 30px;
   height: 30px;
@@ -355,11 +345,16 @@ html {
     display: block;
     float: none;
     width: 100%;
+    min-height: 48px;
     padding: 18px 4px !important;
     border-radius: 100px !important;
     box-shadow: none;
     -webkit-transition: var(--btn-transition);
     transition: var(--btn-transition);
+
+    @media (min-width: @screen-xs-min) {
+      min-height: 86px;
+    }
   }
 
   i {
