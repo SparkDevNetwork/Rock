@@ -209,6 +209,11 @@ namespace Rock.Model
 
                         if ( Entity.ContentIsDirty && Entity.StorageProvider != null )
                         {
+                            /*
+                              SK - 12/11/2021
+                              Path should always be reset in case when there is any change in Storage Provider from previous value. Otherwise new storage provider may still be refering the older path.
+                            */
+                            Entity.Path = null;
                             long? fileSize = null;
                             Entity.StorageProvider.SaveContent( Entity, out fileSize );
 
