@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Steps
             // Retrieve the Step Program data models and create corresponding view models to display in the grid.
             var stepService = new StepService( dataContext );
 
-            var completedStepsQry = stepService.Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus );
+            var completedStepsQry = stepService.Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus && x.StepType.IsActive );
 
             var stepPrograms = stepProgramsQry.Select( x =>
                 new StepProgramListItemViewModel
@@ -424,7 +424,7 @@ namespace RockWeb.Blocks.Steps
                     Name = x.Name,
                     IconCssClass = x.IconCssClass,
                     Category = x.Category.Name,
-                    StepTypeCount = x.StepTypes.Count,
+                    StepTypeCount = x.StepTypes.Count( m => m.IsActive ),
                     StepCompletedCount = completedStepsQry.Count( y => y.StepType.StepProgramId == x.Id )
                 } )
                 .ToList();
