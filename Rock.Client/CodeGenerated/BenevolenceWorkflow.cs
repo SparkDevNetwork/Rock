@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int BenevolenceTypeId { get; set; }
+        public int? BenevolenceTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
