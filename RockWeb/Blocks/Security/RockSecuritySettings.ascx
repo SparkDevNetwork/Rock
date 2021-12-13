@@ -16,7 +16,7 @@
                 </p>
                 <hr />
                 <label for="" class="control-label m-0">Account Protection Profile Levels</label>
-                <div class="mb-3">Below is a listing of the criteria for the acconut protection profile levels.</div>
+                <div class="mb-3">Below is a listing of the criteria for the account protection profile levels.</div>
                 <div class="row d-flex flex-wrap">
                     <div class="col-xs-6 col-md-3">
                         <div class="well-message well-message-info text-left h-100 border border-info p-3">
