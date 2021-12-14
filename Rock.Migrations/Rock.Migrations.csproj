@@ -269,6 +269,14 @@
     <Compile Include="Migrations\202112141524373_SundayOfTheYear.Designer.cs">
       <DependentUpon>202112141524373_SundayOfTheYear.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202112141810303_Rollup_20211214.cs" />
+    <Compile Include="Migrations\202112141810303_Rollup_20211214.Designer.cs">
+      <DependentUpon>202112141810303_Rollup_20211214.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112141825274_CodeGenerated_20211214.cs" />
+    <Compile Include="Migrations\202112141825274_CodeGenerated_20211214.Designer.cs">
+      <DependentUpon>202112141825274_CodeGenerated_20211214.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -1030,6 +1038,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202112141524373_SundayOfTheYear.resx">
       <DependentUpon>202112141524373_SundayOfTheYear.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112141810303_Rollup_20211214.resx">
+      <DependentUpon>202112141810303_Rollup_20211214.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112141825274_CodeGenerated_20211214.resx">
+      <DependentUpon>202112141825274_CodeGenerated_20211214.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
