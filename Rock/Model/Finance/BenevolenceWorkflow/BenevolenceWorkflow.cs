@@ -38,9 +38,8 @@ namespace Rock.Model
         /// <value>
         /// The benevolence type identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int BenevolenceTypeId { get; set; }
+        [DataMember]
+        public int? BenevolenceTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow type identifier.
@@ -105,7 +104,7 @@ namespace Rock.Model
         /// </summary>
         public BenevolenceWorkflowConfiguration()
         {
-            this.HasRequired( p => p.BenevolenceType ).WithMany( p => p.BenevolenceWorkflows ).HasForeignKey( p => p.BenevolenceTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.BenevolenceType ).WithMany( p => p.BenevolenceWorkflows ).HasForeignKey( p => p.BenevolenceTypeId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.WorkflowType ).WithMany().HasForeignKey( p => p.WorkflowTypeId ).WillCascadeOnDelete( true );
         }
     }

@@ -261,6 +261,10 @@
     <Compile Include="Migrations\202112101731446_AttributeColorRollup.Designer.cs">
       <DependentUpon>202112101731446_AttributeColorRollup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202112132318366_UpdateBenevolenceWorkflowSetBenevolenceTypeIdOptional.cs" />
+    <Compile Include="Migrations\202112132318366_UpdateBenevolenceWorkflowSetBenevolenceTypeIdOptional.Designer.cs">
+      <DependentUpon>202112132318366_UpdateBenevolenceWorkflowSetBenevolenceTypeIdOptional.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -1016,6 +1020,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202112101731446_AttributeColorRollup.resx">
       <DependentUpon>202112101731446_AttributeColorRollup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112132318366_UpdateBenevolenceWorkflowSetBenevolenceTypeIdOptional.resx">
+      <DependentUpon>202112132318366_UpdateBenevolenceWorkflowSetBenevolenceTypeIdOptional.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>

@@ -60,12 +60,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BenevolenceType.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
                 return false;
             }
-
-            if ( new Service<BenevolenceWorkflow>( Context ).Queryable().Any( a => a.BenevolenceTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BenevolenceType.FriendlyTypeName, BenevolenceWorkflow.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
