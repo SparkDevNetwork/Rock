@@ -22,10 +22,11 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Attribute;
+using Rock.ClientService.Core.Campus;
+using Rock.ClientService.Core.Campus.Options;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModel.Client;
 using Rock.Web.Cache;
 
 using Regex = System.Text.RegularExpressions.Regex;
@@ -491,13 +492,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A collection of list items.</returns>
         private List<ViewModel.NonEntities.ListItemViewModel> GetValidCampuses( RockContext rockContext )
         {
-            var helper = new ClientHelper( rockContext, RequestContext.CurrentPerson );
+            var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
 
             // Bypass security because the admin has specified which campuses
             // they want to show up.
-            helper.EnableSecurity = false;
+            campusClientService.EnableSecurity = false;
 
-            return helper.GetCampusesAsListItems( new ViewModel.Client.CampusOptions
+            return campusClientService.GetCampusesAsListItems( new CampusOptions
             {
                 LimitCampusTypes = CampusTypeGuids,
                 LimitCampusStatuses = CampusStatusGuids

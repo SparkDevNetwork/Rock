@@ -1215,7 +1215,7 @@ achieve our mission.  We are so grateful for your commitment.
                     scheduledTransaction.Summary = tbComments.Text;
 
                     rockContext.SaveChanges();
-                    Task.Run( () => ScheduledGiftModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+                    Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
 
                     ScheduleId = scheduledTransaction.GatewayScheduleId;
                     TransactionCode = scheduledTransaction.TransactionCode;

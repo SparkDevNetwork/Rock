@@ -32,7 +32,7 @@ namespace Rock.Financial
     ///     </para>
     /// </remarks>
     [RockInternal]
-    public interface IObsidianHostedGatewayComponent
+    public interface IObsidianHostedGatewayComponent : IPaymentTokenGateway
     {
         /// <summary>
         /// Gets the obsidian control file URL.
@@ -48,14 +48,5 @@ namespace Rock.Financial
         /// <param name="options">The hosted control options.</param>
         /// <returns></returns>
         object GetObsidianControlSettings( FinancialGateway financialGateway, HostedPaymentInfoControlOptions options );
-
-        /// <summary>
-        /// Creates the customer account using a token received and returns a customer account token that can be used for future transactions.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage );
     }
 }

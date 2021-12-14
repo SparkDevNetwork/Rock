@@ -868,6 +868,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
         public const string PERSON_GET_CAMPUS_TEAM_MEMBER = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E";
+        public const string PERSON_NOTE_ADDED = "C4AB0F1B-E036-4D14-BFB7-30BAF12D648A";
         public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
@@ -1053,6 +1054,20 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class FollowingEventType
+    {
+        public const string BAPTISMS = "694D5110-EFF0-4E53-818F-A8AFEA268584";
+        public const string BEGAN_SERVING = "8F1476AD-CF60-4253-AC10-2094C6863D96";
+        public const string BIRTHDAYS = "F3A577DB-8F4A-4245-BD00-0B2B8F789131";
+        public const string JOINED_SMALL_GROUP = "CDFB247B-B868-49BD-A080-0B2E8679DA4C";
+        public const string PASTORAL_NOTE_ADDED = "E9CAED55-BFCE-4484-B5CC-23F563B84D68";
+        public const string PRAYER_REQUESTS = "0323D1DE-616B-4060-AF72-1F17FEEA648F";
+        public const string UPCOMING_ANNIVERSARIES = "5E81D053-974F-4841-A829-58410356F080";
+        public const string UPCOMING_BIRTHDAYS = "E1C2F8BD-E875-4C7B-91A1-EDB98AB01BDC";
+    }
+
+    /// <summary>
+    /// </summary>
     public class Group
     {
         public const string GROUP_ADMINISTRATORS = "628C51A8-4613-43ED-A18D-4A6FB999273E";
@@ -1172,6 +1187,7 @@ namespace Rock.Client.SystemGuid
         public const string CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE = "860C37A0-1A44-4681-B96D-4703813609D2";
         public const string FUNDRAISING_OPPORTUNITY_COMMENT = "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95";
         public const string GROUPMEMBER_NOTE = "FFFC3644-60CD-4D14-A714-E8DCC202A0E1";
+        public const string PASTORAL_NOTE = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42";
         public const string PERSON_EVENT_REGISTRATION = "BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045";
         public const string PERSON_TIMELINE_NOTE = "66A1B9D7-7EFA-40F3-9415-E54437977D60";
         public const string PRAYER_COMMENT = "0EBABD75-0890-4756-A9EE-62626282BB5D";
@@ -1593,6 +1609,7 @@ namespace Rock.Client.SystemGuid
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
         public const string MIGRATE_INTERACTIONS_DATA = "189AE3F1-92E9-4394-ACC5-0F244967F32E";
         public const string POST_INSTALL_DATA_MIGRATIONS = "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3";
+        public const string PROCESS_ELEVATED_SECURITY = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714";
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
         public const string ROCK_CLEANUP = "1A8238B1-038A-4295-9FDE-C6D93002A5D7";
         public const string SEND_GROUP_ATTENDANCE_DIGEST = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B";

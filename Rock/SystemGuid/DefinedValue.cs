@@ -416,7 +416,7 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
 
         /// <summary>
-        /// The financial source of On-site Collection
+        /// The financial source of On-Site
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION = "BE7ECF50-52BC-4774-808D-574BA842DB98";
 

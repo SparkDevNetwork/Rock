@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
-    public partial class StepTypeDetail : RockBlock, IDetailBlock
+    public partial class StepTypeDetail : RockBlock
     {
         #region Attribute Keys
 

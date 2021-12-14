@@ -197,10 +197,10 @@
     {%- assign GroupHistoryGridPage = GroupHistoryGridPage | Append:'?GroupId=' | Append:PageParameter.GroupId -%}
 {%- endif -%}
 {%- if GroupMemberHistoryPage contains '{GroupId}' -%}
-    {%- assign GroupMemberHistoryPage  = GroupMemberHistoryPage  | Replace:'{GroupId}', PageParameter.GroupId | Prepend:'/' -%}
+    {%- assign GroupMemberHistoryPage  = GroupMemberHistoryPage | Replace:'{GroupId}', PageParameter.GroupId | Prepend:'/' -%}
 {%- else -%}
     {% comment %}If the GroupMemberHistoryPage route doesn't have a GroupMemberId add the tag to be replaced{% endcomment %}
-    {%- assign GroupMemberHistoryPage  = GroupMemberHistoryPage  | Append:'?GroupId=' | Append:PageParameter.GroupId | Append:'&={GroupMemberId}' -%}
+    {%- assign GroupMemberHistoryPage  = GroupMemberHistoryPage | Append:'?GroupId=' | Append:PageParameter.GroupId | Append:'&GroupMemberId={GroupMemberId}' -%}
 {%- endif -%}
 
 <section class="rock-timeline">
@@ -216,7 +216,7 @@
             {% comment %}Generate the date divider label{% endcomment %}
             {%- capture dateDivider -%}
                 {%- if dateDiff > 1 -%}
-                {%- assign dateLabel = historySummaryByDateByVerb.FirstHistoryDateTime  | Date:'dddd, MMMM d' -%}
+                {%- assign dateLabel = historySummaryByDateByVerb.FirstHistoryDateTime | Date:'dddd, MMMM d' -%}
                 <span>{{ dateLabel }}{%- if currentYear != firstHistoryYear -%}
                 {{ firstHistoryYear }}
                 {%- endif -%}</span>
@@ -309,8 +309,8 @@
                         <span class="timeline-date">{{ historySummaryListByEntityTypeAndVerb.FirstHistoryDateTime | Date:'MMM d, yyyy h:mmtt' }}</span>
                 <div class="timeline-details">
 
-                {%- assign previousHistoryVerb = "" -%}
-                {%- assign CreatedByPersonId = "" | AsInteger -%}
+                {%- assign previousHistoryVerb = '' -%}
+                {%- assign CreatedByPersonId = '' | AsInteger -%}
                     <div class='historydetails'>
                         <ul class="list-unstyled">
                             {%- for historySummary in historySummaryListByEntityTypeAndVerb.HistorySummaryList -%}
@@ -418,16 +418,14 @@
 
 <script>
 Sys.Application.add_load(function () {
+    $('.btn-read-more').on('click', function(e) {
+    $(this).next('.read-more-content').removeClass('standby');
+    $(this).addClass('hide');
+    e.preventDefault();
+    });
 
-$('.btn-read-more').on('click', function(e) {
-  $(this).next('.read-more-content').removeClass('standby');
-  $(this).addClass('hide');
-  console.log("test");
-  e.preventDefault();
-});
-
-$(function () {
-  $('[data-toggle="popover"]').popover()
-})
+    $(function () {
+    $('[data-toggle="popover"]').popover()
+    })
 })
 </script>

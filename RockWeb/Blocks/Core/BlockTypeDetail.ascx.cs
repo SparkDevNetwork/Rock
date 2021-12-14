@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Block Type Detail" )]
     [Category( "Core" )]
     [Description( "Shows the details of a selected block type." )]
-    public partial class BlockTypeDetail : RockBlock, IDetailBlock
+    public partial class BlockTypeDetail : RockBlock
     {
         #region Control Methods
 

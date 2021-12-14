@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "", 4)]
     [BooleanField( "Default Allow Comments Checked", "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.", true, order: 5 )]
     [BooleanField("Require Campus", "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.", false, "", 6 )]
-    public partial class PrayerRequestDetail : RockBlock, IDetailBlock
+    public partial class PrayerRequestDetail : RockBlock
     {
         #region Properties
 

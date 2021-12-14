@@ -22,12 +22,15 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using Rock.Attribute;
+using Rock.ClientService.Core.Campus;
+using Rock.ClientService.Finance.FinancialPersonSavedAccount;
+using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.ViewModel;
-using Rock.ViewModel.Blocks;
+using Rock.ViewModel.Blocks.Event.RegistrationEntry;
 using Rock.ViewModel.Controls;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
@@ -147,13 +150,18 @@ namespace Rock.Blocks.Event
         {
             public const string RegistrationId = "RegistrationId";
             public const string RegistrationInstanceId = "RegistrationInstanceId";
-            public const string RegistrationSessionGuid = "sr";
+            public const string RegistrationSessionGuid = "SessionGuid";
             public const string CampusId = "CampusId";
             public const string Slug = "Slug";
             public const string GroupId = "GroupId";
-            public const string PaymentToken = "paymentToken";
             public const string StartAtBeginning = "StartAtBeginning";
         }
+
+        /// <summary>
+        /// The prefix to look for when identifying if any page parameters are
+        /// for a return-from-payment redirect.
+        /// </summary>
+        public const string ReturnUrlSessionPrefix = "sessionGuid";
 
         #endregion Keys
 
@@ -212,9 +220,10 @@ namespace Rock.Blocks.Event
         /// Gets the payment redirect.
         /// </summary>
         /// <param name="args">The arguments.</param>
+        /// <param name="sessionUrl">The URL currently being viewed in the browser for the registration session.</param>
         /// <returns>The URL to redirect the person to in order to handle payment.</returns>
         [BlockAction]
-        public BlockActionResult GetPaymentRedirect( RegistrationEntryBlockArgs args )
+        public BlockActionResult GetPaymentRedirect( RegistrationEntryBlockArgs args, string returnUrl )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -232,8 +241,24 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
+                if ( !Uri.TryCreate( returnUrl, UriKind.Absolute, out var uri ) )
+                {
+                    return ActionBadRequest( "Invalid return URL specified." );
+                }
+
+                // Parse the original query string and replace/insert our session key.
+                var queryString = uri.Query.ParseQueryString();
+                queryString.Remove( PageParameterKey.RegistrationSessionGuid );
+                queryString.Add( PageParameterKey.RegistrationSessionGuid, session.Guid.ToString() );
+
+                // Create the new return URI with the updated query string.
+                var returnUri = new UriBuilder( uri )
+                {
+                    Query = queryString.ToQueryString()
+                };
+
                 // Generate the redirect URL
-                var redirectUrl = GenerateRedirectUrl( rockContext, context, args.AmountToPayNow, args.Registrar, args.Registrants, session.Guid );
+                var redirectUrl = GenerateRedirectUrl( rockContext, context, args.AmountToPayNow, args.Registrar, args.Registrants, session.Guid, returnUri.ToString() );
 
                 return ActionOk( redirectUrl );
             }
@@ -800,7 +825,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFirstName( RegistrationContext context, ViewModel.Blocks.RegistrantInfo registrantInfo )
+        private string GetRegistrantFirstName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.FirstName );
@@ -813,7 +838,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantLastName( RegistrationContext context, ViewModel.Blocks.RegistrantInfo registrantInfo )
+        private string GetRegistrantLastName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.LastName );
@@ -826,7 +851,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFullName( RegistrationContext context, ViewModel.Blocks.RegistrantInfo registrantInfo )
+        private string GetRegistrantFullName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var firstName = GetRegistrantFirstName( context, registrantInfo );
             var lastName = GetRegistrantLastName( context, registrantInfo );
@@ -1159,7 +1184,7 @@ namespace Rock.Blocks.Event
             RegistrationContext context,
             Person registrar,
             Guid registrarFamilyGuid,
-            ViewModel.Blocks.RegistrantInfo registrantInfo,
+            ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
@@ -1675,20 +1700,17 @@ namespace Rock.Blocks.Event
 
             // If the registration is existing, then add the args that describe it to the view model
             var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
-            var paymentToken = PageParameter( PageParameterKey.PaymentToken );
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
             var isUnauthorized = isExistingRegistration && session == null;
-            var wasRedirectedFromPayment = session != null && paymentToken.IsNotNullOrWhiteSpace();
             RegistrationEntryBlockSuccessViewModel successViewModel = null;
 
-            if ( wasRedirectedFromPayment )
+            if ( session != null )
             {
                 var args = new RegistrationEntryBlockArgs
                 {
                     AmountToPayNow = session.AmountToPayNow,
                     DiscountCode = session.DiscountCode,
                     FieldValues = session.FieldValues,
-                    GatewayToken = PageParameter( PageParameterKey.PaymentToken ),
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
                     RegistrationGuid = null,
@@ -1707,29 +1729,41 @@ namespace Rock.Blocks.Event
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
 
-                // This is a redirect from a redirect gateway. The user was sent to
-                // another site, made payment, and has come back after completion.
-                if ( !isExistingRegistration )
-                {
-                    SubmitRegistration( rockContext, context, args, out errorMessage );
-                }
-                else
-                {
-                    // Existing registration, but they are making another payment.
-                    var transactionGuid = ProcessPayment( rockContext, context, args, out errorMessage );
+                var financialGatewayService = new FinancialGatewayService( rockContext );
+                var paymentFinancialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
+                var paymentGateway = paymentFinancialGateway?.GetGatewayComponent() as IPaymentTokenGateway;
 
-                    if ( !errorMessage.IsNullOrWhiteSpace() )
+                string paymentToken = null;
+                var wasRedirectedFromPayment = paymentGateway?.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out paymentToken ) ?? false;
+
+                if ( wasRedirectedFromPayment )
+                {
+                    args.GatewayToken = paymentToken;
+
+                    // This is a redirect from a redirect gateway. The user was sent to
+                    // another site, made payment, and has come back after completion.
+                    if ( !isExistingRegistration )
                     {
-                        throw new Exception( errorMessage );
+                        SubmitRegistration( rockContext, context, args, out errorMessage );
+                    }
+                    else
+                    {
+                        // Existing registration, but they are making another payment.
+                        var transactionGuid = ProcessPayment( rockContext, context, args, out errorMessage );
+
+                        if ( !errorMessage.IsNullOrWhiteSpace() )
+                        {
+                            throw new Exception( errorMessage );
+                        }
+
+                        if ( !transactionGuid.HasValue )
+                        {
+                            throw new Exception( "There was a problem with the payment" );
+                        }
                     }
 
-                    if ( !transactionGuid.HasValue )
-                    {
-                        throw new Exception( "There was a problem with the payment" );
-                    }
+                    successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
                 }
-
-                successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
             }
 
             // Get models needed for the view model
@@ -1878,7 +1912,7 @@ namespace Rock.Blocks.Event
             var financialGatewayComponent = gatewayComponent as IObsidianHostedGatewayComponent;
 
             // Determine if this is a redirect gateway and get the redirect URL
-            var redirectGateway = gatewayComponent as IRedirectionGateway;
+            var redirectGateway = gatewayComponent as IRedirectionGatewayComponent;
             var isRedirectGateway = redirectGateway != null;
             var redirectGatewayUrl = string.Empty;
 
@@ -1902,81 +1936,23 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            // Initialize the client services to retrieve data in a way we can send
+            // to the client.
+            var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
+            var savedAccountClientService = new FinancialPersonSavedAccountClientService( rockContext, RequestContext.CurrentPerson );
+
             // If we are using saved accounts and have all the details that we
             // need then attempt to load the current person's saved accounts.
-            List<ListItemViewModel> savedAccounts = null;
-            if ( enableSavedAccount && RequestContext.CurrentPerson != null && financialGatewayId.HasValue )
+            List<SavedFinancialAccountListItemViewModel> savedAccounts = null;
+            if ( enableSavedAccount && RequestContext.CurrentPerson != null && financialGateway != null )
             {
-                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
-
-                var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
-                var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
-                var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
-                var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
-                var allowedCurrencyTypes = new List<DefinedValueCache>();
-
-                // Conditionally enable credit card.
-                if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
+                var accountOptions = new SavedFinancialAccountOptions
                 {
-                    allowedCurrencyTypes.Add( creditCardCurrency );
-                }
+                    FinancialGatewayGuids = new List<Guid> { financialGateway.Guid },
+                    CurrencyTypeGuids = GetAllowedCurrencyTypes( gatewayComponent ).Select( a => a.Guid ).ToList()
+                };
 
-                // Conditionally enable ACH.
-                if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
-                {
-                    allowedCurrencyTypes.Add( achCurrency );
-                }
-
-                int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
-
-                // Build the query to get all the matching saved accounts for
-                // the currently logged in person.
-                var savedAccountsQuery = financialPersonSavedAccountService
-                    .GetByPersonId( RequestContext.CurrentPerson.Id )
-                    .Where( a => a.FinancialGatewayId == financialGatewayId.Value
-                        && !a.IsSystem
-                        && a.FinancialPaymentDetail.CurrencyTypeValueId.HasValue
-                        && allowedCurrencyTypeIds.Contains( a.FinancialPaymentDetail.CurrencyTypeValueId.Value ) )
-                    .OrderBy( a => a.Name )
-                    .Select( a => new
-                    {
-                        a.Guid,
-                        a.Name,
-                        a.FinancialPaymentDetail.ExpirationMonth,
-                        a.FinancialPaymentDetail.ExpirationYear,
-                        a.FinancialPaymentDetail.AccountNumberMasked
-                    } );
-
-                // Translate the saved accounts into something that will be
-                // recognized by the client.
-                savedAccounts = savedAccountsQuery
-                    .ToList()
-                    .Select( a =>
-                    {
-                        string expirationDate = null;
-
-                        if ( a.ExpirationMonth.HasValue && a.ExpirationYear.HasValue )
-                        {
-                            // ExpirationYear returns 4 digits, but just in case,
-                            // check if it is 4 digits before just getting the last 2.
-                            string expireYY = a.ExpirationYear.Value.ToString();
-                            if ( expireYY.Length == 4 )
-                            {
-                                expireYY = expireYY.Substring( 2 );
-                            }
-
-                            expirationDate = $"{a.ExpirationMonth.Value:00}/{expireYY:00}";
-                        }
-
-                        return new ListItemViewModel
-                        {
-                            Value = a.Guid.ToString(),
-                            Text = expirationDate.IsNotNullOrWhiteSpace()
-                                    ? $"{a.Name} ({a.AccountNumberMasked} Expires: {expirationDate})"
-                                    : $"{a.Name} ({a.AccountNumberMasked})"
-                        };
-                    } )
-                    .ToList();
+                savedAccounts = savedAccountClientService.GetSavedFinancialAccountsForPersonAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
             }
 
             // If we don't have a session that means we are starting new. Create
@@ -1988,12 +1964,12 @@ namespace Rock.Blocks.Event
                     RegistrationSessionGuid = Guid.NewGuid()
                 };
 
-                session.Registrants = new List<ViewModel.Blocks.RegistrantInfo>();
+                session.Registrants = new List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo>();
 
                 if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
                 {
                     // Fill in first registrant info as a member of the family.
-                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    session.Registrants.Add( new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = currentPerson.PrimaryFamily.Guid,
@@ -2007,7 +1983,7 @@ namespace Rock.Blocks.Event
                 {
                     // Only fill in the first registrant with existing values
                     // as a "new" person if family members are not shown.
-                    session.Registrants.Add( new ViewModel.Blocks.RegistrantInfo
+                    session.Registrants.Add( new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = Guid.NewGuid(),
@@ -2023,8 +1999,6 @@ namespace Rock.Blocks.Event
             var allowRegistrationUpdates = !isExistingRegistration || context.RegistrationSettings.AllowExternalRegistrationUpdates;
             var startAtBeginning = !isExistingRegistration ||
                 ( context.RegistrationSettings.AllowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
-
-            var clientHelper = new Rock.ViewModel.Client.ClientHelper( rockContext, RequestContext.CurrentPerson );
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
@@ -2067,7 +2041,7 @@ namespace Rock.Blocks.Event
                 AllowRegistrationUpdates = allowRegistrationUpdates,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
-                Campuses = clientHelper.GetCampusesAsListItems(),
+                Campuses = campusClientService.GetCampusesAsListItems(),
                 EnableSaveAccount = enableSavedAccount,
                 SavedAccounts = savedAccounts
             };
@@ -2084,14 +2058,16 @@ namespace Rock.Blocks.Event
         /// <param name="registrar">The registrar.</param>
         /// <param name="registrants">The registrants.</param>
         /// <param name="registrationSessionGuid">The registration session unique identifier.</param>
-        /// <returns></returns>
+        /// <param name="returnUrl">The URL to return to after payment has been made.</param>
+        /// <returns>A string that contains the URL the individual should be sent to in order to make payments.</returns>
         private string GenerateRedirectUrl(
             RockContext rockContext,
             RegistrationContext context,
             decimal amount,
             RegistrarInfo registrar,
-            List<ViewModel.Blocks.RegistrantInfo> registrants,
-            Guid registrationSessionGuid )
+            List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo> registrants,
+            Guid registrationSessionGuid,
+            string returnUrl )
         {
             var financialGatewayId = context.RegistrationSettings.FinancialGatewayId;
             var fundId = context.RegistrationSettings.ExternalGatewayFundId;
@@ -2103,7 +2079,7 @@ namespace Rock.Blocks.Event
 
             var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId.Value );
             var gatewayComponent = financialGateway?.GetGatewayComponent();
-            var redirectGateway = gatewayComponent as IRedirectionGateway;
+            var redirectGateway = gatewayComponent as IRedirectionGatewayComponent;
 
             if ( redirectGateway is null )
             {
@@ -2113,12 +2089,13 @@ namespace Rock.Blocks.Event
             var registrantNames = registrants.Select( r => GetRegistrantFullName( context, r ) ).JoinStringsWithCommaAnd();
             var registrarName = $"{registrar.NickName} {registrar.LastName}";
 
-            return redirectGateway.GetEventRegistrationRedirectUrl( fundId.ToStringSafe(), amount, new Dictionary<string, string>
+            return redirectGateway.GetPaymentRedirectUrl( fundId, amount, returnUrl, new Dictionary<string, string>
             {
+                { "ReturnToken", $"{ReturnUrlSessionPrefix}:{registrationSessionGuid}" },
                 { "FirstName", registrar.NickName },
                 { "LastName", registrar.LastName },
                 { "EmailAddress", registrar.Email },
-                { "SourceReference", registrationSessionGuid.ToString() },
+                { "RegistrationSessionGuid", registrationSessionGuid.ToString() },
                 { "Note", $"Event registration for {context.RegistrationSettings.Name} for {registrantNames} by {registrarName}" }
             } );
         }
@@ -2165,7 +2142,7 @@ namespace Rock.Blocks.Event
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var financialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
             var gateway = financialGateway?.GetGatewayComponent();
-            var redirectGateway = gateway as IRedirectionGateway;
+            var redirectGateway = gateway as IRedirectionGatewayComponent;
 
             if ( gateway == null )
             {
@@ -2227,11 +2204,11 @@ namespace Rock.Blocks.Event
 
             FinancialTransaction transaction;
 
-            if ( gateway is IRedirectionGateway redirectionGateway )
+            if ( gateway is IRedirectionGatewayComponent redirectionGateway )
             {
                 // Download the payment from the redirect gateway
-                var fundId = context.RegistrationSettings.ExternalGatewayFundId.ToStringSafe();
-                transaction = redirectionGateway.FetchTransaction( rockContext, financialGateway, fundId, args.GatewayToken );
+                var fundId = context.RegistrationSettings.ExternalGatewayFundId;
+                transaction = redirectionGateway.FetchPaymentTokenTransaction( rockContext, financialGateway, fundId, args.GatewayToken );
                 paymentInfo.Amount = transaction.TotalAmount;
             }
             else if ( gateway is IObsidianHostedGatewayComponent obsidianGateway )
@@ -2248,8 +2225,19 @@ namespace Rock.Blocks.Event
                     paymentInfo.GatewayPersonIdentifier = customerToken;
                 }
 
-                // Charge a new payment with the tokenized payment method
-                transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
+                if ( args.GatewayToken.IsNotNullOrWhiteSpace() && obsidianGateway.IsPaymentTokenCharged( financialGateway, args.GatewayToken ) )
+                {
+                    // Download the existing payment from the gateway.
+                    var fundId = context.RegistrationSettings.ExternalGatewayFundId;
+
+                    transaction = obsidianGateway.FetchPaymentTokenTransaction( rockContext, financialGateway, fundId, args.GatewayToken );
+                    paymentInfo.Amount = transaction.TotalAmount;
+                }
+                else
+                {
+                    // Charge a new payment with the tokenized payment method
+                    transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
+                }
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -2481,6 +2469,61 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Gets the allowed currency types supported by both the block and the
+        /// financial gateway.
+        /// </summary>
+        /// <param name="gatewayComponent">The gateway component that must support the currency types.</param>
+        /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
+        private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent )
+        {
+            var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+            var allowedCurrencyTypes = new List<DefinedValueCache>();
+
+            // Conditionally enable credit card.
+            if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
+            {
+                allowedCurrencyTypes.Add( creditCardCurrency );
+            }
+
+            // Conditionally enable ACH.
+            if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
+            {
+                allowedCurrencyTypes.Add( achCurrency );
+            }
+
+            return allowedCurrencyTypes;
+        }
+
+        /// <summary>
+        /// Gets the registration session page parameter value from all possible sources.
+        /// </summary>
+        /// <returns>The session unique identifier or <c>null</c> if it could not be obtained.</returns>
+        private Guid? GetRegistrationSessionPageParameter()
+        {
+            var sessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+
+            if ( sessionGuid.HasValue )
+            {
+                return sessionGuid;
+            }
+
+            var prefixedSessionValue = RequestContext.GetPageParameters()
+                .Select( k => k.Value )
+                .Where( v => v != null && v.StartsWith( ReturnUrlSessionPrefix ) )
+                .FirstOrDefault();
+
+            if ( prefixedSessionValue == null )
+            {
+                return null;
+            }
+
+            return prefixedSessionValue.Substring( ReturnUrlSessionPrefix.Length + 1 ).AsGuidOrNull();
+        }
+
+        /// <summary>
         /// Gets the registration instance identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -2495,8 +2538,8 @@ namespace Rock.Blocks.Event
                 return registrationInstanceId.Value;
             }
 
-            // Try a session. This is typically from a PushPay redirect
-            var registrationSessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+            // Try a session. This is typically from a redirect
+            var registrationSessionGuid = GetRegistrationSessionPageParameter();
 
             if ( registrationSessionGuid.HasValue )
             {
@@ -2572,7 +2615,7 @@ namespace Rock.Blocks.Event
         private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationSettings settings )
         {
             // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
-            var registrationSessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+            var registrationSessionGuid = GetRegistrationSessionPageParameter();
 
             if ( registrationSessionGuid.HasValue )
             {
@@ -2644,7 +2687,7 @@ namespace Rock.Blocks.Event
                 DiscountPercentage = registration.DiscountPercentage,
                 FieldValues = new Dictionary<Guid, object>(),
                 GatewayToken = string.Empty,
-                Registrants = new List<ViewModel.Blocks.RegistrantInfo>(),
+                Registrants = new List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
                 Registrar = new RegistrarInfo(),
                 RegistrationGuid = registration.Guid,
                 PreviouslyPaid = alreadyPaid
@@ -2667,7 +2710,7 @@ namespace Rock.Blocks.Event
                 person.LoadAttributes( rockContext );
                 registrant.LoadAttributes( rockContext );
 
-                var registrantInfo = new ViewModel.Blocks.RegistrantInfo
+                var registrantInfo = new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
                 {
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,

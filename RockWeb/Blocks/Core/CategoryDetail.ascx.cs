@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Core
         Category = "CustomSetting",
         Key = AttributeKey.ExcludeCategories )]
 
-    public partial class CategoryDetail : RockBlockCustomSettings, IDetailBlock
+    public partial class CategoryDetail : RockBlockCustomSettings
     {
         public static class AttributeKey
         {

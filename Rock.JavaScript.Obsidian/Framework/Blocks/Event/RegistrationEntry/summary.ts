@@ -58,11 +58,14 @@ export default defineComponent({
         /** An error message received from a bad submission */
         const submitErrorMessage = ref("");
 
+        const persistSession = inject("persistSession") as (force: boolean) => Promise<void>;
+
         return {
             loading,
             submitErrorMessage,
             getRegistrationEntryBlockArgs,
             invokeBlockAction,
+            persistSession,
             registrationEntryState: registrationEntryState
         };
     },
@@ -90,7 +93,12 @@ export default defineComponent({
 
         /** The text to be displayed on the "Finish" button */
         finishButtonText(): string {
-            return this.registrationEntryState.amountToPayToday ? "Next" : "Finish";
+            if (this.registrationEntryState.amountToPayToday) {
+                return this.viewModel.isRedirectGateway ? "Pay" : "Next";
+            }
+            else {
+                return "Finish";
+            }
         },
     },
 
@@ -106,8 +114,23 @@ export default defineComponent({
 
             // If there is a cost, then the gateway will need to be used to pay
             if (this.registrationEntryState.amountToPayToday) {
-                this.loading = false;
-                this.$emit("next");
+                await this.persistSession(true);
+
+                if (this.viewModel.isRedirectGateway) {
+                    const redirectUrl = await this.getPaymentRedirect();
+
+                    if (redirectUrl) {
+                        location.href = redirectUrl;
+                    }
+                    else {
+                        // Error is shown by getPaymentRedirect method
+                        this.loading = false;
+                    }
+                }
+                else {
+                    this.loading = false;
+                    this.$emit("next");
+                }
             }
             else {
                 const success = await this.submit();
@@ -135,6 +158,24 @@ export default defineComponent({
             }
 
             return result.isSuccess;
+        },
+
+
+        /**
+         * Persist the args to the server so the user can be redirected for
+         * payment. Returns the redirect URL.
+         */
+        async getPaymentRedirect(): Promise<string> {
+            const result = await this.invokeBlockAction<string>("GetPaymentRedirect", {
+                args: this.getRegistrationEntryBlockArgs(),
+                returnUrl: window.location.href
+            });
+
+            if (result.isError || !result.data) {
+                this.submitErrorMessage = result.errorMessage || "Unknown error";
+            }
+
+            return result.data || "";
         },
     },
 

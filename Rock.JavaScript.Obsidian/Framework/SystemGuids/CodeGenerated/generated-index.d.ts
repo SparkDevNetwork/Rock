@@ -23,6 +23,7 @@
 
 import { AchievementType } from "./achievementType";
 import { BenevolenceType } from "./benevolenceType";
+import { FollowingEventType } from "./followingEventType";
 import { StreakType } from "./streakType";
 import { Badge } from "./badge";
 import { AuthScope } from "./authScope";
@@ -62,6 +63,7 @@ import { SystemEmail } from "./systemEmail";
 export {
     AchievementType,
     BenevolenceType,
+    FollowingEventType,
     StreakType,
     Badge,
     AuthScope,

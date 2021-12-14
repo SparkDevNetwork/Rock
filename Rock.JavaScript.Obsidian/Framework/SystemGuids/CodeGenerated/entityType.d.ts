@@ -202,6 +202,8 @@ export const enum EntityType {
     PersonAlias = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F",
     /** The guid for the Rock.Workflow.Action.PersonGetCampusTeamMember entity */
     PersonGetCampusTeamMember = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E",
+    /** The GUID for the Rock.Follow.Event.PersonNoteAdded entity */
+    PersonNoteAdded = "C4AB0F1B-E036-4D14-BFB7-30BAF12D648A",
     /** The GUID for the Rock.Follow.Event.PersonPrayerRequest entity */
     PersonPrayerRequest = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B",
     /** The guid for the Rock.Model.PersonSignal entity */

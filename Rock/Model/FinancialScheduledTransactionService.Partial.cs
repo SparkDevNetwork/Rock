@@ -155,7 +155,7 @@ namespace Rock.Model
                     bool isReactivated = gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages );
                     if ( isReactivated )
                     {
-                        Task.Run( () => ScheduledGiftModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+                        Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
                     }
 
                     return isReactivated;
@@ -192,7 +192,7 @@ namespace Rock.Model
                     bool isCanceled = gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages );
                     if ( isCanceled )
                     {
-                        Task.Run( () => ScheduledGiftModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftInactivated ) );
+                        Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftInactivated ) );
                     }
 
                     return isCanceled;

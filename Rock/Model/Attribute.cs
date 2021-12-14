@@ -191,6 +191,14 @@ namespace Rock.Model
         public string IconCssClass { get; set; }
 
         /// <summary>
+        /// The color to visually distinguish the attribute. For example, <see cref="AttributeColor"/> might be used to set the color for the <seealso cref="IconCssClass"/> of the icon.
+        /// </summary>
+        /// <value>The color of the attribute.</value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string AttributeColor { get; set; }
+
+        /// <summary>
         /// Gets or sets whether this Attribute should be used in 'search by attribute value' UIs. 
         /// For example, if you had a UI where you would allow the user to find people based on a list of attributes
         /// </summary>

@@ -3234,7 +3234,7 @@ mission. We are so grateful for your commitment.</p>
             financialScheduledTransactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
 
-            Task.Run( () => ScheduledGiftModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
+            Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
 
             BindScheduledTransactions();
         }

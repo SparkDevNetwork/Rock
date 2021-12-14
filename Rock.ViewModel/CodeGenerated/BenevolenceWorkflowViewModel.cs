@@ -37,7 +37,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The BenevolenceTypeId.
         /// </value>
-        public int BenevolenceTypeId { get; set; }
+        public int? BenevolenceTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the QualifierValue.

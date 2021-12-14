@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Communication
         Order = 13 )]
 
     #endregion Block Attributes
-    public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
+    public partial class CommunicationEntryWizard : RockBlock
     {
         #region Attribute Keys
 

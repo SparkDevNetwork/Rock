@@ -899,7 +899,7 @@ mission. We are so grateful for your commitment.</p>
                 }
 
                 rockContext.SaveChanges();
-                Task.Run( () => ScheduledGiftModifiedMessage.PublishScheduledTransactionEvent( financialScheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+                Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( financialScheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
             }
             catch ( Exception )
             {

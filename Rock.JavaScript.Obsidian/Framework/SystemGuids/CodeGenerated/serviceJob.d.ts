@@ -99,5 +99,7 @@ export const enum ServiceJob {
     GivingAnalytics = "B6DE0544-8C91-444E-B911-453D4CE71515",
     /** The media synchronize job. */
     SyncMedia = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
+    /** The Process Elevated Security Job.  */
+    ProcessElevatedSecurity = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
 }
 

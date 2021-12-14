@@ -161,7 +161,7 @@ NOTE: This is not a core transaction type. It'll get created if needed when impo
     FinancialSourceTypeKiosk = "260EEA80-821A-4F79-973F-49DF79C955F7",
     /** The financial source of Mobile Application */
     FinancialSourceTypeMobileApplication = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C",
-    /** The financial source of On-site Collection */
+    /** The financial source of On-Site */
     FinancialSourceTypeOnsiteCollection = "BE7ECF50-52BC-4774-808D-574BA842DB98",
     /** The financial source of Text-to-Give (Give action of the SMS actions) */
     FinancialSourceTypeSmsGive = "8BA95E24-D291-499E-A535-4DCAC365689B",

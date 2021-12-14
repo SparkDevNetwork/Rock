@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Core
         Order = 1,
         Key = AttributeKey.WorkflowButtonText )]
 
-    public partial class BinaryFileDetail : RockBlock, IDetailBlock
+    public partial class BinaryFileDetail : RockBlock
     {
         public static class AttributeKey
         {

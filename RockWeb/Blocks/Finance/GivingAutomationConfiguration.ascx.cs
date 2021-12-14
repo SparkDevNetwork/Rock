@@ -626,7 +626,7 @@ namespace RockWeb.Blocks.Finance
                     string errorMessage;
                     if ( !financialTransactionAlertTypeService.CanDelete( financialTransactionAlertType, out errorMessage ) )
                     {
-                        ShowError( errorMessage );
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 

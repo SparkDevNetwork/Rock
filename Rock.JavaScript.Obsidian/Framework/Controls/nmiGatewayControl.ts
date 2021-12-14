@@ -387,14 +387,14 @@ export default defineComponent({
         /** The CSS classes to apply to the credit card payment type button. */
         const creditCardButtonClasses = computed((): string[] => {
             return isCreditCardPaymentTypeActive.value
-                ? ["btn", "btn-primary", "active", "payment-creditcard"]
+                ? ["btn", "btn-default", "active", "payment-creditcard"]
                 : ["btn", "btn-default", "payment-creditcard"];
         });
 
         /** The CSS classes to apply to the bank account (ACH) payment type button. */
         const bankAccountButtonClasses = computed((): string[] => {
             return isBankAccountPaymentTypeActive.value
-                ? ["btn", "btn-primary", "active", "payment-ach"]
+                ? ["btn", "btn-default", "active", "payment-ach"]
                 : ["btn", "btn-default", "payment-ach"];
         });
 
@@ -632,8 +632,8 @@ export default defineComponent({
         <LoadingIndicator />
     </div>
 
-    <div v-show="!loading && !failedToLoad" style="max-width: 600px; margin-left: auto; margin-right: auto;">
-        <div v-if="hasMultiplePaymentTypes" class="gateway-type-selector btn-group btn-group-justified" role="group">
+    <div v-show="!loading && !failedToLoad" style="max-width: 600px;">
+        <div v-if="hasMultiplePaymentTypes" class="gateway-type-selector btn-group btn-group-xs" role="group">
             <a :class="creditCardButtonClasses" @click.prevent="activateCreditCard">Card</a>
             <a :class="bankAccountButtonClasses" @click.prevent="activateBankAccount">Bank Account</a>
         </div>

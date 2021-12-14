@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Binary File Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays all details of a binary file type." )]
-    public partial class BinaryFileTypeDetail : RockBlock, IDetailBlock
+    public partial class BinaryFileTypeDetail : RockBlock
     {
         #region Fields
 

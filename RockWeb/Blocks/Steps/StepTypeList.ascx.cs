@@ -106,6 +106,7 @@ namespace RockWeb.Blocks.Steps
             public const string Name = "Name";
             public const string AllowMultiple = "Allow Multiple";
             public const string SpansTime = "Spans Time";
+            public const string ActiveStatus = "Active Status";
         }
 
         #endregion Page Parameter Keys
@@ -569,6 +570,7 @@ namespace RockWeb.Blocks.Steps
             txbNameFilter.Text = rFilter.GetUserPreference( FilterSettingName.Name );
             ddlAllowMultipleFilter.SetValue( rFilter.GetUserPreference( FilterSettingName.AllowMultiple ) );
             ddlHasDurationFilter.SetValue( rFilter.GetUserPreference( FilterSettingName.SpansTime ) );
+            ddlActiveFilter.SetValue( rFilter.GetUserPreference( FilterSettingName.ActiveStatus ) );
         }
 
         /// <summary>
@@ -579,6 +581,7 @@ namespace RockWeb.Blocks.Steps
             rFilter.SaveUserPreference( FilterSettingName.Name, txbNameFilter.Text );
             rFilter.SaveUserPreference( FilterSettingName.AllowMultiple, ddlAllowMultipleFilter.SelectedValue );
             rFilter.SaveUserPreference( FilterSettingName.SpansTime, ddlHasDurationFilter.SelectedValue );
+            rFilter.SaveUserPreference( FilterSettingName.ActiveStatus, ddlActiveFilter.SelectedValue );
         }
 
         /// <summary>
@@ -599,6 +602,10 @@ namespace RockWeb.Blocks.Steps
             else if ( filterSettingName == FilterSettingName.SpansTime )
             {
                 return ddlHasDurationFilter.SelectedValue;
+            }
+            else if ( filterSettingName == FilterSettingName.ActiveStatus )
+            {
+                return ddlActiveFilter.SelectedValue;
             }
 
             return string.Empty;
@@ -649,6 +656,19 @@ namespace RockWeb.Blocks.Steps
             if ( hasDuration.HasValue )
             {
                 stepTypesQry = stepTypesQry.Where( a => a.HasEndDate == hasDuration.Value );
+            }
+
+            // Filter by: Active
+            var activeFilter = rFilter.GetUserPreference( FilterSettingName.ActiveStatus ).ToUpperInvariant();
+
+            switch ( activeFilter )
+            {
+                case "ACTIVE":
+                    stepTypesQry = stepTypesQry.Where( a => a.IsActive );
+                    break;
+                case "INACTIVE":
+                    stepTypesQry = stepTypesQry.Where( a => !a.IsActive );
+                    break;
             }
 
             // Sort by: Order, Id.

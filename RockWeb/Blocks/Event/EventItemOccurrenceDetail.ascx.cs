@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Event
         Order = 2,
         Key = AttributeKey.GroupDetailPage )]
 
-    public partial class EventItemOccurrenceDetail : RockBlock, IDetailBlock
+    public partial class EventItemOccurrenceDetail : RockBlock
     {
         #region Properties
 
@@ -1468,6 +1468,18 @@ namespace RockWeb.Blocks.Event
 
                 args.IsValid = !existsInCurrentList && !eventMapingService.Queryable().AsNoTracking().Any( m => m.UrlSlug == urlSlug && m.Guid != groupMapId );
             }
+        }
+
+        protected void rvUrlSlug_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var urlSlug = args.Value;
+            if ( urlSlug.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var match = System.Text.RegularExpressions.Regex.Match( urlSlug, "^[a-z0-9]+(?:-[a-z0-9]+)*$" );
+            args.IsValid = match.Success;
         }
     }
 }

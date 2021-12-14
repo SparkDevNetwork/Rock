@@ -337,6 +337,7 @@ namespace Rock.Model
         /// <value>
         /// The giver identifier.
         /// </value>
+        [MaxLength( 50 )]
         [DataMember]
         [Index( "IX_GivingId" )]
         public string GivingId { get; private set; }
@@ -1896,7 +1897,7 @@ namespace Rock.Model
                 {
                     return string.Format(
                         "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
-                        EmailNote,
+                        HttpUtility.HtmlEncode(EmailNote),
                         Email );
                 }
             }

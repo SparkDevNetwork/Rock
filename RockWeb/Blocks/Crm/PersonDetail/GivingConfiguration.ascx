@@ -33,7 +33,6 @@
                     <Rock:ModalAlert ID="mdWarningAlert" runat="server" />
                     <div class="panel-body">
                         <asp:LinkButton ID="btnAddTransaction" runat="server" CssClass="btn btn-default btn-sm btn-block" Text="Add One-time Gift" OnClick="btnAddTransaction_Click" />
-                        <asp:LinkButton ID="btnAddScheduledTransaction" runat="server" CssClass="btn btn-default btn-sm btn-block" Text="New Scheduled Transaction" OnClick="btnAddScheduledTransaction_Click" />
                     </div>
 
                     <div class="giving-scheduled panel-body border-top border-panel">

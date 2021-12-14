@@ -113,7 +113,7 @@ const SaveFinancialAccountForm = defineComponent({
 
             this.isLoading = true;
 
-            const result = await this.http.post<SaveFinancialAccountFormResult>(`api/v2/controls/savefinancialaccountforms/${this.gatewayGuid}`, null, {
+            const result = await this.http.post<SaveFinancialAccountFormResult>(`/api/v2/controls/savefinancialaccountforms/${this.gatewayGuid}`, null, {
                 Password: this.password,
                 SavedAccountName: this.savedAccountName,
                 TransactionCode: this.transactionCode,

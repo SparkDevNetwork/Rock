@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Lava Shortcode Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a Lava Shortcode." )]
-    public partial class LavaShortcodeDetail : RockBlock, IDetailBlock
+    public partial class LavaShortcodeDetail : RockBlock
     {
         #region Control Methods
 

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web;
 
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -619,17 +620,16 @@ Update Family Status: {updateFamilyStatus}
 
                         // Find any families that has a campus manually added/updated within the configured number of days
                         var groupEntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
-                        var familyIdsWithManualUpdate = new HistoryService( rockContext )
+
+                        var familyIdsWithManualUpdateQuery = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
                                 m.CreatedDateTime >= startPeriod &&
                                 m.EntityTypeId == groupEntityTypeId &&
                                 m.ValueName == "Campus" )
-                            .Select( a => a.EntityId )
-                            .ToList()
-                            .Distinct();
+                            .Select( a => a.EntityId );
 
-                        familyIdQry = familyIdQry.Where( f => !familyIdsWithManualUpdate.Contains( f.Id ) );
+                        familyIdQry = familyIdQry.Where( f => !familyIdsWithManualUpdateQuery.Contains( f.Id ) );
                     }
 
                     // Query for the family ids

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Streaks" )]
     [Description( "Displays the details of the given streak for editing." )]
 
-    public partial class StreakDetail : RockBlock, IDetailBlock
+    public partial class StreakDetail : RockBlock
     {
         /// <summary>
         /// The number of chart bits to show
@@ -464,7 +464,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )

@@ -228,9 +228,13 @@
                 contentType: "application/json"
             });
 
-            if (!result.Items || result.Items.length === 0 || result.Items.length < 25) {
+            if (!result.Items || result.Items.length === 0) {
                 $btnLoadMore.hide();
                 return;
+            } else {
+                if (result.Items.length < 25) {
+                    $btnLoadMore.hide();
+                }
             }
 
             $btnLoadMore.removeClass("disabled");

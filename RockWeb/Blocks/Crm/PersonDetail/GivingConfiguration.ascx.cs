@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( addTransactionPage != null )
             {
                 if ( !this.Person.IsPersonTokenUsageAllowed() )
-                { 
+                {
                     mdWarningAlert.Show( $"Due to their protection profile level you cannot add a transaction on behalf of this person.", ModalAlertType.Warning );
                     return;
                 }
@@ -154,17 +154,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Response.Redirect( addTransactionPage.BuildUrl() );
                 }
             }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnAddScheduledTransaction control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnAddScheduledTransaction_Click( object sender, EventArgs e )
-        {
-            // just send them the same page as Add Transaction page since you can add a scheduled transaction there either way
-            btnAddTransaction_Click( sender, e );
         }
 
         /// <summary>
@@ -550,7 +539,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             We really don't want to actually delete a FinancialScheduledTransaction.
             Just inactivate it, even if there aren't FinancialTransactions associated with it.
             It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
-            If that happens, Rock won't be able to match a record for that downloaded transaction! 
+            If that happens, Rock won't be able to match a record for that downloaded transaction!
             We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
             so we'll need the ScheduledTransaction to do that.
 
@@ -586,7 +575,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

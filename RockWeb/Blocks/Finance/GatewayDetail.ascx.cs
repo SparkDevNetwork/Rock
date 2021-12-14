@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Gateway Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial gateway." )]
-    public partial class GatewayDetail : RockBlock, IDetailBlock
+    public partial class GatewayDetail : RockBlock
     {
         #region Constants
 

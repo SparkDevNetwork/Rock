@@ -86,7 +86,7 @@ namespace Rock.Model
 
                     if ( this.IsSchedulingEnabled && !Enum.GetValues( typeof( ScheduleType ) ).Cast<ScheduleType>().Where( v => v != ScheduleType.None && AllowedScheduleTypes.HasFlag( v ) ).Any() )
                     {
-                        this.ValidationResults.Add( new ValidationResult( "A 'Group Schedule Option' must be selected if Scheduling is enabled." ) );
+                        this.ValidationResults.Add( new ValidationResult( "A 'Group Schedule Option' must be selected under 'Attendance / Check-In' when Scheduling is enabled." ) );
                         return false;
                     }
                 }

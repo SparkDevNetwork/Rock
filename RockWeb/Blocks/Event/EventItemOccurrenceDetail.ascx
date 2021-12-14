@@ -156,6 +156,12 @@
                             ControlToValidate="tbNewLinkageUrlSlug"
                             OnServerValidate="cvUrlSlug_ServerValidate"
                             ValidationGroup="NewEventRegistrationGroupLinkage" />
+                        <asp:CustomValidator runat="server"
+                            ID="rvUrlSlugForNewLinkage"
+                            ErrorMessage="URL Slug cannot contain any special characters other than -"
+                            ControlToValidate="tbNewLinkageUrlSlug"
+                            OnServerValidate="rvUrlSlug_ServerValidate"
+                            ValidationGroup="NewEventRegistrationGroupLinkage" />
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpNewLinkageGroup" runat="server" Label="Group" ValidationGroup="NewEventRegistrationGroupLinkage" />
@@ -241,12 +247,18 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbEditLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="EditLinkage" Help="When creating an event occurrence that specifies a campus, a URL Slug MUST be used when registering in order for the registrant to be placed into the linked group." />
-                         <asp:CustomValidator runat="server"
+                        <asp:CustomValidator runat="server"
                             ID="cvEditUrlSlug"
                             ErrorMessage="URL Slug must be unique across all events."
                             ControlToValidate="tbEditLinkageUrlSlug"
                             OnServerValidate="cvUrlSlug_ServerValidate"
                             ValidationGroup="EditLinkage" />
+                        <asp:CustomValidator runat="server"
+                            ID="rvEditUrlSlug"
+                            ErrorMessage="URL Slug cannot contain any special characters other than -"
+                            ControlToValidate="tbNewLinkageUrlSlug"
+                            OnServerValidate="rvUrlSlug_ServerValidate"
+                            ValidationGroup="NewEventRegistrationGroupLinkage" />
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpEditLinkageGroup" runat="server" Label="Group" ValidationGroup="EditLinkage" />

@@ -5,19 +5,24 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
+    "autoprefixer": "^10.4.0",
     "nodemon": "^2.0.15",
     "npm-run-all": "^4.1.5",
-    "stylelint": "^13.13.1",
-    "stylelint-config-standard": "^20.0.0",
-    "stylelint-order": "^4.1.0"
+    "stylelint": "^14.1.0",
+    "stylelint-config-standard": "^24.0.0",
+    "stylelint-order": "^5.0.0",
+    "postcss": "^8.3.11",
+    "postcss-less": "^5.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "css-lint-core": "stylelint \"RockWeb/Styles/**/*.less\" \"RockWeb/Themes/Rock/**/*.less\" \"!RockWeb/Styles/Bootstrap\" --cache --cache-location .cache/.stylelintcache",
-    "css-lint-core:fix": "stylelint \"RockWeb/Styles/**/*.less\" \"RockWeb/Themes/Rock/**/*.less\" \"!RockWeb/Styles/{Bootstrap,bootstrap-colorpicker,bootstrap-modal,chosen,FontAwesome,JCrop}/**/*\" \"!**/{_rock-core,_variable-overrides,}.less\" --fix --cache --cache-location .cache/.stylelintcache",
-    "css-lint-output": "stylelint \"RockWeb/Themes/**/Styles/*.css\" --cache --cache-location .cache/.stylelintcache",
-    "css-lint-themes": "stylelint \"RockWeb/Themes/**/*.less\" \"!RockWeb/Themes/{CheckinAero,CheckinAdventureKids,CheckinBlueCrystal,CheckinElectric,CheckinPark,DashboardStark,Flat,Rock,Stark,KioskStark,LandingPage}/**/*\" \"!**/{_variables,_variable-overrides}.less\" --cache --cache-location .cache/.stylelintcache",
-    "css-lint-themes:fix": "stylelint \"RockWeb/Themes/**/*.less\" \"!RockWeb/Themes/{CheckinAero,CheckinAdventureKids,CheckinBlueCrystal,CheckinElectric,CheckinPark,DashboardStark,Flat,Rock,Stark,KioskStark,LandingPage}/**/*\" \"!**/{_variables,_variable-overrides}.less\" --fix --cache --cache-location .cache/.stylelintcache",
+    "css-lint-core": "npx stylelint \"RockWeb/Styles/**/*.less\" \"RockWeb/Themes/Rock/**/*.less\" \"!RockWeb/Styles/{Bootstrap,bootstrap-colorpicker,bootstrap-modal,chosen,FontAwesome,JCrop}/**/*\" --cache --cache-location .cache/.stylelintcache --custom-syntax postcss-less",
+    "css-lint-core:fix": "npx stylelint \"RockWeb/Styles/**/*.less\" \"RockWeb/Themes/Rock/**/*.less\" \"!RockWeb/Styles/{Bootstrap,bootstrap-colorpicker,bootstrap-modal,chosen,FontAwesome,JCrop}/**/*\" \"!**/{_rock-core,_variable-overrides,}.less\" --fix --cache --cache-location .cache/.stylelintcache --custom-syntax postcss-less",
+    "css-lint-output": "npx stylelint \"RockWeb/Themes/**/Styles/*.css\" --cache --cache-location .cache/.stylelintcache --custom-syntax postcss-less",
+    "css-lint-themes": "npx stylelint \"RockWeb/Themes/**/*.less\" \"!RockWeb/Themes/{CheckinAero,CheckinAdventureKids,CheckinBlueCrystal,CheckinElectric,CheckinPark,DashboardStark,Flat,Rock,RockManager,Stark,KioskStark,LandingPage}/**/*\" \"!**/{_variables,_variable-overrides}.less\" --cache --cache-location .cache/.stylelintcache --custom-syntax postcss-less",
+    "css-lint-themes:fix": "npx stylelint \"RockWeb/Themes/**/*.less\" \"!RockWeb/Themes/{CheckinAdventureKids,CheckinBlueCrystal,CheckinElectric,CheckinPark,DashboardStark,Flat,Rock,RockManager,Stark,KioskStark,LandingPage}/**/*\" \"!**/{_variables,_variable-overrides}.less\" --fix --custom-syntax postcss-less",
+    "css-lint-checkin:fix": "npx stylelint \"RockWeb/Themes/**/*.less\" \"!RockWeb/Themes/{DashboardStark,Flat,Rock,RockManager,Stark,KioskStark,LandingPage}/**/*\" \"!**/{_variables,_variable-overrides}.less\" --fix --custom-syntax postcss-less",
+    "css-lint-corethemes:fix": "npx stylelint \"RockWeb/Themes/**/*.less\" \"!RockWeb/Themes/{CheckinAdventureKids,CheckinBlueCrystal,CheckinElectric,CheckinPark,DashboardStark,Rock}/**/*\" \"!**/{_variables,_variable-overrides}.less\" --fix --custom-syntax postcss-less",
     "watch-css-core": "nodemon --watch RockWeb/Styles/ --ext less --exec \"npm run css-lint-core\"",
     "watch-css-themes": "nodemon --watch RockWeb/Themes/ --ext less --exec \"npm run css-lint-themes\"",
     "watch-css-themes:fix": "nodemon --watch RockWeb/Themes/ --ext less --exec \"npm run css-lint-themes:fix\""

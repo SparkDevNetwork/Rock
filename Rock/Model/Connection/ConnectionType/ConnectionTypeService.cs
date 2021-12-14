@@ -19,15 +19,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
+using Rock.Model.Connection.ConnectionType.Options;
+using Rock.Security;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// 
     /// </summary>
     public partial class ConnectionTypeService
     {
+        #region Default Options
+
+        /// <summary>
+        /// The default options to use if not specified. This saves a few
+        /// CPU cycles from having to create a new one each time.
+        /// </summary>
+        private static readonly ConnectionTypeQueryOptions DefaultGetConnectionTypesOptions = new ConnectionTypeQueryOptions();
+
+        #endregion
+
         /// <summary>
         /// Copies the connection opportunities.
         /// </summary>
@@ -187,5 +198,83 @@ namespace Rock.Model
             ConnectionWorkflowService.RemoveCachedTriggers();
             return newConnectionTypeId;
         }
+
+        /// <summary>
+        /// Gets the connection opportunities queryable that will provide the results.
+        /// This method returns a queryable of <see cref="ConnectionType"/> objects
+        /// that can then have additional custom filters applied before the results are
+        /// materialized from the database. If no filters are applied then all
+        /// connection types are returned.
+        /// </summary>
+        /// <param name="options">The options that describe the filters to apply to the query.</param>
+        /// <returns>A queryable of <see cref="ConnectionType"/> objects.</returns>
+        /// <exception cref="System.InvalidOperationException">Context is not a RockContext.</exception>
+        public IQueryable<ConnectionType> GetConnectionTypesQuery( ConnectionTypeQueryOptions options = null )
+        {
+            if ( !( Context is RockContext rockContext ) )
+            {
+                throw new InvalidOperationException( "Context is not a RockContext." );
+            }
+
+            options = options ?? DefaultGetConnectionTypesOptions;
+
+            var qry = Queryable();
+
+            if ( options.ConnectorPersonIds != null && options.ConnectorPersonIds.Any() )
+            {
+                var connectorRequestsQry = new ConnectionRequestService( rockContext ).Queryable()
+                    .Where( r => r.ConnectionState != ConnectionState.Connected
+                        && r.ConnectorPersonAliasId.HasValue
+                        && options.ConnectorPersonIds.Contains( r.ConnectorPersonAlias.PersonId ) )
+                    .Select( r => r.Id );
+
+                qry = qry.Where( t => t.ConnectionOpportunities.SelectMany( o => o.ConnectionRequests ).Any( r => connectorRequestsQry.Contains( r.Id ) ) );
+            }
+
+            if ( !options.IncludeInactive )
+            {
+                qry = qry.Where( t => t.IsActive && t.IsActive );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Filters the collection of <see cref="ConnectionType"/> objects to those
+        /// that <paramref name="person"/> is authorized to view. This handles special
+        /// security considerations such as <see cref="ConnectionType.EnableRequestSecurity"/>.
+        /// </summary>
+        /// <param name="connectionTypes">The connection types to be filtered.</param>
+        /// <param name="person">The person that will be used for the authorization check.</param>
+        /// <returns>A list of <see cref="ConnectionType"/> objects that the person is allowed to see.</returns>
+        /// <exception cref="System.InvalidOperationException">Context is not a RockContext.</exception>
+        public List<ConnectionType> GetViewAuthorizedConnectionTypes( IEnumerable<ConnectionType> connectionTypes, Person person )
+        {
+            if ( !( Context is RockContext rockContext ) )
+            {
+                throw new InvalidOperationException( "Context is not a RockContext." );
+            }
+
+            // Make a list of any type identifiers that are configured
+            // for request security and the person is assigned as the
+            // connector to any request.
+            var currentPersonId = person?.Id;
+            var selfAssignedSecurityTypes = new ConnectionRequestService( rockContext )
+                .Queryable()
+                .Where( r => r.ConnectorPersonAlias.PersonId == currentPersonId
+                    && r.ConnectionOpportunity.ConnectionType.EnableRequestSecurity )
+                .Select( r => r.ConnectionOpportunity.ConnectionTypeId )
+                .Distinct()
+                .ToList();
+
+            // Put all the types in memory so we can check security.
+            var types = connectionTypes.ToList()
+                .Where( o => o.IsAuthorized( Authorization.VIEW, person )
+                    || selfAssignedSecurityTypes.Contains( o.Id ) )
+                .ToList();
+
+            return types;
+        }
+
     }
 }

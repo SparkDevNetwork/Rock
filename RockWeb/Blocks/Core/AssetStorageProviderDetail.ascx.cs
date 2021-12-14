@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Asset Storage Provider Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given asset storage provider." )]
-    public partial class AssetStorageProviderDetail : RockBlock, IDetailBlock
+    public partial class AssetStorageProviderDetail : RockBlock
     {
         /// <summary>
         /// Gets or sets the asset storage provider identifier.

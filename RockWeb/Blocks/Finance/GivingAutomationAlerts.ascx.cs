@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.Finance
             var lAmtMeasures = e.Row.FindControl( "lAmtMeasures" ) as Literal;
             if ( lAmtMeasures != null )
             {
-                lAmtMeasures.Text = $"{alert.AmountCurrentMedian.FormatAsCurrency()}<span class='small text-muted'> {(alert.AmountCurrentIqr ?? 0m):0.0} IQR</span>";
+                lAmtMeasures.Text = $"{alert.AmountCurrentMedian.FormatAsCurrency()}<bdi class='small text-muted'> {(alert.AmountCurrentIqr ?? 0m):0.0} IQR</bdi>";
             }
 
             var lFreqMeasures = e.Row.FindControl( "lFreqMeasures" ) as Literal;

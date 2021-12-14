@@ -20,12 +20,11 @@ import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "../..
 import RockForm from "../../../Controls/rockForm";
 import RockValidation from "../../../Controls/rockValidation";
 import Alert from "../../../Elements/alert";
-import DropDownList, { DropDownListOption } from "../../../Elements/dropDownList";
 import RockButton from "../../../Elements/rockButton";
 import { useInvokeBlockAction } from "../../../Util/block";
-import { toGuidOrNull } from "../../../Util/guid";
+import { newGuid, toGuidOrNull } from "../../../Util/guid";
+import { SavedFinancialAccountListItem } from "../../../ViewModels";
 import { RegistrationEntryState } from "../registrationEntry";
-import DiscountCodeForm from "./discountCodeForm";
 import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from "./registrationEntryBlockViewModel";
 
@@ -35,10 +34,8 @@ export default defineComponent({
         RockButton,
         RockForm,
         Alert,
-        DropDownList,
         GatewayControl,
-        RockValidation,
-        DiscountCodeForm
+        RockValidation
     },
     setup() {
         const submitPayment = prepareSubmitPayment();
@@ -62,11 +59,8 @@ export default defineComponent({
         /** The currently selected saved account. */
         const selectedSavedAccount = ref("");
 
-        if (registrationEntryState.viewModel.savedAccounts !== null && registrationEntryState.viewModel.savedAccounts.length > 0) {
-            selectedSavedAccount.value = registrationEntryState.viewModel.savedAccounts[0].value;
-        }
-
         return {
+            uniqueId: newGuid(),
             loading,
             gatewayErrorMessage,
             gatewayValidationFields,
@@ -102,23 +96,16 @@ export default defineComponent({
         },
 
         /** Contains the options to display in the saved account drop down list. */
-        savedAccountOptions(): DropDownListOption[] {
+        savedAccountOptions(): SavedFinancialAccountListItem[] {
             if (this.registrationEntryState.viewModel.savedAccounts === null) {
                 return [];
             }
 
-            const options = this.registrationEntryState.viewModel.savedAccounts.map(a => {
-                const option: DropDownListOption = {
-                    value: a.value,
-                    text: a.text
-                };
-
-                return option;
-            });
+            const options = [...this.registrationEntryState.viewModel.savedAccounts];
 
             options.push({
                 value: "",
-                text: "Use a different payment method"
+                text: "New Payment Method"
             });
 
             return options;
@@ -137,6 +124,16 @@ export default defineComponent({
         /** The amount to pay as a friendly text string. */
         amountToPayText(): string {
             return `$${this.registrationEntryState.amountToPayToday.toFixed(2)}`;
+        },
+
+        /** The URL to return to if the gateway control needs to perform a redirect. */
+        redirectReturnUrl(): string {
+            if (window.location.href.includes("?")) {
+                return `${window.location.href}&sessionGuid=${this.registrationEntryState.registrationSessionGuid}`;
+            }
+            else {
+                return `${window.location.href}?sessionGuid=${this.registrationEntryState.registrationSessionGuid}`;
+            }
         }
     },
 
@@ -152,19 +149,7 @@ export default defineComponent({
 
             // If there is a cost, then the gateway will need to be used to pay
             if (this.registrationEntryState.amountToPayToday) {
-                // If this is a redirect gateway, then persist and redirect now
-                if (this.viewModel.isRedirectGateway) {
-                    const redirectUrl = await this.getPaymentRedirect();
-
-                    if (redirectUrl) {
-                        location.href = redirectUrl;
-                    }
-                    else {
-                        // Error is shown by getPaymentRedirect method
-                        this.loading = false;
-                    }
-                }
-                else if (this.showGateway) {
+                if (this.showGateway) {
                     // Otherwise, this is a traditional gateway
                     this.gatewayErrorMessage = "";
                     this.gatewayValidationFields = {};
@@ -229,6 +214,52 @@ export default defineComponent({
             this.gatewayValidationFields = invalidFields;
         },
 
+        /**
+         * Get the unique identifier of the option to use on the input control.
+         * 
+         * @param option The option that represents the saved account.
+         * 
+         * @returns A string that contains the unique control identifier.
+         */
+        getOptionUniqueId(option: SavedFinancialAccountListItem): string {
+            const key = option.value.replace(" ", "-");
+
+            return `${this.uniqueId}-${key}`;
+        },
+
+        /**
+         * Gets the image to display for the saved account input control.
+         * 
+         * @param option The option that represents the saved account.
+         *
+         * @returns A string with the URL of the image to display.
+         */
+        getAccountImage(option: SavedFinancialAccountListItem): string {
+            return option.image ?? "";
+        },
+
+        /**
+         * Gets the name to display for the saved account input control.
+         *
+         * @param option The option that represents the saved account.
+         *
+         * @returns A string with the user friendly name of the saved account.
+         */
+        getAccountName(option: SavedFinancialAccountListItem): string {
+            return option.text;
+        },
+
+        /**
+         * Gets the descriptive text to display for the saved account input control.
+         * 
+         * @param option The option that represents the saved account.
+         *
+         * @returns A string with the user friendly description of the saved account.
+         */
+        getAccountDescription(option: SavedFinancialAccountListItem): string {
+            return option.description ?? "";
+        },
+
         /** Submit the registration to the server */
         async submit(): Promise<boolean> {
             this.submitErrorMessage = "";
@@ -245,45 +276,90 @@ export default defineComponent({
             }
 
             return result.isSuccess;
-        },
-
-        /** Persist the args to the server so the user can be redirected for payment. Returns the redirect URL. */
-        async getPaymentRedirect(): Promise<string> {
-            const result = await this.invokeBlockAction<string>("GetPaymentRedirect", {
-                args: this.getRegistrationEntryBlockArgs()
-            });
-
-            if (result.isError || !result.data) {
-                this.submitErrorMessage = result.errorMessage || "Unknown error";
-            }
-
-            return result.data || "";
         }
     },
 
     template: `
 <div class="registrationentry-payment">
+    <v-style>
+        .payment-method-options .payment-method {
+            margin-bottom: 20px;
+        }
+
+        .payment-method .payment-method-image {
+            height: 1.4em;
+            margin-right: 8px;
+        }
+
+        .payment-method-account {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .payment-method .payment-method-name {
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .hosted-payment-control {
+            margin-bottom: 60px;
+        }
+
+        @media (min-width: 500px) {
+            .payment-method-options .payment-method-entry {
+                padding-left: 28px;
+            }
+        }
+        .slide-enter-active, .slide-leave-active {
+            transition: all .6s ease;
+        }
+
+        .slide-enter, .slide-leave-to {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+    </v-style>
+
     <RockForm @submit="onNext">
-        <div class="amount-summary">
-            <div class="amount-display">
-                <span>{{ amountToPayText }}</span>
-            </div>
+        <h4>Payment Information</h4>
+        <div>
+            Payment Amount: {{ amountToPayText }}
         </div>
 
-        <div v-if="gatewayControlModel" class="well">
-            <h4>Payment Method</h4>
-            <DropDownList v-if="hasSavedAccounts" v-model="selectedSavedAccount" :options="savedAccountOptions" :showBlankItem="false" />
-            <div v-show="showGateway">
-                <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
-                <RockValidation :errors="gatewayValidationFields" />
-                <div class="hosted-payment-control">
-                    <GatewayControl
-                        :gatewayControlModel="gatewayControlModel"
-                        :amountToPay="amountToPay"
-                        @success="onGatewayControlSuccess"
-                        @error="onGatewayControlError"
-                        @validation="onGatewayControlValidation" />
-                </div>
+        <hr/>
+
+        <div v-if="gatewayControlModel" class="payment-method-options">
+            <div v-if="hasSavedAccounts" v-for="savedAccount in savedAccountOptions" class="radio payment-method">
+                <label :for="getOptionUniqueId(savedAccount)">
+                    <input :id="getOptionUniqueId(savedAccount)"
+                        :name="uniqueId"
+                        type="radio"
+                        :value="savedAccount.value"
+                        v-model="selectedSavedAccount" />
+                    <span class="label-text payment-method-account">
+                        <img v-if="getAccountImage(savedAccount)" class="payment-method-image" :src="getAccountImage(savedAccount)">
+                        <span class="payment-method-name" v-text="getAccountName(savedAccount)"></span>
+                        <span class="payment-method-description text-muted" v-text="getAccountDescription(savedAccount)"></span>
+                    </span>
+                </label>
+            </div>
+
+            <div class="position-relative overflow-hidden">
+                <transition name="slide">
+                    <div v-if="showGateway" class="hosted-gateway-container payment-method-entry">
+                        <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+                        <RockValidation :errors="gatewayValidationFields" />
+                        <div class="hosted-payment-control">
+                            <GatewayControl
+                                :gatewayControlModel="gatewayControlModel"
+                                :amountToPay="amountToPay"
+                                :returnUrl="redirectReturnUrl"
+                                @success="onGatewayControlSuccess"
+                                @error="onGatewayControlError"
+                                @validation="onGatewayControlValidation" />
+                        </div>
+                    </div>
+                </transition>
             </div>
         </div>
 
@@ -293,7 +369,8 @@ export default defineComponent({
             <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading">
                 Previous
             </RockButton>
-            <RockButton btnType="primary" type="submit" :isLoading="loading">
+
+            <RockButton v-if="gatewayControlModel" btnType="primary" type="submit" :isLoading="loading">
                 {{finishButtonText}}
             </RockButton>
         </div>
