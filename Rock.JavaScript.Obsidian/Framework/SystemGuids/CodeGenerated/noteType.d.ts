@@ -40,5 +40,7 @@ export const enum NoteType {
     ScheduledTransactionNote = "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588",
     /** The workflow change log note */
     WorkflowChangeLogNote = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6",
+    /** The pastoral note type. */
+    PastoralNote = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42",
 }
 
