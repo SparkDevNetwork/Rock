@@ -258,8 +258,6 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
 
-            RunCleanupTask( "update account protection profile", () => UpdatePersonAccountProtectionProfile() );
-
             RunCleanupTask( "expired registration session", () => RemoveExpiredRegistrationSessions() );
 
             RunCleanupTask( "expired sms action", () => RemoveExpiredSmsActions() );
@@ -926,7 +924,6 @@ namespace Rock.Jobs
                 .Where( w => w.WorkflowType.MaxWorkflowAgeDays.HasValue && w.ActivatedDateTime.HasValue && !w.CompletedDateTime.HasValue && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.MaxWorkflowAgeDays ) )
                 .Take( batchAmount )
                 .ToList();
-
 
             foreach ( var workflow in toBeMarkedCompletedWorkflows )
             {

@@ -756,6 +756,7 @@
     <Compile Include="Field\Types\MobileNavigationActionFieldType.cs" />
     <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
     <Compile Include="Jobs\PostV13DataMigrationsAddInteractionComponentIndexToInteraction.cs" />
+    <Compile Include="Jobs\ProcessElevatedSecurity.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Mobile\MobileNavigationAction.cs" />

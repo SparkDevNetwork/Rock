@@ -215,5 +215,10 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.SyncMedia">media synchronize</see> job.
         /// </summary>
         public const string SYNC_MEDIA = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9";
+
+        /// <summary>
+        /// The Process Elevated Security Job. <see cref="Rock.Jobs.ProcessElevatedSecurity"/>
+        /// </summary>
+        public const string PROCESS_ELEVATED_SECURITY = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714";
     }
 }
