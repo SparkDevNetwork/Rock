@@ -24,6 +24,7 @@ using System.Text;
 using Quartz;
 
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -41,7 +42,7 @@ namespace Rock.Jobs
         "Expiring Credit Card Email",
         Key = AttributeKey.ExpiringCreditCardEmail,
         Description = "The system communication template to use for the credit card expiration notice. The merge fields 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be available to the email template.",
-        IsRequired = true,
+        IsRequired = false,
         Order = 0 )]
 
     [WorkflowTypeField(
@@ -61,6 +62,15 @@ namespace Rock.Jobs
         Order = 3
         )]
 
+    [BooleanField(
+        "Enable Sending Bus Event",
+        Key = AttributeKey.EnableSendingBusEvent,
+        Description = "When enabled, a 'Credit Card Expiring Soon Message' message will be sent to the Rock message bus.",
+        DefaultValue = "False",
+        IsRequired = false,
+        Order = 4
+        )]
+
     [DisallowConcurrentExecution]
     public class SendCreditCardExpirationNotices : IJob
     {
@@ -72,6 +82,7 @@ namespace Rock.Jobs
             public const string ExpiringCreditCardEmail = "ExpiringCreditCardEmail";
             public const string Workflow = "Workflow";
             public const string RemovedExpiredSavedAccountDays = "RemovedExpiredSavedAccountDays";
+            public const string EnableSendingBusEvent = "EnableSendingBusEvent";
         }
 
         /// <summary> 
@@ -187,11 +198,6 @@ namespace Rock.Jobs
                 systemCommunication = systemCommunicationService.Get( systemEmailGuid.Value );
             }
 
-            if ( systemCommunication == null )
-            {
-                throw new Exception( "Expiring credit card email is missing." );
-            }
-
             // Fetch the configured Workflow once if one was set, we'll use it later.
             Guid? workflowGuid = dataMap.GetString( AttributeKey.Workflow ).AsGuidOrNull();
             WorkflowTypeCache workflowType = null;
@@ -226,6 +232,9 @@ namespace Rock.Jobs
                 ExaminedCount = scheduledTransactionInfoList.Count()
             };
 
+            // get attibute value, so we don't have to keep calling it for every person,
+            bool enableSendingEvent = dataMap.GetString( AttributeKey.EnableSendingBusEvent ).AsBoolean();
+
             foreach ( ScheduledTransactionInfo scheduledTransactionInfo in scheduledTransactionInfoList.OrderByDescending( a => a.Id ) )
             {
                 int? expirationMonth = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationMonth;
@@ -253,45 +262,49 @@ namespace Rock.Jobs
                     }
 
                     string expirationDateMMYYFormatted = scheduledTransactionInfo.FinancialPaymentDetail?.ExpirationDate;
-
                     var recipients = new List<RockEmailMessageRecipient>();
 
                     var person = scheduledTransactionInfo.Person;
 
-                    if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
+                    if ( enableSendingEvent )
                     {
-                        continue;
+                        var financialScheduledTransactions = scheduledTransactionInfoList.Where( m => m.Person.Id == person.Id ).Select( m => m.Id );
+                        CreditCardIsExpiringMessage.Publish( person, scheduledTransactionInfo.FinancialPaymentDetail, financialScheduledTransactions.ToList() );
                     }
 
-                    // make a mergeFields for this person, starting with copy of the commonFieldFields 
-                    var mergeFields = new Dictionary<string, object>( commonMergeFields );
-                    mergeFields.Add( "Person", person );
-                    mergeFields.Add( "Card", maskedCardNumber );
-                    mergeFields.Add( "Expiring", expirationDateMMYYFormatted );
-
-                    recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
-
-                    var emailMessage = new RockEmailMessage( systemCommunication );
-                    emailMessage.SetRecipients( recipients );
-                    emailMessage.Send( out List<string> emailErrors );
-
-                    if ( emailErrors.Any() )
+                    bool isOpenToEmail = person.IsEmailActive && !person.Email.IsNullOrWhiteSpace() && person.EmailPreference != EmailPreference.DoNotEmail;
+                    if ( systemCommunication != null && isOpenToEmail )
                     {
-                        var errorLines = new StringBuilder();
-                        errorLines.AppendLine( string.Empty );
-                        foreach ( string error in emailErrors )
+                        // make a mergeFields for this person, starting with copy of the commonFieldFields 
+                        var mergeFields = new Dictionary<string, object>( commonMergeFields );
+                        mergeFields.Add( "Person", person );
+                        mergeFields.Add( "Card", maskedCardNumber );
+                        mergeFields.Add( "Expiring", expirationDateMMYYFormatted );
+
+                        recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
+
+                        var emailMessage = new RockEmailMessage( systemCommunication );
+                        emailMessage.SetRecipients( recipients );
+                        emailMessage.Send( out List<string> emailErrors );
+
+                        if ( emailErrors.Any() )
                         {
-                            errorLines.AppendLine( error );
+                            var errorLines = new StringBuilder();
+                            errorLines.AppendLine( string.Empty );
+                            foreach ( string error in emailErrors )
+                            {
+                                errorLines.AppendLine( error );
+                            }
+
+                            // Provide better identifying context in case the errors are too vague.
+                            var exception = new Exception( $"Unable to send email (Person ID = {person.Id}).{errorLines}" );
+
+                            result.EmailSendExceptions.Add( exception );
                         }
-
-                        // Provide better identifying context in case the errors are too vague.
-                        var exception = new Exception( $"Unable to send email (Person ID = {person.Id}).{errorLines}" );
-
-                        result.EmailSendExceptions.Add( exception );
-                    }
-                    else
-                    {
-                        result.NoticesSentCount++;
+                        else
+                        {
+                            result.NoticesSentCount++;
+                        }
                     }
 
                     // Start workflow for this person

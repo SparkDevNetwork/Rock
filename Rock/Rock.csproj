@@ -601,9 +601,11 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
+    <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
