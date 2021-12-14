@@ -143,7 +143,7 @@ WHERE {targetColumn} NOT LIKE '%{newValue}%' AND [AttributeId] = @attributeId" )
             RockMigrationHelper.UpdateNoteType(
                 "Pastoral Note",
                 "Rock.Model.Person",
-                true,
+                false,
                 Rock.SystemGuid.NoteType.PASTORAL_NOTE,
                 true,
                 "fa fa-medkit",
