@@ -14,31 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+
     /// <summary>
-    /// Represents the timespan represented by each of the <see cref="StreakType"/> bits.
+    ///
     /// </summary>
-    public enum StreakOccurrenceFrequency
+    public partial class GivingAchievements : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a day.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        Daily = 0,
+        public override void Up()
+        {
+            AddColumn("dbo.StreakType", "StructureSettingsJSON", c => c.String());
+        }
 
         /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a week.
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        Weekly = 1,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a month.
-        /// </summary>
-        Monthly = 2,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a year.
-        /// </summary>
-        Yearly = 3
+        public override void Down()
+        {
+            DropColumn("dbo.StreakType", "StructureSettingsJSON");
+        }
     }
 }

@@ -88,6 +88,33 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected account id.
+        /// </summary>
+        /// <value>
+        /// The account id.
+        /// </value>
+        public int? AccountId
+        {
+            get
+            {
+                int selectedId = this.SelectedValue.AsInteger();
+                if ( selectedId > 0 )
+                {
+                    return selectedId;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            set
+            {
+                SetValue( value );
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()

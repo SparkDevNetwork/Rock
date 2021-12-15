@@ -433,6 +433,7 @@
     <Compile Include="Achievement\AchievementConfiguration.cs" />
     <Compile Include="Achievement\AchievementContainer.cs" />
     <Compile Include="Achievement\AchieverAttemptItem.cs" />
+    <Compile Include="Achievement\Component\GivingToAccountAchievement.cs" />
     <Compile Include="Achievement\Component\StepProgramAchievement.cs" />
     <Compile Include="Achievement\Component\InteractionSourcedAccumulativeAchievement.cs" />
     <Compile Include="Achievement\Component\AccumulativeAchievement.cs" />
@@ -902,6 +903,7 @@
     <Compile Include="Model\Engagement\StreakType\StreakOccurrenceFrequency.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakStructureType.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakType.Logic.cs" />
+    <Compile Include="Model\Engagement\StreakType\StreakTypeSettings.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceGraphBy.cs" />

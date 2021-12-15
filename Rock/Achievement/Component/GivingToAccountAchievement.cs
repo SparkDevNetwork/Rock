@@ -21,7 +21,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Dynamic;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -30,49 +29,59 @@ using Rock.Web.Cache;
 namespace Rock.Achievement.Component
 {
     /// <summary>
-    /// Use to track achievements earned by accumulating interactions
+    /// Use to track achievements earned by giving to an account.
     /// </summary>
     /// <seealso cref="AchievementComponent" />
-    [Description( "Use to track achievements earned by accumulating interactions" )]
+    [Description( "Used to track achievements earned by giving to selected accounts." )]
     [Export( typeof( AchievementComponent ) )]
-    [ExportMetadata( "ComponentName", "Interactions: Accumulative" )]
+    [ExportMetadata( "ComponentName", "Giving: Giving to Account" )]
 
-    [InteractionChannelInteractionComponentField(
-        "Interaction Channel and Component",
-        Description = "The source interaction channel and component from which achievements are earned.",
-        IsRequired = false,
+    [AccountField(
+        "Account",
+        Description = "The financial account from which the giving achievement is earned.",
+        IsRequired = true,
         Order = 0,
-        Key = AttributeKey.InteractionChannelComponent )]
+        Key = AttributeKey.FinancialAccount )]
+
+    [BooleanField(
+        "Include Child Accounts",
+        Description = "Determines whether to include child accounts in this achievement.",
+        IsRequired = false,
+        Order = 1,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.IncludeChildFinancialAccounts,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox )]
 
     [IntegerField(
         "Number to Accumulate",
-        Description = "The number of interactions required to earn this achievement.",
+        Description = "The number of giving transactions required to earn this achievement.",
         IsRequired = true,
-        Order = 1,
+        Order = 2,
+        DefaultIntegerValue = 1,
         Key = AttributeKey.NumberToAccumulate )]
 
     [DateField(
         "Start Date",
-        Description = "The date that defines when the interactions must occur on or after.",
+        Description = "The date that defines when the giving must be completed on or after.",
         IsRequired = false,
-        Order = 2,
+        Order = 3,
         Key = AttributeKey.StartDateTime )]
 
     [DateField(
         "End Date",
-        Description = "The date that defines when the interactions must occur on or before.",
+        Description = "The date that defines when the giving must be completed on or before.",
         IsRequired = false,
-        Order = 3,
+        Order = 4,
         Key = AttributeKey.EndDateTime )]
 
-    public class InteractionSourcedAccumulativeAchievement : AchievementComponent
+    public class GivingToAccountAchievement : AchievementComponent
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AchievementComponent" /> class.
         /// </summary>
-        public InteractionSourcedAccumulativeAchievement() : base(
-            new AchievementConfiguration( typeof( Interaction ), typeof( PersonAlias ) ),
-            new HashSet<string> { AttributeKey.InteractionChannelComponent } )
+        public GivingToAccountAchievement() : base(
+            new AchievementConfiguration( typeof( FinancialTransaction ), typeof( PersonAlias ) ),
+            new HashSet<string> { AttributeKey.GivingToAccountAchievement } )
         {
         }
 
@@ -84,11 +93,6 @@ namespace Rock.Achievement.Component
         public static class AttributeKey
         {
             /// <summary>
-            /// The number to accumulate
-            /// </summary>
-            public const string NumberToAccumulate = "NumberToAccumulate";
-
-            /// <summary>
             /// The Start Date Time
             /// </summary>
             public const string StartDateTime = "StartDateTime";
@@ -99,9 +103,24 @@ namespace Rock.Achievement.Component
             public const string EndDateTime = "EndDateTime";
 
             /// <summary>
-            /// The channel and component
+            /// The financial account
             /// </summary>
-            public const string InteractionChannelComponent = "InteractionChannelComponent";
+            public const string FinancialAccount = "FinancialAccount";
+
+            /// <summary>
+            /// Whether to include child financial accounts
+            /// </summary>
+            public const string IncludeChildFinancialAccounts = "IncludeChildFinancialAccounts";
+
+            /// <summary>
+            /// The giving to account achievement type
+            /// </summary>
+            public const string GivingToAccountAchievement = "GivingToAccountAchievement";
+
+            /// <summary>
+            /// The number to accumulate
+            /// </summary>
+            public const string NumberToAccumulate = "NumberToAccumulate";
         }
 
         #endregion Keys
@@ -114,29 +133,20 @@ namespace Rock.Achievement.Component
         /// <returns></returns>
         public override bool ShouldProcess( AchievementTypeCache achievementTypeCache, IEntity sourceEntity )
         {
-            var interaction = sourceEntity as Interaction;
-
-            if ( interaction == null )
+            if ( !( sourceEntity is FinancialTransaction financialTransaction ) )
             {
                 return false;
             }
 
-            var channel = GetInteractionChannelCache( achievementTypeCache );
+            var accountId = GetFinancialAccountId( achievementTypeCache );
+            var details = financialTransaction.TransactionDetails;
 
-            if ( channel == null )
+            if ( details == null || !accountId.HasValue )
             {
-                return true;
+                return false;
             }
 
-            var component = GetInteractionComponentCache( achievementTypeCache );
-
-            if ( component == null )
-            {
-                component = InteractionComponentCache.Get( interaction.InteractionComponentId );
-                return component.InteractionChannelId == channel.Id;
-            }
-
-            return interaction.InteractionComponentId == component.Id;
+            return details.Any( t => t.AccountId == accountId.Value );
         }
 
         /// <summary>
@@ -146,26 +156,9 @@ namespace Rock.Achievement.Component
         /// <param name="achievementTypeCache">The achievement type cache.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public override IQueryable<IEntity> GetSourceEntitiesQuery( AchievementTypeCache achievementTypeCache, RockContext rockContext )
         {
-            var component = GetInteractionComponentCache( achievementTypeCache );
-            var service = new InteractionService( rockContext );
-            var query = service.Queryable();
-
-            if ( component != null )
-            {
-                return query.Where( i => i.InteractionComponentId == component.Id );
-            }
-
-            var channel = GetInteractionChannelCache( achievementTypeCache );
-
-            if ( channel != null )
-            {
-                return query.Where( i => i.InteractionComponent.InteractionChannelId == channel.Id );
-            }
-
-            return query;
+            return GetFinancialTransactionQuery( achievementTypeCache, rockContext );
         }
 
         /// <summary>
@@ -191,14 +184,14 @@ namespace Rock.Achievement.Component
 
             return filters.All( f =>
             {
-                if ( f.Key.Equals( "InteractionChannelId", StringComparison.OrdinalIgnoreCase ) )
+                if ( f.Key.Equals( "AccountId", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    return f.Value.AsInteger() == GetInteractionChannelCache( achievementTypeCache )?.Id;
+                    return f.Value.AsInteger() == GetFinancialAccount( achievementTypeCache )?.Id;
                 }
 
-                if ( f.Key.Equals( "InteractionComponentId", StringComparison.OrdinalIgnoreCase ) )
+                if ( f.Key.Equals( "FinancialAccountId", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    return f.Value.AsInteger() == GetInteractionComponentCache( achievementTypeCache )?.Id;
+                    return f.Value.AsInteger() == GetFinancialAccount( achievementTypeCache )?.Id;
                 }
 
                 return false;
@@ -242,11 +235,10 @@ namespace Rock.Achievement.Component
         /// <returns>The set of attempts that were created or updated</returns>
         public override HashSet<AchievementAttempt> Process( RockContext rockContext, AchievementTypeCache achievementTypeCache, IEntity sourceEntity )
         {
-            var interaction = sourceEntity as Interaction;
             var updatedAttempts = new HashSet<AchievementAttempt>();
 
-            // If we cannot link the interaction to a person, then there is nothing to do
-            if ( interaction?.PersonAliasId == null )
+            // If we cannot link the transaction to a person, then there is nothing to do
+            if ( !( sourceEntity is FinancialTransaction financialTransaction ) )
             {
                 return updatedAttempts;
             }
@@ -259,9 +251,18 @@ namespace Rock.Achievement.Component
 
             // If there are unmet prerequisites, then there is nothing to do
             var achievementTypeService = new AchievementTypeService( rockContext );
-            var unmetPrerequisites = achievementTypeService.GetUnmetPrerequisites( achievementTypeCache.Id, interaction.PersonAliasId.Value );
+            var unmetPrerequisites = achievementTypeService.GetUnmetPrerequisites( achievementTypeCache.Id, financialTransaction.AuthorizedPersonAliasId.Value );
 
             if ( unmetPrerequisites.Any() )
+            {
+                return updatedAttempts;
+            }
+
+            // If the transaction is a refund, the person is empty, or less than zero amount, then there is nothing to do.
+            if ( null != financialTransaction.RefundDetails ||
+                 !financialTransaction.AuthorizedPersonAliasId.HasValue ||
+                 financialTransaction.AuthorizedPersonAliasId == 0 ||
+                 financialTransaction.TotalAmount <= 0M )
             {
                 return updatedAttempts;
             }
@@ -269,7 +270,7 @@ namespace Rock.Achievement.Component
             // Get all of the attempts for this interaction and achievement combo, ordered by start date DESC so that
             // the most recent attempts can be found with FirstOrDefault
             var achievementAttemptService = new AchievementAttemptService( rockContext );
-            var attempts = achievementAttemptService.GetOrderedAchieverAttempts( achievementAttemptService.Queryable(), achievementTypeCache, interaction.PersonAliasId.Value );
+            var attempts = achievementAttemptService.GetOrderedAchieverAttempts( achievementAttemptService.Queryable(), achievementTypeCache, financialTransaction.AuthorizedPersonAliasId.Value );
 
             var mostRecentSuccess = attempts.FirstOrDefault( saa => saa.AchievementAttemptEndDateTime.HasValue && saa.IsSuccessful );
             var overachievementPossible = achievementTypeCache.AllowOverAchievement;
@@ -279,7 +280,7 @@ namespace Rock.Achievement.Component
             // If the most recent success is still open and overachievement is allowed, then update it
             if ( overachievementPossible && mostRecentSuccess != null && !mostRecentSuccess.IsClosed )
             {
-                UpdateOpenAttempt( mostRecentSuccess, achievementTypeCache, interaction );
+                UpdateOpenAttempt( mostRecentSuccess, achievementTypeCache, financialTransaction );
                 updatedAttempts.Add( mostRecentSuccess );
 
                 if ( !mostRecentSuccess.IsClosed )
@@ -308,7 +309,7 @@ namespace Rock.Achievement.Component
                     .ToList();
             }
 
-            var newAttempts = CreateNewAttempts( achievementTypeCache, interaction, mostRecentSuccess );
+            var newAttempts = CreateNewAttempts( achievementTypeCache, financialTransaction, mostRecentSuccess );
 
             if ( newAttempts != null && newAttempts.Any() )
             {
@@ -327,7 +328,7 @@ namespace Rock.Achievement.Component
                     }
                     else
                     {
-                        newAttempt.AchieverEntityId = interaction.PersonAliasId.Value;
+                        newAttempt.AchieverEntityId = financialTransaction.AuthorizedPersonAliasId.Value;
                         newAttempt.AchievementTypeId = achievementTypeCache.Id;
                         achievementAttemptService.Add( newAttempt );
                         updatedAttempts.Add( newAttempt );
@@ -363,34 +364,18 @@ namespace Rock.Achievement.Component
         /// <returns></returns>
         public override string GetSourceName( AchievementTypeCache achievementTypeCache )
         {
-            var channel = GetInteractionChannelCache( achievementTypeCache );
-            var component = GetInteractionComponentCache( achievementTypeCache );
-
-            if ( channel == null && component == null )
-            {
-                return "Any Interaction";
-            }
-
-            if ( component == null )
-            {
-                return channel.Name;
-            }
-
-            if ( channel == null )
-            {
-                return component.Name;
-            }
-
-            return $"{channel.Name}: {component.Name}";
+            return GetFinancialAccountName( achievementTypeCache );
         }
+
+        #region Helpers
 
         /// <summary>
         /// Update the open attempt record if there are changes.
         /// </summary>
         /// <param name="openAttempt"></param>
         /// <param name="achievementTypeCache">The achievement type cache.</param>
-        /// <param name="interaction">The interaction.</param>
-        private void UpdateOpenAttempt( AchievementAttempt openAttempt, AchievementTypeCache achievementTypeCache, Interaction interaction )
+        /// <param name="transaction">The financial transaction.</param>
+        private void UpdateOpenAttempt( AchievementAttempt openAttempt, AchievementTypeCache achievementTypeCache, FinancialTransaction transaction )
         {
             // Validate the attribute values
             var numberToAccumulate = GetAttributeValue( achievementTypeCache, AttributeKey.NumberToAccumulate ).AsInteger();
@@ -406,10 +391,16 @@ namespace Rock.Achievement.Component
             var minDate = openAttempt.AchievementAttemptStartDateTime;
             var maxDate = CalculateMaxDateForAchievementAttempt( minDate, attributeMaxDate );
 
-            // Get the interaction dates
-            var interactionDates = GetInteractionDatesByPerson( achievementTypeCache, interaction.PersonAliasId.Value, minDate, maxDate );
-            var newCount = interactionDates.Count();
-            var lastInteractionDate = interactionDates.LastOrDefault();
+            // Get the transaction dates
+            var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, transaction.AuthorizedPersonAlias.PersonId, minDate, maxDate );
+            var newCount = transactionDates.Count();
+
+            if (newCount == 0)
+            {
+                return;
+            }
+
+            var lastInteractionDate = transactionDates.LastOrDefault();
             var progress = CalculateProgress( newCount, numberToAccumulate );
             var isSuccessful = progress >= 1m;
 
@@ -423,17 +414,17 @@ namespace Rock.Achievement.Component
         /// Create new attempt records and return them in a list. All new attempts should be after the most recent successful attempt.
         /// </summary>
         /// <param name="achievementTypeCache">The achievement type cache.</param>
-        /// <param name="interaction">The interaction.</param>
+        /// <param name="transaction">The financial transaction.</param>
         /// <param name="mostRecentSuccess">The most recent successful attempt.</param>
         /// <returns></returns>
-        private List<AchievementAttempt> CreateNewAttempts( AchievementTypeCache achievementTypeCache, Interaction interaction, AchievementAttempt mostRecentSuccess )
+        private List<AchievementAttempt> CreateNewAttempts( AchievementTypeCache achievementTypeCache, FinancialTransaction transaction, AchievementAttempt mostRecentSuccess )
         {
             // Validate the attribute values
             var numberToAccumulate = GetAttributeValue( achievementTypeCache, AttributeKey.NumberToAccumulate ).AsInteger();
 
             if ( numberToAccumulate <= 0 )
             {
-                ExceptionLogService.LogException( $"{GetType().Name}.CreateNewAttempts cannot process because the NumberToAccumulate attribute is less than 1" );
+                ExceptionLogService.LogException( $"{GetType().Name}. CreateNewAttempts cannot process because the NumberToAccumulate attribute is less than 1" );
                 return null;
             }
 
@@ -447,19 +438,25 @@ namespace Rock.Achievement.Component
             var attempts = new List<AchievementAttempt>();
             ComputedStreak accumulation = null;
 
-            // Get the interaction dates and begin calculating attempts
-            var interactionDates = GetInteractionDatesByPerson( achievementTypeCache, interaction.PersonAliasId.Value, minDate, maxDate );
+            // Get the transaction dates and begin calculating attempts
+            var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, transaction.AuthorizedPersonAlias.PersonId, minDate, maxDate );
 
-            foreach ( var interactionDate in interactionDates )
+            foreach ( var transactionDate in transactionDates )
             {
+                if ( !transactionDate.HasValue )
+                {
+                    // Nothing we can do without a date
+                    continue;
+                }
+
                 if ( accumulation == null )
                 {
-                    accumulation = new ComputedStreak( interactionDate );
+                    accumulation = new ComputedStreak( transactionDate.Value );
                 }
 
                 // Increment the accumulation
                 accumulation.Count++;
-                accumulation.EndDate = interactionDate;
+                accumulation.EndDate = transactionDate;
 
                 // Check for a fulfilled attempt
                 if ( accumulation.Count >= numberToAccumulate )
@@ -491,85 +488,182 @@ namespace Rock.Achievement.Component
             return attempts;
         }
 
-        #region Helpers
-
         /// <summary>
-        /// Gets the interaction channel unique identifier.
+        /// Gets the financial account unique identifier.
         /// </summary>
         /// <param name="achievementTypeCache">The achievement type cache.</param>
         /// <returns></returns>
-        private Guid? GetInteractionChannelGuid( AchievementTypeCache achievementTypeCache )
+        private Guid? GetFinancialAccountGuid( AchievementTypeCache achievementTypeCache )
         {
-            var delimited = GetAttributeValue( achievementTypeCache, AttributeKey.InteractionChannelComponent );
+            var delimited = GetAttributeValue( achievementTypeCache, AttributeKey.FinancialAccount );
             var guids = delimited.SplitDelimitedValues().AsGuidOrNullList();
             return guids.FirstOrDefault();
         }
 
         /// <summary>
-        /// Gets the interaction component unique identifier.
+        /// Gets the financial account.
         /// </summary>
         /// <param name="achievementTypeCache">The achievement type cache.</param>
-        /// <returns></returns>
-        private Guid? GetInteractionComponentGuid( AchievementTypeCache achievementTypeCache )
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
+        private FinancialAccount GetFinancialAccount ( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
         {
-            var delimited = GetAttributeValue( achievementTypeCache, AttributeKey.InteractionChannelComponent );
-            var guids = delimited.SplitDelimitedValues().AsGuidOrNullList();
-            return guids.Count == 2 ? guids[1] : null;
+            if ( null == rockContext )
+            {
+                rockContext = new RockContext();
+            }
+
+            var guid = GetFinancialAccountGuid( achievementTypeCache );
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var accountService = new FinancialAccountService( rockContext );
+            return accountService.GetByGuids( new List<Guid>() { guid.Value } ).FirstOrDefault();
         }
 
         /// <summary>
-        /// Gets the interaction channel cache.
+        /// Gets the financial account identifier.
         /// </summary>
         /// <param name="achievementTypeCache">The achievement type cache.</param>
-        /// <returns></returns>
-        private InteractionChannelCache GetInteractionChannelCache(AchievementTypeCache achievementTypeCache)
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
+        private int? GetFinancialAccountId ( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
         {
-            var guid = GetInteractionChannelGuid( achievementTypeCache );
-            return guid.HasValue ? InteractionChannelCache.Get( guid.Value ) : null;
+            if ( null == rockContext )
+            {
+                rockContext = new RockContext();
+            }
+
+            var guid = GetFinancialAccountGuid( achievementTypeCache );
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var accountService = new FinancialAccountService( rockContext );
+            return accountService.GetId( guid.Value );
         }
 
         /// <summary>
-        /// Gets the interaction component cache.
+        /// Gets the financial account name.
         /// </summary>
         /// <param name="achievementTypeCache">The achievement type cache.</param>
-        /// <returns></returns>
-        private InteractionComponentCache GetInteractionComponentCache( AchievementTypeCache achievementTypeCache )
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
+        private string GetFinancialAccountName ( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
         {
-            var guid = GetInteractionComponentGuid( achievementTypeCache );
-            return guid.HasValue ? InteractionComponentCache.Get( guid.Value ) : null;
+            if ( null == rockContext )
+            {
+                rockContext = new RockContext();
+            }
+
+            var guid = GetFinancialAccountGuid( achievementTypeCache );
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var accountService = new FinancialAccountService( rockContext );
+            return accountService.GetSelect( guid.Value, a => a.Name );
         }
 
         /// <summary>
-        /// Gets the interaction dates.
+        /// Gets the financial transactions query.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private IQueryable<FinancialTransaction> GetFinancialTransactionQuery( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
+        {
+            if ( null == rockContext )
+            {
+                rockContext = new RockContext();
+            }
+
+            var includeChildAccounts = GetAttributeValue( achievementTypeCache, AttributeKey.IncludeChildFinancialAccounts ).AsBoolean();
+            var attributeMinDate = GetAttributeValue( achievementTypeCache, AttributeKey.StartDateTime ).AsDateTime();
+            var attributeMaxDate = GetAttributeValue( achievementTypeCache, AttributeKey.EndDateTime ).AsDateTime();
+
+            // Get the account identifier for this achievement type
+            var accountId = GetFinancialAccountId( achievementTypeCache, rockContext );
+            if ( !accountId.HasValue )
+            {
+                return null;
+            }
+
+            // For the include child accounts option to work we need to get the descendents for this Type
+            var accountService = new FinancialAccountService( rockContext );
+            var accountDescendentIds = includeChildAccounts ? accountService.GetAllDescendentIds( accountId.Value ).ToList() : new List<int>();
+
+            var transactionService = new FinancialTransactionService( rockContext );
+
+            var query = transactionService.Queryable()
+                .AsNoTracking()
+                .Where( t =>
+                    t.AuthorizedPersonAliasId.HasValue &&
+                    t.RefundDetails == null &&
+                    t.TransactionDetails.Any( a =>
+                        a.Amount > 0 &&
+                        ( a.AccountId == accountId ||
+                        accountDescendentIds.Contains( a.AccountId ) ) ) );
+
+            if ( attributeMinDate.HasValue )
+            {
+                query = query.Where( t => t.TransactionDateTime >= attributeMinDate.Value );
+            }
+
+            if ( attributeMaxDate.HasValue )
+            {
+                var dayAfterMaxDate = attributeMaxDate.Value.AddDays( 1 );
+                query = query.Where( t => t.TransactionDateTime < dayAfterMaxDate );
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the transaction dates for the specified person.
         /// </summary>
         /// <param name="achievementTypeCache">The achievementTypeCache.</param>
-        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="personId">The person alias identifier.</param>
         /// <param name="minDate">The minimum date.</param>
         /// <param name="maxDate">The maximum date.</param>
         /// <returns></returns>
-        private List<DateTime> GetInteractionDatesByPerson( AchievementTypeCache achievementTypeCache, int personAliasId, DateTime minDate, DateTime maxDate )
+        private List<DateTime?> GetOrderedFinancialTransactionDatesByPerson( AchievementTypeCache achievementTypeCache, int personId, DateTime minDate, DateTime maxDate )
         {
             var rockContext = new RockContext();
-            var query = GetSourceEntitiesQuery( achievementTypeCache, rockContext ) as IQueryable<Interaction>;
+            var query = GetSourceEntitiesQuery( achievementTypeCache, rockContext ) as IQueryable<FinancialTransaction>;
             var dayAfterMaxDate = maxDate.AddDays( 1 );
 
-            var personAliasService = new PersonAliasService( rockContext );
-            var personAliasQuery = personAliasService
+            // Get the Person's Giving ID
+            var givingId = new PersonService( rockContext ).GetSelect( personId, p => p.GivingId );
+
+            // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+            var personAliasQuery = new PersonAliasService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( pa => pa.Id == personAliasId )
-                .SelectMany( pa => pa.Person.Aliases )
+                .Where( pa => pa.Person.GivingId == givingId )
                 .Select( pa => pa.Id );
 
             return query
                 .AsNoTracking()
                 .Where( i =>
-                    i.PersonAliasId.HasValue &&
-                    personAliasQuery.Contains(i.PersonAliasId.Value) &&
-                    i.InteractionDateTime >= minDate &&
-                    i.InteractionDateTime < dayAfterMaxDate )
-                .Select( i => i.InteractionDateTime )
-                .ToList()
+                    i.AuthorizedPersonAliasId.HasValue &&
+                    personAliasQuery.Contains( i.AuthorizedPersonAliasId.Value ) &&
+                    i.TransactionDateTime >= minDate &&
+                    i.TransactionDateTime < dayAfterMaxDate )
+                .Select( i => i.TransactionDateTime )
                 .OrderBy( d => d )
                 .ToList();
         }
@@ -595,6 +689,6 @@ namespace Rock.Achievement.Component
             };
         }
 
-        #endregion Helpers
+        #endregion
     }
 }
