@@ -277,6 +277,10 @@
     <Compile Include="Migrations\202112141825274_CodeGenerated_20211214.Designer.cs">
       <DependentUpon>202112141825274_CodeGenerated_20211214.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202112151603442_Rollup_20211215.cs" />
+    <Compile Include="Migrations\202112151603442_Rollup_20211215.Designer.cs">
+      <DependentUpon>202112151603442_Rollup_20211215.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -1044,6 +1048,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202112141825274_CodeGenerated_20211214.resx">
       <DependentUpon>202112141825274_CodeGenerated_20211214.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112151603442_Rollup_20211215.resx">
+      <DependentUpon>202112151603442_Rollup_20211215.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
