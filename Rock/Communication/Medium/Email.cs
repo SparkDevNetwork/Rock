@@ -61,7 +61,7 @@ You can view an online version of this email here:
 
     [BooleanField( "CSS Inlining Enabled",
         Description = "Enable to move CSS styles to inline attributes. This can help maximize compatibility with email clients.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Key = "CSSInliningEnabled",
         Order = 4)]
     public class Email : MediumComponent
