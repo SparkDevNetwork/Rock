@@ -33,15 +33,15 @@ namespace Rock.Migrations
             AddColumn( "dbo.Group", "ElevatedSecurityLevel", c => c.Int( nullable: false ) );
 
             Sql( $@"
--- Update all existing Security Role groups to ElevatedSecurityLevel - High (but then change RSR Prayer Access ElevatedSecurityLevel to low)
+-- Update all existing IsSystem Security Role groups to ElevatedSecurityLevel - High (but then change RSR Prayer Access ElevatedSecurityLevel to low)
 UPDATE [Group]
 SET ElevatedSecurityLevel = 2
-WHERE [GroupTypeId] IN (
+WHERE ([GroupTypeId] IN (
         SELECT Id
         FROM [GroupType]
         WHERE [Guid] = '{Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE}'
         )
-    OR IsSecurityRole = 1
+    OR IsSecurityRole = 1) AND [IsSystem] = 1
 
 -- SET RSR Prayer Access ElevatedSecurityLevel to low
 UPDATE [Group]
