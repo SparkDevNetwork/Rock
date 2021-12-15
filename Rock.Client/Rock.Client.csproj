@@ -83,6 +83,7 @@
     <Compile Include="CodeGenerated\Audit.cs" />
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
+    <Compile Include="CodeGenerated\AuthAuditLog.cs" />
     <Compile Include="CodeGenerated\AuthClaim.cs" />
     <Compile Include="CodeGenerated\AuthClient.cs" />
     <Compile Include="CodeGenerated\AuthScope.cs" />
@@ -91,6 +92,8 @@
     <Compile Include="CodeGenerated\BenevolenceRequest.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequestDocument.cs" />
     <Compile Include="CodeGenerated\BenevolenceResult.cs" />
+    <Compile Include="CodeGenerated\BenevolenceType.cs" />
+    <Compile Include="CodeGenerated\BenevolenceWorkflow.cs" />
     <Compile Include="CodeGenerated\BinaryFile.cs" />
     <Compile Include="CodeGenerated\BinaryFileData.cs" />
     <Compile Include="CodeGenerated\BinaryFileType.cs" />
@@ -116,6 +119,7 @@
     <Compile Include="CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestWorkflow.cs" />
     <Compile Include="CodeGenerated\ConnectionStatus.cs" />
+    <Compile Include="CodeGenerated\ConnectionStatusAutomation.cs" />
     <Compile Include="CodeGenerated\ConnectionType.cs" />
     <Compile Include="CodeGenerated\ConnectionWorkflow.cs" />
     <Compile Include="CodeGenerated\ContentChannel.cs" />
