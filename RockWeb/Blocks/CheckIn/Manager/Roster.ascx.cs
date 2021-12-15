@@ -105,11 +105,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
         DefaultBooleanValue = false,
         Order = 9 )]
 
-    [CategoryField(
+    [AttributeCategoryField(
         "Check-in Roster Alert Icon Category",
         Description = "The Person Attribute category to get the Alert Icon attributes from",
         Key = AttributeKey.CheckInRosterAlertIconCategory,
         DefaultValue = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_CHECK_IN_ROSTER_ALERT_ICON,
+        EntityType = typeof( Rock.Model.Person ),
         AllowMultiple = false,
         Order = 10
         )]
