@@ -275,6 +275,11 @@ namespace Rock.SystemGuid
         public const string CHECK_IN_MANAGER_ATTENDANCE_DETAIL = "758ECFCD-9E20-48B5-827B-973492E39C0D";
 
         /// <summary>
+        /// The check in manager person attendance change history
+        /// </summary>
+        public const string CHECK_IN_MANAGER_PERSON_ATTENDANCE_CHANGE_HISTORY = "185BFEA9-9E95-4B8D-836B-87AF36BE6109";
+
+        /// <summary>
         /// The Check-in Manager Live Metrics page
         /// </summary>
         public const string CHECK_IN_MANAGER_LIVE_METRICS = "04F70D50-5D27-4C12-A76D-B25E6E4CB177";

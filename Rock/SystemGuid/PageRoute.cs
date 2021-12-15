@@ -22,9 +22,14 @@ namespace Rock.SystemGuid
     public static class PageRoute
     {
         /// <summary>
-        /// The CheckinManager route guid
+        /// The /checkinmanager route guid
         /// </summary>
         public const string CHECK_IN_MANAGER = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48";
+
+        /// <summary>
+        /// The /checkinmanager/attendance-detail route guid
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ATTENDANCE_DETAIL = "FB89DA07-CB29-4786-85FF-8814F43511B2";
 
         /// <summary>
         /// Gets the Campus Detail > Group Member Detail page route guid

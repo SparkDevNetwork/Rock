@@ -96,6 +96,11 @@ namespace Rock.SystemGuid
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
 
         /// <summary>
+        /// The Person legal note attribute
+        /// </summary>
+        public const string PERSON_LEGAL_NOTE = "F832AB6F-B684-4EEA-8DB4-C54B895C79ED";
+
+        /// <summary>
         /// The person attribute for the person's giving envelope number
         /// </summary>
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";

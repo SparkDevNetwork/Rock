@@ -92,6 +92,11 @@ namespace Rock.Web.UI.Controls
         protected RockTextBox _tbIconCssClass;
 
         /// <summary>
+        /// The attribute color picker
+        /// </summary>
+        protected ColorPicker _attributeColorPicker;
+
+        /// <summary>
         /// Required control
         /// </summary>
         protected RockCheckBox _cbRequired;
@@ -521,13 +526,8 @@ namespace Rock.Web.UI.Controls
                 _lKey.Text = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The icon CSS class.
-        /// </value>
+        
+        /// <inheritdoc cref="Rock.Model.Attribute.IconCssClass"/>
         public string IconCssClass
         {
             get
@@ -539,6 +539,21 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbIconCssClass.Text = value;
+            }
+        }
+
+        /// <inheritdoc cref="Rock.Model.Attribute.AttributeColor"/>
+        public string AttributeColor
+        {
+            get
+            {
+                EnsureChildControls();
+                return _attributeColorPicker.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _attributeColorPicker.Text = value;
             }
         }
 
@@ -1415,6 +1430,12 @@ namespace Rock.Web.UI.Controls
             _tbIconCssClass.Label = "Icon CSS Class";
             pnlAdvancedTopRowCol1.Controls.Add( _tbIconCssClass );
 
+            _attributeColorPicker = new ColorPicker();
+            _attributeColorPicker.ID = "_attributeColorPicker";
+            _attributeColorPicker.Label = "Attribute Color";
+            _attributeColorPicker.Help = "The color used to visually distinguish this attribute.";
+            pnlAdvancedTopRowCol1.Controls.Add( _attributeColorPicker );
+
             _cbEnableHistory = new RockCheckBox();
             _cbEnableHistory.ID = "_cbEnableHistory";
             _cbEnableHistory.Label = "Enable History";
@@ -1545,6 +1566,7 @@ namespace Rock.Web.UI.Controls
             _tbKey.ValidationGroup = validationGroup;
             _cvKey.ValidationGroup = validationGroup;
             _tbIconCssClass.ValidationGroup = validationGroup;
+            _attributeColorPicker.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
             _cbShowOnBulk.ValidationGroup = validationGroup;
@@ -1798,6 +1820,7 @@ namespace Rock.Web.UI.Controls
                 this.Name = attribute.Name;
                 this.Key = attribute.Key;
                 this.IconCssClass = attribute.IconCssClass;
+                this.AttributeColor = attribute.AttributeColor;
                 this.CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
                 this.Description = attribute.Description;
                 this.Required = attribute.IsRequired;
@@ -1869,6 +1892,7 @@ namespace Rock.Web.UI.Controls
                 attribute.Name = this.Name;
                 attribute.Key = this.Key;
                 attribute.IconCssClass = this.IconCssClass;
+                attribute.AttributeColor = this.AttributeColor;
                 attribute.Description = this.Description;
                 attribute.FieldTypeId = this.AttributeFieldTypeId;
                 attribute.IsMultiValue = false;

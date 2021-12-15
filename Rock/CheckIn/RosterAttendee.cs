@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -121,7 +120,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                if ( _person.AgeClassification == AgeClassification.Adult)
+                if ( _person.AgeClassification == AgeClassification.Adult )
                 {
                     return null;
                 }
@@ -198,6 +197,8 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if this instance has health note; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "No longer used. This will always return false." )]
+        [RockObsolete( "1.13" )]
         public bool HasHealthNote { get; private set; }
 
         /// <summary>
@@ -206,6 +207,8 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if this instance has legal note; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "No longer used. This will always return false." )]
+        [RockObsolete( "1.13" )]
         public bool HasLegalNote { get; private set; }
 
         /// <inheritdoc cref="Attendance.IsFirstTime"/>
@@ -301,13 +304,14 @@ namespace Rock.CheckIn
             }
         }
 
-        /// <summary>
-        /// Gets the check in time.
-        /// </summary>
-        /// <value>
-        /// The check in time.
-        /// </value>
+        /// <inheritdoc cref="Attendance.StartDateTime"/>
         public DateTime CheckInTime { get; private set; }
+
+        /// <inheritdoc cref="Attendance.PresentDateTime"/>
+        public DateTime? PresentDateTime { get; private set; }
+
+        /// <inheritdoc cref="Attendance.EndDateTime"/>
+        public DateTime? CheckOutTime { get; private set; }
 
         /// <summary>
         /// Gets the GroupTypeId (Checkin Area) of the group for the attendance
@@ -470,7 +474,7 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// Gets the current status.
-        /// As determined in precendance 
+        /// As determined in precedence 
         /// </summary>
         /// <returns></returns>
         private RosterAttendeeStatus GetCurrentStatus()
@@ -501,15 +505,14 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the attendee name HTML.
+        /// Gets the attendee name HTML which includes parent's names.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>System.String.</returns>
         public string GetAttendeeNameHtml()
         {
             var result = $@"
 <div class='name'>
     <span class='checkin-person-name js-checkin-person-name'>{this.FullName}</span>
-     <span class='badges d-sm-none d-print-inline'>{this.GetBadgesHtml( true )}</span>
 </div>
 <div class='parent-name small text-muted text-wrap'>{this.ParentNames}</div>";
 
@@ -526,43 +529,91 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the badges markup.
+        /// Gets the badges HTML.
         /// </summary>
         /// <param name="isMobile">if set to <c>true</c> [is mobile].</param>
-        /// <returns></returns>
+        /// <returns>System.String.</returns>
+        [Obsolete( "Use other GetBadgesHtml " )]
+        [RockObsolete( "1.13" )]
         public string GetBadgesHtml( bool isMobile )
+        {
+            List<AttributeCache> attributesForAlertIcons = new List<AttributeCache>();
+            attributesForAlertIcons.Add( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() ) );
+            attributesForAlertIcons.Add( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_LEGAL_NOTE.AsGuid() ) );
+            return GetBadgesHtml( attributesForAlertIcons );
+        }
+
+        /// <summary>
+        /// Gets the badges markup for FirstTime, IsBirthday and any custom alert attributes
+        /// </summary>
+        /// <param name="attributesForAlertIcons">The attributes for alert icons.</param>
+        /// <returns>System.String.</returns>
+        public string GetBadgesHtml( List<AttributeCache> attributesForAlertIcons )
         {
             var badgesSb = new StringBuilder();
 
             if ( this.IsBirthdayWeek )
             {
-                if ( isMobile )
-                {
-                    badgesSb.Append( "&nbsp;<i class='fa fa-birthday-cake text-success'></i>" );
-                }
-                else
-                {
-                    badgesSb.Append( $"<div class='text-center text-success pull-left'><div><i class='fa fa-birthday-cake fa-2x'></i></div><div style='font-size: small;'>{this.Birthday}</div></div>" );
-                }
+                badgesSb.Append( $"<div class='text-center text-success pull-left'><div><i class='fa fa-birthday-cake fa-2x'></i></div><div style='font-size: small;'>{this.Birthday}</div></div>" );
             }
 
-            var openDiv = isMobile ? string.Empty : "<div class='pull-left'>";
-            var closeDiv = isMobile ? string.Empty : "</div>";
-            var fa2x = isMobile ? string.Empty : " fa-2x";
-
-            if ( this.HasHealthNote )
+            if ( attributesForAlertIcons.Any() )
             {
-                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-notes-medical{fa2x} text-danger' title='Health Note'></i>{openDiv}" );
-            }
+                this.Person?.LoadAttributes();
 
-            if ( this.HasLegalNote )
-            {
-                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-clipboard{fa2x}' title='Legal Note'></i>{closeDiv}" );
+                foreach ( var attributeForAlertIcon in attributesForAlertIcons.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                {
+                    // only show the Icon if the attribute has a value, and if it is a boolean field type only show a value it is 'true'.
+                    var attributeValueAsType = this.Person?.GetAttributeValueAsType( attributeForAlertIcon.Key );
+                    if ( attributeValueAsType == null )
+                    {
+                        // don't show if it the attribute has a null value
+                        continue;
+                    }
+                    else if ( attributeValueAsType is bool boolValue )
+                    {
+                        // if is a boolean value and has a value of 'false', don't show the icon
+                        if ( !boolValue )
+                        {
+                            continue;
+                        }
+                    }
+                    else if ( attributeValueAsType is string stringValue )
+                    {
+                        // if is a string value, and has a blank/null value, don't show the icon
+                        if ( stringValue.IsNullOrWhiteSpace() )
+                        {
+                            continue;
+                        }
+                    }
+
+                    string attributeColor = attributeForAlertIcon.AttributeColor;
+
+                    /* if v12.x 
+                    if ( attributeForAlertIcon.Guid == Rock.SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() )
+                    {
+                        attributeColor = "#d4442e";
+                    }
+                    else
+                    {
+                        attributeColor = string.Empty;
+                    }*/
+
+                    string style = attributeColor.IsNotNullOrWhiteSpace() ? $"style='color: {attributeColor}' " : string.Empty;
+                    var iconCssClass = attributeForAlertIcon.IconCssClass;
+                    if ( iconCssClass.IsNullOrWhiteSpace() )
+                    {
+                        // use fa-square-o if icon css class is not specified on the attribute
+                        iconCssClass = "fa fa-square-o";
+                    }
+
+                    badgesSb.Append( $"<div class='pull-left'>&nbsp;<i class='{iconCssClass} fa-2x' title='{attributeForAlertIcon.Name}' {style} ></i></div>" );
+                }
             }
 
             if ( this.IsFirstTime )
             {
-                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-star{fa2x} text-warning' title='First Time'></i>{closeDiv}" );
+                badgesSb.Append( $"<div class='pull-left'>&nbsp;<i class='fa fa-star fa-2x text-warning' title='First Time'></i></div>" );
             }
 
             return badgesSb.ToString();
@@ -616,15 +667,17 @@ namespace Rock.CheckIn
                 this.UniqueServiceTimes.Add( serviceTime );
             }
 
-            // Status: if this Attendee has multiple AttendanceOccurrences, the highest AttendeeStatus value among them wins.
+            // Status: if this Attendee has multiple Attendances, the most recent attendaces
             var latestAttendance = this.Attendances
                 .OrderByDescending( a => a.StartDateTime )
                 .First();
 
             this.Statuses = this.Attendances.Select( s => GetRosterAttendeeStatus( s.EndDateTime, s.PresentDateTime ) ).ToArray();
 
-            // Check-in Time: if this Attendee has multiple AttendanceOccurrences, the latest StartDateTime value among them wins.
+            // If this Attendee has multiple Attendances, use the DateTime from the most recent
             this.CheckInTime = latestAttendance.StartDateTime;
+            this.PresentDateTime = latestAttendance.PresentDateTime;
+            this.CheckOutTime = latestAttendance.EndDateTime;
 
             this.GroupTypeId = latestAttendance.GroupTypeId;
 
@@ -786,29 +839,6 @@ namespace Rock.CheckIn
             var personIds = attendanceList.Select( a => a.PersonId ).Distinct().ToList();
 
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>() ?? 0;
-            const string Person_Allergy = "Allergy";
-            const string Person_LegalNotes = "LegalNotes";
-            Dictionary<int, List<string>> allergyLegalNoteAttributeValuesByPersonId;
-            if ( personIds.Any() )
-            {
-                allergyLegalNoteAttributeValuesByPersonId = new AttributeValueService( new RockContext() ).Queryable()
-                    .Where( a => a.Attribute.EntityTypeId == entityTypeIdPerson
-                        && ( a.Attribute.Key == Person_Allergy || a.Attribute.Key == Person_LegalNotes )
-                        && a.EntityId.HasValue
-                        && personIds.Contains( a.EntityId.Value )
-                        && a.Value != null && a.Value != "" )
-                    .Select( a => new
-                    {
-                        PersonId = a.EntityId.Value,
-                        AttributeKey = a.Attribute.Key,
-                    } ).ToList()
-                    .GroupBy( a => a.PersonId )
-                    .ToDictionary( k => k.Key, v => v.Select( a => a.AttributeKey ).ToList() );
-            }
-            else
-            {
-                allergyLegalNoteAttributeValuesByPersonId = new Dictionary<int, List<string>>();
-            }
 
             var attendees = new List<RosterAttendee>();
             foreach ( var attendance in attendanceList )
@@ -820,8 +850,6 @@ namespace Rock.CheckIn
                 if ( attendee == null )
                 {
                     attendee = new RosterAttendee( person );
-                    attendee.HasHealthNote = allergyLegalNoteAttributeValuesByPersonId.GetValueOrNull( person.Id )?.Contains( Person_Allergy ) ?? false;
-                    attendee.HasLegalNote = allergyLegalNoteAttributeValuesByPersonId.GetValueOrNull( person.Id )?.Contains( Person_LegalNotes ) ?? false;
                     attendees.Add( attendee );
                 }
 

@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 
+using System.Linq;
+
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -28,10 +31,20 @@ namespace Rock.Model
         internal class SaveHook : EntitySaveHook<Attendance>
         {
             /// <summary>
+            /// Changes to the Person's Attendance's Group, Schedule or Location 
+            /// </summary>
+            /// <value>The person attendance history change list.</value>
+            private History.HistoryChangeList PersonAttendanceHistoryChangeList { get; set; }
+
+            private int? preSavePersonAliasId { get; set; }
+
+            /// <summary>
             /// Method that will be called on an entity immediately before the item is saved by context
             /// </summary>
             protected override void PreSave()
             {
+                PersonAttendanceHistoryChangeList = new History.HistoryChangeList();
+
                 _isDeleted = State == EntityContextState.Deleted;
                 bool previousDidAttendValue;
 
@@ -56,6 +69,42 @@ namespace Rock.Model
                 {
                     var launchMemberAttendedGroupWorkflowMsg = GetLaunchMemberAttendedGroupWorkflowMessage();
                     launchMemberAttendedGroupWorkflowMsg.Send();
+                }
+
+                var attendance = this.Entity;
+
+                if ( State == EntityContextState.Modified )
+                {
+                    preSavePersonAliasId = attendance.PersonAliasId;
+                    var originalOccurrenceId = ( int? ) OriginalValues[nameof( attendance.OccurrenceId )];
+                    if ( originalOccurrenceId.HasValue && attendance.OccurrenceId != originalOccurrenceId.Value )
+                    {
+                        var attendanceOccurrenceService = new AttendanceOccurrenceService( this.RockContext );
+                        var originalOccurrence = attendanceOccurrenceService.GetNoTracking( originalOccurrenceId.Value );
+                        var currentOccurrence = attendanceOccurrenceService.GetNoTracking( attendance.OccurrenceId );
+                        if ( originalOccurrence != null && currentOccurrence != null )
+                        {
+                            if ( originalOccurrence.GroupId != currentOccurrence.GroupId )
+                            {
+                                History.EvaluateChange( PersonAttendanceHistoryChangeList, "Group", originalOccurrence.Group?.Name, currentOccurrence.Group?.Name );
+                            }
+
+                            if ( originalOccurrence.ScheduleId.HasValue && currentOccurrence.ScheduleId.HasValue && originalOccurrence.ScheduleId.Value != currentOccurrence.ScheduleId.Value )
+                            {
+                                History.EvaluateChange( PersonAttendanceHistoryChangeList, "Schedule", NamedScheduleCache.Get( originalOccurrence.ScheduleId.Value )?.Name, NamedScheduleCache.Get( currentOccurrence.ScheduleId.Value )?.Name );
+                            }
+
+                            if ( originalOccurrence.LocationId.HasValue && currentOccurrence.LocationId.HasValue && originalOccurrence.LocationId.Value != currentOccurrence.LocationId.Value )
+                            {
+                                History.EvaluateChange( PersonAttendanceHistoryChangeList, "Location", NamedLocationCache.Get( originalOccurrence.LocationId.Value )?.Name, NamedLocationCache.Get( currentOccurrence.LocationId.Value )?.Name );
+                            }
+                        }
+                    }
+                }
+                else if ( State == EntityContextState.Deleted )
+                {
+                    preSavePersonAliasId = ( int? ) OriginalValues[nameof( attendance.PersonAliasId )];
+                    PersonAttendanceHistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, null );
                 }
 
                 base.PreSave();
@@ -87,6 +136,35 @@ namespace Rock.Model
                     // If there are any, they need to be processed in this thread in case there are any achievement changes
                     // that need to be detected as a result of this attendance.
                     StreakTypeService.HandleAttendanceRecord( Entity.Id );
+                }
+
+                var rockContext = ( RockContext ) this.RockContext;
+
+                if ( PersonAttendanceHistoryChangeList?.Any() == true )
+                {
+                    var attendanceId = Entity.Id;
+
+                    if ( preSavePersonAliasId.HasValue )
+                    {
+                        var attendeePersonId = new PersonAliasService( this.RockContext ).GetPersonId( preSavePersonAliasId.Value );
+                        if ( attendeePersonId.HasValue )
+                        {
+                            var entityTypeType = typeof( Person );
+                            var relatedEntityTypeType = typeof( Attendance );
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                entityTypeType,
+                                Rock.SystemGuid.Category.HISTORY_ATTENDANCE_CHANGES.AsGuid(),
+                                attendeePersonId.Value,
+                                this.PersonAttendanceHistoryChangeList,
+                                $"Attendance {attendanceId}",
+                                relatedEntityTypeType,
+                                attendanceId,
+                                true,
+                                Entity.ModifiedByPersonAliasId,
+                                rockContext.SourceOfChange );
+                        }
+                    }
                 }
 
                 base.PostSave();
