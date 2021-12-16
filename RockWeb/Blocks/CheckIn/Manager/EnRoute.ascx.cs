@@ -343,10 +343,28 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            var occurrence = new AttendanceService( new RockContext() ).GetSelect( attendanceId.Value, s => s.Occurrence );
+            var attendanceInfo = new AttendanceService( new RockContext() ).GetSelect( attendanceId.Value, s => new {
+                s.Occurrence,
+                s.CampusId
+            } );
+
+            var occurrence = attendanceInfo?.Occurrence;
             if ( occurrence == null )
             {
                 return;
+            }
+
+            var attendanceCampusId = attendanceInfo?.CampusId;
+
+            if ( attendanceCampusId.HasValue )
+            {
+                // if the selected attendance is at specific campus, set the location picker to that campus's locations
+                var campusLocationId = CampusCache.Get( attendanceCampusId.Value )?.LocationId;
+                lpMovePersonLocation.RootLocationId = campusLocationId ?? 0;
+            }
+            else
+            {
+                lpMovePersonLocation.RootLocationId = 0;
             }
 
             // Location picker will list all named locations
