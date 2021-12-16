@@ -172,8 +172,7 @@ WHERE {targetColumn} NOT LIKE '%{newValue}%' AND [AttributeId] = @attributeId" )
                     {% endif %}
                 </td>
                 <td valign=""top"" style=''padding-bottom: 12px; min-width: 300px;''>
-                    <strong>{{ NoteData.AddedBy }} added a {{ NoteData.NoteType }} note to {{ Entity.Person.FullName }}.</strong><br />
-            <a href=""{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}Person/{{ Entity.PersonId }}"">Click here to go to {{ Entity.Person.FullName }}''s profile.</a>
+                    <strong>{{ NoteData.AddedBy }} added a {{ NoteData.NoteType }} note to <a href=""{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}Person/{{ Entity.PersonId }}"">{{ Entity.Person.FullName }}</a>.</strong><br />
                     {% if Entity.Person.Email != empty %}
                         Email: <a href=""mailto:{{ Entity.Person.Email }}"">{{ Entity.Person.Email }}</a><br />
                     {% endif %}
