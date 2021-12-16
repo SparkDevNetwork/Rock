@@ -32,7 +32,6 @@ namespace Rock.Migrations
             MediaAccountsPageDisplay();
             EnableCssInlining();
             FixContributionTemplatessRoute();
-            CleanupMigrationHistory();
         }
         
         /// <summary>
@@ -94,17 +93,6 @@ namespace Rock.Migrations
 	                SET [Route] =  'finance/settings/contribution-templates/{StatementTemplateId}'
 	                WHERE Id = @routeId
                 END" );
-        }
-
-        /// <summary>
-        /// Cleanups the migration history records except the last one.
-        /// </summary>
-        private void CleanupMigrationHistory()
-        {
-        Sql( @"
-            UPDATE [dbo].[__MigrationHistory]
-            SET [Model] = 0x
-            WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
         }
     }
 }
