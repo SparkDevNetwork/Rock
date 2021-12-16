@@ -262,6 +262,11 @@ namespace RockWeb.Blocks.Communication
             gIndividualRecipients.Actions.ShowAdd = false;
             gIndividualRecipients.ShowActionRow = false;
 
+            gRecipientList.DataKeyNames = new string[] { "Id" };
+            gRecipientList.GridRebind += gRecipientList_GridRebind;
+            gRecipientList.Actions.ShowAdd = false;
+            gRecipientList.ShowActionRow = false;
+
             btnUseSimpleEditor.Visible = !string.IsNullOrEmpty( this.GetAttributeValue( AttributeKey.SimpleCommunicationPage ) );
             pnlHeadingLabels.Visible = btnUseSimpleEditor.Visible;
 
@@ -875,6 +880,16 @@ function onTaskCompleted( resultData )
         private void gIndividualRecipients_GridRebind( object sender, GridRebindEventArgs e )
         {
             BindIndividualRecipientsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gRecipientList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void gRecipientList_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindCommunicationListRecipientsGrid();
         }
 
         /// <summary>
