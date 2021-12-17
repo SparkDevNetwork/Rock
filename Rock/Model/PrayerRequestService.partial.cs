@@ -191,6 +191,20 @@ namespace Rock.Model
                 }
             }
 
+            // Filter by group if it has been specified.
+            if ( options.GroupGuids?.Any() ?? false )
+            {
+                qryPrayerRequests = qryPrayerRequests
+                    .Where( a => options.GroupGuids.Contains( a.Group.Guid ) );
+            }
+
+            // If we are not filtering by group, then exclude any group requests
+            // unless the block setting including them is enabled.
+            if ( !(options.GroupGuids?.Any() ?? false ) && !options.IncludeGroupRequests )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( a => !a.GroupId.HasValue );
+            }
+
             return qryPrayerRequests;
         }
 
