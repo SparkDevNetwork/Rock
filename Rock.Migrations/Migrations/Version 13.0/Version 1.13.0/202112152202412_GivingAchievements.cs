@@ -64,15 +64,18 @@ namespace Rock.Migrations
                 DECLARE @RosterCategoryId int
                 SET @RosterCategoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{Rock.SystemGuid.Category.PERSON_ATTRIBUTES_CHECK_IN_ROSTER_ALERT_ICON}')
 
-                IF NOT EXISTS (
-                    SELECT *
-                    FROM [AttributeCategory]
-                    WHERE [AttributeId] = @LegalNoteAttributeId
-                    AND [CategoryId] = @RosterCategoryId )
-                BEGIN
-                    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
-                    VALUES( @LegalNoteAttributeId, @RosterCategoryId )
-                END" );
+                IF ( @LegalNoteAttributeId IS NOT NULL AND @RosterCategoryId IS NOT NULL ) BEGIN
+                    IF NOT EXISTS (
+                        SELECT *
+                        FROM [AttributeCategory]
+                        WHERE [AttributeId] = @LegalNoteAttributeId
+                        AND [CategoryId] = @RosterCategoryId )
+                    BEGIN
+                        INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
+                        VALUES( @LegalNoteAttributeId, @RosterCategoryId )
+                    END
+                END
+" );
 
             // Add Person Allergy to the Check-in Manager Roster Attributes category
             Sql( $@"
@@ -83,15 +86,18 @@ namespace Rock.Migrations
                 DECLARE @RosterCategoryId int
                 SET @RosterCategoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{Rock.SystemGuid.Category.PERSON_ATTRIBUTES_CHECK_IN_ROSTER_ALERT_ICON}')
 
-                IF NOT EXISTS (
-                    SELECT *
-                    FROM [AttributeCategory]
-                    WHERE [AttributeId] = @PersonAllergyAttributeId
-                    AND [CategoryId] = @RosterCategoryId )
-                BEGIN
-                    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
-                    VALUES( @PersonAllergyAttributeId, @RosterCategoryId )
-                END" );
+                IF ( @PersonAllergyAttributeId IS NOT NULL AND @RosterCategoryId IS NOT NULL ) BEGIN
+                    IF NOT EXISTS (
+                        SELECT *
+                        FROM [AttributeCategory]
+                        WHERE [AttributeId] = @PersonAllergyAttributeId
+                        AND [CategoryId] = @RosterCategoryId )
+                    BEGIN
+                        INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
+                        VALUES( @PersonAllergyAttributeId, @RosterCategoryId )
+                    END
+                END
+" );
 
             // Update IconCSS and AttributeColor on Person Legal Note and Person Allegry
             Sql( $@"
@@ -134,9 +140,13 @@ WHERE [Guid] = '{Rock.SystemGuid.Attribute.PERSON_ALLERGY}'
 
                 DELETE FROM [AttributeValue] WHERE [Guid] = '{HistoryAttendanceChangeUrlAttributeValueGuid}'
 
-                INSERT INTO [AttributeValue] ([IsSystem],[AttributeId],[EntityId],[Value],[Guid])
-                VALUES(
-                    1,@AttributeId,@EntityId,'~/checkinmanager/attendance-detail?attendanceId={{0}}','{HistoryAttendanceChangeUrlAttributeValueGuid}')" );
+                IF ( @AttributeId IS NOT NULL AND @EntityId IS NOT NULL ) BEGIN
+                    INSERT INTO [AttributeValue] ([IsSystem],[AttributeId],[EntityId],[Value],[Guid])
+                    VALUES(
+                        1,@AttributeId,@EntityId,'~/checkinmanager/attendance-detail?attendanceId={{0}}','{HistoryAttendanceChangeUrlAttributeValueGuid}')
+                END
+
+" );
         }
 
         /// <summary>
