@@ -447,7 +447,7 @@ namespace Rock.Financial
             for ( int paymentNumber = 0; paymentNumber < randomNumberOfPayments; paymentNumber++ )
             {
                 // get a random scheduled Transaction (if any)
-                var scheduledTransaction = scheduledTransactionList.OrderBy( a => a.Guid ).FirstOrDefault();
+                var scheduledTransaction = scheduledTransactionList.OrderBy( a => Guid.NewGuid() ).FirstOrDefault();
                 if ( scheduledTransaction == null )
                 {
                     return new List<Payment>();

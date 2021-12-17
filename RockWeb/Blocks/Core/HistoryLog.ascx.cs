@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.Heading )]
 
     [CategoryField( "Category",
-        Description = "The attribute category to use to control which person attribute alert icons to show in addition to the 'is first-time' and 'birthday' indicators. If the person's attribute value is non-empty or non-false, it will show the attribute's CSS Icon",
+        Description = "When selected, only history for this category will be shown and the Category column will be hidden.",
         IsRequired = false,
         AllowMultiple = false,
         Order = 1,
