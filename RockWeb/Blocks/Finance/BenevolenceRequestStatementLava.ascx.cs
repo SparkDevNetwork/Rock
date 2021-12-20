@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,10 +33,10 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
-    [DisplayName("Benevolence Request Statement Lava")]
+    [DisplayName( "Benevolence Request Statement Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a Lava based Benevolence Request detail." )]
-    [CodeEditorField("Lava Template", "The Lava template to use for the Benevolence Request statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"
+    [CodeEditorField( "Lava Template", "The Lava template to use for the Benevolence Request statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"
 {% capture pageTitle %}
     Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }}
 {% endcapture %}
@@ -115,9 +115,9 @@ namespace RockWeb.Blocks.Finance
             <p>
                 <strong>{{ caseworker.FullName }}</strong> <br />
                 {{ caseworker | Address:'Home' }} <br />
-				{% assign CaseWorkerHome = caseworker | PhoneNumber:'Home' %}
-				{% assign CaseWorkerCell = caseworker | PhoneNumber:'Mobile' %}
-				{% assign CaseWorkerWork = caseworker | PhoneNumber:'Work' %}
+                {% assign CaseWorkerHome = caseworker | PhoneNumber:'Home' %}
+                {% assign CaseWorkerCell = caseworker | PhoneNumber:'Mobile' %}
+                {% assign CaseWorkerWork = caseworker | PhoneNumber:'Work' %}
                 {% if CaseWorkerHome %}
                    Home Phone: {{ CaseWorkerHome }} <br />
                 {% endif %}
@@ -166,12 +166,12 @@ namespace RockWeb.Blocks.Finance
             </table>
         </div>
     </div>
-{% endif %}", order: 2)]
+{% endif %}", order: 2 )]
     public partial class BenevolenceRequestStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
+        // Overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -223,26 +223,20 @@ namespace RockWeb.Blocks.Finance
         private void DisplayResults()
         {
             RockContext rockContext = new RockContext();
-
-            if (Request["BenevolenceRequestId"] != null)
+            var benevolenceRequestId = PageParameter( "BenevolenceRequestId" ).AsInteger();
+            if ( benevolenceRequestId > 0 )
             {
-                int id;
-                int.TryParse(Request["BenevolenceRequestId"].ToString(), out id);
-
-
-                var benevolenceRequest = new BenevolenceRequestService(rockContext).Get(id);
+                var benevolenceRequest = new BenevolenceRequestService( rockContext ).Get( benevolenceRequestId );
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add("Request", benevolenceRequest);      
+                mergeFields.Add( "Request", benevolenceRequest );
 
-                var template = GetAttributeValue("LavaTemplate");
+                var template = GetAttributeValue( "LavaTemplate" );
 
-                lResults.Text = template.ResolveMergeFields(mergeFields);
-
+                lResults.Text = template.ResolveMergeFields( mergeFields );
             }
         }
 
         #endregion
-        
     }
 }

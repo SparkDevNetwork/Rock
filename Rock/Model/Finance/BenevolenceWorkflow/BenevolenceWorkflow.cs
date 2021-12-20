@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Lava;
 
@@ -51,14 +52,14 @@ namespace Rock.Model
         [DataMember]
         public int WorkflowTypeId { get; set; }
 
-        /// <summary>
+              /// <summary>
         /// Gets or sets the type of the trigger.
         /// </summary>
         /// <value>
         /// The type of the trigger.
         /// </value>
         [DataMember]
-        public ConnectionWorkflowTriggerType TriggerType { get; set; }
+        public BenevolenceWorkflowTriggerType TriggerType { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow qualifier.
