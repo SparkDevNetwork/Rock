@@ -67,7 +67,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
         {
             var clientConfiguration = base.GetClientConfigurationValues( configurationValues );
             int? definedTypeId = clientConfiguration.ContainsKey( DEFINED_TYPE_KEY ) ? clientConfiguration[DEFINED_TYPE_KEY].AsIntegerOrNull() : null;
@@ -76,8 +76,8 @@ namespace Rock.Field.Types
             {
                 var definedType = DefinedTypeCache.Get( definedTypeId.Value );
 
-                int[] selectableValues = configurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && configurationValues[SELECTABLE_VALUES_KEY].Value.IsNotNullOrWhiteSpace()
-                    ? configurationValues[SELECTABLE_VALUES_KEY].Value.Split( ',' ).Select( int.Parse ).ToArray()
+                int[] selectableValues = configurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && configurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
+                    ? configurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
                     : null;
 
                 var includeInactive = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
@@ -410,14 +410,14 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             string formattedValue = string.Empty;
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                    ? configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean()
+                    ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
                     : false;
 
                 var names = new List<string>();
@@ -437,7 +437,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
         {
             string formattedValue = string.Empty;
 
@@ -470,8 +470,8 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues )
-                : GetCondensedTextValue( value, configurationValues );
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         /// <summary>
@@ -512,11 +512,11 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
         {
             var guids = value.SplitDelimitedValues().AsGuidList();
             bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                ? configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean()
+                ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
                 : false;
 
             var definedValues = new List<DefinedValueCache>();
@@ -538,7 +538,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
         {
             var value = clientValue.FromJsonOrNull<ClientValue>();
 

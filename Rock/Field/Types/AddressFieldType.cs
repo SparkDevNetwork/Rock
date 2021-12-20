@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             string formattedValue = string.Empty;
 
@@ -64,7 +65,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = GetTextValue( value, configurationValues );
+            string formattedValue = GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
@@ -74,7 +75,7 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
         {
             var guid = value.AsGuidOrNull();
             Location location = null;
@@ -109,7 +110,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
         {
             var addressValue = clientValue.FromJsonOrNull<AddressFieldValue>();
 

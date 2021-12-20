@@ -147,6 +147,8 @@ ParentPage: Check-in Type */
     CheckInManager = "A4DCE339-9C11-40CA-9A02-D2FE64EA164B",
     /** The check in manager attendance detail */
     CheckInManagerAttendanceDetail = "758ECFCD-9E20-48B5-827B-973492E39C0D",
+    /** The check in manager person attendance change history */
+    CheckInManagerPersonAttendanceChangeHistory = "185BFEA9-9E95-4B8D-836B-87AF36BE6109",
     /** The Check-in Manager Live Metrics page */
     CheckInManagerLiveMetrics = "04F70D50-5D27-4C12-A76D-B25E6E4CB177",
     /** The Login page under the Check-in Manager page */
