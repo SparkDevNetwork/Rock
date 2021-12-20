@@ -27,7 +27,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             // Add the ShowFinancialResults to the BenevolenceType table
-            AddColumn( "dbo.BenevolenceType", "ShowFinancialResults", c => c.Boolean( nullable: false, defaultValue: false ) );
+            AddColumn( "dbo.BenevolenceType", "ShowFinancialResults", c => c.Boolean( nullable: false, defaultValue: true ) );
 
             // Add Page - Internal Name: Benevolence Types - Site: Rock RMS
             RockMigrationHelper.AddPage( true, "D893CCCC-368A-42CF-B36E-69991128F016", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Benevolence Types", string.Empty, "C6BE9CF1-FFE9-4DC1-8472-865FD93B89A8", string.Empty );
