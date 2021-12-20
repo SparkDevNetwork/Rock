@@ -34,7 +34,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             if ( string.IsNullOrWhiteSpace( value ) )
             {
@@ -58,8 +58,8 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues )
-                : GetCondensedTextValue( value, configurationValues );
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

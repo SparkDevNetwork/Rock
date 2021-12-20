@@ -100,6 +100,8 @@ export const enum EntityType {
     Group = "9BBFDA11-0D22-40D5-902F-60ADFBC88987",
     /** The guid for the Rock.Model.GroupMember entity. */
     GroupMember = "49668B95-FEDC-43DD-8085-D2B0D6343C48",
+    /** The guid for the Rock.Model.History entity. */
+    History = "546D5F43-1184-47C9-8265-2D7BF4E1BCA5",
     /** The HTTP module component */
     HttpModuleComponent = "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
     /** The guid for  */

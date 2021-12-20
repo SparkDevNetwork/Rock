@@ -34,6 +34,8 @@ export const enum Category {
     HistoryEventRegistration = "813DF1A5-ADBD-481C-AC1D-884F0FA7AE77",
     /** History changes for person */
     HistoryPerson = "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7",
+    /** The history attendance changes for a person */
+    HistoryAttendanceChanges = "BF6ABCD3-AD41-4D54-998F-B83C302756E3",
     /** History of person demographic changes */
     HistoryPersonDemographicChanges = "51D3EC5A-D079-45ED-909E-B0AB2FD06835",
     /** History of Family changes */
@@ -74,6 +76,8 @@ export const enum Category {
     PersonAttributesFinanceInternal = "3030B3E2-91EE-4833-BACE-47F775FA98A0",
     /** The category for person attributes for DISC */
     PersonAttributesDisc = "0B187C81-2106-4875-82B6-FBF1277AE23B",
+    /** The category for the Check-in Manager Roster Alert Icons */
+    PersonAttributesCheckInRosterAlertIcon = "367571D1-62D3-4948-B588-C0FDCE00CF27",
     /** The category for person attributes for Personality Assessment Data */
     PersonAttributesPersonalityAssessmentData = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969",
     /** Obsolete. Use  instead */

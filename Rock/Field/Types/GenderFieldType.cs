@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -99,7 +100,7 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             if (value.IsNullOrWhiteSpace())
             {
@@ -118,8 +119,8 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues )
-                : GetCondensedTextValue( value, configurationValues );
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         /// <inheritdoc />

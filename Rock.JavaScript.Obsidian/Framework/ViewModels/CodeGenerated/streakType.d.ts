@@ -34,6 +34,7 @@ export type StreakType = IEntity & {
     requiresEnrollment?: boolean;
     startDate?: string;
     structureEntityId?: number | null;
+    structureSettingsJSON?: string | null;
     structureType?: number | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

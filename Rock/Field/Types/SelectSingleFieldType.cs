@@ -56,7 +56,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
         {
             var clientValues = base.GetClientConfigurationValues( configurationValues );
 
@@ -180,7 +180,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
             {
@@ -206,7 +206,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var formattedValue = GetTextValue( value, configurationValues );
+            var formattedValue = GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
