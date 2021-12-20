@@ -204,6 +204,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
+
         #region Methods
 
         /// <summary>

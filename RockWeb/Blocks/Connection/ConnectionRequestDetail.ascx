@@ -135,7 +135,7 @@
                                 <asp:Repeater ID="rptRequestWorkflows" runat="server">
                                     <ItemTemplate>
                                         <asp:LinkButton ID="lbRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
-                                        <%# Eval("WorkflowType.Name") %>
+                                         <i class="<%# Eval("WorkflowType.IconCssClass") %>"></i>&nbsp;<%# Eval("WorkflowType.Name") %>
                                         </asp:LinkButton>
                                     </ItemTemplate>
                                 </asp:Repeater>

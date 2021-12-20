@@ -7,7 +7,14 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-paste"></i> Benevolence Requests</h1>
+                    <h1 class="panel-title"><i class="fa fa-paste"></i>Benevolence Requests</h1>
+                    <div class="panel-labels d-flex align-items-center">
+                        <asp:Literal ID="lStatusBarContent" runat="server" />
+
+                        <asp:LinkButton ID="lbBenevolenceTypes" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbBenevolenceTypes_Click" CausesValidation="false">
+                            <i title="Options" class="fa fa-gear"></i>
+                        </asp:LinkButton>
+                    </div>
                 </div>
                 <div class="panel-body">
 
@@ -17,13 +24,14 @@
                             <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                             <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                             <Rock:RockTextBox ID="tbGovernmentId" runat="server" Label="Government ID" />
-                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" EnhanceForLongLists="true" />
+                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Assigned To" EnhanceForLongLists="true" />
                             <Rock:DefinedValuePicker ID="dvpResult" runat="server" Label="Result" DataTextField="Value" DataValueField="Id" />
                             <Rock:DefinedValuePicker ID="dvpStatus" runat="server" Label="Request Status" DataTextField="Value" DataValueField="Id" />
+                            <Rock:RockCheckBoxList ID="cblBenevolenceType" runat="server" Label="Benevolence Types" RepeatDirection="Horizontal" RepeatColumns="2" />
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gList" runat="server" DisplayType="Full" AllowSorting="true" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_Edit" ExportSource="DataSource">
+                        <Rock:Grid ID="gList" runat="server" DisplayType="Full" AllowSorting="true" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_View" ExportSource="DataSource">
                             <Columns>
                                 <Rock:RockBoundField DataField="RequestDateTime" HeaderText="Date" DataFormatString="{0:d}" SortExpression="RequestDateTime" />
                                 <Rock:RockBoundField DataField="Campus.Name" HeaderText="Campus" SortExpression="Campus.Name" />
@@ -39,7 +47,7 @@
 
                                 <Rock:RockBoundField DataField="RequestText" HeaderText="Request" SortExpression="RequestText" />
 
-                                <Rock:PersonField DataField="CaseWorkerPersonAlias.Person" SortExpression="CaseWorkerPersonAlias.Person.LastName, CaseWorkerPersonAlias.Person.NickName" HeaderText="Case Worker" ColumnPriority="Tablet" />
+                                <Rock:PersonField DataField="CaseWorkerPersonAlias.Person" SortExpression="CaseWorkerPersonAlias.Person.LastName, CaseWorkerPersonAlias.Person.NickName" HeaderText="Assigned To" ColumnPriority="Tablet" />
 
                                 <Rock:RockBoundField DataField="ResultSummary" HeaderText="Result Summary" SortExpression="ResultSummary" ColumnPriority="DesktopLarge" />
 

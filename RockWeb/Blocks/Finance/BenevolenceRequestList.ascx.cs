@@ -13,12 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -34,18 +35,68 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// Block used to list Benevolence Requests
-    /// </summary>
+    #region Block Attributes
     [DisplayName( "Benevolence Request List" )]
     [Category( "Finance" )]
     [Description( "Block used to list Benevolence Requests." )]
 
     [ContextAware( typeof( Person ) )]
-    [LinkedPage( "Detail Page" )]
     [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
+
+    [LinkedPage( "Detail Page",
+        Description = "Page used to modify and create benevolence requests.",
+        IsRequired = true,
+        Order =1,
+        DefaultValue = Rock.SystemGuid.Page.BENEVOLENCE_REQUEST_DETAIL,
+        Key = AttributeKey.BenevolenceRequestDetailPageKey)]
+    [LinkedPage(
+        "Configuration Page",
+        Description = "Page used to modify and create benevolence type.",
+        IsRequired = true,
+        Order = 2,
+        DefaultValue = Rock.SystemGuid.Page.BENEVOLENCE_TYPES,
+        Key = AttributeKey.ConfigurationPage )]
+    [CustomCheckboxListField( "Hide Columns on Grid",
+        Description = "The grid columns that should be hidden.",
+        ListSource = "Assigned To, Government Id, Total Amount, Total Results",
+        IsRequired = false,
+        Order = 3,
+        RepeatColumns = 3,
+        RepeatDirection = RepeatDirection.Horizontal,
+        Key = AttributeKey.HideColumnsAttributeKey )]
+    [CustomCheckboxListField( "Include Benevolence Types",
+        Description = "The benevolence types to display in the list.<br/><i>If none are selected, all types will be included.<i>",
+       ListSource = FilterBenevolenceTypesSql,
+        IsRequired = false,
+        Order = 4,
+        RepeatColumns = 3,
+        RepeatDirection = RepeatDirection.Horizontal,
+        Key = AttributeKey.FilterBenevolenceTypesAttributeKey )]
+    #endregion
+
     public partial class BenevolenceRequestList : RockBlock, ICustomGridColumns
     {
+        #region SQL Constants
+        private const string FilterBenevolenceTypesSql = @"SELECT
+                                                             bt.[Guid] AS [Value],
+                                                             bt.[Name] AS [Text]
+                                                           FROM BenevolenceType AS bt";
+        #endregion SQL Constants
+
+        #region Keys
+
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ConfigurationPage = "ConfigurationPage";
+            public const string HideColumnsAttributeKey = "HideColumnsAttributeKey";
+            public const string FilterBenevolenceTypesAttributeKey = "FilterBenevolenceTypesAttributeKey";
+            public const string BenevolenceRequestDetailPageKey = "BenevolenceRequestDetail";
+        }
+        #endregion Keys
+
         #region Properties
 
         /// <summary>
@@ -58,16 +109,11 @@ namespace RockWeb.Blocks.Finance
 
         public List<AttributeCache> AvailableAttributes { get; set; }
 
-        #endregion
-
-        #region Private Members
-
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
         /// </summary>
-        private bool _canAddEditDelete = false;
-
-        #endregion
+        protected bool CanAddEditDelete { get; private set; }
+        #endregion Properties
 
         #region Base Control Methods
 
@@ -80,7 +126,6 @@ namespace RockWeb.Blocks.Finance
             base.LoadViewState( savedState );
 
             AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
-
             AddDynamicControls();
         }
 
@@ -104,21 +149,22 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            gList.DataKeyNames = new string[] { "Id" };
             gList.GridRebind += gList_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rFilter.ClearFilterClick += rFilter_ClearFilterClick;
+            CanAddEditDelete = IsUserAuthorized( Authorization.EDIT );
 
-            _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-
-            gList.DataKeyNames = new string[] { "Id" };
             gList.RowDataBound += gList_RowDataBound;
             gList.Actions.AddClick += gList_AddClick;
             gList.GridRebind += gList_GridRebind;
-            gList.Actions.ShowAdd = _canAddEditDelete;
-            gList.IsDeleteEnabled = _canAddEditDelete;
+            gList.Actions.ShowAdd = CanAddEditDelete;
+            gList.IsDeleteEnabled = CanAddEditDelete;
 
             // in case this is used as a Person Block, set the TargetPerson 
             TargetPerson = ContextEntity<Person>();
@@ -130,16 +176,18 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
-                SetFilter();
+                BindAttributes();
+                AddDynamicControls();
+                BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -150,7 +198,7 @@ namespace RockWeb.Blocks.Finance
         {
             // Parse the attribute filters 
             AvailableAttributes = new List<AttributeCache>();
-            
+
             int entityTypeId = new BenevolenceRequest().TypeId;
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
@@ -162,7 +210,6 @@ namespace RockWeb.Blocks.Finance
             {
                 AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
-            
         }
 
         /// <summary>
@@ -172,7 +219,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            SetFilter();
+            BindFilter();
+            BindGrid();
+        }
+
+        private void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            BindFilter( clearFilter: true );
             BindGrid();
         }
 
@@ -191,6 +245,7 @@ namespace RockWeb.Blocks.Finance
             rFilter.SaveUserPreference( "Case Worker", "Case Worker", ddlCaseWorker.SelectedItem.Value );
             rFilter.SaveUserPreference( "Result", "Result", dvpResult.SelectedItem.Value );
             rFilter.SaveUserPreference( "Status", "Status", dvpStatus.SelectedItem.Value );
+            rFilter.SaveUserPreference( "Benevolence Types", "Benevolence Types", cblBenevolenceType.SelectedValues.AsDelimited( "|" ) );
             rFilter.SaveUserPreference( "Campus", "Campus", cpCampus.SelectedCampusId.ToString() );
 
             if ( AvailableAttributes != null )
@@ -248,10 +303,11 @@ namespace RockWeb.Blocks.Finance
                 case "Campus":
                     {
                         int? campusId = e.Value.AsIntegerOrNull();
-                        if( campusId.HasValue )
+                        if ( campusId.HasValue )
                         {
                             e.Value = CampusCache.Get( campusId.Value ).Name;
                         }
+
                         return;
                     }
 
@@ -284,6 +340,18 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     return;
+                case "Benevolence Types":
+                    var benevolencTypeValueIds = e.Value.SplitDelimitedValues().Select( v => v.ToIntSafe() )?.ToList();
+                    if ( benevolencTypeValueIds?.Count() > 0 )
+                    {
+                        var benevolenceTypes = new BenevolenceTypeService( new RockContext() ).GetByIds( benevolencTypeValueIds );
+                        if ( benevolenceTypes != null )
+                        {
+                            e.Value = benevolenceTypes.Select( v => v.Name ).ToList().AsDelimited( ", " );
+                        }
+                    }
+
+                    return;
 
                 default:
                     e.Value = string.Empty;
@@ -298,6 +366,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
         public void gList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 BenevolenceRequest benevolenceRequest = e.Row.DataItem as BenevolenceRequest;
@@ -379,15 +452,44 @@ namespace RockWeb.Blocks.Finance
                 qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
             }
 
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToLinkedPage( AttributeKey.BenevolenceRequestDetailPageKey, qryParams );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gList control.
+        /// Handles the DeleteClick event of the gGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void gGrid_DeleteClick( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var benevolenceRequestService = new BenevolenceRequestService( rockContext );
+            var benevolenceRequest = benevolenceRequestService.Get( e.RowKeyId );
+            string errorMessage;
+
+            if ( benevolenceRequest == null )
+            {
+                return;
+            }
+
+            if ( !benevolenceRequestService.CanDelete( benevolenceRequest, out errorMessage ) )
+            {
+                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                return;
+            }
+
+            benevolenceRequestService.Delete( benevolenceRequest );
+            rockContext.SaveChanges();
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the View event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gList_Edit( object sender, RowEventArgs e )
+        protected void gList_View( object sender, RowEventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "BenevolenceRequestId", e.RowKeyId.ToString() );
@@ -396,7 +498,7 @@ namespace RockWeb.Blocks.Finance
                 qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
             }
 
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToLinkedPage( AttributeKey.BenevolenceRequestDetailPageKey, qryParams );
         }
 
         /// <summary>
@@ -404,7 +506,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gList_Delete( object sender, RowEventArgs e )
+        protected void dfBenevolenceRequest_Click( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
             BenevolenceRequestService service = new BenevolenceRequestService( rockContext );
@@ -426,6 +528,16 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the Click event of the lbBenevolenceTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbBenevolenceTypes_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.ConfigurationPage );
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gPledges control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -434,15 +546,14 @@ namespace RockWeb.Blocks.Finance
         {
             BindGrid();
         }
-
-        #endregion
+        #endregion Events
 
         #region Methods
 
         /// <summary>
         /// Binds the filter.
         /// </summary>
-        private void SetFilter()
+        private void BindFilter( bool clearFilter = false )
         {
             drpDate.LowerValue = rFilter.GetUserPreference( "Start Date" ).AsDateTime();
             drpDate.UpperValue = rFilter.GetUserPreference( "End Date" ).AsDateTime();
@@ -476,9 +587,15 @@ namespace RockWeb.Blocks.Finance
             dvpStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ).Id;
             dvpStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
 
-            // set attribute filters
-            BindAttributes();
-            AddDynamicControls();
+            cblBenevolenceType.Items.Clear();
+
+            cblBenevolenceType.DataSource = new RockContext().BenevolenceTypes
+                .ToList();
+            cblBenevolenceType.DataTextField = "Name";
+            cblBenevolenceType.DataValueField = "Id";
+            cblBenevolenceType.DataBind();
+
+            cblBenevolenceType.SetValues( rFilter.GetUserPreference( "Benevolence Types" ).SplitDelimitedValues() );
         }
 
         private void AddDynamicControls()
@@ -492,7 +609,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( control is IRockControl )
                         {
-                            var rockControl = (IRockControl)control;
+                            var rockControl = ( IRockControl ) control;
                             rockControl.Label = attribute.Name;
                             rockControl.Help = attribute.Description;
                             phAttributeFilters.Controls.Add( control );
@@ -506,7 +623,7 @@ namespace RockWeb.Blocks.Finance
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = rFilter.GetUserPreference( attribute.Key);
+                        string savedValue = rFilter.GetUserPreference( attribute.Key );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try
@@ -540,10 +657,14 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            // Add delete column
-            var deleteField = new DeleteField();
-            gList.Columns.Add( deleteField );
-            deleteField.Click += gList_Delete;
+            if ( CanAddEditDelete )
+            {
+                var deleteField = new DeleteField();
+                deleteField.HeaderText = "&nbsp;";
+                deleteField.Visible = true;
+                gList.Columns.Add( deleteField );
+                deleteField.Click += gGrid_DeleteClick;
+            }
         }
 
         /// <summary>
@@ -556,7 +677,14 @@ namespace RockWeb.Blocks.Finance
             gList.Visible = true;
             RockContext rockContext = new RockContext();
             BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
+
             var benevolenceRequestQuery = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" ).AsNoTracking();
+
+            var hideGridColumns = GetAttributeValue( AttributeKey.HideColumnsAttributeKey )?.Split( ',' )?.Select( v => v.ToUpper() );
+            var benevolenceTypeFilter = GetAttributeValue( AttributeKey.FilterBenevolenceTypesAttributeKey )
+                ?.Split( ',' )
+                ?.Where( v => v.IsNotNullOrWhiteSpace() )
+                ?.Select( v => new Guid( v ) );
 
             // Filter by Start Date
             DateTime? startDate = drpDate.LowerValue;
@@ -629,6 +757,19 @@ namespace RockWeb.Blocks.Finance
                 benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.RequestStatusValueId == requestStatusValueId );
             }
 
+            // Filter by Benevolence Types
+            var benevolenceTypeIds = cblBenevolenceType.SelectedValues.Where( v => v.ToIntSafe() > 0 ).Select( v => v.ToIntSafe() );
+
+            if ( benevolenceTypeIds?.Count() > 0 )
+            {
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => benevolenceTypeIds.Contains( b.BenevolenceTypeId ) );
+            }
+
+            if ( benevolenceTypeFilter?.Count() > 0 )
+            {
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => benevolenceTypeFilter.Contains( b.BenevolenceType.Guid ) );
+            }
+
             SortProperty sortProperty = gList.SortProperty;
             if ( sortProperty != null )
             {
@@ -668,6 +809,17 @@ namespace RockWeb.Blocks.Finance
             gList.DataSource = list;
             gList.DataBind();
 
+            // Hide columns and specific fields if the hide column attributes are set on the block.
+            if ( hideGridColumns?.Count() > 0 )
+            {
+                foreach ( DataControlField controlField in gList.Columns )
+                {
+                    controlField.Visible = !hideGridColumns.Contains( controlField.HeaderText.ToUpper() );
+                }
+
+                pnlSummary.Visible = !hideGridColumns.Contains( "TOTAL RESULTS" );
+            }
+
             // Hide the campus column if the campus filter is not visible.
             gList.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpCampus.Visible;
 
@@ -703,6 +855,6 @@ namespace RockWeb.Blocks.Finance
             phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}</b></div></div>", grandTotal.FormatAsCurrency() ) ) );
         }
 
-        #endregion
+        #endregion Methods
     }
 }
