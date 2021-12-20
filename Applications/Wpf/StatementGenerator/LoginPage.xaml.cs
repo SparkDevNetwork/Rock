@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -120,6 +121,9 @@ namespace Rock.Apps.StatementGenerator
                 rockConfig.RockBaseUrl = rockUrl;
                 rockConfig.Username = userName;
                 rockConfig.Password = password;
+
+                // Load any stored configuration settings
+                rockConfig = this.LoadConfigurationFromSystemSetting( rockConfig );
                 rockConfig.Save();
 
                 if ( this.NavigationService.CanGoBack )
@@ -214,6 +218,32 @@ namespace Rock.Apps.StatementGenerator
         {
             lblRockUrl.Visibility = Visibility.Visible;
             txtRockUrl.Visibility = Visibility.Visible;
+        }
+
+        private RockConfig LoadConfigurationFromSystemSetting( RockConfig rockConfig )
+        {
+            // Login and setup options for REST calls
+            var restClient = new RestClient( rockConfig.RockBaseUrl );
+            restClient.LoginToRock( rockConfig.Username, rockConfig.Password );
+
+            var getStatementGeneratorConfig = new RestRequest( $"api/Attributes?$filter=Guid eq guid'{Rock.Client.SystemGuid.Attribute.STATEMENT_GENERATOR_CONFIG}'" );
+            var storedSetting = restClient.Execute<List<Rock.Client.Attribute>>( getStatementGeneratorConfig ).Data.FirstOrDefault();
+
+            if ( null == storedSetting )
+            {
+                return rockConfig;
+            }
+
+            //Deserializing Json object from string
+            var savedConfig = storedSetting.DefaultValue.FromJsonOrNull<RockConfig>();
+            savedConfig.Username = rockConfig.Username;
+            savedConfig.Password = rockConfig.Password;
+            savedConfig.RockBaseUrl = rockConfig.RockBaseUrl;
+
+            // Reload the report options
+            ReportOptions.LoadFromConfig( savedConfig );
+
+            return savedConfig;
         }
     }
 }
