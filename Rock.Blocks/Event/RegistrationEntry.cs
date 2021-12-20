@@ -1462,13 +1462,13 @@ namespace Rock.Blocks.Event
                             string formattedOriginalValue = string.Empty;
                             if ( !string.IsNullOrWhiteSpace( originalValue ) )
                             {
-                                formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.QualifierValues );
+                                formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.ConfigurationValues );
                             }
 
                             string formattedNewValue = string.Empty;
                             if ( !string.IsNullOrWhiteSpace( newValue ) )
                             {
-                                formattedNewValue = attribute.FieldType.Field.GetTextValue( newValue, attribute.QualifierValues );
+                                formattedNewValue = attribute.FieldType.Field.GetTextValue( newValue, attribute.ConfigurationValues );
                             }
 
                             Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
@@ -1649,13 +1649,13 @@ namespace Rock.Blocks.Event
                     var formattedOriginalValue = string.Empty;
                     if ( !string.IsNullOrWhiteSpace( originalValue ) )
                     {
-                        formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.QualifierValues );
+                        formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.ConfigurationValues );
                     }
 
                     string formattedNewValue = string.Empty;
                     if ( !string.IsNullOrWhiteSpace( newValueAsString ) )
                     {
-                        formattedNewValue = attribute.FieldType.Field.GetTextValue( newValueAsString, attribute.QualifierValues );
+                        formattedNewValue = attribute.FieldType.Field.GetTextValue( newValueAsString, attribute.ConfigurationValues );
                     }
 
                     Helper.SaveAttributeValue( registrant, attribute, newValueAsString, rockContext );
@@ -3033,13 +3033,13 @@ namespace Rock.Blocks.Event
                                     string formattedOriginalValue = string.Empty;
                                     if ( !string.IsNullOrWhiteSpace( originalValue ) )
                                     {
-                                        formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.QualifierValues );
+                                        formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.ConfigurationValues );
                                     }
 
                                     string formattedNewValue = string.Empty;
                                     if ( !string.IsNullOrWhiteSpace( newValue ) )
                                     {
-                                        formattedNewValue = attribute.FieldType.Field.GetTextValue( newValue, attribute.QualifierValues );
+                                        formattedNewValue = attribute.FieldType.Field.GetTextValue( newValue, attribute.ConfigurationValues );
                                     }
 
                                     Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
@@ -56,7 +57,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
         {
             var ratingValue = new RatingClientValue
             {
@@ -68,7 +69,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
         {
             var ratingValue = clientValue.FromJsonOrNull<RatingClientValue>();
 
@@ -146,9 +147,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         private int GetMaxRating( Dictionary<string, ConfigurationValue> configurationValues )
         {
+            return GetMaxRating( configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Gets the maximum rating.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        private int GetMaxRating( Dictionary<string, string> configurationValues )
+        {
             if ( configurationValues != null && configurationValues.ContainsKey( "max" ) )
             {
-                int max = configurationValues["max"].Value.AsInteger();
+                int max = configurationValues["max"].AsInteger();
                 if ( max > 0)
                 {
                     return max;

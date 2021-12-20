@@ -316,6 +316,13 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the configuration values that define the behavior of the attribute.
+        /// </summary>
+        /// <value>The configuration values.</value>
+        [DataMember]
+        public Dictionary<string, string> ConfigurationValues { get; private set; }
+
+        /// <summary>
         /// Gets the qualifier values.
         /// </summary>
         /// <value>
@@ -469,6 +476,7 @@ namespace Rock.Web.Cache
             ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
 
+            ConfigurationValues = new Dictionary<string, string>( qualifiers );
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
             {
@@ -937,6 +945,7 @@ namespace Rock.Web.Cache
                 Guid = model.Guid,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
+                ConfigurationValues = model.ConfigurationValues,
                 DefaultValue = model.DefaultValue,
                 Description = model.Description,
                 EnableHistory = model.EnableHistory,

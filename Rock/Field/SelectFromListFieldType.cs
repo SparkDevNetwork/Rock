@@ -51,7 +51,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
         {
             var clientValues = base.GetClientConfigurationValues( configurationValues );
 
@@ -62,7 +62,7 @@ namespace Rock.Field.Types
                 repeatColumns = 4;
             }
 
-            var values = GetListSource( configurationValues )
+            var values = GetListSource( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                     .Select( kvp => new ListItemViewModel
                     {
                         Value = kvp.Key,
@@ -158,7 +158,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             if ( value == null )
             {
@@ -167,7 +167,7 @@ namespace Rock.Field.Types
 
             var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
 
-            return GetListSource( configurationValues )
+            return GetListSource( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                 .Where( a => valueGuidList.Contains( a.Key.AsGuid() ) )
                 .Select( s => s.Value )
                 .ToList()
@@ -184,7 +184,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return GetTextValue( value, configurationValues );
+            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

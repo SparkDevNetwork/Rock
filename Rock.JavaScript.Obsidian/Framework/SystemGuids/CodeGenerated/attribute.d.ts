@@ -50,6 +50,8 @@ export const enum Attribute {
     PersonSnapchat = "61099377-9EB3-43EA-BA37-75E329E55866",
     /** The allergy attribute */
     PersonAllergy = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31",
+    /** The Person legal note attribute */
+    PersonLegalNote = "F832AB6F-B684-4EEA-8DB4-C54B895C79ED",
     /** The person attribute for the person's giving envelope number */
     PersonGivingEnvelopeNumber = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49",
     /** The same site cookie setting */
