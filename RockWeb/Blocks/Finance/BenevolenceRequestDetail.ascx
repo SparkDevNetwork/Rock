@@ -13,15 +13,25 @@
     }
 
     .person-image-small {
-        background-color: #fafafa;
-        background-size: cover;
-        border: none;
-        border-color: #cccccc;
+        position: relative;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        margin-bottom: 4px;
+        vertical-align: top;
+        background: center/cover #cbd4db;
         border-radius: 50%;
-        width: 58px;
-        height: 58px;
-        background-size: cover;
-        border: 1px solid #dfe0e1
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.07)
+    }
+
+    .request-date {
+        font-size: 14px;
+        font-weight: 400;
+        color: #737475;
+        letter-spacing: 0.32px;
     }
 
     .label-info {
@@ -106,7 +116,7 @@
 
                     <div class="row">
                         <div class="col-md-4">
-                            <Rock:EmailBox ID="ebEditEmail" runat="server" Label="Email" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Email"/>
+                            <Rock:EmailBox ID="ebEditEmail" runat="server" Label="Email" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Email" />
                         </div>
                         <div class="col-md-4">
                             <Rock:LocationAddressPicker ID="lapEditAddress" runat="server" Label="Address" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Location" />
@@ -187,9 +197,9 @@
                                 <asp:Image CssClass="person-image img-responsive" ID="imgViewRequestor" runat="server" />
                             </div>
                             <div class="col-md-8 col-lg-10">
-                                <h4>
+                                <h3>
                                     <asp:Literal ID="lName" runat="server" />
-                                </h4>
+                                </h3>
                                 <Rock:BadgeListControl ID="blViewStatus" runat="server" />
                                 <asp:LinkButton ID="lbViewProfile" runat="server" OnClick="lbViewProfile_Click"></asp:LinkButton>
                                 <asp:Literal ID="lViewNotLinkedProfile" runat="server"></asp:Literal>
@@ -197,19 +207,19 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <h4>Assigned To</h4>
+                        <h6>Assigned To</h6>
                         <asp:Image CssClass="person-image-small float-left" ID="imgViewAssignedTo" runat="server" />
                         <asp:Literal ID="lViewAssignedTo" runat="server"></asp:Literal>
                     </div>
                     <div class="col-md-2">
-                        <h4>Request Date</h4>
+                        <span class="request-date">Request Date</span><br />
                         <asp:Literal ID="lViewRequestDate" runat="server"></asp:Literal>
                     </div>
                 </div>
                 <!-- Contact Information -->
                 <div class="row mt-3">
                     <div class="col-md-12">
-                        <h5>Contact Information</h5>
+                        <h6>Contact Information</h6>
                     </div>
                 </div>
                 <div class="row">

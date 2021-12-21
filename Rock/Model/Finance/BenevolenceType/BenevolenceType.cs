@@ -51,8 +51,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String" /> containing the <see cref="Description"/>.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         [Previewable]
         public string Description { get; set; }
 

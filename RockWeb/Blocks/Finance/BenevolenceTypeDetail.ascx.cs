@@ -180,7 +180,8 @@ namespace RockWeb.Blocks.Finance
                 benevolenceType = new BenevolenceType
                 {
                     Id = 0,
-                    IsActive = true
+                    IsActive = true,
+                    ShowFinancialResults=true
                 };
 
                 lActionTitle.Text = ActionTitle.Add( BenevolenceType.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -307,7 +308,9 @@ namespace RockWeb.Blocks.Finance
                     // Add or Update workflows from the UI
                     foreach ( var workflowStateModel in WorkflowStateModel )
                     {
-                        BenevolenceWorkflow benevolenceWorkflow = benevolenceType.BenevolenceWorkflows.Where( b => b.Guid == workflowStateModel.Guid ).FirstOrDefault();
+                        BenevolenceWorkflow benevolenceWorkflow = benevolenceType.BenevolenceWorkflows
+                            .Where( b => !workflowStateModel.Guid.Equals( Guid.Empty ) && b.Guid == workflowStateModel.Guid ).FirstOrDefault();
+
                         if ( benevolenceWorkflow == null )
                         {
                             benevolenceWorkflow = new BenevolenceWorkflow

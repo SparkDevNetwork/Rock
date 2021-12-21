@@ -107,9 +107,6 @@ namespace Rock.Migrations
             // Add Block Attribute Value - Block: Benevolence Type Detail - BlockType: Benevolence Type Detail - Category: Finance - Block Location: Page=Benevolence Type Detail, Site=Rock RMS - Attribute: Benevolence Type Attributes /*   Attribute Value: 350ca625-ed4f-4d96-a979-ee44cd682e71 */
             RockMigrationHelper.AddBlockAttributeValue( "D5BB2522-35A8-478B-BEA3-D47697E61DF7", "BFBFE4CB-7426-4E24-A8CC-A2F2CBC1B995", @"350ca625-ed4f-4d96-a979-ee44cd682e71" );
 
-            // Add the new Benevolence Request Note Type
-            AddNoteType();
-
             // Add Block Attribute Value - Block: Notes - BlockType: Notes - Category: Core - Block Location: Page=Benevolence Request Detail, Site=Rock RMS - Attribute: Entity Type /*   Attribute Value: cf0ce5c1-9286-4310-9b50-10d040f8ebd2 */
             RockMigrationHelper.AddBlockAttributeValue( "AAC4B265-1E94-4F27-9278-B131F7C8B717", "F1BCF615-FBCA-4BC2-A912-C35C0DC04174", @"cf0ce5c1-9286-4310-9b50-10d040f8ebd2" );
 
@@ -224,9 +221,6 @@ namespace Rock.Migrations
             // Remove Block - Name: Notes, from Page: Benevolence Request Detail, Site: Rock RMS - from Page: Benevolence Request Detail, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "AAC4B265-1E94-4F27-9278-B131F7C8B717" );
 
-            // Delete the BenevolenceRequest Note Type
-            DeleteNoteType();
-
             // Remove Block - Name: Benevolence Type Detail, from Page: Benevolence Type Detail, Site: Rock RMS - from Page: Benevolence Type Detail, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "D5BB2522-35A8-478B-BEA3-D47697E61DF7" );
 
@@ -263,25 +257,5 @@ namespace Rock.Migrations
             // Drop the ShowFinancialResults from the BenevolenceType table
             DropColumn( "dbo.BenevolenceType", "ShowFinancialResults");
         }
-
-        #region SQL Methods
-        private void AddNoteType()
-        {
-            var sql = @"IF NOT EXISTS (SELECT TOP 1 COUNT(*) FROM [NoteType] WHERE [Guid]='93D54D23-097B-4CC2-98C4-C21FD7F29DD1')
-                               BEGIN 
-                                 INSERT INTO [NoteType] 
-                                 ([IsSystem],[EntityTypeId],[Name],[Guid],[CreatedDateTime],[ModifiedDateTime],[UserSelectable],[IconCssClass],[Order]) 
-                                 VALUES 
-                                 (1,268,'Benevolence Request Notes','93D54D23-097B-4CC2-98C4-C21FD7F29DD1',GetDate(),GetDate(),1,'fa fa-heart-o',1);
-                               END";
-            Sql( sql );
-        }
-
-        private void DeleteNoteType()
-        {
-            string sql = "DELETE FROM [NoteType] WHERE [Guid] = '93D54D23-097B-4CC2-98C4-C21FD7F29DD1'";
-            Sql( sql );
-        }
-        #endregion SQL Methods
     }
 }

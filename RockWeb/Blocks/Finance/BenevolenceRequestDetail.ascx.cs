@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Finance
                     else
                     {
                         LoadEditDetails( true );
-                        LoadViewDetails( true );
+                        LoadViewDetails();
                         SetViewMode();
                     }
                 }
@@ -780,9 +780,6 @@ namespace RockWeb.Blocks.Finance
                 if ( !BenevolenceRequestId.Equals( 0 ) )
                 {
                     benevolenceRequest = GetBenevolenceRequest();
-                    Requestor = benevolenceRequest?.RequestedByPersonAlias?.Person;
-                    AssignedTo = benevolenceRequest?.CaseWorkerPersonAlias?.Person;
-
                     pdEditAuditDetails.SetEntity( benevolenceRequest, ResolveRockUrl( "~" ) );
                 }
 
@@ -804,6 +801,9 @@ namespace RockWeb.Blocks.Finance
                     // hide the panel drawer that show created and last modified dates
                     pdEditAuditDetails.Visible = false;
                 }
+
+                Requestor = benevolenceRequest?.RequestedByPersonAlias?.Person;
+                AssignedTo = benevolenceRequest?.CaseWorkerPersonAlias?.Person;
 
                 dtbEditFirstName.Text = benevolenceRequest.FirstName;
                 dtbEditLastName.Text = benevolenceRequest.LastName;
@@ -914,7 +914,7 @@ namespace RockWeb.Blocks.Finance
                 confirmEditExit.Enabled = true;
             }
         }
-        
+
         private void BindUploadDocuments( bool canEdit )
         {
             var ds = DocumentsState.ToList();
@@ -927,7 +927,7 @@ namespace RockWeb.Blocks.Finance
             dlEditDocuments.DataSource = ds;
             dlEditDocuments.DataBind();
         }
-        
+
         private void LoadDropDowns( BenevolenceRequest benevolenceRequest )
         {
             dvpEditRequestStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ).Id;
@@ -1319,9 +1319,10 @@ namespace RockWeb.Blocks.Finance
             lViewBenevolenceType.Text = $"<span class='label label-info'><small>{benevolenceRequest?.BenevolenceType?.Name}</small></span>";
 
             var campus = Requestor?.GetCampus();
+
             if ( campus != null )
             {
-                lViewCampus.Text = $"<span class='label label-orange'><small>{benevolenceRequest?.Campus?.Name}</small></span>";
+                lViewCampus.Text = $"<span class='label label-orange'><small>{campus?.Name}</small></span>";
             }
             else
             {
@@ -1602,21 +1603,18 @@ namespace RockWeb.Blocks.Finance
             return benevolenceRequest ?? new BenevolenceRequest { Id = 0 };
         }
 
-        private void LoadViewDetails( bool reload = false )
+        private void LoadViewDetails()
         {
             if ( BenevolenceRequestId == 0 )
             {
                 return;
             }
 
-            if ( !Page.IsPostBack || reload )
-            {
-                ShowUserProfileDetails();
-                ShowWorkflowDetails();
-                ShowLavaDetails();
-                ShowRequestDetails();
-                ShowRequestSummary();
-            }
+            ShowUserProfileDetails();
+            ShowWorkflowDetails();
+            ShowLavaDetails();
+            ShowRequestDetails();
+            ShowRequestSummary();
         }
         #endregion View Methods
 
