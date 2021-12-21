@@ -52,7 +52,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         {% if note.ApprovalStatus == 'Denied' %}
             {% assign approver = note.ApprovedByPersonAliasId | PersonByAliasId %}
             Approval denied By <a href="/person/{{ approver.Id }}">{{ approver.FullName }}</a> on {{ note.ApprovedDateTime }}
-        {% elsif note.ApprovalStatus == 'PendingApproval' %}
+        {% elseif note.ApprovalStatus == 'PendingApproval' %}
             Pending Approval
         {% endif %}
     {% endcapture %}
