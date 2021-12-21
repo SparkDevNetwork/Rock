@@ -88,7 +88,7 @@ namespace Rock.Web.Cache
         public bool IsActive { get; private set; }
 
         /// <summary>
-        /// Gets the DefinedType of this DefinedVlaue
+        /// Gets the DefinedType of this DefinedValue
         /// </summary>
         /// <value>
         /// The DefinedType

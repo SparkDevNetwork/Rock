@@ -781,6 +781,8 @@
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetDataFormat.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetScriptType.cs" />
     <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceWorkflowService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientServiceExtensions.cs" />
@@ -952,8 +954,14 @@
     <Compile Include="Model\Event\Registration\RegistrationExtensionMethods.cs" />
     <Compile Include="Model\Event\Registration\RegistrationInfo.cs" />
     <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.Logic.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.SaveHook.cs" />
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.cs" />
+    <Compile Include="Model\Finance\FinancialPersonSavedAccountService\Options\FinancialPersonSavedAccountQueryOptions.cs" />
+    <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflowTriggerType.cs" />
+    <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.Logic.cs" />
+    <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.SaveHook.cs" />
+    <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflowService.cs" />
     <Compile Include="Model\Finance\FinancialPersonSavedAccountService\Options\FinancialPersonSavedAccountQueryOptions.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
@@ -1169,6 +1177,7 @@
     <Compile Include="Tasks\LaunchWorkflow.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\CodeGenFeature.cs" />
     <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />

@@ -22,6 +22,11 @@ namespace Rock.SystemGuid
     public class NoteType
     {
         /// <summary>
+        /// Generic prayer comment note type
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST_NOTE = "CC49BF39-8D3E-4512-B8F4-853FE49CDBC7";
+
+        /// <summary>
         /// The content channel item structured content user value
         /// </summary>
         public const string CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE = "860C37A0-1A44-4681-B96D-4703813609D2";

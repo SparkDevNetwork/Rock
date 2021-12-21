@@ -17,11 +17,12 @@
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// 
+    /// Class PageRoute.
     /// </summary>
     public static class PageRoute
     {
         /// <summary>
+        /// The CheckinManager route guid
         /// The /checkinmanager route guid
         /// </summary>
         public const string CHECK_IN_MANAGER = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48";
