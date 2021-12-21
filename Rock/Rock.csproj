@@ -965,7 +965,6 @@
     <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.SaveHook.cs" />
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.cs" />
-    <Compile Include="Model\Finance\FinancialPersonSavedAccountService\Options\FinancialPersonSavedAccountQueryOptions.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflowTriggerType.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.Logic.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.SaveHook.cs" />
