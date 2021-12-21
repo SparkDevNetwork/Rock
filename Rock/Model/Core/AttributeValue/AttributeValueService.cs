@@ -14,10 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Linq;
 using Rock.Data;
-using Rock.ViewModel;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -50,8 +49,7 @@ namespace Rock.Model
                     ( 
                         ( !t.EntityId.HasValue && !entityId.HasValue ) || 
                         ( t.EntityId.HasValue && entityId.HasValue && t.EntityId.Value == entityId.Value )
-                    )
-                )
+                    ) )
                 .FirstOrDefault();
         }
 
@@ -126,7 +124,7 @@ namespace Rock.Model
             rockContext.Database.CommandTimeout = commandTimeout;
 
             // Execute SQL command.
-            var recordsAffected =  rockContext.Database.ExecuteSqlCommand( updateSql );
+            var recordsAffected = rockContext.Database.ExecuteSqlCommand( updateSql );
 
             // Return CommandTimeout to previous setting.
             rockContext.Database.CommandTimeout = currentTimeoutSetting;
@@ -135,23 +133,5 @@ namespace Rock.Model
         }
 
         #endregion Static Methods
-    }
-
-    /// <summary>
-    /// AttributeValue View Model Helper
-    /// </summary>
-    public partial class AttributeValueViewModelHelper
-    {
-        /// <summary>
-        /// Applies the additional properties and security to view model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="viewModel">The view model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeValue model, AttributeValueViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
-        {
-            viewModel.Attribute = AttributeCache.Get( model.AttributeId ).ToViewModel();
-        }
     }
 }

@@ -14,14 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeValueHistorical" )]
     [DataContract]
-    public class AttributeValueHistorical : Model<AttributeValueHistorical>, IHistoricalTracking
+    public partial class AttributeValueHistorical : Model<AttributeValueHistorical>, IHistoricalTracking
     {
         #region Entity Properties
 
@@ -137,7 +136,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the AttributeValue <see cref="Rock.Model.AttributeValue" /> that this AttributeValueHistorical provides a historical value for.
@@ -147,37 +146,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AttributeValue AttributeValue { get; set; }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Creates an AttributeValueHistory with CurrentRowIndicator = true for the specified attributeValue
-        /// </summary>
-        /// <param name="attributeValue">The attribute value.</param>
-        /// <param name="effectiveDateTime">The effective date time.</param>
-        /// <returns></returns>
-        public static AttributeValueHistorical CreateCurrentRowFromAttributeValue( AttributeValue attributeValue, DateTime effectiveDateTime )
-        {
-            var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
-            string formattedValue = attributeCache.FieldType.Field.FormatValue( null, attributeValue.Value, attributeCache.QualifierValues, true );
-            var attributeValueHistoricalCurrent = new AttributeValueHistorical
-            {
-                AttributeValueId = attributeValue.Id,
-                Value = attributeValue.Value,
-                ValueFormatted = formattedValue,
-                ValueAsNumeric = attributeValue.ValueAsNumeric,
-                ValueAsDateTime = attributeValue.ValueAsDateTime,
-                ValueAsBoolean = attributeValue.ValueAsBoolean,
-                ValueAsPersonId = attributeValue.ValueAsPersonId,
-                CurrentRowIndicator = true,
-                EffectiveDateTime = effectiveDateTime,
-                ExpireDateTime = HistoricalTracking.MaxExpireDateTime
-            };
-
-            return attributeValueHistoricalCurrent;
-        }
 
         #endregion
     }
