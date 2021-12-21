@@ -2208,7 +2208,7 @@
     <Compile Include="Model\Core\AttributeMatrix\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
     <Compile Include="Model\Core\AttributeMatrixTemplate\AttributeMatrixTemplate.cs" />
-    <Compile Include="Model\AttributeValueHistorical.cs" />
+    <Compile Include="Model\Core\AttributeValueHistorical\AttributeValueHistorical.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimCampusService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyCurrentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdService.CodeGenerated.cs" />
@@ -2257,12 +2257,12 @@
     <Compile Include="Model\Reporting\Metric\MetricService.cs" />
     <Compile Include="Model\Event\AttendanceCode\AttendanceCodeService.cs" />
     <Compile Include="Model\Event\Attendance\AttendanceService.cs" />
-    <Compile Include="Model\Attribute.cs" />
-    <Compile Include="Model\AttributeQualifier.cs" />
-    <Compile Include="Model\AttributeQualifierService.Partial.cs" />
-    <Compile Include="Model\AttributeService.Partial.cs" />
-    <Compile Include="Model\AttributeValue.cs" />
-    <Compile Include="Model\AttributeValueService.Partial.cs" />
+    <Compile Include="Model\Core\Attribute\Attribute.cs" />
+    <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.cs" />
+    <Compile Include="Model\Core\AttributeQualifier\AttributeQualifierService.Partial.cs" />
+    <Compile Include="Model\Core\Attribute\AttributeService.Partial.cs" />
+    <Compile Include="Model\Core\AttributeValue\AttributeValue.cs" />
+    <Compile Include="Model\Core\AttributeValue\AttributeValueService.Partial.cs" />
     <Compile Include="Model\Core\Audit\Audit.cs" />
     <Compile Include="Model\Core\AuditDetail\AuditDetail.cs" />
     <Compile Include="Model\Core\Auth\Auth.cs" />
