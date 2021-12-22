@@ -16,19 +16,17 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a SiteDomain or URL that is associated with a <see cref="Rock.Model.Site"/> in Rock.  A domain (i.e. yourchurch.org) and a subdomain (sub.yourchurch.org) are considered
-    /// two different SiteDomains in Rock.
+    /// Represents a SiteDomain or URL that is associated with a <see cref="Rock.Model.Site"/> in Rock.
+    /// A domain (i.e. yourchurch.org) and a subdomain (sub.yourchurch.org) are considered two different SiteDomains in Rock.
     /// </summary>
     /// <remarks>
     /// A SiteDomain must have a matching Binding setup in IIS otherwise it will not resolve.
@@ -38,7 +36,6 @@ namespace Rock.Model
     [DataContract]
     public partial class SiteDomain : Model<SiteDomain>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -62,7 +59,7 @@ namespace Rock.Model
         public int SiteId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Url/Domain Name of this SiteDomain. This property is required.
+        /// Gets or sets the URL/Domain Name of this SiteDomain. This property is required.
         /// </summary>
         /// <remarks>
         /// Examples include: localhost, mysite.com (or www.mysite.com), subdomain.mysite.com.
@@ -85,9 +82,9 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Site"/> that is associated with this SiteDomain.
@@ -98,7 +95,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Site Site { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -113,32 +110,7 @@ namespace Rock.Model
             return this.Domain;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            // SiteCache has SiteDomains that could get stale if SiteDomains is modified
-            SiteCache.UpdateCachedEntity( this.SiteId, EntityState.Detached );
-        }
-
-        #endregion
-
+        #endregion Methods
     }
 
     #region Entity Configuration

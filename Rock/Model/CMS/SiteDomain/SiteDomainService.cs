@@ -21,7 +21,7 @@ namespace Rock.Model
     /// <summary>
     /// SiteDomain data access/service class. 
     /// </summary>
-    public partial class SiteDomainService 
+    public partial class SiteDomainService
     {
         /// <summary>
         /// Returns a  <see cref="Rock.Model.SiteDomain"/> by Domain.
@@ -32,7 +32,7 @@ namespace Rock.Model
         {
             return Queryable().FirstOrDefault( t => t.Domain == domain );
         }
-        
+
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.SiteDomain">SiteDomains</see> the Id of the <see cref="Rock.Model.Site"/> that they reference.
         /// </summary>
@@ -42,7 +42,7 @@ namespace Rock.Model
         {
             return Queryable().Where( t => t.SiteId == siteId );
         }
-        
+
         /// <summary>
         /// Returns an enumerable list of <see cref="Rock.Model.SiteDomain"/> entities by the Id of the <see cref="Rock.Model.Site"/> and domain name.
         /// </summary>

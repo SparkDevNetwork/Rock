@@ -850,36 +850,6 @@ namespace Rock.Model
         }
 
         #endregion Methods
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return SiteCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            SiteCache.UpdateCachedEntity( this.Id, entityState );
-
-            foreach ( int pageId in new PageService( ( RockContext ) dbContext ).GetBySiteId( this.Id )
-                    .Select( p => p.Id )
-                    .ToList() )
-            {
-                PageCache.UpdateCachedEntity( pageId, EntityState.Detached );
-            }
-        }
-
-        #endregion ICacheable
     }
 
     #region Entity Configuration
