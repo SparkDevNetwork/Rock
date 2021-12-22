@@ -2620,7 +2620,7 @@
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Core\SignalType\SignalType.cs" />
-    <Compile Include="Model\SiteDomain.cs" />
+    <Compile Include="Model\CMS\SiteDomain\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\PageShortLinkService.Partial.cs" />
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowActionService.cs" />
@@ -2743,7 +2743,7 @@
     <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CMS\Site\Site.cs" />
     <Compile Include="Model\PageShortLink.cs" />
-    <Compile Include="Model\SiteDomainService.Partial.cs" />
+    <Compile Include="Model\CMS\SiteDomain\SiteDomainService.Partial.cs" />
     <Compile Include="Model\CMS\Site\SiteService.cs" />
     <Compile Include="Model\Communication\SystemEmail\SystemEmail.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.cs" />
