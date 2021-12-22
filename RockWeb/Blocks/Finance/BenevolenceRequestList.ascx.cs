@@ -46,9 +46,9 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page",
         Description = "Page used to modify and create benevolence requests.",
         IsRequired = true,
-        Order =1,
+        Order = 1,
         DefaultValue = Rock.SystemGuid.Page.BENEVOLENCE_REQUEST_DETAIL,
-        Key = AttributeKey.BenevolenceRequestDetailPageKey)]
+        Key = AttributeKey.BenevolenceRequestDetailPageKey )]
     [LinkedPage(
         "Configuration Page",
         Description = "Page used to modify and create benevolence type.",
@@ -149,6 +149,8 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            lbBenevolenceTypes.Visible = UserCanAdministrate;
 
             gList.DataKeyNames = new string[] { "Id" };
             gList.GridRebind += gList_GridRebind;
@@ -675,10 +677,16 @@ namespace RockWeb.Blocks.Finance
             phSummary.Controls.Clear();
             rFilter.Visible = true;
             gList.Visible = true;
-            RockContext rockContext = new RockContext();
-            BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
 
-            var benevolenceRequestQuery = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" ).AsNoTracking();
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            gList.Actions.ShowAdd = canAddEditDelete;
+            gList.IsDeleteEnabled = canAddEditDelete;
+
+            var rockContext = new RockContext();
+            var benevolenceRequestService = new BenevolenceRequestService( rockContext );
+
+            var benevolenceRequests = benevolenceRequestService
+                .Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" ).AsNoTracking();
 
             var hideGridColumns = GetAttributeValue( AttributeKey.HideColumnsAttributeKey )?.Split( ',' )?.Select( v => v.ToUpper() );
             var benevolenceTypeFilter = GetAttributeValue( AttributeKey.FilterBenevolenceTypesAttributeKey )
@@ -690,27 +698,27 @@ namespace RockWeb.Blocks.Finance
             DateTime? startDate = drpDate.LowerValue;
             if ( startDate != null )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.RequestDateTime >= startDate );
+                benevolenceRequests = benevolenceRequests.Where( b => b.RequestDateTime >= startDate );
             }
 
             // Filter by End Date
             DateTime? endDate = drpDate.UpperValue;
             if ( endDate != null )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.RequestDateTime <= endDate );
+                benevolenceRequests = benevolenceRequests.Where( b => b.RequestDateTime <= endDate );
             }
 
             // Filter by Campus
             if ( cpCampus.SelectedCampusId.HasValue )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.CampusId == cpCampus.SelectedCampusId );
+                benevolenceRequests = benevolenceRequests.Where( b => b.CampusId == cpCampus.SelectedCampusId );
             }
 
             if ( TargetPerson != null )
             {
                 // show benevolence request for the target person and also for their family members
                 var qryFamilyMembers = TargetPerson.GetFamilyMembers( true, rockContext );
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( a => a.RequestedByPersonAliasId.HasValue && qryFamilyMembers.Any( b => b.PersonId == a.RequestedByPersonAlias.PersonId ) );
+                benevolenceRequests = benevolenceRequests.Where( a => a.RequestedByPersonAliasId.HasValue && qryFamilyMembers.Any( b => b.PersonId == a.RequestedByPersonAlias.PersonId ) );
             }
             else
             {
@@ -718,14 +726,14 @@ namespace RockWeb.Blocks.Finance
                 string firstName = tbFirstName.Text;
                 if ( !string.IsNullOrWhiteSpace( firstName ) )
                 {
-                    benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.FirstName.StartsWith( firstName ) );
+                    benevolenceRequests = benevolenceRequests.Where( b => b.FirstName.StartsWith( firstName ) );
                 }
 
                 // Filter by Last Name 
                 string lastName = tbLastName.Text;
                 if ( !string.IsNullOrWhiteSpace( lastName ) )
                 {
-                    benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.LastName.StartsWith( lastName ) );
+                    benevolenceRequests = benevolenceRequests.Where( b => b.LastName.StartsWith( lastName ) );
                 }
             }
 
@@ -733,28 +741,28 @@ namespace RockWeb.Blocks.Finance
             string governmentId = tbGovernmentId.Text;
             if ( !string.IsNullOrWhiteSpace( governmentId ) )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.GovernmentId.StartsWith( governmentId ) );
+                benevolenceRequests = benevolenceRequests.Where( b => b.GovernmentId.StartsWith( governmentId ) );
             }
 
             // Filter by Case Worker
             int? caseWorkerPersonAliasId = ddlCaseWorker.SelectedItem.Value.AsIntegerOrNull();
             if ( caseWorkerPersonAliasId != null )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.CaseWorkerPersonAliasId == caseWorkerPersonAliasId );
+                benevolenceRequests = benevolenceRequests.Where( b => b.CaseWorkerPersonAliasId == caseWorkerPersonAliasId );
             }
 
             // Filter by Result
             int? resultTypeValueId = dvpResult.SelectedItem.Value.AsIntegerOrNull();
             if ( resultTypeValueId != null )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.BenevolenceResults.Where( r => r.ResultTypeValueId == resultTypeValueId ).Count() > 0 );
+                benevolenceRequests = benevolenceRequests.Where( b => b.BenevolenceResults.Where( r => r.ResultTypeValueId == resultTypeValueId ).Count() > 0 );
             }
 
             // Filter by Request Status
             int? requestStatusValueId = dvpStatus.SelectedItem.Value.AsIntegerOrNull();
             if ( requestStatusValueId != null )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.RequestStatusValueId == requestStatusValueId );
+                benevolenceRequests = benevolenceRequests.Where( b => b.RequestStatusValueId == requestStatusValueId );
             }
 
             // Filter by Benevolence Types
@@ -762,12 +770,12 @@ namespace RockWeb.Blocks.Finance
 
             if ( benevolenceTypeIds?.Count() > 0 )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => benevolenceTypeIds.Contains( b.BenevolenceTypeId ) );
+                benevolenceRequests = benevolenceRequests.Where( b => benevolenceTypeIds.Contains( b.BenevolenceTypeId ) );
             }
 
             if ( benevolenceTypeFilter?.Count() > 0 )
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => benevolenceTypeFilter.Contains( b.BenevolenceType.Guid ) );
+                benevolenceRequests = benevolenceRequests.Where( b => benevolenceTypeFilter.Contains( b.BenevolenceType.Guid ) );
             }
 
             SortProperty sortProperty = gList.SortProperty;
@@ -777,36 +785,50 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( sortProperty.Direction == SortDirection.Descending )
                     {
-                        benevolenceRequestQuery = benevolenceRequestQuery.OrderByDescending( a => a.BenevolenceResults.Sum( b => b.Amount ) );
+                        benevolenceRequests = benevolenceRequests.OrderByDescending( a => a.BenevolenceResults.Sum( b => b.Amount ) );
                     }
                     else
                     {
-                        benevolenceRequestQuery = benevolenceRequestQuery.OrderBy( a => a.BenevolenceResults.Sum( b => b.Amount ) );
+                        benevolenceRequests = benevolenceRequests.OrderBy( a => a.BenevolenceResults.Sum( b => b.Amount ) );
                     }
-                }
-                else
-                {
-                    benevolenceRequestQuery = benevolenceRequestQuery.Sort( sortProperty );
                 }
             }
             else
             {
-                benevolenceRequestQuery = benevolenceRequestQuery.OrderByDescending( a => a.RequestDateTime ).ThenByDescending( a => a.Id );
+                benevolenceRequests = benevolenceRequests.OrderByDescending( a => a.RequestDateTime ).ThenByDescending( a => a.Id );
             }
 
             // Filter query by any configured attribute filters
+
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    benevolenceRequestQuery = attribute.FieldType.Field.ApplyAttributeQueryFilter( benevolenceRequestQuery, filterControl, attribute, benevolenceRequestService, Rock.Reporting.FilterMode.SimpleFilter );
+                    benevolenceRequests = attribute.FieldType.Field.ApplyAttributeQueryFilter( benevolenceRequests, filterControl, attribute, benevolenceRequestService, Rock.Reporting.FilterMode.SimpleFilter );
                 }
             }
 
-            var list = benevolenceRequestQuery.ToList();
+            var personContext = this.ContextEntity<Person>();
 
-            gList.DataSource = list;
+            if ( personContext != null )
+            {
+                benevolenceRequests = benevolenceRequests.Where( a => a.RequestedByPersonAlias.PersonId == personContext.Id );
+            }
+
+            if ( sortProperty != null )
+            {
+                gList.DataSource = benevolenceRequests.Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                gList.DataSource = benevolenceRequests.OrderByDescending( p => p.CreatedDateTime ).ThenByDescending( p => p.Id ).ToList();
+            }
+
+            // Hide the campus column if the campus filter is not visible.
+            gList.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpCampus.Visible;
+
+            gList.EntityTypeId = EntityTypeCache.Get<BenevolenceRequest>().Id;
             gList.DataBind();
 
             // Hide columns and specific fields if the hide column attributes are set on the block.
@@ -827,7 +849,7 @@ namespace RockWeb.Blocks.Finance
             var definedTypeCache = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );
             Dictionary<string, decimal> resultTotals = new Dictionary<string, decimal>();
             decimal grandTotal = 0;
-            foreach ( BenevolenceRequest request in list )
+            foreach ( BenevolenceRequest request in benevolenceRequests )
             {
                 foreach ( BenevolenceResult result in request.BenevolenceResults )
                 {
