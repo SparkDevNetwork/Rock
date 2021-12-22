@@ -48,7 +48,8 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:CodeEditor ID="ceLavaTemplate" runat="server" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="RequestLavaTemplate" EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" Label="Request Lava Template" Help="Used to show personalized resources or instructions based on the information on the request" />
+                            <Rock:CodeEditor ID="ceLavaTemplate" runat="server" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="RequestLavaTemplate" EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" Label="Request Lava Template"
+                                Help="Used to show personalized resources or instructions based on the information on the request. The request will be provided in the <strong>'BenevolenceRequest'</strong> merge field." />
                         </div>
                     </div>
 
@@ -84,7 +85,7 @@
         <asp:Button ID="btnHideDialog" runat="server" Style="display: none" OnClick="btnHideDialog_Click" />
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="mdWorkflowDetails" runat="server" Title="Select Workflow" OnSaveClick="mdWorkflowDetails_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="WorkflowDetails">
+        <Rock:ModalDialog ID="mdWorkflowDetails" runat="server" Title="Select Workflow" SaveButtonText="Add" OnSaveClick="mdWorkflowDetails_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="WorkflowDetails">
             <Content>
 
                 <asp:HiddenField ID="hfWorkflowGuid" runat="server" />

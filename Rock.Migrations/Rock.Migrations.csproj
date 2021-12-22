@@ -61,6 +61,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.Designer.cs">
+      <DependentUpon>202112212311473_AddBenevolnceRequestNoteType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112201637287_BenevolencePastoralCareCallLog.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112201637287_BenevolencePastoralCareCallLog.Designer.cs">
       <DependentUpon>202112201637287_BenevolencePastoralCareCallLog.cs</DependentUpon>
@@ -899,6 +903,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.resx">
+      <DependentUpon>202112212311473_AddBenevolnceRequestNoteType.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.0\202112201637287_BenevolencePastoralCareCallLog.resx">
       <DependentUpon>202112201637287_BenevolencePastoralCareCallLog.cs</DependentUpon>
     </EmbeddedResource>

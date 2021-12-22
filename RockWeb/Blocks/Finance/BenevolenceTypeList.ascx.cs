@@ -270,6 +270,10 @@ namespace RockWeb.Blocks.Finance
                   b.IsActive
               } );
 
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            gBenevolenceType.Actions.ShowAdd = canAddEditDelete;
+            gBenevolenceType.IsDeleteEnabled = canAddEditDelete;
+
             // The default benevolence type should not be edited or removed
             gBenevolenceType.EntityTypeId = EntityTypeCache.GetId<BenevolenceType>();
             gBenevolenceType.DataSource = selectQry.ToList();
