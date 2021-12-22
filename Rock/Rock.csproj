@@ -2739,10 +2739,10 @@
     <Compile Include="Model\Communication\SignatureDocument\SignatureDocumentService.cs" />
     <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplate.cs" />
     <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplateService.cs" />
-    <Compile Include="Model\Site.cs" />
+    <Compile Include="Model\CMS\Site\Site.cs" />
     <Compile Include="Model\PageShortLink.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
-    <Compile Include="Model\SiteService.Partial.cs" />
+    <Compile Include="Model\CMS\Site\SiteService.Partial.cs" />
     <Compile Include="Model\Communication\SystemEmail\SystemEmail.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItemService.cs" />
