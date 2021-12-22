@@ -780,6 +780,8 @@
     <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.Logic.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetDataFormat.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetScriptType.cs" />
+    <Compile Include="Model\CMS\Site\Site.WebForms.cs" />
+    <Compile Include="Model\CMS\Site\SiteType.cs" />
     <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceWorkflowService.CodeGenerated.cs" />
@@ -2742,7 +2744,7 @@
     <Compile Include="Model\CMS\Site\Site.cs" />
     <Compile Include="Model\PageShortLink.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
-    <Compile Include="Model\CMS\Site\SiteService.Partial.cs" />
+    <Compile Include="Model\CMS\Site\SiteService.cs" />
     <Compile Include="Model\Communication\SystemEmail\SystemEmail.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItemService.cs" />

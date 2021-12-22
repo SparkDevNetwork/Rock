@@ -25,7 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// The data access/service class for the <see cref="Rock.Model.Site"/> entity. This inherits from the Service class
     /// </summary>
-    public partial class SiteService 
+    public partial class SiteService
     {
         /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Site"/> entities that by their Default <see cref="Rock.Model.Page">Page's</see> PageId.
@@ -57,7 +57,7 @@ namespace Rock.Model
 
             bool canDelete = CanDelete( item, out errorMessage );
 
-            if ( canDelete && includeSecondLvl && new Service<Layout>( (RockContext)Context ).Queryable().Where( l => l.SiteId == item.Id ).Any( a => a.Pages.Count() > 0 ) )
+            if ( canDelete && includeSecondLvl && new Service<Layout>( ( RockContext ) Context ).Queryable().Where( l => l.SiteId == item.Id ).Any( a => a.Pages.Count() > 0 ) )
             {
                 errorMessage = string.Format( "This {0} has a {1} which is used by a {2}.", Site.FriendlyTypeName, Layout.FriendlyTypeName, Page.FriendlyTypeName );
                 canDelete = false;
@@ -81,7 +81,6 @@ namespace Rock.Model
 
             return null;
         }
-
 
         /// <summary>
         /// Gets the domain URI.

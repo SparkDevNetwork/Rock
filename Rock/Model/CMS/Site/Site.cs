@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -24,13 +23,12 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 using Rock.Data;
+using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -278,10 +276,10 @@ namespace Rock.Model
         public string ErrorPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the google analytics code.
+        /// Gets or sets the Google analytics code.
         /// </summary>
         /// <value>
-        /// The google analytics code.
+        /// The Google analytics code.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
@@ -349,6 +347,7 @@ namespace Rock.Model
             get { return _enablePageViews; }
             set { _enablePageViews = value; }
         }
+
         private bool _enablePageViews = true;
 
         /// <summary>
@@ -372,8 +371,8 @@ namespace Rock.Model
             get { return _allowIndexing; }
             set { _allowIndexing = value; }
         }
-        private bool _allowIndexing = true;
 
+        private bool _allowIndexing = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
@@ -403,7 +402,7 @@ namespace Rock.Model
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this site should be available to be used for shortlinks (the shortlink can still reference url of other sites).
+        /// Gets or sets a value indicating whether this site should be available to be used for shortlinks (the shortlink can still reference the URL of other sites).
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enabled for shortening]; otherwise, <c>false</c>.
@@ -460,7 +459,10 @@ namespace Rock.Model
             {
                 return Site.GetFileUrl( this.ConfigurationMobilePhoneBinaryFileId );
             }
-            private set { }
+
+            private set
+            {
+            }
         }
 
         /// <summary>
@@ -476,7 +478,10 @@ namespace Rock.Model
             {
                 return Site.GetFileUrl( this.ConfigurationMobileTabletBinaryFileId );
             }
-            private set { }
+
+            private set
+            {
+            }
         }
 
         /// <summary>
@@ -492,12 +497,15 @@ namespace Rock.Model
             {
                 return Site.GetFileUrl( this.ThumbnailBinaryFileId );
             }
-            private set { }
+
+            private set
+            {
+            }
         }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.Layout"/> entities that are a part of the Site.
@@ -647,7 +655,7 @@ namespace Rock.Model
         /// Gets or sets the favicon binary file.
         /// </summary>
         /// <value>
-        /// The fav icon binary file.
+        /// The favicon binary file.
         /// </value>
         [LavaVisible]
         public virtual BinaryFile FavIconBinaryFile { get; set; }
@@ -711,18 +719,20 @@ namespace Rock.Model
                         return new Uri( protocol + host );
                     }
                 }
-                catch { }
+                catch
+                {
+                }
 
                 return new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
             }
         }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> containing the Name of the site that that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the Name of the site that represents this instance.
         /// </summary>
         /// <returns>
         /// A <see cref="System.String" /> containing the Name of the site that represents this instance.
@@ -839,41 +849,7 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the file URL.
-        /// </summary>
-        /// <param name="fileId">The configuration mobile phone file identifier.</param>
-        /// <returns>full path of resource from Binary file path</returns>
-        private static string GetFileUrl( int? fileId )
-        {
-            string virtualPath = string.Empty;
-            if ( fileId.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) fileId );
-                    if ( binaryFile != null )
-                    {
-                        if ( binaryFile.Path.Contains( "~" ) )
-                        {
-                            // Need to build out full path
-                            virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
-                            var globalAttributes = GlobalAttributesCache.Get();
-                            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
-                            virtualPath = $"{publicAppRoot}{virtualPath}";
-                        }
-                        else
-                        {
-                            virtualPath = binaryFile.Path;
-                        }
-                    }
-                }
-            }
-
-            return virtualPath;
-        }
-
-        #endregion
+        #endregion Methods
 
         #region ICacheable
 
@@ -903,33 +879,8 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion ICacheable
     }
-
-    #region enums
-
-    /// <summary>
-    /// Types Web, Mobile
-    /// </summary>
-    public enum SiteType
-    {
-        /// <summary>
-        /// Websites
-        /// </summary>
-        Web,
-
-        /// <summary>
-        /// Mobile applications
-        /// </summary>
-        Mobile,
-
-        /// <summary>
-        /// TV Apps
-        /// </summary>
-        Tv
-    }
-
-    #endregion
 
     #region Entity Configuration
 
@@ -964,5 +915,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }
