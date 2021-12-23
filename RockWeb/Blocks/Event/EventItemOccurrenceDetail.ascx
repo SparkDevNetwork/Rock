@@ -256,7 +256,7 @@
                         <asp:CustomValidator runat="server"
                             ID="rvEditUrlSlug"
                             ErrorMessage="URL Slug cannot contain any special characters other than -"
-                            ControlToValidate="tbNewLinkageUrlSlug"
+                            ControlToValidate="tbEditLinkageUrlSlug"
                             OnServerValidate="rvUrlSlug_ServerValidate"
                             ValidationGroup="NewEventRegistrationGroupLinkage" />
                     </div>
