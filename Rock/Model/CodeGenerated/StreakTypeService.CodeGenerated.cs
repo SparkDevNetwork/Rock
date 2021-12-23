@@ -92,6 +92,7 @@ namespace Rock.Model
                 RequiresEnrollment = model.RequiresEnrollment,
                 StartDate = model.StartDate,
                 StructureEntityId = model.StructureEntityId,
+                StructureSettingsJSON = model.StructureSettingsJSON,
                 StructureType = ( int? ) model.StructureType,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -174,6 +175,7 @@ namespace Rock.Model
             target.RequiresEnrollment = source.RequiresEnrollment;
             target.StartDate = source.StartDate;
             target.StructureEntityId = source.StructureEntityId;
+            target.StructureSettingsJSON = source.StructureSettingsJSON;
             target.StructureType = source.StructureType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

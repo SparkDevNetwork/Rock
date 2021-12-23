@@ -22,7 +22,8 @@
 //
 
 export const enum PageRoute {
-    /** The /checkinmanager route guid */
+    /** The CheckinManager route guid
+The /checkinmanager route guid */
     CheckInManager = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48",
     /** The /checkinmanager/attendance-detail route guid */
     CheckInManagerAttendanceDetail = "FB89DA07-CB29-4786-85FF-8814F43511B2",

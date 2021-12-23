@@ -64,6 +64,14 @@ namespace Rock.ViewModel
         public string RequestLavaTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets the ShowFinancialResults.
+        /// </summary>
+        /// <value>
+        /// The ShowFinancialResults.
+        /// </value>
+        public bool ShowFinancialResults { get; set; }
+
+        /// <summary>
         /// Gets or sets the CreatedDateTime.
         /// </summary>
         /// <value>

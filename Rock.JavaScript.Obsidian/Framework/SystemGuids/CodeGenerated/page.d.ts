@@ -79,9 +79,12 @@ ParentPage: Functions */
     /** Gets the Benevolence page guid
 ParentPage: Person Pages */
     BenevolencePersonPages = "15FA4176-1C8E-409D-8B47-85ADA35DE5D2",
-    /** Gets the Benevolence Detail page guid
+    /** Gets the Benevolence Types page guid
 ParentPage: Benevolence */
-    BenevolenceDetail = "6DC7BAED-CA01-4703-B679-EC81143CDEDD",
+    BenevolenceTypes = "C6BE9CF1-FFE9-4DC1-8472-865FD93B89A8",
+    /** Gets the Benevolence Types Detail page guid
+ParentPage: Benevolence */
+    BenevolenceTypesDetail = "DBFC432E-F0A4-457E-BA5B-572C49B899D1",
     /** Gets the Benevolence Request Detail page guid
 ParentPage: Benevolence */
     BenevolenceRequestDetail = "648CA58C-EB12-4479-9994-F064070E3A32",

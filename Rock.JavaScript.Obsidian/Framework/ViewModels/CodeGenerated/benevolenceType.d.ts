@@ -28,6 +28,7 @@ export type BenevolenceType = IEntity & {
     isActive?: boolean;
     name?: string | null;
     requestLavaTemplate?: string | null;
+    showFinancialResults?: boolean;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;
