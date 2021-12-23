@@ -2624,7 +2624,7 @@
     <Compile Include="Model\Core\SignalType\SignalType.cs" />
     <Compile Include="Model\CMS\SiteDomain\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
-    <Compile Include="Model\PageShortLinkService.Partial.cs" />
+    <Compile Include="Model\CMS\PageShortLink\PageShortLinkService.Partial.cs" />
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowActionService.cs" />
     <Compile Include="Pbx\CdrRecord.cs" />
     <Compile Include="Pbx\PbxComponent.cs" />
@@ -2744,7 +2744,7 @@
     <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplate.cs" />
     <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CMS\Site\Site.cs" />
-    <Compile Include="Model\PageShortLink.cs" />
+    <Compile Include="Model\CMS\PageShortLink\PageShortLink.cs" />
     <Compile Include="Model\CMS\SiteDomain\SiteDomainService.cs" />
     <Compile Include="Model\CMS\Site\SiteService.cs" />
     <Compile Include="Model\Communication\SystemEmail\SystemEmail.cs" />
