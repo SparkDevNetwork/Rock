@@ -973,6 +973,7 @@
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.Logic.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflow.SaveHook.cs" />
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflowService.cs" />
+    <Compile Include="Model\Finance\FinancialPersonSavedAccountService\Options\FinancialPersonSavedAccountQueryOptions.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
