@@ -71,7 +71,7 @@
                             <Rock:DatePicker ID="dpEditRequestDate" runat="server" Label="Request Date" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestDateTime" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockDropDownList ID="ddlEditRequestType" runat="server" Label="Request Type" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true" />
+                            <Rock:RockDropDownList ID="ddlEditRequestType" runat="server" AutoPostBack="true" Label="Request Type" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true"/>
                         </div>
                         <div class="col-md-3">
                             <Rock:DefinedValuePicker ID="dvpEditRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValueId" Required="true" />
@@ -96,7 +96,7 @@
                                     <Rock:PersonPicker ID="ppEditPerson" ClientIDMode="Static" runat="server" Label="Person" OnSelectPerson="ppPerson_SelectPerson" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" FormGroupCssClass="" PropertyName="RequestedByPersonAlias" />
                                 </div>
                                 <div class="col-md-4 p-md-0 pt-md-4">
-                                    <asp:LinkButton ID="lbEditCreatePerson" ClientIDMode="Static" runat="server" Text="Create Record From Fields" CssClass="btn btn-link" OnClick="lbEditCreatePerson_Click"></asp:LinkButton>
+                                    <asp:LinkButton ID="lbEditCreatePerson" ClientIDMode="Static" runat="server" Text="Create Record From Fields" CssClass="btn btn-sm btn-link" OnClick="lbEditCreatePerson_Click"></asp:LinkButton>
                                 </div>
                             </div>
                         </div>
@@ -246,23 +246,27 @@
                     </div>
                 </div>
                 <!-- Workflows -->
-                <div class="row mt-3">
-                    <div class="col-md-12">
-                        <h5>Available Workflows</h5>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <Rock:ModalAlert ID="mdViewWorkflowLaunched" runat="server" />
-                        <asp:Repeater ID="rptViewRequestWorkflows" runat="server">
-                            <ItemTemplate>
-                                <asp:LinkButton ID="lbLaunchRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
+                <asp:UpdatePanel ID="upViewWorkflows" runat="server">
+                    <ContentTemplate>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <h5>Available Workflows</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:ModalAlert ID="mdViewWorkflowLaunched" runat="server" />
+                                <asp:Repeater ID="rptViewRequestWorkflows" runat="server">
+                                    <ItemTemplate>
+                                        <asp:LinkButton ID="lbLaunchRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
                                         <i class="<%# Eval("WorkflowType.IconCssClass") %>"></i>&nbsp;<%# Eval("WorkflowType.Name") %>
-                                </asp:LinkButton>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </div>
-                </div>
+                                        </asp:LinkButton>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
                 <div class="row mt-3">
                     <div class="col-md-12">
                         <asp:Literal ID="lViewBenevolenceTypeLava" runat="server"></asp:Literal>
@@ -281,24 +285,26 @@
                         <asp:Literal ID="lViewBenevolenceTypeDescription" runat="server"></asp:Literal>
                     </div>
                 </div>
-                <div class="row mt-3">
+                <div id="divViewAttributes" class="row mt-3" runat="server">
                     <div class="col-md-12">
                         <Rock:AttributeValuesContainer ID="avcViewBenevolenceTypeAttributes" runat="server" ShowCategoryLabel="false" />
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <h6>Related Documents</h6>
+                <div id="divViewRelatedDocs" runat="server">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6>Related Documents</h6>
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <asp:Repeater ID="rptViewBenevolenceDocuments" runat="server">
-                        <ItemTemplate>
-                            <div class="col-md-2">
-                                <asp:HyperLink ID="lnkViewUploadedFile" runat="server" Target="_blank" CssClass="btn-link"></asp:HyperLink>
-                            </div>
-                        </ItemTemplate>
-                    </asp:Repeater>
+                    <div class="row">
+                        <asp:Repeater ID="rptViewBenevolenceDocuments" runat="server">
+                            <ItemTemplate>
+                                <div class="col-md-2">
+                                    <asp:HyperLink ID="lnkViewUploadedFile" runat="server" Target="_blank" CssClass="btn-link"></asp:HyperLink>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
                 </div>
                 <!-- Summary -->
                 <hr />

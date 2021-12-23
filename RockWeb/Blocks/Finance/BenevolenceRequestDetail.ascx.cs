@@ -54,6 +54,19 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         Key = AttributeKey.BenevolenceRequestStatementPage,
         Order = 5 )]
+    [LinkedPage(
+        "Workflow Detail Page",
+        Description = "Page used to display details about a workflow.",
+        Order = 6,
+        Key = AttributeKey.WorkflowDetailPage,
+        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_DETAIL )]
+
+    [LinkedPage(
+        "Workflow Entry Page",
+        Description = "Page used to launch a new workflow of the selected type.",
+        Order = 7,
+        Key = AttributeKey.WorkflowEntryPage,
+        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
     #endregion
 
     public partial class BenevolenceRequestDetailView : RockBlock
@@ -77,6 +90,8 @@ namespace RockWeb.Blocks.Finance
             public const string DisplayGovernmentId = "DisplayGovernmentId";
             public const string EnableCallOrigination = "EnableCallOrigination";
             public const string BenevolenceRequestStatementPage = "BenevolenceRequestStatementPage";
+            public const string WorkflowDetailPage = "WorkflowDetailPage";
+            public const string WorkflowEntryPage = "WorkflowEntryPage";
         }
 
         #endregion Attribute Keys
@@ -101,7 +116,7 @@ namespace RockWeb.Blocks.Finance
 
         protected List<int> DocumentsState { get; private set; }
 
-        protected Person Requestor { get; private set; }
+        protected Person Requester { get; private set; }
 
         protected Person AssignedTo { get; private set; }
 
@@ -278,6 +293,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         benevolenceRequestService.Add( benevolenceRequest );
                     }
+
 
                     // get attributes
                     benevolenceRequest.LoadAttributes();
@@ -558,11 +574,6 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        /// <summary>
-        /// Handles the FileRemoved event of the fuEditDoc control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fuEditDoc_FileRemoved( object sender, FileUploaderEventArgs e )
         {
             var fuEditDoc = ( Rock.Web.UI.Controls.FileUploader ) sender;
@@ -573,11 +584,6 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        /// <summary>
-        /// Handles the ItemDataBound event of the dlEditDocuments control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="DataListItemEventArgs"/> instance containing the event data.</param>
         private void dlDocuments_ItemDataBound( object sender, DataListItemEventArgs e )
         {
             Guid binaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS.AsGuid();
@@ -590,11 +596,7 @@ namespace RockWeb.Blocks.Finance
         #endregion Edit Events
 
         #region View Events
-        /// <summary>
-        /// Handles the ItemCommand event of the rptViewRequestWorkflows control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+
         private void rptRequestWorkflows_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( e.CommandName == "LaunchWorkflow" )
@@ -611,14 +613,63 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Add a script to the client load event for the current page that will also open a new page for the workflow entry form.
+        /// </summary>
+        private void RegisterWorkflowDetailPageScript( int workflowTypeId, Guid workflowGuid, string message = null )
+        {
+            var qryParam = new Dictionary<string, string>
+                {
+                    { "WorkflowTypeId", workflowTypeId.ToString() },
+                    { "WorkflowGuid", workflowGuid.ToString() }
+                };
+
+            var url = LinkedPageUrl( AttributeKey.WorkflowEntryPage, qryParam );
+
+            // When the script is executed, it is also removed from the client load event to ensure that it is only run once.
+            string script;
+
+            if ( string.IsNullOrEmpty( message ) )
+            {
+                // Open the workflow detail page.
+                script = $@"
+                           <script language='javascript' type='text/javascript'> 
+                             Sys.Application.add_load(openWorkflowEntryPage);
+                               function openWorkflowEntryPage() {{
+                                  Sys.Application.remove_load( openWorkflowEntryPage );
+                                  window.open('{url}');
+                                  }}
+                           </script>";
+            }
+            else
+            {
+                // Show a modal message dialog, and open the workflow detail page when the dialog is closed.
+                message = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
+                script = $@"
+                           <script language='javascript' type='text/javascript'> 
+                             Sys.Application.add_load(openWorkflowEntryPage);
+                               function openWorkflowEntryPage() {{
+                                  Sys.Application.remove_load( openWorkflowEntryPage );
+                                  bootbox.alert({{ message:'{message}',callback: function() {{ window.open('{url}'); }}}});
+                                  }}
+                          </script>";
+            }
+
+            ScriptManager.RegisterStartupScript( upViewWorkflows,
+                upViewWorkflows.GetType(),
+                "openWorkflowScript",
+               script,
+                false );
+
+        }
         protected void lbViewProfile_Click( object sender, EventArgs e )
         {
             var queryParams = new Dictionary<string, string>
             {
-                { PageParameterKey.PersonId, Requestor.Id.ToString() }
+                { PageParameterKey.PersonId, Requester.Id.ToString() }
             };
 
-            if ( Requestor.IsNameless() )
+            if ( Requester.IsNameless() )
             {
                 NavigateToPage( new Guid( Rock.SystemGuid.Page.EDIT_PERSON ), queryParams );
             }
@@ -802,7 +853,7 @@ namespace RockWeb.Blocks.Finance
                     pdEditAuditDetails.Visible = false;
                 }
 
-                Requestor = benevolenceRequest?.RequestedByPersonAlias?.Person;
+                Requester = benevolenceRequest?.RequestedByPersonAlias?.Person;
                 AssignedTo = benevolenceRequest?.CaseWorkerPersonAlias?.Person;
 
                 dtbEditFirstName.Text = benevolenceRequest.FirstName;
@@ -900,14 +951,10 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
+
                 var benevolenceRequest = GetBenevolenceRequest();
-                if ( benevolenceRequest == null )
-                {
-                    benevolenceRequest = new BenevolenceRequest();
-                }
-
+                benevolenceRequest.BenevolenceTypeId = ddlEditRequestType.SelectedValue.ToIntSafe();
                 benevolenceRequest.LoadAttributes();
-
                 phEditAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( benevolenceRequest, phEditAttributes, false, BlockValidationGroup, 2 );
 
@@ -967,15 +1014,23 @@ namespace RockWeb.Blocks.Finance
 
             var benevolenceTypeList = new BenevolenceTypeService( rockContext )
                 .Queryable()
+                .OrderBy( p => p.Name )
                 .ToList();
 
             // Load Benevolence Types and set the value from the Benevolence Request
-            ddlEditRequestType.DataSource = benevolenceTypeList.OrderBy( p => p.Name );
+            ddlEditRequestType.DataSource = benevolenceTypeList;
             ddlEditRequestType.DataTextField = "Name";
             ddlEditRequestType.DataValueField = "Id";
             ddlEditRequestType.SelectedValue = benevolenceRequest?.BenevolenceType?.Id.ToString();
             ddlEditRequestType.DataBind();
             ddlEditRequestType.Items.Insert( 0, new ListItem() );
+
+            ddlEditRequestType.Enabled = BenevolenceRequestId == 0;
+
+            if ( BenevolenceRequestId == 0 && benevolenceTypeList.Count == 1 )
+            {
+                ddlEditRequestType.SelectedValue = benevolenceTypeList.FirstOrDefault().Id.ToString();
+            }
         }
 
         /// <summary>
@@ -1166,7 +1221,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( pbxComponent != null )
                     {
-                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", CurrentPerson.Guid, number.ToString(), CurrentPerson.FullName, Requestor.FullName, formattedNumber );
+                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", CurrentPerson.Guid, number.ToString(), CurrentPerson.FullName, Requester.FullName, formattedNumber );
                         phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, formattedNumber );
                     }
                     else if ( RockPage.IsMobileRequest )
@@ -1203,39 +1258,39 @@ namespace RockWeb.Blocks.Finance
             // Get the Display Name.
             string nameText;
 
-            if ( Requestor == null )
+            if ( Requester == null )
             {
                 nameText = $"<span class='first-word nickname'>{benevolenceRequest.FirstName}</span> <span class='lastname'>{ benevolenceRequest.LastName}</span>";
                 lName.Text = nameText;
                 return;
             }
 
-            if ( Requestor?.RecordTypeValueId != null && Requestor.RecordTypeValueId.HasValue )
+            if ( Requester?.RecordTypeValueId != null && Requester.RecordTypeValueId.HasValue )
             {
                 int recordTypeValueIdBusiness = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
-                isBusiness = Requestor.RecordTypeValueId.Value == recordTypeValueIdBusiness;
+                isBusiness = Requester.RecordTypeValueId.Value == recordTypeValueIdBusiness;
             }
 
             if ( isBusiness )
             {
-                nameText = Requestor.LastName;
+                nameText = Requester.LastName;
             }
             else
             {
-                if ( GetAttributeValue( AttributeKey.DisplayMiddleName ).AsBoolean() && !string.IsNullOrWhiteSpace( Requestor.MiddleName ) )
+                if ( GetAttributeValue( AttributeKey.DisplayMiddleName ).AsBoolean() && !string.IsNullOrWhiteSpace( Requester.MiddleName ) )
                 {
-                    nameText = $"<span class='first-word nickname'>{ Requestor.NickName}</span> <span class='middlename'>{Requestor.MiddleName}</span> <span class='lastname'>{ Requestor.LastName}</span>";
+                    nameText = $"<span class='first-word nickname'>{ Requester.NickName}</span> <span class='middlename'>{Requester.MiddleName}</span> <span class='lastname'>{ Requester.LastName}</span>";
                 }
                 else
                 {
-                    nameText = $"<span class='first-word nickname'>{Requestor.NickName}</span> <span class='lastname'>{ Requestor.LastName}</span>";
+                    nameText = $"<span class='first-word nickname'>{Requester.NickName}</span> <span class='lastname'>{ Requester.LastName}</span>";
                 }
 
                 // Prefix with Title if they have a Title with IsFormal=True
-                if ( Requestor.TitleValueId.HasValue )
+                if ( Requester.TitleValueId.HasValue )
                 {
-                    var personTitleValue = DefinedValueCache.Get( Requestor.TitleValueId.Value );
+                    var personTitleValue = DefinedValueCache.Get( Requester.TitleValueId.Value );
                     if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
                     {
                         nameText = $"<span class='title'>{personTitleValue.Value + nameText}</span>";
@@ -1243,18 +1298,18 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Add First Name if different from NickName.
-                if ( Requestor.NickName != Requestor.FirstName )
+                if ( Requester.NickName != Requester.FirstName )
                 {
-                    if ( !string.IsNullOrWhiteSpace( Requestor.FirstName ) )
+                    if ( !string.IsNullOrWhiteSpace( Requester.FirstName ) )
                     {
-                        nameText += $" <span class='firstname'>({Requestor.FirstName})</span>";
+                        nameText += $" <span class='firstname'>({Requester.FirstName})</span>";
                     }
                 }
 
                 // Add Suffix.
-                if ( Requestor.SuffixValueId.HasValue )
+                if ( Requester.SuffixValueId.HasValue )
                 {
-                    var suffix = DefinedValueCache.Get( Requestor.SuffixValueId.Value );
+                    var suffix = DefinedValueCache.Get( Requester.SuffixValueId.Value );
                     if ( suffix != null )
                     {
                         nameText += " " + suffix.Value;
@@ -1264,7 +1319,7 @@ namespace RockWeb.Blocks.Finance
                 // Add Previous Names. 
                 using ( var rockContext = new RockContext() )
                 {
-                    var previousNames = Requestor.GetPreviousNames( rockContext ).Select( a => a.LastName );
+                    var previousNames = Requester.GetPreviousNames( rockContext ).Select( a => a.LastName );
 
                     if ( previousNames.Any() )
                     {
@@ -1297,15 +1352,12 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                upViewWorkflows.Visible = authorizedWorkflows.Any();
+
                 if ( authorizedWorkflows.Any() )
                 {
-                    // lblWorkflows.Visible = true;
                     rptViewRequestWorkflows.DataSource = authorizedWorkflows.ToList();
                     rptViewRequestWorkflows.DataBind();
-                }
-                else
-                {
-                    // lblWorkflows.Visible = false;
                 }
             }
         }
@@ -1313,12 +1365,12 @@ namespace RockWeb.Blocks.Finance
         private void ShowUserProfileDetails()
         {
             var benevolenceRequest = GetBenevolenceRequest();
-            Requestor = benevolenceRequest?.RequestedByPersonAlias?.Person;
+            Requester = benevolenceRequest?.RequestedByPersonAlias?.Person;
             AssignedTo = benevolenceRequest?.CaseWorkerPersonAlias?.Person;
 
             lViewBenevolenceType.Text = $"<span class='label label-info'><small>{benevolenceRequest?.BenevolenceType?.Name}</small></span>";
 
-            var campus = Requestor?.GetCampus();
+            var campus = Requester?.GetCampus();
 
             if ( campus != null )
             {
@@ -1334,9 +1386,9 @@ namespace RockWeb.Blocks.Finance
             DisplayPersonName();
 
             // Setup Image
-            if ( Requestor?.PhotoId != null && Requestor.PhotoId.HasValue )
+            if ( Requester?.PhotoId != null && Requester.PhotoId.HasValue )
             {
-                imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( Requestor );
+                imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( Requester );
             }
             else
             {
@@ -1352,7 +1404,7 @@ namespace RockWeb.Blocks.Finance
                 imgViewAssignedTo.ImageUrl = "/Assets/Images/person-no-photo-unknown.svg";
             }
 
-            if ( Requestor == null )
+            if ( Requester == null )
             {
                 lViewNotLinkedProfile.Visible = true;
                 lbViewProfile.Visible = false;
@@ -1401,9 +1453,9 @@ namespace RockWeb.Blocks.Finance
                 lViewNotLinkedProfile.Visible = false;
                 lbViewProfile.Visible = true;
                 lbViewProfile.Text = "<small> View Profile</small>";
-                if ( Requestor.PhoneNumbers != null )
+                if ( Requester.PhoneNumbers != null )
                 {
-                    var phoneNumbers = Requestor.PhoneNumbers.AsEnumerable();
+                    var phoneNumbers = Requester.PhoneNumbers.AsEnumerable();
                     var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
                     if ( phoneNumberTypes.DefinedValues.Any() )
                     {
@@ -1416,10 +1468,11 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Get the connection status badge
-                var badgesEntity = new PersonService( new RockContext() ).Get( Requestor.Guid );
+                var badgesEntity = new PersonService( new RockContext() ).Get( Requester.Guid );
                 var badge = BadgeCache.Get( new Guid( "66972BFF-42CD-49AB-9A7A-E1B9DECA4EBF" ) );
                 if ( badge != null )
                 {
+                    blViewStatus.BadgeTypes.Clear();
                     blViewStatus.BadgeTypes.Add( badge );
                     blViewStatus.Entity = badgesEntity;
                 }
@@ -1430,13 +1483,13 @@ namespace RockWeb.Blocks.Finance
                 if ( newCommunicationPage != null )
                 {
                     communicationPageReference = new Rock.Web.PageReference( newCommunicationPage.Id );
-                    lViewEmail.Text = Requestor.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
+                    lViewEmail.Text = Requester.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
                 }
 
-                lViewAddress.Text = Requestor.GetHomeLocation( new RockContext() )?.FormattedHtmlAddress;
+                lViewAddress.Text = Requester.GetHomeLocation( new RockContext() )?.FormattedHtmlAddress;
             }
 
-            lViewAssignedTo.Text = AssignedTo?.FullName;
+            lViewAssignedTo.Text = AssignedTo?.FullName ?? "Not assigned";
             lViewRequestDate.Text = $"{benevolenceRequest.RequestDateTime.ToShortDateString()} <small>({RockDateTime.Now.Subtract( benevolenceRequest.RequestDateTime ).Days} days)</small>";
 
             if ( ( benevolenceRequest?.GovernmentId?.IsNotNullOrWhiteSpace() ).GetValueOrDefault( false ) && GetAttributeValue( AttributeKey.DisplayGovernmentId ).AsBoolean() )
@@ -1463,13 +1516,22 @@ namespace RockWeb.Blocks.Finance
         private void ShowRequestDetails()
         {
             var benevolenceRequest = GetBenevolenceRequest();
-            lViewBenevolenceTypeDescription.Text = $"<small>{benevolenceRequest?.RequestText}</small>";
             benevolenceRequest.LoadAttributes();
+
+            divViewAttributes.Visible = ( benevolenceRequest?.Attributes?.Any() ).GetValueOrDefault( false );
+
+            lViewBenevolenceTypeDescription.Text = $"<small>{benevolenceRequest?.RequestText}</small>";
+
             avcViewBenevolenceTypeAttributes.AddDisplayControls( benevolenceRequest );
 
+            var documentList = benevolenceRequest?.Documents.ToList();
+
             rptViewBenevolenceDocuments.ItemDataBound += rptBenevolenceDocuments_ItemDataBound;
-            rptViewBenevolenceDocuments.DataSource = benevolenceRequest?.Documents.ToList();
+            rptViewBenevolenceDocuments.DataSource = documentList;
             rptViewBenevolenceDocuments.DataBind();
+
+            divViewRelatedDocs.Visible = documentList.Any();
+
         }
 
         private void InitializeViewResultsSummary()
@@ -1523,11 +1585,8 @@ namespace RockWeb.Blocks.Finance
                             {
                                 if ( workflow.HasActiveEntryForm( CurrentPerson ) )
                                 {
-                                    var qryParam = new Dictionary<string, string>();
-                                    qryParam.Add( "WorkflowTypeId", workflowType.Id.ToString() );
-                                    qryParam.Add( "WorkflowGuid", workflow.Guid.ToString() );
-
-                                    NavigateToPage( new Guid( Rock.SystemGuid.Page.WORKFLOW_ENTRY ), qryParam );
+                                    var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
+                                    RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
                                 }
                                 else
                                 {
