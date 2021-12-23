@@ -16,7 +16,6 @@
 //
 using System.Data.Entity;
 using System.Linq;
-
 using Rock;
 
 namespace Rock.Model
@@ -27,7 +26,7 @@ namespace Rock.Model
     public partial class PageShortLinkService
     {
         /// <summary>
-        /// Gets a url by token. If more than one url exists for token (multiple sites)
+        /// Gets a URL by token. If more than one URL exists for token (multiple sites)
         /// get the one that matches the included site id.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -55,7 +54,7 @@ namespace Rock.Model
             string token = PageShortLink.GetRandomToken( length );
 
             while ( this.Queryable().AsNoTracking()
-                .Any( t => 
+                .Any( t =>
                     t.SiteId == siteId &&
                     t.Token == token ) )
             {
@@ -80,6 +79,5 @@ namespace Rock.Model
                     t.Token == token &&
                     t.Id != id );
         }
-
     }
 }

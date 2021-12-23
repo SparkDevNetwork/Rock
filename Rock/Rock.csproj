@@ -777,6 +777,7 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
+    <Compile Include="Model\CMS\PageShortLink\PageShortLink.Logic.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.Logic.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetDataFormat.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetScriptType.cs" />
@@ -2624,7 +2625,7 @@
     <Compile Include="Model\Core\SignalType\SignalType.cs" />
     <Compile Include="Model\CMS\SiteDomain\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
-    <Compile Include="Model\CMS\PageShortLink\PageShortLinkService.Partial.cs" />
+    <Compile Include="Model\CMS\PageShortLink\PageShortLinkService.cs" />
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowActionService.cs" />
     <Compile Include="Pbx\CdrRecord.cs" />
     <Compile Include="Pbx\PbxComponent.cs" />

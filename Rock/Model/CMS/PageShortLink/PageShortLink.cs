@@ -14,20 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using System.Text;
-
 using Rock.Data;
 using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Used to map a site and token to a specific url 
+    /// Used to map a site and token to a specific URL. 
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "PageShortLink" )]
@@ -67,9 +64,9 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Url { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Site"/> that is associated with this PageShortLink.
@@ -96,7 +93,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -111,31 +108,7 @@ namespace Rock.Model
             return this.Token;
         }
 
-        #endregion
-
-        #region Static Properties/Methods 
-
-        private static Random _random = new Random( Guid.NewGuid().GetHashCode() );
-        private static char[] alphaCharacters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
-
-        /// <summary>
-        /// Gets a random token.
-        /// </summary>
-        /// <param name="length">The length.</param>
-        /// <returns></returns>
-        public static string GetRandomToken( int length )
-        {
-            StringBuilder sb = new StringBuilder();
-            int poolSize = alphaCharacters.Length;
-            for ( int i = 0; i < length; i++ )
-            {
-                sb.Append( alphaCharacters[_random.Next( poolSize )] );
-            }
-            return sb.ToString();
-        }
-
-        #endregion
-
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -150,9 +123,9 @@ namespace Rock.Model
         /// </summary>
         public PageShortLinkConfiguration()
         {
-            this.HasRequired( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( true );
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }
