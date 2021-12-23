@@ -51,7 +51,11 @@ namespace RockWeb.Blocks.Finance
             public const string BenevolenceTypeAttributes = "BenevolenceTypeAttributes";
         }
 
-        #region Properties
+        #region Properties        
+        /// <summary>
+        /// Gets or sets the workflow state model.
+        /// </summary>
+        /// <value>The workflow state model.</value>
         public List<BenevolenceWorkflow> WorkflowStateModel { get; set; }
         #endregion Properties
 
@@ -162,7 +166,11 @@ namespace RockWeb.Blocks.Finance
             gBenevolenceTypeWorkflows.GridRebind += gBenevolenceTypeWorkflows_GridRebind;
         }
 
-        public void ShowDetail( int benevolenceTypeId )
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="benevolenceTypeId">The benevolence type identifier.</param>
+        private void ShowDetail( int benevolenceTypeId )
         {
             pnlDetails.Visible = true;
             var rockContext = new RockContext();
