@@ -376,7 +376,19 @@ namespace Rock.Model
             }
         }
 
-#endregion Public Methods
+#if NET5_0_OR_GREATER
+        /// <summary>
+        /// Sets the initiator.
+        /// </summary>
+        internal void SetInitiator()
+        {
+            System.Diagnostics.Debug.WriteLine( "EFTODO: Workflow.SetInitiator() is currently a no-op." );
+            // EFTODO: This must be implemented somehow.
+        }
+
+#endif
+
+        #endregion Public Methods
 
         #region Private Methods
 

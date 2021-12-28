@@ -745,6 +745,7 @@ namespace Rock.Security
 
             return authCookie;
         }
+#endif
 
         /// <summary>
         /// Gets the simple authentication cookie.
@@ -755,6 +756,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
+#if !NET5_0_OR_GREATER
             var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated );
 
             if ( authCookie == null )
@@ -768,8 +770,12 @@ namespace Rock.Security
                 Name = authCookie.Name,
                 Value = authCookie.Value
             };
+#else
+            return null;
+#endif
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Sets the auth cookie.
         /// </summary>

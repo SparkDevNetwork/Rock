@@ -456,7 +456,11 @@ namespace Rock.Model
                 int personId = this.EntityId.Value;
                 if ( this.ModifiedByPersonAliasId.HasValue )
                 {
+#if NET5_0_OR_GREATER
+                    rockContext.Database.ExecuteSqlRaw(
+#else
                     rockContext.Database.ExecuteSqlCommand(
+#endif
                         $"UPDATE [Person] SET [ModifiedDateTime] = @modifiedDateTime, [ModifiedByPersonAliasId] = @modifiedByPersonAliasId WHERE [Id] = @personId",
                         new System.Data.SqlClient.SqlParameter( "@modifiedDateTime", currentDateTime ),
                         new System.Data.SqlClient.SqlParameter( "@modifiedByPersonAliasId", this.ModifiedByPersonAliasId.Value),
@@ -464,7 +468,11 @@ namespace Rock.Model
                 }
                 else
                 {
+#if NET5_0_OR_GREATER
+                    rockContext.Database.ExecuteSqlRaw(
+#else
                     rockContext.Database.ExecuteSqlCommand(
+#endif
                         $"UPDATE [Person] SET [ModifiedDateTime] = @modifiedDateTime, [ModifiedByPersonAliasId] = NULL WHERE [Id] = @personId",
                         new System.Data.SqlClient.SqlParameter( "@modifiedDateTime", currentDateTime ),
                         new System.Data.SqlClient.SqlParameter( "@personId", personId ) );

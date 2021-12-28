@@ -130,6 +130,41 @@ namespace Rock.Model
             return null;
         }
 
+#if NET5_0_OR_GREATER
+
+        /// <summary>
+        /// Gets the photo URL.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
+        public static string GetPhotoUrl( int? photoId, int? maxWidth = null, int? maxHeight = null )
+        {
+            string virtualPath = string.Empty;
+            if ( photoId.HasValue )
+            {
+                string widthHeightParams = string.Empty;
+                if ( maxWidth.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
+                }
+
+                if ( maxHeight.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
+                }
+
+                virtualPath = string.Format( "/GetImage.ashx?id={0}" + widthHeightParams, photoId );
+            }
+            else
+            {
+                virtualPath = "/Assets/Images/no-picture.svg?";
+            }
+
+            return virtualPath;
+        }
+#endif
 
 
         #endregion

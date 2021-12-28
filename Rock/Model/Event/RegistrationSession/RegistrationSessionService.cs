@@ -18,6 +18,10 @@
 using System;
 using System.Linq;
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#endif
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -59,7 +63,11 @@ namespace Rock.Model
                     // Initiate a full table lock so nothing else can query data,
                     // otherwise they might get a count that will no longer be
                     // valid after our transaction is committed.
+#if NET5_0_OR_GREATER
+                    rockContext.Database.ExecuteSqlRaw( "SELECT TOP 1 Id FROM [RegistrationSession] WITH (TABLOCKX, HOLDLOCK)" );
+#else
                     rockContext.Database.ExecuteSqlCommand( "SELECT TOP 1 Id FROM [RegistrationSession] WITH (TABLOCKX, HOLDLOCK)" );
+#endif
 
                     // Try to find the session to renew, if we can't find it then
                     // return a failure indication.
@@ -146,7 +154,11 @@ namespace Rock.Model
                     // Initiate a full table lock so nothing else can query data,
                     // otherwise they might get a count that will no longer be
                     // valid after our transaction is committed.
+#if NET5_0_OR_GREATER
+                    rockContext.Database.ExecuteSqlRaw( "SELECT TOP 1 Id FROM [RegistrationSession] WITH (TABLOCKX, HOLDLOCK)" );
+#else
                     rockContext.Database.ExecuteSqlCommand( "SELECT TOP 1 Id FROM [RegistrationSession] WITH (TABLOCKX, HOLDLOCK)" );
+#endif
 
                     var registrationService = new RegistrationService( rockContext );
 

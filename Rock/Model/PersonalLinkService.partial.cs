@@ -15,7 +15,11 @@
 // </copyright>
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Web;
 
@@ -391,12 +395,14 @@ namespace Rock.Model
             /// </remarks>
             public static void FlushPersonalLinksSessionDataLastModifiedDateTime()
             {
+#if !NET5_0_OR_GREATER
                 if ( HttpContext.Current?.Session == null )
                 {
                     return;
                 }
 
                 HttpContext.Current.Session[SessionKey.PersonalLinksLastUpdateDateTime] = null;
+#endif
             }
 
             /// <summary>
@@ -407,6 +413,9 @@ namespace Rock.Model
             /// </remarks>
             public static DateTime? GetPersonalLinksLastModifiedDateTime( Person currentPerson )
             {
+#if NET5_0_OR_GREATER
+                return null;
+#else
                 if ( currentPerson == null )
                 {
                     return null;
@@ -474,6 +483,7 @@ namespace Rock.Model
                 }
 
                 return lastModifiedDateTime;
+#endif
             }
         }
 

@@ -821,7 +821,9 @@ namespace Rock.Web.Cache
         [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
         public static void RemoveEntityAttributes()
         {
+#if !NET5_0_OR_GREATER
             EntityAttributesCache.Remove();
+#endif
         }
 
         #endregion
