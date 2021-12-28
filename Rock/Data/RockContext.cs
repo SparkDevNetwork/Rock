@@ -2221,7 +2221,7 @@ namespace Rock.Data
                 }
             }
 
-            modelBuilder.HasDbFunction( typeof( Rock.ExtensionMethods ).GetMethod( "Left", BindingFlags.Static | BindingFlags.Public ) );
+            modelBuilder.HasDbFunction( typeof( Rock.StringExtensions ).GetMethod( "Left", BindingFlags.Static | BindingFlags.Public ) );
 
             ContextHelper.ModelBuilder = modelBuilder;
 #endif
