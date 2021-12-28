@@ -68,6 +68,7 @@
     <Compile Remove="Address\MelissaData.cs" />
     <Compile Remove="Address\ServiceObjects.cs" />
     <Compile Remove="Blocks\Types\Mobile\Groups\GroupFinder.WebForms.cs" />
+    <Compile Remove="Bus\Message\ScheduledGiftModifiedMessage.cs" />
     <Compile Remove="Bus\Transport\Component\AzureServiceBus.cs" />
     <Compile Remove="Bus\Transport\Component\RabbitMq.cs" />
     <Compile Remove="Chart\ChartJsTimeSeriesDataPoint.cs" />
@@ -158,6 +159,10 @@
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
+    <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
+    <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
+    <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
+    <Compile Include="Transactions\ConnectionRequestActivityChangeTransaction.cs" />
     <Compile Include="Transactions\InteractionTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />

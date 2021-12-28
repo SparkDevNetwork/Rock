@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace Rock.CoreShims
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public interface ILegacyMigration
     {
         MigrationBuilder MigrationBuilder { get; set; }
@@ -96,4 +97,5 @@ namespace Rock.CoreShims
             }
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

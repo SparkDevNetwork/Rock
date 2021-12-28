@@ -20,10 +20,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
-using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -110,11 +108,11 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string EnabledLavaCommands = "EnabledLavaCommands";
         }
 
-        protected const string ConfirmHeadingTemplateDefaultValue = @"<h2 class='margin-t-none'>{{ Person.NickName }}, You’re confirmed to serve</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }} <i class='text-success fa fa-check-circle'></i><br></p>
+        protected const string ConfirmHeadingTemplateDefaultValue = @"<h2 class='margin-t-none'>{{ Person.NickName }}, you’re confirmed to serve.</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }} <i class='text-success fa fa-check-circle'></i><br></p>
 <p class='margin-b-lg'>Thanks again!<br>
 {{ Scheduler.FullName }}</p>";
 
-        protected const string DeclineHeadingTemplateDefaultValue = @"<h2 class='margin-t-none'>{{ Person.NickName }}, Can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
+        protected const string DeclineHeadingTemplateDefaultValue = @"<h2 class='margin-t-none'>{{ Person.NickName }}, can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
 <p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>
 {{ Group.Name }}<br>
 {{ ScheduledItem.Location.Name }} {{ ScheduledItem.Schedule.Name }}<br></p>";
@@ -189,14 +187,14 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
-        /// Handles the Click event of the btnConfirmAttending control.
+        /// Handles the Click event of the btnConfirmAttend control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnConfirmAttending_Click( object sender, EventArgs e )
+        protected void btnConfirmAttend_Click( object sender, EventArgs e )
         {
-            var btnConfirmAttending = sender as LinkButton;
-            int? attendanceId = btnConfirmAttending.CommandArgument.AsIntegerOrNull();
+            var btnConfirmAttend = sender as LinkButton;
+            int? attendanceId = btnConfirmAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
@@ -208,14 +206,14 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
-        /// Handles the Click event of the btnDeclineAttending control.
+        /// Handles the Click event of the btnDeclineAttend control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDeclineAttending_Click( object sender, EventArgs e )
+        protected void btnDeclineAttend_Click( object sender, EventArgs e )
         {
-            var btnDeclineAttending = sender as LinkButton;
-            int? attendanceId = btnDeclineAttending.CommandArgument.AsIntegerOrNull();
+            var btnDeclineAttend = sender as LinkButton;
+            int? attendanceId = btnDeclineAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
@@ -240,16 +238,16 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             var lPendingOccurrenceDetails = e.Item.FindControl( "lPendingOccurrenceDetails" ) as Literal;
             var lPendingOccurrenceTime = e.Item.FindControl( "lPendingOccurrenceTime" ) as Literal;
-            var btnConfirmAttending = e.Item.FindControl( "btnConfirmAttending" ) as LinkButton;
-            var btnDeclineAttending = e.Item.FindControl( "btnDeclineAttending" ) as LinkButton;
+            var btnConfirmAttend = e.Item.FindControl( "btnConfirmAttend" ) as LinkButton;
+            var btnDeclineAttend = e.Item.FindControl( "btnDeclineAttend" ) as LinkButton;
             var attendance = e.Item.DataItem as Attendance;
 
             lPendingOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
             lPendingOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
-            btnConfirmAttending.CommandName = "AttendanceId";
-            btnConfirmAttending.CommandArgument = attendance.Id.ToString();
-            btnDeclineAttending.CommandName = "AttendanceId";
-            btnDeclineAttending.CommandArgument = attendance.Id.ToString();
+            btnConfirmAttend.CommandName = "AttendanceId";
+            btnConfirmAttend.CommandArgument = attendance.Id.ToString();
+            btnDeclineAttend.CommandName = "AttendanceId";
+            btnDeclineAttend.CommandArgument = attendance.Id.ToString();
         }
         #endregion
 

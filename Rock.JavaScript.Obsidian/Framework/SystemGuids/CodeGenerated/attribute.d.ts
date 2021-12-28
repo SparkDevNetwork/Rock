@@ -50,6 +50,8 @@ export const enum Attribute {
     PersonSnapchat = "61099377-9EB3-43EA-BA37-75E329E55866",
     /** The allergy attribute */
     PersonAllergy = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31",
+    /** The Person legal note attribute */
+    PersonLegalNote = "F832AB6F-B684-4EEA-8DB4-C54B895C79ED",
     /** The person attribute for the person's giving envelope number */
     PersonGivingEnvelopeNumber = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49",
     /** The same site cookie setting */
@@ -188,6 +190,8 @@ export const enum Attribute {
     GroupmemberCommunicationListPreferredCommunicationMedium = "D7941908-1F65-CC9B-416C-CCFABE4221B9",
     /** The communication transport SMTP server Attribute Guid */
     CommunicationTransportSmtpServer = "6CFFDF99-E93A-49B8-B440-0EF93878A51F",
+    /** The communication medium Email CSS Inlining Enabled Attribute Guid */
+    CommunicationMediumEmailCssInliningEnabled = "1D5E06A4-79BD-4554-AB63-DD6F1F815594",
     /** The Template DefinedType &gt; TemplateBlock DefinedValue Attribute Guid */
     DefinedTypeTemplateTemplateBlock = "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D",
     /** The Template DefinedType &gt; Icon DefinedValue Attribute Guid */
@@ -258,6 +262,8 @@ export const enum Attribute {
     WorkflowActionSendEmailAttachmentThree = "A059767A-5592-4926-948A-1065AF4E9748",
     /** The Send Email workflow action attribute guid for SaveCommunicationHistory */
     WorkflowActionSendEmailSaveCommunicationHistory = "65E69B78-37D8-4A88-B8AC-71893D2F75EF",
+    /** The Workflow Entry Block Attribute that disables passing the WorkflowTypeID. */
+    WorkflowEntryBlockDisablePassingWorkflowtypeid = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB",
     /** The defined value logging domains to log */
     DefinedValueLoggingDomainsToLog = "9BEA544F-0636-485E-8772-B63180E529F9",
     /** The defined value log system settings */
@@ -302,13 +308,14 @@ export const enum Attribute {
     PersonGivingPreferredCurrency = "77A5F7DE-9096-45C8-9051-9D8EE50E3C2F",
     /** Preferred Source - Defined Type */
     PersonGivingPreferredSource = "0567B279-1F4D-4573-9AA7-927A7278443E",
-    /** Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined) */
+    /** Frequency Label. See . */
     PersonGivingFrequencyLabel = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5",
     /** Percent of Gifts Scheduled - Integer */
     PersonGivingPercentScheduled = "98373264-0E65-4C79-B75B-4F8477AA647E",
     /** Gift Amount: Median - Currency */
     PersonGivingAmountMedian = "327F1CFF-A013-42B5-80A7-5922A40480EC",
-    /** Gift Amount: IQR - Currency */
+    /** Gift Amount: IQR - Currency
+IQR = Interquartile Range calculated from the past 12 months of giving */
     PersonGivingAmountIqr = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7",
     /** Gift Frequency Days: Mean -  Decimal */
     PersonGivingFrequencyMeanDays = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA",

@@ -64,6 +64,11 @@ namespace Rock.SystemGuid
         public const string HISTORY_PERSON = "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7";
 
         /// <summary>
+        /// The history attendance changes for a person
+        /// </summary>
+        public const string HISTORY_ATTENDANCE_CHANGES = "BF6ABCD3-AD41-4D54-998F-B83C302756E3";
+
+        /// <summary>
         /// History of person demographic changes
         /// </summary>
         public const string HISTORY_PERSON_DEMOGRAPHIC_CHANGES = "51D3EC5A-D079-45ED-909E-B0AB2FD06835";
@@ -170,6 +175,11 @@ namespace Rock.SystemGuid
         /// The category for person attributes for DISC
         /// </summary>
         public const string PERSON_ATTRIBUTES_DISC = "0B187C81-2106-4875-82B6-FBF1277AE23B";
+
+        /// <summary>
+        /// The category for the Check-in Manager Roster Alert Icons
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_CHECK_IN_ROSTER_ALERT_ICON = "367571D1-62D3-4948-B588-C0FDCE00CF27";
 
         /// <summary>
         /// The category for person attributes for Personality Assessment Data

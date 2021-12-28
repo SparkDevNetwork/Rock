@@ -16,6 +16,13 @@
 //
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Runtime.Serialization;
 using Rock.Data;
 
@@ -103,5 +110,24 @@ namespace Rock.Model
         }
 
         private ICollection<BenevolenceRequestDocument> _documents;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The database entity entry.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                // If this is a new entry we need to make sure the benevolence type defaults to 1
+                if ( entry.CurrentValues["BenevolenceTypeId"].Equals( 0 ) )
+                {
+                    entry.CurrentValues["BenevolenceTypeId"] = 1;
+                }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
     }
 }

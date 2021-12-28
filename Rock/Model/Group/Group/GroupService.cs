@@ -994,8 +994,8 @@ namespace Rock.Model
 
                 if ( !familyMembersList.Any() )
                 {
-                    // This should only happen if there are no non-deceased people in the group
-                    return "";
+                    // This should only happen if all members of the family are deceased.
+                    return group.Name;
                 }
             }
 

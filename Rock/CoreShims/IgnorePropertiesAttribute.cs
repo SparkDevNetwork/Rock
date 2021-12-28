@@ -16,6 +16,7 @@
 //
 namespace Rock.Data
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class IgnorePropertiesAttribute : System.Attribute
     {
         /// <summary>
@@ -33,4 +34,5 @@ namespace Rock.Data
             this.Properties = properties;
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

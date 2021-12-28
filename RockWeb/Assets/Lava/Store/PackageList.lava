@@ -1,9 +1,9 @@
 <div class="panel panel-block">
     <div class="panel-body">
-        <div class="row">
+        <div class="row d-flex flex-wrap">
             {% for package in Packages %}
 
-            <div class="col-sm-3 col-xs-6">
+            <div class="col-lg-3 col-sm-4 col-xs-6 mb-4">
                 <div class="packagesummary">
 
                     <div class="packagesummary-image">
@@ -16,15 +16,17 @@
                         <p class="vendor text-sm text-muted">{{ package.Vendor.Name }}</p>
                     </div>
 
-                    <div class="packagesummary-footer clearfix">
-                        <div class="rating text-warning pull-left">
+                    <div class="packagesummary-footer">
+                        <div class="rating text-warning">
                             {{ package.Rating | RatingMarkup }}
                         </div>
-                        <div class="cost text-color pull-right">
+                        <div class="cost text-color text-sm">
                             {% if package.IsFree == true %}
                                 Free
                             {% elseif package.Price != null %}
                                 ${{ package.Price }}
+                            {% else %}
+                                Paid
                             {% endif %}
                         </div>
                     </div>

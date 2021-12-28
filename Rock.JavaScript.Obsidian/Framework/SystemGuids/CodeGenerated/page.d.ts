@@ -79,9 +79,12 @@ ParentPage: Functions */
     /** Gets the Benevolence page guid
 ParentPage: Person Pages */
     BenevolencePersonPages = "15FA4176-1C8E-409D-8B47-85ADA35DE5D2",
-    /** Gets the Benevolence Detail page guid
+    /** Gets the Benevolence Types page guid
 ParentPage: Benevolence */
-    BenevolenceDetail = "6DC7BAED-CA01-4703-B679-EC81143CDEDD",
+    BenevolenceTypes = "C6BE9CF1-FFE9-4DC1-8472-865FD93B89A8",
+    /** Gets the Benevolence Types Detail page guid
+ParentPage: Benevolence */
+    BenevolenceTypesDetail = "DBFC432E-F0A4-457E-BA5B-572C49B899D1",
     /** Gets the Benevolence Request Detail page guid
 ParentPage: Benevolence */
     BenevolenceRequestDetail = "648CA58C-EB12-4479-9994-F064070E3A32",
@@ -147,6 +150,8 @@ ParentPage: Check-in Type */
     CheckInManager = "A4DCE339-9C11-40CA-9A02-D2FE64EA164B",
     /** The check in manager attendance detail */
     CheckInManagerAttendanceDetail = "758ECFCD-9E20-48B5-827B-973492E39C0D",
+    /** The check in manager person attendance change history */
+    CheckInManagerPersonAttendanceChangeHistory = "185BFEA9-9E95-4B8D-836B-87AF36BE6109",
     /** The Check-in Manager Live Metrics page */
     CheckInManagerLiveMetrics = "04F70D50-5D27-4C12-A76D-B25E6E4CB177",
     /** The Login page under the Check-in Manager page */

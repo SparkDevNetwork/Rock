@@ -272,11 +272,11 @@ namespace RockWeb.Blocks.Groups
                 if ( groupInfo.IsSecurityRole && this.GroupListGridMode == GridListGridMode.GroupList )
                 {
                     var lElevatedSecurityLevel = e.Row.FindControl( "lElevatedSecurityLevel" ) as Literal;
-                    if ( groupInfo.ElevatedSecurityLevel >= ElevatedSecurityLevel.Low )
+                    if ( groupInfo.ElevatedSecurityLevel >= ElevatedSecurityLevel.High )
                     {
                         lElevatedSecurityLevel.Visible = true;
                         string cssClass;
-                        if ( groupInfo.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
+                        if ( groupInfo.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
                         {
                             cssClass = "label label-danger";
                         }

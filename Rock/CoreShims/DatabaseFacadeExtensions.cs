@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Rock
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class DatabaseFacadeExtensions
     {
         /// <summary>
@@ -82,4 +83,5 @@ namespace Rock
             }
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

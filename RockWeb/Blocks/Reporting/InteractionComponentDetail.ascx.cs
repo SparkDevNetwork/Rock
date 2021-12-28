@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Reporting
     </div>
 ", "", 0 )]
 
-    public partial class InteractionComponentDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class InteractionComponentDetail : Rock.Web.UI.RockBlock
     {
 
         #region Fields 

@@ -26,7 +26,7 @@ import RegistrantPersonField from "./registrantPersonField";
 import RegistrantAttributeField from "./registrantAttributeField";
 import Alert from "../../../Elements/alert";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./registrationEntryBlockViewModel";
-import { areEqual, Guid } from "../../../Util/guid";
+import { areEqual, Guid, newGuid } from "../../../Util/guid";
 import RockForm from "../../../Controls/rockForm";
 import FeeField from "./feeField";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "../../../Elements/itemsWithPreAndPostHtml";
@@ -34,7 +34,7 @@ import { useStore } from "../../../Store/index";
 
 const store = useStore();
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.Registrant",
     components: {
         RadioButtonList,
@@ -58,7 +58,7 @@ export default defineComponent( {
         }
     },
     setup () {
-        const registrationEntryState = inject( "registrationEntryState" ) as RegistrationEntryState;
+        const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
 
         return {
             registrationEntryState
@@ -88,77 +88,82 @@ export default defineComponent( {
             return this.formsToShow[ this.currentFormIndex ] || null;
         },
         isLastForm (): boolean {
-            return ( this.currentFormIndex + 1 ) === this.formsToShow.length;
+            return (this.currentFormIndex + 1) === this.formsToShow.length;
         },
 
         /** The filtered list of forms that will be shown */
         formsToShow (): RegistrationEntryBlockFormViewModel[] {
-            if ( !this.isWaitList ) {
+            if (!this.isWaitList) {
                 return this.viewModel.registrantForms;
             }
 
-            return this.viewModel.registrantForms.filter( form => form.fields.some( field => field.showOnWaitList ) );
+            return this.viewModel.registrantForms.filter(form => form.fields.some(field => field.showOnWaitList));
         },
 
         /** The filtered fields to show on the current form */
         currentFormFields (): RegistrationEntryBlockFormFieldViewModel[] {
-            return ( this.currentForm?.fields || [] )
-                .filter( f => !this.isWaitList || f.showOnWaitList );
+            return (this.currentForm?.fields || [])
+                .filter(f => !this.isWaitList || f.showOnWaitList);
         },
 
         /** The current fields as pre-post items to allow pre-post HTML to be rendered */
         prePostHtmlItems (): ItemWithPreAndPostHtml[] {
             return this.currentFormFields
-                .map( f => ( {
+                .map(f => ({
                     preHtml: f.preHtml,
                     postHtml: f.postHtml,
                     slotName: f.guid
-                } ) );
+                }));
         },
         currentPerson (): Person | null {
             return store.state.currentPerson;
         },
         pluralFeeTerm (): string {
-            return StringFilter.toTitleCase( this.viewModel.pluralFeeTerm || "fees" );
+            return StringFilter.toTitleCase(this.viewModel.pluralFeeTerm || "fees");
         },
 
         /** The radio options that are displayed to allow the user to pick another person that this
          *  registrant is part of a family. */
-        familyOptions (): DropDownListOption[] {
+        familyOptions(): DropDownListOption[] {
             const options: DropDownListOption[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
-            if ( this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask ) {
+            if (this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask) {
                 return options;
             }
 
             // Add previous registrants as options
-            for ( let i = 0; i < this.registrationEntryState.currentRegistrantIndex; i++ ) {
+            for (let i = 0; i < this.registrationEntryState.currentRegistrantIndex; i++) {
                 const registrant = this.registrationEntryState.registrants[ i ];
-                const info = getRegistrantBasicInfo( registrant, this.viewModel.registrantForms );
+                const info = getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
 
-                if ( !usedFamilyGuids[ registrant.familyGuid ] && info?.firstName && info?.lastName ) {
-                    options.push( {
+                if (!usedFamilyGuids[ registrant.familyGuid ] && info?.firstName && info?.lastName) {
+                    options.push({
                         text: `${info.firstName} ${info.lastName}`,
                         value: registrant.familyGuid
-                    } );
+                    });
 
                     usedFamilyGuids[ registrant.familyGuid ] = true;
                 }
             }
 
             // Add the current person (registrant) if not already added
-            if ( this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[ this.currentPerson.primaryFamilyGuid ] ) {
-                options.push( {
+            if (this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[this.currentPerson.primaryFamilyGuid]) {
+                usedFamilyGuids[this.currentPerson.primaryFamilyGuid] = true;
+                options.push({
                     text: this.currentPerson.fullName,
                     value: this.currentPerson.primaryFamilyGuid
-                } );
+                });
             }
 
-            options.push( {
+            // Add the current person (registrant) if not already added
+            const familyGuid = usedFamilyGuids[this.currentRegistrant.familyGuid] == true
+                ? newGuid()
+                : this.currentRegistrant.familyGuid;
+            options.push({
                 text: "None of the above",
-                value: this.currentRegistrant.ownFamilyGuid
-            } );
+                value: familyGuid
+            });
 
             return options;
         },
@@ -167,37 +172,37 @@ export default defineComponent( {
         familyMemberOptions (): DropDownListOption[] {
             const selectedFamily = this.currentRegistrant.familyGuid;
 
-            if ( !selectedFamily ) {
+            if (!selectedFamily) {
                 return [];
             }
 
             const usedFamilyMemberGuids = this.registrationEntryState.registrants
-                .filter( r => r.personGuid && r.personGuid !== this.currentRegistrant.personGuid )
-                .map( r => r.personGuid );
+                .filter(r => r.personGuid && r.personGuid !== this.currentRegistrant.personGuid)
+                .map(r => r.personGuid);
 
             return this.viewModel.familyMembers
-                .filter( fm =>
-                    areEqual( fm.familyGuid, selectedFamily ) &&
-                    !usedFamilyMemberGuids.includes( fm.guid ) )
-                .map( fm => ( {
+                .filter(fm =>
+                    areEqual(fm.familyGuid, selectedFamily) &&
+                    !usedFamilyMemberGuids.includes(fm.guid))
+                .map(fm => ({
                     text: fm.fullName,
                     value: fm.guid
-                } ) );
+                }));
         },
         uppercaseRegistrantTerm (): string {
-            return StringFilter.toTitleCase( this.viewModel.registrantTerm );
+            return StringFilter.toTitleCase(this.viewModel.registrantTerm);
         },
         firstName (): string {
-            return getRegistrantBasicInfo( this.currentRegistrant, this.viewModel.registrantForms ).firstName;
+            return getRegistrantBasicInfo(this.currentRegistrant, this.viewModel.registrantForms).firstName;
         },
         familyMember (): RegistrationEntryBlockFamilyMemberViewModel | null {
             const personGuid = this.currentRegistrant.personGuid;
 
-            if ( !personGuid ) {
+            if (!personGuid) {
                 return null;
             }
 
-            return this.viewModel.familyMembers.find( fm => areEqual( fm.guid, personGuid ) ) || null;
+            return this.viewModel.familyMembers.find(fm => areEqual(fm.guid, personGuid)) || null;
         }
     },
     methods: {
@@ -243,14 +248,17 @@ export default defineComponent( {
                             this.currentRegistrant.fieldValues[field.guid] = familyMemberValue;
                         }
                     }
+                    else {
+                        delete this.currentRegistrant.fieldValues[field.guid];
+                    }
                 }
             }
         }
     },
     watch: {
-        "currentRegistrant.FamilyGuid"(): void {
+        "currentRegistrant.familyGuid"(): void {
             // Clear the person guid if the family changes
-            this.currentRegistrant.personGuid = "";
+            this.currentRegistrant.personGuid = null;
         },
         familyMember: {
             handler(): void {
@@ -315,4 +323,4 @@ export default defineComponent( {
         </div>
     </RockForm>
 </div>`
-} );
+});

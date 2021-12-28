@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Rock.CoreShims
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     /// <summary>
     /// Provides information to EF Core about what migrations are available.
     /// EFTODO: Eventually need to mix in both EF6 and EF Core migrations into one.
@@ -119,5 +120,5 @@ namespace Rock.CoreShims
             return migration;
         }
     }
-
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

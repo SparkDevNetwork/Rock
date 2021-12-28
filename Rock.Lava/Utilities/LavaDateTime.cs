@@ -112,6 +112,18 @@ namespace Rock.Lava
             return NewDateTimeOffset( year, month, day, hour, minute, second, null );
         }
 
+        /// <summary>
+        /// Creates a new datetime for the Rock timezone.
+        /// </summary>
+        /// <param name="ticks"></param>
+        /// <returns></returns>
+        public static DateTimeOffset NewDateTimeOffset( long ticks )
+        {
+            var dto = new DateTimeOffset( ticks, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( new DateTime( ticks ) ) );
+
+            return dto;
+        }
+
         private static DateTimeOffset NewDateTimeOffset( int year, int month, int day, int hour, int minute, int second, TimeSpan? offset )
         {
             offset = offset ?? RockDateTime.OrgTimeZoneInfo.BaseUtcOffset;
@@ -219,12 +231,12 @@ namespace Rock.Lava
                 // Convert a UTC or Local datetime to the Rock timezone.
                 dateTime = ConvertToRockDateTime( dateTime );
 
-                return new DateTimeOffset( dateTime, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                return new DateTimeOffset( dateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dateTime ) );
             }
             else
             {
                 // Assume an Unspecified Date Kind refers to the Rock timezone.
-                return new DateTimeOffset( dateTime, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                return new DateTimeOffset( dateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dateTime ) );
             }
         }
 

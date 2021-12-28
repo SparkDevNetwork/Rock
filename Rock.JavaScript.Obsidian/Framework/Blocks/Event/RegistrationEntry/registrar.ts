@@ -31,7 +31,7 @@ import { useStore } from "../../../Store/index";
 
 const store = useStore();
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.Registrar",
     components: {
         TextBox,
@@ -42,8 +42,8 @@ export default defineComponent( {
     },
     setup () {
         return {
-            getRegistrationEntryBlockArgs: inject( "getRegistrationEntryBlockArgs" ) as () => RegistrationEntryBlockArgs,
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState
+            getRegistrationEntryBlockArgs: inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs,
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
     data () {
@@ -55,7 +55,7 @@ export default defineComponent( {
     computed: {
         /** Is the registrar option set to UseLoggedInPerson */
         useLoggedInPersonForRegistrar (): boolean {
-            return ( !!this.currentPerson ) && this.viewModel.registrarOption === RegistrarOption.UseLoggedInPerson;
+            return (!!this.currentPerson) && this.viewModel.registrarOption === RegistrarOption.UseLoggedInPerson;
         },
 
         /** The person that is currently authenticated */
@@ -85,7 +85,7 @@ export default defineComponent( {
 
         /** Info about the registrants made available by .FirstName instead of by field guid */
         registrantInfos (): RegistrantBasicInfo[] {
-            return this.registrationEntryState.registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.registrantForms ) );
+            return this.registrationEntryState.registrants.map(r => getRegistrantBasicInfo(r, this.viewModel.registrantForms));
         },
 
         /** The registrant term - plural if there are more than 1 */
@@ -104,37 +104,32 @@ export default defineComponent( {
             const options: DropDownListOption[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
-            if ( this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask ) {
+            if (this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask) {
                 return options;
             }
 
             // Add previous registrants as options
-            for ( let i = 0; i < this.registrationEntryState.registrants.length; i++ ) {
+            for (let i = 0; i < this.registrationEntryState.registrants.length; i++) {
                 const registrant = this.registrationEntryState.registrants[ i ];
-                const info = getRegistrantBasicInfo( registrant, this.viewModel.registrantForms );
+                const info = getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
 
-                if ( !usedFamilyGuids[ registrant.familyGuid ] && info?.firstName && info?.lastName ) {
-                    options.push( {
+                if (!usedFamilyGuids[ registrant.familyGuid ] && info?.firstName && info?.lastName) {
+                    options.push({
                         text: `${info.firstName} ${info.lastName}`,
                         value: registrant.familyGuid
-                    } );
+                    });
 
                     usedFamilyGuids[ registrant.familyGuid ] = true;
                 }
             }
 
             // Add the current person (registrant) if not already added
-            if ( this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[ this.currentPerson.primaryFamilyGuid ] ) {
-                options.push( {
-                    text: this.currentPerson.fullName,
-                    value: this.currentPerson.primaryFamilyGuid
-                } );
+            if (!usedFamilyGuids[this.registrationEntryState.ownFamilyGuid]) {
+                options.push({
+                    text: "None",
+                    value: this.registrationEntryState.ownFamilyGuid
+                });
             }
-
-            options.push( {
-                text: "None of the above",
-                value: this.registrar.ownFamilyGuid
-            } );
 
             return options;
         },
@@ -145,8 +140,8 @@ export default defineComponent( {
             this.isRegistrarPanelShown = true;
 
             // If the option is to prompt or use the current person, prefill the current person if available
-            if ( this.currentPerson &&
-                ( this.viewModel.registrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar ) ) {
+            if (this.currentPerson &&
+                (this.viewModel.registrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar)) {
                 this.registrar.nickName = this.currentPerson.nickName || this.currentPerson.firstName || "";
                 this.registrar.lastName = this.currentPerson.lastName || "";
                 this.registrar.email = this.currentPerson.email || "";
@@ -154,21 +149,21 @@ export default defineComponent( {
                 return;
             }
 
-            if ( this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar ) {
+            if (this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar) {
                 return;
             }
 
             // If prefill or first-registrant, then the first registrants info is used (as least as a starting point)
-            if ( this.viewModel.registrarOption === RegistrarOption.PrefillFirstRegistrant || this.viewModel.registrarOption === RegistrarOption.UseFirstRegistrant ) {
-                const firstRegistrantInfo = getRegistrantBasicInfo( this.firstRegistrant, this.viewModel.registrantForms );
+            if (this.viewModel.registrarOption === RegistrarOption.PrefillFirstRegistrant || this.viewModel.registrarOption === RegistrarOption.UseFirstRegistrant) {
+                const firstRegistrantInfo = getRegistrantBasicInfo(this.firstRegistrant, this.viewModel.registrantForms);
                 this.registrar.nickName = firstRegistrantInfo.firstName;
                 this.registrar.lastName = firstRegistrantInfo.lastName;
                 this.registrar.email = firstRegistrantInfo.email;
                 this.registrar.familyGuid = this.firstRegistrant.familyGuid;
 
-                const hasAllInfo = ( !!this.registrar.nickName ) && ( !!this.registrar.lastName ) && ( !!this.registrar.email );
+                const hasAllInfo = (!!this.registrar.nickName) && (!!this.registrar.lastName) && (!!this.registrar.email);
 
-                if ( hasAllInfo && this.viewModel.registrarOption === RegistrarOption.UseFirstRegistrant ) {
+                if (hasAllInfo && this.viewModel.registrarOption === RegistrarOption.UseFirstRegistrant) {
                     this.isRegistrarPanelShown = false;
                 }
 
@@ -218,4 +213,4 @@ export default defineComponent( {
         </div>
     </template>
 </div>`
-} );
+});

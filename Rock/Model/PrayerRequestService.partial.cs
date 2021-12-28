@@ -181,7 +181,7 @@ namespace Rock.Model
             // Filter by campus if we have been given any.
             if ( options.Campuses != null && options.Campuses.Any() )
             {
-                if ( options.IncludeNullableCampus )
+                if ( options.IncludeEmptyCampus )
                 {
                     qryPrayerRequests = qryPrayerRequests
                         .Include( r => r.Campus )
@@ -193,6 +193,20 @@ namespace Rock.Model
                         .Include( r => r.Campus )
                         .Where( r => r.CampusId.HasValue && options.Campuses.Contains( r.Campus.Guid ) );
                 }
+            }
+
+            // Filter by group if it has been specified.
+            if ( options.GroupGuids?.Any() ?? false )
+            {
+                qryPrayerRequests = qryPrayerRequests
+                    .Where( a => options.GroupGuids.Contains( a.Group.Guid ) );
+            }
+
+            // If we are not filtering by group, then exclude any group requests
+            // unless the block setting including them is enabled.
+            if ( !(options.GroupGuids?.Any() ?? false ) && !options.IncludeGroupRequests )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( a => !a.GroupId.HasValue );
             }
 
             return qryPrayerRequests;

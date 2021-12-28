@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
@@ -379,6 +381,34 @@ namespace Rock.Tests.Integration.Lava
             TestHelper.AssertTemplateOutput( "Calendar Events not available. Invalid configuration setting \"maxoccurrences\".",
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        /// <summary>
+        /// Retrieve information about a known event that exists in the Rock sample data set, and verify the information is accurate.
+        /// </summary>
+        [TestMethod]
+        public void CalendarEventsCommand_ForSampleDataKnownEvents_ReturnsExpectedEventData()
+        {
+            var input = @"
+{% calendarevents calendarid:'Internal' startdate:'2021-1-1' maxoccurrences:2 %}
+    {% for item in EventScheduledInstances %}
+        Name={{ item.Name }}<br>
+        Date={{item.Date }}<br>
+        Time={{ item.Time }}<br>
+        DateTime={{ item.DateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}
+        <hr>
+    {% endfor %}
+{% endcalendarevents %}
+";
+            var rockTimeOffset = LavaDateTime.ConvertToRockDateTime( new DateTime( 2021, 1, 1, 0, 0, 0, DateTimeKind.Unspecified ) ).ToString( "zzz" );
+
+            var expectedOutput = @"
+Name=Rock Solid Finances Class<br>Date=2/01/2021<br>Time=4:30 PM<br>DateTime=2021-01-02T16:30:00<offset><hr>
+Name=Rock Solid Finances Class<br>Date=3/01/2021<br>Time=12:00 PM<br>DateTime=2021-01-03T12:00:00<offset><hr>
+";
+            expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         #region Test Data

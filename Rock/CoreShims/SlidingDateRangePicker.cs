@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Rock.Web.UI.Controls
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SlidingDateRangePicker
     {
         public static string GetDelimitedValues( SlidingDateRangeType slidingDateRangeMode, TimeUnitType? timeUnit = null, int? numberOfTimeUnits = 1, DateTime? dateRangeModeStart = null, DateTime? dateRangeModeEnd = null )
@@ -364,4 +365,5 @@ namespace Rock.Web.UI.Controls
             None
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

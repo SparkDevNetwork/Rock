@@ -411,6 +411,11 @@ textarea,
     &[align="center"] {
       padding: 18px 6px;
     }
+
+    // Remove padding offset on center
+    &[align="right"] {
+      padding: 18px 12px 18px 0;
+    }
   }
 
   > thead > tr.grid-header-bold > th {
@@ -1028,7 +1033,6 @@ td.grid-actions {
 }
 
 
-
 // expanded view
 @media (min-width: @screen-sm-min) {
   .navbar-static-side {
@@ -1144,7 +1148,6 @@ td.grid-actions {
     margin: -35px -35px 0;
   }
 }
-
 
 
 // workflow page

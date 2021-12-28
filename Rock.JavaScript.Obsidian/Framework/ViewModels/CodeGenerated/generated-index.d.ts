@@ -44,6 +44,8 @@ import { Badge } from "./badge";
 import { BenevolenceRequest } from "./benevolenceRequest";
 import { BenevolenceRequestDocument } from "./benevolenceRequestDocument";
 import { BenevolenceResult } from "./benevolenceResult";
+import { BenevolenceType } from "./benevolenceType";
+import { BenevolenceWorkflow } from "./benevolenceWorkflow";
 import { BinaryFile } from "./binaryFile";
 import { BinaryFileData } from "./binaryFileData";
 import { BinaryFileType } from "./binaryFileType";
@@ -261,6 +263,8 @@ export {
     BenevolenceRequest,
     BenevolenceRequestDocument,
     BenevolenceResult,
+    BenevolenceType,
+    BenevolenceWorkflow,
     BinaryFile,
     BinaryFileData,
     BinaryFileType,

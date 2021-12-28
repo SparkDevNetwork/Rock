@@ -119,6 +119,15 @@ namespace Rock.Model
         [DataMember]
         public string Note { get; set; }
 
+        /// <summary>
+        /// Gets or sets the datetime for the next scheduled occurrence of this event. 
+        /// </summary>
+        /// <value>
+        /// The datetime of the next occurrence.
+        /// </value>
+        [DataMember]
+        public DateTime? NextStartDateTime { get; set; }
+
         #endregion
 
         #region Navigation Properties

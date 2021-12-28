@@ -50,6 +50,21 @@ namespace Rock.Search.Person
             }
         }
 
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            var personIdQry = groupMemberService.GetPersonIdsByHomeAddress( searchTerm );
+
+            return personService.Queryable()
+                .Where( p => personIdQry.Contains( p.Id ) )
+                .OrderBy( p => p.NickName )
+                .ThenBy( p => p.LastName );
+        }
+
         /// <summary>
         /// Returns a list of matching people
         /// </summary>

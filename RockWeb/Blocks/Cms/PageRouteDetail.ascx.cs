@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Route Detail")]
     [Category("CMS")]
     [Description("Displays the details of a page route.")]
-    public partial class PageRouteDetail : RockBlock, IDetailBlock
+    public partial class PageRouteDetail : RockBlock
     {
         #region Control Methods
 

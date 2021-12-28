@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Bus
     [Category( "Bus" )]
     [Description( "Displays the details of the given Queue for editing." )]
 
-    public partial class QueueDetail : RockBlock, IDetailBlock
+    public partial class QueueDetail : RockBlock
     {
         #region Keys
 
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Bus
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )

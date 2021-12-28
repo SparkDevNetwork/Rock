@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Common.Mobile.Enums;
+
 namespace Rock.Mobile
 {
     /// <summary>
@@ -59,5 +61,25 @@ namespace Rock.Mobile
         /// then they will get a true full-screen experience like a splash screen.
         /// </remarks>
         public bool ShowFullScreen { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the page will automatically
+        /// reload when it becomes visible.
+        /// </summary>
+        /// <value><c>true</c> if the page automatically reloads when it becomes visible; otherwise, <c>false</c>.</value>
+        public bool AutoRefresh { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the page that will be displayed.
+        /// </summary>
+        /// <value>The type of the page that will be displayed.</value>
+        public MobilePageType PageType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web page URL, this value is used if the <see cref="PageType"/>
+        /// is set to <see cref="MobilePageType.InternalWebPage"/> or <see cref="MobilePageType.ExternalWebPage"/>.
+        /// </summary>
+        /// <value>The web page URL.</value>
+        public string WebPageUrl { get; set; }
     }
 }

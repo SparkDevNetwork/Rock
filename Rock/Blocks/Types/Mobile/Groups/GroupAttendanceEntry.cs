@@ -79,6 +79,21 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.AllowAnyDateSelection,
         Order = 4 )]
 
+    [BooleanField( "Show Attendance Notes",
+        Description = "Enables collecting notes about the attendance. This will automatically show the save button as well.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.ShowAttendanceNotes,
+        Order = 5 )]
+
+    [TextField( "Attendance Note Label",
+        Description = "The label that will describe how the notes will be used.",
+        IsRequired = true,
+        DefaultValue = "Notes",
+        Key = AttributeKeys.AttendanceNoteLabel,
+        Order = 6 )]
+
     #endregion
 
     public class GroupAttendanceEntry : RockMobileBlockType
@@ -114,6 +129,16 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The allow any date selection attribute key.
             /// </summary>
             public const string AllowAnyDateSelection = "AllowAnyDateSelection";
+
+            /// <summary>
+            /// The show attendance notes attribute key.
+            /// </summary>
+            public const string ShowAttendanceNotes = "ShowAttendanceNotes";
+
+            /// <summary>
+            /// The attendance note label attribute key.
+            /// </summary>
+            public const string AttendanceNoteLabel = "AttendanceNoteLabel";
         }
 
         /// <summary>
@@ -156,6 +181,22 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </value>
         protected bool AllowAnyDateSelection => GetAttributeValue( AttributeKeys.AllowAnyDateSelection ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether a text field for note entry will be visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if a text field for note entry will be visible; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ShowAttendanceNotes => GetAttributeValue( AttributeKeys.ShowAttendanceNotes ).AsBoolean();
+
+        /// <summary>
+        /// Gets the attendance note label text that appears above the notes field.
+        /// </summary>
+        /// <value>
+        /// The attendance note label text that appears above the notes field.
+        /// </value>
+        protected string AttendanceNoteLabel => GetAttributeValue( AttributeKeys.AttendanceNoteLabel );
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -184,11 +225,15 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            return new Common.Mobile.Blocks.Groups.GroupAttendanceEntry.Configuration
+            return new
             {
                 AllowAnyDateSelection = AllowAnyDateSelection,
                 ShowSaveButton = ShowSaveButton,
-                SaveRedirectPage = SaveRedirectPage
+                SaveRedirectPage = SaveRedirectPage,
+
+                // These are only supported in mobile shell 2.1 and later.
+                ShowAttendanceNotes,
+                AttendanceNoteLabel
             };
         }
 
@@ -319,7 +364,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <param name="date">The date.</param>
         /// <param name="attendees">The attendees.</param>
         /// <param name="didNotMeet">if set to <c>true</c> then the group is marked as having not met.</param>
-        private void SaveAttendanceData( RockContext rockContext, Group group, DateTime date, List<Attendee> attendees, bool didNotMeet )
+        /// <param name="notes">Contains the note text to save with the occurrence.</param>
+        private void SaveAttendanceData( RockContext rockContext, Group group, DateTime date, List<Attendee> attendees, bool didNotMeet, string notes )
         {
             var attendanceService = new AttendanceService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
@@ -384,6 +430,9 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             occurrence.DidNotOccur = didNotMeet;
 
+            // Only update the occurrence Notes if 'notes' is not null.
+            occurrence.Notes = notes ?? occurrence.Notes;
+
             rockContext.SaveChanges();
         }
 
@@ -433,17 +482,17 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 var occurrence = GetOccurrence( rockContext, group, absDate ?? DateTime.MinValue, false );
                 var rockDates = dates
-                    .Select( a => DateTime.SpecifyKind( a, DateTimeKind.Unspecified ) )
-                    .Select( a => new DateTimeOffset( a, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( a ) ) )
+                    .Select( d => d.ToRockDateTimeOffset() )
                     .ToList();
 
-                return ActionOk( new GroupData
+                return ActionOk( new
                 {
                     Header = GetHeader( group ),
                     Date = absDate.Value,
                     Dates = rockDates,
                     DidNotMeet = occurrence?.DidNotOccur ?? false,
-                    Attendees = GetAttendees( rockContext, occurrence, group )
+                    Attendees = GetAttendees( rockContext, occurrence, group ),
+                    Notes = occurrence?.Notes ?? string.Empty
                 } );
             }
         }
@@ -476,9 +525,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <param name="date">The date.</param>
         /// <param name="attendees">The attendees.</param>
         /// <param name="didNotMeet">if set to <c>true</c> the group did not meet.</param>
+        /// <param name="notes">Contains the notes to be saved with the occurrence.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveAttendance( Guid groupGuid, DateTimeOffset date, List<Attendee> attendees, bool didNotMeet )
+        public BlockActionResult SaveAttendance( Guid groupGuid, DateTimeOffset date, List<Attendee> attendees, bool didNotMeet, string notes = null )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -499,7 +549,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
-                SaveAttendanceData( rockContext, group, absDate, attendees, didNotMeet );
+                SaveAttendanceData( rockContext, group, absDate, attendees, didNotMeet, notes );
 
                 return ActionOk();
             }
@@ -536,7 +586,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
-                SaveAttendanceData( rockContext, group, absDate, new List<Attendee>(), didNotMeet );
+                SaveAttendanceData( rockContext, group, absDate, new List<Attendee>(), didNotMeet, null );
 
                 return GetGroupData( groupGuid, absDate );
             }

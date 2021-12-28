@@ -18,9 +18,11 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -133,8 +135,19 @@ namespace Rock.Badge.Component
             }
             else
             {
-                // check for recent DISC request
-                DateTime? lastRequestDate = Person.GetAttributeValue( "LastDiscRequestDate" ).AsDateTime();
+                var rockContext = new RockContext();
+                var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
+                var lastRequestDate = new AssessmentService( rockContext )
+                   .Queryable()
+                   .AsNoTracking()
+                   .Where( a => a.PersonAlias != null
+                                && a.PersonAlias.PersonId == Person.Id
+                                && a.Status == AssessmentRequestStatus.Pending
+                                && a.AssessmentTypeId == assessmentType.Id
+                                && a.RequestedDateTime.HasValue )
+                   .Select( a => a.RequestedDateTime )
+                   .OrderByDescending( a => a )
+                   .FirstOrDefault();
 
                 bool recentRequest = lastRequestDate.HasValue && lastRequestDate.Value > ( RockDateTime.Now.AddDays( -30 ) );
 

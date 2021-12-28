@@ -49,16 +49,34 @@ namespace Rock.Search.Group
         }
 
         /// <summary>
+        /// Gets the search result entity queryable that matches the search term.
+        /// </summary>
+        /// <param name="searchTerm">The search term used to find results.</param>
+        /// <returns>A queryable of entity objects that match the search term.</returns>
+        private IQueryable<Model.Group> GetSearchResults( string searchTerm )
+        {
+            return new GroupService( new RockContext() ).Queryable()
+                .Where( g => g.GroupType.ShowInNavigation
+                    && g.Name.Contains( searchTerm ) );
+        }
+
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            return GetSearchResults( searchTerm )
+                .OrderBy( g => g.Name );
+        }
+
+        /// <summary>
         /// Returns a list of matching groups
         /// </summary>
         /// <param name="searchterm"></param>
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new GroupService( new RockContext() ).Queryable()
-                .Where( g => 
-                    g.GroupType.ShowInNavigation &&
-                    g.Name.Contains( searchterm ) )
+            var groupQry = ( IQueryable<Model.Group> ) SearchQuery( searchterm );
+
+            return GetSearchResults( searchterm )
                 .OrderBy( g => g.Name )
                 .Select( g => g.Name );
         }

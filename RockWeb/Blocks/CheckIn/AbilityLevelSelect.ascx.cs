@@ -157,12 +157,6 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
-            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
-            if ( bodyTag != null )
-            {
-                bodyTag.AddCssClass( "checkin-abilitylevelselect-bg" );
-            }
-
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -356,7 +350,8 @@ namespace RockWeb.Blocks.CheckIn
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
                         person.StateParameters.Add( "AbilityLevel", _personAbilityLevelGuid );
 
-                        if ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAsk )
+                        if ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAsk ||
+                            ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAskIfThereIsNoAbilityLevel && _personAbilityLevelGuid.IsNullOrWhiteSpace() ) )
                         {
                             if ( !ProcessSelection() )
                             {

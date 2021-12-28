@@ -138,10 +138,16 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_PERSON_PAGES = "15FA4176-1C8E-409D-8B47-85ADA35DE5D2";
 
         /// <summary>
-        /// Gets the Benevolence Detail page guid
+        /// Gets the Benevolence Types page guid
         /// ParentPage: Benevolence
         /// </summary>
-        public const string BENEVOLENCE_DETAIL = "6DC7BAED-CA01-4703-B679-EC81143CDEDD";
+        public const string BENEVOLENCE_TYPES = "C6BE9CF1-FFE9-4DC1-8472-865FD93B89A8";
+
+        /// <summary>
+        /// Gets the Benevolence Types Detail page guid
+        /// ParentPage: Benevolence
+        /// </summary>
+        public const string BENEVOLENCE_TYPES_DETAIL = "DBFC432E-F0A4-457E-BA5B-572C49B899D1";
 
         /// <summary>
         /// Gets the Benevolence Request Detail page guid
@@ -273,6 +279,11 @@ namespace Rock.SystemGuid
         /// The check in manager attendance detail
         /// </summary>
         public const string CHECK_IN_MANAGER_ATTENDANCE_DETAIL = "758ECFCD-9E20-48B5-827B-973492E39C0D";
+
+        /// <summary>
+        /// The check in manager person attendance change history
+        /// </summary>
+        public const string CHECK_IN_MANAGER_PERSON_ATTENDANCE_CHANGE_HISTORY = "185BFEA9-9E95-4B8D-836B-87AF36BE6109";
 
         /// <summary>
         /// The Check-in Manager Live Metrics page

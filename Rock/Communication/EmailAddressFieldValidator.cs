@@ -47,7 +47,7 @@ namespace Rock.Communication
     /// </summary>
     public class EmailAddressFieldValidator
     {
-        private const string _emailAddressRegex = @"\s*(\w+(?:[-+.]\w+)*@\w+(?:[-.]\w+)*\.\w+(?:[-.]\w+)*)\s*";
+        private const string _emailAddressRegex = @"\s*(\w+(?:[-+.]*\w+)*@\w+(?:[-.]\w+)*\.\w+(?:[-.]\w+)*)\s*";
         private const string _lavaVariableRegex = @"({{\s*[^}}]+\s*}})";
         private const string _lavaTagRegex = @"({%\s*[^%}]+\s*%})";
         private const string _lavaBlockRegex = @"(({%\s*(?<tagName>(\w+)\s*).*%})).*({%\s*end\k<tagName>\s*%})";

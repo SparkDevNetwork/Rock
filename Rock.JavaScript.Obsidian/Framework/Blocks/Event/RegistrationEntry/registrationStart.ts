@@ -22,7 +22,7 @@ import RockButton from "../../../Elements/rockButton";
 import { ClientEditableAttributeValue } from "../../../ViewModels";
 import { RegistrationEntryState } from "../registrationEntry";
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.RegistrationStart",
     components: {
         RockButton,
@@ -31,7 +31,7 @@ export default defineComponent( {
     },
     setup() {
         return {
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
     data() {
@@ -46,10 +46,10 @@ export default defineComponent( {
     },
     methods: {
         onPrevious() {
-            this.$emit( "previous" );
+            this.$emit("previous");
         },
         onNext() {
-            this.$emit( "next" );
+            this.$emit("next");
         }
     },
     watch: {
@@ -95,4 +95,4 @@ export default defineComponent( {
         </div>
     </RockForm>
 </div>`
-} );
+});

@@ -22,6 +22,8 @@
 //
 
 export const enum NoteType {
+    /** Generic prayer comment note type */
+    BenevolenceRequestNote = "CC49BF39-8D3E-4512-B8F4-853FE49CDBC7",
     /** The content channel item structured content user value */
     ContentChannelItemStructuredContentUserValue = "860C37A0-1A44-4681-B96D-4703813609D2",
     /** The fundraising opportunity comment */
@@ -40,5 +42,7 @@ export const enum NoteType {
     ScheduledTransactionNote = "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588",
     /** The workflow change log note */
     WorkflowChangeLogNote = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6",
+    /** The pastoral note type. */
+    PastoralNote = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42",
 }
 

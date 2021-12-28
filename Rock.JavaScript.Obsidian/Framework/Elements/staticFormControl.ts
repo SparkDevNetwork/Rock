@@ -17,7 +17,7 @@
 import { defineComponent } from "vue";
 import RockFormField from "./rockFormField";
 
-export default defineComponent( {
+export default defineComponent({
     name: "StaticFormControl",
     components: {
         RockFormField
@@ -40,4 +40,4 @@ export default defineComponent( {
         </div>
     </template>
 </RockFormField>`
-} );
+});

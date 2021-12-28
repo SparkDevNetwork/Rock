@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Event
         Order = 2,
         Key = AttributeKey.GroupDetailPage )]
 
-    public partial class EventItemOccurrenceDetail : RockBlock, IDetailBlock
+    public partial class EventItemOccurrenceDetail : RockBlock
     {
         #region Properties
 
@@ -1170,7 +1170,9 @@ namespace RockWeb.Blocks.Event
                 {
                     foreach ( var instance in new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( i => i.RegistrationTemplateId == templateId.Value )
+                        .Where( i => i.RegistrationTemplateId == templateId.Value
+                            && i.RegistrationTemplate.IsActive == true
+                            && i.IsActive == true )
                         .OrderBy( i => i.Name )
                         )
                     {
@@ -1192,7 +1194,10 @@ namespace RockWeb.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
-                foreach ( var template in new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().OrderBy( t => t.Name ) )
+                foreach ( var template in new RegistrationTemplateService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( i => i.IsActive == true )
+                    .OrderBy( t => t.Name ) )
                 {
                     if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
@@ -1463,6 +1468,18 @@ namespace RockWeb.Blocks.Event
 
                 args.IsValid = !existsInCurrentList && !eventMapingService.Queryable().AsNoTracking().Any( m => m.UrlSlug == urlSlug && m.Guid != groupMapId );
             }
+        }
+
+        protected void rvUrlSlug_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var urlSlug = args.Value;
+            if ( urlSlug.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var match = System.Text.RegularExpressions.Regex.Match( urlSlug, "^[a-z0-9]+(?:-[a-z0-9]+)*$" );
+            args.IsValid = match.Success;
         }
     }
 }

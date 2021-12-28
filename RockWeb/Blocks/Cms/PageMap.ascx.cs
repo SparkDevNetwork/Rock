@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -58,6 +59,7 @@ namespace RockWeb.Blocks.Cms
         {
             public const string RootPage = "RootPage";
             public const string SiteType = "SiteType";
+            public const string DetailPage = "DetailPage";
         }
 
         #endregion Attribute Keys
@@ -75,6 +77,13 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
+        #region Fields
+
+        private int? _pageId = null;
+        private string _pageSearch = null;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -84,6 +93,33 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            _pageId = PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
+            _pageSearch = PageParameter( PageParameterKey.PageSearch );
+
+            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.DetailPage ) );
+
+            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
+            if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
+            {
+                hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl();
+            }
+            else
+            {
+                hfPageRouteTemplate.Value = string.Empty;
+                var pageCache = PageCache.Get( detailPageReference.PageId );
+                if ( pageCache != null )
+                {
+                    var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
+                    if ( route != null )
+                    {
+                        hfPageRouteTemplate.Value = route.Route;
+                    }
+                }
+
+                hfDetailPageUrl.Value = detailPageReference.BuildUrl();
+            }
 
             InitializeSettingsNotification( upPanel );
         }
@@ -96,151 +132,123 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
-            List<int> expandedPageIds = new List<int>();
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
-            RockContext rockContext = new RockContext();
-            PageService pageService = new PageService( rockContext );
-
-            if ( Page.IsPostBack )
+            if ( _pageId.HasValue )
             {
-                foreach ( int expandedId in hfExpandedIds.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList() )
-                {
-                    if ( expandedId != 0 )
-                    {
-                        expandedPageIds.Add( expandedId );
-                    }
-                }
-            }
-            else
-            {
-                string pageSearch = this.PageParameter( PageParameterKey.PageSearch );
+                var key = string.Format( "Page:{0}", _pageId );
+                var rockContext = new RockContext();
+                var selectedPage = RockPage.GetSharedItem( key ) as Rock.Model.Page;
+                var pageService = new PageService( rockContext );
+                var parentIdList = new List<string>();
 
                 // NOTE: using "Page" instead of "PageId" since PageId is already parameter of the current page
-                int? selectedPageId = this.PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
-                if ( !string.IsNullOrWhiteSpace( pageSearch ) )
+                if ( !string.IsNullOrWhiteSpace( _pageSearch ) )
                 {
-                    foreach ( var page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
+                    foreach ( var pageItem in pageService.Queryable().Where( a => a.InternalName.IndexOf( _pageSearch ) >= 0 ) )
                     {
-                        var selectedPage = page;
+                        selectedPage = pageItem;
                         while ( selectedPage != null )
                         {
                             selectedPage = selectedPage.ParentPage;
                             if ( selectedPage != null )
                             {
-                                expandedPageIds.Add( selectedPage.Id );
+                                parentIdList.Add( selectedPage.Id.ToString() );
                             }
                         }
                     }
                 }
-                else if ( selectedPageId.HasValue )
+                else
                 {
-                    expandedPageIds.Add( selectedPageId.Value );
-                    hfSelectedItemId.Value = selectedPageId.ToString();
+                    parentIdList.Add( _pageId.ToString() );
+                    hfSelectedPageId.Value = _pageId.ToString();
                 }
-            }
 
-            // also get any additional expanded nodes that were sent in the Post
-            string postedExpandedIds = this.Request.Params["ExpandedIds"];
-            if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
-            {
-                var postedExpandedIdList = postedExpandedIds.Split( ',' ).ToList().AsIntegerList();
-                foreach ( var postedId in postedExpandedIdList )
+                if ( selectedPage == null )
                 {
-                    if ( !expandedPageIds.Contains( postedId ) )
+                    selectedPage = new PageService( rockContext ).Queryable()
+                        .Where( p => p.Id == _pageId )
+                        .FirstOrDefault();
+                    RockPage.SaveSharedItem( key, selectedPage );
+                }
+
+                // Apply the Site Type filter to the root page list.
+                hfSiteTypeList.Value = GetAttributeValue( AttributeKey.SiteType );
+
+                // get the parents of the selected item so we can tell the treeview to expand those
+                int? rootPageId = hfRootPageId.Value.AsIntegerOrNull();
+                var page = selectedPage;
+                while ( page != null )
+                {
+                    if ( page.Id == rootPageId )
                     {
-                        expandedPageIds.Add( postedId );
+                        // stop if we are at the root group
+                        page = null;
+                    }
+                    else
+                    {
+                        page = page.ParentPage;
+                    }
+
+                    if ( page != null )
+                    {
+                        if ( !parentIdList.Contains( page.Id.ToString() ) )
+                        {
+                            parentIdList.Insert( 0, page.Id.ToString() );
+                        }
+                        else
+                        {
+                            // The parent list already contains this node, so we have encountered a recursive loop.
+                            // Stop here and make the current node the root of the tree.
+                            page = null;
+                        }
                     }
                 }
-            }
 
-            var sb = new StringBuilder();
+                // also get any additional expanded nodes that were sent in the Post
+                string postedExpandedIds = this.Request.Params["ExpandedIds"];
+                if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
+                {
+                    var postedExpandedIdList = postedExpandedIds.Split( ',' ).ToList();
+                    foreach ( var id in postedExpandedIdList )
+                    {
+                        if ( !parentIdList.Contains( id ) )
+                        {
+                            parentIdList.Add( id );
+                        }
+                    }
+                }
 
-            sb.AppendLine( "<ul id=\"treeview\">" );
+                if ( null != selectedPage )
+                {
+                    hfInitialPageId.Value = selectedPage.Id.ToString();
+                    hfSelectedPageId.Value = selectedPage.Id.ToString();
+                }
 
-            var rootPagesQry = pageService.Queryable().AsNoTracking();
-
-            string rootPage = GetAttributeValue( AttributeKey.RootPage );
-            if ( !string.IsNullOrEmpty( rootPage ) )
-            {
-                Guid pageGuid = rootPage.AsGuid();
-                rootPagesQry = rootPagesQry.Where( a => a.ParentPage.Guid == pageGuid );
+                hfInitialPageParentIds.Value = parentIdList.AsDelimited( "," );
             }
             else
             {
-                rootPagesQry = rootPagesQry.Where( a => a.ParentPageId == null );
+                // let the Add button be visible if there is nothing selected (if authorized)
+                lbAddPageChild.Enabled = canEditBlock;
             }
 
-            // Apply the Site Type filter to the root page list.
-            var siteTypeList = GetAttributeValue( AttributeKey.SiteType ).SplitDelimitedValues( "," ).AsIntegerList();
+            // NOTE that canEditBlock just controls if the button is shown.
+            // The page detail block will take care of enforcing auth when they attempt to save a group.
+            divAddPage.Visible = canEditBlock;
+            lbAddPageRoot.Enabled = canEditBlock;
+            lbAddPageChild.Enabled = canEditBlock;
 
-            if ( siteTypeList.Any() )
+            // disable add child page if no page is selected
+            if ( hfSelectedPageId.ValueAsInt() == 0 )
             {
-                var siteService = new SiteService( rockContext );
-
-                var siteIdList = siteService.Queryable()
-                    .Where( x => siteTypeList.Contains( ( int ) x.SiteType ) )
-                    .Select( x => x.Id )
-                    .ToList();
-
-                rootPagesQry = rootPagesQry.Where( a => siteIdList.Contains( a.Layout.Site.Id ) );
+                lbAddPageChild.Enabled = false;
             }
-
-            var rootPageList = rootPagesQry.OrderBy( a => a.Order ).Select( a => a.Id ).ToList();
-
-            foreach ( var pageId in rootPageList )
-            {
-                sb.Append( PageNode( PageCache.Get( pageId ), expandedPageIds, rockContext ) );
-            }
-
-            sb.AppendLine( "</ul>" );
-
-            lPages.Text = sb.ToString();
         }
 
         #endregion Base Control Methods
 
         #region Events
-
-        /// <summary>
-        /// Adds the page nodes.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="expandedPageIdList">The expanded page identifier list.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        protected string PageNode( PageCache page, List<int> expandedPageIdList, RockContext rockContext )
-        {
-            var sb = new StringBuilder();
-
-            bool isExpanded = expandedPageIdList.Contains( page.Id );
-
-            sb.AppendFormat(
-                @"
-<li {0} data-id='{1}'>
-    <span><i class='fa fa-file-o'></i> {2}</span>
-",
-                isExpanded ? "data-expanded='true'" : string.Empty, // 0
-                page.Id, // 1
-                page.InternalName // 2
-            );
-
-            var childPages = page.GetPages( rockContext );
-            if ( childPages.Any() )
-            {
-                sb.AppendLine( "<ul>" );
-
-                foreach ( var childPage in childPages.OrderBy( a => a.Order ) )
-                {
-                    sb.Append( PageNode( childPage, expandedPageIdList, rockContext ) );
-                }
-
-                sb.AppendLine( "</ul>" );
-            }
-
-            sb.AppendLine( "</li>" );
-
-            return sb.ToString();
-        }
 
         /// <summary>
         /// Handles the Click event of the lbAddPageRoot control.
@@ -260,7 +268,7 @@ namespace RockWeb.Blocks.Cms
                 qryParams.Add( "ParentPageId", parentPageId.ToString() );
             }
 
-            qryParams.Add( "ExpandedIds", hfExpandedIds.Value );
+            qryParams.Add( "ExpandedIds", hfInitialPageParentIds.Value );
 
             NavigateToPage( this.RockPage.Guid, qryParams );
         }
@@ -281,7 +289,7 @@ namespace RockWeb.Blocks.Cms
                 qryParams.Add( "ParentPageId", selectedPageId.ToString() );
             }
 
-            qryParams.Add( "ExpandedIds", hfExpandedIds.Value );
+            qryParams.Add( "ExpandedIds", hfInitialPageParentIds.Value );
 
             NavigateToPage( this.RockPage.Guid, qryParams );
         }

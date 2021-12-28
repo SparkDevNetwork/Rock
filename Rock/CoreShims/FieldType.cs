@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -26,6 +27,10 @@ namespace Rock.Field
 
         public List<string> ConfigurationKeys()
             => new List<string>();
+
+        [RockInternal]
+        public Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+            => new Dictionary<string, string>();
 
         public List<object> ConfigurationControls()
             => throw new NotImplementedException();
@@ -58,6 +63,18 @@ namespace Rock.Field
             => originalValue;
 
         public bool HasDefaultControl => false;
+
+        [RockInternal]
+        public string GetClientValue( string value, Dictionary<string, string> configurationValues )
+            => value;
+
+        [RockInternal]
+        public string GetClientEditValue( string value, Dictionary<string, string> configurationValues )
+            => value;
+
+        [RockInternal]
+        public string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+            => clientValue;
 
         public object EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
             => throw new NotImplementedException();
@@ -151,20 +168,36 @@ namespace Rock.Field
             return configurationValues.ToDictionary( c => c.Key, c => c.Value.Value );
         }
 
+        [RockInternal]
+        public string GetTextValue( string value, Dictionary<string, string> configurationValues )
+            => value;
+
         public string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return value;
         }
+
+        [RockInternal]
+        public string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
+            => GetTextValue( value, configurationValues );
 
         public string GetHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return GetTextValue( value, configurationValues );
         }
 
+        [RockInternal]
+        public string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+            => GetTextValue( value, configurationValues );
+
         public string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return GetTextValue( value, configurationValues );
         }
+
+        [RockInternal]
+        public string GetCondensedHtmlValue( string value, Dictionary<string, string> configurationValues )
+            => GetHtmlValue( value, configurationValues );
 
         public string GetCondensedHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {

@@ -22,9 +22,6 @@
 }
 
 .codeeditor-header {
-  /* position: absolute;
-    top: -4px;
-    right: 0; */
 
   .picker-mergefield {
     float: right;
@@ -203,7 +200,7 @@
   --kpi-col-md: 50%;
 }
 
-.media-element-play-analytics {
+.media-element-detail {
   .video-container {
     position: relative;
   }
@@ -225,59 +222,75 @@
     font-size: 28px;
     font-weight: 600;
   }
-
-  .individual-play-row {
-    display: flex;
-    flex-direction: row;
-    margin-bottom: 12px;
-  }
 }
 
 .individual-play-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+  @media (min-width: @screen-sm) {
+    flex-direction: row;
+    align-items: center;
+  }
+
   .individual-play-date {
     flex: 0 0 auto;
-    width: 100px;
     padding: 4px 8px 4px 0;
     font-size: 12px;
     line-height: initial;
     color: @text-muted;
-    text-align: right;
+
+    @media (min-width: @screen-sm) {
+      width: 100px;
+      text-align: right;
+
+      span {
+        display: block;
+      }
+    }
   }
 
+  .individual-play-bar {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: @gray-200;
+    border-radius: @border-radius-large;
+
+    @media (min-width: @screen-sm) {
+      flex-direction: row;
+    }
+  }
+
+  .individual-play-percent,
   .individual-play-person {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-    width: 200px;
     padding: 8px;
     font-weight: 600;
-    background-color: @gray-200;
-    border-top-left-radius: @border-radius-large;
-    border-bottom-left-radius: @border-radius-large;
+  }
+  @media (min-width: @screen-sm) {
+    .individual-play-person {
+      width: 200px;
+    }
+
+    .individual-play-percent {
+      justify-content: center;
+      width: 60px;
+    }
   }
 
   .individual-play-chart {
-    flex-shrink: 1;
-    flex-grow: 1;
+    flex: 1 1 auto;
     height: 60px;
     background: @gray-100;
-  }
 
-  .individual-play-chart > svg {
-    width: 100%;
-    height: 60px;
-    pointer-events: none;
-  }
-
-  .individual-play-percent {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    padding: 8px;
-    background-color: @gray-200;
-    border-top-right-radius: @border-radius-large;
-    border-bottom-right-radius: @border-radius-large;
+    > svg {
+      width: 100%;
+      height: 60px;
+      pointer-events: none;
+    }
   }
 }

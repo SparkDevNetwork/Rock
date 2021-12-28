@@ -480,6 +480,18 @@ namespace Rock.Data
         public DbSet<BenevolenceResult> BenevolenceResults { get; set; }
 
         /// <summary>
+        /// Gets or sets the benevolence types.
+        /// </summary>
+        /// <value>The benevolence types.</value>
+        public DbSet<BenevolenceType> BenevolenceTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence workflows.
+        /// </summary>
+        /// <value>The benevolence workflows.</value>
+        public DbSet<BenevolenceWorkflow> BenevolenceWorkflows { get; set; }
+
+        /// <summary>
         /// Gets or sets the Files.
         /// </summary>
         /// <value>
@@ -2293,10 +2305,12 @@ namespace Rock.Data
         /// No metrics will be captured (default)
         /// </summary>
         Off = 0,
+
         /// <summary>
         /// Just the number of queries will be captured.
         /// </summary>
         Count = 1,
+
         /// <summary>
         /// All metrics will the captured (count and a copy of the SQL)
         /// </summary>

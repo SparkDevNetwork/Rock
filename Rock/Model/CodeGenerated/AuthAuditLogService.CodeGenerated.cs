@@ -119,6 +119,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
+            target.PersonAliasId = source.PersonAliasId;
             target.PostAllowOrDeny = source.PostAllowOrDeny;
             target.PostOrder = source.PostOrder;
             target.PreAllowOrDeny = source.PreAllowOrDeny;

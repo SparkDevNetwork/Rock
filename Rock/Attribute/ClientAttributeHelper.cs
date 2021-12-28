@@ -69,8 +69,8 @@ namespace Rock.Attribute
                     Order = c.Order
                 } ).ToList(),
                 Order = attribute.Order,
-                TextValue = fieldType.GetTextValue( attributeValue.Value, attribute.QualifierValues ),
-                Value = fieldType.GetClientValue( attributeValue.Value, attribute.QualifierValues )
+                TextValue = fieldType.GetTextValue( attributeValue.Value, attribute.ConfigurationValues ),
+                Value = fieldType.GetClientValue( attributeValue.Value, attribute.ConfigurationValues )
             };
         }
 
@@ -111,12 +111,12 @@ namespace Rock.Attribute
                     Order = c.Order
                 } ).ToList(),
                 Order = attribute.Order,
-                TextValue = fieldType.GetTextValue( value, attribute.QualifierValues ),
-                Value = fieldType.GetClientEditValue( value, attribute.QualifierValues ),
+                TextValue = fieldType.GetTextValue( value, attribute.ConfigurationValues ),
+                Value = fieldType.GetClientEditValue( value, attribute.ConfigurationValues ),
                 Key = attribute.Key,
                 IsRequired = attribute.IsRequired,
                 Description = attribute.Description,
-                ConfigurationValues = fieldType.GetClientConfigurationValues( attribute.QualifierValues )
+                ConfigurationValues = fieldType.GetClientConfigurationValues( attribute.ConfigurationValues )
             };
         }
 
@@ -132,7 +132,7 @@ namespace Rock.Attribute
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return fieldType.GetValueFromClient( clientValue, attribute.QualifierValues );
+            return fieldType.GetValueFromClient( clientValue, attribute.ConfigurationValues );
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace Rock.Attribute
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return fieldType.GetClientValue( databaseValue, attribute.QualifierValues );
+            return fieldType.GetClientValue( databaseValue, attribute.ConfigurationValues );
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Rock.Attribute
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return fieldType.GetClientEditValue( databaseValue, attribute.QualifierValues );
+            return fieldType.GetClientEditValue( databaseValue, attribute.ConfigurationValues );
         }
 
         /// <summary>

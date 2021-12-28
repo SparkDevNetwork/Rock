@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
-    public partial class DefinedTypeDetail : RockBlock, IDetailBlock
+    public partial class DefinedTypeDetail : RockBlock
     {
         public static class AttributeKey
         {

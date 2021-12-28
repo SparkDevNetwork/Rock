@@ -112,6 +112,14 @@ namespace Rock.ViewModel
         public int? StructureEntityId { get; set; }
 
         /// <summary>
+        /// Gets or sets the StructureSettingsJSON.
+        /// </summary>
+        /// <value>
+        /// The StructureSettingsJSON.
+        /// </value>
+        public string StructureSettingsJSON { get; set; }
+
+        /// <summary>
         /// Gets or sets the StructureType.
         /// </summary>
         /// <value>

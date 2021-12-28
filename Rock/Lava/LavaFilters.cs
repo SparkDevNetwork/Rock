@@ -64,8 +64,10 @@ namespace Rock.Lava
     /// </summary>
     /// <remarks>
     /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
-    /// Filters defined in this class should be moved to the TemplateFilters class once they are confirmed to operate correctly
-    /// in both the Rock Web and Rock Mobile applications.
+    /// Filters should only be defined in this class if they are specific to the Rock web application, as these definitions
+    /// override any implementation of the same name defined in the TemplateFilters class.
+    /// Filters that are confirmed as suitable for use with both the Rock Web and Rock Mobile applications should be
+    /// implemented in the TemplateFilters class.
     /// </remarks>
     internal static class LavaFilters
     {
@@ -1067,85 +1069,6 @@ namespace Rock.Lava
         #endregion String Filters
 
         #region DateTime Filters
-
-        /* [2021-07-31] DL
-         * 
-         * Lava Date filters may return DateTime, DateTimeOffset, or string values according to their purpose.
-         * Where possible, a filter should return a DateTime value specified in UTC, or a DateTimeOffset.
-         * Local DateTime values may give unexpected results if the Rock timezone setting is different from the server timezone.
-         * Where a date string is accepted as an input parameter, the Rock timezone is implied unless a timezone is specified.
-         */
-
-        /// <summary>
-        /// Formats a date using a .NET date format string
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="format"></param>
-        /// <returns></returns>
-        public static string Date( object input, string format = null )
-        {
-            if ( input == null )
-            {
-                return null;
-            }
-
-            // If input is "now", use the current Rock date/time as the input value.
-            if ( input.ToString().ToLower() == "now" )
-            {
-                // To correctly include the Rock configured timezone, we need to use a DateTimeOffset.
-                // The DateTime object can only represent local server time or UTC time.
-                input = LavaDateTime.NowOffset;
-            }
-
-            // Use the General Short Date/Long Time format by default.
-            if ( string.IsNullOrWhiteSpace( format ) )
-            {
-                format = "G";
-            }
-            // Consider special 'Standard Date' and 'Standard Time' formats.
-            else if ( format == "sd" )
-            {
-                format = "d";
-            }
-            else if ( format == "st" )
-            {
-                format = "t";
-            }
-            // If the format string is a single character, add a space to produce a valid custom format string.
-            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
-            else if ( format.Length == 1 )
-            {
-                format = " " + format;
-            }
-
-            if ( input is DateTimeOffset inputDateTimeOffset )
-            {
-                // Preserve the value of the specified offset and return the formatted datetime value.
-                return inputDateTimeOffset.ToString( format ).Trim();
-            }
-
-            // Convert the input to a valid Rock DateTimeOffset if possible.
-            DateTimeOffset? inputDateTime;
-
-            if ( input is DateTime dt )
-            {
-                inputDateTime = LavaDateTime.ConvertToRockOffset( dt );
-            }
-            else
-            {
-                inputDateTime = LavaDateTime.ParseToOffset( input.ToString(), null );
-            }
-
-            if ( !inputDateTime.HasValue )
-            {
-                // Not a valid date, so return the input unformatted.
-                return input.ToString().Trim();
-            }
-
-            var output = LavaDateTime.ToString( inputDateTime.Value, format ).Trim();
-
-            return output;
-        }
 
         /// <summary>
         /// Sundays the date.
@@ -4500,13 +4423,27 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current.Handler as RockPage;
 
             if ( page != null )
             {
-                HtmlLink imageLink = new HtmlLink();
+                // If the link already exists, do not add it again.
+                foreach ( var ctl in page.Header.Controls )
+                {
+                    if ( ctl is HtmlLink ctlLink )
+                    {
+                        if ( ctlLink.Attributes["href"] == input
+                             && ctlLink.Attributes[attributeName] == attributeValue )
+                        {
+                            return null;
+                        }
+                    }
+                }
+
+                var imageLink = new HtmlLink();
                 imageLink.Attributes.Add( attributeName, attributeValue );
                 imageLink.Attributes.Add( "href", input );
+
                 page.Header.Controls.Add( imageLink );
             }
 

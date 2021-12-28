@@ -73,10 +73,10 @@ namespace Rock.Follow.Event
                     daysBack += 2;
                 }
 
-                var cuttoffDateTime = processDate.AddDays( 0 - daysBack );
-                if ( lastNotified.HasValue && lastNotified.Value > cuttoffDateTime )
+                var cutoffDateTime = processDate.AddDays( 0 - daysBack );
+                if ( lastNotified.HasValue && lastNotified.Value > cutoffDateTime )
                 {
-                    cuttoffDateTime = lastNotified.Value;
+                    cutoffDateTime = lastNotified.Value;
                 }
 
                 var personAlias = entity as PersonAlias;
@@ -84,11 +84,11 @@ namespace Rock.Follow.Event
                 {
                     if ( followingEvent.IncludeNonPublicRequests )
                     {
-                        return HasPubicOrPrivatePrayerRequest( personAlias, cuttoffDateTime );
+                        return HasPublicOrPrivatePrayerRequest( personAlias, cutoffDateTime );
                     }
                     else
                     {
-                        return HasPubicPrayerRequest( personAlias, cuttoffDateTime );
+                        return HasPublicPrayerRequest( personAlias, cutoffDateTime );
                     }
                 }
             }
@@ -98,7 +98,7 @@ namespace Rock.Follow.Event
 
         #endregion
 
-        private bool HasPubicPrayerRequest( PersonAlias personAlias, DateTime cuttoffDateTime )
+        private bool HasPublicPrayerRequest( PersonAlias personAlias, DateTime cutoffDateTime )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -108,13 +108,13 @@ namespace Rock.Follow.Event
                         r.RequestedByPersonAlias != null &&
                         r.RequestedByPersonAlias.PersonId == personAlias.PersonId &&
                         r.ApprovedOnDateTime.HasValue &&
-                        r.ApprovedOnDateTime.Value >= cuttoffDateTime && 
+                        r.ApprovedOnDateTime.Value >= cutoffDateTime && 
                         r.IsApproved == true &&
                         r.IsPublic == true );
             }
         }
 
-        private bool HasPubicOrPrivatePrayerRequest( PersonAlias personAlias, DateTime cuttoffDateTime )
+        private bool HasPublicOrPrivatePrayerRequest( PersonAlias personAlias, DateTime cutoffDateTime )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -124,7 +124,7 @@ namespace Rock.Follow.Event
                         r.RequestedByPersonAlias != null &&
                         r.RequestedByPersonAlias.PersonId == personAlias.PersonId &&
                         r.ApprovedOnDateTime.HasValue &&
-                        r.ApprovedOnDateTime.Value >= cuttoffDateTime && 
+                        r.ApprovedOnDateTime.Value >= cutoffDateTime && 
                         r.IsApproved == true );
             }
         }

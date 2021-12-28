@@ -46,6 +46,31 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_COMMUNICATION_VIEW = "0D588D84-111C-4350-98DE-460C194F5DE5";
 
         /// <summary>
+        /// The block template for the Mobile > Connection > Connection Type List block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_TYPE_LIST = "FECAD08A-570F-434E-BEED-412C4F2A3159";
+
+        /// <summary>
+        /// The block template for the Mobile > Connection > Connection Opportunity List block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST = "167465D9-E8D2-413C-BA99-FDA529B14E6C";
+
+        /// <summary>
+        /// The block template for the Mobile > Connection > Connection Request List block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_REQUEST_LIST = "4A45926C-5571-414C-8C69-8203FDBF4AE7";
+
+        /// <summary>
+        /// The block template for the Mobile > Connection > Connection Request Detail block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL = "44538702-5157-489A-B256-217F5D1F53F4";
+
+        /// <summary>
+        /// The block template for <see cref="Rock.Blocks.Types.Mobile.Core.Search"/> block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CORE_SEARCH = "CFEB7FA6-0F19-496B-8DCC-4D200AEEE866";
+
+        /// <summary>
         /// The block template mobile daily challenge entry
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_DAILY_CHALLENGE_ENTRY = "30ECA4B6-0869-4656-A4CD-B8729CB29E76";
@@ -391,7 +416,7 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
 
         /// <summary>
-        /// The financial source of On-site Collection
+        /// The financial source of On-Site
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION = "BE7ECF50-52BC-4774-808D-574BA842DB98";
 
@@ -1240,6 +1265,7 @@ namespace Rock.SystemGuid
         #endregion Schedule Types
 
         #region Map Markers
+
         /// <summary>
         /// The map marker pin
         /// </summary>
@@ -1256,9 +1282,11 @@ namespace Rock.SystemGuid
         /// The map marker circle
         /// </summary>
         public const string MAP_MARKER_CIRCLE = "66C27E88-6BC5-4B57-A981-0AD58481C66A";
-        #endregion
+
+        #endregion Map Markers
 
         #region Languages
+
         /// <summary>
         /// Translation Languages - English
         /// </summary>
@@ -1268,6 +1296,7 @@ namespace Rock.SystemGuid
         /// Translation Languages - Spanish
         /// </summary>
         public const string LANGUAGE_SPANISH = "C93CB430-8554-E599-4F49-D7F3CED2B2C7";
-        #endregion
+
+        #endregion Languages
     }
 }

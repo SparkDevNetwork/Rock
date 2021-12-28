@@ -1212,10 +1212,12 @@ namespace Rock.Lava
                 format = " " + format;
             }
 
+            string output;
+
             if ( input is DateTimeOffset inputDateTimeOffset )
             {
                 // Preserve the value of the specified offset and return the formatted datetime value.
-                return inputDateTimeOffset.ToString( format ).Trim();
+                output = inputDateTimeOffset.ToString( format ).Trim();
             }
             else if ( input is DateTime dt )
             {
@@ -1226,27 +1228,30 @@ namespace Rock.Lava
                     var dtoUtc = new DateTimeOffset( dt, TimeSpan.Zero );
                     var dtoRock = TimeZoneInfo.ConvertTime( dtoUtc, RockDateTime.OrgTimeZoneInfo );
 
-                    return dtoRock.ToString( format ).Trim();
+                    output = dtoRock.ToString( format ).Trim();
                 }
                 else
                 {
                     // The input date kind is local or unspecified, so assume it is expressed in Rock time.
+                    dt = DateTime.SpecifyKind( dt, DateTimeKind.Unspecified );
                     var rockDateTime = new DateTimeOffset( dt, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dt ) );
 
-                    return rockDateTime.ToString( format ).Trim();
+                    output = rockDateTime.ToString( format ).Trim();
                 }
             }
-
-            // Convert the input to a valid Rock DateTime if possible.
-            var outputDateTime = LavaDateTime.ParseToOffset( input.ToString() );
-
-            if ( !outputDateTime.HasValue )
+            else
             {
-                // Not a valid date, so return the input unformatted.
-                return input.ToString().Trim();
-            }
+                // Convert the input to a valid Rock DateTime if possible.
+                var outputDateTime = LavaDateTime.ParseToOffset( input.ToString() );
 
-            var output = LavaDateTime.ToString( outputDateTime.Value, format ).Trim();
+                if ( !outputDateTime.HasValue )
+                {
+                    // Not a valid date, so return the input unformatted.
+                    return input.ToString().Trim();
+                }
+
+                output = LavaDateTime.ToString( outputDateTime.Value, format ).Trim();
+            }
 
             return output;
         }
@@ -4665,13 +4670,27 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current.Handler as RockPage;
 
             if ( page != null )
             {
-                HtmlLink imageLink = new HtmlLink();
+                // If the link already exists, do not add it again.
+                foreach ( var ctl in page.Header.Controls )
+                {
+                    if ( ctl is HtmlLink ctlLink )
+                    {
+                        if ( ctlLink.Attributes["href"] == input
+                             && ctlLink.Attributes[attributeName] == attributeValue )
+                        {
+                            return null;
+                        }
+                    }
+                }
+
+                var imageLink = new HtmlLink();
                 imageLink.Attributes.Add( attributeName, attributeValue );
                 imageLink.Attributes.Add( "href", input );
+
                 page.Header.Controls.Add( imageLink );
             }
 

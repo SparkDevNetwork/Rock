@@ -17,9 +17,8 @@
 
 import { GatewayControlModel } from "../../../Controls/gatewayControl";
 import { Guid } from "../../../Util/guid";
-import { ClientEditableAttributeValue } from "../../../ViewModels";
+import { ClientEditableAttributeValue, ListItem, SavedFinancialAccountListItem } from "../../../ViewModels";
 import { RegistrationEntryBlockSession } from "./registrationEntryBlockArgs";
-import { DropDownListOption } from "../../../Elements/dropDownList";
 
 export const enum RegistrationPersonFieldType {
     FirstName = 0,
@@ -125,7 +124,9 @@ export type RegistrationEntryBlockViewModel = {
     allowRegistrationUpdates: boolean;
     startAtBeginning: boolean;
     gatewayGuid: Guid | null;
-    campuses: DropDownListOption[];
+    campuses: ListItem[];
+    enableSaveAccount: boolean;
+    savedAccounts: SavedFinancialAccountListItem[] | null;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -182,12 +183,10 @@ export type RegistrantInfo = {
     familyGuid: Guid;
 
     /** If the person were an existing person, this is his/her guid */
-    personGuid: Guid;
+    personGuid: Guid | null;
     fieldValues: Record<Guid, unknown>;
     feeItemQuantities: Record<Guid, number>;
 
-    /** If the person were in their own family, this would be that family's guid */
-    ownFamilyGuid: Guid;
     guid: Guid;
 };
 
@@ -197,7 +196,6 @@ export type RegistrarInfo = {
     email: string;
     updateEmail: boolean;
     familyGuid: Guid | null;
-    ownFamilyGuid: Guid
 };
 
 export type RegistrationEntryBlockSuccessViewModel = {

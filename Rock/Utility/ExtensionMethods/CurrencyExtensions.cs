@@ -22,7 +22,7 @@ using Rock.Web.Cache;
 namespace Rock
 {
     /// <summary>
-    /// 
+    /// Currency extension methods.
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -79,10 +79,10 @@ namespace Rock
 
             if ( currencyCodeInfo.SymbolLocation.Equals( "left", System.StringComparison.OrdinalIgnoreCase ) )
             {
-                return string.Format( "{2} {0}{1:N" + decimalPlaces.ToString() + "}", currencySymbol, value, currencyCode );
+                return string.Format( "{2} {0}{1:N" + decimalPlaces.ToString() + "}", currencySymbol, value, currencyCode ).Trim();
             }
 
-            return string.Format( "{1:N" + decimalPlaces.ToString() + "}{0}{2}", currencySymbol, value, currencyCode );
+            return string.Format( "{1:N" + decimalPlaces.ToString() + "}{0}{2}", currencySymbol, value, currencyCode ).Trim();
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Rock
 
         /// <summary>
         /// Formats the value to include commas and decimal point. But without
-        /// a currency symbol. 
+        /// a currency symbol.
         /// For example: 123456.55345 returns "123,456.55" (depending on browser language settings).
         /// Use <seealso cref="FormatAsCurrency(decimal)"/> to include the currency symbol.
         /// </summary>

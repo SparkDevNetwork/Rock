@@ -27,7 +27,9 @@ import { Guid } from "../../Util/guid";
 export type Attribute = IEntity & {
     abbreviatedName?: string | null;
     allowSearch?: boolean;
+    attributeColor?: string | null;
     categoryGuids?: (Guid)[];
+    configurationValues?: Record<string, unknown>;
     defaultValue?: string | null;
     description?: string | null;
     enableHistory?: boolean;

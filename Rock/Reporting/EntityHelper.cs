@@ -355,6 +355,16 @@ namespace Rock.Reporting
                                 a.EntityTypeQualifierColumn == string.Empty ||
                                 ( a.EntityTypeQualifierColumn == "WorkflowTypeId" && validWorkflowTypeIds.Contains( a.EntityTypeQualifierValue ) ) ).ToList();
                 }
+                else if ( entityType == typeof( Note ) )
+                {
+                    // in the case of notes, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
+                    cacheAttributeList = cacheAttributeList
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "NoteTypeId"
+                                );
+                }
                 else
                 {
                     cacheAttributeList = cacheAttributeList.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) ).ToList();
@@ -525,7 +535,6 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "Group" or "GroupMember" to handle sub-types that are distinguished by GroupTypeId.
                 if ( ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) || attribute.EntityTypeId == EntityTypeCache.GetId( typeof( GroupMember ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" ) )
                 {
-
                     var groupType = GroupTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger() );
                     if ( groupType != null )
                     {
@@ -533,7 +542,6 @@ namespace Rock.Reporting
                         entityField.AttributeEntityTypeQualifierName = groupType.Name;
                         entityField.Title = string.Format( "{0} ({1})", attribute.Name, groupType.Name );
                     }
-
                 }
 
                 // Special processing for Entity Type "ConnectionRequest" to handle sub-types that are distinguished by ConnectionOpportunityId.
@@ -590,6 +598,18 @@ namespace Rock.Reporting
                         // Append the Qualifier to the title
                         entityField.AttributeEntityTypeQualifierName = contentChannel.Name;
                         entityField.Title = string.Format( "{0} (Channel: {1})", attribute.Name, contentChannel.Name );
+                    }
+                }
+
+                // Special processing for Entity Type "Note" to handle sub-types that are distinguished by NoteTypeId.
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Note ) ) && attribute.EntityTypeQualifierColumn == "NoteTypeId" )
+                {
+                    var noteType = NoteTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                    if ( noteType != null )
+                    {
+                        // Append the Qualifier to the title
+                        entityField.AttributeEntityTypeQualifierName = noteType.Name;
+                        entityField.Title = string.Format( "{0} ({1})", attribute.Name, noteType.Name );
                     }
                 }
 

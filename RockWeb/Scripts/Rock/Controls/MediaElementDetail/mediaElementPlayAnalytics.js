@@ -81,7 +81,7 @@
         /**
          * Takes the data calculated in the C# code and converts it into data
          * that can be used by the chart plug in.
-         * 
+         *
          * @param source The source data to be converted into ChartJS data.
          */
         const buildChartData = function (source) {
@@ -171,7 +171,7 @@
 
         /**
          * Updates the chart from the data we got from the API.
-         * 
+         *
          * @param chart The chart instance to be updated.
          * @param data The data to use when building the chart.
          */
@@ -183,7 +183,7 @@
 
         /**
          * Update the chart with data retrieved from the server.
-         * 
+         *
          * @param chart The chart to be updated.
          * @param options The configuration options.
          */
@@ -217,9 +217,9 @@
                 pageContext
             };
 
-            const $btn = $panel.find('.js-load-more');
-            $btn.html('<i class="fa fa-refresh fa-spin"></i> Load More');
-            $btn.addClass("disabled");
+            const $btnLoadMore = $panel.find('.js-load-more');
+            $btnLoadMore.html('<i class="fa fa-refresh fa-spin"></i> Load More');
+            $btnLoadMore.addClass("disabled");
 
             const result = await $.ajax({
                 type: "POST",
@@ -229,23 +229,29 @@
             });
 
             if (!result.Items || result.Items.length === 0) {
-                $btn.hide();
+                $btnLoadMore.hide();
                 return;
+            } else {
+                if (result.Items.length < 25) {
+                    $btnLoadMore.hide();
+                }
             }
 
-            $btn.removeClass("disabled");
-            $btn.data("context", result.NextPage);
-            $btn.text("Load More");
+            $btnLoadMore.removeClass("disabled");
+            $btnLoadMore.data("context", result.NextPage);
+            $btnLoadMore.text("Load More");
 
             for (var i = 0; i < result.Items.length; i++) {
                 const item = result.Items[i];
 
                 var $row = $('<div class="individual-play-row"></div>');
                 var $date = $('<div class="individual-play-date"></div>');
+                var $bar = $('<div class="individual-play-bar"></div>');
                 var $person = $('<div class="individual-play-person"></div>');
                 var $chart = $('<div class="individual-play-chart"></div>');
                 var $percent = $('<div class="individual-play-percent"></div>');
-                $row.append($date, $person, $chart, $percent);
+                $row.append($date, $bar);
+                $bar.append($person, $chart, $percent);
 
                 const date = new moment(item.DateTime);
 
@@ -253,7 +259,7 @@
 
                 const lastDate = $panel.find(".individual-play-row").last().data("date");
                 if ($row.data("date") !== lastDate) {
-                    $date.html(date.format("dddd") + "<br />" + date.format("MMM D, YYYY") + "<br />" + date.format("h:mm a"));
+                    $date.html("<span>" + date.format("dddd") + "</span> <span>" + date.format("MMM D, YYYY") + "</span> <span>" + date.format("h:mm a") + "</span>");
                 }
                 else {
                     $date.html(date.format("h:mm a"));
@@ -264,7 +270,7 @@
                 $chart.append(getHeatMap(item.Data.WatchMap));
                 $percent.text(Math.floor(item.Data.WatchedPercentage) + "%");
 
-                $row.insertBefore($btn);
+                $row.insertBefore($btnLoadMore);
             }
         }
 
@@ -359,16 +365,16 @@
             }
 
             const $individualPlaysPanel = $("#" + options.individualPlaysId);
-            const $btn = $individualPlaysPanel.find(".js-load-more");
+            const $btnLoadMore = $individualPlaysPanel.find(".js-load-more");
 
-            $btn.on("click", ev => {
+            $btnLoadMore.on("click", ev => {
                 ev.preventDefault();
 
-                if ($btn.hasClass("disabled")) {
+                if ($btnLoadMore.hasClass("disabled")) {
                     return;
                 }
 
-                const context = $btn.data("context");
+                const context = $btnLoadMore.data("context");
 
                 loadMoreIndividualPlays($individualPlaysPanel, options, context);
             });
@@ -379,7 +385,7 @@
         var exports = {
             /**
              * Initialize the statistics block for dynamically building charts.
-             * 
+             *
              * @param options The configuration options to use.
              */
             initialize: function (options) {

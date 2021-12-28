@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 #if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
@@ -23,7 +24,7 @@ using System.Data.Entity;
 #endif
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
 
@@ -110,6 +111,31 @@ namespace Rock.Web.Cache
         /// </summary>
         [DataMember]
         public bool IsActive { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the structure settings JSON.
+        /// </summary>
+        /// <value>The structure settings JSON.</value>
+        [DataMember]
+        public string StructureSettingsJSON
+        {
+            get
+            {
+                return StructureSettings?.ToJson();
+            }
+
+            set
+            {
+                StructureSettings = value.FromJsonOrNull<Rock.Model.Engagement.StreakType.StreakTypeSettings>() ?? new Rock.Model.Engagement.StreakType.StreakTypeSettings();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the structure settings.
+        /// </summary>
+        /// <value>The structure settings.</value>
+        [NotMapped]
+        public Rock.Model.Engagement.StreakType.StreakTypeSettings StructureSettings { get; set; } = new Rock.Model.Engagement.StreakType.StreakTypeSettings();
 
         /// <summary>
         /// Gets a value indicating whether this streak type is releated to interactions.
@@ -213,6 +239,7 @@ namespace Rock.Web.Cache
             StartDate = sourceModel.StartDate;
             OccurrenceMap = sourceModel.OccurrenceMap;
             FirstDayOfWeek = sourceModel.FirstDayOfWeek;
+            StructureSettingsJSON = sourceModel.StructureSettingsJSON;
 
             _streakTypeExclusionIds = null;
         }

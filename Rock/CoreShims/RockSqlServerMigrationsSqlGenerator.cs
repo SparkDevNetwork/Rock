@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace Rock.CoreShims
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     /// <summary>
     /// The base SqlServerMigrationsSqlGenerator has a timeout of 1 second when trying to
     /// split large SQL statements using RegEx. This causes problems with, for example, the
@@ -29,4 +30,5 @@ namespace Rock.CoreShims
             }
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

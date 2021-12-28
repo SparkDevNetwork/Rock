@@ -23,10 +23,8 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
-using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -439,14 +437,14 @@ $('#{0}').tooltip();
         {
             var lConfirmedOccurrenceDetails = e.Item.FindControl( "lConfirmedOccurrenceDetails" ) as Literal;
             var lConfirmedOccurrenceTime = e.Item.FindControl( "lConfirmedOccurrenceTime" ) as Literal;
-            var btnCancelConfirmAttending = e.Item.FindControl( "btnCancelConfirmAttending" ) as LinkButton;
+            var btnCancelConfirmAttend = e.Item.FindControl( "btnCancelConfirmAttend" ) as LinkButton;
             var attendance = e.Item.DataItem as Attendance;
 
             lConfirmedOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
             lConfirmedOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
 
-            btnCancelConfirmAttending.CommandName = "AttendanceId";
-            btnCancelConfirmAttending.CommandArgument = attendance.Id.ToString();
+            btnCancelConfirmAttend.CommandName = "AttendanceId";
+            btnCancelConfirmAttend.CommandArgument = attendance.Id.ToString();
         }
 
         /// <summary>
@@ -458,28 +456,28 @@ $('#{0}').tooltip();
         {
             var lPendingOccurrenceDetails = e.Item.FindControl( "lPendingOccurrenceDetails" ) as Literal;
             var lPendingOccurrenceTime = e.Item.FindControl( "lPendingOccurrenceTime" ) as Literal;
-            var btnConfirmAttending = e.Item.FindControl( "btnConfirmAttending" ) as LinkButton;
-            var btnDeclineAttending = e.Item.FindControl( "btnDeclineAttending" ) as LinkButton;
+            var btnConfirmAttend = e.Item.FindControl( "btnConfirmAttend" ) as LinkButton;
+            var btnDeclineAttend = e.Item.FindControl( "btnDeclineAttend" ) as LinkButton;
             var attendance = e.Item.DataItem as Attendance;
 
             lPendingOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
             lPendingOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
-            btnConfirmAttending.CommandName = "AttendanceId";
-            btnConfirmAttending.CommandArgument = attendance.Id.ToString();
+            btnConfirmAttend.CommandName = "AttendanceId";
+            btnConfirmAttend.CommandArgument = attendance.Id.ToString();
 
-            btnDeclineAttending.CommandName = "AttendanceId";
-            btnDeclineAttending.CommandArgument = attendance.Id.ToString();
+            btnDeclineAttend.CommandName = "AttendanceId";
+            btnDeclineAttend.CommandArgument = attendance.Id.ToString();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancelConfirmAttending control.
+        /// Handles the Click event of the btnCancelConfirmAttend control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelConfirmAttending_Click( object sender, EventArgs e )
+        protected void btnCancelConfirmAttend_Click( object sender, EventArgs e )
         {
-            var btnCancelConfirmAttending = sender as LinkButton;
-            int? attendanceId = btnCancelConfirmAttending.CommandArgument.AsIntegerOrNull();
+            var btnCancelConfirmAttend = sender as LinkButton;
+            int? attendanceId = btnCancelConfirmAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
@@ -491,14 +489,14 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnConfirmAttending control.
+        /// Handles the Click event of the btnConfirmAttend control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnConfirmAttending_Click( object sender, EventArgs e )
+        protected void btnConfirmAttend_Click( object sender, EventArgs e )
         {
-            var btnConfirmAttending = sender as LinkButton;
-            int? attendanceId = btnConfirmAttending.CommandArgument.AsIntegerOrNull();
+            var btnConfirmAttend = sender as LinkButton;
+            int? attendanceId = btnConfirmAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
@@ -510,14 +508,14 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnDeclineAttending control.
+        /// Handles the Click event of the btnDeclineAttend control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDeclineAttending_Click( object sender, EventArgs e )
+        protected void btnDeclineAttend_Click( object sender, EventArgs e )
         {
-            var btnDeclineAttending = sender as LinkButton;
-            int? attendanceId = btnDeclineAttending.CommandArgument.AsIntegerOrNull();
+            var btnDeclineAttend = sender as LinkButton;
+            int? attendanceId = btnDeclineAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
@@ -735,6 +733,8 @@ $('#{0}').tooltip();
                     rockContext.SaveChanges();
                 }
             }
+
+            dpGroupMemberScheduleTemplateStartDate.Visible = scheduleTemplateId.HasValue && scheduleTemplateId > 0;
 
             var pnlGroupPreferenceAssignment = repeaterItem.FindControl( "pnlGroupPreferenceAssignment" ) as Panel;
             pnlGroupPreferenceAssignment.Visible = scheduleTemplateId.HasValue;
@@ -1690,7 +1690,6 @@ $('#{0}').tooltip();
                 cbSignupSchedule.Text += " <span class='text-muted small'>(filled)</span>";
             }
             
-
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
 
             var locations = availableGroupLocationSchedules
@@ -1846,7 +1845,7 @@ $('#{0}').tooltip();
                 {
                     foreach ( var schedule in personGroupLocation.Schedules )
                     {
-                        //  find if this has max volunteers here
+                        // Find if this has max volunteers here.
                         int maximumCapacitySetting = 0;
                         int desiredCapacitySetting = 0;
                         int minimumCapacitySetting = 0;
@@ -1856,7 +1855,7 @@ $('#{0}').tooltip();
                             var groupConfigs = personGroupLocationList.Where( x => x.GroupId == personGroupLocation.GroupId ).Select( x => x.GroupLocationScheduleConfigs );
                             foreach ( var groupConfig in groupConfigs )
                             {
-                                foreach( var config in groupConfig )
+                                foreach ( var config in groupConfig )
                                 {
                                     if ( config.ScheduleId == schedule.Id )
                                     {

@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
-    public partial class StepTypeDetail : RockBlock, IDetailBlock
+    public partial class StepTypeDetail : RockBlock
     {
         #region Attribute Keys
 
@@ -225,11 +225,12 @@ namespace RockWeb.Blocks.Steps
             bool editAllowed = false;
             if ( _stepType != null )
             {
-                editAllowed =  _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+                editAllowed = _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
             else if ( _program != null )
             {
-                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _program.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+                // Till this point, Step Type may not be initialized. That is the reason we are looking for authorization for Step Program.
+                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
 
             InitializeAttributesGrid( editAllowed );
@@ -1366,15 +1367,18 @@ namespace RockWeb.Blocks.Steps
                 pdAuditDetails.Visible = false;
             }
 
-            // Admin rights are required to edit a Step Type. Edit rights only allow adding/removing items.
-            bool adminAllowed = UserCanAdministrate || stepType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            /*
+             SK - 10/28/2021
+             Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+             */
+            bool editAllowed = stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
             pnlDetails.Visible = true;
             hfStepTypeId.Value = stepType.Id.ToString();
             lIcon.Text = string.Format( "<i class='{0}'></i>", stepType.IconCssClass );
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !adminAllowed )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
@@ -1560,7 +1564,8 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepType != null )
             {
-                if ( !stepType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                // Earlier only Person with admin rights were allowed edit the block.That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+                if ( !stepType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Information );
                     return;

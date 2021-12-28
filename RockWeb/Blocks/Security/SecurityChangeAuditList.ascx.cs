@@ -50,6 +50,22 @@ namespace RockWeb.Blocks.Security
 
         #endregion UserPreferanceKeys
 
+        private static class LabelTypeString
+        {
+            public const string Success = "success";
+            public const string Danger = "danger";
+            public const string Info = "info";
+        }
+
+        private static class PermissionTypeString
+        {
+            public const string Allow = "Allow";
+            public const string Deny = "Deny";
+        }
+
+        private const string RIGHT_ARROW_INDICATOR = " &rarr; ";
+        private const string LABEL_MARKUP = @"<span class='label label-{1}'>{0}</span>";
+
         #region Base Control Methods
 
         /// <summary>
@@ -284,27 +300,33 @@ namespace RockWeb.Blocks.Security
             var lChange = e.Row.FindControl( "lChange" ) as Literal;
             if ( authAuditLog != null )
             {
-                var changeLabelStr = "success";
+                var changeLabelStr = LabelTypeString.Success;
                 if ( authAuditLog.ChangeType == ChangeType.Delete )
                 {
-                    changeLabelStr = "danger";
+                    changeLabelStr = LabelTypeString.Danger;
                 }
                 else if ( authAuditLog.ChangeType == ChangeType.Modify )
                 {
-                    changeLabelStr = "info";
+                    changeLabelStr = LabelTypeString.Info;
                 }
 
-                lChange.Text = string.Format( @"<span class='label label-{1}'>{0}</span>", authAuditLog.ChangeType, changeLabelStr );
+                lChange.Text = string.Format( LABEL_MARKUP, authAuditLog.ChangeType, changeLabelStr );
 
-                string accessStr = GetAccessString( authAuditLog.PreAllowOrDeny );
-                accessStr += " > ";
-                accessStr += GetAccessString( authAuditLog.PostAllowOrDeny );
-                lAccess.Text = accessStr;
+                if ( authAuditLog.PreAllowOrDeny != authAuditLog.PostAllowOrDeny )
+                {
+                    string accessStr = GetAccessString( authAuditLog.PreAllowOrDeny );
+                    accessStr += RIGHT_ARROW_INDICATOR;
+                    accessStr += GetAccessString( authAuditLog.PostAllowOrDeny );
+                    lAccess.Text = accessStr;
+                }
 
-                var orderStr = authAuditLog.PreOrder.HasValue ? authAuditLog.PreOrder.ToString() : "-";
-                orderStr += " > ";
-                orderStr += authAuditLog.PostOrder.HasValue ? authAuditLog.PostOrder.ToString() : "-";
-                lOrder.Text = orderStr;
+                if ( authAuditLog.PreOrder != authAuditLog.PostOrder )
+                {
+                    var orderStr = authAuditLog.PreOrder.HasValue ? authAuditLog.PreOrder.ToString() : string.Empty;
+                    orderStr += RIGHT_ARROW_INDICATOR;
+                    orderStr += authAuditLog.PostOrder.HasValue ? authAuditLog.PostOrder.ToString() : string.Empty;
+                    lOrder.Text = orderStr;
+                }
             }
         }
 
@@ -316,11 +338,11 @@ namespace RockWeb.Blocks.Security
             string accessStr;
             if ( allowOrDeny.IsNullOrWhiteSpace() )
             {
-                accessStr = "-";
+                accessStr = string.Empty;
             }
             else
             {
-                accessStr = allowOrDeny == "A" ? "Allow" : "Deny";
+                accessStr = allowOrDeny == "A" ? PermissionTypeString.Allow : PermissionTypeString.Deny;
             }
 
             return accessStr;

@@ -143,7 +143,7 @@ namespace Rock.Model
                 // Verify this registration is for the same person and instance.
                 if ( context.Registration != null )
                 {
-                    if ( context.Registration.PersonAliasId.HasValue && context.Registration.PersonAliasId.Value != currentPerson?.PrimaryAliasId )
+                    if ( context.Registration.PersonAliasId.HasValue && currentPerson?.Aliases.Any( a => a.Id == context.Registration.PersonAliasId.Value ) != true )
                     {
                         // This existing registration does not belong to this person
                         errorMessage = "Your existing registration was not found";
@@ -197,7 +197,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetFirstName( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
+        public string GetFirstName( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.FirstName );
 
@@ -223,7 +223,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetLastName( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
+        public string GetLastName( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.LastName );
 
@@ -249,7 +249,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetEmail( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
+        public string GetEmail( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.Email );
 
@@ -276,7 +276,7 @@ namespace Rock.Model
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="personFieldType">Type of the person field.</param>
         /// <returns></returns>
-        public object GetPersonFieldValue( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo, RegistrationPersonFieldType personFieldType )
+        public object GetPersonFieldValue( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationPersonFieldType personFieldType )
         {
             if ( settings != null && settings.Forms != null )
             {

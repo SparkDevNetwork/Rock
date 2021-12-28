@@ -184,6 +184,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool AllowSearch { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Attribute.AttributeColor"/>
+        [DataMember]
+        public string AttributeColor { get; private set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
         /// </summary>
@@ -314,6 +318,13 @@ namespace Rock.Web.Cache
                 return categories;
             }
         }
+
+        /// <summary>
+        /// Gets the configuration values that define the behavior of the attribute.
+        /// </summary>
+        /// <value>The configuration values.</value>
+        [DataMember]
+        public Dictionary<string, string> ConfigurationValues { get; private set; }
 
         /// <summary>
         /// Gets the qualifier values.
@@ -457,6 +468,7 @@ namespace Rock.Web.Cache
             IsMultiValue = attribute.IsMultiValue;
             IsRequired = attribute.IsRequired;
             AllowSearch = attribute.AllowSearch;
+            AttributeColor = attribute.AttributeColor;
             IsIndexEnabled = attribute.IsIndexEnabled;
             IsAnalytic = attribute.IsAnalytic;
             IsAnalyticHistory = attribute.IsAnalyticHistory;
@@ -468,6 +480,7 @@ namespace Rock.Web.Cache
             ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
 
+            ConfigurationValues = new Dictionary<string, string>( qualifiers );
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
             {
@@ -940,6 +953,7 @@ namespace Rock.Web.Cache
                 Guid = model.Guid,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
+                ConfigurationValues = model.ConfigurationValues,
                 DefaultValue = model.DefaultValue,
                 Description = model.Description,
                 EnableHistory = model.EnableHistory,
@@ -948,6 +962,7 @@ namespace Rock.Web.Cache
                 EntityTypeQualifierValue = model.EntityTypeQualifierValue,
                 FieldTypeId = model.FieldTypeId,
                 IconCssClass = model.IconCssClass,
+                AttributeColor = model.AttributeColor,
                 IsActive = model.IsActive,
                 IsAnalytic = model.IsAnalytic,
                 IsAnalyticHistory = model.IsAnalyticHistory,

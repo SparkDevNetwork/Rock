@@ -18,6 +18,8 @@
                             <Rock:RockBoundField DataField="ShortCode" HeaderText="Short Code"  />
                             <Rock:RockBoundField DataField="PhoneNumber" HeaderText="Phone Number" />
                             <Rock:RockBoundField DataField="LeaderPersonAlias.Person.FullName" HeaderText="Campus Leader" />
+                            <Rock:DefinedValueField DataField="CampusTypeValueId" HeaderText="Campus Type" />
+                            <Rock:DefinedValueField DataField="CampusStatusValueId" HeaderText="Campus Status" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                         </Columns>
                     </Rock:Grid>

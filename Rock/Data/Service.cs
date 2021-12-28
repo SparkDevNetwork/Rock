@@ -638,7 +638,7 @@ namespace Rock.Data
         #region Related Entities
 
         /// <summary>
-        /// Helper for Related Entities
+        /// Helper for Related Entities of this Service's type T
         /// </summary>
         /// <value>
         /// The related entities.

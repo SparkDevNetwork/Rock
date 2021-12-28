@@ -263,7 +263,7 @@ namespace Rock.Workflow.Action.CheckIn
                             groupType.PreSelected = groupType.Groups.Any( g => g.PreSelected );
                         }
 
-                        person.PreSelected = person.GroupTypes.Any( t => t.PreSelected );
+                        person.PreSelected = person.GroupTypes.Any( t => t.PreSelected ) && person.FamilyMember;
                     }
                     else
                     {

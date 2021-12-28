@@ -106,6 +106,41 @@ export class List<T> {
     // #endregion
 
     /**
+     * Returns a boolean that determines if the collection contains any elements.
+     *
+     * @returns true if the collection contains any elements; otherwise false.
+     */
+    public any(): boolean;
+
+    /**
+     * Filters the list by the predicate and then returns a boolean that determines
+     * if the filtered collection contains any elements.
+     *
+     * @param predicate The predicate to filter the elements by.
+     *
+     * @returns true if the collection contains any elements; otherwise false.
+     */
+    public any(predicate: PredicateFn<T>): boolean;
+
+    /**
+     * Filters the list by the predicate and then returns a boolean that determines
+     * if the filtered collection contains any elements.
+     *
+     * @param predicate The predicate to filter the elements by.
+     *
+     * @returns true if the collection contains any elements; otherwise false.
+     */
+    public any(predicate?: PredicateFn<T>): boolean {
+        let elements = this.elements;
+
+        if (predicate !== undefined) {
+            elements = elements.filter(predicate);
+        }
+
+        return elements.length > 0;
+    }
+
+    /**
      * Returns the first element from the collection if there are any elements.
      * Otherwise will throw an exception.
      *

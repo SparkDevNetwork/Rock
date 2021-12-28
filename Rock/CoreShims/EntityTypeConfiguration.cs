@@ -10,6 +10,7 @@ using Rock.Data;
 // EFTODO: This is such garbage. This should only be used during pre-migration.
 namespace System.Data.Entity.ModelConfiguration
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public abstract class EntityTypeConfiguration<TEntity>
         where TEntity : class
     {
@@ -90,4 +91,5 @@ namespace System.Data.Entity.ModelConfiguration
             }
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

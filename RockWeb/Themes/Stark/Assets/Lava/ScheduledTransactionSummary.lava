@@ -24,7 +24,7 @@
                     {% endif %}
                 {% endif %}
             </p>
-        {% elsif ScheduledTransactions.size > 1 %}
+        {% elseif ScheduledTransactions.size > 1 %}
             You currently have <span class='label label-default'>{{ ScheduledTransactions.size }}</span>
             giving profiles active.
         {% else %}

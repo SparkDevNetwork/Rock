@@ -399,6 +399,14 @@
         public static readonly string CONFIG_ENHANCE_FOR_LONG_LISTS_THRESHOLD = "enhanceForLongListsThreshold";
         public static readonly string CONFIG_ALLOW_REFRESH = "allowRefresh";
     }
+    public partial class MediaWatchFieldType : Rock.Field.FieldType
+    {
+        public static readonly string CONFIG_MEDIA = "media";
+        public static readonly string CONFIG_COMPLETION_PERCENTAGE = "completionPercentage";
+        public static readonly string CONFIG_AUTO_RESUME_IN_DAYS = "autoResumeInDays";
+        public static readonly string CONFIG_MAX_WIDTH = "maxWidth";
+        public static readonly string CONFIG_VALIDATION_MESSAGE = "validationMessage";
+    }
     public partial class MemoFieldType : Rock.Field.FieldType
     {
     }
@@ -409,6 +417,9 @@
     {
     }
     public partial class MetricFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class MobileNavigationActionFieldType : Rock.Field.FieldType
     {
     }
     public partial class MonthDayFieldType : Rock.Field.FieldType

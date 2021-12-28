@@ -16,7 +16,7 @@
             <asp:HiddenField ID="hfNoteTypeId" runat="server" />
 
             <div class="panel-body">
-
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />

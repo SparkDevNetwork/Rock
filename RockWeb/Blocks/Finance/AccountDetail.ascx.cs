@@ -13,17 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -34,9 +36,65 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Account Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial account." )]
-    public partial class AccountDetail : RockBlock, IDetailBlock
+    public partial class AccountDetail : RockBlock
     {
+        #region ViewStateKeys
+
+        private static class ViewStateKey
+        {
+            public const string AccountParticipantJSON = "AccountParticipantJSON";
+        }
+
+        #endregion ViewStateKeys
+
+        private List<AccountParticipant> AccountParticipantState { get; set; }
+
         #region Control Methods
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            gAccountParticipants.DataKeyNames = new string[] { "PersonAliasId" };
+            gAccountParticipants.ShowActionRow = true;
+            gAccountParticipants.Actions.ShowAdd = true;
+            gAccountParticipants.Actions.AddClick += gAccountParticipants_AddClick;
+            gAccountParticipants.GridRebind += gAccountParticipants_GridRebind;
+
+            this.BlockUpdated += AccountDetail_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( pnlAccountListUpdatePanel );
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+            var accountParticipantJSON = ViewState[ViewStateKey.AccountParticipantJSON] as string ?? string.Empty;
+            AccountParticipantState = accountParticipantJSON.FromJsonOrNull<List<AccountParticipant>>() ?? new List<AccountParticipant>();
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>Returns the user control's current view state. If there is no view state associated with the control, it returns <see langword="null" />.</returns>
+        protected override object SaveViewState()
+        {
+            ViewState[ViewStateKey.AccountParticipantJSON] = AccountParticipantState?.ToJson();
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the AccountDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void AccountDetail_BlockUpdated( object sender, EventArgs e )
+        {
+            this.NavigateToCurrentPageReference();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -59,6 +117,7 @@ namespace RockWeb.Blocks.Finance
             {
                 account = new FinancialAccount();
             }
+
             account.LoadAttributes();
             phAttributes.Controls.Clear();
             Helper.AddEditControls( account, phAttributes, true, BlockValidationGroup );
@@ -125,6 +184,24 @@ namespace RockWeb.Blocks.Finance
             {
                 cvAccount.ErrorMessage = account.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
+            }
+
+            if ( accountId == 0 )
+            {
+                // just added, but we'll need an Id to set account participants
+                rockContext.SaveChanges();
+                accountId = new FinancialAccountService( new RockContext() ).GetId( account.Guid ) ?? 0;
+            }
+
+            var accountParticipantsPersonAliasIdsByPurposeKey = AccountParticipantState.GroupBy( a => a.PurposeKey ).ToDictionary( k => k.Key, v => v.Select( x => x.PersonAliasId ).ToList() );
+            foreach ( var purposeKey in accountParticipantsPersonAliasIdsByPurposeKey.Keys )
+            {
+                var accountParticipantsPersonAliasIds = accountParticipantsPersonAliasIdsByPurposeKey.GetValueOrNull( purposeKey );
+                if ( accountParticipantsPersonAliasIds?.Any() == true )
+                {
+                    var accountParticipants = new PersonAliasService( rockContext ).GetByIds( accountParticipantsPersonAliasIds ).ToList();
+                    accountService.SetAccountParticipants( accountId, accountParticipants, purposeKey );
+                }
             }
 
             rockContext.SaveChanges();
@@ -266,6 +343,7 @@ namespace RockWeb.Blocks.Finance
                         account.ParentAccount = parentAccount;
                     }
                 }
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -293,7 +371,6 @@ namespace RockWeb.Blocks.Finance
                     ShowEditDetails( account );
                 }
             }
-
         }
 
         /// <summary>
@@ -336,6 +413,10 @@ namespace RockWeb.Blocks.Finance
             cbIsTaxDeductible.Checked = account.IsTaxDeductible;
             dtpStartDate.SelectedDate = account.StartDate;
             dtpEndDate.SelectedDate = account.EndDate;
+
+            this.AccountParticipantState = GetAccountParticipantStateFromDatabase();
+
+            BindAccountParticipantsGrid();
         }
 
         /// <summary>
@@ -357,6 +438,14 @@ namespace RockWeb.Blocks.Finance
             leftDescription.Add( "GLCode", account.GlCode );
             leftDescription.Add( "Is Tax Deductible", account.IsTaxDeductible );
             lLeftDetails.Text = leftDescription.Html;
+
+            var followingsFromDatabase = GetAccountParticipantStateFromDatabase().OrderBy( a => a.PersonFullName ).ToList();
+            var accountParticipantsHtml = followingsFromDatabase.Select( a => $"{a.PersonFullName} ({a.PurposeKeyDescription})" ).ToList().AsDelimited( "<br>\n" );
+
+            DescriptionList rightDescription = new DescriptionList();
+            rightDescription.Add( "Account Participants", accountParticipantsHtml );
+            lRightDetails.Text = rightDescription.Html;
+
             account.LoadAttributes();
             Helper.AddDisplayControls( account, Helper.GetAttributeCategories( account, true, false ), phAttributesView, null, false );
         }
@@ -381,8 +470,138 @@ namespace RockWeb.Blocks.Finance
             dvpAccountType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ).Id;
 
             cpCampus.Campuses = CampusCache.All();
+
+            ddlAccountParticipantPurposeKey.Items.Clear();
+            ddlAccountParticipantPurposeKey.Items.Add( new ListItem( RelatedEntityPurposeKey.GetPurposeKeyFriendlyName( RelatedEntityPurposeKey.FinancialAccountGivingAlert ), RelatedEntityPurposeKey.FinancialAccountGivingAlert ) );
         }
 
         #endregion
+
+        #region Account Participants
+
+        /// <summary>
+        /// Gets the account participants state from database.
+        /// </summary>
+        /// <param name="purposeKeys">The purpose keys.</param>
+        /// <returns>List&lt;AccountParticipantInfo&gt;.</returns>
+        private List<AccountParticipant> GetAccountParticipantStateFromDatabase()
+        {
+            var accountId = hfAccountId.Value.AsInteger();
+
+            var financialAccountService = new FinancialAccountService( new RockContext() );
+            var accountParticipantsQuery = financialAccountService.GetAccountParticipantsAndPurpose( accountId );
+
+            var participantsState = accountParticipantsQuery
+                .ToList()
+                .Select( a => new AccountParticipant
+                {
+                    PersonAliasId = a.PersonAlias.Id,
+                    PersonFullName = a.PersonAlias.Person.FullName,
+                    PurposeKey = a.PurposeKey
+                } ).ToList();
+
+            return participantsState;
+        }
+
+        /// <summary>
+        /// Binds the account participants grid.
+        /// </summary>
+        private void BindAccountParticipantsGrid()
+        {
+            gAccountParticipants.DataSource = AccountParticipantState;
+            gAccountParticipants.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAccountParticipants control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void gAccountParticipants_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindAccountParticipantsGrid();
+        }
+
+        /// <summary>
+        /// Handles the AddClick event of the gAccountParticipants control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gAccountParticipants_AddClick( object sender, EventArgs e )
+        {
+            ppAccountParticipantPerson.SetValue( null );
+            mdAddAccountParticipant.Show();
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the gAccountParticipants control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gAccountParticipants_DeleteClick( object sender, RowEventArgs e )
+        {
+            var participantPersonAliasId = e.RowKeyValue as int?;
+            if ( participantPersonAliasId.HasValue )
+            {
+                AccountParticipant accountParticipantInfo = AccountParticipantState.FirstOrDefault( a => a.PersonAliasId == participantPersonAliasId.Value );
+                if ( accountParticipantInfo != null )
+                {
+                    AccountParticipantState.Remove( accountParticipantInfo );
+                    BindAccountParticipantsGrid();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdAddAccountParticipant control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAddAccountParticipant_SaveClick( object sender, EventArgs e )
+        {
+            mdAddAccountParticipant.Hide();
+
+            var personId = ppAccountParticipantPerson.PersonId;
+            if ( !personId.HasValue )
+            {
+                // shouldn't happen, just ignore
+                return;
+            }
+
+            var person = new PersonService( new RockContext() ).Get( personId.Value );
+            var personAliasId = person?.PrimaryAliasId;
+            if ( !personAliasId.HasValue )
+            {
+                // shouldn't happen, just ignore
+                return;
+            }
+
+            var purposeKey = ddlAccountParticipantPurposeKey.SelectedValue ?? RelatedEntityPurposeKey.FinancialAccountGivingAlert;
+
+            if ( !AccountParticipantState.Any( a => a.PersonAliasId == personAliasId.Value ) )
+            {
+                AccountParticipantState.Add( new AccountParticipant
+                {
+                    PersonAliasId = personAliasId.Value,
+                    PersonFullName = person.FullName,
+                    PurposeKey = purposeKey
+                } );
+            }
+
+            BindAccountParticipantsGrid();
+        }
+
+        #endregion Account Participants
+
+        private class AccountParticipant : RockDynamic
+        {
+            public int PersonAliasId { get; set; }
+
+            public string PersonFullName { get; set; }
+
+            public string PurposeKey { get; set; }
+
+            public string PurposeKeyDescription => RelatedEntityPurposeKey.GetPurposeKeyFriendlyName( PurposeKey );
+        }
     }
 }

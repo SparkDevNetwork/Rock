@@ -529,6 +529,22 @@ namespace Rock.Data
                             CallSaveFailedHooks( updatedItems.Values );
                             return null;
                         }
+
+                        /*
+                             11/18/2021 - SK
+    
+                             Reason: It may look irrelevant to update the ModifiedByPersonAliasId and ModifiedDateTime here but
+                             this play vital role in displaying the Who column in history summary.
+                        */
+                        if ( entry.Entity is IModel )
+                        {
+                            var model = entry.Entity as IModel;
+                            model.ModifiedDateTime = RockDateTime.Now;
+                            if ( !model.ModifiedAuditValuesAlreadyUpdated || model.ModifiedByPersonAliasId == null )
+                            {
+                                model.ModifiedByPersonAliasId = personAliasId;
+                            }
+                        }
                     }
 
                     if ( enableAuditing )

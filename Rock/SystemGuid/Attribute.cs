@@ -96,6 +96,11 @@ namespace Rock.SystemGuid
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
 
         /// <summary>
+        /// The Person legal note attribute
+        /// </summary>
+        public const string PERSON_LEGAL_NOTE = "F832AB6F-B684-4EEA-8DB4-C54B895C79ED";
+
+        /// <summary>
         /// The person attribute for the person's giving envelope number
         /// </summary>
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
@@ -143,37 +148,37 @@ namespace Rock.SystemGuid
         public const string PERSON_CONFLICT_MODE_WINNING = "7147F706-388E-45E6-BE21-893FC7D652AA";
 
         /// <summary>
-        /// The person attribute for the conflict mode: resolving 
+        /// The person attribute for the conflict mode: resolving
         /// </summary>
         public const string PERSON_CONFLICT_MODE_RESOLVING = "5B811EAC-51B2-41F2-A55A-C966D9DB05EE";
 
         /// <summary>
-        /// The person attribute for the conflict mode: compromising  
+        /// The person attribute for the conflict mode: compromising
         /// </summary>
         public const string PERSON_CONFLICT_MODE_COMPROMISING = "817D6B13-E4AA-4E93-8547-FE711A0065F2";
 
         /// <summary>
-        /// The person attribute for the conflict mode: avoiding  
+        /// The person attribute for the conflict mode: avoiding
         /// </summary>
         public const string PERSON_CONFLICT_MODE_AVOIDING = "071A8EFA-AD1C-436A-8E1E-23D215617004";
 
         /// <summary>
-        /// The person attribute for the conflict mode: yielding  
+        /// The person attribute for the conflict mode: yielding
         /// </summary>
         public const string PERSON_CONFLICT_MODE_YIELDING = "D30A33AD-7A60-43E0-84DA-E23600156BF7";
 
         /// <summary>
-        /// The person attribute for the conflict engagement profile: accommodating  
+        /// The person attribute for the conflict engagement profile: accommodating
         /// </summary>
         public const string PERSON_CONFLICT_THEME_ACCOMMODATING = "404A64FB-7396-4896-9C94-84DE21E995CA";
 
         /// <summary>
-        /// The person attribute for the conflict engagement profile: winning  
+        /// The person attribute for the conflict engagement profile: winning
         /// </summary>
         public const string PERSON_CONFLICT_THEME_WINNING = "6DE5878D-7CDB-404D-93A7-27CFF5E98C3B";
 
         /// <summary>
-        /// The person attribute for the conflict engagement profile: solving  
+        /// The person attribute for the conflict engagement profile: solving
         /// </summary>
         public const string PERSON_CONFLICT_THEME_SOLVING = "33235605-D8BB-4C1E-B231-6F085970A14F";
 
@@ -469,6 +474,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Communication Medium Attributes
+
+        /// <summary>
+        /// The communication medium Email CSS Inlining Enabled Attribute Guid
+        /// </summary>
+        public const string COMMUNICATION_MEDIUM_EMAIL_CSS_INLINING_ENABLED = "1D5E06A4-79BD-4554-AB63-DD6F1F815594";
+
+        #endregion
+
         #region DefinedType Attributes
 
         /// <summary>
@@ -676,6 +690,15 @@ namespace Rock.SystemGuid
 
         #endregion Workflow Action Attributes
 
+        #region Workflow Entry Block Attributes
+
+        /// <summary>
+        /// The Workflow Entry Block Attribute that disables passing the WorkflowTypeID.
+        /// </summary>
+        public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWTYPEID = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB";
+
+        #endregion Workflow Entry Block Attributes
+
         /// <summary>
         /// The defined value logging domains to log
         /// </summary>
@@ -761,6 +784,7 @@ namespace Rock.SystemGuid
         /// The attendance type label
         /// </summary>
         public const string ATTENDANCE_TYPE_LABEL = "6916359C-C168-4DBA-A893-365526C9F4C4";
+
         /// <summary>
         /// The configured attendance types
         /// </summary>
@@ -794,7 +818,7 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_PREFERRED_SOURCE = "0567B279-1F4D-4573-9AA7-927A7278443E";
 
         /// <summary>
-        /// Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
+        /// Frequency Label. See <seealso cref="FinancialGivingAnalyticsFrequencyLabel"/>.
         /// </summary>
         public const string PERSON_GIVING_FREQUENCY_LABEL = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5";
 
@@ -810,6 +834,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gift Amount: IQR - Currency
+        /// IQR = Interquartile Range calculated from the past 12 months of giving
         /// </summary>
         public const string PERSON_GIVING_AMOUNT_IQR = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7";
 
@@ -840,7 +865,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Last Classification Run Date Time - Date - sets the date time of then the giving unit was last classified.
-        /// Classification is updated after each new gift, but if they stop giving we’ll use this to occasionally update the classification. 
+        /// Classification is updated after each new gift, but if they stop giving we’ll use this to occasionally update the classification.
         /// </summary>
         public const string PERSON_GIVING_LAST_CLASSIFICATION_DATE = "7220B230-03CE-4D1E-985B-26AA28BE06F8";
 
@@ -977,5 +1002,10 @@ namespace Rock.SystemGuid
         /// The streak achievement time span in days
         /// </summary>
         public const string STREAK_ACHIEVEMENT_TIME_SPAN_IN_DAYS = "80030537-ED8E-41BA-BF61-AF242B9073CC";
+
+        /// <summary>
+        /// The statement generator configuration
+        /// </summary>
+        public const string STATEMENT_GENERATOR_CONFIG = "3C6B81A5-63AB-4EA7-A671-836505B9E444";
     }
 }

@@ -114,6 +114,16 @@ export const enum BlockType {
     WorkflowEntry = "A8BD05C8-6F89-4628-845B-059E686F089A",
     /** The Checkin Manager En Route */
     CheckInManagerEnRoute = "BC86F18C-9F38-4CA3-8CF9-5A837CBC700D",
+    /** The mobile Connection &gt; Connection Type List block type. */
+    MobileConnectionConnectionTypeList = "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF",
+    /** The mobile Connection &gt; Connection Opportunity List block type. */
+    MobileConnectionConnectionOpportunityList = "0015A574-C10A-4530-897C-F7B7C3D9393E",
+    /** The mobile Connection &gt; Connection Request List block type. */
+    MobileConnectionConnectionRequestList = "612E9E13-434F-4E47-958D-37E1C3EEF304",
+    /** The mobile Connection &gt; Connection Request Detail block type. */
+    MobileConnectionConnectionRequestDetail = "EF537CC9-5E53-4832-A473-0D5EA439C296",
+    /** The mobile Core &gt;  block type. */
+    MobileCoreSearch = "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
     /** The mobile Groups &gt; Group Registration block type. */
     MobileGroupsGroupRegistration = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912",
     /** The mobile Groups &gt; Group Finder block type. */

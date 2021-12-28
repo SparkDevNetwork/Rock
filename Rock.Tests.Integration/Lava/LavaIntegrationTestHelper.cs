@@ -731,6 +731,16 @@ namespace Rock.Tests.Integration.Lava
                 outputString = outputString.ToLower();
             }
 
+            var matchType = options.OutputMatchType;
+
+            if ( expectedOutputs.Count() > 1 )
+            {
+                if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                {
+                    matchType = LavaTestOutputMatchTypeSpecifier.Contains;
+                }
+            }
+
             foreach ( var expectedOutputString in expectedOutputs )
             {
                 var expectedOutput = expectedOutputString;
@@ -754,7 +764,8 @@ namespace Rock.Tests.Integration.Lava
 
                     expectedOutput = Regex.Escape( expectedOutput );
 
-                    expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.*)" );
+                    // Require a match of 1 or more characters for a wildcard.
+                    expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
 
                     if ( options.OutputMatchType != LavaTestOutputMatchTypeSpecifier.RegEx )
                     {
@@ -773,15 +784,15 @@ namespace Rock.Tests.Integration.Lava
                         expectedOutput = expectedOutput.ToLower();
                     }
 
-                    if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                    if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
                     {
                         Assert.That.Equal( expectedOutput, outputString );
                     }
-                    else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Contains )
+                    else if ( matchType == LavaTestOutputMatchTypeSpecifier.Contains )
                     {
                         Assert.That.Contains( outputString, expectedOutput );
                     }
-                    else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
+                    else if ( matchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
                     {
                         Assert.That.DoesNotContain( outputString, expectedOutput );
                     }
@@ -896,6 +907,77 @@ namespace Rock.Tests.Integration.Lava
 
             AssertTemplateOutputDate( expectedDate, inputTemplate, maximumDelta );
         }
+
+        #region Test Configuration
+
+        /// <summary>
+        /// Get the Lava Engine configuration for the currenttest environment.
+        /// </summary>
+        /// <returns></returns>
+        private static LavaEngineConfigurationOptions GetCurrentEngineOptions()
+        {
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                FileSystem = new WebsiteLavaFileSystem(),
+                CacheService = new WebsiteLavaTemplateCacheService(),
+                TimeZone = RockDateTime.OrgTimeZoneInfo
+            };
+
+            return engineOptions;
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to the current system local timezone.
+        /// </summary>
+        public static void SetRockOrganizationLocalTimeZone()
+        {
+            RockDateTime.Initialize( TimeZoneInfo.Local );
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
+        /// in which the organization timezone does not match the local system timezone.
+        /// This configuration simulates a Rock server hosted in a different timezone to the Rock organization.
+        /// </summary>
+        public static void SetRockOrganizationTestTimeZone()
+        {
+            // Set to India Standard Time, or an alternative if that is the local timezone in the current environment.
+            SetRockOrganizationTimeZone( "India Standard Time" );
+
+            if ( RockDateTime.OrgTimeZoneInfo.Id == TimeZoneInfo.Local.Id )
+            {
+                SetRockOrganizationTimeZone( "Mountain Standard Time" );
+            }
+
+            // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
+            // If a DST-affected timezone is used, some tests will fail when executed across DST boundary dates.
+            Assert.That.IsFalse( RockDateTime.OrgTimeZoneInfo.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
+        /// in which the organization timezone does not match the local system timezone.
+        /// This configuration simulates a Rock server hosted in a different timezone to the Rock organization.
+        /// </summary>
+        public static void SetRockOrganizationTimeZone( string timeZoneId )
+        {
+            try
+            {
+                var tz = TimeZoneInfo.FindSystemTimeZoneById( timeZoneId );
+
+                RockDateTime.Initialize( tz );
+            }
+            catch ( TimeZoneNotFoundException )
+            {
+                throw new Exception( $"Timezone '{timeZoneId}' is not available in this environment." );
+            }
+
+            // Re-initialize the lava engine options.
+            var options = GetCurrentEngineOptions();
+            _fluidEngine.Initialize( options );
+        }
+
+        #endregion
 
         #region Test Data
 

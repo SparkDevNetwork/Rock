@@ -129,7 +129,7 @@ namespace Rock.NMI
         IsRequired = false,
         DefaultValue = null,
         Order = 10 )]
-    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent
+    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent
     {
         #region Attribute Keys
 
@@ -1761,12 +1761,21 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             }
 
             // since we can't update a subscription in NMI, we'll have to Delete and Create a new one
+            var deletedGatewayScheduleId = scheduledTransaction.GatewayScheduleId;
             DeleteSubscription( scheduledTransaction.FinancialGateway, scheduledTransaction.GatewayScheduleId );
 
             // add the scheduled payment, but don't use the financialScheduledTransaction that was returned since we already have one
             var dummyFinancialScheduledTransaction = AddScheduledPayment( scheduledTransaction.FinancialGateway, paymentSchedule, paymentInfo, out errorMessage );
             if ( dummyFinancialScheduledTransaction != null )
             {
+                // keep track of the deleted schedule id in case some have been processed but not downloaded yet.
+                if ( scheduledTransaction.PreviousGatewayScheduleIds == null)
+                {
+                    scheduledTransaction.PreviousGatewayScheduleIds = new List<string>();
+                }
+
+                scheduledTransaction.PreviousGatewayScheduleIds.Add( deletedGatewayScheduleId );
+
                 scheduledTransaction.GatewayScheduleId = dummyFinancialScheduledTransaction.GatewayScheduleId;
 
                 scheduledTransaction.IsActive = true;
@@ -2170,6 +2179,59 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         }
 
         #endregion IHostedGatewayComponent
+
+        #region IObsidianFinancialGateway
+
+        /// <inheritdoc/>
+        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        {
+            return "/Obsidian/Controls/nmiGatewayControl.js";
+        }
+
+        /// <inheritdoc/>
+        public object GetObsidianControlSettings( FinancialGateway financialGateway, HostedPaymentInfoControlOptions options )
+        {
+            List<int> enabledPaymentTypes = new List<int>();
+
+            if ( options?.EnableCreditCard ?? true )
+            {
+                enabledPaymentTypes.Add( ( int ) NMIPaymentType.card );
+            }
+
+            if ( options?.EnableACH ?? true )
+            {
+                enabledPaymentTypes.Add( ( int ) NMIPaymentType.ach );
+            }
+
+            return new
+            {
+                EnabledPaymentTypes = enabledPaymentTypes,
+                TokenizationKey = GetAttributeValue( financialGateway, AttributeKey.TokenizationKey )
+            };
+        }
+
+        /// <inheritdoc/>
+        public bool TryGetPaymentTokenFromParameters( FinancialGateway financialGateway, IDictionary<string, string> parameters, out string paymentToken )
+        {
+            paymentToken = null;
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public bool IsPaymentTokenCharged( FinancialGateway financialGateway, string paymentToken )
+        {
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public FinancialTransaction FetchPaymentTokenTransaction( Data.RockContext rockContext, FinancialGateway financialGateway, int? fundId, string paymentToken )
+        {
+            // This method is not required in our implementation.
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         #region IFeeCoverageGatewayComponent
 

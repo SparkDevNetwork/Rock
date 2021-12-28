@@ -77,6 +77,7 @@ export class Note implements BlockTool {
 
     save(block: HTMLElement): NoteData {
         return {
+            id: this.id,
             note: block.querySelector("textarea")?.value || ""
         };
     }

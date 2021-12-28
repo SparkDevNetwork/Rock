@@ -89,6 +89,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.CreateInteractionsForPrayers,
         Order = 6 )]
 
+    [BooleanField( "Include Group Requests",
+        Description = "Includes prayer requests that are attached to a group.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.IncludeGroupRequests,
+        Order = 7 )]
+
     #endregion
 
     public class PrayerSession : RockMobileBlockType
@@ -134,6 +142,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The create interactions for prayers key.
             /// </summary>
             public const string CreateInteractionsForPrayers = "CreateInteractionsForPrayers";
+
+            /// <summary>
+            /// The include group requests key.
+            /// </summary>
+            public const string IncludeGroupRequests = "IncludeGroupRequests";
         }
 
         /// <summary>
@@ -192,6 +205,16 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// </value>
         protected bool CreateInteractionsForPrayers => GetAttributeValue( AttributeKeys.CreateInteractionsForPrayers ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value that specifies if group requests should be included by default.
+        /// If <c>false</c> and no group is specified in the page parameters then any
+        /// requests that are attached to a group will be excluded.
+        /// </summary>
+        /// <value>
+        /// A value that specifies if group requests should be included by default.
+        /// </value>
+        protected bool IncludeGroupRequests => GetAttributeValue( AttributeKeys.IncludeGroupRequests ).AsBoolean( false );
+
         #endregion
 
         #region Page Parameters
@@ -210,6 +233,12 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// My campus key, value should be blank or a boolean value.
             /// </summary>
             public const string MyCampus = "MyCampus";
+
+            /// <summary>
+            /// The unique identifier of the group to use when filtering prayer
+            /// requests.
+            /// </summary>
+            public const string GroupGuid = "GroupGuid";
         }
 
         /// <summary>
@@ -227,6 +256,12 @@ namespace Rock.Blocks.Types.Mobile.Events
         ///   <c>true</c> if the prayer session should be limited to the user's campus; otherwise, <c>false</c>.
         /// </value>
         protected bool MyCampus => RequestContext.GetPageParameter( PageParameterKeys.MyCampus ).AsBooleanOrNull() ?? false;
+
+        /// <summary>
+        /// The unique identifier of the group to use when filtering prayer
+        /// requests.
+        /// </summary>
+        protected Guid? GroupGuid => RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuidOrNull();
 
         #endregion
 
@@ -347,7 +382,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             var prayerRequestService = new PrayerRequestService( rockContext );
             var category = CategoryCache.Get( PrayerCategory );
 
-            if ( category == null )
+            if ( category == null && !GroupGuid.HasValue )
             {
                 return null;
             }
@@ -367,6 +402,19 @@ namespace Rock.Blocks.Types.Mobile.Events
                 {
                     query = query.Where( a => a.CampusId.HasValue && a.CampusId == campusId );
                 }
+            }
+
+            // Filter by group if it has been specified.
+            if ( GroupGuid.HasValue )
+            {
+                query = query.Where( a => a.Group != null && a.Group.Guid == GroupGuid.Value );
+            }
+
+            // If we are not filtering by group, then exclude any group requests
+            // unless the block setting including them is enabled.
+            if ( !GroupGuid.HasValue && !IncludeGroupRequests )
+            {
+                query = query.Where( a => !a.GroupId.HasValue );
             }
 
             query = query.OrderByDescending( a => a.IsUrgent )

@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Streaks
         IsRequired = false,
         Order = 3 )]
 
-    public partial class StreakTypeDetail : RockBlock, IDetailBlock
+    public partial class StreakTypeDetail : RockBlock
     {
         #region Keys
 
@@ -437,13 +437,18 @@ namespace RockWeb.Blocks.Streaks
             streakType.StructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );
             streakType.StructureEntityId = GetStructureEntityIdSelected();
 
-            if ( streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            if ( streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Weekly )
             {
-                streakType.FirstDayOfWeek = null;
+                streakType.FirstDayOfWeek = dowPicker.SelectedDayOfWeek;
             }
             else
             {
-                streakType.FirstDayOfWeek = dowPicker.SelectedDayOfWeek;
+                streakType.FirstDayOfWeek = null;
+            }
+
+            if ( streakType.StructureType == StreakStructureType.FinancialTransaction )
+            {
+                streakType.StructureSettings.IncludeChildAccounts = cbIncludeChildAccounts.Checked;
             }
 
             if ( !streakType.IsValid )
@@ -486,7 +491,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )
@@ -622,7 +627,7 @@ namespace RockWeb.Blocks.Streaks
             {
                 var structureName = GetStreakStructureName();
                 var structureString = string.Format( "{0}{1}",
-                    streakType.StructureType.Value.ConvertToString(),
+                    streakType.StructureType.Value.GetDescription(),
                     string.Format( "{0}{1}",
                         structureName.IsNullOrWhiteSpace() ? string.Empty : " - ",
                         structureName
@@ -654,14 +659,14 @@ namespace RockWeb.Blocks.Streaks
         private void BindDropDownLists()
         {
             BindDropDownListToEnum( typeof( StreakOccurrenceFrequency ), ddlFrequencyOccurrence, false );
-            BindDropDownListToEnum( typeof( StreakStructureType ), ddlStructureType, true, "None" );
+            BindStreakStructureTypeToDropDownList( ddlStructureType, true, "None" );
         }
 
         /// <summary>
         /// Take an enum type and bind it's options to the drop down list
         /// </summary>
-        /// <param name="enumType"></param>
-        /// <param name="ddl"></param>
+        /// <param name="enumType">The type of the enum to populate the dropdown with.</param>
+        /// <param name="ddl">The dropdown list.</param>
         private void BindDropDownListToEnum( Type enumType, DataDropDownList ddl, bool includeBlank, string blankText = "" )
         {
             if ( includeBlank )
@@ -672,9 +677,45 @@ namespace RockWeb.Blocks.Streaks
             var itemValues = Enum.GetValues( enumType );
             var itemNames = Enum.GetNames( enumType );
 
+
             for ( var i = 0; i < itemNames.Length; i++ )
             {
                 ddl.Items.Add( new ListItem( itemNames[i].SplitCase(), itemValues.GetValue( i ).ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Binds the streak structure type to drop down list.
+        /// </summary>
+        /// <param name="ddl">The dropdown list.</param>
+        /// <param name="includeBlank">if set to <c>true</c> [include blank].</param>
+        /// <param name="blankText">The blank text.</param>
+        private void BindStreakStructureTypeToDropDownList( DataDropDownList ddl, bool includeBlank, string blankText = "" )
+        {
+            if ( includeBlank )
+            {
+                ddl.Items.Add( new ListItem( blankText, string.Empty ) );
+            }
+
+            var itemValues = Enum.GetValues( typeof( StreakStructureType ) );
+            var itemNames = GetStreakStructureTypeDisplayValues();
+
+            for ( var i = 0; i < itemNames.Count(); i++ )
+            {
+                ddl.Items.Add( new ListItem( itemNames.ElementAt( i ), itemValues.GetValue( i ).ToString() ) );
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the streak structure type display values.
+        /// </summary>
+        /// <returns>A <see cref="IEnumerable&lt;string&gt;"/> of display attribute values for the enum.</returns>
+        private IEnumerable<string> GetStreakStructureTypeDisplayValues()
+        {
+            foreach ( object item in Enum.GetValues( typeof( StreakStructureType ) ) )
+            {
+                yield return ( ( StreakStructureType ) item ).GetDescription();
             }
         }
 
@@ -720,6 +761,8 @@ namespace RockWeb.Blocks.Streaks
                     return icChannelPicker.SelectedValueAsInt();
                 case StreakStructureType.InteractionComponent:
                     return icicComponentPicker.InteractionComponentId;
+                case StreakStructureType.FinancialTransaction:
+                    return apStructureAccountPicker.AccountId;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
             }
@@ -732,14 +775,7 @@ namespace RockWeb.Blocks.Streaks
         {
             var frequencySelected = GetEnumSelected<StreakOccurrenceFrequency>( ddlFrequencyOccurrence ) ?? StreakOccurrenceFrequency.Daily;
 
-            if ( frequencySelected == StreakOccurrenceFrequency.Daily )
-            {
-                dowPicker.Visible = false;
-            }
-            else
-            {
-                dowPicker.Visible = true;
-            }
+            dowPicker.Visible = ( frequencySelected == StreakOccurrenceFrequency.Weekly );
         }
 
         /// <summary>
@@ -759,12 +795,15 @@ namespace RockWeb.Blocks.Streaks
             gtpStructureGroupTypePicker.Visible = false;
             icicComponentPicker.Visible = false;
             icChannelPicker.Visible = false;
+            apStructureAccountPicker.Visible = false;
+            cbIncludeChildAccounts.Visible = false;
 
             var streakType = isAddMode ? null : GetStreakType();
             var originalStructureType = isAddMode ? null : streakType.StructureType;
             var selectedStructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );
             var originalEntityId = isAddMode ? null : streakType.StructureEntityId;
             var structureEntityId = originalStructureType == selectedStructureType ? originalEntityId : null;
+            var includeChildAccounts = isAddMode ? false : streakType.StructureSettings.IncludeChildAccounts;
 
             if ( !selectedStructureType.HasValue )
             {
@@ -795,6 +834,9 @@ namespace RockWeb.Blocks.Streaks
                     break;
                 case StreakStructureType.InteractionMedium:
                     RenderStructureDefinedValueControl( structureEntityId, "Interaction Medium", Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM );
+                    break;
+                case StreakStructureType.FinancialTransaction:
+                    RenderFinancialTransactionControl( structureEntityId, includeChildAccounts );
                     break;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
@@ -877,6 +919,20 @@ namespace RockWeb.Blocks.Streaks
         {
             icicComponentPicker.InteractionComponentId = structureEntityId;
             icicComponentPicker.Visible = true;
+        }
+
+        /// <summary>
+        /// Render control for linked activity structure of financial transactions.
+        /// </summary>
+        private void RenderFinancialTransactionControl( int? structureEntityId, bool includeChildAccounts )
+        {
+            apStructureAccountPicker.Label = "Account";
+            apStructureAccountPicker.AccountId = structureEntityId;
+            apStructureAccountPicker.Visible = true;
+
+            cbIncludeChildAccounts.Label = "Include Child Accounts";
+            cbIncludeChildAccounts.Checked = includeChildAccounts;
+            cbIncludeChildAccounts.Visible = true;
         }
 
         #endregion Internal Methods

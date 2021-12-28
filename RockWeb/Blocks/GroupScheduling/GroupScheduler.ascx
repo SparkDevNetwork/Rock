@@ -12,14 +12,14 @@
 
                 <div class="panel-labels hidden-xs">
                     <button id="btnHelp" runat="server"
-                        class="btn btn-link p-0 text-color focus-no-outline"
+                        class="btn btn-default btn-xs btn-square"
                         onclick="$('#filter-drawer').slideToggle();return false;">
                         <i class='fa fa-question'></i>
                     </button>
 
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="bottom" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
-                        class="btn btn-link p-0 btn-copy-to-clipboard text-color"
+                        class="btn btn-default btn-xs btn-square btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
@@ -152,7 +152,7 @@
                                 <div class="d-flex">
                                     <Rock:GroupPicker ID="gpPickedGroups" runat="server" Label="" AllowMultiSelect="true" OnValueChanged="gpPickedGroups_ValueChanged" CssClass="occurrences-groups-picker" LimitToSchedulingEnabledGroups="true" />
                                     <div>
-                                    <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn" Text="<i class='fa fa-square'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
+                                    <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn btn-xs btn-tool" Text="<i class='fa fa-square'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
                                     </div>
                                 </div>
 

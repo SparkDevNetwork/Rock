@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
@@ -104,6 +105,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string GroupTypeIds = "GroupTypeIds";
             public const string GroupIds = "GroupIds";
             public const string FamilyId = "FamilyId";
+            public const string CameraIndex = "CameraIndex";
         }
 
         #endregion PageParameterKeys
@@ -117,6 +119,7 @@ namespace RockWeb.Blocks.CheckIn
         protected override void OnLoad( EventArgs e )
         {
             RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
+            RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/html5-qrcode.min.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             if ( !Page.IsPostBack )
@@ -130,6 +133,13 @@ namespace RockWeb.Blocks.CheckIn
                     if ( familyId.IsNotNullOrWhiteSpace() )
                     {
                         queryParams.Add( PageParameterKey.FamilyId, familyId );
+                    }
+
+                    // if the HTML5 CameraIndex was specified, pass that onto the Welcome/Start page so that it can set the Camera in LocalStorage 
+                    var cameraIndex = PageParameter( PageParameterKey.CameraIndex );
+                    if ( cameraIndex.IsNotNullOrWhiteSpace() )
+                    {
+                        queryParams.Add( PageParameterKey.CameraIndex, cameraIndex );
                     }
 
                     NavigateToNextPage( queryParams );
@@ -213,7 +223,7 @@ namespace RockWeb.Blocks.CheckIn
             ddlKiosk.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
-                ddlKiosk.DataSource = new DeviceService( rockContext )
+                var deviceList = new DeviceService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId
                     && d.IsActive )
@@ -221,15 +231,26 @@ namespace RockWeb.Blocks.CheckIn
                     .Select( d => new
                     {
                         d.Id,
-                        d.Name
+                        d.Name,
+                        d.KioskType
                     } )
                     .ToList();
+
+                foreach ( var device in deviceList )
+                {
+                    ddlKiosk.Items.Add( new ListItem
+                    {
+                        Text = device.KioskType.HasValue ? $"{device.Name} ({device.KioskType.Value.GetDescription()})" : device.Name,
+                        Value = device.Id.ToString()
+                    } );
+                }
+
             }
 
-            ddlKiosk.DataBind();
             ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
 
             ddlKiosk.SetValue( this.LocalDeviceConfig.CurrentKioskId );
+            DisplayControlsForSelectedKiosk();
             BindCheckinTypes( this.LocalDeviceConfig.CurrentCheckinTypeId );
             BindGroupTypes( this.LocalDeviceConfig.CurrentGroupTypeIds );
         }
@@ -281,12 +302,12 @@ namespace RockWeb.Blocks.CheckIn
 
             this.LocalDeviceConfig.CurrentCheckinTypeId = urlCheckinTypeId;
 
-             /*
-                 2020-09-10 MDP
-                 If both PageParameterKey.CheckinConfigId and PageParameterKey.GroupTypeIds are specified, set the local device configuration from those.
-                 Then if PageParameterKey.KioskId is also specified set the KioskId from that, otherwise determine it from the IP Address
-                 see https://app.asana.com/0/1121505495628584/1191546188992881/f
-             */
+            /*
+                2020-09-10 MDP
+                If both PageParameterKey.CheckinConfigId and PageParameterKey.GroupTypeIds are specified, set the local device configuration from those.
+                Then if PageParameterKey.KioskId is also specified set the KioskId from that, otherwise determine it from the IP Address
+                see https://app.asana.com/0/1121505495628584/1191546188992881/f
+            */
 
             if ( urlGroupTypeIds.Any() )
             {
@@ -597,6 +618,7 @@ tryGeoLocation();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
         {
+            DisplayControlsForSelectedKiosk();
             BindCheckinTypes( ddlCheckinType.SelectedValueAsInt() );
             BindGroupTypes( GetSelectedGroupTypeIds() );
         }
@@ -690,6 +712,36 @@ tryGeoLocation();
                 .Select( g => g.Value )
                 .OrderBy( g => g.Order )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Displays the controls based on the Device kiosk type, etc
+        /// </summary>
+        private void DisplayControlsForSelectedKiosk()
+        {
+            pnlHtml5CameraOptions.Visible = false;
+
+            var deviceId = ddlKiosk.SelectedValueAsInt();
+            if ( !deviceId.HasValue )
+            {
+                return;
+            }
+
+            var device = new DeviceService( new RockContext() ).GetSelect( deviceId.Value, s => new { s.HasCamera, s.KioskType } );
+            if ( device == null )
+            {
+                return;
+            }
+
+            // Only show HTML5 Camera options if all the following are true
+            // -- HasCamera is true
+            // -- KioskType has been set (the HTML5 camera feature won't be enabled until they specifically set the KioskType)
+            // -- The KioskType is not an IPad
+            // -- The current Theme supports the HTML5 Camera feature
+            // Also, Javascript will hide this option if it detects this is running an on IPad, even though they didn't select Ipad as the KioskType
+            bool showHtml5CameraOptions = device.HasCamera && device.KioskType.HasValue && device?.KioskType != KioskType.IPad && this.CurrentThemeSupportsHTML5Camera();
+            hfKioskType.Value = device?.KioskType?.ConvertToString( false );
+            pnlHtml5CameraOptions.Visible = showHtml5CameraOptions;
         }
 
         /// <summary>

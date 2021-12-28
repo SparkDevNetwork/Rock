@@ -2158,15 +2158,22 @@ namespace RockWeb.Blocks.Communication
             if ( communicationId != null )
             {
                 var recipientService = new CommunicationRecipientService( dataContext );
-
                 var sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
 
-                var recipientQuery = recipientService.Queryable().Where( a => a.CommunicationId == communicationId ).ToList();
+                var recipientSummary = recipientService.Queryable()
+                    .Where( a => a.CommunicationId == communicationId )
+                    .GroupBy( a => a.Status )
+                    .Select( g => new
+                    {
+                        Status = g.Key,
+                        Count = g.Count()
+                    } )
+                    .ToList();
 
-                pendingRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Pending );
-                deliveredRecipientCount = recipientQuery.Count( a => sentStatus.Contains( a.Status ) );
-                failedRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Failed );
-                cancelledRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Cancelled );
+                pendingRecipientCount = recipientSummary.Where( a => a.Status == CommunicationRecipientStatus.Pending ).Sum( a => a.Count );
+                deliveredRecipientCount = recipientSummary.Where( a => sentStatus.Contains( a.Status ) ).Sum( a => a.Count );
+                failedRecipientCount = recipientSummary.Where( a => a.Status == CommunicationRecipientStatus.Failed ).Sum( a => a.Count );
+                cancelledRecipientCount = recipientSummary.Where( a => a.Status == CommunicationRecipientStatus.Cancelled ).Sum( a => a.Count );
             }
 
             string actionsStatFormatNumber = "<div>{0:#,##0}</div>";

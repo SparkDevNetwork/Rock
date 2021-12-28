@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Type Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given Connection Type for editing." )]
-    public partial class ConnectionTypeDetail : RockBlock, IDetailBlock
+    public partial class ConnectionTypeDetail : RockBlock
     {
         #region Properties
 

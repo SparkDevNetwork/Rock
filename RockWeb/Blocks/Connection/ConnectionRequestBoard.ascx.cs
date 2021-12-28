@@ -1973,46 +1973,40 @@ namespace RockWeb.Blocks.Connection
             var workflowService = new WorkflowService( rockContext );
             List<string> workflowErrors;
 
-            if ( workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
+            // Process the workflow and exit if any errors occur.
+            if ( !workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
             {
-                if ( workflow.Id != 0 )
-                {
-                    new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
-                    {
-                        ConnectionRequestId = connectionRequest.Id,
-                        WorkflowId = workflow.Id,
-                        ConnectionWorkflowId = connectionWorkflow.Id,
-                        TriggerType = connectionWorkflow.TriggerType,
-                        TriggerQualifier = connectionWorkflow.QualifierValue
-                    } );
+                mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
+                return;
+            }
 
-                    rockContext.SaveChanges();
-
-                    if ( workflow.HasActiveEntryForm( CurrentPerson ) )
-                    {
-                        NavigateToLinkedPage(
-                            AttributeKey.WorkflowEntryPage,
-                            new Dictionary<string, string>
-                            {
-                                { "WorkflowTypeId", workflowType.Id.ToString() },
-                                { "WorkflowGuid", workflow.Guid.ToString() }
-                            } );
-                    }
-                    else
-                    {
-                        var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
-                        mdWorkflowLaunched.Show( message, ModalAlertType.Information );
-                    }
-                }
-                else
+            // If the workflow is persisted, create a link between the workflow and this connection request.
+            if ( workflow.Id != 0 )
+            {
+                new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
                 {
-                    var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
-                    mdWorkflowLaunched.Show( message, ModalAlertType.Information );
-                }
+                    ConnectionRequestId = connectionRequest.Id,
+                    WorkflowId = workflow.Id,
+                    ConnectionWorkflowId = connectionWorkflow.Id,
+                    TriggerType = connectionWorkflow.TriggerType,
+                    TriggerQualifier = connectionWorkflow.QualifierValue
+                } );
+
+                rockContext.SaveChanges();
+            }
+
+            // Notify the user that the workflow has been processed.
+            // If the workflow has an active entry form, load the form in a separate browser window or tab.
+            if ( workflow.HasActiveEntryForm( CurrentPerson ) )
+            {
+                var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
+
+                RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
             }
             else
             {
-                mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
+                var message = string.Format( "A '{0}' workflow was processed.", workflowType.Name );
+                mdWorkflowLaunched.Show( message, ModalAlertType.Information );
             }
         }
 
@@ -2263,18 +2257,66 @@ namespace RockWeb.Blocks.Connection
 
             if ( requestWorkflow.Workflow.HasActiveEntryForm( CurrentPerson ) )
             {
-                var qryParam = new Dictionary<string, string>
-                {
-                    { "WorkflowTypeId", requestWorkflow.Workflow.WorkflowTypeId.ToString() },
-                    { "WorkflowGuid", requestWorkflow.Workflow.Guid.ToString() }
-                };
-
-                NavigateToLinkedPage( AttributeKey.WorkflowEntryPage, qryParam );
+                RegisterWorkflowDetailPageScript( requestWorkflow.Workflow.WorkflowTypeId, requestWorkflow.Workflow.Guid );
             }
             else
             {
                 NavigateToLinkedPage( AttributeKey.WorkflowDetailPage, PageParameterKey.WorkflowId, requestWorkflow.Workflow.Id );
             }
+        }
+
+        /// <summary>
+        /// Add a script to the client load event for the current page that will also open a new page for the workflow entry form.
+        /// </summary>
+        /// <param name="workflowTypeId"></param>
+        /// <param name="workflowGuid"></param>
+        private void RegisterWorkflowDetailPageScript( int workflowTypeId, Guid workflowGuid, string message = null )
+        {
+            var qryParam = new Dictionary<string, string>
+                {
+                    { "WorkflowTypeId", workflowTypeId.ToString() },
+                    { "WorkflowGuid", workflowGuid.ToString() }
+                };
+
+            var url = LinkedPageUrl( AttributeKey.WorkflowEntryPage, qryParam );
+
+            // When the script is executed, it is also removed from the client load event to ensure that it is only run once.
+            string script;
+
+            if ( string.IsNullOrEmpty( message ) )
+            {
+                // Open the workflow detail page.
+                script = $@"
+<script language='javascript' type='text/javascript'> 
+    Sys.Application.add_load(openWorkflowEntryPage);
+    function openWorkflowEntryPage() {{
+        Sys.Application.remove_load( openWorkflowEntryPage );
+        window.open('{url}');
+    }}
+</script>";
+            }
+            else
+            {
+                // Show a modal message dialog, and open the workflow detail page when the dialog is closed.
+                message = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
+                script = $@"
+<script language='javascript' type='text/javascript'> 
+    Sys.Application.add_load(openWorkflowEntryPage);
+    function openWorkflowEntryPage() {{
+        Sys.Application.remove_load( openWorkflowEntryPage );
+        bootbox.alert({{ message:'{message}',
+            callback: function() {{ window.open('{url}'); }}
+        }});
+    }}
+</script>
+";
+            }
+
+            ScriptManager.RegisterStartupScript( gRequestModalViewModeWorkflows,
+                gRequestModalViewModeWorkflows.GetType(),
+                "openWorkflowScript",
+                script,
+                false );
         }
 
         #endregion Request Modal (View Mode) Workflows

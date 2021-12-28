@@ -456,6 +456,11 @@ namespace Rock.Tests.UnitTests.Lava
         /// Verify the "equals" comparison operator.
         /// </summary>
         [DataTestMethod]
+        [DataRow( "blank == 0", false )]
+        [DataRow( "empty == 0", false )]
+        [DataRow( "null == 0", false )]
+        [DataRow( "'' == 0", false )]
+        [DataRow( "'zero' == 0", false )]
         [DataRow( "1 == 1", true )]
         [DataRow( "'1' == 1", true )]
         [DataRow( "1 == '1'", true )]

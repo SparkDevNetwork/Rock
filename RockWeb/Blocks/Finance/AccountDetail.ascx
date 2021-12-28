@@ -30,6 +30,7 @@
                             <asp:Literal ID="lLeftDetails" runat="server" />
                         </div>
                         <div class="col-md-6">
+                            <asp:Literal ID="lRightDetails" runat="server" />
                             <asp:PlaceHolder ID="phAttributesView" runat="server" />
                         </div>
                     </div>
@@ -90,6 +91,17 @@
                             <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />           
                         </div>
                     </div>
+
+                    <asp:Panel ID="pnlAccountParticipants" runat="server">
+                        <label>Account Participants</label>
+                        <Rock:Grid ID="gAccountParticipants" runat="server" DisplayType="Light" RowItemText="Account Participant" ShowHeader="true" ShowConfirmDeleteDialog="false" AllowSorting="false">
+                            <Columns>
+                                <asp:BoundField DataField="PersonFullName" HeaderText="Person" />
+                                <asp:BoundField DataField="PurposeKeyDescription" HeaderText="Purpose" />
+                                <Rock:DeleteField OnClick="gAccountParticipants_DeleteClick" />
+                            </Columns>
+                        </Rock:Grid>
+                    </asp:Panel>
                     
                     <div class="row">
                         <div class="col-md-6">
@@ -109,6 +121,15 @@
             </div>
 
         </asp:Panel>
+
+        <Rock:ModalDialog ID="mdAddAccountParticipant" runat="server" Title="Add Participant" OnSaveClick="mdAddAccountParticipant_SaveClick" ValidationGroup="vgAddAccountParticipant">
+            <Content>
+                <asp:ValidationSummary ID="valAddAccountParticipant" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgAddAccountParticipant" />
+
+                <Rock:PersonPicker ID="ppAccountParticipantPerson" runat="server" Label="Person"  Required="true" ValidationGroup="vgAddAccountParticipant"/>
+                <Rock:RockDropDownList ID="ddlAccountParticipantPurposeKey" runat="server" Label="Purpose" Required="true" ValidationGroup="vgAddAccountParticipant" />
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

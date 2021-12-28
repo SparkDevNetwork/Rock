@@ -25,7 +25,7 @@ import Number from "../../../Services/number";
 import GuidHelper, { Guid } from "../../../Util/guid";
 import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./registrationEntryBlockViewModel";
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.FeeField",
     components: {
         NumberUpDown,
@@ -51,11 +51,11 @@ export default defineComponent( {
         };
     },
     methods: {
-        getItemLabel( item: RegistrationEntryBlockFeeItemViewModel ): string {
-            const formattedCost = Number.asFormattedString( item.cost, 2 );
+        getItemLabel(item: RegistrationEntryBlockFeeItemViewModel): string {
+            const formattedCost = Number.asFormattedString(item.cost, 2);
 
-            if ( item.countRemaining ) {
-                const formattedRemaining = Number.asFormattedString( item.countRemaining, 0 );
+            if (item.countRemaining) {
+                const formattedRemaining = Number.asFormattedString(item.countRemaining, 0);
                 return `${item.name} ($${formattedCost}) (${formattedRemaining} remaining)`;
             }
 
@@ -64,15 +64,14 @@ export default defineComponent( {
     },
     computed: {
         label(): string {
-            if ( this.singleItem ) {
-                const formattedCost = Number.asFormattedString( this.singleItem.cost, 2 );
-                return `${this.fee.name} ($${formattedCost})`;
+            if (this.singleItem) {
+                return this.getItemLabel(this.singleItem);
             }
 
             return this.fee.name;
         },
         singleItem(): RegistrationEntryBlockFeeItemViewModel | null {
-            if ( this.fee.items.length !== 1 ) {
+            if (this.fee.items.length !== 1) {
                 return null;
             }
 
@@ -94,18 +93,18 @@ export default defineComponent( {
             return this.fee.items.length > 1 && !this.fee.allowMultiple;
         },
         dropDownListOptions(): DropDownListOption[] {
-            return this.fee.items.map( i => ( {
-                text: this.getItemLabel( i ),
+            return this.fee.items.map(i => ({
+                text: this.getItemLabel(i),
                 value: i.guid
-            } ) );
+            }));
         },
         numberUpDownGroupOptions(): NumberUpDownGroupOption[] {
-            return this.fee.items.map( i => ( {
+            return this.fee.items.map(i => ({
                 key: i.guid,
-                label: this.getItemLabel( i ),
+                label: this.getItemLabel(i),
                 max: i.countRemaining || 100,
                 min: 0
-            } ) );
+            }));
         },
         rules(): string {
             return this.fee.isRequired ? "required" : "";
@@ -170,4 +169,4 @@ export default defineComponent( {
     <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="modelValue" :rules="rules" />
     <Alert v-else alertType="danger">This fee configuration is not supported</Alert>
 </template>`
-} );
+});

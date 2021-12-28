@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.UI.HtmlControls;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -921,6 +923,18 @@ namespace Rock.CheckIn
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns true if the current check-in theme supports HTML5 Camera.
+        /// This is determined by themes that have a 'js-camera-supported' class on the 'body' tag.
+        /// </summary>
+        /// <returns><c>true</c> if CurrentThemeSupportsHTML5Camera, <c>false</c> otherwise.</returns>
+        public bool CurrentThemeSupportsHTML5Camera()
+        {
+            var body = this.RockPage.Master.FindControl( "body" ) as HtmlGenericControl;
+            var themeSupportsHTML5Camera = body?.HasCssClass( "js-camera-supported" ) == true;
+            return themeSupportsHTML5Camera;
         }
 
         private static class SessionKey

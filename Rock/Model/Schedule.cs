@@ -297,7 +297,8 @@ namespace Rock.Model
         {
             if ( this.IsActive )
             {
-                var endDate = currentDateTime.AddYears( 1 );
+                // Increase this from 1 to 2 years to catch events more than a year out. See github issue #4812.
+                var endDate = currentDateTime.AddYears( 2 );
 
                 var calEvent = GetICalEvent();
 
@@ -317,7 +318,7 @@ namespace Rock.Model
 
                 /* 2020-06-24 MP
                  * To improve performance, only go out a week (or so) if this is a weekly or daily schedule.
-                 * If this optimization fails to find a next scheduled date, fall back to looking out a full year
+                 * If this optimization fails to find a next scheduled date, fall back to looking out a full two years
                  */
 
                 if ( rrule?.Frequency == FrequencyType.Weekly )
@@ -333,11 +334,11 @@ namespace Rock.Model
 
                 var occurrences = GetScheduledStartTimes( currentDateTime, endDate );
                 var nextOccurrence = occurrences.Min( o => ( DateTime? ) o );
-                if ( nextOccurrence == null && endDate < currentDateTime.AddYears( 1 ) )
+                if ( nextOccurrence == null && endDate < currentDateTime.AddYears( 2 ) )
                 {
                     // if tried an earlier end date, but didn't get a next datetime,
-                    // use the regular way and see if there is a next schedule date within the next year
-                    endDate = currentDateTime.AddYears( 1 );
+                    // use the regular way and see if there is a next schedule date within the next two years
+                    endDate = currentDateTime.AddYears( 2 );
                     occurrences = GetScheduledStartTimes( currentDateTime, endDate );
                     nextOccurrence = occurrences.Min( o => ( DateTime? ) o );
                 }
@@ -544,10 +545,13 @@ namespace Rock.Model
             var originalEffectiveEndDate = EffectiveEndDate;
             var originalEffectiveStartDate = EffectiveStartDate;
 
+            // Set initial values for start and end dates.
+            // End date is set to MaxValue as a placeholder - infinitely repeating schedules should be stored with
+            // a null end date value.
             DateTime? effectiveStartDateTime = calEvent.DtStart?.Value.Date;
-            DateTime? effectiveEndDateTime = null;
+            DateTime? effectiveEndDateTime = DateTime.MaxValue;
 
-            // In Rock it is possible to set a rule with an end date, no end date (which is actually end date of max value) or a number
+            // In Rock it is possible to set a rule with an end date, no end date or a number
             // of occurrences. The count property in the iCal rule refers to the count of occurrences.
             var endDateRules = calEvent.RecurrenceRules.Where( rule => rule.Count <= 0 );
             var countRules = calEvent.RecurrenceRules.Where( rule => rule.Count > 0 );
@@ -564,7 +568,7 @@ namespace Rock.Model
             {
                 if ( endDateRules.Any( rule => RockDateTime.IsMinDate( rule.Until ) ) )
                 {
-                    effectiveEndDateTime = DateTime.MaxValue;
+                    effectiveEndDateTime = null;
                 }
                 else
                 {
@@ -578,7 +582,7 @@ namespace Rock.Model
                 {
                     // If there is a count rule greater than 999 (limit in the UI), and no end date rule was applied,
                     // we don't want to calculate occurrences because it will be too costly. Treat this as no end date.
-                    effectiveEndDateTime = DateTime.MaxValue;
+                    effectiveEndDateTime = null;
                 }
                 else
                 {
@@ -592,17 +596,18 @@ namespace Rock.Model
             // if it occurs after the Effective End Date required by the recurrence rules.
             if ( hasDates )
             {
-                // If the Schedule does not have any other rules, reset the Effective End Date to ensure it is recalculated.
+                // If the Schedule does not have any other rules, reset the Effective End Date to the placeholder value
+                // to ensure it is recalculated.
                 if ( !hasRuleWithEndDate && !hasRuleWithCount )
                 {
-                    effectiveEndDateTime = null;
+                    effectiveEndDateTime = DateTime.MaxValue;
                 }
 
                 adjustEffectiveDateForLastOccurrence = true;
             }
 
             if ( adjustEffectiveDateForLastOccurrence
-                 && effectiveEndDateTime != DateTime.MaxValue )
+                 && effectiveEndDateTime != null )
             {
                 var occurrences = GetICalOccurrences( DateTime.MinValue, DateTime.MaxValue );
 
@@ -612,7 +617,7 @@ namespace Rock.Model
                         ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Value
                         : effectiveStartDateTime;
 
-                    if ( effectiveEndDateTime == null
+                    if ( effectiveEndDateTime == DateTime.MaxValue
                          || lastOccurrenceDate > effectiveEndDateTime )
                     {
                         effectiveEndDateTime = lastOccurrenceDate;
@@ -621,7 +626,7 @@ namespace Rock.Model
             }
 
             // At this point, if no EffectiveEndDate is set then assume this is a one-time event and set the EffectiveEndDate to the EffectiveStartDate.
-            if ( effectiveEndDateTime == null && !adjustEffectiveDateForLastOccurrence )
+            if ( effectiveEndDateTime == DateTime.MaxValue && !adjustEffectiveDateForLastOccurrence )
             {
                 effectiveEndDateTime = effectiveStartDateTime;
             }

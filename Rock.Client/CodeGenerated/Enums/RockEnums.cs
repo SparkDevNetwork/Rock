@@ -125,6 +125,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum BenevolenceWorkflowTriggerType
+    {
+        RequestStarted = 0x0,
+        StatusChanged = 0x1,
+        CaseworkerAssigned = 0x2,
+        Manual = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum BlockLocation
     {
         Layout = 0x0,
@@ -499,6 +509,15 @@ namespace Rock.Client.Enums
         Success = 0x2,
         Error = 0x3,
         None = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum KioskType
+    {
+        IPad = 0x0,
+        WindowsApp = 0x1,
+        Browser = 0x2,
     }
 
     /// <summary>
@@ -901,6 +920,8 @@ namespace Rock.Client.Enums
     {
         Daily = 0x0,
         Weekly = 0x1,
+        Monthly = 0x2,
+        Yearly = 0x3,
     }
 
     /// <summary>
@@ -915,6 +936,7 @@ namespace Rock.Client.Enums
         InteractionChannel = 0x5,
         InteractionComponent = 0x6,
         InteractionMedium = 0x7,
+        FinancialTransaction = 0x8,
     }
 
     /// <summary>

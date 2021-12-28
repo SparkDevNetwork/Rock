@@ -8,6 +8,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class MergeFieldPicker
     {
         /// <summary>
@@ -126,4 +127,5 @@ namespace Rock.Web.UI.Controls
             }
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

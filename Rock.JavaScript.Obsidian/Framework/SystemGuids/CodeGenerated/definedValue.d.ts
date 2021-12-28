@@ -30,6 +30,16 @@ export const enum DefinedValue {
     BlockTemplateMobileCalendarEventItemOccurrenceView = "128F7350-97FD-4ECA-9C79-D02DE0C434EB",
     /** The block template for the mobile communication view */
     BlockTemplateMobileCommunicationView = "0D588D84-111C-4350-98DE-460C194F5DE5",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Type List block. */
+    BlockTemplateMobileConnectionConnectionTypeList = "FECAD08A-570F-434E-BEED-412C4F2A3159",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Opportunity List block. */
+    BlockTemplateMobileConnectionConnectionOpportunityList = "167465D9-E8D2-413C-BA99-FDA529B14E6C",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Request List block. */
+    BlockTemplateMobileConnectionConnectionRequestList = "4A45926C-5571-414C-8C69-8203FDBF4AE7",
+    /** The block template for the Mobile &gt; Connection &gt; Connection Request Detail block. */
+    BlockTemplateMobileConnectionConnectionRequestDetail = "44538702-5157-489A-B256-217F5D1F53F4",
+    /** The block template for  block. */
+    BlockTemplateMobileCoreSearch = "CFEB7FA6-0F19-496B-8DCC-4D200AEEE866",
     /** The block template mobile daily challenge entry */
     BlockTemplateMobileDailyChallengeEntry = "30ECA4B6-0869-4656-A4CD-B8729CB29E76",
     /** The block template mobile event item occurrence list by audience */
@@ -151,7 +161,7 @@ NOTE: This is not a core transaction type. It'll get created if needed when impo
     FinancialSourceTypeKiosk = "260EEA80-821A-4F79-973F-49DF79C955F7",
     /** The financial source of Mobile Application */
     FinancialSourceTypeMobileApplication = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C",
-    /** The financial source of On-site Collection */
+    /** The financial source of On-Site */
     FinancialSourceTypeOnsiteCollection = "BE7ECF50-52BC-4774-808D-574BA842DB98",
     /** The financial source of Text-to-Give (Give action of the SMS actions) */
     FinancialSourceTypeSmsGive = "8BA95E24-D291-499E-A535-4DCAC365689B",

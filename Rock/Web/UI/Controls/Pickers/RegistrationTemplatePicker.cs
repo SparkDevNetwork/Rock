@@ -60,7 +60,7 @@ namespace Rock.Web.UI.Controls
                     parentCategory = parentCategory.ParentCategory;
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ExpandedCategoryIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemName = registrationTemplate.Name;
             }
             else
@@ -100,7 +100,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ExpandedCategoryIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemIds = ids;
                 ItemNames = names;
             }

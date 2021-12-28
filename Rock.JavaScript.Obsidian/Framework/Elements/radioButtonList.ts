@@ -55,26 +55,22 @@ export default defineComponent({
         containerClasses (): string {
             const classes: string[] = [];
 
-            if ( this.repeatColumns > 0 ) {
+            if (this.repeatColumns > 0) {
                 classes.push(`in-columns in-columns-${this.repeatColumns}`);
             }
 
-            if ( this.horizontal ) {
-                classes.push( "rockradiobuttonlist-horizontal" );
+            if (this.horizontal) {
+                classes.push("rockradiobuttonlist-horizontal");
             }
             else {
-                classes.push( "rockradiobuttonlist-vertical" );
+                classes.push("rockradiobuttonlist-vertical");
             }
 
-            return classes.join( " " );
+            return classes.join(" ");
         }
     },
     methods: {
         getOptionUniqueId(uniqueId: Guid, option: DropDownListOption): string {
-            if (option.value === undefined) {
-                option.value = "";
-            }
-
             const key = option.value.replace(" ", "-");
 
             return `${uniqueId}-${key}`;

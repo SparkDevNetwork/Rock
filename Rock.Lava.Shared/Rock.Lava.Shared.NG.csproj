@@ -15,4 +15,8 @@
     <None Remove="obj\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Core\LavaRenderContext.cs" />
+  </ItemGroup>
+
 </Project>

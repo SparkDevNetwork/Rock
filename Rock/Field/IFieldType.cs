@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Reporting;
 
 #if NET5_0_OR_GREATER
@@ -47,7 +48,16 @@ namespace Rock.Field
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>The configuration values that should be sent down to the client.</returns>
-        Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
@@ -86,7 +96,16 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>A plain string of text.</returns>
-        string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetTextValue( string value, Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Formats the value into a string of HTML text that can be rendered
@@ -95,7 +114,16 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>A string of HTML text.</returns>
-        string GetHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetHtmlValue( string value, Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Formats the value into a condensed user-friendly string of plain text.
@@ -104,7 +132,16 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>A plain string of text.</returns>
-        string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Formats the value into a string of HTML text that can be rendered
@@ -113,7 +150,16 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>A string of HTML text.</returns>
-        string GetCondensedHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetCondensedHtmlValue( string value, Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Formats the value based on the type and qualifiers
@@ -213,7 +259,16 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>A string of text to send to the client.</returns>
-        string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetClientValue( string value, Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Gets the value that will be sent down to the client. This value is
@@ -222,7 +277,16 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>A string of text to send to the client.</returns>
-        string GetClientEditValue( string value, Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetClientEditValue( string value, Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Gets the value to be stored in the database from the value sent by
@@ -231,7 +295,16 @@ namespace Rock.Field
         /// <param name="clientValue">The client value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns>A string value to store in the database.</returns>
-        string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues );
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues );
 
         /// <summary>
         /// Creates an HTML control.

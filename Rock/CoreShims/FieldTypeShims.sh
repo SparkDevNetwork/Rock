@@ -3,6 +3,7 @@
 
 echo namespace Rock.Field.Types
 echo {
+echo "#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member"
 for file in ../Field/Types/*.cs ../Field/SelectFromListFieldType.cs; do
   class=`grep -E -E ' class ([a-zA-Z\<\>]+) :' "$file" | grep 'FieldType' | sed -E 's/.* class ([a-zA-Z\<\>]+) :.*/\1/g'`
   echo "    public partial class $class : Rock.Field.FieldType"
@@ -30,4 +31,5 @@ for file in ../Field/Types/*.cs ../Field/SelectFromListFieldType.cs; do
 
   echo "    }"
 done
+echo "#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member"
 echo }
