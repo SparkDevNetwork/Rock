@@ -144,11 +144,19 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
+#if NET5_0_OR_GREATER
+            get { return _eventCalendarItems ?? ( _eventCalendarItems = new Collection<EventCalendarItem>() ); }
+            set { _eventCalendarItems = value; }
+        }
+
+        private ICollection<EventCalendarItem> _eventCalendarItems;
+#else
             get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalenderItems = value; }
         }
 
         private ICollection<EventCalendarItem> _eventCalenderItems;
+#endif
 
         /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.EventItemOccurrence">EventItemOccurrence</see> that belong to this EventItem.
@@ -174,11 +182,19 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<EventItemAudience> EventItemAudiences
         {
+#if NET5_0_OR_GREATER
+            get { return _eventItemAudiences ?? ( _eventItemAudiences = new Collection<EventItemAudience>() ); }
+            set { _eventItemAudiences = value; }
+        }
+
+        private ICollection<EventItemAudience> _eventItemAudiences;
+#else
             get { return _calendarItemAudiences ?? ( _calendarItemAudiences = new Collection<EventItemAudience>() ); }
             set { _calendarItemAudiences = value; }
         }
 
         private ICollection<EventItemAudience> _calendarItemAudiences;
+#endif
 
         /// <summary>
         /// Gets or sets the approved by <see cref="Rock.Model.PersonAlias"/>.

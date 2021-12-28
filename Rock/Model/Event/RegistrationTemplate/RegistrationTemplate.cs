@@ -692,11 +692,19 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<RegistrationInstance> Instances
         {
+#if NET5_0_OR_GREATER
+            get { return _instances ?? ( _instances = new Collection<RegistrationInstance>() ); }
+            set { _instances = value; }
+        }
+
+        private ICollection<RegistrationInstance> _instances;
+#else
             get { return _registrationInstances ?? ( _registrationInstances = new Collection<RegistrationInstance>() ); }
             set { _registrationInstances = value; }
         }
 
         private ICollection<RegistrationInstance> _registrationInstances;
+#endif
 
         /// <summary>
         /// Gets or sets the forms.
@@ -707,11 +715,19 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<RegistrationTemplateForm> Forms
         {
+#if NET5_0_OR_GREATER
+            get { return _forms ?? ( _forms = new Collection<RegistrationTemplateForm>() ); }
+            set { _forms = value; }
+        }
+
+        private ICollection<RegistrationTemplateForm> _forms;
+#else
             get { return _registrationTemplateForms ?? ( _registrationTemplateForms = new Collection<RegistrationTemplateForm>() ); }
             set { _registrationTemplateForms = value; }
         }
 
         private ICollection<RegistrationTemplateForm> _registrationTemplateForms;
+#endif
 
         #endregion Navigation Properties
 

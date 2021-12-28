@@ -96,10 +96,17 @@ namespace Rock.Model
         /// </value>
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
+#if NET5_0_OR_GREATER
+            get { return _eventCalendarItems ?? ( _eventCalendarItems = new Collection<EventCalendarItem>() ); }
+            set { _eventCalendarItems = value; }
+        }
+        private ICollection<EventCalendarItem> _eventCalendarItems;
+#else
             get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalenderItems = value; }
         }
         private ICollection<EventCalendarItem> _eventCalenderItems;
+#endif
 
         /// <summary>
         /// Gets or sets the content channels.

@@ -147,10 +147,17 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<DataViewFilter> ChildFilters
         {
+#if NET5_0_OR_GREATER
+            get { return _childFilters ?? ( _childFilters = new Collection<DataViewFilter>() ); }
+            set { _childFilters = value; }
+        }
+        private ICollection<DataViewFilter> _childFilters;
+#else
             get { return _filters ?? ( _filters = new Collection<DataViewFilter>() ); }
             set { _filters = value; }
         }
         private ICollection<DataViewFilter> _filters;
+#endif
 
         #endregion
     }

@@ -229,7 +229,11 @@ namespace Rock.Model
         public BenevolenceRequest()
             : base()
         {
+#if NET5_0_OR_GREATER
+            _benevolenceResults = new Collection<BenevolenceResult>();
+#else
             _results = new Collection<BenevolenceResult>();
+#endif
             _documents = new Collection<BenevolenceRequestDocument>();
         }
 
@@ -300,11 +304,19 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<BenevolenceResult> BenevolenceResults
         {
+#if NET5_0_OR_GREATER
+            get { return _benevolenceResults; }
+            set { _benevolenceResults = value; }
+        }
+
+        private ICollection<BenevolenceResult> _benevolenceResults;
+#else
             get { return _results; }
             set { _results = value; }
         }
 
         private ICollection<BenevolenceResult> _results;
+#endif
 
         /// <summary>
         /// Gets or sets the request source date.
