@@ -110,10 +110,13 @@ namespace Rock.Data
 
             var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings[_nameOrConnectionString]?.ConnectionString ?? _nameOrConnectionString;
 
+#pragma warning disable EF1001 // Internal EF Core API usage.
             optionsBuilder.UseSqlServer( connectionString, a => a.UseNetTopologySuite() )
-                //.UseLazyLoadingProxies()
+                .UseLazyLoadingProxies()
                 .ReplaceService<IMigrationsAssembly, CoreShims.RockMigrationsAssembly>()
-                .ReplaceService<IMigrationsSqlGenerator, CoreShims.RockSqlServerMigrationsSqlGenerator>();
+                .ReplaceService<IMigrationsSqlGenerator, CoreShims.RockSqlServerMigrationsSqlGenerator>()
+                .ReplaceService<Microsoft.EntityFrameworkCore.Proxies.Internal.IProxyFactory, Rock.CoreShims.RockProxyFactory>();
+#pragma warning restore EF1001 // Internal EF Core API usage.
         }
 #endif
 
