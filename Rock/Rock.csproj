@@ -1657,7 +1657,6 @@
     <Compile Include="Model\CRM\AssessmentType\AssessmentType.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentTypeService.CodeGenerated.cs" />
-    <Compile Include="Model\AttendanceData.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\StreakService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeExclusionService.CodeGenerated.cs" />
