@@ -1,0 +1,91 @@
+@import "_variables";
+
+// Panels
+.panel {
+	border: 0;
+	margin-bottom: @base-spacing-unit/2;
+	border-radius: @border-radius-large;
+	box-shadow: none;
+
+	&.card {
+		background-color: transparent;
+	}
+
+	@media (min-width: @screen-sm-min) {
+		margin-bottom: @base-spacing-unit;
+	}
+}
+
+.panel.panel-primary, 
+.panel.panel-secondary, 
+.panel.panel-tertiary, 
+.panel.panel-success,
+.panel.panel-info,
+.panel.panel-warning,
+.panel.panel-danger {
+	border-top: 5px solid @gray-lighter;
+}
+
+.panel.panel-primary, .panel.panel-success {
+	border-color: @brand-primary;
+}
+
+.panel.panel-secondary {
+	border-color: @brand-secondary;
+}
+
+.panel.panel-tertiary {
+	border-color: @brand-tertiary;
+}
+
+.panel.panel-info {
+	border-color: @brand-info;
+}
+
+.panel.panel-warning {
+	border-color: @brand-warning;
+}
+
+.panel.panel-danger {
+	border-color: @brand-danger;
+}
+
+.panel > .panel-heading {
+	font-family: @font-family-sans-serif;
+	font-weight: 700;
+	letter-spacing: -.5px;
+}
+
+.panel-default > .panel-heading {
+	border-bottom: 1px solid darken(@gray-lighter,4%);
+}
+
+.panel .panel-title {
+	margin-top: 2px;
+}
+
+.panel-body {
+	padding:  @base-spacing-unit;
+	z-index: 0;
+	position: relative;
+}
+
+.panel-image {
+	position: relative;
+	display: block;
+	border-top-left-radius: @border-radius-base;
+	border-top-right-radius: @border-radius-base;
+
+	img {
+		display: block;
+		max-width: 100%;
+	}
+
+	.label {
+		margin-bottom: -18px;
+
+		@media (min-width: @screen-sm-min) {
+			margin-bottom: -15px;
+		}
+	}
+}

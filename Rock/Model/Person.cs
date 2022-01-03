@@ -2446,7 +2446,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public sealed class CalculateFamilySalutationArgs
         {
@@ -2759,7 +2759,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the person image tag.
-        /// NOTE: You might want to use <seealso cref="GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs) "/> instead 
+        /// NOTE: You might want to use <seealso cref="GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs) "/> instead
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="photoId">The photo identifier.</param>

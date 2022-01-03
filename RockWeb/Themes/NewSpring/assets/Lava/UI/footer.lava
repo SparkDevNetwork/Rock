@@ -1,0 +1,58 @@
+<style>
+.fa-facebook, .fa-twitter, .fa-instagram, .fa-youtube { transition: all .2s ease; }
+.fa-facebook:hover { color: #4467ca; }
+.fa-twitter:hover { color: #1DA1F2; }
+.fa-instagram:hover { color: #FDD362; }
+.fa-youtube:hover { color: #FB0007; }
+</style>
+
+{% assign orgAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
+{% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
+
+<footer id="footer" class="position-relative soft-double xs-soft-double-ends bg-gray-dark">
+    <div class="soft xs-soft-half">
+
+        <div class="row">
+            <div class="col-xs-12 xs-text-center">
+                <div class="push-half-bottom">
+                    <a href="/"><img class="mb-2" src="https://s3.amazonaws.com/ns.images/newspring/icons/newspring_mark.png" alt="NewSpring Church" style="max-width:40px;"></a>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12 xs-text-center">
+                <h5 class="text-uppercase strongest letter-spacing-normal text-white push-half-bottom">{{ 'Global' | Attribute:'OrganizationName' }}</h5>
+                <p><span class="text-white">{{ orgAddress.Street1 }}<br>
+                {{ orgAddress.City }}, {{ orgAddress.State }} {{ orgAddress.PostalCode | Split:'-' | First }}<br></span>
+                <a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a></p>
+
+                <p class="sans-serif strong text-white text-decoration-none flush-bottom xs-text-center"><small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on
+                <span class="position-relative fa-layers fa-lg fa-fw" style="top:5px;">
+                    <i class="fas fa-circle" style="color:white"></i>
+                    <i class="fa-inverse fab fa-rockrms" style="color: #ee7725; transform: scale(1.1);" data-fa-transform="shrink-6"></i>
+                </span>
+                Rock RMS</a></small></p>
+            </div><div class="col-md-6 col-sm-12 col-xs-12">
+
+            </div><div class="col-md-3 col-sm-6 col-xs-12 text-right xs-text-center xs-push-top">
+                <p class="sans-serif strong text-decoration-none">
+                    <a href="/privacy">Privacy Policy</a><br>
+                    <a href="/terms">Terms of Use</a><br>
+                    <a href="/reprinting-and-reposting">Reprinting &amp; Reposting</a>
+                </p>
+
+                <p class="text-white flush">
+                    <a href="{{ 'Global' | Attribute:'OrganizationFacebook','RawValue' }}" target="_blank"><i class="fab fa-2x fa-facebook"></i></a>&nbsp;&nbsp;
+                    <a href="{{ 'Global' | Attribute:'OrganizationTwitter','RawValue' }}" target="_blank"><i class="fab fa-2x fa-twitter"></i></a>&nbsp;&nbsp;
+                    <a href="{{ 'Global' | Attribute:'OrganizationInstagram','RawValue' }}" target="_blank"><i class="fab fa-2x fa-instagram"></i></a>&nbsp;&nbsp;
+                    <a href="{{ 'Global' | Attribute:'OrganizationYouTube','RawValue' }}" target="_blank"><i class="fab fa-2x fa-youtube"></i></a>
+                </p>
+            </div>
+        </div>
+
+    <div class="row push-top text-uppercase text-gray sans-serif strong">
+        <div class="col-md-6 col-xs-12 xs-text-center">
+            <p class="mb-0"> <small>© 2021 NewSpring Church</small></p>
+        </div><div class="col-md-6 col-xs-12 text-right xs-text-center xs-push-half-top">
+            <p class="text-sans-serif strong text-uppercase flush"><small><a class="text-decoration-none text-gray" href="https://newspring.cc/devotionals/year-of-the-bible-2021"><i class="fas fa-sm fa-book-open" aria-hidden="true"></i>&nbsp; Read Your Bible</a></small></p>
+        </div>
+    </div>
+</footer>
