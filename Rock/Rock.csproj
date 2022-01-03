@@ -830,6 +830,7 @@
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.SaveHook.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflowTriggerType.cs" />
+    <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.Logic.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.Logic.cs" />
     <Compile Include="Model\Core\AttributeValueHistorical\AttributeValueHistorical.Logic.cs" />
     <Compile Include="Model\Core\AttributeValue\AttributeValue.Logic.cs" />
