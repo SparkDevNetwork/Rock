@@ -1,3 +1,16 @@
+-- =====================================================================================================
+-- Author:        Rock
+-- Create Date: 
+-- Modified Date: 01-03-2021
+-- Description:   A post depoloy utility script for testing that set certain functionality for test mode.
+--
+-- Change History:
+--                 01-03-2021 COREYH - Add this script description. 
+--                                     Also added the script requirements.
+-- Requirements:
+--                 The [RockUser] login must exist in the SQL database.
+-- ======================================================================================================
+
 -- CREATE FUNCTION FOR REMOVING NON-ALPHA CHARACTERS
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufnUtility_RemoveNonAlphaCharacters]') AND type = 'FN')
 DROP FUNCTION [dbo].[ufnUtility_RemoveNonAlphaCharacters]
