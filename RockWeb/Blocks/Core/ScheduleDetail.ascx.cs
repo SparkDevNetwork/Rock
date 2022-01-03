@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Schedule Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given schedule." )]
-    public partial class ScheduleDetail : RockBlock, IDetailBlock
+    public partial class ScheduleDetail : RockBlock
     {
         #region Control Methods
 

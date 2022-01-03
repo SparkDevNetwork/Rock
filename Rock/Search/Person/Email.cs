@@ -50,18 +50,37 @@ namespace Rock.Search.Person
         }
 
         /// <summary>
+        /// Gets the search result entity queryable that matches the search term.
+        /// </summary>
+        /// <param name="searchTerm">The search term used to find results.</param>
+        /// <returns>A queryable of entity objects that match the search term.</returns>
+        private IQueryable<Model.Person> GetSearchResults( string searchTerm )
+        {
+            var personService = new PersonService( new RockContext() );
+
+            return personService.Queryable()
+                .Where( p => p.Email.Contains( searchTerm ) );
+        }
+
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            return GetSearchResults( searchTerm )
+                .OrderBy( p => p.NickName )
+                .ThenBy( p => p.LastName );
+        }
+
+        /// <summary>
         /// Returns a list of matching people
         /// </summary>
         /// <param name="searchterm"></param>
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            var personService = new PersonService( new RockContext() );
-
-            return personService.Queryable().
-                Where( p => p.Email.Contains( searchterm ) ).
-                OrderBy( p => p.Email ).
-                Select( p => p.Email ).Distinct();
+            return GetSearchResults( searchterm )
+                .OrderBy( p => p.Email )
+                .Select( p => p.Email )
+                .Distinct();
         }
     }
 }

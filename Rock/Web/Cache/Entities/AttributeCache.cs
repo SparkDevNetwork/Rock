@@ -180,6 +180,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool AllowSearch { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Attribute.AttributeColor"/>
+        [DataMember]
+        public string AttributeColor { get; private set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
         /// </summary>
@@ -453,6 +457,7 @@ namespace Rock.Web.Cache
             IsMultiValue = attribute.IsMultiValue;
             IsRequired = attribute.IsRequired;
             AllowSearch = attribute.AllowSearch;
+            AttributeColor = attribute.AttributeColor;
             IsIndexEnabled = attribute.IsIndexEnabled;
             IsAnalytic = attribute.IsAnalytic;
             IsAnalyticHistory = attribute.IsAnalyticHistory;
@@ -940,6 +945,7 @@ namespace Rock.Web.Cache
                 EntityTypeQualifierValue = model.EntityTypeQualifierValue,
                 FieldTypeId = model.FieldTypeId,
                 IconCssClass = model.IconCssClass,
+                AttributeColor = model.AttributeColor,
                 IsActive = model.IsActive,
                 IsAnalytic = model.IsAnalytic,
                 IsAnalyticHistory = model.IsAnalyticHistory,

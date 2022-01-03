@@ -29,7 +29,7 @@ export enum AlertType {
 }
 
 /** Displays a countdown and decremements the seconds. */
-const CountdownTimer = defineComponent( {
+const CountdownTimer = defineComponent({
     name: "CountdownTimer",
     props: {
         /** Seconds until 0:00 */
@@ -45,36 +45,36 @@ const CountdownTimer = defineComponent( {
     },
     computed: {
         timeString (): string {
-            const minutes = Math.floor( this.modelValue / 60 );
-            const seconds = Math.floor( this.modelValue % 60 );
+            const minutes = Math.floor(this.modelValue / 60);
+            const seconds = Math.floor(this.modelValue % 60);
             return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
         },
     },
     methods: {
         onInterval () {
-            if ( this.modelValue <= 0 ) {
-                this.$emit( "update:modelValue", 0 );
+            if (this.modelValue <= 0) {
+                this.$emit("update:modelValue", 0);
                 return;
             }
 
-            this.$emit( "update:modelValue", Math.floor( this.modelValue - 1 ) );
+            this.$emit("update:modelValue", Math.floor(this.modelValue - 1));
         }
     },
     mounted () {
-        if ( this.handle ) {
-            clearInterval( this.handle );
+        if (this.handle) {
+            clearInterval(this.handle);
         }
 
-        this.handle = setInterval( () => this.onInterval(), 1000 ) as unknown as number;
+        this.handle = setInterval(() => this.onInterval(), 1000) as unknown as number;
     },
     unmounted () {
-        if ( this.handle ) {
-            clearInterval( this.handle );
+        if (this.handle) {
+            clearInterval(this.handle);
             this.handle = null;
         }
     },
     template: `
 <span>{{timeString}}</span>`
-} );
+});
 
 export default CountdownTimer;

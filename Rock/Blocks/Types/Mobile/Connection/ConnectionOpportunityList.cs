@@ -18,11 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 
 using Rock.Attribute;
+using Rock.ClientService.Connection.ConnectionOpportunity;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
+using Rock.Model.Connection.ConnectionOpportunity.Options;
 using Rock.Security;
 
 namespace Rock.Blocks.Types.Mobile.Connection
@@ -127,45 +129,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #region Methods
 
         /// <summary>
-        /// Gets the connection opportunities queryable that will provide the results.
-        /// </summary>
-        /// <param name="connectionTypeGuid">The connection type unique identifier.</param>
-        /// <param name="filter">The filter to apply to the query.</param>
-        /// <param name="rockContext">The Rock database context.</param>
-        /// <returns>A queryable of <see cref="ConnectionOpportunity"/> objects.</returns>
-        /// <exception cref="System.ArgumentNullException">filter</exception>
-        internal static IQueryable<ConnectionOpportunity> GetConnectionOpportunitiesQuery( Guid connectionTypeGuid, GetConnectionOpportunitiesFilter filter, RockContext rockContext )
-        {
-            if ( filter == null )
-            {
-                throw new ArgumentNullException( nameof( filter ) );
-            }
-
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var qry = connectionOpportunityService.Queryable()
-                .Where( o => o.ConnectionType.Guid == connectionTypeGuid );
-
-            if ( filter.ConnectorPersonIds != null && filter.ConnectorPersonIds.Any() )
-            {
-                var connectorRequestsQry = new ConnectionRequestService( rockContext ).Queryable()
-                    .Where( r => r.ConnectionState != ConnectionState.Connected
-                        && r.ConnectorPersonAliasId.HasValue
-                        && filter.ConnectorPersonIds.Contains( r.ConnectorPersonAlias.PersonId ) )
-                    .Select( r => r.Id );
-
-                qry = qry.Where( o => o.ConnectionRequests.Any( r => connectorRequestsQry.Contains( r.Id ) ) );
-            }
-
-            if ( !filter.IncludeInactive )
-            {
-                qry = qry.Where( o => o.IsActive && o.ConnectionType.IsActive );
-            }
-
-            return qry;
-        }
-
-        /// <summary>
         /// Gets the connection opportunities view model that can be sent to the client.
         /// </summary>
         /// <param name="connectionTypeGuid">The connection type unique identifier.</param>
@@ -175,40 +138,35 @@ namespace Rock.Blocks.Types.Mobile.Connection
         {
             using ( var rockContext = new RockContext() )
             {
+                var opportunityService = new ConnectionOpportunityService( rockContext );
+                var opportunityClientService = new ConnectionOpportunityClientService( rockContext, RequestContext.CurrentPerson );
                 var connectionType = new ConnectionTypeService( rockContext ).GetNoTracking( connectionTypeGuid );
 
-                var filter = new GetConnectionOpportunitiesFilter
+                var filterOptions = new ConnectionOpportunityQueryOptions
                 {
+                    ConnectionTypeGuids = new List<Guid> { connectionTypeGuid },
                     IncludeInactive = true
                 };
 
                 if ( filterViewModel.OnlyMyConnections )
                 {
-                    filter.ConnectorPersonIds = new List<int> { RequestContext.CurrentPerson?.Id ?? 0 };
+                    filterOptions.ConnectorPersonIds = new List<int> { RequestContext.CurrentPerson?.Id ?? 0 };
                 }
 
-                var qry = GetConnectionOpportunitiesQuery( connectionTypeGuid, filter, rockContext );
-
-                // Make a list of any opportunity identifiers that are
-                // configured for request security and the person is assigned
-                // as the connector to any request.
-                var currentPersonId = RequestContext.CurrentPerson?.Id;
-                var selfAssignedSecurityOpportunities = new ConnectionRequestService( rockContext )
-                    .Queryable()
-                    .Where( r => r.ConnectorPersonAlias.PersonId == currentPersonId
-                        && r.ConnectionOpportunity.ConnectionType.EnableRequestSecurity )
-                    .Select( r => r.ConnectionOpportunityId )
-                    .Distinct()
-                    .ToList();
-
                 // Put all the opportunities in memory so we can check security.
+                var qry = opportunityService.GetConnectionOpportunitiesQuery( filterOptions );
                 var opportunities = qry.ToList()
-                    .Where( o => o.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
-                        || selfAssignedSecurityOpportunities.Contains( o.Id ) )
-                    .ToList();
+                    .Where( o => o.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
 
                 // Get the various counts to make available to the Lava template.
-                var requestCounts = GetOpportunityRequestCounts( opportunities, RequestContext.CurrentPerson, rockContext );
+                // The conversion of the value to a dictionary is a temporary work-around
+                // until we have a way to mark external types as lava safe.
+                var opportunityIds = opportunities.Select( o => o.Id ).ToList();
+                var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds )
+                    .ToDictionary( k => k.Key, k => k.Value
+                        .GetType()
+                        .GetProperties( BindingFlags.Instance | BindingFlags.Public )
+                        .ToDictionary( prop => prop.Name, prop => prop.GetValue( k.Value, null ) ) );
 
                 // Process the connection opportunities with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();
@@ -218,17 +176,14 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 var content = OpportunityTemplate.ResolveMergeFields( mergeFields );
 
-                // If we found a connection opportunity then process the header
-                // template.
-                string headerContent = string.Empty;
-
+                // Process the header template for.
+                mergeFields = RequestContext.GetCommonMergeFields();
                 if ( connectionType != null )
                 {
-                    mergeFields = RequestContext.GetCommonMergeFields();
                     mergeFields.Add( "ConnectionType", connectionType );
-
-                    headerContent = HeaderTemplate.ResolveMergeFields( mergeFields );
                 }
+
+                var headerContent = HeaderTemplate.ResolveMergeFields( mergeFields );
 
                 return new GetContentViewModel
                 {
@@ -236,64 +191,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     Content = content
                 };
             }
-        }
-
-        /// <summary>
-        /// Gets the opportunity request counts for the given opportunities.
-        /// </summary>
-        /// <param name="opportunities">The opportunities.</param>
-        /// <param name="currentPerson">The current person to use for count checks.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A dictionary of connection request count objects.</returns>
-        internal static Dictionary<int, ConnectionRequestCountsViewModel> GetOpportunityRequestCounts( List<ConnectionOpportunity> opportunities, Person currentPerson, RockContext rockContext )
-        {
-            var connectionRequestService = new ConnectionRequestService( rockContext );
-
-            // Fast out, if there is no logged in person then just return a
-            // bunch of zeros for now. Later if we add other counts we might
-            // need more complex logic.
-            if ( currentPerson == null )
-            {
-                return opportunities.ToDictionary( o => o.Id, _ => new ConnectionRequestCountsViewModel
-                {
-                    AssignedToYouCount = 0
-                } );
-            }
-
-            var opportunityIds = opportunities.Select( o => o.Id ).ToList();
-
-            // Find all the connection requests assigned to the current person.
-            var assignedToYouRequestQry = connectionRequestService.Queryable()
-                .Where( r => opportunityIds.Contains( r.ConnectionOpportunityId )
-                    && r.ConnectionState == ConnectionState.Active
-                    && r.ConnectorPersonAliasId.HasValue
-                    && r.ConnectorPersonAlias.PersonId == currentPerson.Id );
-
-            // Group them by the connection opportunity and get the counts for
-            // each opportunity.
-            var requestCounts = assignedToYouRequestQry
-                .GroupBy( r => r.ConnectionOpportunityId )
-                .Select( g => new
-                {
-                    Id = g.Key,
-                    Count = g.Count()
-                } )
-                .ToList()
-                .ToDictionary( o => o.Id, o => new ConnectionRequestCountsViewModel
-                {
-                    AssignedToYouCount = o.Count
-                } );
-
-            // Fill in any missing opportunities with empty counts.
-            foreach ( var opportunityId in opportunityIds )
-            {
-                if ( !requestCounts.ContainsKey( opportunityId ) )
-                {
-                    requestCounts.Add( opportunityId, new ConnectionRequestCountsViewModel() );
-                }
-            }
-
-            return requestCounts;
         }
 
         #endregion
@@ -317,32 +214,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #endregion
 
         #region Support Classes
-
-        /// <summary>
-        /// The filtering options when getting opportunities.
-        /// </summary>
-        internal class GetConnectionOpportunitiesFilter
-        {
-            /// <summary>
-            /// Gets or sets a value indicating whether inactive opportunities
-            /// should be included.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if inactive opportunities are included; otherwise, <c>false</c>.
-            /// </value>
-            public bool IncludeInactive { get; set; }
-
-            /// <summary>
-            /// Gets or sets the connector person identifiers to limit the
-            /// results to. If an opportunity does not have a non-connected
-            /// request that is assigned to one of these identifiers it will
-            /// not be included.
-            /// </summary>
-            /// <value>
-            /// The connector person identifiers.
-            /// </value>
-            public List<int> ConnectorPersonIds { get; set; }
-        }
 
         /// <summary>
         /// The view model that defines the filtering options when getting opportunities.
@@ -380,24 +251,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// The rendered content for this page of opportunities.
             /// </value>
             public string Content { get; set; }
-        }
-
-        /// <summary>
-        /// View model that contains the request counts for a single connection
-        /// opportunity.
-        /// </summary>
-        [LavaType]
-        [DotLiquid.LiquidType( nameof( AssignedToYouCount ) )]
-        internal class ConnectionRequestCountsViewModel
-        {
-            /// <summary>
-            /// Gets or sets the number of requests in the opportunity that
-            /// are assigned to the specified person.
-            /// </summary>
-            /// <value>
-            /// The number of requests assigned to you.
-            /// </value>
-            public int AssignedToYouCount { get; set; }
         }
 
         #endregion

@@ -96,6 +96,7 @@ namespace Rock.Model
                 Guid = model.Guid,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
+                AttributeColor = model.AttributeColor,
                 DefaultValue = model.DefaultValue,
                 Description = model.Description,
                 EnableHistory = model.EnableHistory,
@@ -190,6 +191,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AbbreviatedName = source.AbbreviatedName;
             target.AllowSearch = source.AllowSearch;
+            target.AttributeColor = source.AttributeColor;
             target.DefaultValue = source.DefaultValue;
             target.Description = source.Description;
             target.EnableHistory = source.EnableHistory;

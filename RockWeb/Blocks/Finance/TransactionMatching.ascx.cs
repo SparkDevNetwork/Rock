@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Finance
         Description = "Determines if the email address field should be shown.",
         Order = 9 )]
 
-    public partial class TransactionMatching : RockBlock, IDetailBlock
+    public partial class TransactionMatching : RockBlock
     {
         #region Attribute Keys
 

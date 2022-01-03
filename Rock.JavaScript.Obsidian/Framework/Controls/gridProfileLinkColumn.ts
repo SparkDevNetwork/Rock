@@ -18,14 +18,14 @@ import { defineComponent, PropType, inject } from "vue";
 import { RowContext } from "./grid";
 import GridColumn from "./gridColumn";
 
-export default defineComponent( {
+export default defineComponent({
     name: "GridProfileLinkColumn",
     components: {
         GridColumn
     },
     setup () {
         return {
-            rowContext: inject( "rowContext" ) as RowContext
+            rowContext: inject("rowContext") as RowContext
         };
     },
     props: {
@@ -40,11 +40,11 @@ export default defineComponent( {
     },
     computed: {
         personId (): number | null {
-            return ( this.rowContext.rowData[ this.property ] as number ) || null;
+            return (this.rowContext.rowData[ this.property ] as number) || null;
         },
         url (): string {
-            if ( this.personId ) {
-                return this.urlTemplate.replace( "{id}", this.personId.toString() );
+            if (this.personId) {
+                return this.urlTemplate.replace("{id}", this.personId.toString());
             }
 
             return "";
@@ -56,4 +56,4 @@ export default defineComponent( {
         <i class="fa fa-user"></i>
     </a>
 </GridColumn>`
-} );
+});

@@ -336,8 +336,10 @@ namespace Rock.Rest.v2
 
                         parameters.Add( actionParameters[key].ToObject( methodParameters[i].ParameterType ) );
                     }
-                    catch
+                    catch ( Exception ex )
                     {
+                        System.Diagnostics.Debug.WriteLine( ex.Message );
+
                         return new BadRequestErrorMessageResult( $"Parameter type mismatch for '{methodParameters[i].Name}'.", controller );
                     }
                 }

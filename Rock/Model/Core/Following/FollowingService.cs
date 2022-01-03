@@ -205,5 +205,46 @@ namespace Rock.Model
                     && f.PersonAlias.PersonId == personId
                     && f.EntityId == entityId );
         }
+
+        /// <summary>
+        /// Returns a queryable of followers for the specified entity
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns>IQueryable&lt;Following&gt;.</returns>
+        public IQueryable<Following> GetByEntity( IEntity entity )
+        {
+            return GetByEntity( entity, null );
+        }
+
+        /// <summary>
+        /// Returns a queryable of followers for the specified entity and purpose key
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <returns>IQueryable&lt;Following&gt;.</returns>
+        public IQueryable<Following> GetByEntity( IEntity entity, string purposeKey )
+        {
+            if ( entity == null )
+            {
+                return this.Queryable().Where( a => false );
+            }
+
+            var entityTypeId = EntityTypeCache.GetId( entity.GetType() );
+            if ( entityTypeId == null )
+            {
+                return this.Queryable().Where( a => false );
+            }
+
+            var entityId = entity.Id;
+
+            var qry = this.Queryable().Where( f => f.EntityTypeId == entityTypeId && f.EntityId == entityId );
+
+            if ( purposeKey.IsNotNullOrWhiteSpace() )
+            {
+                qry = qry.Where( a => a.PurposeKey == purposeKey );
+            }
+
+            return qry;
+        }
     }
 }

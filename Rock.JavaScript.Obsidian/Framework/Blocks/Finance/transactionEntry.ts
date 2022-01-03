@@ -23,13 +23,13 @@ import { areEqual, Guid, newGuid } from "../../Util/guid";
 import { RockDateTime } from "../../Util/rockDateTime";
 import Alert from "../../Elements/alert";
 import { asFormattedString } from "../../Services/number";
-import { ConfigurationValues, InvokeBlockActionFunc } from "../../Util/block";
+import { ConfigurationValues, InvokeBlockActionFunc, useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import Toggle from "../../Elements/toggle";
 import { FinancialAccount, Person } from "../../ViewModels";
 import { useStore } from "../../Store/index";
 import TextBox from "../../Elements/textBox";
 import { asCommaAnd } from "../../Services/string";
-import GatewayControl, { GatewayControlModel } from "../../Controls/gatewayControl";
+import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "../../Controls/gatewayControl";
 import RockValidation from "../../Controls/rockValidation";
 
 const store = useStore();
@@ -76,20 +76,26 @@ export default defineComponent({
     },
 
     setup() {
+        const submitPayment = prepareSubmitPayment();
+
         return {
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc,
-            configurationValues: inject("configurationValues") as ConfigurationValues
+            submitPayment,
+            invokeBlockAction: useInvokeBlockAction(),
+            configurationValues: useConfigurationValues<ConfigurationValues>()
         };
     },
 
     data() {
+        const configurationValues = useConfigurationValues<ConfigurationValues>();
+        const campuses = configurationValues["campuses"] as DropDownListOption[] || [];
+        const frequencies = configurationValues["frequencies"] as DropDownListOption[] || [];
+
         return {
             loading: false,
             gatewayErrorMessage: "",
             gatewayValidationFields: {} as Record<string, string>,
             transactionGuid: newGuid(),
             criticalError: "",
-            doGatewayControlSubmit: false,
             pageIndex: 1,
             page1Error: "",
             args: {
@@ -111,9 +117,9 @@ export default defineComponent({
                 comment: "",
                 transactionEntityId: null,
                 referenceNumber: "",
-                campusGuid: "",
+                campusGuid: campuses.length > 0 ? campuses[0].value : "",
                 businessGuid: null,
-                frequencyValueGuid: "",
+                frequencyValueGuid: frequencies.length > 0 ? frequencies[0].value : "",
                 giftDate: RockDateTime.now().toASPString("yyyy-MM-dd"),
                 isGiveAnonymously: false
             } as ProcessTransactionArgs
@@ -141,6 +147,16 @@ export default defineComponent({
 
         currentPerson(): Person | null {
             return store.state.currentPerson;
+        },
+
+        currentPersonFullName(): string | null {
+            const currentPerson = this.currentPerson;
+
+            if (currentPerson === null) {
+                return null;
+            }
+
+            return `${currentPerson.nickName ?? ""} ${currentPerson.lastName ?? ""}`;
         },
 
         accounts(): FinancialAccount[] {
@@ -189,7 +205,6 @@ export default defineComponent({
     methods: {
         goBack(): void {
             this.pageIndex--;
-            this.doGatewayControlSubmit = false;
         },
 
         onPageOneSubmit(): void {
@@ -209,7 +224,7 @@ export default defineComponent({
             this.loading = true;
             this.gatewayErrorMessage = "";
             this.gatewayValidationFields = {};
-            this.doGatewayControlSubmit = true;
+            this.submitPayment();
         },
 
         /**
@@ -227,7 +242,6 @@ export default defineComponent({
          * @param message
          */
         onGatewayControlError(message: string): void {
-            this.doGatewayControlSubmit = false;
             this.loading = false;
             this.gatewayErrorMessage = message;
         },
@@ -237,7 +251,6 @@ export default defineComponent({
          * @param invalidFields
          */
         onGatewayControlValidation(invalidFields: Record<string, string>): void {
-            this.doGatewayControlSubmit = false;
             this.loading = false;
             this.gatewayValidationFields = invalidFields;
         },
@@ -313,7 +326,6 @@ export default defineComponent({
             <div class="hosted-payment-control">
                 <GatewayControl
                     :gatewayControlModel="gatewayControlModel"
-                    :submit="doGatewayControlSubmit"
                     @success="onGatewayControlSuccess"
                     @error="onGatewayControlError"
                     @validation="onGatewayControlValidation" />
@@ -331,7 +343,7 @@ export default defineComponent({
         </Toggle>
         <template v-if="args.isGivingAsPerson && currentPerson">
             <div class="form-control-static">
-                {{currentPerson.FullName}}
+                {{currentPersonFullName}}
             </div>
         </template>
         <template v-else-if="args.isGivingAsPerson">

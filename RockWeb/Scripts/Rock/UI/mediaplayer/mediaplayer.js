@@ -3,7 +3,7 @@ var Rock;
 (function (Rock) {
     var UI;
     (function (UI) {
-        var DefaultOptions = {
+        const DefaultOptions = {
             mediaUrl: "",
             trackProgress: true,
             resumePlaying: true,
@@ -19,9 +19,8 @@ var Rock;
             map: "",
             debug: false
         };
-        var MediaPlayer = (function () {
-            function MediaPlayer(elementSelector, options) {
-                if (options === void 0) { options = {}; }
+        class MediaPlayer {
+            constructor(elementSelector, options = {}) {
                 this.timerId = null;
                 this.watchBits = Array();
                 this.watchBitsInitialized = false;
@@ -33,7 +32,7 @@ var Rock;
                 this.options = Object.assign({}, DefaultOptions, options);
                 this.elementId = elementSelector;
                 MediaPlayer.AllPlayers.push(this);
-                var element = document.querySelector(elementSelector);
+                const element = document.querySelector(elementSelector);
                 if (element === null) {
                     throw "Element not found to initialize media player with.";
                 }
@@ -50,40 +49,30 @@ var Rock;
                 }
                 this.setupPlayer();
             }
-            Object.defineProperty(MediaPlayer.prototype, "map", {
-                get: function () {
-                    return MediaPlayer.toRle(this.watchBits);
-                },
-                enumerable: false,
-                configurable: true
-            });
-            Object.defineProperty(MediaPlayer.prototype, "percentWatched", {
-                get: function () {
-                    return this.percentWatchedInternal;
-                },
-                enumerable: false,
-                configurable: true
-            });
-            Object.defineProperty(MediaPlayer.prototype, "duration", {
-                get: function () {
-                    return this.player.duration;
-                },
-                enumerable: false,
-                configurable: true
-            });
-            MediaPlayer.prototype.seek = function (positionInSeconds) {
+            get map() {
+                return MediaPlayer.toRle(this.watchBits);
+            }
+            get percentWatched() {
+                return this.percentWatchedInternal;
+            }
+            get duration() {
+                return this.player.duration;
+            }
+            seek(positionInSeconds) {
                 this.player.currentTime = positionInSeconds;
-            };
-            MediaPlayer.prototype.setupPlayer = function () {
-                var _this = this;
-                var mediaElement = document.createElement(this.options.type === "audio" ? "audio" : "video");
+            }
+            setupPlayer() {
+                const mediaElement = document.createElement(this.options.type === "audio" ? "audio" : "video");
                 mediaElement.setAttribute("playsinline", "");
                 mediaElement.setAttribute("controls", "");
                 mediaElement.setAttribute("style", "width: 100%;");
                 this.element.appendChild(mediaElement);
-                var plyrOptions = {
+                const plyrOptions = {
                     storage: {
                         enabled: false
+                    },
+                    youtube: {
+                        customControls: false
                     },
                     autoplay: this.options.autoplay,
                     controls: this.options.controls.split(","),
@@ -98,44 +87,44 @@ var Rock;
                     return;
                 }
                 var hls = new Hls();
-                var updateQuality = function (newQuality) {
+                const updateQuality = function (newQuality) {
                     if (newQuality === 0) {
                         hls.currentLevel = -1;
                     }
                     else {
-                        hls.levels.forEach(function (level, levelIndex) {
+                        hls.levels.forEach((level, levelIndex) => {
                             if (level.height === newQuality) {
                                 hls.currentLevel = levelIndex;
                             }
                         });
                     }
                 };
-                hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                    var availableQualities = hls.levels.map(function (l) { return l.height; });
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    const availableQualities = hls.levels.map((l) => l.height);
                     availableQualities.unshift(0);
                     plyrOptions.quality = {
                         default: 0,
                         options: availableQualities,
                         forced: true,
-                        onChange: function (e) { return updateQuality(e); },
+                        onChange: (e) => updateQuality(e),
                     };
                     plyrOptions.i18n = plyrOptions.i18n || {};
                     plyrOptions.i18n.qualityLabel = {
                         0: 'Auto'
                     };
                     hls.currentLevel = -1;
-                    _this.initializePlayer(mediaElement, plyrOptions);
+                    this.initializePlayer(mediaElement, plyrOptions);
                 });
                 if (this.options.posterUrl !== undefined) {
                     mediaElement.setAttribute("poster", this.options.posterUrl);
                 }
                 hls.loadSource(this.options.mediaUrl);
                 hls.attachMedia(mediaElement);
-            };
-            MediaPlayer.prototype.initializePlayer = function (mediaElement, plyrOptions) {
+            }
+            initializePlayer(mediaElement, plyrOptions) {
                 this.player = new Plyr(mediaElement, plyrOptions);
-                this.writeDebugMessage("Setting media URL to " + this.options.mediaUrl);
-                var sourceInfo = {
+                this.writeDebugMessage(`Setting media URL to ${this.options.mediaUrl}`);
+                let sourceInfo = {
                     type: this.options.type === "audio" ? "audio" : "video",
                     title: this.options.title,
                     sources: [
@@ -158,49 +147,49 @@ var Rock;
                     this.player.source = sourceInfo;
                 }
                 this.wireEvents();
-            };
-            MediaPlayer.prototype.getFilenameFromUrl = function (url) {
+            }
+            getFilenameFromUrl(url) {
                 var _a, _b;
                 return ((_b = (_a = url.split('#').shift()) === null || _a === void 0 ? void 0 : _a.split('?').shift()) === null || _b === void 0 ? void 0 : _b.split('/').pop()) || url;
-            };
-            MediaPlayer.prototype.stringEndsWith = function (haystack, needle) {
+            }
+            stringEndsWith(haystack, needle) {
                 return haystack.substr(-needle.length) === needle;
-            };
-            MediaPlayer.prototype.isAudio = function (url) {
-                var filename = this.getFilenameFromUrl(url).toLowerCase();
+            }
+            isAudio(url) {
+                const filename = this.getFilenameFromUrl(url).toLowerCase();
                 return this.stringEndsWith(filename, ".aac") === true
                     || this.stringEndsWith(filename, ".flac") === true
                     || this.stringEndsWith(filename, ".mp3") === true
                     || this.stringEndsWith(filename, ".wav") === true;
-            };
-            MediaPlayer.prototype.isHls = function (url) {
-                var filename = this.getFilenameFromUrl(url).toLowerCase();
+            }
+            isHls(url) {
+                const filename = this.getFilenameFromUrl(url).toLowerCase();
                 return this.stringEndsWith(filename, ".m3u8") === true && Hls !== undefined && Hls.isSupported() === true;
-            };
-            MediaPlayer.prototype.isYouTubeEmbed = function (url) {
-                var pattern = /https?:\/\/www\.youtube\.com\/embed\/([^\?]+)\??/i;
-                var match = pattern.exec(url);
+            }
+            isYouTubeEmbed(url) {
+                const pattern = /https?:\/\/www\.youtube\.com\/embed\/([^\?]+)\??/i;
+                const match = pattern.exec(url);
                 return match !== null;
-            };
-            MediaPlayer.prototype.isVimeoEmbed = function (url) {
-                var pattern = /https?:\/\/player\.vimeo\.com\/video\/([^\?]+)\??/i;
-                var match = pattern.exec(url);
+            }
+            isVimeoEmbed(url) {
+                const pattern = /https?:\/\/player\.vimeo\.com\/video\/([^\?]+)\??/i;
+                const match = pattern.exec(url);
                 return match !== null;
-            };
-            MediaPlayer.prototype.translateWellKnownUrls = function (url) {
-                var youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
-                var vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
-                var match = youTubePattern.exec(url);
+            }
+            translateWellKnownUrls(url) {
+                const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
+                const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
+                let match = youTubePattern.exec(url);
                 if (match !== null) {
-                    return "https://www.youtube.com/embed/" + match[1];
+                    return `https://www.youtube.com/embed/${match[1]}`;
                 }
                 match = vimeoPattern.exec(url);
                 if (match !== null) {
-                    return "https://player.vimeo.com/video/" + match[1];
+                    return `https://player.vimeo.com/video/${match[1]}`;
                 }
                 return url;
-            };
-            MediaPlayer.prototype.markBitWatched = function () {
+            }
+            markBitWatched() {
                 var playBit = Math.floor(this.player.currentTime);
                 if (playBit == this.previousPlayBit) {
                     return;
@@ -209,14 +198,14 @@ var Rock;
                     this.watchBits[playBit]++;
                     this.watchBitsDirty = true;
                 }
-                var watchedItemCount = this.watchBits.filter(function (item) { return item > 0; }).length;
+                const watchedItemCount = this.watchBits.filter(item => item > 0).length;
                 this.percentWatchedInternal = watchedItemCount / this.watchBits.length;
                 this.previousPlayBit = playBit;
                 this.emit("progress");
-                this.writeDebugMessage("RLE: " + MediaPlayer.toRle(this.watchBits));
-                this.writeDebugMessage("Player Time: " + this.player.currentTime + "; Current Time: " + playBit + "; Percent Watched: " + this.percentWatched + "; Unwatched Items: " + (this.watchBits.length - watchedItemCount) + "; Map Size: " + this.watchBits.length);
-            };
-            MediaPlayer.prototype.prepareForPlay = function () {
+                this.writeDebugMessage(`RLE: ${MediaPlayer.toRle(this.watchBits)}`);
+                this.writeDebugMessage(`Player Time: ${this.player.currentTime}; Current Time: ${playBit}; Percent Watched: ${this.percentWatched}; Unwatched Items: ${this.watchBits.length - watchedItemCount}; Map Size: ${this.watchBits.length}`);
+            }
+            prepareForPlay() {
                 if (this.watchBitsInitialized !== false) {
                     return;
                 }
@@ -224,139 +213,143 @@ var Rock;
                 this.initializeMap();
                 this.setResume();
                 this.emit("ready");
-            };
-            MediaPlayer.prototype.setResume = function () {
-                this.writeDebugMessage("The media length is " + this.player.duration + " seconds.");
+            }
+            setResume() {
+                this.writeDebugMessage(`The media length is ${this.player.duration} seconds.`);
                 if (this.options.resumePlaying === false || this.percentWatched === 1) {
                     return;
                 }
-                var startPosition = 0;
-                for (var i = 0; i < this.watchBits.length; i++) {
-                    if (this.watchBits[i] == 0) {
-                        startPosition = i;
+                let startPosition = 0;
+                for (let i = this.watchBits.length - 1; i >= 0; i--) {
+                    if (this.watchBits[i] !== 0) {
+                        startPosition = i + 1;
                         break;
                     }
                 }
-                this.player.currentTime = startPosition;
-                this.writeDebugMessage("Set starting position at: " + startPosition);
-                this.writeDebugMessage("The current starting position is: " + this.player.currentTime);
-            };
-            MediaPlayer.prototype.initializeMap = function () {
+                if (startPosition < this.watchBits.length) {
+                    this.player.currentTime = startPosition;
+                }
+                else {
+                    this.player.currentTime = 0;
+                }
+                this.writeDebugMessage(`Set starting position at: ${startPosition}`);
+                this.writeDebugMessage(`The current starting position is: ${this.player.currentTime}`);
+            }
+            initializeMap() {
                 this.loadExistingMap();
                 this.validateMap();
                 this.watchBitsInitialized = true;
-                this.writeDebugMessage("Initialize Map (" + this.watchBits.length + "): " + this.watchBits.join(""));
-            };
-            MediaPlayer.prototype.loadExistingMap = function () {
+                this.writeDebugMessage(`Initialize Map (${this.watchBits.length}): ${this.watchBits.join("")}`);
+            }
+            loadExistingMap() {
                 this.writeDebugMessage("Loading existing map.");
                 if (this.options.map === "") {
                     this.createBlankMap();
                     this.writeDebugMessage("No previous map provided, creating a blank map.");
                     return;
                 }
-                var existingMapString = this.options.map;
-                this.writeDebugMessage("Map provided in .map property: " + existingMapString);
+                const existingMapString = this.options.map;
+                this.writeDebugMessage(`Map provided in .map property: ${existingMapString}`);
                 this.watchBits = MediaPlayer.rleToArray(existingMapString);
-                var watchedItemCount = this.watchBits.filter(function (item) { return item > 0; }).length;
+                const watchedItemCount = this.watchBits.filter(item => item > 0).length;
                 this.percentWatchedInternal = watchedItemCount / this.watchBits.length;
-            };
-            MediaPlayer.prototype.validateMap = function () {
-                var mediaLength = Math.ceil(this.player.duration);
+            }
+            validateMap() {
+                let mediaLength = Math.ceil(this.player.duration);
                 if (this.watchBits.length !== mediaLength) {
-                    this.writeDebugMessage("Provided map size (" + this.watchBits.length + ") did not match the media (" + mediaLength + "). Using a blank map.");
+                    this.writeDebugMessage(`Provided map size (${this.watchBits.length}) did not match the media (${mediaLength}). Using a blank map.`);
                     this.createBlankMap();
                 }
-            };
-            MediaPlayer.prototype.createBlankMap = function () {
-                var mapSize = Math.ceil(this.player.duration);
+            }
+            createBlankMap() {
+                let mapSize = Math.ceil(this.player.duration);
                 if (mapSize < 0) {
                     mapSize = 0;
                 }
                 this.watchBits = new Array(mapSize).fill(0);
                 this.percentWatchedInternal = 0;
-                this.writeDebugMessage("Blank map created of size: " + this.watchBits.length);
-            };
-            MediaPlayer.rleToArray = function (value) {
-                var unencoded = new Array();
-                var rleArray = value.split(",");
+                this.writeDebugMessage(`Blank map created of size: ${this.watchBits.length}`);
+            }
+            static rleToArray(value) {
+                let unencoded = new Array();
+                let rleArray = value.split(",");
                 for (var i = 0; i < rleArray.length; i++) {
-                    var components = rleArray[i];
-                    var value_1 = parseInt(components[components.length - 1]);
-                    var size = parseInt(components.substring(0, components.length - 1));
-                    var segment = new Array(size).fill(value_1);
-                    unencoded.push.apply(unencoded, segment);
+                    let components = rleArray[i];
+                    let value = parseInt(components[components.length - 1]);
+                    let size = parseInt(components.substring(0, components.length - 1));
+                    let segment = new Array(size).fill(value);
+                    unencoded.push(...segment);
                 }
                 return unencoded;
-            };
-            MediaPlayer.prototype.trackPlay = function () {
-                this.writeDebugMessage("" + this.player.currentTime);
+            }
+            trackPlay() {
+                this.writeDebugMessage(`${this.player.currentTime}`);
                 this.markBitWatched();
-            };
-            MediaPlayer.prototype.writeDebugMessage = function (message) {
+            }
+            writeDebugMessage(message) {
                 if (this.options.debug) {
-                    console.log("RMP(" + this.elementId + "): " + message);
+                    console.log(`RMP(${this.elementId}): ${message}`);
                 }
-            };
-            MediaPlayer.prototype.wireEvents = function () {
-                var _this = this;
-                var self = this;
-                var pageHideHandler = function () {
+            }
+            wireEvents() {
+                const self = this;
+                const pageHideHandler = function () {
                     self.writeInteraction(false);
                 };
-                var visibilityChangeHandler = function () {
+                const visibilityChangeHandler = function () {
                     if (document.visibilityState === "hidden") {
                         self.writeInteraction(false);
                     }
                 };
-                this.player.on("play", function () {
-                    _this.prepareForPlay();
-                    if (_this.options.trackProgress) {
-                        _this.timerId = setInterval(function () { return _this.trackPlay(); }, 250);
+                this.player.on("play", () => {
+                    this.prepareForPlay();
+                    if (this.options.trackProgress) {
+                        this.timerId = setInterval(() => this.trackPlay(), 250);
                     }
-                    if (_this.options.autopause) {
-                        MediaPlayer.AllPlayers.forEach(function (mp) {
-                            if (mp !== _this && mp.player.playing === true) {
+                    if (this.options.autopause) {
+                        MediaPlayer.AllPlayers.forEach(mp => {
+                            if (mp !== this && mp.player.playing === true) {
                                 mp.player.pause();
                             }
                         });
                     }
-                    _this.emit("play");
+                    this.emit("play");
                     window.addEventListener("pagehide", pageHideHandler);
                     window.addEventListener("visibilitychange", visibilityChangeHandler);
-                    _this.writeDebugMessage("Event 'play' called.");
+                    this.writeDebugMessage("Event 'play' called.");
                 });
-                this.player.on("pause", function () {
-                    if (_this.timerId) {
-                        clearInterval(_this.timerId);
+                this.player.on("pause", () => {
+                    if (this.timerId) {
+                        clearInterval(this.timerId);
                     }
-                    _this.markBitWatched();
+                    this.markBitWatched();
                     window.removeEventListener("pagehide", pageHideHandler);
                     window.removeEventListener("visibilitychange", visibilityChangeHandler);
-                    _this.emit("pause");
-                    _this.writeInteraction(true);
-                    _this.writeDebugMessage("Event 'pause' called.");
+                    this.emit("pause");
+                    this.writeInteraction(true);
+                    this.writeDebugMessage("Event 'pause' called.");
                 });
-                this.player.on("ended", function () {
-                    _this.emit("completed");
-                    _this.writeDebugMessage("Event 'ended' called.");
+                this.player.on("ended", () => {
+                    this.emit("completed");
+                    this.writeDebugMessage("Event 'ended' called.");
                 });
-                this.player.on("ready", function () {
-                    _this.writeDebugMessage("Event 'ready' called: " + _this.player.duration);
-                    if (_this.player.duration > 0) {
-                        _this.prepareForPlay();
+                this.player.on("ready", () => {
+                    this.writeDebugMessage(`Event 'ready' called: ${this.player.duration}`);
+                    if (this.player.duration > 0) {
+                        this.prepareForPlay();
                     }
                     else {
-                        var readyTimerId_1 = setInterval(function () {
-                            if (_this.player.duration > 0) {
-                                clearInterval(readyTimerId_1);
-                                _this.prepareForPlay();
+                        const readyTimerId = setInterval(() => {
+                            if (this.player.duration > 0) {
+                                clearInterval(readyTimerId);
+                                this.prepareForPlay();
                             }
                         }, 250);
-                        setTimeout(function () { return clearInterval(readyTimerId_1); }, 5000);
+                        setTimeout(() => clearInterval(readyTimerId), 5000);
                     }
                 });
-            };
-            MediaPlayer.prototype.writeInteraction = function (async) {
+            }
+            writeInteraction(async) {
                 if (this.options.writeInteraction === false || this.options.mediaElementGuid === undefined || this.options.mediaElementGuid.length === 0) {
                     return;
                 }
@@ -364,21 +357,21 @@ var Rock;
                     return;
                 }
                 this.watchBitsDirty = false;
-                var data = {
+                const data = {
                     InteractionGuid: this.options.interactionGuid,
                     MediaElementGuid: this.options.mediaElementGuid,
                     WatchMap: MediaPlayer.toRle(this.watchBits),
                     RelatedEntityTypeId: this.options.relatedEntityTypeId,
                     RelatedEntityId: this.options.relatedEntityId
                 };
-                var xmlRequest = new XMLHttpRequest();
-                var self = this;
+                const xmlRequest = new XMLHttpRequest();
+                const self = this;
                 xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);
                 xmlRequest.setRequestHeader("Content-Type", "application/json");
                 xmlRequest.onreadystatechange = function () {
                     if (xmlRequest.readyState === 4) {
                         if (xmlRequest.status === 200) {
-                            var response = JSON.parse(xmlRequest.responseText);
+                            const response = JSON.parse(xmlRequest.responseText);
                             self.options.interactionGuid = response.InteractionGuid;
                         }
                         else {
@@ -388,18 +381,18 @@ var Rock;
                     }
                 };
                 xmlRequest.send(JSON.stringify(data));
-            };
-            MediaPlayer.toRle = function (value) {
+            }
+            static toRle(value) {
                 if (!Array.isArray(value)) {
-                    value = value.split("").map(function (x) { return +x; });
+                    value = value.split("").map(x => +x);
                 }
                 if (value.length == 0) {
                     return "";
                 }
-                var encoding = [];
-                var previous = value[0];
-                var count = 1;
-                for (var i = 1; i < value.length; i++) {
+                let encoding = [];
+                let previous = value[0];
+                let count = 1;
+                for (let i = 1; i < value.length; i++) {
                     if (value[i] !== previous) {
                         encoding.push(count.toString() + previous.toString());
                         count = 1;
@@ -411,24 +404,24 @@ var Rock;
                 }
                 encoding.push(count.toString() + previous.toString());
                 return encoding.join(",");
-            };
-            MediaPlayer.prototype.on = function (event, fn) {
+            }
+            on(event, fn) {
                 this.callbacks = this.callbacks || {};
                 if (event === undefined || fn === undefined) {
                     return this;
                 }
-                var key = "$" + event;
+                const key = `$${event}`;
                 this.callbacks[key] = this.callbacks[key] || [];
                 this.callbacks[key].push(fn);
                 return this;
-            };
-            MediaPlayer.prototype.off = function (event, fn) {
+            }
+            off(event, fn) {
                 this.callbacks = this.callbacks || {};
                 if (event === undefined) {
                     this.callbacks = {};
                     return this;
                 }
-                var key = "$" + event;
+                const key = `$${event}`;
                 if (fn === undefined) {
                     delete this.callbacks[key];
                     return this;
@@ -436,7 +429,7 @@ var Rock;
                 if (this.callbacks[key] === undefined) {
                     return this;
                 }
-                for (var i = 0; i < this.callbacks[key].length; i++) {
+                for (let i = 0; i < this.callbacks[key].length; i++) {
                     if (fn === this.callbacks[key][i]) {
                         this.callbacks[key].slice(i, 1);
                         break;
@@ -446,25 +439,20 @@ var Rock;
                     delete this.callbacks[key];
                 }
                 return this;
-            };
-            MediaPlayer.prototype.emit = function (event) {
-                var args = [];
-                for (var _i = 1; _i < arguments.length; _i++) {
-                    args[_i - 1] = arguments[_i];
-                }
+            }
+            emit(event, ...args) {
                 this.callbacks = this.callbacks || {};
-                var callbacks = this.callbacks["$" + event];
+                let callbacks = this.callbacks[`$${event}`];
                 if (callbacks === undefined) {
                     return;
                 }
                 callbacks = callbacks.slice(0);
-                for (var i = 0; i < callbacks.length; i++) {
+                for (let i = 0; i < callbacks.length; i++) {
                     callbacks[i].apply(this, args);
                 }
-            };
-            MediaPlayer.AllPlayers = [];
-            return MediaPlayer;
-        }());
+            }
+        }
+        MediaPlayer.AllPlayers = [];
         UI.MediaPlayer = MediaPlayer;
     })(UI = Rock.UI || (Rock.UI = {}));
 })(Rock || (Rock = {}));

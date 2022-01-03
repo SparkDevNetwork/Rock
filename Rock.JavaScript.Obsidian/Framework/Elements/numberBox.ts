@@ -115,9 +115,9 @@ export default defineComponent({
     formGroupClasses="rock-number-box"
     name="numberbox"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, disabled, tabIndex}">
+    <template #default="{uniqueId, field, errors, disabled, tabIndex, inputGroupClasses}">
         <div class="control-wrapper">
-            <div class="input-group" v-if="isGrouped">
+            <div class="input-group" :class="inputGroupClasses" v-if="isGrouped">
                 <slot name="prepend"></slot>
                 <input
                     :id="uniqueId"

@@ -1218,8 +1218,8 @@ namespace Rock.Model
         {
             var rockContext = this.Context as RockContext;
 
-            var occurrenceSchedules =
-                new ScheduleService( rockContext ).GetByIds( schedulerResourceParameters.AttendanceOccurrenceScheduleIds.ToList() )
+            var occurrenceSchedules = new ScheduleService( rockContext )
+                .GetByIds( schedulerResourceParameters.AttendanceOccurrenceScheduleIds.ToList() )
                 .AsNoTracking()
                 .ToList();
 
@@ -1231,13 +1231,16 @@ namespace Rock.Model
                 return schedulerResourceList;
             }
 
-            var occurrenceSundayDate = schedulerResourceParameters.AttendanceOccurrenceSundayDate;
-            var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
+            var occurrenceFirstDayOfWeek = schedulerResourceParameters.AttendanceOccurrenceSundayDate.StartOfWeek( RockDateTime.FirstDayOfWeek );
+            var occurrenceLastDayOfWeek = schedulerResourceParameters.AttendanceOccurrenceSundayDate.EndOfWeek( RockDateTime.FirstDayOfWeek );
+
+            //var occurrenceSundayDate = schedulerResourceParameters.AttendanceOccurrenceSundayDate;
+            //var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
 
             // don't include schedule dates in the past
-            if ( occurrenceSundayWeekStartDate <= RockDateTime.Today )
+            if ( occurrenceFirstDayOfWeek <= RockDateTime.Today )
             {
-                occurrenceSundayWeekStartDate = RockDateTime.Today;
+                occurrenceFirstDayOfWeek = RockDateTime.Today;
             }
 
             // get all the occurrences for the selected week for the selected schedules (It could be more than once a week if it is a daily scheduled, or it might not be in the selected week if it is every 2 weeks, etc)
@@ -1245,7 +1248,7 @@ namespace Rock.Model
             Dictionary<int, int> scheduleOccurrenceCountByScheduleId = new Dictionary<int, int>();
             foreach ( var occurrenceSchedule in occurrenceSchedules )
             {
-                var occurrenceStartTimes = occurrenceSchedule.GetScheduledStartTimes( occurrenceSundayWeekStartDate, occurrenceSundayDate.AddDays( 1 ) );
+                var occurrenceStartTimes = occurrenceSchedule.GetScheduledStartTimes( occurrenceFirstDayOfWeek, occurrenceLastDayOfWeek.AddDays( 1 ) );
                 scheduleOccurrenceCountByScheduleId.AddOrReplace( occurrenceSchedule.Id, occurrenceStartTimes.Count );
                 scheduleOccurrenceDateTimeList.AddRange( occurrenceStartTimes );
             }
@@ -1367,9 +1370,9 @@ namespace Rock.Model
 
                     List<int> matchingScheduleGroupMemberIdList = new List<int>();
 
-                    // get first scheduled occurrence for the selected "sunday week", which would be from the start of the preceding Monday to the end of the Sunday
-                    var beginDateTime = occurrenceSundayWeekStartDate;
-                    var endDateTime = occurrenceSundayDate.AddDays( 1 );
+                    // get first scheduled occurrence for the selected "sunday week", which would be from the start of the configured RockDateTime.FirstDayOfWeek
+                    var beginDateTime = occurrenceFirstDayOfWeek;
+                    var endDateTime = occurrenceLastDayOfWeek.AddDays( 1 );
 
                     foreach ( var groupMember in resourceList )
                     {
@@ -1718,17 +1721,21 @@ namespace Rock.Model
             int scheduleId = attendanceOccurrenceInfo.ScheduleId ?? 0;
             var attendanceOccurrenceGroupId = attendanceOccurrenceInfo.GroupId ?? 0;
             DateTime occurrenceDate = attendanceOccurrenceInfo.OccurrenceDate;
-            var occurrenceSundayDate = attendanceOccurrenceInfo.OccurrenceDate.SundayDate();
-            var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
+
+            var occurrenceFirstDayOfWeek = attendanceOccurrenceInfo.OccurrenceDate.StartOfWeek( RockDateTime.FirstDayOfWeek );
+            var occurrenceLastDayOfWeek = attendanceOccurrenceInfo.OccurrenceDate.EndOfWeek( RockDateTime.FirstDayOfWeek );
+
+            //var occurrenceSundayDate = attendanceOccurrenceInfo.OccurrenceDate.SundayDate();
+            //var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
 
             // don't include schedule dates in the past
-            if ( occurrenceSundayWeekStartDate <= RockDateTime.Today )
+            if ( occurrenceFirstDayOfWeek <= RockDateTime.Today )
             {
-                occurrenceSundayWeekStartDate = RockDateTime.Today;
+                occurrenceFirstDayOfWeek = RockDateTime.Today;
             }
 
             // get all the occurrences for the selected week for this schedule (It could be more than once a week if it is a daily scheduled, or it might not be in the selected week if it is every 2 weeks, etc)
-            var scheduleOccurrenceDateList = attendanceOccurrenceInfo.Schedule.GetScheduledStartTimes( occurrenceSundayWeekStartDate, occurrenceSundayDate.AddDays( 1 ) ).Select( a => a.Date ).ToList();
+            var scheduleOccurrenceDateList = attendanceOccurrenceInfo.Schedule.GetScheduledStartTimes( occurrenceFirstDayOfWeek, occurrenceLastDayOfWeek.AddDays( 1 ) ).Select( a => a.Date ).ToList();
 
             IQueryable<PersonScheduleExclusion> personScheduleExclusionQueryForOccurrence = GetPersonScheduleExclusionQueryForOccurrenceDates( attendanceOccurrenceGroupId, scheduleOccurrenceDateList );
 
@@ -1960,8 +1967,11 @@ namespace Rock.Model
         {
             var rockContext = this.Context as RockContext;
 
-            var startDate = sundayDate.Date.AddDays( -6 );
-            var endDate = sundayDate.Date;
+            //var startDate = sundayDate.Date.AddDays( -6 );
+            //var endDate = sundayDate.Date;
+
+            var startDate = sundayDate.Date.StartOfWeek( RockDateTime.FirstDayOfWeek );
+            var endDate = sundayDate.Date.EndOfWeek( RockDateTime.FirstDayOfWeek );
 
             var groupLocationQry = new GroupLocationService( rockContext ).Queryable().Where( a => a.GroupId == groupId );
             var scheduleList = groupLocationQry.SelectMany( a => a.Schedules ).WhereIsActive().Distinct().AsNoTracking().ToList();

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Requirement Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group requirement type for editing." )]
-    public partial class GroupRequirementTypeDetail : RockBlock, IDetailBlock
+    public partial class GroupRequirementTypeDetail : RockBlock
     {
         #region Base Control Methods
 

@@ -31,11 +31,11 @@ namespace Rock.Utility.Enums
         /// <summary>
         /// The group members of this type will get an AccountProtectionProfile of High.
         /// </summary>
-        Low = 1,
+        High = 1,
 
         /// <summary>
         /// The group members of this type will get an AccountProtectionProfile of Extreme.
         /// </summary>
-        High = 2,
+        Extreme = 2,
     }
 }

@@ -17,11 +17,11 @@
 import { defineComponent } from "vue";
 import DatePartsPicker from "./datePartsPicker";
 
-export default defineComponent( {
+export default defineComponent({
     name: "BirthdayPicker",
     components: {
         DatePartsPicker
     },
     template: `
 <DatePartsPicker :allowFutureDates="false" :requireYear="false" />`
-} );
+});

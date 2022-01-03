@@ -121,11 +121,11 @@ export abstract class FieldTypeBase implements IFieldType {
     }
 
     public getCondensedTextValue(value: ClientAttributeValue): string {
-        return truncate(value.textValue ?? "", 10);
+        return truncate(value.textValue ?? "", 100);
     }
 
     public getCondensedHtmlValue(value: ClientAttributeValue): string {
-        return `<span>${this.getHtmlValue(value)}</span>`;
+        return this.getHtmlValue(value);
     }
 
     public getFormattedComponent(value: ClientAttributeValue): Component {

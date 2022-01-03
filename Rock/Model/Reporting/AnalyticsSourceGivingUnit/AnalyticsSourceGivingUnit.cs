@@ -127,6 +127,7 @@ namespace Rock.Model
 
         /// <summary>
         /// The frequency that this person typically has given in the past 12 months.
+        /// <see cref="Rock.Financial.FinancialGivingAnalyticsFrequencyLabel" />
         /// Possible values include: Weekly, Bi-Weekly, Monthly, Quarterly, Erratic, Variable
         /// </summary>
         /// <value>

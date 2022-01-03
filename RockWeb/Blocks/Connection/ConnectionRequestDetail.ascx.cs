@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Connection
         Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         Order = 7 )]
     #endregion Block Attributes
-    public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
+    public partial class ConnectionRequestDetail : PersonBlock
     {
         #region Attribute Keys
 

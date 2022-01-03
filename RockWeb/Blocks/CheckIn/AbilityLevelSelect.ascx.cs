@@ -350,7 +350,8 @@ namespace RockWeb.Blocks.CheckIn
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
                         person.StateParameters.Add( "AbilityLevel", _personAbilityLevelGuid );
 
-                        if ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAsk )
+                        if ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAsk ||
+                            ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAskIfThereIsNoAbilityLevel && _personAbilityLevelGuid.IsNullOrWhiteSpace() ) )
                         {
                             if ( !ProcessSelection() )
                             {

@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK,
         Key = AttributeKey.MapStyle )]
 
-    public partial class DeviceDetail : RockBlock, IDetailBlock
+    public partial class DeviceDetail : RockBlock
     {
         public static class AttributeKey
         {

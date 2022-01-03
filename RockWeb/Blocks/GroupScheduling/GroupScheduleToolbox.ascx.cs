@@ -734,6 +734,8 @@ $('#{0}').tooltip();
                 }
             }
 
+            dpGroupMemberScheduleTemplateStartDate.Visible = scheduleTemplateId.HasValue && scheduleTemplateId > 0;
+
             var pnlGroupPreferenceAssignment = repeaterItem.FindControl( "pnlGroupPreferenceAssignment" ) as Panel;
             pnlGroupPreferenceAssignment.Visible = scheduleTemplateId.HasValue;
         }

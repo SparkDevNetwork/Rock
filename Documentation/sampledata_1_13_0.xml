@@ -24,9 +24,9 @@
           firstName="Theodore" nickName="Ted" lastName="Decker" birthDate="2/10/1976" age="38" gender="male"
           email="ted@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
-          anniversaryDate="1/4/2001"
+          anniversaryDate="1/4/2003"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
-          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444" graduationDate="1/1/1994">
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444" graduationDate="1/1/2001">
           <attributes>
             <attribute BaptismDate="2001-09-13"/>
             <attribute FirstVisit="2012-12-15"/>
@@ -64,7 +64,7 @@
           firstName="Cynthia" nickName="Cindy" lastName="Decker" birthDate="3/10/1977" age="37" gender="female"
           email="cindy@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
-          anniversaryDate="1/4/2001"
+          anniversaryDate="1/4/2003"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
           homePhone="6235553323" mobilePhone="6235553323" workPhone="">
           <attributes>
@@ -119,7 +119,7 @@
           email="ben.jones@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_ben.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="6235558888"/>
 
         <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E"
           firstName="Brian" nickName="Brian" lastName="Jones" birthDate="6/9/2008" age="6" gender="male"
@@ -151,14 +151,14 @@
           email="jim.simmons@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_jim.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="6238881212" workPhone=""/>
 
         <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F"
           firstName="Sarah" nickName="Sarah" lastName="Simmons" birthDate="5/3/1980" age="34" gender="female"
           email="sarah.simmons@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_sarah.jpg"
-          homePhone="" mobilePhone="" workPhone="">
+          homePhone="" mobilePhone="6238881213" workPhone="6235558888">
           
             <previousNames>
                 <name lastName="Jones" />
@@ -1015,6 +1015,7 @@
     <group type="serving" name="A/V Team" guid="0BA93D66-21B1-4229-979D-F76CEB57666D" description="Responsible for all A/V equipment. Useful for testing volunteer Group Scheduling." parentGroupGuid="31730962-4c7b-425b-bd73-4185331f37ef">
       <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
       <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
+      <person fullname="Admin Admin" guid="AD28DA19-4AF1-408F-9090-2672F8376F27"/>
       <location guid="17382278-9bf4-45b2-bc6a-021605680fef">
         <schedule guid="7883CAC8-6E30-482B-95A7-2F0DEE859BE1" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
         <schedule guid="33FF69E9-059B-4702-B1E5-4D499CB7B07A" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
@@ -1259,6 +1260,7 @@
     </group>
     <group name="Staff Users" guid="2C112948-FF4C-46E7-981A-0257681EADF4" >
       <members>
+        <person fullname="Admin Admin" guid="AD28DA19-4AF1-408F-9090-2672F8376F27"/>
         <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
         <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
         <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>

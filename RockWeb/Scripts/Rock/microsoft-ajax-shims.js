@@ -12,3 +12,22 @@ if (String.prototype.startsWith.toString().indexOf("function String$startsWith("
         return this.indexOf(searchString, pos) === 0;
     };
 }
+
+
+/* Fix the String.prototype.endsWith function. Microsoft Ajax library
+ * loads in it's own version from an era before it was standard in browsers.
+ * But it's a broken version.
+ * https://vanillajstoolkit.com/polyfills/stringendswith/
+ */
+if (String.prototype.endsWith.toString().indexOf("function String$endsWith(") === 0) {
+    String.prototype.endsWith = function (searchStr, position) {
+        // This works much better than >= because
+        // it compensates for NaN:
+        if (!(position < this.length)) {
+            position = this.length;
+        } else {
+            position |= 0; // round position
+        }
+        return this.substr(position - searchStr.length, searchStr.length) === searchStr;
+    };
+}

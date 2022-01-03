@@ -2,53 +2,59 @@
   position: absolute;
   top: 0;
   right: 0;
-  left: 0;
   bottom: 0;
-  padding: 1em;
+  left: 0;
+  z-index: 3000;
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
+  padding: 1em;
   overflow: hidden;
-  z-index: 3000;
   pointer-events: none;
 }
 
 .balloon {
-  height: 125px;
-  width: 105px;
-  border-radius: 75% 75% 70% 70%;
   position: relative;
+  width: 105px;
+  height: 125px;
+  border-radius: 75% 75% 70% 70%;
   opacity: 0;
 }
 
-.balloon:before {
-  content: "";
-  height: 75px;
-  width: 1px;
-  padding: 1px;
-  background-color: #FDFD96;
-  display: block;
+.balloon::before {
   position: absolute;
   top: 125px;
-  left: 0;
   right: 0;
+  left: 0;
+  display: block;
+  width: 1px;
+  height: 75px;
+  padding: 1px;
   margin: auto;
+  content: "";
+  background-color: #fdfd96;
 }
 
-.balloon:after {
-    content: "▲";
-    text-align: center;
-    display: block;
-    position: absolute;
-    color: inherit;
-    top: 120px;
-    left: 0;
-    right: 0;
-    margin: auto;
+.balloon::after {
+  position: absolute;
+  top: 120px;
+  right: 0;
+  left: 0;
+  display: block;
+  margin: auto;
+  color: inherit;
+  text-align: center;
+  content: "▲";
 }
 
 @keyframes float {
-  0% {transform: translateY(100vh); opacity: 1;}
-  90% {opacity: 1;}
-  100% {transform: translateY(-300vh); opacity: 0;}
+  0% {
+    opacity: 1;
+    transform: translateY(100vh);
+  }
+  90% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translateY(-300vh);
+  }
 }

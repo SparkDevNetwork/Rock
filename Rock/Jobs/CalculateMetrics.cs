@@ -23,7 +23,7 @@ using System.Diagnostics;
 using System.Linq;
 
 using Quartz;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -36,9 +36,26 @@ namespace Rock.Jobs
     [DisplayName( "Calculate Metrics" )]
     [Description( "A job that processes any metrics with schedules." )]
 
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for any SQL based operations to complete. Leave blank to use the default for this job (300). Note, some metrics do not use SQL so this timeout will only apply to metrics that are SQL based.",
+        IsRequired = false,
+        DefaultIntegerValue = 60 * 5,
+        Category = "General",
+        Order = 7 )]
+
     [DisallowConcurrentExecution]
     public class CalculateMetrics : IJob
     {
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string CommandTimeout = "CommandTimeout";
+        }
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -56,6 +73,8 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            var dataMap = context.JobDetail.JobDataMap;
+            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
             var metricSourceValueTypeDataviewGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
             var metricSourceValueTypeSqlGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
             var metricSourceValueTypeLavaGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid();
@@ -84,6 +103,7 @@ namespace Rock.Jobs
                 {
                     using ( var rockContextForMetricEntity = new RockContext() )
                     {
+                        rockContextForMetricEntity.Database.CommandTimeout = commandTimeout;
                         var metricService = new MetricService( rockContextForMetricEntity );
 
                         metric = metricService.Get( metricId );
@@ -103,6 +123,7 @@ namespace Rock.Jobs
                         {
                             using ( var rockContextForMetricValues = new RockContext() )
                             {
+                                rockContextForMetricValues.Database.CommandTimeout = commandTimeout;
                                 var metricPartitions = new MetricPartitionService( rockContextForMetricValues ).Queryable().Where( a => a.MetricId == metric.Id ).ToList();
                                 var metricValueService = new MetricValueService( rockContextForMetricValues );
                                 List<ResultValue> resultValues = new List<ResultValue>();

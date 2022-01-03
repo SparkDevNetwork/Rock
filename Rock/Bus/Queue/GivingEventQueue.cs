@@ -29,5 +29,14 @@ namespace Rock.Bus.Queue
         /// The name.
         /// </value>
         public override string Name => "rock-giving-event-queue";
+
+        /// <summary>
+        /// Gets or sets the time to live seconds.
+        /// A setting of null or less than 1 means there is no expiration.
+        /// </summary>
+        /// <value>
+        /// The time to live seconds.
+        /// </value>
+        public override int? TimeToLiveSeconds => 604800; // 7 days 
     }
 }

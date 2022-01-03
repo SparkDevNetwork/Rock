@@ -27,7 +27,7 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
+                                <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidateRequestMode="Disabled" />
                                 <asp:RegularExpressionValidator ID="revTagName" runat="server" ControlToValidate ="tbName" Display="None" ErrorMessage="Invalid characters have been entered for the tag name. Angle brackets, percent, and ampersand are not allowed." />
                             </div>
                             <div class="col-md-6">

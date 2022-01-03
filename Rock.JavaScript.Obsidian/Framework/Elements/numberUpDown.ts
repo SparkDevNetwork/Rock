@@ -126,7 +126,7 @@ export default defineComponent({
         }
     },
     methods: {
-        additionalClasses( fieldLabel: string): string {
+        additionalClasses(fieldLabel: string): string {
             if (fieldLabel !== "") {
                 return `margin-t-sm ${this.numberIncrementClasses}`;
             }

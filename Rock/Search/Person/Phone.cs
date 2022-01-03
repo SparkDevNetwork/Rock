@@ -49,6 +49,21 @@ namespace Rock.Search.Person
             }
         }
 
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            var rockContext = new RockContext();
+            var phoneNumberService = new PhoneNumberService( rockContext );
+            var personService = new PersonService( rockContext );
+
+            var personIdQry = phoneNumberService.GetPersonIdsByNumber( searchTerm );
+
+            return personService.Queryable()
+                .Where( p => personIdQry.Contains( p.Id ) )
+                .OrderBy( p => p.NickName )
+                .ThenBy( p => p.LastName );
+        }
+
         /// <summary>
         /// Returns a list of matching people
         /// </summary>

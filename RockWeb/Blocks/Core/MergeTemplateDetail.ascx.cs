@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = "Global",
         Key = AttributeKey.MergeTemplatesOwnership )]
 
-    public partial class MergeTemplateDetail : RockBlock, IDetailBlock
+    public partial class MergeTemplateDetail : RockBlock
     {
         public static class AttributeKey
         {

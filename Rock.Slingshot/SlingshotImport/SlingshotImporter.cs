@@ -2746,7 +2746,7 @@ namespace Rock.Slingshot
 
             if ( !this.TransactionSourceTypeValues.ContainsKey( SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid() ) )
             {
-                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdTransactionSourceType, SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid(), "On-Site Collection", "Transactions that were collected on-site" ) );
+                definedValuesToAdd.Add( CreateDefinedValue( definedTypeIdTransactionSourceType, SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION.AsGuid(), "On-Site", "Transactions that were collected on-site" ) );
             }
 
 

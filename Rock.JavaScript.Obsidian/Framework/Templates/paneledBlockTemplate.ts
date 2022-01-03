@@ -17,7 +17,7 @@
 import { defineComponent } from "vue";
 
 /** Provides a generic Rock Block structure */
-const PaneledBlockTemplate = defineComponent( {
+const PaneledBlockTemplate = defineComponent({
     name: "PaneledBlockTemplate",
     data() {
         return {
@@ -51,6 +51,6 @@ const PaneledBlockTemplate = defineComponent( {
         </div>
     </div>
 </div>`
-} );
+});
 
 export default PaneledBlockTemplate;

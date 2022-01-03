@@ -19,12 +19,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -1213,6 +1215,7 @@ achieve our mission.  We are so grateful for your commitment.
                     scheduledTransaction.Summary = tbComments.Text;
 
                     rockContext.SaveChanges();
+                    Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
 
                     ScheduleId = scheduledTransaction.GatewayScheduleId;
                     TransactionCode = scheduledTransaction.TransactionCode;

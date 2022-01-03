@@ -43,7 +43,7 @@ export default defineComponent({
             } as Record<string, string>));
         },
         innerTemplate(): string {
-            if ( !this.items.length ) {
+            if (!this.items.length) {
                 return "<slot />";
             }
 

@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group type for editing." )]
-    public partial class GroupTypeDetail : RockBlock, IDetailBlock
+    public partial class GroupTypeDetail : RockBlock
     {
         #region Properties
 
@@ -632,9 +632,9 @@ namespace RockWeb.Blocks.Groups
 
                 /* Save Attributes */
                 string qualifierValue = groupType.Id.ToString();
-                SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, rockContext, false );
-                SaveAttributes( new Group().TypeId, "GroupTypeId", qualifierValue, GroupAttributesState, rockContext, true );
-                SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, rockContext, false );
+                SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, rockContext, groupType, false );
+                SaveAttributes( new Group().TypeId, "GroupTypeId", qualifierValue, GroupAttributesState, rockContext, groupType, true );
+                SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, rockContext, groupType, false );
 
                 // Reload to save default role
                 groupType = groupTypeService.Get( groupType.Id );
@@ -1441,7 +1441,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="viewStateAttributes">The view state attributes.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="AddAuthorizationsFromGroupType">if set to <c>true</c> for new attributes this will copy the explicit permissions for the group type into the attribute.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext, bool AddAuthorizationsFromGroupType )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext, GroupType groupType, bool AddAuthorizationsFromGroupType )
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
@@ -1470,8 +1470,6 @@ namespace RockWeb.Blocks.Groups
                 var groupTypeId = qualifierValue.AsIntegerOrNull();
                 if ( groupTypeId.HasValue && groupTypeId > 0 && attributeState.Id == 0 && AddAuthorizationsFromGroupType )
                 {
-	                var groupType = GroupTypeCache.Get( groupTypeId.Value );
-
                     // If this is a new group type then this will be null since it is still in an uncommitted transaction and not in the cache.
                     // Also there are no explicit authorizations to copy.
                     if ( groupType != null )

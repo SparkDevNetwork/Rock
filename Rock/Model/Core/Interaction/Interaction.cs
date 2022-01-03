@@ -35,7 +35,12 @@ namespace Rock.Model
     public partial class Interaction : Model<Interaction>
     {
         /* Custom Indexes:
-         *
+         *      
+         *  InteractionComponentId
+         *      This was added because InteractionComponent deletes have a FK reference that was not indexed.
+         *      Mainly used in delete operations that also delete interaction references.
+         *      See FK_dbo.Interaction_dbo.InteractionComponent_InteractionComponentId
+         *      
          * InteractionComponentId, InteractionDateTime
          *      Includes InteractionTimeToServe, Operation, InteractionSessionId, PersonalDeviceId
          *      This was added for <see cref="Rock.Jobs.RockCleanup.UpdateMedianPageLoadTimes"/>
@@ -47,6 +52,7 @@ namespace Rock.Model
          *  PersonAliasId, InteractionSessionId
          *      Includes InteractionDateTime, InteractionComponentId
          *      This was added for RockWeb.Blocks.Reporting.InteractionSessionList
+         *      
          */
 
         #region Entity Properties

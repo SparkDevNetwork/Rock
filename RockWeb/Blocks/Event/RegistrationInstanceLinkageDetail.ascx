@@ -47,6 +47,11 @@
                                         ControlToValidate="tbLinkageUrlSlug"
                                         OnServerValidate="cvUrlSlug_ServerValidate"
                                         Display="None" />
+                        <asp:RegularExpressionValidator runat="server"
+                                        ID="rvUrlSlug"
+                                        ErrorMessage="URL Slug cannot contain any special characters other than -"
+                                        ControlToValidate="tbLinkageUrlSlug"
+                                        ValidationExpression="^[a-z0-9]+(?:-[a-z0-9]+)*$" />
                     </div>
                 </div>
 

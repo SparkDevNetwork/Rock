@@ -137,7 +137,7 @@ export const DatePickerBase = defineComponent({
 `
 });
 
-export default defineComponent( {
+export default defineComponent({
     name: "DatePicker",
 
     components: {
@@ -182,7 +182,7 @@ export default defineComponent( {
         },
 
         valueToEmit (): string | string | null {
-            if ( this.isCurrent ) {
+            if (this.isCurrent) {
                 return this.asCurrentDateValue;
             }
 
@@ -261,4 +261,4 @@ export default defineComponent( {
         <DatePickerBase v-else v-model.lazy="internalValue" :id="uniqueId" :disabled="isCurrent" />
     </div>
 </RockFormField>`
-} );
+});

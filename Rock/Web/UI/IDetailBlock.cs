@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Web.UI
 {
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete("This interface has no effect. It was previously implemented to facilitate navigation between related blocks.")]
+    [RockObsolete("1.13")]
     public interface IDetailBlock
     {
         /// <summary>

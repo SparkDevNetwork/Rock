@@ -337,6 +337,7 @@ namespace Rock.Model
         /// <value>
         /// The giver identifier.
         /// </value>
+        [MaxLength( 50 )]
         [DataMember]
         [Index( "IX_GivingId" )]
         public string GivingId { get; private set; }
@@ -1896,7 +1897,7 @@ namespace Rock.Model
                 {
                     return string.Format(
                         "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
-                        EmailNote,
+                        HttpUtility.HtmlEncode(EmailNote),
                         Email );
                 }
             }
@@ -2974,7 +2975,7 @@ namespace Rock.Model
         {
             if ( gradeOffset.HasValue && gradeOffset.Value >= 0 )
             {
-                return RockDateTime.CurrentGraduationYear + gradeOffset.Value;
+                return PersonService.GetCurrentGraduationYear() + gradeOffset.Value;
             }
 
             return null;
@@ -2993,7 +2994,7 @@ namespace Rock.Model
             }
             else
             {
-                return graduationYear.Value - RockDateTime.CurrentGraduationYear;
+                return graduationYear.Value - PersonService.GetCurrentGraduationYear();
             }
         }
 
@@ -3867,7 +3868,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> WhereGradeOffsetRange( this IQueryable<Person> personQry, int? minGradeOffset, int? maxGradeOffset, bool includePeopleWithNoGrade = true )
         {
-            var currentGradYear = RockDateTime.CurrentGraduationYear;
+            var currentGradYear = PersonService.GetCurrentGraduationYear();
 
             var qryWithGradeOffset = personQry.Select(
                       p => new

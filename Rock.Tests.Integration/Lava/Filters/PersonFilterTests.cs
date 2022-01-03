@@ -15,13 +15,14 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
-using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Utility.Enums;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -116,10 +117,95 @@ namespace Rock.Tests.Integration.Lava
 
         #endregion
 
+        #region Person Tokens
+
+        /// <summary>
+        /// Verify that a PersonToken cannot be created where the Account Protection Profile of the person is equal to the threshold
+        /// in Security Settings.
+        /// </summary>
+        [TestMethod]
+        public void PersonTokenCreate_WithPersonHavingProtectedProfile_ReturnsTokenProhibited()
+        {
+            SetPersonAccountProtectionProfile( TestGuids.TestPeople.TedDecker, AccountProtectionProfile.Extreme );
+
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var options = new LavaTestRenderOptions { MergeFields = values, Wildcards = new List<string> { "<token>" } };
+
+            var template = @"
+Your token is: {{ CurrentPerson | PersonTokenCreate }}
+";
+            var outputExpected = @"
+Your token is: TokenProhibited
+";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        /// <summary>
+        /// Verify that a PersonToken can be created where the Account Protection Profile of the person is less than the threshold
+        /// in Security Settings.
+        /// </summary>
+        [TestMethod]
+        public void PersonTokenCreate_WithPersonHavingUnprotectedProfile_ReturnsTokenString()
+        {
+            SetPersonAccountProtectionProfile( TestGuids.TestPeople.SamHanks, AccountProtectionProfile.Medium );
+
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.SamHanks.AsGuid(), null, "Person" );
+            var options = new LavaTestRenderOptions { MergeFields = values, Wildcards = new List<string> { "<token>" } };
+
+            var template = @"
+Your token is: {{ Person | PersonTokenCreate }}
+";
+            var outputExpected = @"
+Your token is: <token>
+";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        /// <summary>
+        /// Verify that a PersonToken can be created where the Account Protection Profile of the person is not set.
+        /// </summary>
+        [TestMethod]
+        public void PersonTokenCreate_WithPersonHavingDefaultProtectionProfile_ReturnsTokenString()
+        {
+            SetPersonAccountProtectionProfile( TestGuids.TestPeople.BillMarble, AccountProtectionProfile.Low );
+
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.BillMarble.AsGuid() );
+            var options = new LavaTestRenderOptions { MergeFields = values, Wildcards = new List<string> { "<token>" } };
+
+            var template = @"
+Your token is: {{ CurrentPerson | PersonTokenCreate }}
+";
+            var outputExpected = @"
+Your token is: <token>
+";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+        private void SetPersonAccountProtectionProfile( String guid, AccountProtectionProfile profile )
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            var person = personService.Get( guid.AsGuid() );
+            person.AccountProtectionProfile = profile;
+
+            rockContext.SaveChanges();
+        }
+
+        #endregion
+
         #region Steps
 
         [TestMethod]
-        [Ignore("Requires additional sample test data.")]
+        [Ignore( "Requires additional sample test data." )]
         public void PersonSteps_WithDefaultParameters_ReturnsAllStepsForCurrentPerson()
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );

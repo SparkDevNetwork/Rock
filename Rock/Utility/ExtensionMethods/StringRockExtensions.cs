@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -58,6 +59,17 @@ namespace Rock
             }
 
             return str;
+        }
+
+        /// <summary>
+        /// Parses the query string into a <see cref="NameValueCollection"/> that
+        /// can be used to access all the name-value pairs.
+        /// </summary>
+        /// <param name="str">The string to be parsed.</param>
+        /// <returns>A <see cref="NameValueCollection"/> that represents the query string.</returns>
+        public static NameValueCollection ParseQueryString( this string str )
+        {
+            return System.Web.HttpUtility.ParseQueryString( str );
         }
     }
 }
