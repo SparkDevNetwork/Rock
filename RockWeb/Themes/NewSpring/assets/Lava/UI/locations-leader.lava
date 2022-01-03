@@ -26,11 +26,11 @@
     {% endif %}
 
     <div id="staff" class="row soft-double-sides xs-soft-half-sides text-center push-double-top xs-push-half-top">
-
-        {% for person in campus.CampusStaff %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom  {% if person.FullName == leader.FullName %}hidden{% endif %}">
+        {% assign staff = campus.CampusStaff | GroupBy:'PersonId' %}
+        {% for personId in staff %}{% assign person = personId | Property:'Value' | First %}{% if person.ShowOnWebsite == 'Yes' %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom  {% if person.FullName == leader.FullName %}hidden{% endif %}">
 
             {[ user imageurl:'{{ person.StaffImage }}' title:'{{ person.FullName }}' subtitle:'{{ person.StaffTitle | Replace:"'","’" }}' linkurl:'https://newspring.cc/workflows/712?StaffMember={{ person | Property:"PersonId" | PersonById | Property:"PrimaryAlias" | Property:"Guid" }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
-        </div>{% endfor %}
+        </div>{% endif %}{% endfor %}
     </div>
 
     <style>
