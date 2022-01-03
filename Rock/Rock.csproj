@@ -2218,7 +2218,7 @@
     <Compile Include="Model\Event\AttendanceCode\AttendanceCode.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrenceService.cs" />
     <Compile Include="Model\Core\AttributeMatrix\AttributeMatrix.cs" />
-    <Compile Include="Model\AttributeMatrixItem.cs" />
+    <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.cs" />
     <Compile Include="Model\Core\AttributeMatrixTemplate\AttributeMatrixTemplate.cs" />
     <Compile Include="Model\Core\AttributeValueHistorical\AttributeValueHistorical.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimCampusService.CodeGenerated.cs" />
