@@ -922,6 +922,7 @@
     <Compile Include="Model\Engagement\StreakType\StreakTypeSettings.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
+    <Compile Include="Model\Event\AttendanceData\AttendanceData.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceGraphBy.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.Logic.cs" />
     <Compile Include="Model\Event\Attendance\Attendance.Logic.cs" />

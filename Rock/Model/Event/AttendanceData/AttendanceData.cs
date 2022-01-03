@@ -59,7 +59,7 @@ namespace Rock.Model
         [HideFromReporting]
         public string LabelData { get; set; }
 
-        #endregion
+        #endregion Entity Properties
     }
 
     #region Entity Configuration
@@ -77,6 +77,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
