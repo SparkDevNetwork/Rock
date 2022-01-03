@@ -19,7 +19,7 @@ import { defineComponent } from "vue";
 export default defineComponent({
     name: "LoadingIndicator",
     template: `
-<div class="text-muted">
-    Loading...
+<div class="text-center fa-2x">
+    <i class="fas fa-spinner fa-pulse"></i>
 </div>`
 });

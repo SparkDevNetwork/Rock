@@ -55,6 +55,10 @@
                 {% if Item and Item != empty %}
 
                     [[ item data:'' ]]
+                        {% assign parentId = Item.Parents | First | Property:'Id' | AsInteger %}
+                        {% assign parentDataset = Item.Parents | First | Property:'Dataset' %}
+                        {% assign parent = parentDataset |  PersistedDataset | Where:'Id',parentId | First %}
+
                         {% assign dataset = Item.Dataset %}
                         {% assign type = Item.ChannelName | Split:' - ' | Index:1 | Singularize %}
                         {% assign childChannelId = Item.ChannelId %}
@@ -89,7 +93,13 @@
                             {% assign sessionNumber = child.Index | Plus:1 %}
                             {% assign label = 'Session ' | Append:sessionNumber %}
                         {% else %}
-                            {% assign imageurl = Item.ImageLandscape %}
+                            {% if Item.VideoImageLandscape and Item.VideoImageLandscape != empty %}
+                                {% assign imageurl = Item.VideoImageLandscape | Trim %}
+                            {% elseif Item.ImageLandscape and Item.ImageLandscape != empty %}
+                                {% assign imageurl = Item.ImageLandscape %}
+                            {% elseif parent.ImageLandscape and parent.ImageLandscape != empty %}
+                                {% assign imageurl = parent.ImageLandscape %}
+                            {% endif %}
                         {% endif %}
 
                         {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}

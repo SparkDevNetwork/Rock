@@ -229,7 +229,7 @@ namespace Rock.Web.UI.Controls
                     definedValuesList = definedValuesList.Where( a => picker.SelectableDefinedValuesId.Contains( a.Id ) );
                 }
 
-                var filteredList = definedValuesList.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+                var filteredList = definedValuesList?.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
                 if ( filteredList != null && filteredList.Any() )
                 {
                     foreach ( var definedValue in filteredList )

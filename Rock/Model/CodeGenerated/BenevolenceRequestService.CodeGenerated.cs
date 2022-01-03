@@ -82,6 +82,7 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                BenevolenceTypeId = model.BenevolenceTypeId,
                 CampusId = model.CampusId,
                 CaseWorkerPersonAliasId = model.CaseWorkerPersonAliasId,
                 CellPhoneNumber = model.CellPhoneNumber,
@@ -168,6 +169,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BenevolenceRequest target, BenevolenceRequest source )
         {
             target.Id = source.Id;
+            target.BenevolenceTypeId = source.BenevolenceTypeId;
             target.CampusId = source.CampusId;
             target.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
             target.CellPhoneNumber = source.CellPhoneNumber;

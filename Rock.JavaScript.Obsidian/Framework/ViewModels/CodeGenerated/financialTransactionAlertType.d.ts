@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FinancialTransactionAlertType = IEntity & {
+    accountParticipantSystemCommunicationId?: number | null;
     alertSummaryNotificationGroupId?: number | null;
     alertType?: number;
     amountSensitivityScale?: number | null;
@@ -31,7 +32,9 @@ export type FinancialTransactionAlertType = IEntity & {
     connectionOpportunityId?: number | null;
     continueIfMatched?: boolean;
     dataViewId?: number | null;
+    financialAccountId?: number | null;
     frequencySensitivityScale?: number | null;
+    includeChildFinancialAccounts?: boolean;
     maximumDaysSinceLastGift?: number | null;
     maximumGiftAmount?: number | null;
     maximumMedianGiftAmount?: number | null;

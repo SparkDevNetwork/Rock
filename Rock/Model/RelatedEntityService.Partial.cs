@@ -95,7 +95,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="sourceEntityId">The source entity identifier.</param>
         /// <param name="sourceEntityTypeId">The source entity type identifier.</param>
-        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">The related (target) entity type identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
         /// <returns></returns>
         public IQueryable<RelatedEntity> GetRelatedEntityRecordsToSource( int sourceEntityId, int sourceEntityTypeId, int relatedEntityTypeId, string purposeKey )
@@ -122,7 +122,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="sourceEntityId">The source entity identifier.</param>
         /// <param name="sourceEntityTypeId">The source entity type identifier.</param>
-        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">The related (target) entity type identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
         /// <param name="qualifierValue">The qualifier value.</param>
         /// <returns></returns>
@@ -144,8 +144,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="sourceEntityId">The source entity identifier.</param>
         /// <param name="sourceEntityTypeId">The source entity type identifier.</param>
-        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
-        /// <param name="relatedEntityId">The related entity identifier.</param>
+        /// <param name="relatedEntityTypeId">The related (target) entity type identifier.</param>
+        /// <param name="relatedEntityId">The related (target) entity identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
         /// <param name="qualifierValue">The qualifier value.</param>
         /// <returns></returns>
@@ -166,8 +166,8 @@ namespace Rock.Model
         /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
         /// <param name="targetEntityId">A <see cref="System.Int32" /> representing the target entity identifier.</param>
-        /// <param name="targetEntityTypeId">A <see cref="System.Int32" /> representing the target entity type identifier.</param>
-        /// <param name="relatedEntityTypeId">A <see cref="System.Int32" /> representing the related source entity type identifier.</param>
+        /// <param name="targetEntityTypeId">A <see cref="System.Int32" /> representing the <see cref="RelatedEntity.TargetEntityTypeId"/></param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32" /> representing the related <see cref="RelatedEntity.SourceEntityTypeId"/></param>
         /// <param name="purposeKey">The purpose key.</param>
         /// <returns>
         /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> entities.

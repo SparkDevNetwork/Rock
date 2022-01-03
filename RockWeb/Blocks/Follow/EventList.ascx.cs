@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for viewing list of following events." )]
     [LinkedPage( "Detail Page" )]
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to change following events." )]
     public partial class EventList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
@@ -52,6 +53,7 @@ namespace RockWeb.Blocks.Follow
             base.OnInit( e );
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
+            bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             rGridEvent.DataKeyNames = new string[] { "Id" };
             rGridEvent.Actions.ShowAdd = canEdit;
@@ -59,6 +61,14 @@ namespace RockWeb.Blocks.Follow
             rGridEvent.GridReorder += rGridEvent_GridReorder;
             rGridEvent.GridRebind += rGridEvents_GridRebind;
             rGridEvent.IsDeleteEnabled = canEdit;
+
+            var securityField = rGridEvent.ColumnsOfType<SecurityField>().FirstOrDefault();
+
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( FollowingEventType ) ).Id;
+                securityField.Visible = canAdministrate;
+            }
         }
 
         /// <summary>
@@ -134,7 +144,7 @@ namespace RockWeb.Blocks.Follow
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        void rGridEvent_GridReorder( object sender, GridReorderEventArgs e )
+        protected void rGridEvent_GridReorder( object sender, GridReorderEventArgs e )
         {
             var rockContext = new RockContext();
             var service = new FollowingEventTypeService( rockContext );
@@ -148,7 +158,7 @@ namespace RockWeb.Blocks.Follow
         /// <summary>
         /// Handles the GridRebind event of the rGridEvent control.
         /// </summary>
-        /// <param name="sendder">The source of the event.</param>
+        /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGridEvents_GridRebind( object sender, EventArgs e )
         {

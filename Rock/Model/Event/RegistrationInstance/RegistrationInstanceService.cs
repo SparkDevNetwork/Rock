@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 
-using Rock.ViewModel.Blocks;
+using Rock.ViewModel.Blocks.Event.RegistrationEntry;
 
 namespace Rock.Model
 {

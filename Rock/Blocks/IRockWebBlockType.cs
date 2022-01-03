@@ -15,12 +15,23 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Blocks
 {
     /// <summary>
     /// A Rock block that is designed to exist on a web page.
     /// </summary>
     /// <seealso cref="Rock.Blocks.IRockBlockType" />
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    [RockInternal]
     public interface IRockWebBlockType : IRockBlockType
     {
         /// <summary>

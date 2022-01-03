@@ -1006,18 +1006,20 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private List<Note> GetViewableNoteList( RockContext rockContext, Person currentPerson )
         {
-            var viewableNoteTypes = this.NoteOptions?.GetViewableNoteTypes( currentPerson );
+            var configuredNoteTypes = this.NoteOptions?.NoteTypes.ToList();
             var entityId = this.NoteOptions?.EntityId;
 
             ShowMoreOption = false;
-            if ( viewableNoteTypes != null && viewableNoteTypes.Any() && entityId.HasValue )
+            if ( configuredNoteTypes != null && configuredNoteTypes.Any() && entityId.HasValue )
             {
-                var viewableNoteTypeIds = viewableNoteTypes.Select( t => t.Id ).ToList();
+                var configuredNoteTypeIds = configuredNoteTypes.Select( t => t.Id ).ToList();
 
                 // only show Viewable Note Types for this Entity and only show the Root Notes (the NoteControl will take care of child notes)
-                var qry = new NoteService( rockContext ).Queryable().Include( a => a.ChildNotes ).Include( a => a.CreatedByPersonAlias.Person )
+                var qry = new NoteService( rockContext ).Queryable()
+                    .Include( a => a.ChildNotes )
+                    .Include( a => a.CreatedByPersonAlias.Person )
                     .Where( n =>
-                        viewableNoteTypeIds.Contains( n.NoteTypeId )
+                        configuredNoteTypeIds.Contains( n.NoteTypeId )
                         && n.EntityId == entityId.Value
                         && n.ParentNoteId == null );
 
@@ -1034,10 +1036,18 @@ namespace Rock.Web.UI.Controls
 
                 var noteList = qry.ToList();
 
-                NoteCount = noteList.Count();
-
+                /*
+                 * 3-DEC-2021 DMV
+                 * 
+                 * Moved the viewable note types here because granting
+                 * an individual rights to view an specific note gets lost
+                 * if the viewable types are in the query above.
+                 * 
+                 */
                 // only get notes they have auth to VIEW
                 var viewableNoteList = noteList.Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
+
+                NoteCount = viewableNoteList.Count();
 
                 return viewableNoteList;
             }

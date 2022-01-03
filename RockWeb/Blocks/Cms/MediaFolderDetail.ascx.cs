@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Edit details of a Media Folder" )]
 
-    public partial class MediaFolderDetail : RockBlock, IDetailBlock
+    public partial class MediaFolderDetail : RockBlock
     {
         #region PageParameterKeys
 

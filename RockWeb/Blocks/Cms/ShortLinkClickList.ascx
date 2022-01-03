@@ -20,7 +20,7 @@
                             <Rock:PersonField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="InteractionSession.DeviceType.ClientType" HeaderText="Client Type" SortExpression="InteractionSession.DeviceType.ClientType" />
                             <Rock:RockBoundField DataField="InteractionSession.DeviceType.OperatingSystem" HeaderText="Operating System" SortExpression="InteractionSession.DeviceType.OperatingSystem" />
-                            <Rock:RockBoundField DataField="InteractionSession.DeviceType.Application" HeaderText="Browswer" SortExpression="InteractionSession.DeviceType.Application" />
+                            <Rock:RockBoundField DataField="InteractionSession.DeviceType.Application" HeaderText="Browser" SortExpression="InteractionSession.DeviceType.Application" />
                         </Columns>
                     </Rock:Grid>
                 </div>

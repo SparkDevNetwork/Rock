@@ -69,9 +69,7 @@ namespace Rock.Tests.Shared
         public static class TestPeople
         {
             public static string TedDecker = "8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4";
-
             public static string BillMarble = "1EA811BB-3118-42D1-B020-32A82BC8081A";
-
             public static string AlishaMarble = "69DC0FDC-B451-4303-BD91-EF17C0015D23";
 
             public static string SarahSimmons = "FC6B9819-EF2E-44C9-93DB-05571B39E58F";
@@ -82,6 +80,8 @@ namespace Rock.Tests.Shared
 
             public static string MariahJackson = "9C2A020B-CF34-403E-A948-3E91FDFB958B";
             public static string MaddieLowe = "C398A8E3-C9BC-4017-A3F6-7C2BFF654056";
+
+            public static string SamHanks = "1E6E66C7-A487-48E6-B064-7F9F4DDE6680";
         }
 
         public static class PrayerRequestGuid

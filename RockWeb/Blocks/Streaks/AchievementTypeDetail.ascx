@@ -32,18 +32,14 @@
                 <asp:CustomValidator ID="cvCustomValidator" runat="server" Display="None" />
 
                 <div id="pnlViewDetails" runat="server">
-                    <div class="row margin-b-lg">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lDescription" runat="server" />
-                        </div>
-                    </div>
+                    <p class="description"><asp:Literal ID="lDescription" runat="server" /></p>
 
                     <div id="pnlActivitySummary" runat="server" class="row">
                         <div class="col-sm-6">
                             <h5>Successful Attempts</h5>
                         </div>
                         <div class="col-sm-6">
-                            <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click">
+                            <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-square pull-right" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click">
                                 <i class="fa fa-refresh"></i>
                             </asp:LinkButton>
                             <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" CssClass="pull-right" runat="server" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"

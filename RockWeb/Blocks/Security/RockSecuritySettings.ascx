@@ -10,10 +10,49 @@
                     Security Settings</h1>
             </div>
             <div class="panel-body">
-                <h3>Rock Security Settings</h3>
+                <h3 class="mt-0">Rock Security Settings</h3>
                 <p>
                     The settings below allow you to adjust how security in Rock is configured in your instance. Be sure that you fully understand each setting to ensure proper configuration.
                 </p>
+                <hr />
+                <label for="" class="control-label m-0">Account Protection Profile Levels</label>
+                <div class="mb-3">Below is a listing of the criteria for the account protection profile levels.</div>
+                <div class="row d-flex flex-wrap">
+                    <div class="col-xs-6 col-md-3">
+                        <div class="well-message well-message-info text-left h-100 border border-info p-3">
+                            <h4 class="mt-0">Low</h4>
+                            <ul>
+                                <li>No risk items</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        <div class="well-message well-message-warning text-left h-100 border border-warning p-3">
+                            <h4 class="mt-0">Medium</h4>
+                            <ul>
+                                <li>Has login account</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        <div class="well-message well-message-critical text-left h-100 border border-critical p-3">
+                            <h4 class="mt-0">High</h4>
+                            <ul>
+                                <li>Active Scheduled Financial Transaction</li>
+                                <li>Saved Payment Account</li>
+                                <li>In a Security Role Marked w/ High Elevated Security </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-3">
+                        <div class="well-message well-message-danger text-left h-100 border border-danger p-3">
+                            <h4 class="mt-0">Extreme</h4>
+                            <ul>
+                                <li>In a Security Role Marked w/ Extreme Elevated Security </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 <hr />
                 <Rock:NotificationBox
                     runat="server"

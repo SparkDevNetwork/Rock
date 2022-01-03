@@ -136,6 +136,23 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts a <see cref="IEnumerable{T}"/> of <see cref="string"/> values into
+        /// their enumeration type. Only returns values that can be converted
+        /// to <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The enumeration type to be converted to.</typeparam>
+        /// <param name="items">The items to be converted.</param>
+        /// <returns>A list of <typeparamref name="T"/> enumeration values.</returns>
+        public static List<T> AsEnumList<T>( this IEnumerable<string> items )
+            where T : struct
+        {
+            return items.Select( a => a.ConvertToEnumOrNull<T>() )
+                .Where( a => a.HasValue )
+                .Select( a => a.Value )
+                .ToList();
+        }
+
+        /// <summary>
         /// Joins a dictionary of items.
         /// </summary>
         /// <param name="items">The items.</param>

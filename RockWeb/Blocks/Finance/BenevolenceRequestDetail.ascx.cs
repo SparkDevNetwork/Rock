@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -89,6 +89,7 @@ namespace RockWeb.Blocks.Finance
                     _mocBenevolenceResult = new BenevolenceResult();
                     _mocBenevolenceResult.LoadAttributes();
                 }
+
                 return _mocBenevolenceResult;
             }
         }
@@ -216,7 +217,6 @@ namespace RockWeb.Blocks.Finance
             AddDynamicColumns();
         }
 
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -238,18 +238,17 @@ namespace RockWeb.Blocks.Finance
                 {
                     item = new BenevolenceRequest();
                 }
+
                 item.LoadAttributes();
 
                 phAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
-
 
                 Rock.Attribute.Helper.AddEditControls( MockBenevolenceResult, phResultAttributes, false, valResultsSummary.ValidationGroup, 2 );
 
                 confirmExit.Enabled = true;
             }
         }
-
 
         /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
@@ -381,7 +380,9 @@ namespace RockWeb.Blocks.Finance
             {
                 infoGuid = Guid.NewGuid();
             }
+
             var resultInfo = benevolenceResultInfoViewStateList.FirstOrDefault( r => r.TempGuid == infoGuid );
+
             if ( resultInfo != null )
             {
                 resultInfo.Amount = dtbAmount.Value;
@@ -398,8 +399,7 @@ namespace RockWeb.Blocks.Finance
             {
                 BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
 
-                //We need the attributes and values so that we can populate them later
-
+                // We need the attributes and values so that we can populate them later
                 benevolenceResultInfo.Attributes = MockBenevolenceResult.Attributes;
                 benevolenceResultInfo.AttributeValues = MockBenevolenceResult.AttributeValues;
 
@@ -416,7 +416,6 @@ namespace RockWeb.Blocks.Finance
                 Rock.Attribute.Helper.GetEditValues( phResultAttributes, benevolenceResultInfo );
                 benevolenceResultInfoViewStateList.Add( benevolenceResultInfo );
             }
-
 
             BenevolenceResultsState = benevolenceResultInfoViewStateList;
 
@@ -566,12 +565,13 @@ namespace RockWeb.Blocks.Finance
                             document.BenevolenceRequestId = benevolenceRequest.Id;
                             benevolenceRequest.Documents.Add( document );
                         }
+
                         document.BinaryFileId = binaryFileId;
                         document.Order = documentOrder;
                         documentOrder++;
                     }
 
-                    // Make sure updated binary files are not temporarytemporary
+                    // Make sure updated binary files are not temporary
                     foreach ( var binaryFile in binaryFileService.Queryable().Where( f => DocumentsState.Contains( f.Id ) ) )
                     {
                         binaryFile.IsTemporary = false;
@@ -651,13 +651,13 @@ namespace RockWeb.Blocks.Finance
                         dtbFirstName.Text = person.NickName;
                     }
 
-                    //If both FirstName and NickName are blank, let them edit it manually
+                    // If both FirstName and NickName are blank, let them edit it manually
                     dtbFirstName.Enabled = string.IsNullOrWhiteSpace( dtbFirstName.Text );
 
                     dtbLastName.Text = person.LastName;
-                    //If both LastName is blank, let them edit it manually
+
+                    // If both LastName is blank, let them edit it manually
                     dtbLastName.Enabled = string.IsNullOrWhiteSpace( dtbLastName.Text );
-                    ;
 
                     dvpConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     dvpConnectionStatus.Enabled = false;
@@ -765,7 +765,6 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-
         #endregion
 
         #region Methods
@@ -816,6 +815,7 @@ namespace RockWeb.Blocks.Finance
                         benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
                     }
                 }
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -1010,7 +1010,10 @@ namespace RockWeb.Blocks.Finance
             [DataMember]
             public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
-            public Dictionary<string, string> AttributeValueDefaults { get { return null; } }
+            public Dictionary<string, string> AttributeValueDefaults
+            {
+                get { return null; }
+            }
 
             public string GetAttributeValue( string key )
             {
@@ -1050,8 +1053,6 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        #endregion
-
-
+        #endregion BenevolenceResultInfo
     }
 }

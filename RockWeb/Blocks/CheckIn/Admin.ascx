@@ -28,6 +28,10 @@
                 localStorage.CameraDeviceId = cameraDeviceId;
             }
 
+            // Note that if this is running in the IPad App, but is using a Device that is configured as KioskType.Browser
+            // with an HTML5 Camera, the HTML5 cameras won't get listed because of the IPad app's browser permissions.
+            // This is OK because we don't really support using HTML5 Camera in the IPad.
+
             function loadHtml5CameraOptions ($cameraListSelect) {
                 // https://blog.minhazav.dev/HTML5-QR-Code-scanning-launched-v1.0.1/#enumerate-all-available-cameras
                 // This method will trigger user permissions

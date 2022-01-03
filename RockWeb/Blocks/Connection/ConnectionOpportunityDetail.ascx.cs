@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Connection
         Order = 2,
         Key = AttributeKey.ShowEdit )]
     #endregion Block Attributes
-    public partial class ConnectionOpportunityDetail : RockBlock, IDetailBlock
+    public partial class ConnectionOpportunityDetail : RockBlock
     {
         #region Attribute Keys
 

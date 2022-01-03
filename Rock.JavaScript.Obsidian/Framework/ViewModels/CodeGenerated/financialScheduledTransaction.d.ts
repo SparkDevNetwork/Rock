@@ -37,6 +37,7 @@ export type FinancialScheduledTransaction = IEntity & {
     lastStatusUpdateDateTime?: string | null;
     nextPaymentDate?: string | null;
     numberOfPayments?: number | null;
+    previousGatewayScheduleIdsJson?: string | null;
     sourceTypeValueId?: number | null;
     startDate?: string;
     status?: number | null;

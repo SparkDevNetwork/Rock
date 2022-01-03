@@ -110,7 +110,7 @@ namespace Rock.Web.UI.Controls
                     parentCategory = parentCategory.ParentCategory;
                 }
 
-                InitialItemParentIds = parentCategoryIds.AsDelimited( "," );
+                ExpandedCategoryIds = parentCategoryIds.AsDelimited( "," );
                 ItemName = mergeTemplate.Name;
             }
             else

@@ -23,7 +23,7 @@ export enum ValidationField {
     SecurityCode
 }
 
-export default defineComponent( {
+export default defineComponent({
     name: "Dialog",
     components: {
         RockButton
@@ -50,26 +50,26 @@ export default defineComponent( {
     },
     methods: {
         close () {
-            this.$emit( "update:modelValue", false );
+            this.$emit("update:modelValue", false);
         },
         shake () {
-            if ( !this.doShake ) {
+            if (!this.doShake) {
                 this.doShake = true;
-                setTimeout( () => this.doShake = false, 1000 );
+                setTimeout(() => this.doShake = false, 1000);
             }
         },
         centerOnScreen () {
-            this.$nextTick( () => {
+            this.$nextTick(() => {
                 const div = this.$refs[ "modalDiv" ] as HTMLElement | null;
 
-                if ( !div ) {
+                if (!div) {
                     return;
                 }
 
                 const height = div.offsetHeight;
                 const margin = height / 2;
                 div.style.marginTop = `-${margin}px`;
-            } );
+            });
         }
     },
     watch: {
@@ -79,16 +79,16 @@ export default defineComponent( {
                 const body = document.body;
                 const cssClasses = [ "modal-open", "page-overflow" ];
 
-                if ( this.modelValue ) {
-                    for ( const cssClass of cssClasses ) {
-                        body.classList.add( cssClass );
+                if (this.modelValue) {
+                    for (const cssClass of cssClasses) {
+                        body.classList.add(cssClass);
                     }
 
                     this.centerOnScreen();
                 }
                 else {
-                    for ( const cssClass of cssClasses ) {
-                        body.classList.remove( cssClass );
+                    for (const cssClass of cssClasses) {
+                        body.classList.remove(cssClass);
                     }
                 }
             }
@@ -117,4 +117,4 @@ export default defineComponent( {
     </div>
     <div class="modal-backdrop fade in" style="z-index: 1050;"></div>
 </div>`
-} );
+});

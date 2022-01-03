@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Assessments
     [Category( "Assessments" )]
     [Description( "Displays the details of the given Assessment Type for editing." )]
 
-    public partial class AssessmentTypeDetail : RockBlock, IDetailBlock
+    public partial class AssessmentTypeDetail : RockBlock
     {
         #region Page Parameter Keys
 

@@ -20,9 +20,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Tasks;
+using System.Threading.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -150,7 +152,13 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    return gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages );
+                    bool isReactivated = gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages );
+                    if ( isReactivated )
+                    {
+                        Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+                    }
+
+                    return isReactivated;
                 }
             }
 
@@ -181,7 +189,13 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    return gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages );
+                    bool isCanceled = gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages );
+                    if ( isCanceled )
+                    {
+                        Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftInactivated ) );
+                    }
+
+                    return isCanceled;
                 }
             }
 

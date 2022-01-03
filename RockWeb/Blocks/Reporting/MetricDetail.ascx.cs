@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Reporting
         Order = 3 )]
     #endregion Block Attributes
 
-    public partial class MetricDetail : RockBlock, IDetailBlock
+    public partial class MetricDetail : RockBlock
     {
         #region Attribute Keys
 

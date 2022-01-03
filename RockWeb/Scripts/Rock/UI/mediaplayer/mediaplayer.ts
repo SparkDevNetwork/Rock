@@ -149,7 +149,7 @@ namespace Rock.UI {
         RelatedEntityTypeId?: number;
 
         /** The related EntityId for the interaction. */
-        RelatedEntityId?: number
+        RelatedEntityId?: number;
     }
 
     /**
@@ -340,6 +340,9 @@ namespace Rock.UI {
                 // override whatever we set below which isn't what we want.
                 storage: {
                     enabled: false
+                },
+                youtube: {
+                    customControls: false
                 },
                 autoplay: this.options.autoplay,
                 controls: this.options.controls.split(","),
@@ -621,14 +624,20 @@ namespace Rock.UI {
 
             let startPosition = 0;
 
-            for (let i = 0; i < this.watchBits.length; i++) {
-                if (this.watchBits[i] == 0) {
-                    startPosition = i;
+            for (let i = this.watchBits.length - 1; i >= 0; i--) {
+                if (this.watchBits[i] !== 0) {
+                    startPosition = i + 1;
                     break;
                 }
             }
 
-            this.player.currentTime = startPosition;
+            if (startPosition < this.watchBits.length) {
+                this.player.currentTime = startPosition;
+            }
+            else {
+                this.player.currentTime = 0;
+            }
+
             this.writeDebugMessage(`Set starting position at: ${startPosition}`);
             this.writeDebugMessage(`The current starting position is: ${this.player.currentTime}`);
         }

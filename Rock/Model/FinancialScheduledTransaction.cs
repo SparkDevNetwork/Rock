@@ -218,6 +218,24 @@ namespace Rock.Model
         public string GatewayScheduleId { get; set; }
 
         /// <summary>
+        /// The JSON for <see cref="PreviousGatewayScheduleIds"/>
+        /// </summary>
+        /// <value></value>
+        [DataMember]
+        public string PreviousGatewayScheduleIdsJson
+        {
+            get
+            {
+                return PreviousGatewayScheduleIds?.ToJson();
+            }
+
+            set
+            {
+                PreviousGatewayScheduleIds = value.FromJsonOrNull<List<string>>() ?? new List<string>();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the date to remind user to update scheduled transaction.
         /// </summary>
         /// <value>
@@ -372,6 +390,15 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
+
+        /// <summary>
+        /// This will be any previous <see cref="GatewayScheduleId"/> that this <see cref="FinancialScheduledTransaction"/> has had.
+        /// This might be used in a case where a <see cref="Rock.Financial.GatewayComponent" /> may have changed what schedule id it used.
+        /// schedule ids <see cref="FinancialScheduledTransaction"/>
+        /// </summary>
+        /// <value>The previous gateway schedule ids.</value>
+        [NotMapped]
+        public virtual List<string> PreviousGatewayScheduleIds { get; set; } = new List<string>();
 
         #endregion
 

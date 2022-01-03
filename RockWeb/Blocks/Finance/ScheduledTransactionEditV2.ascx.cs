@@ -18,11 +18,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
@@ -897,11 +899,12 @@ mission. We are so grateful for your commitment.</p>
                 }
 
                 rockContext.SaveChanges();
+                Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( financialScheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
             }
             catch ( Exception )
             {
                 // if the GatewayScheduleId was updated, but there was an exception,
-                // make sure we save the  financialScheduledTransaction record with the updated GatewaayScheduleId so we don't orphan it
+                // make sure we save the  financialScheduledTransaction record with the updated GatewayScheduleId so we don't orphan it
                 if ( financialScheduledTransaction.GatewayScheduleId.IsNotNullOrWhiteSpace() && ( originalGatewayScheduleId != financialScheduledTransaction.GatewayScheduleId ) )
                 {
                     rockContext.SaveChanges();

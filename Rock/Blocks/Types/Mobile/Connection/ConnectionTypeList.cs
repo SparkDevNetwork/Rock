@@ -17,13 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 
 using Rock.Attribute;
+using Rock.ClientService.Connection.ConnectionType;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
+using Rock.Model.Connection.ConnectionType.Options;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -127,82 +128,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #region Methods
 
         /// <summary>
-        /// Gets the connection opportunities queryable that will provide the results.
-        /// </summary>
-        /// <param name="filter">The filter to apply to the query.</param>
-        /// <param name="rockContext">The Rock database context.</param>
-        /// <returns>A queryable of <see cref="ConnectionType"/> objects.</returns>
-        /// <exception cref="System.ArgumentNullException">filter</exception>
-        internal static IQueryable<ConnectionType> GetConnectionTypesQuery( GetConnectionTypesFilter filter, RockContext rockContext )
-        {
-            if ( filter == null )
-            {
-                throw new ArgumentNullException( nameof( filter ) );
-            }
-
-            var connectionTypeService = new ConnectionTypeService( rockContext );
-
-            var qry = connectionTypeService.Queryable();
-
-            if ( filter.ConnectorPersonIds != null && filter.ConnectorPersonIds.Any() )
-            {
-                var connectorRequestsQry = new ConnectionRequestService( rockContext ).Queryable()
-                    .Where( r => r.ConnectionState != ConnectionState.Connected
-                        && r.ConnectorPersonAliasId.HasValue
-                        && filter.ConnectorPersonIds.Contains( r.ConnectorPersonAlias.PersonId ) )
-                    .Select( r => r.Id );
-
-                qry = qry.Where( t => t.ConnectionOpportunities.SelectMany( o => o.ConnectionRequests ).Any( r => connectorRequestsQry.Contains( r.Id ) ) );
-            }
-
-            if ( !filter.IncludeInactive )
-            {
-                qry = qry.Where( t => t.IsActive && t.IsActive );
-            }
-
-            return qry;
-        }
-
-        /// <summary>
-        /// Gets the type request counts for the given connection types.
-        /// </summary>
-        /// <param name="connectionTypeIds">The connection type identifiers.</param>
-        /// <param name="currentPerson">The current person to use for count checks.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A dictionary of connection request count objects.</returns>
-        internal static Dictionary<int, ConnectionOpportunityList.ConnectionRequestCountsViewModel> GetConnectionTypeCounts( List<int> connectionTypeIds, Person currentPerson, RockContext rockContext )
-        {
-            var opportunities = new ConnectionOpportunityService( rockContext )
-                .Queryable()
-                .AsNoTracking()
-                .Where( o => connectionTypeIds.Contains( o.ConnectionTypeId ) )
-                .ToList();
-
-            var requestCounts = ConnectionOpportunityList.GetOpportunityRequestCounts( opportunities, currentPerson, rockContext )
-                .Select( c => new
-                {
-                    TypeId = opportunities.Single( o => o.Id == c.Key ).ConnectionTypeId,
-                    Counts = c.Value
-                } )
-                .GroupBy( c => c.TypeId )
-                .ToDictionary( g => g.Key, g => new ConnectionOpportunityList.ConnectionRequestCountsViewModel
-                {
-                    AssignedToYouCount = g.Sum( c => c.Counts.AssignedToYouCount )
-                } );
-
-            // Fill in any missing types with empty counts.
-            foreach ( var typeId in connectionTypeIds )
-            {
-                if ( !requestCounts.ContainsKey( typeId ) )
-                {
-                    requestCounts.Add( typeId, new ConnectionOpportunityList.ConnectionRequestCountsViewModel() );
-                }
-            }
-
-            return requestCounts;
-        }
-
-        /// <summary>
         /// Gets the connection types view model that can be sent to the client.
         /// </summary>
         /// <returns>The <see cref="GetContentViewModel"/> that contains the information about the response.</returns>
@@ -210,39 +135,34 @@ namespace Rock.Blocks.Types.Mobile.Connection
         {
             using ( var rockContext = new RockContext() )
             {
-                var filter = new GetConnectionTypesFilter
+                var connectionTypeService = new ConnectionTypeService( rockContext );
+                var clientTypeService = new ConnectionTypeClientService( rockContext, RequestContext.CurrentPerson );
+                var filterOptions = new ConnectionTypeQueryOptions
                 {
                     IncludeInactive = true
                 };
 
+                // If requesting to only have my connections returned then specify
+                // the current person identifier. If they are not logged in then
+                // use an invalid identifier value so that no matches will be returned.
                 if ( filterViewModel.OnlyMyConnections )
                 {
-                    filter.ConnectorPersonIds = new List<int> { RequestContext.CurrentPerson?.Id ?? 0 };
+                    filterOptions.ConnectorPersonIds = new List<int> { RequestContext.CurrentPerson?.Id ?? 0 };
                 }
 
-                var qry = GetConnectionTypesQuery( filter, rockContext );
-
-                // Make a list of any type identifiers that are configured
-                // for request security and the person is assigned as the
-                // connector to any request.
-                var currentPersonId = RequestContext.CurrentPerson?.Id;
-                var selfAssignedSecurityTypes = new ConnectionRequestService( rockContext )
-                    .Queryable()
-                    .Where( r => r.ConnectorPersonAlias.PersonId == currentPersonId
-                        && r.ConnectionOpportunity.ConnectionType.EnableRequestSecurity )
-                    .Select( r => r.ConnectionOpportunity.ConnectionTypeId )
-                    .Distinct()
-                    .ToList();
-
-                // Put all the types in memory so we can check security.
-                var types = qry.ToList()
-                    .Where( o => o.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
-                        || selfAssignedSecurityTypes.Contains( o.Id ) )
-                    .ToList();
+                // Get the connection types.
+                var qry = connectionTypeService.GetConnectionTypesQuery( filterOptions );
+                var types = connectionTypeService.GetViewAuthorizedConnectionTypes( qry, RequestContext.CurrentPerson );
 
                 // Get the various counts to make available to the Lava template.
+                // The conversion of the value to a dictionary is a temporary work-around
+                // until we have a way to mark external types as lava safe.
                 var connectionTypeIds = types.Select( t => t.Id ).ToList();
-                var requestCounts = GetConnectionTypeCounts( connectionTypeIds, RequestContext.CurrentPerson, rockContext );
+                var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds )
+                    .ToDictionary( k => k.Key, k => k.Value
+                        .GetType()
+                        .GetProperties( BindingFlags.Instance | BindingFlags.Public )
+                        .ToDictionary( prop => prop.Name, prop => prop.GetValue( k.Value, null ) ) );
 
                 // Process the connection opportunities with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();
@@ -283,32 +203,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #endregion
 
         #region Support Classes
-
-        /// <summary>
-        /// The filtering options when getting connection types.
-        /// </summary>
-        internal class GetConnectionTypesFilter
-        {
-            /// <summary>
-            /// Gets or sets a value indicating whether inactive types
-            /// should be included.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if inactive types are included; otherwise, <c>false</c>.
-            /// </value>
-            public bool IncludeInactive { get; set; }
-
-            /// <summary>
-            /// Gets or sets the connector person identifiers to limit the
-            /// results to. If an type does not have a non-connected
-            /// request that is assigned to one of these identifiers it will
-            /// not be included.
-            /// </summary>
-            /// <value>
-            /// The connector person identifiers.
-            /// </value>
-            public List<int> ConnectorPersonIds { get; set; }
-        }
 
         /// <summary>
         /// The view model that defines the filtering options when getting types.

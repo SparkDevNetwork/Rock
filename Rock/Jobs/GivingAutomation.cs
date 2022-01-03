@@ -142,8 +142,9 @@ namespace Rock.Jobs
             // Load the alert types once since they will be needed for each giving id
             HydrateAlertTypes( context );
 
-            // we only want to update classifications on people that have had new transactions since they last time they were classified
+            // We only want to update classifications on people that have had new transactions since they last time they were classified
             DateTime? lastClassificationRunDateTime = GetLastClassificationsRunDateTime();
+
             var classificationStartDateTime = RockDateTime.Now;
 
             var classificationsDaysToRun = settings.GivingClassificationSettings.RunDays ?? DayOfWeekFlag.All.AsDayOfWeekList().ToArray();
@@ -167,10 +168,18 @@ namespace Rock.Jobs
             jobContext.UpdateLastStatusMessage( $"Processing classifications and alerts for {totalCount} Giving Units..." );
 
             DateTime lastGivingClassificationProgressUpdate = DateTime.MinValue;
+            var parallelOptions = new ParallelOptions
+            {
+                // Set MaxDegreeOfParallelism to 1 to make it easier to debug. 
+                // Otherwise set it to half of Processor Count. Seems to be a sweet spot on best performance without overwhelming the machine and slowing down IIS.
+                MaxDegreeOfParallelism = Environment.ProcessorCount > 4
+                    ? Environment.ProcessorCount / 2
+                    : 1
+            };
 
             Parallel.ForEach(
                 context.GivingIdsToClassify,
-                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                parallelOptions,
                 givingId =>
                 {
                     var perStopWatch = new Stopwatch();
@@ -182,19 +191,32 @@ namespace Rock.Jobs
 
                     ProcessGivingIdClassificationsAndAlerts( givingId, context );
 
+                    perStopWatch.Stop();
+
                     if ( _debugModeEnabled )
                     {
-                        perStopWatch.Stop();
                         elapsedTimesMs.Add( perStopWatch.ElapsedMilliseconds );
-                        progressCount++;
-                        if ( ( RockDateTime.Now - lastGivingClassificationProgressUpdate ).TotalSeconds >= 3 )
-                        {
-                            var ms = perStopWatch.ElapsedMilliseconds.ToString( "G" );
+                    }
 
-                            WriteToDebugOutput( $"Progress: {progressCount}/{totalCount}, progressCount/minute:{progressCount / totalStopWatch.Elapsed.TotalMinutes}" );
-                            perStopWatch.Reset();
-                            lastGivingClassificationProgressUpdate = RockDateTime.Now;
+                    progressCount++;
+                    if ( ( RockDateTime.Now - lastGivingClassificationProgressUpdate ).TotalSeconds >= 3 )
+                    {
+                        var ms = perStopWatch.ElapsedMilliseconds.ToString( "G" );
+
+                        WriteToDebugOutput( $"Progress: {progressCount}/{totalCount}, progressCount/minute:{progressCount / totalStopWatch.Elapsed.TotalMinutes}" );
+
+                        try
+                        {
+                            jobContext.UpdateLastStatusMessage( $"Processing Giving Classifications and Alerts: {progressCount}/{totalCount}" );
                         }
+                        catch ( Exception ex )
+                        {
+                            // ignore, but write to debug output
+                            Debug.WriteLine( $"Error updating LastStatusMessage for ProcessGivingIdClassificationsAndAlerts loop: {ex}" );
+                        }
+
+                        perStopWatch.Reset();
+                        lastGivingClassificationProgressUpdate = RockDateTime.Now;
                     }
                 } );
 
@@ -211,10 +233,10 @@ namespace Rock.Jobs
                 WriteToDebugOutput( $"Finished {elapsedTimesMs.Count} giving ids in average of {elapsedTimesMs.Average()}ms per giving unit and total {ms}ms" );
             }
 
-            jobContext.UpdateLastStatusMessage( "Processing Alerts..." );
+            jobContext.UpdateLastStatusMessage( "Processing Late Alerts..." );
 
             // Create alerts for "late" gifts
-            ProcessLateAlerts( context );
+            ProcessLateAlertTypes( context );
 
             // Process the Giving Journeys
             var givingJourneyHelper = new GivingJourneyHelper
@@ -288,13 +310,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         #region Settings and Attribute Helpers
 
         /// <summary>
-        /// Creates the person identifier query for DataView.
+        /// Creates the person query for DataView.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="alertType">Type of the alert.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static IQueryable<int> CreatePersonIdQueryForDataView( RockContext rockContext, FinancialTransactionAlertType alertType, GivingAutomationContext context )
+        private static IQueryable<Person> CreatePersonQueryForDataView( RockContext rockContext, FinancialTransactionAlertType alertType, GivingAutomationContext context )
         {
             if ( alertType.DataViewId is null )
             {
@@ -316,10 +338,10 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 DbContext = rockContext
             };
 
-            IQueryable<IEntity> dataviewQuery;
+            IQueryable<Person> dataviewQuery;
             try
             {
-                dataviewQuery = dataview.GetQuery( dataViewGetQueryArgs );
+                dataviewQuery = dataview.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
             }
             catch ( Exception ex )
             {
@@ -334,9 +356,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return null;
             }
 
-            // This query contains person ids in the dataview
-            var personIdQuery = dataviewQuery.AsNoTracking().Select( e => e.Id );
-            return personIdQuery;
+            return dataviewQuery;
         }
 
         /// <summary>
@@ -394,19 +414,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             return unitValue;
-        }
-
-        /// <summary>
-        /// Sets the giving unit attribute value.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="people">The people.</param>
-        /// <param name="guidString">The unique identifier string.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private static void SetGivingUnitAttributeValue( GivingAutomationContext context, List<Person> people, string guidString, double? value, RockContext rockContext = null )
-        {
-            SetGivingUnitAttributeValue( context, people, guidString, value.ToStringSafe(), rockContext );
         }
 
         /// <summary>
@@ -607,18 +614,26 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         }
 
         /// <summary>
-        /// Splits Interquartile Ranges.
-        /// Ex: 1,2,3,4,5,6 => (1,2), (3,4), (5,6)
+        /// Splits the total amount of each transactions into Interquartile Ranges.
+        /// Ex: 1,2,3,4,5,6,7,8,9,10 =&gt; (1,2,3,4), (5,6), (7,8,9,10)
+        /// Ex: 1,2,3,4,5,6,7,8,9,10,11 =&gt; (1,2,3,4, 5), (6), (7,8,9,10, 11)
         /// </summary>
-        /// <param name="orderedValues"></param>
-        /// <returns></returns>
-        internal static Tuple<List<decimal>, List<decimal>, List<decimal>> SplitQuartileRanges( List<decimal> orderedValues )
+        /// <param name="transactionAmounts">The transaction amounts.</param>
+        /// <returns>QuartileRanges.</returns>
+        internal static QuartileRanges GetQuartileRanges( IEnumerable<decimal> transactionAmounts )
         {
+            var orderedValues = transactionAmounts.OrderBy( a => a ).ToList();
+
             var count = orderedValues.Count;
 
             if ( count <= 2 )
             {
-                return Tuple.Create( new List<decimal>(), orderedValues, new List<decimal>() );
+                return new QuartileRanges
+                {
+                    Q1MedianRange = new List<decimal>(),
+                    Q2MedianRange = orderedValues,
+                    Q3MedianRange = new List<decimal>(),
+                };
             }
 
             var lastMidIndex = count / 2;
@@ -632,46 +647,100 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             var q1 = orderedValues.GetRange( 0, firstMidIndex );
             var q3 = orderedValues.GetRange( lastMidIndex + 1, count - lastMidIndex - 1 );
 
-            return Tuple.Create( q1, medianValues, q3 );
-        }
-
-        /// <summary>
-        /// Gets the median range.
-        /// Ex: 1,2,3,4,5,6 => 3,4
-        /// </summary>
-        /// <param name="orderedValues">The ordered values.</param>
-        /// <returns></returns>
-        private static List<decimal> GetMedianRange( List<decimal> orderedValues )
-        {
-            var ranges = SplitQuartileRanges( orderedValues );
-            return ranges.Item2;
-        }
-
-        /// <summary>
-        /// Gets the median.
-        /// Ex: 1,2,3,4,5,6 => 3.5
-        /// </summary>
-        /// <param name="orderedValues">The ordered values.</param>
-        /// <returns></returns>
-        private static decimal GetMedian( List<decimal> orderedValues )
-        {
-            if ( orderedValues.Count == 0 )
+            return new QuartileRanges
             {
-                return 0;
-            }
-
-            var medianRange = GetMedianRange( orderedValues );
-            return medianRange.Average();
+                Q1MedianRange = q1,
+                Q2MedianRange = medianValues,
+                Q3MedianRange = q3,
+            };
         }
 
         /// <summary>
-        /// Gets the amount IQR count.
+        /// A List of Giving Amounts broken into 3 Quartiles. See https://en.wikipedia.org/wiki/Interquartile_range
+        /// These are sorted from smallest amount to largest amount.
+        /// <para>
+        /// Examples
+        /// <list type="bullet">
+        /// <item>1,2,3,4,5,6,7,8,9,10 => (1,2,3,4), (5,6), (7,8,9,10)</item>
+        /// <item>1,2,3,4,5,6,7,8,9,10,11 => (1,2,3,4, 5), (6), (7,8,9,10,11)</item>
+        /// </list>
+        /// </para>
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="people">The people.</param>
+        internal class QuartileRanges
+        {
+            /// <summary>
+            /// Gets or sets the Q1 median range.
+            /// This is The list of amounts (in order) that are Less than the Median amount all all amounts.
+            /// </summary>
+            /// <value>The q1 median range.</value>
+            public List<decimal> Q1MedianRange { get; set; }
+
+            /// <summary>
+            /// Gets the q1 median amount.
+            /// </summary>
+            /// <value>The q1 median amount.</value>
+            public decimal Q1MedianAmount => GetQuartileRanges( Q1MedianRange ).MedianAmount;
+
+            /// <summary>
+            /// Gets or sets the Q2 median range.
+            /// This the middle of all amounts. This would either be 1 or 2 amounts depending on if there are an odd or event number of amounts;
+            /// </summary>
+            /// <value>The q2 median range.</value>
+            public List<decimal> Q2MedianRange { get; set; }
+
+            /// <summary>
+            /// Gets the median amount.
+            /// </summary>
+            /// <value>The median amount.</value>
+            public decimal MedianAmount => Q2MedianAmount;
+
+            /// <summary>
+            /// Gets the q2 median amount (this is what is stored in PERSON_GIVING_AMOUNT_MEDIAN )
+            /// Q2MedianRange is either 1 or 2 values, so we use Average just in case there are 2 to get the 'Median'
+            /// </summary>
+            /// <value>The q2 median amount.</value>
+            public decimal Q2MedianAmount => Q2MedianRange.Any() ? Q2MedianRange.Average() : 0.00M;
+
+            /// <summary>
+            /// Gets or sets the Q3 median range.
+            /// The List of amounts (in order) that are greater than the Median amount all all amounts
+            /// </summary>
+            /// <value>The q3 median rangle.</value>
+            public List<decimal> Q3MedianRange { get; set; }
+
+            /// <summary>
+            /// Gets the q3 median amount.
+            /// </summary>
+            /// <value>The q3 median amount.</value>
+            public decimal Q3MedianAmount => GetQuartileRanges( Q3MedianRange ).MedianAmount;
+
+            /// <summary>
+            /// IQR Amount is the difference between <see cref="Q3MedianAmount"/> and <seealso cref="Q1MedianAmount"/>
+            /// </summary>
+            /// <value><see cref="Q3MedianAmount"/> minus <seealso cref="Q1MedianAmount"/></value>
+            public decimal IQRAmount => Q3MedianAmount - Q1MedianAmount;
+        }
+
+        /// <summary>
+        /// Gets the amount IQR count (Measure of how much of an outlier the amount is).
+        /// IQR is kind of similar to Std Dev, but excludes outliers.
+        /// https://www.statology.org/interquartile-range-vs-standard-deviation/
+        /// This would be how much the specified amount compares with the normal deviation.
+        /// <para>Positive values indicate a larger amount than usual.</para>
+        /// <para>
+        /// Example:
+        /// </para>
+        /// For example, if they give between $400 and $600 (Average: $500). The normal deviation is  +/-$100.
+        /// <br />
+        /// If the specified amount is $1250, that is $750 more than the average.
+        /// That is $750 is 7.5x bigger than than their normal deviation (-/+ 100).
+        /// <br />
+        /// Therefore, IQR Count would be 7.5.
+        /// </summary>
+        /// <param name="quartileRanges">The quartile ranges.</param>
         /// <param name="amount">The amount.</param>
-        /// <returns></returns>
-        internal static decimal GetAmountIqrCount( GivingAutomationContext context, List<Person> people, decimal amount )
+        /// <returns>System.Decimal.</returns>
+        internal static decimal GetAmountIqrCount( QuartileRanges quartileRanges, decimal amount )
         {
             // For the purpose of having a high number that is reasonable and also does not overflow any c# type, I am choosing
             // a constant to represent infinity other than max value of any particular type
@@ -679,8 +748,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             var negativeInfinity = 0 - infinity;
 
             // Check the number of IQRs that the amount varies
-            var medianGiftAmount = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN ).AsDecimal();
-            var amountIqr = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR ).AsDecimal();
+            var medianGiftAmount = quartileRanges.MedianAmount;
+            var amountIqr = quartileRanges.IQRAmount;
             var amountDeviation = amount - medianGiftAmount;
             decimal numberOfAmountIqrs;
 
@@ -698,10 +767,30 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 // number of IQRs since the formula is dividing by zero. Since we don't want alerts for scenarios like an increase of $1, we use
                 // a fallback formula for IQR.
                 // Use 15% of the median amount or $100 if the median amount is somehow $0.
+                // Examples
+                //
+                // Exactly $20 every time
+                //   - IQR = $3 (15%)
+                //   - Sensitivity 3
+                //   - Minimum Difference from Mean $9  (3 * 3)
+                //   - Larger than usual would be $29 or more
+                //
+                // Exactly $100 every time
+                //   - IQR = $15 (15%)
+                //   - Sensitivity 3
+                //   - Minimum Difference from Mean $45  (3 * 15)
+                //   - Larger than usual would be $145 or more
+                //
+                // Exactly $500 every time
+                //   - IQR = $75 (15% * $500)
+                //   - Sensitivity 3
+                //   - Minimum Difference from Mean $225  (3 * 75)
+                //   - Larger than usual would be $725 or more
                 amountIqr = 0.15m * medianGiftAmount;
 
                 if ( amountIqr == 0 )
                 {
+                    // Shouldn't happen. They somehow have given $0.00 every time, multiple times. Also, we only query for amount > $0.00, so it really should not happen.
                     amountIqr = 100m;
                 }
 
@@ -723,21 +812,59 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
         /// <summary>
         /// Gets the frequency deviation count.
+        /// <para>Positive values indicate <i>earlier</i> than usual.</para>
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="people">The people.</param>
+        /// <param name="frequencyStdDev">The frequency standard dev.</param>
+        /// <param name="frequencyMean">The frequency mean.</param>
         /// <param name="daysSinceLastTransaction">The days since last transaction.</param>
-        /// <returns></returns>
-        internal static decimal GetFrequencyDeviationCount( GivingAutomationContext context, List<Person> people, double daysSinceLastTransaction )
+        /// <returns>System.Decimal.</returns>
+        internal static decimal GetFrequencyDeviationCount( decimal frequencyStdDev, decimal frequencyMean, decimal daysSinceLastTransaction )
         {
             // For the purpose of having a high number that is reasonable and also does not overflow any c# type, I am choosing
             // a constant to represent infinity other than max value of any particular type
             const int FrequencyStdDevsInfinity = 1000;
             const int FrequencyStdDevsNegativeInfinity = 0 - FrequencyStdDevsInfinity;
 
-            var frequencyStdDev = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimal();
-            var frequencyMean = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimal();
-            var frequencyDeviation = frequencyMean - Convert.ToDecimal( daysSinceLastTransaction );
+            var frequencyDeviation = frequencyMean - daysSinceLastTransaction;
+
+            /* Example
+             Example: Family gives every 30 days, but skipped a month once, and gave early once
+
+             Days since previous:
+             29
+             30  
+             31
+             30
+             
+             60 (they must have skipped a month)
+             28
+             30
+             31
+             28
+             14
+             stddev: 10.75
+
+             Lets say it has been 45 days after than last gift ( around 15 days later than usual )
+
+             frequencyStdDev = 10.75
+               frequencyMean = 30
+             - daysSince = 45
+             = frequencyDeviation = 15  "15 days later than usual"
+             numberOfFrequencyStdDevs =  1.39  ( 15 / 10.75 )
+
+            They are only 1.39x late, so 15 days late isn't really that concerning. Don't need a 'late alert' quite yet.
+
+            But lets say it has been over 65 days (35 days late).
+            frequencyStdDev = 10.75
+               frequencyMean = 30
+             - daysSince = 65 (95 since they late gave)
+             = frequencyDeviation = 35  "45 days later than usual"
+             numberOfFrequencyStdDevs =  4.18  ( 45 / 10.75 )
+
+            Now they are 4.18x late, so 45 days late might be worth a 'late alert'.
+            
+            */
+
             decimal numberOfFrequencyStdDevs;
 
             if ( frequencyDeviation == 0 )
@@ -753,12 +880,17 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 // If the frequency std dev is less than 1, then this giving group gives the same interval and even a 1.1 day change would be a large
                 // number of std devs since the formula is dividing by zero. Since we don't want alerts for scenarios like being 1 day early, we use
                 // a fallback formula for std dev.
-                // Use 15% of the mean or 3 days if the mean is still 0.
-                frequencyStdDev = 0.15m * frequencyMean;
+                // For example:
+                // Frequency mean: 3 days (consistently twice a week!): std Dev : 0.45 days! ( 0.15 * 3 ) 
+                // Frequency mean: 7 day (once a week). Std Dev = 1.05 days ( 0.15 * 7 )
+                // Frequency mean: 14 days (consistently every 2 weeks): std Dev : 2.1 days ( 0.15 * 14 )
+                // Frequency mean: ~30 days (consistently every month): std Dev : 4.5 days ( 0.15 * 30 )
+                frequencyStdDev = 0.15M * frequencyMean;
 
-                if ( frequencyStdDev < 1 )
+                if ( frequencyStdDev < 3 )
                 {
-                    frequencyStdDev = 3m;
+
+                    frequencyStdDev = 3;
                 }
 
                 numberOfFrequencyStdDevs = frequencyDeviation / frequencyStdDev;
@@ -778,14 +910,15 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         }
 
         /// <summary>
-        /// Are follow-up alerts allowed given the recent alerts.
+        /// Are follow-up alerts allowed given the recent alerts based on 
+        /// <see cref="GivingAlertingSettings.FollowupRepeatPreventionDurationDays"/> and <see cref="GivingAlertingSettings.GlobalRepeatPreventionDurationDays"/>
         /// </summary>
         /// <param name="recentAlerts">The recent alerts.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
         private static bool AllowFollowUpAlerts( List<AlertView> recentAlerts, GivingAutomationContext context )
         {
-            if ( !recentAlerts.Any() )
+            if ( recentAlerts == null || !recentAlerts.Any() )
             {
                 return true;
             }
@@ -802,16 +935,19 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 }
             }
 
-            var lastFollowUpAlertDate = recentAlerts.LastOrDefault( a => a.AlertType == AlertType.FollowUp )?.AlertDateTime;
-
-            if ( FollowUpRepeatPreventionDays.HasValue && lastFollowUpAlertDate.HasValue )
+            var lastFollowUpAlerts = recentAlerts.Where( a => a.AlertType == AlertType.FollowUp );
+            if ( lastFollowUpAlerts?.Any() == true )
             {
-                var daysSinceLastFollowUpAlert = ( context.Now - lastFollowUpAlertDate.Value ).TotalDays;
-
-                if ( daysSinceLastFollowUpAlert <= FollowUpRepeatPreventionDays.Value )
+                var lastFollowUpAlertDate = lastFollowUpAlerts.Max( x => ( DateTime? ) x.AlertDateTime );
+                if ( FollowUpRepeatPreventionDays.HasValue && lastFollowUpAlertDate.HasValue )
                 {
-                    // This group has follow-up alerts within the repeat duration. Don't create any new follow-up alerts.
-                    return false;
+                    var daysSinceLastFollowUpAlert = ( context.Now - lastFollowUpAlertDate.Value ).TotalDays;
+
+                    if ( daysSinceLastFollowUpAlert <= FollowUpRepeatPreventionDays.Value )
+                    {
+                        // This group has follow-up alerts within the repeat duration. Don't create any new follow-up alerts.
+                        return false;
+                    }
                 }
             }
 
@@ -819,7 +955,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         }
 
         /// <summary>
-        /// Are gratitude alerts allowed given the recent alerts.
+        /// Are gratitude alerts allowed given the recent alerts based on 
+        /// <see cref="GivingAlertingSettings.GratitudeRepeatPreventionDurationDays"/> and <see cref="GivingAlertingSettings.GlobalRepeatPreventionDurationDays"/>
         /// </summary>
         /// <param name="recentAlerts">The recent alerts.</param>
         /// <param name="context">The context.</param>
@@ -843,16 +980,20 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 }
             }
 
-            var lastGratitudeAlertDate = recentAlerts.LastOrDefault( a => a.AlertType == AlertType.Gratitude )?.AlertDateTime;
+            var lastGratitudeAlerts = recentAlerts.Where( a => a.AlertType == AlertType.Gratitude );
 
-            if ( GratitudeRepeatPreventionDays.HasValue && lastGratitudeAlertDate.HasValue )
+            if ( lastGratitudeAlerts?.Any() == true )
             {
-                var daysSinceLastGratitudeAlert = ( context.Now - lastGratitudeAlertDate.Value ).TotalDays;
-
-                if ( daysSinceLastGratitudeAlert <= GratitudeRepeatPreventionDays.Value )
+                var lastGratitudeAlertDate = lastGratitudeAlerts.Max( a => ( DateTime? ) a.AlertDateTime );
+                if ( GratitudeRepeatPreventionDays.HasValue && lastGratitudeAlertDate.HasValue )
                 {
-                    // This group has gratitude alerts within the repeat duration. Don't create any new gratitude alerts.
-                    return false;
+                    var daysSinceLastGratitudeAlert = ( context.Now - lastGratitudeAlertDate.Value ).TotalDays;
+
+                    if ( daysSinceLastGratitudeAlert <= GratitudeRepeatPreventionDays.Value )
+                    {
+                        // This group has gratitude alerts within the repeat duration. Don't create any new gratitude alerts.
+                        return false;
+                    }
                 }
             }
 
@@ -876,6 +1017,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 // Get the alert types
                 var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
                 var alertTypes = alertTypeService.Queryable()
+                    .Include( a => a.FinancialAccount.ChildAccounts )
                     .AsNoTracking()
                     .OrderBy( at => at.Order )
                     .ToList();
@@ -1008,6 +1150,40 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             {
                 rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
 
+                // Get the gifts from the past 12 months for the giving group
+                var financialTransactionService = new FinancialTransactionService( rockContext );
+
+                // Classifications for: % Scheduled, Gives As ___, Preferred Source, Preferred Currency will be based
+                // off of all giving in the last 12 months.In the case of a tie in values( e.g. 50% credit card, 50%
+                // cash ) use the most recent value as the tie breaker. This could be calculated with only one gift.
+                var oneYearAgo = context.Now.AddMonths( -12 );
+                var twelveMonthsTransactionsQry = financialTransactionService
+                        .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                        .Where( t => t.TransactionDateTime >= oneYearAgo );
+
+                var twelveMonthsTransactions = twelveMonthsTransactionsQry
+                    .Select( t => new TransactionView
+                    {
+                        Id = t.Id,
+                        AuthorizedPersonAliasId = t.AuthorizedPersonAliasId.Value,
+                        AuthorizedPersonCampusId = t.AuthorizedPersonAlias.Person.PrimaryCampusId,
+                        AuthorizedPersonGivingId = givingId,
+                        TransactionDateTime = t.TransactionDateTime.Value,
+                        TransactionViewDetails = t.TransactionDetails.Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
+                        CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
+                        SourceTypeValueId = t.SourceTypeValueId,
+                        IsScheduled = t.ScheduledTransactionId.HasValue
+                    } )
+                    .ToList()
+                    .OrderBy( t => t.TransactionDateTime )
+                    .ToList();
+
+                // If there are no transactions, then there is no basis to classify or alert
+                if ( !twelveMonthsTransactions.Any() )
+                {
+                    return;
+                }
+
                 // Load the people that are in this giving group so their attribute values can be set
                 var personService = new PersonService( rockContext );
 
@@ -1035,52 +1211,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                 people.LoadAttributes( rockContext );
 
-                // Get the gifts from the past 12 months for the giving group
-                var financialTransactionService = new FinancialTransactionService( rockContext );
-
-                // Classifications for: % Scheduled, Gives As ___, Preferred Source, Preferred Currency will be based
-                // off of all giving in the last 12 months.In the case of a tie in values( e.g. 50% credit card, 50%
-                // cash ) use the most recent value as the tie breaker. This could be calculated with only one gift.
-                var oneYearAgo = context.Now.AddMonths( -12 );
-                var twelveMonthsTransactionsQry = financialTransactionService
-                        .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
-                        .Where( t => t.TransactionDateTime >= oneYearAgo );
-
-                var twelveMonthsTransactions = twelveMonthsTransactionsQry
-                    .Select( t => new TransactionView
-                    {
-                        Id = t.Id,
-                        AuthorizedPersonAliasId = t.AuthorizedPersonAliasId.Value,
-                        TransactionDateTime = t.TransactionDateTime.Value,
-                        TotalAmount = t.TransactionDetails.Sum( d => d.Amount ),
-                        CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
-                        SourceTypeValueId = t.SourceTypeValueId,
-                        IsScheduled = t.ScheduledTransactionId.HasValue
-                    } )
-                    .ToList()
-                    .OrderBy( t => t.TransactionDateTime )
-                    .ToList();
-
-                // If there are no transactions, then there is no basis to classify or alert
-                if ( !twelveMonthsTransactions.Any() )
-                {
-                    return;
-                }
-
-                // Load the defined value guids into the transaction views from cache rather than using a table join in the SQL above
-                foreach ( var transaction in twelveMonthsTransactions )
-                {
-                    if ( transaction.CurrencyTypeValueId.HasValue )
-                    {
-                        transaction.CurrencyTypeValueGuid = DefinedValueCache.Get( transaction.CurrencyTypeValueId.Value )?.Guid;
-                    }
-
-                    if ( transaction.SourceTypeValueId.HasValue )
-                    {
-                        transaction.SourceTypeValueGuid = DefinedValueCache.Get( transaction.SourceTypeValueId.Value )?.Guid;
-                    }
-                }
-
                 // If the group doesn't have FirstGiftDate attribute, set it by querying for the value
                 var firstGiftDate = GetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_ERA_FIRST_GAVE ).AsDateTime();
                 var updatedFirstGiftDate = false;
@@ -1099,24 +1229,35 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     }
                 }
 
-                // If the first gift date was less than 12 months ago and there are less than 5 gifts, do not process this giving group
-                // because there is not enough data to develop any meaningful insights
-                if ( ( !firstGiftDate.HasValue || firstGiftDate.Value > oneYearAgo ) && twelveMonthsTransactions.Count < 5 )
+                // If the first gift date was less than 12 months ago and there are less than 5 gifts,
+                // do not process the classification for the giving group because there is not
+                // enough data to develop any meaningful insights.
+                bool hasEnoughDataForClassification = !( ( !firstGiftDate.HasValue || firstGiftDate.Value > oneYearAgo ) && twelveMonthsTransactions.Count < context.MinimumTransactionCountForClassifications );
+
+                // Determine if there are alert types that don't have either FrequencySensitivityScale or AmountSensitivityScale defined
+                bool hasAlertsTypesWithoutSensitivity = context.AlertTypes.Any( a => !a.FrequencySensitivityScale.HasValue && !a.AmountSensitivityScale.HasValue );
+
+                if ( hasEnoughDataForClassification == false )
                 {
-                    return;
+                    // We don't have enough data to classify.
+                    // If we also don't have any Alert Types that need transaction history, we can move on to the next GivingID
+                    if ( hasAlertsTypesWithoutSensitivity == false )
+                    {
+                        return;
+                    }
                 }
 
-                // Only run classifications on the days specified by the settings
-                if ( context.IsGivingClassificationRunDay )
+                // We need to know if this giving group has other transactions. If they do then we do not need to
+                // extrapolate because we have the complete 12 month data picture.
+                var mostRecentOldTransactionDateQuery = financialTransactionService
+                        .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                        .Where( t => t.TransactionDateTime < oneYearAgo );
+
+                var mostRecentOldTransactionDate = mostRecentOldTransactionDateQuery.Select( t => t.TransactionDateTime ).Max();
+
+                // Only run classifications on the days specified by the settings, and only if there is enough data to do classification for this GivingId
+                if ( context.IsGivingClassificationRunDay && hasEnoughDataForClassification )
                 {
-                    // We need to know if this giving group has other transactions. If they do then we do not need to
-                    // extrapolate because we have the complete 12 month data picture.
-                    var mostRecentOldTransactionDateQuery = financialTransactionService
-                            .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
-                            .Where( t => t.TransactionDateTime < oneYearAgo );
-
-                    var mostRecentOldTransactionDate = mostRecentOldTransactionDateQuery.Select( t => t.TransactionDateTime ).Max();
-
                     // Update the attributes using the logic function
                     var classificationSuccess = UpdateGivingUnitClassifications( givingId, people, twelveMonthsTransactions, mostRecentOldTransactionDate, context, oneYearAgo );
 
@@ -1159,9 +1300,14 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 var oneWeekAgo = context.Now.AddDays( -7 );
                 var hasBeenClassifiedRecently = lastClassifiedDate >= oneWeekAgo;
 
-                if ( !hasBeenClassifiedRecently )
+                if ( hasBeenClassifiedRecently == false )
                 {
-                    return;
+                    // The person hasn't be classified recently.
+                    // If we also don't have any Alert Types that need transaction history, we can move on to the next GivingID
+                    if ( hasAlertsTypesWithoutSensitivity == false )
+                    {
+                        return;
+                    }
                 }
 
                 // Alerts can be generated for transactions given in the last week. One week was chosen since alert types
@@ -1184,13 +1330,14 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 var givingIdPersonAliasIdQuery = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
                 twelveMonthsAlertsQry = twelveMonthsAlertsQry.Where( t => givingIdPersonAliasIdQuery.Contains( t.PersonAliasId ) );
 
-                var twelveMonthsAlerts = twelveMonthsAlertsQry.Select( a => new AlertView
-                {
-                    AlertDateTime = a.AlertDateTime,
-                    AlertTypeId = a.AlertTypeId,
-                    AlertType = a.FinancialTransactionAlertType.AlertType,
-                    TransactionId = a.TransactionId
-                } )
+                var twelveMonthsAlerts = twelveMonthsAlertsQry
+                    .Select( a => new AlertView
+                    {
+                        AlertDateTime = a.AlertDateTime,
+                        AlertTypeId = a.AlertTypeId,
+                        AlertType = a.FinancialTransactionAlertType.AlertType,
+                        TransactionId = a.TransactionId
+                    } )
                     .OrderBy( a => a.AlertDateTime )
                     .ToList();
 
@@ -1204,21 +1351,36 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 {
                     foreach ( var transaction in transactionsToCheckAlerts )
                     {
-                        var lastTransactionDate = twelveMonthsTransactions
-                            .LastOrDefault( t => t.TransactionDateTime < transaction.TransactionDateTime )
-                            ?.TransactionDateTime;
+                        DateTime? previousTransactionDate;
 
-                        var alertsForTransaction = lastTransactionDate.HasValue ?
-                            CreateAlertsForTransaction(
-                                rockContext,
-                                people,
+                        var previousTransactions = twelveMonthsTransactions.Where( t => t.TransactionDateTime < transaction.TransactionDateTime ).ToList();
+
+                        if ( previousTransactions.Any() )
+                        {
+                            previousTransactionDate = previousTransactions.Max( a => a.TransactionDateTime );
+                        }
+                        else
+                        {
+                            previousTransactionDate = null;
+                        }
+
+                        List<FinancialTransactionAlert> alertsForTransaction;
+                        if ( previousTransactionDate.HasValue )
+                        {
+                            alertsForTransaction = CreateAlertsForTransaction(
                                 twelveMonthsAlerts,
                                 transaction,
-                                lastTransactionDate.Value,
+                                twelveMonthsTransactions,
+                                previousTransactionDate.Value,
+                                mostRecentOldTransactionDate,
                                 context,
                                 allowGratitude,
-                                allowFollowUp ) :
-                            new List<FinancialTransactionAlert>();
+                                allowFollowUp );
+                        }
+                        else
+                        {
+                            alertsForTransaction = new List<FinancialTransactionAlert>();
+                        }
 
                         alertsToAddToDb.AddRange( alertsForTransaction );
 
@@ -1261,222 +1423,39 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <summary>
         /// Creates the alerts for transaction.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="people">The people.</param>
         /// <param name="recentAlerts">The recent alerts.</param>
         /// <param name="transaction">The transaction.</param>
+        /// <param name="twelveMonthsTransactions">The twelve months transactions.</param>
         /// <param name="lastGiftDate">The last gift date.</param>
+        /// <param name="mostRecentOldTransactionDate">The most recent old transaction date for transactions older than 12 months ago</param>
         /// <param name="context">The context.</param>
         /// <param name="allowGratitude">if set to <c>true</c> [allow gratitude].</param>
         /// <param name="allowFollowUp">if set to <c>true</c> [allow follow up].</param>
+        /// <returns>System.Collections.Generic.List&lt;Rock.Model.FinancialTransactionAlert&gt;.</returns>
         internal static List<FinancialTransactionAlert> CreateAlertsForTransaction(
-            RockContext rockContext,
-            List<Person> people,
             List<AlertView> recentAlerts,
             TransactionView transaction,
+            List<TransactionView> twelveMonthsTransactions,
             DateTime lastGiftDate,
+            DateTime? mostRecentOldTransactionDate,
             GivingAutomationContext context,
             bool allowGratitude,
             bool allowFollowUp )
         {
             var alerts = new List<FinancialTransactionAlert>();
-
-            if ( !people.Any() )
-            {
-                return alerts;
-            }
-
             var daysSinceLastTransaction = ( transaction.TransactionDateTime - lastGiftDate ).TotalDays;
-
-            // The people all have the same attribute values, so this method will use the first person
-            var person = people.First();
 
             // Go through the ordered alert types (ordered in the hydrate method)
             foreach ( var alertType in context.AlertTypes )
             {
-                // Make sure this transaction / alert type combo doesn't already exist
-                var alreadyAlerted = recentAlerts.Any( a =>
-                    a.AlertTypeId == alertType.Id &&
-                    a.TransactionId == transaction.Id );
-
-                if ( alreadyAlerted )
+                var newAlert = CreateAlertForRecentTransaction( alertType, recentAlerts, transaction, twelveMonthsTransactions, daysSinceLastTransaction, mostRecentOldTransactionDate, context, allowGratitude, allowFollowUp );
+                if ( newAlert != null )
                 {
-                    continue;
-                }
-
-                // Ensure that this alert type is allowed (might be disallowed because of global repeat prevention durations)
-                if ( !allowFollowUp && alertType.AlertType == AlertType.FollowUp )
-                {
-                    continue;
-                }
-
-                if ( !allowGratitude && alertType.AlertType == AlertType.Gratitude )
-                {
-                    continue;
-                }
-
-                // Check the days since the last transaction are within allowed range
-                if ( alertType.MaximumDaysSinceLastGift.HasValue && daysSinceLastTransaction > alertType.MaximumDaysSinceLastGift.Value )
-                {
-                    continue;
-                }
-
-                // Check the min gift amount
-                if ( alertType.MinimumGiftAmount.HasValue && transaction.TotalAmount < alertType.MinimumGiftAmount )
-                {
-                    // Gift is less than this rule allows
-                    continue;
-                }
-
-                // Check the max gift amount
-                if ( alertType.MaximumGiftAmount.HasValue && transaction.TotalAmount > alertType.MaximumGiftAmount )
-                {
-                    // Gift is more than this rule allows
-                    continue;
-                }
-
-                // Check if this alert type has already been alerted too recently
-                if ( alertType.RepeatPreventionDuration.HasValue && recentAlerts?.Any( a => a.AlertTypeId == alertType.Id ) == true )
-                {
-                    var lastAlertOfTypeDate = recentAlerts.Last( a => a.AlertTypeId == alertType.Id ).AlertDateTime;
-                    var daysSinceLastAlert = ( context.Now - lastAlertOfTypeDate ).TotalDays;
-
-                    if ( daysSinceLastAlert <= alertType.RepeatPreventionDuration.Value )
+                    alerts.Add( newAlert );
+                    if ( !alertType.ContinueIfMatched )
                     {
-                        // Alert would be too soon after the last alert was generated
-                        continue;
+                        break;
                     }
-                }
-
-                // Check if the campus is a match
-                if ( alertType.CampusId.HasValue )
-                {
-                    var campusId = person.GetCampus()?.Id;
-
-                    if ( alertType.CampusId != campusId )
-                    {
-                        // Campus does not match
-                        continue;
-                    }
-                }
-
-                // Check the median gift amount
-                var medianGiftAmount = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN ).AsDecimal();
-
-                if ( alertType.MinimumMedianGiftAmount.HasValue && medianGiftAmount < alertType.MinimumMedianGiftAmount )
-                {
-                    // Median gift amount is too small for this rule
-                    continue;
-                }
-
-                if ( alertType.MaximumMedianGiftAmount.HasValue && medianGiftAmount > alertType.MaximumMedianGiftAmount )
-                {
-                    // Median gift amount is too large for this rule
-                    continue;
-                }
-
-                // Check the number of IQRs that the amount varies
-                var amountIqr = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR ).AsDecimal();
-                var numberOfAmountIqrs = GetAmountIqrCount( context, people, transaction.TotalAmount );
-
-                // Check the frequency sensitivity scale
-                var frequencyStdDev = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimal();
-                var frequencyMean = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimal();
-                var frequencyDeviation = frequencyMean - Convert.ToDecimal( daysSinceLastTransaction );
-                var numberOfFrequencyStdDevs = GetFrequencyDeviationCount( context, people, daysSinceLastTransaction );
-
-                // Detect which thing, amount or frequency, is exceeding the rule's sensitivity scale
-                var reasons = new List<string>();
-
-                if ( alertType.AlertType == AlertType.Gratitude )
-                {
-                    if ( alertType.AmountSensitivityScale.HasValue && numberOfAmountIqrs >= alertType.AmountSensitivityScale.Value )
-                    {
-                        // Gift is larger than the sensitivity
-                        reasons.Add( nameof( alertType.AmountSensitivityScale ) );
-                    }
-
-                    if ( alertType.FrequencySensitivityScale.HasValue && numberOfFrequencyStdDevs >= alertType.FrequencySensitivityScale )
-                    {
-                        // Gift is earlier than the sensitivity
-                        reasons.Add( nameof( alertType.FrequencySensitivityScale ) );
-                    }
-                }
-                else if ( alertType.AlertType == AlertType.FollowUp )
-                {
-                    if ( alertType.AmountSensitivityScale.HasValue && numberOfAmountIqrs <= ( alertType.AmountSensitivityScale * -1 ) )
-                    {
-                        // Gift is outside the amount sensitivity scale
-                        reasons.Add( nameof( alertType.AmountSensitivityScale ) );
-                    }
-
-                    if ( alertType.FrequencySensitivityScale.HasValue && numberOfFrequencyStdDevs <= ( alertType.FrequencySensitivityScale * -1 ) )
-                    {
-                        // Gift is outside the frequency sensitivity scale
-                        reasons.Add( nameof( alertType.FrequencySensitivityScale ) );
-                    }
-                }
-
-                // Sensitivity scales are optional. If all other filters are met, then allow the alert to be created
-                if ( !reasons.Any() && ( alertType.AmountSensitivityScale.HasValue || alertType.FrequencySensitivityScale.HasValue ) )
-                {
-                    // If amount and frequency are within "normal" sensitivity levels for this rule, then continue on without an alert.
-                    continue;
-                }
-
-                // Check at least one of the people are within the dataview
-                if ( alertType.DataViewId.HasValue )
-                {
-                    var personIdQuery = context.DataViewPersonQueries.GetValueOrNull( alertType.DataViewId.Value );
-
-                    // If the query hasn't already been created, generate the person id query for this dataview
-                    if ( personIdQuery is null )
-                    {
-                        personIdQuery = CreatePersonIdQueryForDataView( rockContext, alertType, context );
-
-                        if ( personIdQuery is null )
-                        {
-                            // Errors are logged within the creation method so just return
-                            return alerts;
-                        }
-
-                        context.DataViewPersonQueries[alertType.DataViewId.Value] = personIdQuery;
-                    }
-
-                    // Check at least one of the people are within the dataview
-                    if ( !personIdQuery.Any( id => people.Any( p => p.Id == id ) ) )
-                    {
-                        // None of the people are in the dataview
-                        continue;
-                    }
-                }
-
-                // Create the alert because this gift is a match for this rule.
-                var financialTransactionAlert = new FinancialTransactionAlert
-                {
-                    TransactionId = transaction.Id,
-                    PersonAliasId = transaction.AuthorizedPersonAliasId,
-                    GivingId = person.GivingId,
-                    AlertTypeId = alertType.Id,
-                    Amount = transaction.TotalAmount,
-                    AmountCurrentMedian = medianGiftAmount,
-                    AmountCurrentIqr = amountIqr,
-                    AmountIqrMultiplier = numberOfAmountIqrs,
-                    FrequencyCurrentMean = frequencyMean,
-                    FrequencyCurrentStandardDeviation = frequencyStdDev,
-                    FrequencyDifferenceFromMean = frequencyDeviation,
-                    FrequencyZScore = numberOfFrequencyStdDevs,
-                    ReasonsKey = reasons.ToJson(),
-                    AlertDateTime = context.Now,
-                    AlertDateKey = context.Now.ToDateKey()
-                };
-
-                alerts.Add( financialTransactionAlert );
-
-                // Return if not set to continue after a match has been made. Otherwise, let the loop continue to the next rule.
-                if ( !alertType.ContinueIfMatched )
-                {
-                    return alerts;
                 }
             }
 
@@ -1484,12 +1463,320 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         }
 
         /// <summary>
+        /// Creates the alert.
+        /// </summary>
+        /// <param name="alertType">Type of the alert.</param>
+        /// <param name="recentAlerts">The recent alerts.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="last12MonthsTransactionsAll">The last12 months transactions all.</param>
+        /// <param name="daysSinceLastTransaction">The days since last transaction.</param>
+        /// <param name="mostRecentOldTransactionDate">The most recent old transaction date for transactions older than 12 months ago</param>
+        /// <param name="context">The context.</param>
+        /// <param name="allowGratitude">if set to <c>true</c> [allow gratitude].</param>
+        /// <param name="allowFollowUp">if set to <c>true</c> [allow follow up].</param>
+        /// <returns>FinancialTransactionAlert.</returns>
+        private static FinancialTransactionAlert CreateAlertForRecentTransaction(
+            FinancialTransactionAlertType alertType,
+            List<AlertView> recentAlerts,
+            TransactionView transaction,
+            List<TransactionView> last12MonthsTransactionsAll,
+            double daysSinceLastTransaction,
+            DateTime? mostRecentOldTransactionDate,
+            GivingAutomationContext context,
+            bool allowGratitude,
+            bool allowFollowUp )
+        {
+            // Make sure this transaction / alert type combo doesn't already exist
+            var alreadyAlerted = recentAlerts.Any( a =>
+                a.AlertTypeId == alertType.Id &&
+                a.TransactionId == transaction.Id );
+
+            if ( alreadyAlerted )
+            {
+                return null;
+            }
+
+            // Ensure that this alert type is allowed (might be disallowed because of global repeat prevention durations)
+            if ( !allowFollowUp && alertType.AlertType == AlertType.FollowUp )
+            {
+                return null;
+            }
+
+            if ( !allowGratitude && alertType.AlertType == AlertType.Gratitude )
+            {
+                return null;
+            }
+
+            // Check the days since the last transaction are within allowed range
+            if ( alertType.MaximumDaysSinceLastGift.HasValue && daysSinceLastTransaction > alertType.MaximumDaysSinceLastGift.Value )
+            {
+                return null;
+            }
+
+            // Check if this alert type has already been alerted too recently
+            if ( alertType.RepeatPreventionDuration.HasValue && recentAlerts?.Any( a => a.AlertTypeId == alertType.Id ) == true )
+            {
+                var lastAlertOfTypeDate = recentAlerts.Last( a => a.AlertTypeId == alertType.Id ).AlertDateTime;
+                var daysSinceLastAlert = ( context.Now - lastAlertOfTypeDate ).TotalDays;
+
+                if ( daysSinceLastAlert <= alertType.RepeatPreventionDuration.Value )
+                {
+                    // Alert would be too soon after the last alert was generated
+                    return null;
+                }
+            }
+
+            // Check if the campus is a match
+            if ( alertType.CampusId.HasValue )
+            {
+                var campusId = transaction.AuthorizedPersonCampusId;
+
+                if ( alertType.CampusId != campusId )
+                {
+                    // Campus does not match
+                    return null;
+                }
+            }
+
+            List<decimal> transactionAmountsForAlert;
+            List<DateTime> transactionDateTimesForAlert;
+            List<int> alertAccountIds = GetAlertTypeAccountIds( alertType );
+            decimal transactionAmount;
+
+            if ( alertAccountIds != null )
+            {
+                if ( !transaction.TransactionViewDetails.Where( a => alertAccountIds.Contains( a.AccountId ) ).Any() )
+                {
+                    // transaction doesn't meet criteria for this alerts Accounts
+                    return null;
+                }
+
+                transactionDateTimesForAlert = last12MonthsTransactionsAll.Where( a => a.TransactionViewDetails.Any( d => alertAccountIds.Contains( d.AccountId ) ) ).Select( a => a.TransactionDateTime ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsAll.SelectMany( m => m.TransactionViewDetails ).Where( a => alertAccountIds.Contains( a.AccountId ) ).Select( a => a.Amount ).ToList();
+                transactionAmount = transaction.TransactionViewDetails.Where( a => alertAccountIds.Contains( a.AccountId ) ).Sum( a => a.Amount );
+            }
+            else
+            {
+                transactionDateTimesForAlert = last12MonthsTransactionsAll.Select( a => a.TransactionDateTime ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsAll.SelectMany( m => m.TransactionViewDetails ).Select( a => a.Amount ).ToList();
+                transactionAmount = transaction.TotalTransactionAmount;
+            }
+
+            // Determine if the alert type has either FrequencySensitivityScale or AmountSensitivityScale defined
+            if ( alertType.FrequencySensitivityScale.HasValue || alertType.AmountSensitivityScale.HasValue )
+            {
+                // If there is either FrequencySensitivity or AmountSensitivity rule, we need to have some transaction history
+                if ( transactionDateTimesForAlert.Count() < context.MinimumTransactionCountForSensitivityAlertTypes )
+                {
+                    // after filtering to Accounts, there isn't enough transaction history for an alert type that has sensitivity rules
+                    return null;
+                }
+            }
+
+            // Check the min gift amount
+            if ( alertType.MinimumGiftAmount.HasValue && transactionAmount < alertType.MinimumGiftAmount )
+            {
+                // Gift is less than this rule allows
+                return null;
+            }
+
+            // Check the max gift amount
+            if ( alertType.MaximumGiftAmount.HasValue && transactionAmount > alertType.MaximumGiftAmount )
+            {
+                // Gift is more than this rule allows
+                return null;
+            }
+
+            var quartileRanges = GetQuartileRanges( transactionAmountsForAlert );
+
+            // Check the median gift amount
+            if ( alertType.MinimumMedianGiftAmount.HasValue && quartileRanges.MedianAmount < alertType.MinimumMedianGiftAmount )
+            {
+                // Median gift amount is too small for this rule
+                return null;
+            }
+
+            if ( alertType.MaximumMedianGiftAmount.HasValue && quartileRanges.MedianAmount > alertType.MaximumMedianGiftAmount )
+            {
+                // Median gift amount is too large for this rule
+                return null;
+            }
+
+            // Check the number of IQRs that the amount varies
+            var numberOfAmountIqrs = GetAmountIqrCount( quartileRanges, transactionAmount );
+
+            var transactionStats = GetFrequencyStats( transactionDateTimesForAlert, mostRecentOldTransactionDate );
+            var meanFrequencyDays = transactionStats.MeanFrequencyDays;
+
+            // Store Frequency Std Dev
+            var frequencyStdDevDays = transactionStats.FrequencyStdDevDays;
+
+            var numberOfFrequencyStdDevs = GetFrequencyDeviationCount( frequencyStdDevDays, meanFrequencyDays, Convert.ToDecimal( daysSinceLastTransaction ) );
+
+            // Detect which thing, amount or frequency, is exceeding the rule's sensitivity scale
+            var reasons = new List<string>();
+
+            /*
+              11-18-2021 MDP
+
+            The Sensitivity scale logic is dependant on whether Gratitude or Follow-up is selected:
+              - Gratitude looks at 'better than usual' transactions (higher amount than usual, or earlier than usual)
+              - Follow-up looks at 'worse than usual'  transactions (lower amount than usual, or later than usual)
+
+            Example:
+                - Normal Range $500 +/- $30
+                - Gratitude (with sensitivity of 3), would alert if $590 or more
+
+
+            */
+
+
+            if ( alertType.AlertType == AlertType.Gratitude )
+            {
+                // For example, if Follow-up with a Sensitivity of 3
+                // Normal is $500 +/- 50
+                // Gratitude with look at values $650 or more
+                if ( alertType.AmountSensitivityScale.HasValue && numberOfAmountIqrs >= alertType.AmountSensitivityScale.Value )
+                {
+                    // Gift is larger amount than they usually give (Larger than Usual alert)
+                    // Note that this is only for people have established a normal range of giving, so it would only
+                    // people with some transaction history. ('Large Gift alert' is different than 'Larger than Usual alert')
+                    reasons.Add( nameof( alertType.AmountSensitivityScale ) );
+                }
+
+                if ( alertType.FrequencySensitivityScale.HasValue && numberOfFrequencyStdDevs >= alertType.FrequencySensitivityScale )
+                {
+                    // Gift is earlier than when they usually give (Early Gift Alert)
+                    reasons.Add( nameof( alertType.FrequencySensitivityScale ) );
+                }
+            }
+            else if ( alertType.AlertType == AlertType.FollowUp )
+            {
+                // Follow up 'Flips the Sign' of what was specified.
+                // For example, if Followup with a Sensitivity of 3
+                // Normal is $500 +/- 50
+                // Follow-up with look at values $350 or less
+                if ( alertType.AmountSensitivityScale.HasValue && numberOfAmountIqrs <= ( alertType.AmountSensitivityScale * -1 ) )
+                {
+                    // Gift is outside the amount sensitivity scale (Smaller Amount than Usual alert)
+                    reasons.Add( nameof( alertType.AmountSensitivityScale ) );
+                }
+
+                if ( alertType.FrequencySensitivityScale.HasValue && numberOfFrequencyStdDevs <= ( alertType.FrequencySensitivityScale * -1 ) )
+                {
+                    // Gift is outside the frequency sensitivity scale (Later than Usual)
+                    reasons.Add( nameof( alertType.FrequencySensitivityScale ) );
+                }
+            }
+
+            bool hasSensitivityAlerts = reasons.Any();
+
+            if ( !hasSensitivityAlerts )
+            {
+                bool hasSensitivityRules = alertType.AmountSensitivityScale.HasValue || alertType.FrequencySensitivityScale.HasValue;
+
+                if ( hasSensitivityRules )
+                {
+                    // this alerts has Sensitivity rules, but neither triggered an alert, so we continue without generating alert 
+                    return null;
+                }
+                else
+                {
+                    // If the case of no sensitivity rules and no sensitivity alerts,
+                    // Check for a simple 'Transaction Amount Over $x' type of alert (no other criteria other than Minimum Amount)
+                    if ( alertType.MinimumGiftAmount.HasValue && transactionAmount >= alertType.MinimumGiftAmount.Value )
+                    {
+                        // this is the 'Large Gift Amount' use case
+                        reasons.Add( nameof( alertType.MinimumGiftAmount ) );
+                    }
+                    else
+                    {
+                        // No alert criteria is met, so continue without an alert
+                        return null;
+                    }
+                }
+            }
+
+            bool personMeetsDataViewCriteria = PersonMeetsDataViewCriteria( alertType, transaction.AuthorizedPersonGivingId, context );
+            if ( !personMeetsDataViewCriteria )
+            {
+                return null;
+            }
+
+            var frequencyDeviation = meanFrequencyDays - Convert.ToDecimal( daysSinceLastTransaction );
+
+            // Create the alert because this gift is a match for this rule.
+            var financialTransactionAlert = new FinancialTransactionAlert
+            {
+                TransactionId = transaction.Id,
+                PersonAliasId = transaction.AuthorizedPersonAliasId,
+                GivingId = transaction.AuthorizedPersonGivingId,
+                AlertTypeId = alertType.Id,
+                Amount = transactionAmount,
+                AmountCurrentMedian = quartileRanges.MedianAmount,
+                AmountCurrentIqr = quartileRanges.IQRAmount,
+                AmountIqrMultiplier = numberOfAmountIqrs,
+                FrequencyCurrentMean = meanFrequencyDays,
+                FrequencyCurrentStandardDeviation = frequencyStdDevDays,
+                FrequencyDifferenceFromMean = frequencyDeviation,
+                FrequencyZScore = numberOfFrequencyStdDevs,
+                ReasonsKey = reasons.ToJson(),
+                AlertDateTime = context.Now,
+                AlertDateKey = context.Now.ToDateKey()
+            };
+
+            return financialTransactionAlert;
+        }
+
+        /// <summary>
+        /// Persons the meets data view criteria.
+        /// </summary>
+        /// <param name="alertType">Type of the alert.</param>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <param name="context">The context.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        private static bool PersonMeetsDataViewCriteria( FinancialTransactionAlertType alertType, string givingId, GivingAutomationContext context )
+        {
+            bool personMeetsDataViewCriteria = true;
+
+            // Check if GivingUnitId is in the DataView
+            // Since this would involve a database hit, check this only if all the criteria for an Alert has been met so far.
+            if ( alertType.DataViewId.HasValue )
+            {
+                var personQuery = context.DataViewPersonQueries.GetValueOrNull( alertType.DataViewId.Value );
+
+                // If the query hasn't already been created, generate the person id query for this dataview
+                if ( personQuery is null )
+                {
+                    personQuery = CreatePersonQueryForDataView( context.DataViewPersonQueriesRockContext, alertType, context );
+
+                    if ( personQuery is null )
+                    {
+                        // Errors are logged within the creation method so just return
+                        personMeetsDataViewCriteria = false;
+                    }
+
+                    context.DataViewPersonQueries[alertType.DataViewId.Value] = personQuery;
+                }
+
+                // Check at least one of the people are within the dataview
+                if ( !personQuery.Any( p => p.GivingId == givingId ) )
+                {
+                    // None of the people are in the dataview
+                    personMeetsDataViewCriteria = false;
+                }
+            }
+
+            return personMeetsDataViewCriteria;
+        }
+
+        /// <summary>
         /// Processes the giving identifier. This logic was isolated for automated testing.
         /// </summary>
         /// <param name="givingId">The giving identifier.</param>
         /// <param name="people">The people.</param>
-        /// <param name="transactions">The past year transactions.</param>
-        /// <param name="mostRecentOldTransactionDate">The most recent old transaction date.</param>
+        /// <param name="transactions">The transactions from the last 12 months</param>
+        /// <param name="mostRecentOldTransactionDate">The most recent old transaction date for transactions older than 12 months ago</param>
         /// <param name="context">The context.</param>
         /// <param name="minDate">The minimum date that the transactions were queried with.</param>
         /// <returns>
@@ -1527,8 +1814,15 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return false;
             }
 
+            if ( !transactions.Any() )
+            {
+                // shouldn't happen because we checked this earlier
+                return false;
+            }
+
             // Update the groups "last gift date" attribute
-            var lastGiftDate = transactions.LastOrDefault().TransactionDateTime;
+            var lastGiftDate = transactions.Max( a => a.TransactionDateTime );
+
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE, lastGiftDate );
 
             var transactionTwelveMonthCount = transactions.Count;
@@ -1539,25 +1833,28 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED, percentScheduled );
 
             // Store preferred source
-            var sourceGroups = transactions.GroupBy( t => t.SourceTypeValueGuid ).OrderByDescending( g => g.Count() );
+            var sourceGroups = transactions.Where( a => a.SourceTypeValueId.HasValue ).GroupBy( t => t.SourceTypeValueId ).OrderByDescending( g => g.Count() );
             var maxSourceCount = sourceGroups.FirstOrDefault()?.Count() ?? 0;
             var preferredSourceTransactions = sourceGroups
                 .Where( g => g.Count() == maxSourceCount )
                 .SelectMany( g => g.ToList() )
                 .OrderByDescending( t => t.TransactionDateTime );
 
-            var preferredSourceGuid = preferredSourceTransactions.FirstOrDefault()?.SourceTypeValueGuid;
+            var preferredSourceTypeValueId = preferredSourceTransactions.FirstOrDefault()?.SourceTypeValueId;
+            var preferredSourceGuid = preferredSourceTypeValueId.HasValue ? DefinedValueCache.Get( preferredSourceTypeValueId.Value )?.Guid : null;
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE, preferredSourceGuid.ToStringSafe() );
 
             // Store preferred currency
-            var currencyGroups = transactions.GroupBy( t => t.CurrencyTypeValueGuid ).OrderByDescending( g => g.Count() );
+            var currencyGroups = transactions.Where( a => a.CurrencyTypeValueId.HasValue ).GroupBy( t => t.CurrencyTypeValueId ).OrderByDescending( g => g.Count() );
             var maxCurrencyCount = currencyGroups.FirstOrDefault()?.Count() ?? 0;
             var preferredCurrencyTransactions = currencyGroups
                 .Where( g => g.Count() == maxCurrencyCount )
                 .SelectMany( g => g.ToList() )
                 .OrderByDescending( t => t.TransactionDateTime );
 
-            var preferredCurrencyGuid = preferredCurrencyTransactions.FirstOrDefault()?.CurrencyTypeValueGuid;
+            var preferredCurrencyValueId = preferredCurrencyTransactions.FirstOrDefault()?.CurrencyTypeValueId;
+            var preferredCurrencyGuid = preferredCurrencyValueId.HasValue ? DefinedValueCache.Get( preferredCurrencyValueId.Value )?.Guid : null;
+
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY, preferredCurrencyGuid.ToStringSafe() );
 
             // ii.) Classifications for: Bin, Percentile
@@ -1569,7 +1866,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
             if ( !hasMoreTransactions )
             {
-                var oldestGiftDate = transactions.FirstOrDefault()?.TransactionDateTime;
+                var oldestGiftDate = transactions.OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault()?.TransactionDateTime;
                 var daysSinceOldestGift = oldestGiftDate == null ? 0d : ( context.Now - oldestGiftDate.Value ).TotalDays;
                 var daysSinceMinDate = ( context.Now - minDate ).TotalDays;
                 extrapolationFactor = Convert.ToDecimal( daysSinceOldestGift > 0d ? ( daysSinceMinDate / daysSinceOldestGift ) : 0d );
@@ -1581,7 +1878,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             // Store bin
-            var yearGiftAmount = transactions.Sum( t => t.TotalAmount ) * extrapolationFactor;
+            var yearGiftAmount = transactions.Sum( t => t.TotalTransactionAmount ) * extrapolationFactor;
             var binIndex = 3;
 
             while ( binIndex >= 1 )
@@ -1634,7 +1931,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             //          available is < 10 then we’ll remove the top largest and smallest gift.
             */
 
-            if ( transactionTwelveMonthCount < 5 )
+            if ( transactionTwelveMonthCount < context.MinimumTransactionCountForClassifications )
             {
                 SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN, string.Empty );
                 SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR, string.Empty );
@@ -1653,47 +1950,74 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // IQR is the median(Q3) - median(Q1)
             */
 
+            var quartileRanges = GetQuartileRanges( transactions.Select( a => a.TotalTransactionAmount ) );
+
             // Store median amount
-            var orderedAmounts = transactions.Select( t => t.TotalAmount ).OrderBy( a => a ).ToList();
-            var quartileRanges = SplitQuartileRanges( orderedAmounts );
-            var medianAmount = quartileRanges.Item2.Average();
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN, medianAmount );
+            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN, quartileRanges.MedianAmount );
 
             // Store IQR amount
-            var q1Median = GetMedian( quartileRanges.Item1 );
-            var q3Median = GetMedian( quartileRanges.Item3 );
-            var iqrAmount = q3Median - q1Median;
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR, iqrAmount );
+            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR, quartileRanges.IQRAmount );
 
             // Create a parallel array that stores the days since the last transaction for the transaction at that index
-            var daysSinceLastTransaction = new List<double?>();
-            var lastTransactionDate = mostRecentOldTransactionDate;
+            var transactionStats = GetFrequencyStats( transactions.Select( a => a.TransactionDateTime ).ToList(), mostRecentOldTransactionDate );
 
-            foreach ( var transaction in transactions )
+            // Store Mean Frequency
+            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS, transactionStats.MeanFrequencyDays );
+
+            // Store Frequency Std Dev
+            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS, transactionStats.FrequencyStdDevDays );
+
+            // Giving Frequency Label
+            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL, ( int ) transactionStats.GivingFrequencyLabel );
+
+            // Update the next expected gift date
+            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE, transactionStats.NextExpectedGiftDate );
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets Statistics about the dates of the specified transactions
+        /// This uses Standard Deviation based on the dates of the transaction history.
+        /// </summary>
+        /// <param name="transactionDateTimes">The transaction date times.</param>
+        /// <param name="mostRecentOldTransactionDate">The most recent old transaction date (last transaction that was over 12 months ago).</param>
+        private static FrequencyStats GetFrequencyStats( List<DateTime> transactionDateTimes, DateTime? mostRecentOldTransactionDate )
+        {
+            var daysSinceLastTransactionList = new List<decimal?>();
+            var lastTransactionDateTime = mostRecentOldTransactionDate;
+            foreach ( var transactionDateTime in transactionDateTimes.OrderBy( a => a ) )
             {
-                var currentTransactionDate = transaction.TransactionDateTime;
-
-                if ( lastTransactionDate.HasValue )
+                if ( lastTransactionDateTime.HasValue )
                 {
-                    var daysSince = ( currentTransactionDate - lastTransactionDate.Value ).TotalDays;
-                    daysSinceLastTransaction.Add( daysSince );
+                    var daysSince = ( transactionDateTime - lastTransactionDateTime.Value ).TotalDays;
+                    daysSinceLastTransactionList.Add( ( decimal ) daysSince );
                 }
                 else
                 {
-                    daysSinceLastTransaction.Add( null );
+                    daysSinceLastTransactionList.Add( null );
                 }
 
-                lastTransactionDate = currentTransactionDate;
+                lastTransactionDateTime = transactionDateTime;
             }
 
-            // Store Mean Frequency
-            var daysSinceLastTransactionWithValue = daysSinceLastTransaction.Where( d => d.HasValue ).Select( d => d.Value ).ToList();
-            var meanFrequencyDays = daysSinceLastTransactionWithValue.Count > 0 ? daysSinceLastTransactionWithValue.Average() : 0;
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS, meanFrequencyDays );
+            var daysSinceLastTransactionWithValue = daysSinceLastTransactionList.Where( d => d.HasValue ).Select( d => d.Value ).ToList();
+            double meanFrequencyDays;
+            double frequencyStdDevDays;
+            if ( daysSinceLastTransactionWithValue.Any() )
+            {
+                meanFrequencyDays = Convert.ToDouble( daysSinceLastTransactionWithValue.Average() );
+                frequencyStdDevDays = ( double ) Math.Sqrt( daysSinceLastTransactionWithValue.Average( d => Math.Pow( Convert.ToDouble( d ) - meanFrequencyDays, 2 ) ) );
+            }
+            else
+            {
+                meanFrequencyDays = 0;
+                frequencyStdDevDays = 0;
+            }
 
-            // Store Frequency Std Dev
-            var frequencyStdDevDays = Math.Sqrt( daysSinceLastTransactionWithValue.Average( d => Math.Pow( d - meanFrequencyDays, 2 ) ) );
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS, frequencyStdDevDays );
+            var nextExpectedGiftDate = lastTransactionDateTime.HasValue ? lastTransactionDateTime.Value.AddDays( ( double ) meanFrequencyDays ) : ( DateTime? ) null;
+
+            FinancialGivingAnalyticsFrequencyLabel givingFrequencyLabel;
 
             // Frequency Labels:
             //      Weekly = Avg days between 4.5 - 8.5; Std Dev< 7;
@@ -1707,46 +2031,49 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             if ( meanFrequencyDays >= 4.5d && meanFrequencyDays <= 8.5d && frequencyStdDevDays < 7d )
             {
                 // Weekly
-                SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL, 1 );
+                givingFrequencyLabel = FinancialGivingAnalyticsFrequencyLabel.Weekly;
             }
             else if ( meanFrequencyDays >= 9d && meanFrequencyDays <= 17d && frequencyStdDevDays < 10d )
             {
                 // BiWeekly
-                SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL, 2 );
+                givingFrequencyLabel = FinancialGivingAnalyticsFrequencyLabel.BiWeekly;
             }
             else if ( meanFrequencyDays >= 25d && meanFrequencyDays <= 35d && frequencyStdDevDays < 10d )
             {
                 // Monthly
-                SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL, 3 );
+                givingFrequencyLabel = FinancialGivingAnalyticsFrequencyLabel.Monthly;
             }
             else if ( meanFrequencyDays >= 80d && meanFrequencyDays <= 110d && frequencyStdDevDays < 15d )
             {
                 // Quarterly
-                SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL, 4 );
+                givingFrequencyLabel = FinancialGivingAnalyticsFrequencyLabel.Quarterly;
             }
             else if ( ( meanFrequencyDays / 2 ) < frequencyStdDevDays )
             {
                 // Erratic
-                SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL, 5 );
+                givingFrequencyLabel = FinancialGivingAnalyticsFrequencyLabel.Erratic;
             }
             else
             {
                 // Undetermined
-                SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL, 6 );
+                givingFrequencyLabel = FinancialGivingAnalyticsFrequencyLabel.Undetermined;
             }
 
-            // Update the next expected gift date
-            var nextExpectedGiftDate = lastTransactionDate.HasValue ? lastTransactionDate.Value.AddDays( meanFrequencyDays ) : ( DateTime? ) null;
-            SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE, nextExpectedGiftDate );
-
-            return true;
+            return new FrequencyStats
+            {
+                LastTransactionDateTime = lastTransactionDateTime,
+                MeanFrequencyDays = ( decimal ) meanFrequencyDays,
+                FrequencyStdDevDays = ( decimal ) frequencyStdDevDays,
+                NextExpectedGiftDate = nextExpectedGiftDate,
+                GivingFrequencyLabel = givingFrequencyLabel
+            };
         }
 
         /// <summary>
         /// Processes the late alerts. This method finds giving groups that have an expected gift date that has now passed
         /// </summary>
         /// <param name="context">The context.</param>
-        private static void ProcessLateAlerts( GivingAutomationContext context )
+        private static void ProcessLateAlertTypes( GivingAutomationContext context )
         {
             // Find the late gift alert types. There are already filtered to the alert types that should run today
             var lateGiftAlertTypes = context.AlertTypes
@@ -1760,373 +2087,351 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return;
             }
 
-            // When querying for attribute values, we will use the most aggressive rule, which is the one with the
-            // smallest sensitivity value.
-            var minExpectedDate = context.Now.AddDays( -100 );
-            var minFrequencySensitivity = lateGiftAlertTypes.Select( at => at.FrequencySensitivityScale.Value ).Min();
+            context.LateAlertsByGivingId = new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
+            List<FinancialTransactionAlert> lateAlerts = new List<FinancialTransactionAlert>();
 
-            var nextExpectedGiftAttributeId = AttributeCache.Get( SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE ).Id;
-            var stdDevFrequencyDaysAttributeId = AttributeCache.Get( SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).Id;
-            var fallbackStdDevDays = 7;
-
-            using ( var rockContext = new RockContext() )
+            foreach ( FinancialTransactionAlertType lateGiftAlertType in lateGiftAlertTypes.OrderBy( a => a.Order ) )
             {
-                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
-
-                var stopWatch = new Stopwatch();
-                var elapsedTimesMs = new List<long>();
-
-                if ( _debugModeEnabled )
+                var lateAlertsForAlertType = ProcessLateAlertType( context, lateGiftAlertType );
+                if ( lateAlertsForAlertType.Any() )
                 {
-                    WriteToDebugOutput( "Starting late transaction query" );
-                    stopWatch.Start();
-                }
-
-                var attributeValueService = new AttributeValueService( rockContext );
-
-                // Query for the min sensitivity multiplied by the mean days to get each giving groups specific "late"
-                // number of days
-                var stdDevQuery = attributeValueService.Queryable()
-                    .AsNoTracking()
-                    .Where( av =>
-                        av.AttributeId == stdDevFrequencyDaysAttributeId &&
-                        av.ValueAsNumeric.HasValue &&
-                        av.EntityId.HasValue )
-                    .Select( av => new
+                    using ( var rockContext = new RockContext() )
                     {
-                        PersonId = av.EntityId.Value,
-                        StdDevDays = av.ValueAsNumeric.Value == 0 ? fallbackStdDevDays : av.ValueAsNumeric.Value
-                    } );
-
-                // Query for expected dates that have passed
-                var pastExpectedDatesQuery = attributeValueService.Queryable()
-                    .AsNoTracking()
-                    .Where( av =>
-                        av.AttributeId == nextExpectedGiftAttributeId &&
-                        av.ValueAsDateTime.HasValue &&
-                        av.ValueAsDateTime.Value < context.Now &&
-                        av.ValueAsDateTime.Value > minExpectedDate )
-                    .Select( av => new
-                    {
-                        PersonId = av.EntityId.Value,
-                        ExpectedDateTime = av.ValueAsDateTime.Value
-                    } );
-
-                // Join the two queries to get the intersection
-                var pastExpectedGivers = pastExpectedDatesQuery.Join(
-                    stdDevQuery,
-                    ed => ed.PersonId,
-                    sd => sd.PersonId,
-                    ( ed, sd ) => new
-                    {
-                        ed.PersonId,
-                        ed.ExpectedDateTime,
-                        sd.StdDevDays
-                    } )
-                    .ToList();
-
-                // Filter the query for the giving groups that have exceeded the sensitivity level
-                var personIds = pastExpectedGivers
-                    .Where( p => p.ExpectedDateTime.AddDays( decimal.ToDouble( minFrequencySensitivity * p.StdDevDays ) ) < context.Now )
-                    .Select( p => p.PersonId )
-                    .ToList();
-
-                if ( _debugModeEnabled )
-                {
-                    stopWatch.Stop();
-                    var ms = stopWatch.ElapsedMilliseconds.ToString( "G" );
-                    WriteToDebugOutput( $"Found {personIds.Count} people with potential late transactions in {ms}ms" );
-                    stopWatch.Reset();
-                }
-
-                // Create a single late alert for each giving group
-                var givingIds = new HashSet<string>();
-                var personAliasService = new PersonAliasService( rockContext );
-                var personService = new PersonService( rockContext );
-                var financialTransactionService = new FinancialTransactionService( rockContext );
-                var financialTransactionAlertService = new FinancialTransactionAlertService( rockContext );
-                var oneYearAgo = context.Now.AddMonths( -12 );
-                var alertsToAdd = new List<FinancialTransactionAlert>();
-
-                foreach ( var personId in personIds )
-                {
-                    // Get the giving id
-                    var givingId = personService.Queryable()
-                        .AsNoTracking()
-                        .Where( p => p.Id == personId )
-                        .Select( p => p.GivingId )
-                        .FirstOrDefault();
-
-                    if ( givingId.IsNullOrWhiteSpace() || givingIds.Contains( givingId ) )
-                    {
-                        continue;
+                        rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+                        new FinancialTransactionAlertService( rockContext ).AddRange( lateAlertsForAlertType );
+                        context.AlertsCreated += lateAlertsForAlertType.Count;
+                        rockContext.SaveChanges();
                     }
-
-                    // Add to the hashset so this giving id is not processed again
-                    givingIds.Add( givingId );
-
-                    // Load the people that are in this giving group so their attribute values can be set
-                    var people = personService.Queryable()
-                        .Include( p => p.Aliases )
-                        .Where( p => p.GivingId == givingId )
-                        .ToList();
-                    people.LoadAttributes();
-
-                    // Get all aliases in the giving id
-                    var aliasIds = people.SelectMany( p => p.Aliases.Select( a => a.Id ) ).ToList();
-
-                    // Get the last giver, who the alert will be tied to
-                    var lastTransactionAliasId = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
-                        .Where( ft =>
-                            ft.AuthorizedPersonAliasId.HasValue &&
-                            aliasIds.Contains( ft.AuthorizedPersonAliasId.Value ) )
-                        .OrderByDescending( ft => ft.TransactionDateTime )
-                        .Select( ft => ft.AuthorizedPersonAliasId )
-                        .FirstOrDefault();
-
-                    if ( lastTransactionAliasId is null )
-                    {
-                        continue;
-                    }
-
-                    if ( _debugModeEnabled )
-                    {
-                        stopWatch.Start();
-                    }
-
-                    // Get any recent alerts for these people
-                    var recentAlerts = financialTransactionAlertService.Queryable()
-                        .AsNoTracking()
-                        .Where( a =>
-                            aliasIds.Contains( a.PersonAliasId ) &&
-                            a.AlertDateTime > oneYearAgo )
-                        .Select( a => new AlertView
-                        {
-                            AlertDateTime = a.AlertDateTime,
-                            AlertTypeId = a.AlertTypeId,
-                            AlertType = a.FinancialTransactionAlertType.AlertType,
-                            TransactionId = a.TransactionId
-                        } )
-                        .OrderBy( a => a.AlertDateTime )
-                        .ToList();
-
-                    // Create the alerts
-                    var alerts = CreateAlertsForLateTransaction( rockContext, lateGiftAlertTypes, lastTransactionAliasId.Value, people, recentAlerts, context );
-                    alertsToAdd.AddRange( alerts );
-
-                    if ( _debugModeEnabled )
-                    {
-                        stopWatch.Stop();
-                        elapsedTimesMs.Add( stopWatch.ElapsedMilliseconds );
-                        var ms = stopWatch.ElapsedMilliseconds.ToString( "G" );
-                        WriteToDebugOutput( $"Giving Id {givingId} late alerts done in {ms}ms" );
-                        stopWatch.Reset();
-                    }
-                }
-
-                if ( _debugModeEnabled && elapsedTimesMs.Any() )
-                {
-                    WriteToDebugOutput( $"Finished {elapsedTimesMs.Count} giving ids for late alerts in average of {elapsedTimesMs.Average()}ms per giving unit" );
-                }
-
-                // Save the new alerts to the database
-                if ( alertsToAdd.Any() )
-                {
-                    financialTransactionAlertService.AddRange( alertsToAdd );
-                    rockContext.SaveChanges();
-
-                    context.AlertsCreated += alertsToAdd.Count;
-                    HandlePostAlertsAddedLogic( alertsToAdd );
                 }
             }
         }
 
         /// <summary>
-        /// Creates the alerts for a late transaction.
+        /// Processes the type of the late alert.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="lateGiftAlertTypes">The late gift alert types.</param>
-        /// <param name="lastTransactionAuthorizedAliasId">The last transaction authorized alias identifier.</param>
-        /// <param name="people">The people.</param>
-        /// <param name="recentAlerts">The recent alerts.</param>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
-        internal static List<FinancialTransactionAlert> CreateAlertsForLateTransaction(
-            RockContext rockContext,
-            List<FinancialTransactionAlertType> lateGiftAlertTypes,
-            int lastTransactionAuthorizedAliasId,
-            List<Person> people,
-            List<AlertView> recentAlerts,
-            GivingAutomationContext context )
+        /// <param name="lateGiftAlertType">Type of the late gift alert.</param>
+        private static List<FinancialTransactionAlert> ProcessLateAlertType( GivingAutomationContext context, FinancialTransactionAlertType lateGiftAlertType )
         {
-            var alerts = new List<FinancialTransactionAlert>();
+            List<int> alertAccountIds = GetAlertTypeAccountIds( lateGiftAlertType );
 
-            if ( !people.Any() )
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+
+            var givingAutomationSourceTransactionQueryForAlertType = financialTransactionService
+                .GetGivingAutomationSourceTransactionQuery()
+                .Where( a => a.TransactionDateTime.HasValue && a.AuthorizedPersonAliasId.HasValue );
+
+            if ( alertAccountIds != null )
             {
-                return alerts;
+                givingAutomationSourceTransactionQueryForAlertType = givingAutomationSourceTransactionQueryForAlertType.Where( a => a.TransactionDetails.Any( x => alertAccountIds.Contains( x.AccountId ) ) );
             }
 
-            // The people all have the same attribute values, so this method will use the first person
-            var person = people.First();
-
-            // Check the repeat prevention durations
-            var allowFollowUp = AllowFollowUpAlerts( recentAlerts, context );
-
-            if ( !allowFollowUp )
+            if ( lateGiftAlertType.DataViewId != null )
             {
-                return alerts;
-            }
-
-            // Load giving overview attributes
-            var amountIqr = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR ).AsDecimal();
-            var medianGiftAmount = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN ).AsDecimal();
-            var frequencyStdDev = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimal();
-            var frequencyMean = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimal();
-            var lastGiftDate = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_ERA_LAST_GAVE ).AsDateTime();
-
-            if ( !lastGiftDate.HasValue )
-            {
-                return alerts;
-            }
-
-            var daysSinceLastTransaction = ( context.Now - lastGiftDate.Value ).TotalDays;
-            var frequencyDeviation = frequencyMean - Convert.ToDecimal( daysSinceLastTransaction );
-
-            // Check the frequency sensitivity scale
-            var numberOfFrequencyStdDevs = GetFrequencyDeviationCount( context, people, daysSinceLastTransaction );
-
-            // Find the correct alert type to tie the new alert with
-            foreach ( var alertType in lateGiftAlertTypes )
-            {
-                // Make sure that we don't generate late alerts more than once for a giving group since the last time they gave
-                var mostRecentAlertOfThisType = recentAlerts.LastOrDefault( a => a.AlertTypeId == alertType.Id )?.AlertDateTime;
-
-                if ( mostRecentAlertOfThisType.HasValue && mostRecentAlertOfThisType > lastGiftDate.Value )
+                var personIdDataViewQuery = CreatePersonQueryForDataView( rockContext, lateGiftAlertType, context )?.Select( a => a.Id );
+                if ( personIdDataViewQuery == null )
                 {
-                    continue;
+                    return null;
                 }
 
-                // Check the maximum days since the last alert
-                if ( alertType.MaximumDaysSinceLastGift.HasValue && daysSinceLastTransaction > alertType.MaximumDaysSinceLastGift )
+                var personAliasIdQueryFromDataView = new PersonAliasService( rockContext ).Queryable().Where( a => personIdDataViewQuery.Contains( a.PersonId ) ).Select( a => a.Id );
+
+                givingAutomationSourceTransactionQueryForAlertType = givingAutomationSourceTransactionQueryForAlertType.Where( t => personAliasIdQueryFromDataView.Contains( t.AuthorizedPersonAliasId.Value ) );
+            }
+
+            var oneYearAgo = context.Now.AddMonths( -12 );
+
+            var mostRecentOldTransactionDateForAlertTypeByGivingId = givingAutomationSourceTransactionQueryForAlertType
+                .Where( t => t.TransactionDateTime < oneYearAgo )
+                .GroupBy( a => a.AuthorizedPersonAlias.Person.GivingId )
+                .Select( a => new
                 {
-                    continue;
+                    GivingId = a.Key,
+                    MostRecentOldTransactionDateTime = a.Max( x => x.TransactionDateTime.Value )
+                } ).ToDictionary(
+                    k => k.GivingId,
+                    v => v.MostRecentOldTransactionDateTime );
+
+            var twelveMonthsTransactionsForAlertTypeByGivingId = givingAutomationSourceTransactionQueryForAlertType
+                .Where( t => t.TransactionDateTime >= oneYearAgo )
+                .GroupBy( a => a.AuthorizedPersonAlias.Person.GivingId )
+                .Select( a => new
+                {
+                    GivingId = a.Key,
+                    Last12MonthsTransactions = a.Select( t => new TransactionView
+                    {
+                        Id = t.Id,
+                        AuthorizedPersonAliasId = t.AuthorizedPersonAliasId.Value,
+                        AuthorizedPersonGivingId = a.Key,
+                        AuthorizedPersonCampusId = t.AuthorizedPersonAlias.Person.PrimaryCampusId,
+                        TransactionDateTime = t.TransactionDateTime.Value,
+                        TransactionViewDetails = t.TransactionDetails.Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
+                        CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
+                        SourceTypeValueId = t.SourceTypeValueId,
+                        IsScheduled = t.ScheduledTransactionId.HasValue
+                    } ).ToList()
+                } ).ToList();
+
+            var financialTransactionAlertService = new FinancialTransactionAlertService( rockContext );
+
+            // Get any recent alerts for these people
+            var recentAlertsByGivingId = financialTransactionAlertService.Queryable()
+                .AsNoTracking()
+                .Where( a => a.AlertTypeId == lateGiftAlertType.Id && a.AlertDateTime > oneYearAgo )
+                .Select( a => new
+                {
+                    a.GivingId,
+                    a.AlertDateTime,
+                    a.FinancialTransactionAlertType.AlertType,
+                    a.AlertTypeId
+                } )
+                .ToList()
+                .GroupBy( a => a.GivingId )
+                .Select( a => new
+                {
+                    GivingId = a.Key,
+                    RecentAlerts = a.Select( x => new AlertView { AlertDateTime = x.AlertDateTime, AlertType = x.AlertType, AlertTypeId = x.AlertTypeId } ).OrderByDescending( x => x.AlertDateTime ).ToList()
+                } )
+                .ToDictionary( k => k.GivingId, v => v.RecentAlerts );
+
+            var alertsForThisAlertType = new List<FinancialTransactionAlert>();
+
+            foreach ( var givingIdTransactions in twelveMonthsTransactionsForAlertTypeByGivingId )
+            {
+                var givingId = givingIdTransactions.GivingId;
+
+                var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs(
+                    givingId,
+                    givingIdTransactions.Last12MonthsTransactions,
+                    recentAlertsByGivingId.GetValueOrNull( givingId ),
+                    mostRecentOldTransactionDateForAlertTypeByGivingId.GetValueOrNull( givingId ) );
+
+                var financialTransactionAlert = CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
+
+                if ( financialTransactionAlert != null )
+                {
+                    alertsForThisAlertType.Add( financialTransactionAlert );
+                }
+            }
+
+            return alertsForThisAlertType;
+        }
+
+        private static List<int> GetAlertTypeAccountIds( FinancialTransactionAlertType lateGiftAlertType )
+        {
+            List<int> alertAccountIds;
+            if ( lateGiftAlertType.FinancialAccountId.HasValue )
+            {
+                alertAccountIds = new List<int>();
+                alertAccountIds.Add( lateGiftAlertType.FinancialAccountId.Value );
+                if ( lateGiftAlertType.IncludeChildFinancialAccounts )
+                {
+                    var childAccountsIds = lateGiftAlertType.FinancialAccount?.ChildAccounts?.Select( a => a.Id ).ToList();
+                    if ( childAccountsIds?.Any() == true )
+                    {
+                        alertAccountIds.AddRange( childAccountsIds );
+                    }
+                }
+            }
+            else
+            {
+                alertAccountIds = null;
+            }
+
+            return alertAccountIds;
+        }
+
+        /// <summary>
+        /// Processes the late alert for giving identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="lateGiftAlertType">Type of the late gift alert.</param>
+        /// <param name="lateAlertForGivingIdArgs">The late alert for giving identifier arguments.</param>
+        /// <returns>FinancialTransactionAlert.</returns>
+        internal static FinancialTransactionAlert CreateAlertForLateTransaction(
+            GivingAutomationContext context,
+            FinancialTransactionAlertType lateGiftAlertType,
+            LateAlertForGivingIdArgs lateAlertForGivingIdArgs )
+        {
+            var givingId = lateAlertForGivingIdArgs.GivingId;
+            context.LateAlertsByGivingId = context.LateAlertsByGivingId ?? new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
+            var newAlertsForGivingId = context.LateAlertsByGivingId.GetValueOrNull( givingId );
+            if ( newAlertsForGivingId != null )
+            {
+                // if an alert was already generated for this GivingId, don't add any more new ones if ContinueIfMatched is false;
+                if ( newAlertsForGivingId.Any( a => a.ContinueIfMatched == false ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( newAlertsForGivingId == null )
+            {
+                newAlertsForGivingId = new List<(int AlertTypeId, bool ContinueIfMatched)>();
+                context.LateAlertsByGivingId.Add( givingId, newAlertsForGivingId );
+            }
+
+            var alertTypeAccountIds = GetAlertTypeAccountIds( lateGiftAlertType );
+
+            var allowFollowUp = AllowFollowUpAlerts( lateAlertForGivingIdArgs.RecentAlerts, context );
+
+            List<decimal> transactionAmountsForAlert;
+            List<DateTime> transactionDateTimesForAlert;
+            TransactionView mostRecentTransaction;
+
+            var last12MonthsTransactionsForAlertType = lateAlertForGivingIdArgs.Last12MonthsTransactions;
+
+            // last12MonthsTransactionsForAlertType should have been filtered by account ids already, but just in case (and for integration) testing
+            if ( alertTypeAccountIds != null )
+            {
+                transactionDateTimesForAlert = last12MonthsTransactionsForAlertType.Where( a => a.TransactionViewDetails.Any( d => alertTypeAccountIds.Contains( d.AccountId ) ) ).Select( a => a.TransactionDateTime ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsForAlertType.SelectMany( m => m.TransactionViewDetails ).Where( a => alertTypeAccountIds.Contains( a.AccountId ) ).Select( a => a.Amount ).ToList();
+                mostRecentTransaction = last12MonthsTransactionsForAlertType.Where( a => a.TransactionViewDetails.Any( d => alertTypeAccountIds.Contains( d.AccountId ) ) ).OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault();
+            }
+            else
+            {
+                transactionDateTimesForAlert = last12MonthsTransactionsForAlertType.Select( a => a.TransactionDateTime ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsForAlertType.SelectMany( m => m.TransactionViewDetails ).Select( a => a.Amount ).ToList();
+                mostRecentTransaction = last12MonthsTransactionsForAlertType?.OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault();
+            }
+
+            var mostRecentOldTransactionDateTime = lateAlertForGivingIdArgs.MostRecentOldTransactionDateTime;
+            var mostRecentAlertOfThisTypeAlertDateTime = lateAlertForGivingIdArgs.GeMostRecentAlertOfThisTypeAlertDateTime( lateGiftAlertType.Id );
+
+            if ( transactionDateTimesForAlert.Count < context.MinimumTransactionCountForSensitivityAlertTypes )
+            {
+                // A Late Transaction Alert requires Frequency Sensitivity Rules
+                return null;
+            }
+
+            if ( mostRecentTransaction == null )
+            {
+                // no transaction in last 12 months for this AlertType's criteria
+                return null;
+            }
+
+            var quartileRanges = GetQuartileRanges( transactionAmountsForAlert );
+
+            var transactionStats = GetFrequencyStats( transactionDateTimesForAlert, mostRecentOldTransactionDateTime );
+
+            if ( !transactionStats.NextExpectedGiftDate.HasValue )
+            {
+                // Since there is NextExpectedGiftDate based on giving patterns, there wouldn't be a late alert
+                return null;
+            }
+
+            if ( !transactionStats.LastTransactionDateTime.HasValue )
+            {
+                // No previous transaction
+                return null;
+            }
+
+            if ( mostRecentAlertOfThisTypeAlertDateTime.HasValue )
+            {
+                if ( mostRecentAlertOfThisTypeAlertDateTime.Value > transactionStats.LastTransactionDateTime )
+                {
+                    // Don't generate late alerts more than once for a giving group since the last time they gave
+                    return null;
                 }
 
                 // Check if this alert type has already been alerted too recently
-                if ( alertType.RepeatPreventionDuration.HasValue && recentAlerts?.Any( a => a.AlertTypeId == alertType.Id ) == true )
+                if ( lateGiftAlertType.RepeatPreventionDuration.HasValue )
                 {
-                    var lastAlertOfTypeDate = recentAlerts.Last( a => a.AlertTypeId == alertType.Id ).AlertDateTime;
+                    var lastAlertOfTypeDate = mostRecentAlertOfThisTypeAlertDateTime.Value;
                     var daysSinceLastAlert = ( context.Now - lastAlertOfTypeDate ).TotalDays;
 
-                    if ( daysSinceLastAlert <= alertType.RepeatPreventionDuration.Value )
+                    if ( daysSinceLastAlert <= lateGiftAlertType.RepeatPreventionDuration.Value )
                     {
                         // Alert would be too soon after the last alert was generated
-                        continue;
+                        return null;
                     }
-                }
-
-                // Check if the campus is a match
-                if ( alertType.CampusId.HasValue )
-                {
-                    var campusId = person.GetCampus()?.Id;
-
-                    if ( alertType.CampusId != campusId )
-                    {
-                        // Campus does not match
-                        continue;
-                    }
-                }
-
-                // Check the median gift amount
-                if ( alertType.MinimumMedianGiftAmount.HasValue && medianGiftAmount < alertType.MinimumMedianGiftAmount )
-                {
-                    // Median gift amount is too small for this rule
-                    continue;
-                }
-
-                if ( alertType.MaximumMedianGiftAmount.HasValue && medianGiftAmount > alertType.MaximumMedianGiftAmount )
-                {
-                    // Median gift amount is too large for this rule
-                    continue;
-                }
-
-                // Detect which thing, amount or frequency, is exceeding the rule's sensitivity scale
-                var reasons = new List<string>();
-
-                if ( numberOfFrequencyStdDevs <= ( alertType.FrequencySensitivityScale * -1 ) )
-                {
-                    // The current date is outside the frequency sensitivity scale
-                    reasons.Add( nameof( alertType.FrequencySensitivityScale ) );
-                }
-
-                if ( !reasons.Any() )
-                {
-                    // If frequency is within "normal" sensitivity levels for this rule, then continue on without an alert.
-                    continue;
-                }
-
-                // How many std deviations does this transaction exceed the sensitivity level by?
-                // FrequencySensitivityScale is going to be positive, and numberOfFrequencyStdDevs is negative
-                var exceedingFrequencyStdDevs = Math.Abs( numberOfFrequencyStdDevs ) - alertType.FrequencySensitivityScale.Value;
-                var exceedingFrequencyStdDevsAsDays = exceedingFrequencyStdDevs * frequencyStdDev;
-
-                // Check at least one of the people are within the dataview
-                if ( alertType.DataViewId.HasValue )
-                {
-                    var personIdQuery = context.DataViewPersonQueries.GetValueOrNull( alertType.DataViewId.Value );
-
-                    // If the query hasn't already been created, generate the person id query for this dataview
-                    if ( personIdQuery is null )
-                    {
-                        personIdQuery = CreatePersonIdQueryForDataView( rockContext, alertType, context );
-
-                        if ( personIdQuery is null )
-                        {
-                            // Errors are logged within the creation method so just return
-                            break;
-                        }
-
-                        context.DataViewPersonQueries[alertType.DataViewId.Value] = personIdQuery;
-                    }
-
-                    // Check at least one of the people are within the dataview
-                    if ( !personIdQuery.Any( id => people.Any( p => p.Id == id ) ) )
-                    {
-                        // None of the people are in the dataview
-                        continue;
-                    }
-                }
-
-                // Create the alert
-                var financialTransactionAlert = new FinancialTransactionAlert
-                {
-                    TransactionId = null,
-                    PersonAliasId = lastTransactionAuthorizedAliasId,
-                    GivingId = person.GivingId,
-                    AlertTypeId = alertType.Id,
-                    Amount = null,
-                    AmountCurrentMedian = medianGiftAmount,
-                    AmountCurrentIqr = amountIqr,
-                    AmountIqrMultiplier = null,
-                    FrequencyCurrentMean = frequencyMean,
-                    FrequencyCurrentStandardDeviation = frequencyStdDev,
-                    FrequencyDifferenceFromMean = null,
-                    FrequencyZScore = null,
-                    ReasonsKey = reasons.ToJson(),
-                    AlertDateTime = context.Now,
-                    AlertDateKey = context.Now.ToDateKey()
-                };
-
-                alerts.Add( financialTransactionAlert );
-
-                // Break if not set to continue after a match has been made. Otherwise, let the loop continue to the next rule.
-                if ( !alertType.ContinueIfMatched )
-                {
-                    break;
                 }
             }
 
-            return alerts;
+            var daysSinceLastTransaction = ( context.Now - transactionStats.LastTransactionDateTime.Value ).TotalDays;
+
+            // Check the maximum days since the last alert
+            if ( lateGiftAlertType.MaximumDaysSinceLastGift.HasValue && daysSinceLastTransaction > lateGiftAlertType.MaximumDaysSinceLastGift )
+            {
+                return null;
+            }
+
+            // Check if the campus is a match
+            if ( lateGiftAlertType.CampusId.HasValue )
+            {
+                var mostRecentTransactionCampusId = mostRecentTransaction?.AuthorizedPersonCampusId;
+
+                if ( lateGiftAlertType.CampusId != mostRecentTransactionCampusId )
+                {
+                    // Campus does not match
+                    return null;
+                }
+            }
+
+            // Check the median gift amount
+            if ( lateGiftAlertType.MinimumMedianGiftAmount.HasValue && quartileRanges.MedianAmount < lateGiftAlertType.MinimumMedianGiftAmount )
+            {
+                // Median gift amount is too small for this rule
+                return null;
+            }
+
+            if ( lateGiftAlertType.MaximumMedianGiftAmount.HasValue && quartileRanges.MedianAmount > lateGiftAlertType.MaximumMedianGiftAmount )
+            {
+                // Median gift amount is too large for this rule
+                return null;
+            }
+
+            var numberOfFrequencyStdDevs = GetFrequencyDeviationCount( transactionStats.FrequencyStdDevDays, transactionStats.MeanFrequencyDays, ( decimal ) daysSinceLastTransaction );
+
+            var reasons = new List<string>();
+
+            if ( numberOfFrequencyStdDevs <= ( lateGiftAlertType.FrequencySensitivityScale * -1 ) )
+            {
+                // The current date is later the frequency sensitivity scale
+                reasons.Add( nameof( lateGiftAlertType.FrequencySensitivityScale ) );
+            }
+
+            if ( !reasons.Any() )
+            {
+                // If the current date is earlier than the expected next transaction date, don't generate an alert
+                return null;
+            }
+
+            bool personMeetsDataViewCriteria = PersonMeetsDataViewCriteria( lateGiftAlertType, givingId, context );
+            if ( !personMeetsDataViewCriteria )
+            {
+                return null;
+            }
+
+            // The next expected gift date is earlier than today, and they haven't given since then, so create a late alert
+            // Create the alert
+            // Note that Amount, AmountIqrMultiplier, FrequencyDifferenceFromMean and FrequencyZScore will be set to null.
+            // Those values are comparisons of the specific transaction that created the alert to the normal giving patterns.
+            // In this case it is the lack of a transaction that caused the alert, so no transaction to compare to.
+            var financialTransactionAlert = new FinancialTransactionAlert
+            {
+                TransactionId = null,
+                PersonAliasId = mostRecentTransaction.AuthorizedPersonAliasId,
+                GivingId = givingId,
+                AlertTypeId = lateGiftAlertType.Id,
+                Amount = null,
+                AmountCurrentMedian = quartileRanges.MedianAmount,
+                AmountCurrentIqr = quartileRanges.IQRAmount,
+                AmountIqrMultiplier = null,
+                FrequencyCurrentMean = transactionStats.MeanFrequencyDays,
+                FrequencyCurrentStandardDeviation = transactionStats.FrequencyStdDevDays,
+                FrequencyDifferenceFromMean = null,
+                FrequencyZScore = null,
+                ReasonsKey = reasons.ToJson(),
+                AlertDateTime = context.Now,
+                AlertDateKey = context.Now.ToDateKey()
+            };
+
+            newAlertsForGivingId.Add( (lateGiftAlertType.Id, lateGiftAlertType.ContinueIfMatched) );
+
+            return financialTransactionAlert;
         }
 
         /// <summary>
@@ -2142,6 +2447,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     continue;
                 }
 
+                // This Task does all of the various Workflow, Bus Events, System Communications, etc
                 new ProcessTransactionAlertActions.Message
                 {
                     FinancialTransactionAlertId = alert.Id
@@ -2187,9 +2493,39 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             {
                 JobExecutionContext = jobExecutionContext;
                 JobDataMap = jobExecutionContext.JobDetail.JobDataMap;
-                DataViewPersonQueries = new Dictionary<int, IQueryable<int>>();
+                DataViewPersonQueries = new Dictionary<int, IQueryable<Person>>();
                 SqlCommandTimeoutSeconds = JobDataMap.GetString( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+                DataViewPersonQueriesRockContext = new RockContext();
+                DataViewPersonQueriesRockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
+                LateAlertsByGivingId = new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
             }
+
+
+            /* 11-17-2021 MDP
+
+            Talking with some local statistics nerds, 4 datapoints is the absolute bare minimum for an IQR,
+            and 5 datapoints is the bare minimum for anything meaningful. It gets
+            more meaningful as you approach 10. However, in the case of Church Giving,
+            "at least 5 in last 12 months" is a reasonable rule (without making it more complex).
+
+            Therefore here are our rules:
+                -  Giving Classifications requires at least 5 in last 12 months
+                -  Alert Types
+                    - With sensitivity: Requires at least 5 in last 12 months
+                    - Without sensitivity, doesn't require transaction history,
+            */
+
+            /// <summary>
+            /// The minimum transaction count needed to get meaningful statistics
+            /// for Alert Types that have either the Amount Sensitivity or Frequency Sensitivity defined.
+            /// Need at least 5 in last 12 months (see above engineering note).
+            /// </summary>
+            public readonly int MinimumTransactionCountForSensitivityAlertTypes = 5;
+
+            /// <summary>
+            /// The minimum transaction count for classifications
+            /// </summary>
+            public readonly int MinimumTransactionCountForClassifications = 5;
 
             #region Fields
 
@@ -2283,12 +2619,24 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             public List<FinancialTransactionAlertType> AlertTypes { get; set; }
 
             /// <summary>
+            /// Gets or sets the data view person queries rock context.
+            /// </summary>
+            /// <value>The data view person queries rock context.</value>
+            internal RockContext DataViewPersonQueriesRockContext { get; set; }
+
+            /// <summary>
             /// Gets the data view person queries.
             /// </summary>
             /// <value>
             /// The data view person queries.
             /// </value>
-            public Dictionary<int, IQueryable<int>> DataViewPersonQueries { get; }
+            public Dictionary<int, IQueryable<Person>> DataViewPersonQueries { get; }
+
+            /// <summary>
+            /// Gets or sets the late alerts by giving identifier.
+            /// </summary>
+            /// <value>The late alerts by giving identifier.</value>
+            internal Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>> LateAlertsByGivingId { get; set; }
 
             /// <summary>
             /// Gets the attribute value.
@@ -2302,121 +2650,206 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Alert View
-    /// </summary>
-    public sealed class AlertView
-    {
-        /// <summary>
-        /// Gets or sets the alert type identifier.
-        /// </summary>
-        /// <value>
-        /// The alert type identifier.
-        /// </value>
-        public int AlertTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the alert date time.
+        /// Alert View
         /// </summary>
-        /// <value>
-        /// The alert date time.
-        /// </value>
-        public DateTime AlertDateTime { get; set; }
+        public sealed class AlertView
+        {
+            /// <summary>
+            /// Gets or sets the alert type identifier.
+            /// </summary>
+            /// <value>
+            /// The alert type identifier.
+            /// </value>
+            public int AlertTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the alert date time.
+            /// </summary>
+            /// <value>
+            /// The alert date time.
+            /// </value>
+            public DateTime AlertDateTime { get; set; }
+
+            /// <summary>
+            /// Gets the type of the alert.
+            /// </summary>
+            /// <value>
+            /// The type of the alert.
+            /// </value>
+            public AlertType AlertType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the transaction identifier.
+            /// </summary>
+            /// <value>
+            /// The transaction identifier.
+            /// </value>
+            public int? TransactionId { get; set; }
+        }
 
         /// <summary>
-        /// Gets the type of the alert.
+        /// Transaction View
         /// </summary>
-        /// <value>
-        /// The type of the alert.
-        /// </value>
-        public AlertType AlertType { get; set; }
+        public sealed class TransactionView
+        {
+            /// <summary>
+            /// Gets or sets the transaction date time.
+            /// </summary>
+            /// <value>
+            /// The transaction date time.
+            /// </value>
+            public DateTime TransactionDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the total amount (for all accounts)
+            /// </summary>
+            /// <value>
+            /// The total amount.
+            /// </value>
+            public decimal TotalTransactionAmount
+            {
+                get
+                {
+                    return TransactionViewDetails?.Sum( x => x.Amount ) ?? 0.0M;
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the currency type value identifier.
+            /// </summary>
+            /// <value>
+            /// The currency type value identifier.
+            /// </value>
+            public int? CurrencyTypeValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the source type value identifier.
+            /// </summary>
+            /// <value>
+            /// The source type value identifier.
+            /// </value>
+            public int? SourceTypeValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is scheduled.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is scheduled; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsScheduled { get; set; }
+
+            /// <summary>
+            /// Gets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the authorized person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The authorized person alias identifier.
+            /// </value>
+            public int AuthorizedPersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets the authorized person giving identifier.
+            /// </summary>
+            /// <value>The authorized person giving identifier.</value>
+            public string AuthorizedPersonGivingId { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the authorized person campus identifier.
+            /// </summary>
+            /// <value>The authorized person campus identifier.</value>
+            public int? AuthorizedPersonCampusId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the transaction view details.
+            /// </summary>
+            /// <value>The transaction view details.</value>
+            public List<TransactionViewDetail> TransactionViewDetails { get; set; }
+
+            /// <summary>
+            /// Converts to string.
+            /// </summary>
+            /// <returns>string.</returns>
+            public override string ToString()
+            {
+                return $"{TransactionDateTime}, GivingId: {AuthorizedPersonGivingId}, TotalAmount: {TotalTransactionAmount}";
+            }
+        }
 
         /// <summary>
-        /// Gets or sets the transaction identifier.
+        /// Class TransactionViewDetail. This class cannot be inherited.
         /// </summary>
-        /// <value>
-        /// The transaction identifier.
-        /// </value>
-        public int? TransactionId { get; set; }
-    }
+        public sealed class TransactionViewDetail
+        {
+            /// <summary>
+            /// Gets or sets the account identifier.
+            /// </summary>
+            /// <value>The account identifier.</value>
+            public int AccountId { get; set; }
 
-    /// <summary>
-    /// Transaction View
-    /// </summary>
-    public sealed class TransactionView
-    {
-        /// <summary>
-        /// Gets or sets the transaction date time.
-        /// </summary>
-        /// <value>
-        /// The transaction date time.
-        /// </value>
-        public DateTime TransactionDateTime { get; set; }
+            /// <summary>
+            /// Gets or sets the amount.
+            /// </summary>
+            /// <value>The amount.</value>
+            public decimal Amount { get; set; }
+        }
 
-        /// <summary>
-        /// Gets or sets the total amount.
-        /// </summary>
-        /// <value>
-        /// The total amount.
-        /// </value>
-        public decimal TotalAmount { get; set; }
+        private sealed class FrequencyStats
+        {
+            public DateTime? LastTransactionDateTime { get; set; }
 
-        /// <summary>
-        /// Gets or sets the currency type value identifier.
-        /// </summary>
-        /// <value>
-        /// The currency type value identifier.
-        /// </value>
-        public int? CurrencyTypeValueId { get; set; }
+            public decimal MeanFrequencyDays { get; set; }
+
+            public decimal FrequencyStdDevDays { get; set; }
+
+            public DateTime? NextExpectedGiftDate { get; set; }
+
+            public FinancialGivingAnalyticsFrequencyLabel GivingFrequencyLabel { get; set; }
+        }
 
         /// <summary>
-        /// Gets or sets the source type value identifier.
+        /// Class LateAlertForGivingIdArgs. This class cannot be inherited.
         /// </summary>
-        /// <value>
-        /// The source type value identifier.
-        /// </value>
-        public int? SourceTypeValueId { get; set; }
+        internal sealed class LateAlertForGivingIdArgs
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LateAlertForGivingIdArgs" /> class.
+            /// </summary>
+            /// <param name="givingId">The giving identifier.</param>
+            /// <param name="last12MonthsTransactions">The last12 months transactions.</param>
+            /// <param name="recentAlerts">The recent alerts.</param>
+            /// <param name="mostRecentOldTransactionDateTime">The most recent old transaction date time.</param>
+            internal LateAlertForGivingIdArgs( string givingId, List<TransactionView> last12MonthsTransactions, List<AlertView> recentAlerts, DateTime? mostRecentOldTransactionDateTime )
+            {
+                GivingId = givingId;
+                Last12MonthsTransactions = last12MonthsTransactions;
+                RecentAlerts = recentAlerts ?? new List<AlertView>();
+                MostRecentOldTransactionDateTime = mostRecentOldTransactionDateTime;
+            }
 
-        /// <summary>
-        /// Gets or sets the currency type value identifier.
-        /// </summary>
-        /// <value>
-        /// The currency type value identifier.
-        /// </value>
-        public Guid? CurrencyTypeValueGuid { get; set; }
+            public readonly string GivingId;
+            public readonly List<TransactionView> Last12MonthsTransactions;
+            public readonly List<AlertView> RecentAlerts;
 
-        /// <summary>
-        /// Gets or sets the source type value identifier.
-        /// </summary>
-        /// <value>
-        /// The source type value identifier.
-        /// </value>
-        public Guid? SourceTypeValueGuid { get; set; }
+            public DateTime? GeMostRecentAlertOfThisTypeAlertDateTime( int alertTypeId )
+            {
+                if ( !RecentAlerts.Any() )
+                {
+                    return null;
+                }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is scheduled.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is scheduled; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsScheduled { get; set; }
+                return RecentAlerts.Where( a => a.AlertTypeId == alertTypeId ).Max( x => x.AlertDateTime );
+            }
 
-        /// <summary>
-        /// Gets the identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the authorized person alias identifier.
-        /// </summary>
-        /// <value>
-        /// The authorized person alias identifier.
-        /// </value>
-        public int AuthorizedPersonAliasId { get; set; }
+            public readonly DateTime? MostRecentOldTransactionDateTime;
+        }
     }
 }

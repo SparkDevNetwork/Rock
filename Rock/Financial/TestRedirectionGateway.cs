@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Web;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -59,7 +60,7 @@ namespace Rock.Financial
         Key = AttributeKey.GenerateFakeGetPayments,
         DefaultBooleanValue = false,
         Order = 3 )]
-    public class TestRedirectionGateway : GatewayComponent, IAutomatedGatewayComponent, IRedirectionGateway
+    public class TestRedirectionGateway : GatewayComponent, IAutomatedGatewayComponent, IRedirectionGatewayComponent
     {
         #region Attribute Keys
 
@@ -480,6 +481,7 @@ namespace Rock.Financial
         #endregion
 
         #region IRedirectionGateway Implementation
+
         /// <summary>
         /// Gets the merchant field label.
         /// </summary>
@@ -527,16 +529,17 @@ namespace Rock.Financial
             };
         }
 
-        /// <summary>
-        /// Gets the redirect URL.
-        /// </summary>
-        /// <param name="fundId">The fund identifier.</param>
-        /// <param name="amount">The amount.</param>
-        /// <param name="metadata">The metadata.</param>
-        /// <returns></returns>
-        public string GetEventRegistrationRedirectUrl( string fundId, decimal amount, Dictionary<string, string> metadata )
+        /// <inheritdoc/>
+        public string GetPaymentRedirectUrl( int? fundId, decimal amount, string returnUrl, Dictionary<string, string> metadata )
         {
-            var returnUrl = $"sr={metadata["SourceReference"]}&paymentToken={fundId}:{amount}";
+            if ( returnUrl.Contains( "?" ) )
+            {
+                returnUrl = $"{returnUrl}&paymentToken={Guid.NewGuid()}:{amount}";
+            }
+            else
+            {
+                returnUrl = $"{returnUrl}?paymentToken={Guid.NewGuid()}:{amount}";
+            }
 
             /*
              * Okay, there are about 18 levels of madness here.
@@ -553,26 +556,31 @@ namespace Rock.Financial
              * our custom HTML.
              * 
              * Level 5: When the person clicks the link in the fake body page it
-             * redirects them back to the current page with the new query parameters.
+             * redirects them back to the return url with the new query parameters.
              *
              * -Daniel Hazelbaker 9/13/2021
              */
             var javascript = $@"javascript:window.document.body.innerHTML = '<h1>Test Redirection Gateway</h1>
 <p>You will pay a simulated amount of {amount.FormatAsCurrency()}</p>
-<p><a href=""' + window.location.href + (window.location.href.indexOf('?') !== -1 ? '&' : '?') + '{returnUrl}"">Pay and Return</a></p>'";
+<p><a href=""{returnUrl}"">Pay and Return</a></p>'";
 
             return javascript;
         }
 
-        /// <summary>
-        /// Fetches the transaction from the database if it already exists or the API otherwise.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="merchantId">The merchant identifier.</param>
-        /// <param name="paymentToken">The payment token.</param>
-        /// <returns></returns>
-        public FinancialTransaction FetchTransaction( Data.RockContext rockContext, FinancialGateway financialGateway, string merchantId, string paymentToken )
+        /// <inheritdoc/>
+        public bool TryGetPaymentTokenFromParameters( FinancialGateway financialGateway, IDictionary<string, string> parameters, out string paymentToken )
+        {
+            return parameters.TryGetValue( "paymentToken", out paymentToken );
+        }
+
+        /// <inheritdoc/>
+        public bool IsPaymentTokenCharged( FinancialGateway financialGateway, string paymentToken )
+        {
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public FinancialTransaction FetchPaymentTokenTransaction( Data.RockContext rockContext, FinancialGateway financialGateway, int? fundId, string paymentToken )
         {
             var tokenComponents = paymentToken.ToStringSafe().Split( ':' );
 
@@ -587,6 +595,13 @@ namespace Rock.Financial
                     }
                 }
             };
+        }
+
+        /// <inheritdoc/>
+        public string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return Guid.NewGuid().ToString( "N" );
         }
 
         #endregion IRedirectionGateway Implementation

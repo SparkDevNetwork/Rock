@@ -217,9 +217,9 @@
                 pageContext
             };
 
-            const $btn = $panel.find('.js-load-more');
-            $btn.html('<i class="fa fa-refresh fa-spin"></i> Load More');
-            $btn.addClass("disabled");
+            const $btnLoadMore = $panel.find('.js-load-more');
+            $btnLoadMore.html('<i class="fa fa-refresh fa-spin"></i> Load More');
+            $btnLoadMore.addClass("disabled");
 
             const result = await $.ajax({
                 type: "POST",
@@ -229,13 +229,17 @@
             });
 
             if (!result.Items || result.Items.length === 0) {
-                $btn.hide();
+                $btnLoadMore.hide();
                 return;
+            } else {
+                if (result.Items.length < 25) {
+                    $btnLoadMore.hide();
+                }
             }
 
-            $btn.removeClass("disabled");
-            $btn.data("context", result.NextPage);
-            $btn.text("Load More");
+            $btnLoadMore.removeClass("disabled");
+            $btnLoadMore.data("context", result.NextPage);
+            $btnLoadMore.text("Load More");
 
             for (var i = 0; i < result.Items.length; i++) {
                 const item = result.Items[i];
@@ -266,7 +270,7 @@
                 $chart.append(getHeatMap(item.Data.WatchMap));
                 $percent.text(Math.floor(item.Data.WatchedPercentage) + "%");
 
-                $row.insertBefore($btn);
+                $row.insertBefore($btnLoadMore);
             }
         }
 
@@ -361,16 +365,16 @@
             }
 
             const $individualPlaysPanel = $("#" + options.individualPlaysId);
-            const $btn = $individualPlaysPanel.find(".js-load-more");
+            const $btnLoadMore = $individualPlaysPanel.find(".js-load-more");
 
-            $btn.on("click", ev => {
+            $btnLoadMore.on("click", ev => {
                 ev.preventDefault();
 
-                if ($btn.hasClass("disabled")) {
+                if ($btnLoadMore.hasClass("disabled")) {
                     return;
                 }
 
-                const context = $btn.data("context");
+                const context = $btnLoadMore.data("context");
 
                 loadMoreIndividualPlays($individualPlaysPanel, options, context);
             });

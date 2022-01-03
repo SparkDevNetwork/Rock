@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Finance
         AllowMultiple = true,
         Order = 5 )]
 
-    public partial class BusinessDetail : ContextEntityBlock, IDetailBlock
+    public partial class BusinessDetail : ContextEntityBlock
     {
         private static class AttributeKey
         {

@@ -35,7 +35,7 @@ type SaveFinancialAccountFormResult = {
 };
 
 /** A form to save a payment token for later use as a Financial Person Saved Account */
-const SaveFinancialAccountForm = defineComponent( {
+const SaveFinancialAccountForm = defineComponent({
     name: "SaveFinancialAccountForm",
     components: {
         CheckBox,
@@ -60,7 +60,7 @@ const SaveFinancialAccountForm = defineComponent( {
     },
     setup () {
         return {
-            http: inject( "http" ) as BlockHttp
+            http: inject("http") as BlockHttp
         };
     },
     data () {
@@ -105,7 +105,7 @@ const SaveFinancialAccountForm = defineComponent( {
             this.errorTitle = "";
             this.errorMessage = "";
 
-            if ( this.password !== this.confirmPassword ) {
+            if (this.password !== this.confirmPassword) {
                 this.errorTitle = "Password";
                 this.errorMessage = "The password fields do not match.";
                 return;
@@ -113,15 +113,15 @@ const SaveFinancialAccountForm = defineComponent( {
 
             this.isLoading = true;
 
-            const result = await this.http.post<SaveFinancialAccountFormResult>( `api/v2/controls/savefinancialaccountforms/${this.gatewayGuid}`, null, {
+            const result = await this.http.post<SaveFinancialAccountFormResult>(`/api/v2/controls/savefinancialaccountforms/${this.gatewayGuid}`, null, {
                 Password: this.password,
                 SavedAccountName: this.savedAccountName,
                 TransactionCode: this.transactionCode,
                 Username: this.username,
                 GatewayPersonIdentifier: this.gatewayPersonIdentifier
-            } );
+            });
 
-            if ( result?.data?.isSuccess ) {
+            if (result?.data?.isSuccess) {
                 this.successTitle = result.data.title;
                 this.successMessage = result.data.detail || "Success";
             }
@@ -165,6 +165,6 @@ const SaveFinancialAccountForm = defineComponent( {
         </RockForm>
     </template>
 </div>`
-} );
+});
 
 export default SaveFinancialAccountForm;

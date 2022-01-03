@@ -108,7 +108,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
-        public String HomePhoneNumber { get; set; }
+        public string HomePhoneNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the Cell Phone Number of the person who requested benevolence.
@@ -118,7 +118,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
-        public String CellPhoneNumber { get; set; }
+        public string CellPhoneNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the Work Phone Number of the person who requested benevolence.
@@ -128,7 +128,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
-        public String WorkPhoneNumber { get; set; }
+        public string WorkPhoneNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.PersonAlias"/> who is the case worker for this request.
@@ -208,6 +208,16 @@ namespace Rock.Model
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence type identifier.
+        /// </summary>
+        /// <value>
+        /// The benevolence type identifier.
+        /// </value>
+        [HideFromReporting]
+        [DataMember( IsRequired = true )]
+        public int BenevolenceTypeId { get; set; }
 
         #endregion Entity Properties
 
@@ -304,6 +314,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate RequestSourceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence type.
+        /// </summary>
+        /// <value>
+        /// The benevolence type.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.BenevolenceType BenevolenceType { get; set; }
         #endregion Navigation Properties
 
         #region Public Methods
@@ -339,9 +358,11 @@ namespace Rock.Model
             this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( false );
+
+            this.HasRequired( p => p.BenevolenceType ).WithMany( p => p.BenevolenceRequests ).HasForeignKey( p => p.BenevolenceTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.RequestStatusValue ).WithMany().HasForeignKey( p => p.RequestStatusValueId ).WillCascadeOnDelete( false );
 
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier RequestSourceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasRequired( r => r.RequestSourceDate ).WithMany().HasForeignKey( r => r.RequestDateKey ).WillCascadeOnDelete( false );
         }

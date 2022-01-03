@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given calendar event item." )]
 
-    public partial class EventItemDetail : RockBlock, IDetailBlock
+    public partial class EventItemDetail : RockBlock
     {
         #region Properties
 

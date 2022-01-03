@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int BenevolenceTypeId { get; set; }
+
+        /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
@@ -129,6 +132,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BenevolenceRequest source )
         {
             this.Id = source.Id;
+            this.BenevolenceTypeId = source.BenevolenceTypeId;
             this.CampusId = source.CampusId;
             this.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
             this.CellPhoneNumber = source.CellPhoneNumber;
@@ -166,6 +170,9 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<BenevolenceResult> BenevolenceResults { get; set; }
+
+        /// <summary />
+        public BenevolenceType BenevolenceType { get; set; }
 
         /// <summary />
         public Campus Campus { get; set; }

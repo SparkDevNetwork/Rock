@@ -255,7 +255,9 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// Gets a value indicating the ability level determination if the AbilityLevelSelect checking block should be skipped or not.
-        /// 0 = (Ask) show the ability level, 1 = (Don't Ask) Do not show the ability level
+        /// 0 = (Ask) show the ability level
+        /// 1 = (Don't Ask) Do not show the ability level
+        /// 2 = (Don't Ask If There Is No Ability Level) Do not show the ability level if the person does not have one.
         /// </summary>
         /// <value>
         /// The ability level determination.
@@ -791,7 +793,14 @@ namespace Rock.CheckIn
         /// <summary>
         /// Trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.
         /// </summary>
-        DoNotAsk = 1
+        DoNotAsk = 1,
+
+        /// <summary>
+        /// The individuals without an ability level will not be asked as part of each check-in.
+        /// If the person has an ability level: show the ability selection screen (to possibly change it) and then allow selecting a group that matches the ability level.
+        /// If the person does not have an ability level: Bypass the ability screen then allow selection of a group that has no ability levels. 
+        /// </summary>
+        DoNotAskIfThereIsNoAbilityLevel = 2
     }
 
     /// <summary>

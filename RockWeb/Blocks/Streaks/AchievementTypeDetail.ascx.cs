@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Achievements" )]
     [Description( "Displays the details of the given Achievement Type for editing." )]
 
-    public partial class AchievementTypeDetail : RockBlock, IDetailBlock
+    public partial class AchievementTypeDetail : RockBlock
     {
         #region Keys
 
@@ -704,7 +704,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )

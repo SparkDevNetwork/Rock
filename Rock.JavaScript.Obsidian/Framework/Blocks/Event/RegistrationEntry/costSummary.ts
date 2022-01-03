@@ -48,21 +48,21 @@ type AugmentedLineItem = LineItem & {
     amountFormatted: string;
 };
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.CostSummary",
     components: {
         Loading,
         CurrencyBox,
         HelpBlock
     },
-    setup () {
+    setup() {
         return {
-            getRegistrationEntryBlockArgs: inject( "getRegistrationEntryBlockArgs" ) as () => RegistrationEntryBlockArgs,
-            invokeBlockAction: inject( "invokeBlockAction" ) as InvokeBlockActionFunc,
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState
+            getRegistrationEntryBlockArgs: inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs,
+            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc,
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
-    data () {
+    data() {
         return {
             isLoading: false,
             lineItems: [] as LineItem[]
@@ -70,56 +70,56 @@ export default defineComponent( {
     },
     computed: {
         /** Line items with some extra info computed for table rendering */
-        augmentedLineItems (): AugmentedLineItem[] {
-            return this.lineItems.map( li => ( {
+        augmentedLineItems(): AugmentedLineItem[] {
+            return this.lineItems.map(li => ({
                 ...li,
                 isFee: li.type === RegistrationCostSummaryType.Fee,
-                discountHelp: ( this.hasDiscount && li.cost === li.discountedCost ) ? "This item is not eligible for the discount." : "",
-                amountFormatted: asFormattedString( li.cost, 2 ),
-                discountedAmountFormatted: asFormattedString( li.discountedCost, 2 )
-            } as AugmentedLineItem ) );
+                discountHelp: (this.hasDiscount && li.cost === li.discountedCost) ? "This item is not eligible for the discount." : "",
+                amountFormatted: asFormattedString(li.cost, 2),
+                discountedAmountFormatted: asFormattedString(li.discountedCost, 2)
+            } as AugmentedLineItem));
         },
 
         /** Should the discount column in the fee table be shown? */
-        hasDiscount (): boolean {
-            return this.lineItems.some( li => li.discountedCost !== li.cost );
+        hasDiscount(): boolean {
+            return this.lineItems.some(li => li.discountedCost !== li.cost);
         },
 
         /** The total cost before discounts */
-        total (): number {
+        total(): number {
             let total = 0;
-            this.lineItems.forEach( li => total += li.cost );
+            this.lineItems.forEach(li => total += li.cost);
             return total;
         },
 
         /** The total before discounts as a formatted string */
-        totalFormatted (): string {
-            return `$${asFormattedString( this.total, 2 )}`;
+        totalFormatted(): string {
+            return `$${asFormattedString(this.total, 2)}`;
         },
 
         /** The total cost before discounts */
-        defaultPaymentAmount (): number {
+        defaultPaymentAmount(): number {
             let total = 0;
             let hasDefault = false;
 
-            this.lineItems.forEach( li => {
-                if ( li.defaultPayment ) {
+            this.lineItems.forEach(li => {
+                if (li.defaultPayment) {
                     hasDefault = true;
                     total += li.defaultPayment;
                 }
-            } );
+            });
 
             total = hasDefault ? total : this.maxAmountCanBePaid;
 
-            if ( total > this.maxAmountCanBePaid ) {
+            if (total > this.maxAmountCanBePaid) {
                 total = this.maxAmountCanBePaid;
             }
 
-            if ( total < this.amountDueToday ) {
+            if (total < this.amountDueToday) {
                 total = this.amountDueToday;
             }
 
-            if ( total < 0 ) {
+            if (total < 0) {
                 total = 0;
             }
 
@@ -127,53 +127,53 @@ export default defineComponent( {
         },
 
         /** The total cost after discounts */
-        discountedTotal (): number {
+        discountedTotal(): number {
             let total = 0;
-            this.lineItems.forEach( li => total += li.discountedCost );
+            this.lineItems.forEach(li => total += li.discountedCost);
             return total;
         },
 
         /** The total after discounts as a formatted string */
-        discountedTotalFormatted (): string {
-            return `$${asFormattedString( this.discountedTotal, 2 )}`;
+        discountedTotalFormatted(): string {
+            return `$${asFormattedString(this.discountedTotal, 2)}`;
         },
 
         /** The min amount that must be paid today */
-        amountDueToday (): number {
-            if ( this.amountPreviouslyPaid ) {
+        amountDueToday(): number {
+            if (this.amountPreviouslyPaid) {
                 return 0;
             }
 
             let total = 0;
-            this.lineItems.forEach( li => total += li.minPayment );
+            this.lineItems.forEach(li => total += li.minPayment);
             return total;
         },
 
         /** The min amount that must be paid today as a formatted string */
-        amountDueTodayFormatted (): string {
-            return `$${asFormattedString( this.amountDueToday, 2 )}`;
+        amountDueTodayFormatted(): string {
+            return `$${asFormattedString(this.amountDueToday, 2)}`;
         },
 
         /** Should the amount that is due today be shown */
-        showAmountDueToday (): boolean {
+        showAmountDueToday(): boolean {
             return this.amountDueToday !== this.discountedTotal;
         },
 
         /** The amount previously paid */
-        amountPreviouslyPaid (): number {
+        amountPreviouslyPaid(): number {
             return this.registrationEntryState.viewModel.session?.previouslyPaid || 0;
         },
 
         /** The amount previously paid formatted as a string */
-        amountPreviouslyPaidFormatted (): string {
-            return `$${asFormattedString( this.amountPreviouslyPaid, 2 )}`;
+        amountPreviouslyPaidFormatted(): string {
+            return `$${asFormattedString(this.amountPreviouslyPaid, 2)}`;
         },
 
         /** The max amount that can be paid today */
-        maxAmountCanBePaid (): number {
+        maxAmountCanBePaid(): number {
             const balance = this.discountedTotal - this.amountPreviouslyPaid;
 
-            if ( balance > 0 ) {
+            if (balance > 0) {
                 return balance;
             }
 
@@ -181,35 +181,35 @@ export default defineComponent( {
         },
 
         /** The max amount that can be paid today as a formatted string */
-        maxAmountCanBePaidFormatted (): string {
-            return `$${asFormattedString( this.maxAmountCanBePaid, 2 )}`;
+        maxAmountCanBePaidFormatted(): string {
+            return `$${asFormattedString(this.maxAmountCanBePaid, 2)}`;
         },
 
         /** The amount that would remain if the user paid the amount indicated in the currency box */
-        amountRemaining (): number {
+        amountRemaining(): number {
             const actual = this.maxAmountCanBePaid - this.registrationEntryState.amountToPayToday;
             const bounded = actual < 0 ? 0 : actual > this.maxAmountCanBePaid ? this.maxAmountCanBePaid : actual;
             return bounded;
         },
 
         /** The amount that would remain if the user paid the amount indicated in the currency box as a formatted string */
-        amountRemainingFormatted (): string {
-            return `$${asFormattedString( this.amountRemaining, 2 )}`;
+        amountRemainingFormatted(): string {
+            return `$${asFormattedString(this.amountRemaining, 2)}`;
         },
 
         /** The vee-validate rules for the amount to pay today */
-        amountToPayTodayRules (): string {
-            const rules: string[] = [ "required" ];
+        amountToPayTodayRules(): string {
+            const rules: string[] = ["required"];
             let min = this.amountDueToday;
             const max = this.maxAmountCanBePaid;
 
-            if ( min > max ) {
+            if (min > max) {
                 min = max;
             }
 
-            rules.push( `gte:${min}` );
-            rules.push( `lte:${max}` );
-            return ruleArrayToString( rules );
+            rules.push(`gte:${min}`);
+            rules.push(`lte:${max}`);
+            return ruleArrayToString(rules);
         },
     },
     methods: {
@@ -232,7 +232,7 @@ export default defineComponent( {
             }
         }
     },
-    async created () {
+    async created() {
         await this.fetchData();
     },
     watch: {
@@ -337,4 +337,4 @@ export default defineComponent( {
         </div>
     </div>
 </Loading>`
-} );
+});

@@ -41,6 +41,9 @@ namespace Rock.Client
         public bool AllowSearch { get; set; }
 
         /// <summary />
+        public string AttributeColor { get; set; }
+
+        /// <summary />
         public string DefaultValue { get; set; }
 
         /// <summary />
@@ -155,6 +158,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AbbreviatedName = source.AbbreviatedName;
             this.AllowSearch = source.AllowSearch;
+            this.AttributeColor = source.AttributeColor;
             this.DefaultValue = source.DefaultValue;
             this.Description = source.Description;
             this.EnableHistory = source.EnableHistory;

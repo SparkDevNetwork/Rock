@@ -49,6 +49,14 @@ namespace Rock.Model
         public GroupMemberStatus? PlacementGroupMemberStatus { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the placement group role.
+        /// </summary>
+        /// <value>
+        /// The name of the placement group role.
+        /// </value>
+        public string PlacementGroupRoleName { get; set; }
+
+        /// <summary>
         /// Gets or sets the comments.
         /// </summary>
         public string Comments { get; set; }
@@ -557,6 +565,25 @@ namespace Rock.Model
                 }
 
                 return string.Format( "{0} Days Since Last Activity", DaysSinceLastActivity.Value );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group name with role and status.
+        /// </summary>
+        /// <value>
+        /// The group name with role and status.
+        /// </value>
+        public string GroupNameWithRoleAndStatus
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace( PlacementGroupRoleName ) || PlacementGroupMemberStatus != null )
+                {
+                    return string.Format("{0} ({1} {2})", GroupName, PlacementGroupMemberStatus, PlacementGroupRoleName );
+                }
+
+                return GroupName;
             }
         }
 

@@ -399,20 +399,38 @@ namespace Rock.Model
             }
             else if ( settings.AreChildAccountsIncluded == true )
             {
-                query = query.Where( t => t.TransactionDetails.Any( td =>
-                    accountIds.Contains( td.AccountId ) ||
-                    ( td.Account.ParentAccountId.HasValue && accountIds.Contains( td.Account.ParentAccountId.Value ) ) ) );
+                if ( accountIds.Count() == 1 )
+                {
+                    var accountId = accountIds[0];
+                    query = query.Where( t => t.TransactionDetails.Any( td => td.AccountId == accountId ||
+                        ( td.Account.ParentAccountId.HasValue && accountId == td.Account.ParentAccountId.Value ) ) );
+
+                }
+                else
+                {
+                    query = query.Where( t => t.TransactionDetails.Any( td =>
+                        accountIds.Contains( td.AccountId ) ||
+                        ( td.Account.ParentAccountId.HasValue && accountIds.Contains( td.Account.ParentAccountId.Value ) ) ) );
+                }
             }
             else
             {
-                query = query.Where( t => t.TransactionDetails.Any( td => accountIds.Contains( td.AccountId ) ) );
+                if ( accountIds.Count() == 1 )
+                {
+                    var accountId = accountIds[0];
+                    query = query.Where( t => t.TransactionDetails.Any( td => accountId == td.AccountId ) );
+                }
+                else
+                {
+                    query = query.Where( t => t.TransactionDetails.Any( td => accountIds.Contains( td.AccountId ) ) );
+                }
             }
 
             // Remove transactions that have refunds
             query = query.Where( t => !t.Refunds.Any() );
 
             // Remove transactions with $0 or negative amounts
-            query = query.Where( t => t.TransactionDetails.Sum( d => d.Amount ) > 0M );
+            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
 
             return query;
         }

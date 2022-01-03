@@ -556,33 +556,33 @@ namespace RockWeb.Blocks.Finance
             gList.Visible = true;
             RockContext rockContext = new RockContext();
             BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
-            var qry = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" ).AsNoTracking();
+            var benevolenceRequestQuery = benevolenceRequestService.Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person" ).AsNoTracking();
 
             // Filter by Start Date
             DateTime? startDate = drpDate.LowerValue;
             if ( startDate != null )
             {
-                qry = qry.Where( b => b.RequestDateTime >= startDate );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.RequestDateTime >= startDate );
             }
 
             // Filter by End Date
             DateTime? endDate = drpDate.UpperValue;
             if ( endDate != null )
             {
-                qry = qry.Where( b => b.RequestDateTime <= endDate );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.RequestDateTime <= endDate );
             }
 
             // Filter by Campus
             if ( cpCampus.SelectedCampusId.HasValue )
             {
-                qry = qry.Where( b => b.CampusId == cpCampus.SelectedCampusId );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.CampusId == cpCampus.SelectedCampusId );
             }
 
             if ( TargetPerson != null )
             {
                 // show benevolence request for the target person and also for their family members
                 var qryFamilyMembers = TargetPerson.GetFamilyMembers( true, rockContext );
-                qry = qry.Where( a => a.RequestedByPersonAliasId.HasValue && qryFamilyMembers.Any( b => b.PersonId == a.RequestedByPersonAlias.PersonId ) );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( a => a.RequestedByPersonAliasId.HasValue && qryFamilyMembers.Any( b => b.PersonId == a.RequestedByPersonAlias.PersonId ) );
             }
             else
             {
@@ -590,14 +590,14 @@ namespace RockWeb.Blocks.Finance
                 string firstName = tbFirstName.Text;
                 if ( !string.IsNullOrWhiteSpace( firstName ) )
                 {
-                    qry = qry.Where( b => b.FirstName.StartsWith( firstName ) );
+                    benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.FirstName.StartsWith( firstName ) );
                 }
 
                 // Filter by Last Name 
                 string lastName = tbLastName.Text;
                 if ( !string.IsNullOrWhiteSpace( lastName ) )
                 {
-                    qry = qry.Where( b => b.LastName.StartsWith( lastName ) );
+                    benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.LastName.StartsWith( lastName ) );
                 }
             }
 
@@ -605,28 +605,28 @@ namespace RockWeb.Blocks.Finance
             string governmentId = tbGovernmentId.Text;
             if ( !string.IsNullOrWhiteSpace( governmentId ) )
             {
-                qry = qry.Where( b => b.GovernmentId.StartsWith( governmentId ) );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.GovernmentId.StartsWith( governmentId ) );
             }
 
             // Filter by Case Worker
             int? caseWorkerPersonAliasId = ddlCaseWorker.SelectedItem.Value.AsIntegerOrNull();
             if ( caseWorkerPersonAliasId != null )
             {
-                qry = qry.Where( b => b.CaseWorkerPersonAliasId == caseWorkerPersonAliasId );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.CaseWorkerPersonAliasId == caseWorkerPersonAliasId );
             }
 
             // Filter by Result
             int? resultTypeValueId = dvpResult.SelectedItem.Value.AsIntegerOrNull();
             if ( resultTypeValueId != null )
             {
-                qry = qry.Where( b => b.BenevolenceResults.Where( r => r.ResultTypeValueId == resultTypeValueId ).Count() > 0 );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.BenevolenceResults.Where( r => r.ResultTypeValueId == resultTypeValueId ).Count() > 0 );
             }
 
             // Filter by Request Status
             int? requestStatusValueId = dvpStatus.SelectedItem.Value.AsIntegerOrNull();
             if ( requestStatusValueId != null )
             {
-                qry = qry.Where( b => b.RequestStatusValueId == requestStatusValueId );
+                benevolenceRequestQuery = benevolenceRequestQuery.Where( b => b.RequestStatusValueId == requestStatusValueId );
             }
 
             SortProperty sortProperty = gList.SortProperty;
@@ -636,21 +636,21 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( sortProperty.Direction == SortDirection.Descending )
                     {
-                        qry = qry.OrderByDescending( a => a.BenevolenceResults.Sum( b => b.Amount ) );
+                        benevolenceRequestQuery = benevolenceRequestQuery.OrderByDescending( a => a.BenevolenceResults.Sum( b => b.Amount ) );
                     }
                     else
                     {
-                        qry = qry.OrderBy( a => a.BenevolenceResults.Sum( b => b.Amount ) );
+                        benevolenceRequestQuery = benevolenceRequestQuery.OrderBy( a => a.BenevolenceResults.Sum( b => b.Amount ) );
                     }
                 }
                 else
                 {
-                    qry = qry.Sort( sortProperty );
+                    benevolenceRequestQuery = benevolenceRequestQuery.Sort( sortProperty );
                 }
             }
             else
             {
-                qry = qry.OrderByDescending( a => a.RequestDateTime ).ThenByDescending( a => a.Id );
+                benevolenceRequestQuery = benevolenceRequestQuery.OrderByDescending( a => a.RequestDateTime ).ThenByDescending( a => a.Id );
             }
 
             // Filter query by any configured attribute filters
@@ -659,11 +659,11 @@ namespace RockWeb.Blocks.Finance
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, benevolenceRequestService, Rock.Reporting.FilterMode.SimpleFilter );
+                    benevolenceRequestQuery = attribute.FieldType.Field.ApplyAttributeQueryFilter( benevolenceRequestQuery, filterControl, attribute, benevolenceRequestService, Rock.Reporting.FilterMode.SimpleFilter );
                 }
             }
 
-            var list = qry.ToList();
+            var list = benevolenceRequestQuery.ToList();
 
             gList.DataSource = list;
             gList.DataBind();

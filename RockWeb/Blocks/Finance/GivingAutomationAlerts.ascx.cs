@@ -66,7 +66,6 @@ namespace RockWeb.Blocks.Finance
         {
             public const string TransactionPage = "TransactionPage";
             public const string ConfigPage = "ConfigPage";
-            public const string PersonLinkPage = "PersonLinkPage";
         }
 
         #endregion Attribute Keys
@@ -401,27 +400,14 @@ namespace RockWeb.Blocks.Finance
             var lAmtMeasures = e.Row.FindControl( "lAmtMeasures" ) as Literal;
             if ( lAmtMeasures != null )
             {
-                var amountMeasures = alert.AmountIqrMultiplier ?? 0m;
-                var amountMeasuresText = amountMeasures > 100 ?
-                    string.Format( "<span title='{0:N1}'>HIGH</span>", amountMeasures ) :
-                    amountMeasures < -100 ?
-                        string.Format( "<span title='{0:N1}'>LOW</span>", amountMeasures ) :
-                        amountMeasures.ToString( "N1" );
-
-                lAmtMeasures.Text = string.Format( "{0}<span class='small text-muted'> ${1:N0} IQR</span>", amountMeasuresText, alert.AmountCurrentIqr ?? 0m );
+                lAmtMeasures.Text = $"{alert.AmountCurrentMedian.FormatAsCurrency()}<bdi class='small text-muted'> {(alert.AmountCurrentIqr ?? 0m):0.0} IQR</bdi>";
             }
 
             var lFreqMeasures = e.Row.FindControl( "lFreqMeasures" ) as Literal;
             if ( lFreqMeasures != null )
             {
-                var frequencyMeasures = alert.FrequencyZScore ?? 0m;
-                var frequencyMeasuresText = frequencyMeasures > 100 ?
-                    string.Format( "<span title='{0:N1}'>HIGH</span>", frequencyMeasures ) :
-                    frequencyMeasures < -100 ?
-                        string.Format( "<span title='{0:N1}'>LOW</span>", frequencyMeasures ) :
-                        frequencyMeasures.ToString( "N1" );
 
-                lFreqMeasures.Text = string.Format( "{0}<span class='small text-muted'> {1:N1}d σ</span>", frequencyMeasuresText, alert.FrequencyCurrentStandardDeviation ?? 0m );
+                lFreqMeasures.Text = $"{alert.FrequencyCurrentMean:0.0}<span class='small text-muted'> {alert.FrequencyCurrentStandardDeviation:0.0}d σ</span>";
             }
         }
 
@@ -548,6 +534,10 @@ namespace RockWeb.Blocks.Finance
                 {
                     var person = new PersonService( new RockContext() ).Get( personId.Value );
                     ppPerson.SetValue( person );
+                }
+                else
+                {
+                    ppPerson.SetValue( null );
                 }
             }
 
