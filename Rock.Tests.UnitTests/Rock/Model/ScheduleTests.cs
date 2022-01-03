@@ -47,6 +47,9 @@ namespace Rock.Tests.Rock.Model
 
             var nextMonth = RockDateTime.Now.AddMonths( 1 ).Month;
 
+            // These dates don't work well with Feburary so use March instead.
+            nextMonth = nextMonth == 2 ? 3 : nextMonth;
+
             _specificDates = new List<DateTime>();
             _specificDates.Add( new DateTime( today.Year, nextMonth, 1 ) );
             _specificDates.Add( new DateTime( today.Year, nextMonth, 3 ) );
