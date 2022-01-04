@@ -2569,12 +2569,12 @@
     <Compile Include="Model\Core\NoteWatch\NoteWatch.cs" />
     <Compile Include="Model\Communication\Notification\Notification.cs" />
     <Compile Include="Model\Communication\NotificationRecipient\NotificationRecipient.cs" />
-    <Compile Include="Model\Page.cs" />
+    <Compile Include="Model\CMS\Page\Page.cs" />
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageContextService.Partial.cs" />
     <Compile Include="Model\PageRoute.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
-    <Compile Include="Model\PageService.Partial.cs" />
+    <Compile Include="Model\CMS\Page\PageService.Partial.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.cs" />
     <Compile Include="Model\CRM\PersonAlias\PersonAlias.cs" />
