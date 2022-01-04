@@ -173,10 +173,10 @@ Example:
 
 ## person-address.csv
 
-`PersonId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,AddressType`
+`PersonId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`
 
 Example:
-`14,777 Cloud Dr,,Peoria,AZ,85301-1111,USA,,,Home`
+`14,777 Cloud Dr,,Peoria,AZ,85301-1111,USA,,,True,Home`
 
 
 ## person-attribute.csv
