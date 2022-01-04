@@ -176,7 +176,8 @@ namespace Rock.Field.Types
                 }
             }
 
-            editControl.GroupTypes = qryGroupTypes.OrderBy( a => a.Name ).ToList();
+            editControl.IsSortedByName = true;
+            editControl.GroupTypes = qryGroupTypes.ToList();
             return editControl;
         }
 

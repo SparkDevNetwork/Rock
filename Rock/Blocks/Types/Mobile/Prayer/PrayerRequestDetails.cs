@@ -193,6 +193,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     public class PrayerRequestDetails : RockMobileBlockType
     {
+        #region Page Parameters
+
         /// <summary>
         /// The page parameter keys for the PrayerRequestDetails block.
         /// </summary>
@@ -207,7 +209,21 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             /// The request
             /// </summary>
             public const string Request = "Request";
+
+            /// <summary>
+            /// The unique identifier of the group a new prayer request should
+            /// be assigned to.
+            /// </summary>
+            public const string GroupGuid = "GroupGuid";
         }
+
+        /// <summary>
+        /// The unique identifier of the group a new prayer request should be
+        /// assigned to.
+        /// </summary>
+        protected Guid? GroupGuid => RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuidOrNull();
+
+        #endregion
 
         #region Block Attributes
 
@@ -712,10 +728,19 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 else
                 {
                     int? categoryId = null;
+                    int? groupId = null;
 
                     if ( DefaultCategory.HasValue )
                     {
                         categoryId = CategoryCache.Get( DefaultCategory.Value ).Id;
+                    }
+
+                    // If a group unique identifier was specified in the page
+                    // parameters then use it to look up the group to assign
+                    // this request to.
+                    if ( GroupGuid.HasValue )
+                    {
+                        groupId = new GroupService( rockContext ).GetId( GroupGuid.Value );
                     }
 
                     prayerRequest = new PrayerRequest
@@ -725,7 +750,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                         IsApproved = EnableAutoApprove,
                         AllowComments = false,
                         EnteredDateTime = RockDateTime.Now,
-                        CategoryId = categoryId
+                        CategoryId = categoryId,
+                        GroupId = groupId
                     };
                     prayerRequestService.Add( prayerRequest );
 

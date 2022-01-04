@@ -241,6 +241,7 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\attribute.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\authScope.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\badge.d.ts" />
+    <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\benevolenceType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\binaryFile.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\binaryFiletype.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\block.d.ts" />
@@ -312,6 +313,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\benevolenceRequest.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\benevolenceRequestDocument.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\benevolenceResult.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\benevolenceType.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\benevolenceWorkflow.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\binaryFile.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\binaryFileData.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\binaryFileType.d.ts" />

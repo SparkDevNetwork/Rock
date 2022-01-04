@@ -76,6 +76,9 @@ namespace Rock.Client
         public int? StructureEntityId { get; set; }
 
         /// <summary />
+        public string StructureSettingsJSON { get; set; } = @"{""IncludeChildAccounts"":false}";
+
+        /// <summary />
         public Rock.Client.Enums.StreakStructureType? StructureType { get; set; }
 
         /// <summary>
@@ -124,6 +127,7 @@ namespace Rock.Client
             this.RequiresEnrollment = source.RequiresEnrollment;
             this.StartDate = source.StartDate;
             this.StructureEntityId = source.StructureEntityId;
+            this.StructureSettingsJSON = source.StructureSettingsJSON;
             this.StructureType = source.StructureType;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

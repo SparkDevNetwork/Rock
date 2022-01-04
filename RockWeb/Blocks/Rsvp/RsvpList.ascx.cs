@@ -588,6 +588,7 @@ namespace RockWeb.Blocks.RSVP
         public string ParentLocationPath { get; set; }
         public int? ScheduleId { get; set; }
         public string ScheduleName { get; set; }
+        public string Name { get; set; }
         public TimeSpan StartTime { get; set; }
         public int? CampusId { get; set; }
         public int? GroupId { get; set; }
@@ -645,6 +646,7 @@ namespace RockWeb.Blocks.RSVP
                 }
             }
 
+            Name = occurrence.Name;
             LocationName = occurrence.Location != null ? occurrence.Location.Name : string.Empty;
             ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : ( int? ) null;
             ScheduleId = occurrence.ScheduleId;

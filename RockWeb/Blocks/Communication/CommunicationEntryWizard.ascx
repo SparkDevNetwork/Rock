@@ -52,12 +52,11 @@
                                         </div>
                                         <div class="col-sm-4">
                                             <asp:LinkButton
-                                                ID="btnManualList"
+                                                ID="btnRecipientList"
                                                 CausesValidation="false"
                                                 runat="server"
                                                 CssClass="btn btn-link btn-xs text-primary pull-right"
-                                                Text="Manual List"
-                                                OnClick="btnManualList_Click" />
+                                                OnClick="btnRecipientList_Click" />
                                         </div>
                                     </div>
 
@@ -134,6 +133,22 @@
                             CausesValidation="true"
                             OnClick="btnRecipientSelectionNext_Click" />
                     </div>
+
+                     <%-- Recipient Selection: Communication List Recipients Modal --%>
+                    <Rock:ModalDialog Id="mdCommunicationListRecipients" runat="server" Title="Communication List Recipients">
+                        <Content>
+                            <Rock:NotificationBox ID="nbListWarning" runat="server" NotificationBoxType="Info" />
+                            <Rock:Grid ID="gRecipientList" runat="server" OnRowDataBound="gRecipientList_RowDataBound">
+                                <Columns>
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName"  />
+                                    <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlert" HeaderText="Notes" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlertEmail" HeaderText="Email" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlertSMS" HeaderText="SMS" />
+                                </Columns>
+                            </Rock:Grid>
+                        </Content>
+                    </Rock:ModalDialog>
 
                 </asp:Panel>
 

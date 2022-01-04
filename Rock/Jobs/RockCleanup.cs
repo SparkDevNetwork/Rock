@@ -31,7 +31,6 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -117,6 +116,16 @@ namespace Rock.Jobs
         Order = 1
         )]
 
+    [IntegerField(
+        "Remove Benevolence Requests Without a Person after days",
+        Key = AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays,
+        Description = "The number of days before a benevolence request will be deleted if it does not have a requested by person record.",
+        DefaultIntegerValue = 180,
+        IsRequired = false,
+        Category = "Finance",
+        Order = 9
+        )]
+
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
@@ -134,6 +143,7 @@ namespace Rock.Jobs
             public const string CommandTimeout = "CommandTimeout";
             public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
             public const string RemovedExpiredSavedAccountDays = "RemovedExpiredSavedAccountDays";
+            public const string RemoveBenevolenceRequestsWithoutAPersonMaxDays = "RemoveBenevolenceRequestsWithoutAPerson";
         }
 
         /// <summary>
@@ -265,6 +275,8 @@ namespace Rock.Jobs
             RunCleanupTask( "expired saved account", () => RemoveExpiredSavedAccounts( dataMap ) );
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
+
+            RunCleanupTask( "benevolence request missing person", () => RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( dataMap ) );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
@@ -2255,7 +2267,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             var activeScheduleIdList = scheduleService.Queryable().Where( x => x.IsActive ).Select( x => x.Id ).ToList();
 
             var activeOccurrences = eventOccurrenceService.Queryable()
-                .Include( x=> x.Schedule )
+                .Include( x => x.Schedule )
                 .Where( x => x.EventItem.IsActive
                     && x.ScheduleId != null && !inactiveScheduleIdList.Contains( x.ScheduleId.Value ) );
 
@@ -2276,6 +2288,30 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
 
             return updateCount;
+        }
+
+        /// <summary>
+        /// Removes the benevolence requests without requested person past number of days.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns>System.Int32.</returns>
+        private int RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( JobDataMap dataMap )
+        {
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
+
+
+
+            var filter = rockContext.BenevolenceRequests
+                .Where( b => b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0
+                        &  DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays) ;
+
+            rockContext.BenevolenceRequests.RemoveRange( filter );
+            var removedCount=rockContext.SaveChanges();
+
+            return removedCount;
         }
 
         /// <summary>

@@ -69,6 +69,11 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 
         /// <summary>
+        /// The benevolence type
+        /// </summary>
+        public const string BENEVOLENCE_TYPE = "A612BF6F-EF9C-4625-AF68-3C6BC4AE7C46";
+
+        /// <summary>
         /// The Block entity type
         /// </summary>
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
@@ -210,6 +215,11 @@ namespace Rock.SystemGuid
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
 
         /// <summary>
+        /// The guid for the <see cref="Rock.Model.History">Rock.Model.History</see> entity.
+        /// </summary>
+        public const string HISTORY = "546D5F43-1184-47C9-8265-2D7BF4E1BCA5";
+
+        /// <summary>
         /// The HTTP module component
         /// </summary>
         public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
@@ -289,7 +299,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF";
 
-		/// <summary>
+        /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests"/>.
         /// </summary>
         public const string MOBILE_MY_PRAYER_REQUESTS_BLOCK_TYPE = "E644DE6A-44CA-48AC-BF33-5429DA8052C6";

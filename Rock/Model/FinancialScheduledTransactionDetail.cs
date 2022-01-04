@@ -178,12 +178,14 @@ namespace Rock.Model
             var rockContext = ( RockContext ) dbContext;
             HistoryChangeList = new History.HistoryChangeList();
 
+            var scheduledTransaction = this.ScheduledTransaction ?? new FinancialScheduledTransactionService( dbContext as RockContext ).Get( this.ScheduledTransactionId );
+
             switch ( entry.State )
             {
                 case EntityState.Added:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Amount.FormatAsCurrency( ScheduledTransaction.ForeignCurrencyCodeValueId ) );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Amount.FormatAsCurrency( scheduledTransaction?.ForeignCurrencyCodeValueId ) );
                         break;
                     }
 
@@ -198,18 +200,21 @@ namespace Rock.Model
                             History.EvaluateChange( HistoryChangeList, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
                         }
 
-                        var originalCurrencyCodeValueId = ScheduledTransaction.ForeignCurrencyCodeValueId;
-                        var originalScheduledTransactionEntry = rockContext.ChangeTracker
-                            .Entries<FinancialScheduledTransaction>()
-                            .Where( s => ( int ) s.OriginalValues["Id"] == ScheduledTransaction.Id )
-                            .FirstOrDefault();
-
-                        if ( originalScheduledTransactionEntry != null )
+                        var originalCurrencyCodeValueId = scheduledTransaction?.ForeignCurrencyCodeValueId;
+                        if ( scheduledTransaction != null )
                         {
-                            originalCurrencyCodeValueId = ( int? ) originalScheduledTransactionEntry.OriginalValues["ForeignCurrencyCodeValueId"];
+                            var originalScheduledTransactionEntry = rockContext.ChangeTracker
+                                .Entries<FinancialScheduledTransaction>()
+                                .Where( s => ( int ) s.OriginalValues["Id"] == scheduledTransaction.Id )
+                                .FirstOrDefault();
+
+                            if ( originalScheduledTransactionEntry != null )
+                            {
+                                originalCurrencyCodeValueId = ( int? ) originalScheduledTransactionEntry.OriginalValues["ForeignCurrencyCodeValueId"];
+                            }
                         }
 
-                        History.EvaluateChange( HistoryChangeList, acct + " Amount", entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency( originalCurrencyCodeValueId ), Amount.FormatAsCurrency( ScheduledTransaction.ForeignCurrencyCodeValueId ) );
+                        History.EvaluateChange( HistoryChangeList, acct + " Amount", entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency( originalCurrencyCodeValueId ), Amount.FormatAsCurrency( scheduledTransaction?.ForeignCurrencyCodeValueId ) );
                         History.EvaluateChange( HistoryChangeList, acct + " Fee Coverage Amount", ( entry.OriginalValues["FeeCoverageAmount"] as int? ).FormatAsCurrency(), FeeCoverageAmount.FormatAsCurrency() );
 
                         break;
@@ -217,7 +222,7 @@ namespace Rock.Model
                 case EntityState.Deleted:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Amount.FormatAsCurrency( ScheduledTransaction.ForeignCurrencyCodeValueId ) );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Amount.FormatAsCurrency( scheduledTransaction?.ForeignCurrencyCodeValueId ) );
                         break;
                     }
             }

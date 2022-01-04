@@ -151,7 +151,8 @@ namespace Rock.Reporting.DataFilter.Person
             filterControl.Controls.Add( gtpGroupType );
 
             gtpGroupType.UseGuidAsValue = true;
-            gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy(a => a.Name).ToList();
+            gtpGroupType.IsSortedByName = true;
+            gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
 
             var cbChildGroupTypes = new RockCheckBox();
             cbChildGroupTypes.ID = filterControl.ID + "_cbChildGroupTypes";

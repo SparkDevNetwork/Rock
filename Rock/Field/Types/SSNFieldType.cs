@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Web.UI.Controls;
@@ -32,7 +33,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             string ssn = UnencryptAndClean( value );
 
@@ -54,7 +55,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return GetTextValue( value, configurationValues );
+            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         /// <summary>
@@ -74,20 +75,20 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
         {
             // Return the masked value so we aren't sending the full value.
             return GetTextValue( value, configurationValues );
         }
 
         /// <inheritdoc/>
-        public override string GetClientEditValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetClientEditValue( string value, Dictionary<string, string> configurationValues )
         {
             return UnencryptAndClean( value );
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
         {
             return Security.Encryption.EncryptString( clientValue );
         }

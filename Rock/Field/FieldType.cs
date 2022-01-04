@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -58,9 +59,10 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
         {
-            return configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value );
+            return configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
         }
 
         /// <summary>
@@ -104,25 +106,29 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
-        public virtual string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             return value;
         }
 
         /// <inheritdoc/>
-        public virtual string GetHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
         {
             return GetTextValue( value, configurationValues );
         }
 
         /// <inheritdoc/>
-        public virtual string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
         {
             return GetTextValue( value, configurationValues ).Truncate( 100 );
         }
 
         /// <inheritdoc/>
-        public virtual string GetCondensedHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual string GetCondensedHtmlValue( string value, Dictionary<string, string> configurationValues )
         {
             return GetCondensedTextValue( value, configurationValues );
         }
@@ -250,19 +256,22 @@ namespace Rock.Field
         public virtual bool HasDefaultControl => true;
 
         /// <inheritdoc/>
-        public virtual string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual string GetClientValue( string value, Dictionary<string, string> configurationValues )
         {
             return value;
         }
 
         /// <inheritdoc/>
-        public virtual string GetClientEditValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual string GetClientEditValue( string value, Dictionary<string, string> configurationValues )
         {
             return GetClientValue( value, configurationValues );
         }
 
         /// <inheritdoc/>
-        public virtual string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        [RockInternal]
+        public virtual string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
         {
             return clientValue;
         }

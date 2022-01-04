@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -50,18 +51,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     [BooleanField(
         "Show Only Parent Group",
-        "When enabled, the parent group and path for each check-in, instead of the actual group.",
+        Description = "When enabled, the parent group and path for each check-in, instead of the actual group.",
         Key = AttributeKey.ShowOnlyParentGroup,
         DefaultBooleanValue = false,
         Order = 2 )]
 
     [BooleanField(
         "Always Show Child Groups",
-        @"When enabled, all child groups of the selected group will be included in the filter. Otherwise, a 'Include Child Groups' option will 
+        Description = @"When enabled, all child groups of the selected group will be included in the filter. Otherwise, a 'Include Child Groups' option will 
  be displayed to include child groups.",
         Key = AttributeKey.AlwaysShowChildGroups,
         DefaultBooleanValue = false,
         Order = 3 )]
+
     public partial class EnRoute : RockBlock
     {
         #region Keys
@@ -267,6 +269,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Move Person
 
+        /*  12-07-2021 MDP
+
+        This Move Person code in this #region is nearly identical in both the RockWeb.Blocks.CheckIn.Manager
+        EnRoute and AttendanceDetail Blocks. If changes are made to one, make sure to update the other.
+
+        */
+
         /// <summary>
         /// Handles the Click event of the btnMovePerson control.
         /// </summary>
@@ -301,37 +310,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             ddlMovePersonSelectAttendance.SetValue( mostRecentAttendance );
 
-            var scheduleService = new ScheduleService( rockContext );
-            var groupLocationQuery = new GroupLocationService( rockContext ).Queryable();
+            var attendanceId = mostRecentAttendance?.Id;
 
-            // Limit to active,named check-in schedules, ones that associated with a Group/Location.
-            // NOTE: The Move Room feature should not be filtered by selected Checkin-Area (they should be able to moved to
-            // a room in a different Checkin-Configuration (Area)).
-            var scheduleQry = scheduleService.Queryable().Where( a =>
-                a.IsActive
-                && groupLocationQuery.Any( x => x.Schedules.Any( s => s.Id == a.Id ) )
-                && a.CheckInStartOffsetMinutes != null
-                && a.Name != null
-                && a.Name != string.Empty ).ToList();
-
-            var scheduleList = scheduleQry.ToList();
-
-            // Limit to schedules for the current day.
-            scheduleList = scheduleList
-                .Where( a => a.GetNextCheckInStartTime( RockDateTime.Today ) < RockDateTime.Today.AddDays( 1 ) )
-                .ToList();
-
-            var sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
-            ddlMovePersonSchedule.Items.Clear();
-
-            foreach ( var schedule in sortedScheduleList )
+            if ( !attendanceId.HasValue )
             {
-                ddlMovePersonSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
+                return;
             }
 
             UpdateMovePersonControls( mostRecentAttendance.Id );
-
-            UpdateMovePersonGroupList();
 
             mdMovePerson.Show();
         }
@@ -357,27 +343,54 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            var occurrence = new AttendanceService( new RockContext() ).GetSelect( attendanceId.Value, s => s.Occurrence );
+            var attendanceInfo = new AttendanceService( new RockContext() ).GetSelect( attendanceId.Value, s => new {
+                s.Occurrence,
+                s.CampusId
+            } );
+
+            var occurrence = attendanceInfo?.Occurrence;
             if ( occurrence == null )
             {
                 return;
             }
 
-            ddlMovePersonSchedule.SetValue( occurrence.ScheduleId );
+            var attendanceCampusId = attendanceInfo?.CampusId;
+
+            if ( attendanceCampusId.HasValue )
+            {
+                // if the selected attendance is at specific campus, set the location picker to that campus's locations
+                var campusLocationId = CampusCache.Get( attendanceCampusId.Value )?.LocationId;
+                lpMovePersonLocation.RootLocationId = campusLocationId ?? 0;
+            }
+            else
+            {
+                lpMovePersonLocation.RootLocationId = 0;
+            }
+
+            // Location picker will list all named locations
             lpMovePersonLocation.SetValueFromLocationId( occurrence.LocationId );
 
-            UpdateMovePersonGroupList();
+            // Groups depend on selected Location
+            LoadMovePersonGroups( occurrence.LocationId );
+
+            // Now that Groups is populated, set to selected group
             ddlMovePersonGroup.SetValue( occurrence.GroupId );
+
+            // Now load list of schedules based on Group and Location
+            LoadMovePersonSchedules( occurrence.GroupId, occurrence.LocationId );
+            ddlMovePersonSchedule.SetValue( occurrence.ScheduleId );
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlMovePersonSchedule control.
+        /// Handles the SelectedIndexChanged event of the ddlMovePersonGroup control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlMovePersonSchedule_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ddlMovePersonGroup_SelectedIndexChanged( object sender, EventArgs e )
         {
-            UpdateMovePersonGroupList();
+            var selectedLocationId = lpMovePersonLocation.SelectedValueAsId();
+            var selectedGroupId = ddlMovePersonGroup.SelectedValueAsId();
+            LoadMovePersonSchedules( selectedGroupId, selectedLocationId );
         }
 
         /// <summary>
@@ -389,28 +402,96 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             // just in case a location warning is showing, we can hide if they are selecting a different location
             nbMovePersonLocationFull.Visible = false;
+            var selectedLocationId = lpMovePersonLocation.SelectedValueAsId();
+            LoadMovePersonGroups( selectedLocationId );
 
-            UpdateMovePersonGroupList();
+            var selectedGroupId = ddlMovePersonGroup.SelectedValueAsId();
+            LoadMovePersonSchedules( selectedGroupId, selectedLocationId );
         }
 
         /// <summary>
-        /// Uploads the staying group list.
+        /// Loads the move person schedules based on selected Group and Location
         /// </summary>
-        protected void UpdateMovePersonGroupList()
+        /// <param name="selectedGroupId">The selected group identifier.</param>
+        /// <param name="selectedLocationId">The selected location identifier.</param>
+        private void LoadMovePersonSchedules( int? selectedGroupId, int? selectedLocationId )
+        {
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            var scheduleService = new ScheduleService( rockContext );
+
+
+            /* 12-7-2021 MDP
+
+                There is special logic for populating the Schedule, Group and Location pickers and it isn't very intuitive.
+                Also, this logic could change based on feedback. If it does change, make sure to append this engineering note.
+                As of 12-7-2021, this is how it should work: 
+
+              - List All Checkin Locations
+              - List Groups associated with selected Location
+              - List schedules limited to selected Group and Location and
+                  - Named schedule
+                  - Active
+                  - Not limited to Checkin Time
+                  - Not limited to ones that have a CheckInStartOffsetMinutes specified.
+                  - Not limited to only current day's schedules
+              - If Group is not selected, don't filter schedules by Group
+              - If Location is not selected,  don't filter Groups by Location and don't filter Schedules by Location
+
+            */
+
+            var groupLocationQuery = new GroupLocationService( rockContext ).Queryable();
+            if ( selectedGroupId.HasValue )
+            {
+                groupLocationQuery = groupLocationQuery.Where( a => a.GroupId == selectedGroupId.Value );
+            }
+
+            if ( selectedLocationId.HasValue )
+            {
+                groupLocationQuery = groupLocationQuery.Where( a => a.LocationId == selectedLocationId.Value );
+            }
+
+            var scheduleQry = scheduleService.Queryable().Where( a =>
+                a.IsActive
+                && groupLocationQuery.Any( x => x.Schedules.Any( s => s.Id == a.Id ) )
+                && a.Name != null
+                && a.Name != string.Empty ).ToList();
+
+            var scheduleList = scheduleQry.ToList();
+
+
+            var sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
+            ddlMovePersonSchedule.Items.Clear();
+
+            foreach ( var schedule in sortedScheduleList )
+            {
+                ddlMovePersonSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Updates the list of Groups in the 'Move Person' dialog based on selected Location
+        /// </summary>
+        private void LoadMovePersonGroups( int? selectedLocationId )
         {
             var currentlySelectedGroupId = ddlMovePersonGroup.SelectedValueAsId();
             ddlMovePersonGroup.Items.Clear();
-            var selectedLocationId = lpMovePersonLocation.SelectedValueAsId();
-            var selectedScheduleId = ddlMovePersonSchedule.SelectedValueAsId();
-            if ( !selectedLocationId.HasValue || !selectedScheduleId.HasValue )
-            {
-                return;
-            }
 
             var rockContext = new RockContext();
-            var availableGroupQuery = new GroupLocationService( rockContext ).Queryable()
-                .Where( a => a.LocationId == selectedLocationId
-                    && a.Schedules.Any( s => s.Id == selectedScheduleId ) );
+
+            IQueryable<GroupLocation> availableGroupQuery;
+
+            if ( selectedLocationId.HasValue )
+            {
+                // If a Location is selected, get all Groups that have a GroupLocation for the selected Location and have any active schedule, but not filtered by selected Schedule
+                availableGroupQuery = new GroupLocationService( rockContext ).Queryable().Where( a => a.LocationId == selectedLocationId && a.Schedules.Where( s => s.IsActive ).Any() );
+            }
+            else
+            {
+                // If a Location is not selected, get all Groups that have a GroupLocation that has any active schedule
+                // Don't filter by selected Schedule and don't filter to a specific location since no location is selected.
+                availableGroupQuery = new GroupLocationService( rockContext ).Queryable().Where( a => a.LocationId == selectedLocationId && a.Schedules.Where( s => s.IsActive ).Any() );
+            }
 
             var groupsQuery = new GroupService( rockContext ).Queryable();
             var availableGroupList = groupsQuery
@@ -700,7 +781,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             attendanceList = attendanceList.Where( a => a.Person != null ).ToList();
 
-            if (tbSearch.Text.IsNotNullOrWhiteSpace())
+            if ( tbSearch.Text.IsNotNullOrWhiteSpace() )
             {
                 // search by name
                 var searchValue = tbSearch.Text;
@@ -708,7 +789,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // ignore the result of reversed (LastName, FirstName vs FirstName LastName
                 bool reversed;
 
-                var personIds = new PersonService(rockContext)
+                var personIds = new PersonService( rockContext )
                     .GetByFullName( searchValue, false, false, false, out reversed )
                     .AsNoTracking()
                     .Select( a => a.Id )
@@ -723,9 +804,5 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         #endregion
-
-
-
-
     }
 }

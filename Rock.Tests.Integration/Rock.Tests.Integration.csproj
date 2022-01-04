@@ -133,6 +133,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Achievement\GivingToAccountAchievementTest.cs" />
     <Compile Include="Achievement\StepProgramAchievementTests.cs" />
     <Compile Include="Achievement\InteractionAchievementTests.cs" />
     <Compile Include="Achievement\AccumulativeAchievementTests.cs" />

@@ -389,17 +389,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 attendanceQuery = attendanceQuery.Where( a => selectedScheduleIds.Contains( a.Occurrence.ScheduleId.Value ) );
             }
 
-            IEnumerable<AttendanceCheckinTimeInfo> attendanceCheckinTimeInfoList = attendanceQuery.Select( a => new AttendanceCheckinTimeInfo
-            {
-                LocationId = a.Occurrence.LocationId.Value,
-                GroupId = a.Occurrence.GroupId.Value,
-                GroupTypeId = a.Occurrence.Group.GroupTypeId,
-                StartDateTime = a.StartDateTime,
-                EndDateTime = a.EndDateTime,
-                ScheduleId = a.Occurrence.ScheduleId.Value,
-                PresentDateTime = a.PresentDateTime,
-                PersonId = a.PersonAlias.PersonId
-            } ).ToList();
+            var rosterAttendeeAttendanceList = RosterAttendeeAttendance.Select( attendanceQuery ).ToList();
 
             var groupTypeIdsWithAllowCheckout = selectedGroupTypeIds
                 .Select( a => GroupTypeCache.Get( a ) )
@@ -415,11 +405,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Select( a => a.Id )
                 .Distinct();
 
-            var scheduleIds = attendanceCheckinTimeInfoList.Select( a => a.ScheduleId ).Distinct().ToList();
+            var scheduleIds = rosterAttendeeAttendanceList.Select( a => a.ScheduleId.Value ).Distinct().ToList();
             var scheduleList = new ScheduleService( rockContext ).GetByIds( scheduleIds ).ToList();
             var scheduleIdsWasScheduleOrCheckInActiveForCheckOut = new HashSet<int>( scheduleList.Where( a => a.WasScheduleOrCheckInActiveForCheckOut( currentDateTime ) ).Select( a => a.Id ).ToList() );
 
-            attendanceCheckinTimeInfoList = attendanceCheckinTimeInfoList.Where( a =>
+            rosterAttendeeAttendanceList = rosterAttendeeAttendanceList.Where( a =>
             {
                 var allowCheckout = groupTypeIdsWithAllowCheckout.Contains( a.GroupTypeId );
                 if ( !allowCheckout )
@@ -435,7 +425,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         'Checking-out' Attendees in the case that the parents are running late in picking them up.
                     */
 
-                    return scheduleIdsWasScheduleOrCheckInActiveForCheckOut.Contains( a.ScheduleId );
+                    return scheduleIdsWasScheduleOrCheckInActiveForCheckOut.Contains( a.ScheduleId.Value );
                 }
                 else
                 {
@@ -443,12 +433,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             } ).ToList();
 
-            var attendancesByLocationId = attendanceCheckinTimeInfoList
-                .GroupBy( a => a.LocationId ).ToDictionary( k => k.Key, v => v.ToList() );
+            var attendancesByLocationId = rosterAttendeeAttendanceList
+                .GroupBy( a => a.LocationId.Value ).ToDictionary( k => k.Key, v => v.ToList() );
 
             _attendancesByLocationIdAndGroupId = attendancesByLocationId.ToDictionary(
                    k => k.Key,
-                   v => v.Value.GroupBy( x => x.GroupId ).ToDictionary( x => x.Key, xx => xx.ToList() ) );
+                   v => v.Value.GroupBy( x => x.GroupId.Value ).ToDictionary( x => x.Key, xx => xx.ToList() ) );
 
             _checkinAreaPathsLookupByGroupTypeId = checkinAreaPaths.ToDictionary( k => k.GroupTypeId, v => v );
 
@@ -511,7 +501,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         // lookups for adding groupLocationInfo to the RoomList
-        private Dictionary<int, Dictionary<int, List<AttendanceCheckinTimeInfo>>> _attendancesByLocationIdAndGroupId;
+        private Dictionary<int, Dictionary<int, List<RosterAttendeeAttendance>>> _attendancesByLocationIdAndGroupId;
         private Dictionary<int, CheckinAreaPath> _checkinAreaPathsLookupByGroupTypeId;
 
         private bool _showOnlyParentGroup;
@@ -523,51 +513,37 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="groupLocation">The group location.</param>
         private void AddToRoomList( List<RoomInfo> roomList, GroupLocationInfo groupLocation )
         {
-            Dictionary<int, List<AttendanceCheckinTimeInfo>> attendancesForLocationByGroupId = _attendancesByLocationIdAndGroupId.GetValueOrNull( groupLocation.LocationId );
+            Dictionary<int, List<RosterAttendee>> rosterAttendeesForLocationByGroupId = _attendancesByLocationIdAndGroupId
+                .GetValueOrNull( groupLocation.LocationId )
+                ?.ToDictionary( k => k.Key, v => RosterAttendee.GetFromAttendanceList( v.Value.ToList() ).ToList() );
 
-            List<AttendanceCheckinTimeInfo> attendancesForLocationAndGroup;
-            if ( attendancesForLocationByGroupId != null )
+            List<RosterAttendee> rosterAttendeesForLocationAndGroup;
+            if ( rosterAttendeesForLocationByGroupId != null )
             {
-                attendancesForLocationAndGroup = attendancesForLocationByGroupId.GetValueOrNull( groupLocation.GroupId );
+                rosterAttendeesForLocationAndGroup = rosterAttendeesForLocationByGroupId.GetValueOrNull( groupLocation.GroupId );
 
-                if ( attendancesForLocationAndGroup != null )
-                {
-                    // if the same person is attending this location and group multiple times,
-                    // choose the one that is Present (if there is one). Otherwise, choose the most recent one.
-                    attendancesForLocationAndGroup = attendancesForLocationAndGroup
-                        .GroupBy( a => a.PersonId )
-                        .Select( s =>
-                               s.OrderByDescending( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.Present )
-                              .ThenByDescending(( x => x.StartDateTime ) )
-                        .FirstOrDefault() ).ToList();
-                }
-                else
+                if ( rosterAttendeesForLocationAndGroup == null )
                 {
                     // no attendances for this Location (Room) and Group
-                    attendancesForLocationAndGroup = new List<AttendanceCheckinTimeInfo>();
+                    rosterAttendeesForLocationAndGroup = new List<RosterAttendee>();
                 }
             }
             else
             {
                 // no attendances for this Location (Room)
-                attendancesForLocationByGroupId = new Dictionary<int, List<AttendanceCheckinTimeInfo>>();
-                attendancesForLocationAndGroup = new List<AttendanceCheckinTimeInfo>();
+                rosterAttendeesForLocationByGroupId = new Dictionary<int, List<RosterAttendee>>();
+                rosterAttendeesForLocationAndGroup = new List<RosterAttendee>();
             }
 
             var roomCounts = new RoomCounts
             {
-                CheckedInCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.CheckedIn ).Count(),
-                PresentCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.Present ).Count(),
-                CheckedOutCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.CheckedOut ).Count(),
+                CheckedInList = rosterAttendeesForLocationAndGroup.Where( a => a.Status == RosterAttendeeStatus.CheckedIn ).ToList(),
+                PresentList = rosterAttendeesForLocationAndGroup.Where( a => a.Status == RosterAttendeeStatus.Present ).ToList(),
+                CheckedOutList = rosterAttendeesForLocationAndGroup.Where( a => a.Status == RosterAttendeeStatus.Present ).ToList(),
             };
 
             if ( _showOnlyParentGroup )
             {
-                // if the same person is attending this location and group multiple times, just take the most recent one
-                var attendancesForLocation = attendancesForLocationByGroupId.SelectMany( s => s.Value )
-                    .GroupBy( a => a.PersonId )
-                    .Select( s => s.OrderByDescending( x => x.StartDateTime ).FirstOrDefault() ).ToList();
-
                 // roll group/location counts into the parent group
                 // for example, if the Group Structure is
                 // - Babies
@@ -594,9 +570,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
                 else
                 {
-                    groupInfoByParentGroups.RoomCounts.CheckedInCount += roomCounts.CheckedInCount;
-                    groupInfoByParentGroups.RoomCounts.PresentCount += roomCounts.PresentCount;
-                    groupInfoByParentGroups.RoomCounts.CheckedOutCount += roomCounts.CheckedOutCount;
+                    groupInfoByParentGroups.RoomCounts.CheckedInList.AddRange( roomCounts.CheckedInList );
+                    groupInfoByParentGroups.RoomCounts.PresentList.AddRange( roomCounts.PresentList );
+                    groupInfoByParentGroups.RoomCounts.CheckedOutList.AddRange( roomCounts.CheckedOutList );
                 }
 
                 if ( groupLocation.ParentGroupId.HasValue )
@@ -834,35 +810,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private class RoomCounts
         {
-            public int CheckedInCount { get; internal set; }
+            public List<RosterAttendee> CheckedInList { get; internal set; }
 
-            public int PresentCount { get; internal set; }
+            public int CheckedInCount => CheckedInList.DistinctBy( a => a.PersonId ).Count();
 
-            public int CheckedOutCount { get; internal set; }
-        }
+            public List<RosterAttendee> PresentList { get; internal set; }
 
-        private class AttendanceCheckinTimeInfo
-        {
-            public int LocationId { get; internal set; }
+            public int PresentCount => PresentList.DistinctBy( a => a.PersonId ).Count();
 
-            public int GroupId { get; internal set; }
+            public List<RosterAttendee> CheckedOutList { get; internal set; }
 
-            public int GroupTypeId { get; internal set; }
-
-            public DateTime StartDateTime { get; internal set; }
-
-            public DateTime? EndDateTime { get; internal set; }
-            
-            public int ScheduleId { get; internal set; }
-
-            public DateTime? PresentDateTime { get; internal set; }
-
-            public int PersonId { get; internal set; }
-
-            public override string ToString()
-            {
-                return string.Format( "GroupId:{0} LocationId:{1} PersonId:{2}", GroupId, LocationId, PersonId );
-            }
+            public int CheckedOutCount => CheckedOutList.DistinctBy( a => a.PersonId ).Count();
         }
 
         private class GroupLocationInfo

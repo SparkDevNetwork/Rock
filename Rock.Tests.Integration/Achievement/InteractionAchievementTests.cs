@@ -24,7 +24,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         private static InteractionService _interactionService { get; set; }
 
         private static List<int> _personAliasIds { get; set; }
-        
+
         private static int _achievementTypeId { get; set; }
         private static InteractionComponentCache _interactionComponent { get; set; }
 
@@ -51,12 +51,12 @@ namespace Rock.Tests.Integration.RockTests.Model
 
             for ( var i = 0; i < NUMBER_OF_ALIASES; i++ )
             {
-                personAliasService.Add( new PersonAlias { Person = tedDecker, AliasPersonGuid = Guid.NewGuid(), AliasPersonId = aliasPersonId + i } );
+                personAliasService.Add( new PersonAlias { Person = tedDecker, AliasPersonGuid = Guid.NewGuid(), AliasPersonId = aliasPersonId + i, ForeignKey = KEY } );
             }
 
             _rockContext.SaveChanges();
 
-            var personAlias = personAliasService.Queryable().Where( pa => pa.Person.Guid == tedDeckerGuid ).Take( NUMBER_OF_ALIASES ).Select( p => p.Id ).ToList();
+            var personAlias = personAliasService.Queryable().Where( pa => pa.Person.Guid == tedDeckerGuid && pa.ForeignKey == KEY ).Take( NUMBER_OF_ALIASES ).Select( p => p.Id ).ToList();
             _personAliasIds = personAlias;
         }
 

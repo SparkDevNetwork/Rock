@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -115,6 +116,31 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public byte[] OccurrenceMap { get; set; }
+
+        /// <summary>
+        /// Gets or sets the structure settings JSON.
+        /// </summary>
+        /// <value>The structure settings JSON.</value>
+        [DataMember]
+        public string StructureSettingsJSON
+        {
+            get
+            {
+                return StructureSettings?.ToJson();
+            }
+
+            set
+            {
+                StructureSettings = value.FromJsonOrNull<Rock.Model.Engagement.StreakType.StreakTypeSettings>() ?? new Rock.Model.Engagement.StreakType.StreakTypeSettings();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the structure settings.
+        /// </summary>
+        /// <value>The structure settings.</value>
+        [NotMapped]
+        public virtual Rock.Model.Engagement.StreakType.StreakTypeSettings StructureSettings { get; set; } = new Rock.Model.Engagement.StreakType.StreakTypeSettings();
 
         #endregion Entity Properties
 
