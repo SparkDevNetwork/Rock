@@ -46,7 +46,7 @@ Example:
 
 ## business-address.csv
 
-`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,AddressType`
+`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`
 
 ## business-attribute.csv
 `Key,Name,FieldType,Category`
