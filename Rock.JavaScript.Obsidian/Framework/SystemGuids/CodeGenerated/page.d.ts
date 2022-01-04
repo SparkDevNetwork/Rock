@@ -73,6 +73,9 @@ ParentPage: System Settings */
     /** Gets the Batches page guid
 ParentPage: Functions */
     Batches = "EF65EFF2-99AC-4081-8E09-32A04518683A",
+    /** Gets the Benevolence Detail page guid
+ParentPage: Benevolence */
+    BenevolenceDetail = "6DC7BAED-CA01-4703-B679-EC81143CDEDD",
     /** Gets the Benevolence page guid
 ParentPage: Functions */
     BenevolenceFunctions = "D893CCCC-368A-42CF-B36E-69991128F016",

@@ -70,19 +70,19 @@ export const enum Attribute {
     PersonSpiritualGiftsLastSaveDate = "3668547C-3DC4-450B-B92D-4B98A693A371",
     /** The person attribute for the conflict mode: winning */
     PersonConflictModeWinning = "7147F706-388E-45E6-BE21-893FC7D652AA",
-    /** The person attribute for the conflict mode: resolving  */
+    /** The person attribute for the conflict mode: resolving */
     PersonConflictModeResolving = "5B811EAC-51B2-41F2-A55A-C966D9DB05EE",
-    /** The person attribute for the conflict mode: compromising   */
+    /** The person attribute for the conflict mode: compromising */
     PersonConflictModeCompromising = "817D6B13-E4AA-4E93-8547-FE711A0065F2",
-    /** The person attribute for the conflict mode: avoiding   */
+    /** The person attribute for the conflict mode: avoiding */
     PersonConflictModeAvoiding = "071A8EFA-AD1C-436A-8E1E-23D215617004",
-    /** The person attribute for the conflict mode: yielding   */
+    /** The person attribute for the conflict mode: yielding */
     PersonConflictModeYielding = "D30A33AD-7A60-43E0-84DA-E23600156BF7",
-    /** The person attribute for the conflict engagement profile: accommodating   */
+    /** The person attribute for the conflict engagement profile: accommodating */
     PersonConflictThemeAccommodating = "404A64FB-7396-4896-9C94-84DE21E995CA",
-    /** The person attribute for the conflict engagement profile: winning   */
+    /** The person attribute for the conflict engagement profile: winning */
     PersonConflictThemeWinning = "6DE5878D-7CDB-404D-93A7-27CFF5E98C3B",
-    /** The person attribute for the conflict engagement profile: solving   */
+    /** The person attribute for the conflict engagement profile: solving */
     PersonConflictThemeSolving = "33235605-D8BB-4C1E-B231-6F085970A14F",
     /** The person attribute for the EQ self aware */
     PersonEqConstructsSelfAwareness = "A5EFCE3E-EA41-4FEC-99F6-DD748A7D5BB5",
@@ -328,7 +328,7 @@ IQR = Interquartile Range calculated from the past 12 months of giving */
     /** Next Expected Gift Date - Date */
     PersonGivingNextExpectedGiftDate = "65D7CF79-BD80-44B2-9F5F-96D81B9B4990",
     /** Last Classification Run Date Time - Date - sets the date time of then the giving unit was last classified.
-Classification is updated after each new gift, but if they stop giving we’ll use this to occasionally update the classification.  */
+Classification is updated after each new gift, but if they stop giving we’ll use this to occasionally update the classification. */
     PersonGivingLastClassificationDate = "7220B230-03CE-4D1E-985B-26AA28BE06F8",
     /** Giving History JSON - Code - gets the JSON array of giving data by month objects.
 [{ Year: 2020, Month: 1, AccountId: 1, Amount: 550.67 }, ...] */
@@ -377,5 +377,7 @@ Classification is updated after each new gift, but if they stop giving we’ll u
     StreakAchievementNumberToAchieve = "302BDD9E-5EAA-423B-AC1A-7E2067E70C19",
     /** The streak achievement time span in days */
     StreakAchievementTimeSpanInDays = "80030537-ED8E-41BA-BF61-AF242B9073CC",
+    /** The statement generator configuration */
+    StatementGeneratorConfig = "3C6B81A5-63AB-4EA7-A671-836505B9E444",
 }
 
