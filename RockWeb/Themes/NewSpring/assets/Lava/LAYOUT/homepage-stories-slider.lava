@@ -42,7 +42,7 @@
 
         <script>
         var swiper = new Swiper('#{{ swiperid }}', {
-            slidesPerView: 2.3,
+            slidesPerView: 4.3,
             spaceBetween: 100,
             speed: 100,
             centeredSlides: true,
@@ -62,14 +62,17 @@
                 prevEl: '.swiper-prev',
             },
             breakpoints: {
-                1024: {
-                slidesPerView: 2.3
+                667: {
+                slidesPerView: 1.15
                 },
                 768: {
                 slidesPerView: 2.3
                 },
-                667: {
-                slidesPerView: 1.15
+                1280: {
+                slidesPerView: 2.1
+                },
+                1400: {
+                slidesPerView: 3.1
                 }
             }
 

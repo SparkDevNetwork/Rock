@@ -2,18 +2,18 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-    <Rock:Lava ID="PageColor" runat="server">
-            {% assign pageColor = CurrentPage | Attribute:'PageColor' %}
-            <div class="position-fixed top-zero right-zero bottom-zero left-zero" style="background-color: {{ pageColor }}; z-index: -1;"></div>
-    </Rock:Lava>
-
-    <div class="soft xs-soft-half hard-bottom xs-hard-bottom clearfix">
+    <div class="position-relative soft xs-soft-half hard-bottom xs-hard-bottom clearfix">
 
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error no-index" style="display:none">
             <p><strong>Error</strong></p>
             <span class="ajax-error-message"></span>
         </div>
+
+        <Rock:Lava ID="PageColor" runat="server">
+            {% assign pageColor = CurrentPage | Attribute:'PageColor' %}
+            <div class="position-absolute full-screen" style="background-color: {{ pageColor }};"></div>
+        </Rock:Lava>
 
         <Rock:Zone Name="Feature" runat="server" />
 
@@ -34,7 +34,6 @@
             
             <Rock:Zone Name="Section D" runat="server" />
         </div>
-
     </div>
 
 </asp:Content>
