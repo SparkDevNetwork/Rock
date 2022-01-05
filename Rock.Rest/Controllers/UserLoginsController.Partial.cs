@@ -20,7 +20,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using Newtonsoft.Json;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
@@ -29,6 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Users REST API
     /// </summary>
+    [RockGuid( "003879b7-b613-4295-982b-9f3427a25081" )]
     public partial class UserLoginsController
     {
         /// <summary>
@@ -39,9 +40,10 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/userlogins/available/{username}" )]
         [System.Web.Http.Route( "api/userlogins/available" )]
+        [RockGuid( "037c3806-0a80-4029-acae-269dfc702ea8" )]
         public bool Available( string username )
         {
-            return ( (UserLoginService)Service ).Exists( username ) == false;
+            return ( ( UserLoginService ) Service ).Exists( username ) == false;
         }
 
         /// <summary>
@@ -52,6 +54,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authenticate, Secured]
+        [RockGuid( "91f8509c-1feb-4d23-ac23-3c5f6a7eaca8" )]
         public override System.Net.Http.HttpResponseMessage Post( UserLogin value )
         {
             if ( ( ( UserLoginService ) Service ).Exists( value.UserName ) )
@@ -79,6 +82,7 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <param name="value">The value.</param>
         [Authenticate, Secured]
+        [RockGuid( "07d5a10c-2d74-46cc-a70c-f6dafa1ec65e" )]
         public override void Put( int id, UserLogin value )
         {
             // Store current value, as SetPassword() will always set this to false.
@@ -125,7 +129,7 @@ namespace Rock.Rest.Controllers
             {
                 // since REST doesn't serialize Password, get the existing Password from the database so that it doesn't get NULLed out
                 var existingUserLoginRecord = this.Get( value.Id );
-                if (existingUserLoginRecord != null)
+                if ( existingUserLoginRecord != null )
                 {
                     value.Password = existingUserLoginRecord.Password;
                 }

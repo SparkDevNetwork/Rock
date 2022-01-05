@@ -18,7 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 
 namespace Rock.Controllers
@@ -26,6 +26,7 @@ namespace Rock.Controllers
     /// <summary>
     /// Search REST API
     /// </summary>
+    [RockGuid( "1d08e8b4-61af-4ed7-9201-b64fcc3c22ad" )]
     public partial class SearchController : ApiController
     {
         /// <summary>
@@ -36,6 +37,7 @@ namespace Rock.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/search" )]
         [EnableQuery]
+        [RockGuid( "ebaec60a-9c0a-45cd-954d-51e56b3bd162" )]
         public IQueryable<string> Get()
         {
             string queryString = Request.RequestUri.Query;
@@ -43,17 +45,17 @@ namespace Rock.Controllers
             string term = System.Web.HttpUtility.ParseQueryString( queryString ).Get( "term" );
 
             int key = int.MinValue;
-            if (int.TryParse(type, out key))
+            if ( int.TryParse( type, out key ) )
             {
                 var searchComponents = Rock.Search.SearchContainer.Instance.Components;
-                if (searchComponents.ContainsKey(key))
+                if ( searchComponents.ContainsKey( key ) )
                 {
                     var component = searchComponents[key];
                     return component.Value.Search( term );
                 }
             }
 
-            throw new HttpResponseException(HttpStatusCode.BadRequest);
+            throw new HttpResponseException( HttpStatusCode.BadRequest );
         }
     }
 }

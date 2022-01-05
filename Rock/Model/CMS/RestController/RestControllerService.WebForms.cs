@@ -14,15 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Rock.Data;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// Service/Data access class for <see cref="Rock.Model.RestControllerService"/> entity objects.
+    /// </summary>
     public partial class RestControllerService
     {
         /// <summary>
@@ -63,29 +67,37 @@ namespace Rock.Model
                 var controller = discoveredControllers.Where( c => c.Name == name ).FirstOrDefault();
                 if ( controller == null )
                 {
+                    var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<RockGuidAttribute>();
+
                     controller = new RestController
                     {
                         Name = name,
                         ClassName = action.ControllerDescriptor.ControllerType.FullName
                     };
 
+                    controller.SetGuidFromRockGuidAttribute( controllerRockGuid );
+
                     discoveredControllers.Add( controller );
                     controllerApiIdMap[controller.ClassName] = new Dictionary<string, string>();
                 }
 
                 var apiIdMap = controllerApiIdMap[controller.ClassName];
-                var apiId = GetApiId( reflectedHttpActionDescriptor.MethodInfo, method, controller.Name );
+                var apiId = GetApiId( reflectedHttpActionDescriptor.MethodInfo, method, controller.Name, out RockGuidAttribute methodRockGuid );
 
                 // Because we changed the format of the stored ApiId, it is possible some RestAction records will have the old
                 // style Id, which is apiDescription.ID
                 apiIdMap[apiId] = apiDescription.ID;
 
-                controller.Actions.Add( new RestAction
+                var restAction = new RestAction
                 {
                     ApiId = apiId,
                     Method = method,
                     Path = apiDescription.RelativePath
-                } );
+                };
+
+                restAction.SetGuidFromRockGuidAttribute( methodRockGuid );
+
+                controller.Actions.Add( restAction );
             }
 
             var actionService = new RestActionService( rockContext );
@@ -102,16 +114,24 @@ namespace Rock.Model
                 }
                 controller.ClassName = discoveredController.ClassName;
 
+                if ( discoveredController.GuidSetFromRockGuidAttribute &&
+                     !controller.Guid.Equals( discoveredController.Guid ) )
+                {
+                    controller.SetGuidFromRockGuidAttribute( new RockGuidAttribute( discoveredController.Guid ) );
+                }
+
                 foreach ( var discoveredAction in discoveredController.Actions )
                 {
                     var newFormatId = discoveredAction.ApiId;
                     var oldFormatId = apiIdMap[newFormatId];
+                    var apiGuid = discoveredAction.Guid;
 
-                    var action = controller.Actions.Where( a => a.ApiId == newFormatId || a.ApiId == oldFormatId ).FirstOrDefault();
+                    var action = controller.Actions.Where( a => a.ApiId == newFormatId || a.ApiId == oldFormatId || a.Guid == apiGuid ).FirstOrDefault();
 
-                    if ( action?.ApiId == oldFormatId )
+                    if ( action?.ApiId != newFormatId )
                     {
                         // Update the ID to the new format
+                        // This will also take care of method signature changes
                         action.ApiId = newFormatId;
                     }
 
@@ -122,6 +142,12 @@ namespace Rock.Model
                     }
                     action.Method = discoveredAction.Method;
                     action.Path = discoveredAction.Path;
+
+                    if ( discoveredAction.GuidSetFromRockGuidAttribute &&
+                         !action.Guid.Equals( discoveredAction.Guid ) )
+                    {
+                        action.SetGuidFromRockGuidAttribute( new RockGuidAttribute( discoveredAction.Guid ) );
+                    }
                 }
 
                 var actions = discoveredController.Actions.Select( d => d.ApiId ).ToList();

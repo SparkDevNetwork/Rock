@@ -26,6 +26,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// HtmlContents REST API
     /// </summary>
+    [RockGuid( "fe7e5808-b5a0-46ba-9a42-9e2e020ac822" )]
     public partial class HtmlContentsController
     {
         /// <summary>
@@ -36,6 +37,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/HtmlContents/UpdateContents/{blockId}" )]
+        [RockGuid( "6236deeb-8536-4485-890b-0fa4b0c86f81" )]
         public void UpdateContents( int blockId, [FromBody] HtmlContents htmlContents )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -43,10 +45,10 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
 
-            var block = new BlockService( (RockContext)Service.Context ).Get( blockId );
+            var block = new BlockService( ( RockContext ) Service.Context ).Get( blockId );
             if ( block != null && block.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
             {
-                var htmlContentService = (HtmlContentService)Service;
+                var htmlContentService = ( HtmlContentService ) Service;
                 var htmlContent = htmlContentService.GetActiveContentQueryable( blockId, htmlContents.EntityValue ).FirstOrDefault();
                 if ( htmlContent != null )
                 {
@@ -61,7 +63,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HtmlContents
         {
@@ -72,7 +74,7 @@ namespace Rock.Rest.Controllers
             /// The entity value.
             /// </value>
             public string EntityValue { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the content.
             /// </summary>

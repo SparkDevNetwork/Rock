@@ -25,8 +25,10 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    /// Class AuthController.
+    /// Implements the <see cref="System.Web.Http.ApiController" />
     /// </summary>
+    [RockGuid( "713b9e66-e962-4637-b701-53372fb40dbf" )]
     public class AuthController : ApiController
     {
         /// <summary>
@@ -36,6 +38,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/Auth/Login" )]
+        [RockGuid( "6149c98b-134f-48eb-a92f-d37b9b08b322" )]
         public void Login( [FromBody] LoginParameters loginParameters )
         {
             if ( !IsLoginValid( loginParameters, out var errorMessage ) )

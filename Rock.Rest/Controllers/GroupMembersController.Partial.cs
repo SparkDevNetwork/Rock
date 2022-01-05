@@ -26,7 +26,8 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
-    public partial class GroupMembersController 
+    [RockGuid( "3ff0343e-2eec-4ab7-871c-10f86c1ff7bf" )]
+    public partial class GroupMembersController
     {
         /// <summary>
         /// Overrides base Get controller method to include deceased GroupMembers
@@ -34,6 +35,7 @@ namespace Rock.Rest.Controllers
         /// <returns>A queryable collection of GroupMembers, including deceased, that match the provided query.</returns>
         [Authenticate, Secured]
         [EnableQuery]
+        [RockGuid( "eb77dda4-1dcb-45e6-ac58-888d9c9c04fa" )]
         public override IQueryable<GroupMember> Get()
         {
             var queryString = Request.RequestUri.Query;
@@ -60,20 +62,21 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
+        [RockGuid( "018496a4-f8c3-473e-bebb-2236497afb1c" )]
         public System.Net.Http.HttpResponseMessage CreateKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
             SetProxyCreation( true );
             var rockContext = this.Service.Context as RockContext;
-            var personService = new PersonService(rockContext);
-            var person = personService.Get(personId);
-            var relatedPerson = personService.Get(relatedPersonId);
+            var personService = new PersonService( rockContext );
+            var person = personService.Get( personId );
+            var relatedPerson = personService.Get( relatedPersonId );
 
             CheckCanEdit( person );
             CheckCanEdit( relatedPerson );
 
             System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
-            var groupMemberService = new GroupMemberService(rockContext);
+            var groupMemberService = new GroupMemberService( rockContext );
             groupMemberService.CreateKnownRelationship( personId, relatedPersonId, relationshipRoleId );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
@@ -88,15 +91,16 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
+        [RockGuid( "51cb49b5-4338-4826-8dfc-2f902e30a01c" )]
         public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
         {
-           SetProxyCreation( true );
-           var rockContext = this.Service.Context as RockContext;
-        
-           var groupMemberService = new GroupMemberService( rockContext );
-           var groupMembers = groupMemberService.GetKnownRelationship( personId, relationshipRoleId );
+            SetProxyCreation( true );
+            var rockContext = this.Service.Context as RockContext;
 
-           return groupMembers;
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMembers = groupMemberService.GetKnownRelationship( personId, relationshipRoleId );
+
+            return groupMembers;
         }
 
         /// <summary>
@@ -108,6 +112,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpDelete]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
+        [RockGuid( "f5fc602f-ae95-4853-9bca-16be0fbbcafc" )]
         public void DeleteKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
             SetProxyCreation( true );

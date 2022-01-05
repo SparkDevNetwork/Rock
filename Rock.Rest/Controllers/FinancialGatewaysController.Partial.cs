@@ -19,7 +19,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Financial;
 
 namespace Rock.Rest.Controllers
@@ -27,6 +27,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
+    [RockGuid( "aadbd4ca-1534-4ce6-bca9-97b6ece275a9" )]
     public partial class FinancialGatewaysController
     {
         /// <summary>
@@ -40,8 +41,9 @@ namespace Rock.Rest.Controllers
         /// </param>
         /// <returns></returns>
         [HttpPost]
-        [Route( "api/FinancialGateways/Webhook" )]
-        public HttpResponseMessage HandleWebhook( [FromUri]Guid guid )
+        [System.Web.Http.Route( "api/FinancialGateways/Webhook" )]
+        [RockGuid( "130a3865-f090-4b4a-98ab-c23e2db96500" )]
+        public HttpResponseMessage HandleWebhook( [FromUri] Guid guid )
         {
             if ( guid.IsEmpty() )
             {

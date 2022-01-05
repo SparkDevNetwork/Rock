@@ -18,6 +18,7 @@
 using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -25,7 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Service/Data access class for <see cref="Rock.Model.RestControllerService"/> entity objects.
     /// </summary>
-    public partial class RestControllerService 
+    public partial class RestControllerService
     {
         /// <summary>
         /// Gets the API identifier.
@@ -34,8 +35,25 @@ namespace Rock.Model
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="controllerName">Name of the controller.</param>
         /// <returns></returns>
+        [RockObsolete("1.14")]
+        [Obsolete("Use the method with the 'rockGuid' property instead.")]
         public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName )
         {
+            return GetApiId( methodInfo, httpMethod, controllerName, out RockGuidAttribute rockGuid );
+        }
+
+        /// <summary>
+        /// Gets the API identifier.
+        /// </summary>
+        /// <param name="methodInfo">The method information.</param>
+        /// <param name="httpMethod">The HTTP method.</param>
+        /// <param name="controllerName">Name of the controller.</param>
+        /// <param name="rockGuid">Returns the <see cref="RockGuidAttribute"/> associated with this API.</param>
+        /// <returns></returns>
+        public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName, out RockGuidAttribute rockGuid )
+        {
+            rockGuid = methodInfo.GetCustomAttribute<RockGuidAttribute>();
+
             var strippedClassname = Regex.Replace( methodInfo.ToString(), @"((?:(?:\w+)?\.(?<name>[a-z_A-Z]\w+))+)", "${name}" );
             return $"{httpMethod}{controllerName}^{strippedClassname}";
         }

@@ -16,7 +16,7 @@
 //
 using System.Threading.Tasks;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
@@ -24,6 +24,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Communications REST API
     /// </summary>
+    [RockGuid( "1df46cc7-326a-48e6-b0a9-9330badd0512" )]
     public partial class CommunicationsController
     {
         /// <summary>
@@ -32,7 +33,8 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         [Authenticate, Secured]
         [HttpPost]
-        [Route( "api/Communications/Send/{id}" )]
+        [System.Web.Http.Route( "api/Communications/Send/{id}" )]
+        [RockGuid( "272c25fc-c608-4673-99d5-7fb1377d8a61" )]
         public virtual Task Send( int id )
         {
             var communication = GetById( id );

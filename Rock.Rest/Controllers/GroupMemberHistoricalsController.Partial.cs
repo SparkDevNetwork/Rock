@@ -25,8 +25,9 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "6246fd5b-e9b6-4632-b640-79960f89a329" )]
     public partial class GroupMemberHistoricalsController
     {
         /// <summary>
@@ -40,6 +41,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/GroupMemberHistoricals/GetGroupHistoricalSummary" )]
+        [RockGuid( "368a4efb-47c6-426b-bf75-e244e886ee61" )]
         public List<GroupMemberHistoricalService.GroupHistoricalSummary> GetGroupHistoricalSummary(
             int personId,
             DateTime? startDateTime = null,
