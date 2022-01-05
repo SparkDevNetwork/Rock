@@ -253,7 +253,7 @@ namespace Rock.Model
         {
             this.HasOptional( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.TransactionId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.FinancialTransactionAlertType ).WithMany( t => t.FinancialTransactionAlerts ).HasForeignKey( t => t.AlertTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.FinancialTransactionAlertType ).WithMany( t => t.FinancialTransactionAlerts ).HasForeignKey( t => t.AlertTypeId ).WillCascadeOnDelete( true );
         }
     }
 
