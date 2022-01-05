@@ -14,13 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Routing;
 
@@ -42,11 +38,10 @@ namespace Rock.Model
     [DataContract]
     public partial class PageRoute : Model<PageRoute>
     {
-
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if the PageRoute is part of of the Rock core system/framework. This property is required.
+        /// Gets or sets a flag indicating if the PageRoute is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the PageRoute is part of the Rock core system/framework, otherwise <c>false</c>.
@@ -80,7 +75,7 @@ namespace Rock.Model
         public string Route { get; set; }
 
         /// <summary>
-        /// If true then the route will be accessable from all sites regardless if EnableExclusiveRoutes is set on the site
+        /// If true then the route will be accessible from all sites regardless if EnableExclusiveRoutes is set on the site
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is global; otherwise, <c>false</c>.
@@ -88,9 +83,9 @@ namespace Rock.Model
         [DataMember]
         public bool IsGlobal { get; set; } = false;
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Page"/> associated with the RoutePath.
@@ -101,41 +96,9 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Page Page { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            if ( entry.State == EntityState.Deleted )
-            {
-                var routes = RouteTable.Routes;
-                if ( routes != null )
-                {
-                    var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteIds().Contains( this.Id ) );
-                    if ( existingRoute != null )
-                    {
-                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                        pageAndRouteIds = pageAndRouteIds.Where( p => p.RouteId != this.Id ).ToList();
-                        if ( pageAndRouteIds.Any() )
-                        {
-                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                        }
-                        else
-                        {
-                            RouteTable.Routes.Remove( existingRoute );
-                        }
-                    }
-                }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Route and represents this PageRoute
@@ -148,8 +111,7 @@ namespace Rock.Model
             return this.Route;
         }
 
-        #endregion
-
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -168,6 +130,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

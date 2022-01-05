@@ -778,6 +778,7 @@
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
     <Compile Include="Model\CMS\PageContext\PageContext.Logic.cs" />
+    <Compile Include="Model\CMS\PageRoute\PageRoute.SaveHook.cs" />
     <Compile Include="Model\CMS\PageShortLink\PageShortLink.Logic.cs" />
     <Compile Include="Model\CMS\Page\DisplayInNavWhen.cs" />
     <Compile Include="Model\CMS\Page\Page.Logic.cs" />
@@ -2586,7 +2587,7 @@
     <Compile Include="Model\CMS\PageContext\PageContext.cs" />
     <Compile Include="Model\CMS\PageContext\PageContextService.cs" />
     <Compile Include="Model\CMS\PageRoute\PageRoute.cs" />
-    <Compile Include="Model\CMS\PageRoute\PageRouteService.Partial.cs" />
+    <Compile Include="Model\CMS\PageRoute\PageRouteService.cs" />
     <Compile Include="Model\CMS\Page\PageService.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.cs" />
