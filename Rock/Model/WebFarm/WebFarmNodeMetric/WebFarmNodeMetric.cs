@@ -104,7 +104,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.WebFarmNode"/>.
@@ -115,45 +115,24 @@ namespace Rock.Model
         [DataMember]
         public virtual WebFarmNode WebFarmNode { get; set; }
 
-        #endregion Virtual Properties
-
-        #region Entity Configuration
-
-        /// <summary>
-        /// WebFarmNodeMetric Configuration class.
-        /// </summary>
-        public partial class WebFarmNodeMetricConfiguration : EntityTypeConfiguration<WebFarmNodeMetric>
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="WebFarmNodeMetricConfiguration"/> class.
-            /// </summary>
-            public WebFarmNodeMetricConfiguration()
-            {
-                HasRequired( wfnm => wfnm.WebFarmNode ).WithMany( wfn => wfn.WebFarmNodeMetrics ).HasForeignKey( wfnm => wfnm.WebFarmNodeId ).WillCascadeOnDelete( true );
-            }
-        }
-
-        #endregion Entity Configuration
-
-        #region Enumerations
-
-        /// <summary>
-        /// Represents the severity of the log entry.
-        /// </summary>
-        public enum TypeOfMetric
-        {
-            /// <summary>
-            /// The percent of total available CPU power being used by the node.
-            /// A MetricValue of 1 is 1% and 99.99 is 99.99%.
-            /// </summary>
-            CpuUsagePercent = 0,
-
-            /// <summary>
-            /// The number of megabytes of RAM currently being utilized by the node.
-            /// </summary>
-            MemoryUsageMegabytes = 1,
-        }
-
-        #endregion Enumerations
+        #endregion
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// WebFarmNodeMetric Configuration class.
+    /// </summary>
+    public partial class WebFarmNodeMetricConfiguration : EntityTypeConfiguration<WebFarmNodeMetric>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebFarmNodeMetricConfiguration"/> class.
+        /// </summary>
+        public WebFarmNodeMetricConfiguration()
+        {
+            HasRequired( wfnm => wfnm.WebFarmNode ).WithMany( wfn => wfn.WebFarmNodeMetrics ).HasForeignKey( wfnm => wfnm.WebFarmNodeId ).WillCascadeOnDelete( true );
+        }
+    }
+
+    #endregion Entity Configuration
 }

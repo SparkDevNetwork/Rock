@@ -14,37 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using System.Web.Http.Description;
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    /// <summary>
-    /// Service/Data access class for <see cref="Rock.Model.RestControllerService"/> entity objects.
-    /// </summary>
-    public partial class RestControllerService 
+    public partial class RestControllerService
     {
-        /// <summary>
-        /// Gets the API identifier.
-        /// </summary>
-        /// <param name="methodInfo">The method information.</param>
-        /// <param name="httpMethod">The HTTP method.</param>
-        /// <param name="controllerName">Name of the controller.</param>
-        /// <returns></returns>
-        public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName )
-        {
-            var strippedClassname = Regex.Replace( methodInfo.ToString(), @"((?:(?:\w+)?\.(?<name>[a-z_A-Z]\w+))+)", "${name}" );
-            return $"{httpMethod}{controllerName}^{strippedClassname}";
-        }
-
         /// <summary>
         /// Registers the controllers.
         /// </summary>
@@ -109,7 +89,7 @@ namespace Rock.Model
             }
 
             var actionService = new RestActionService( rockContext );
-            foreach(var discoveredController in discoveredControllers)
+            foreach ( var discoveredController in discoveredControllers )
             {
                 var apiIdMap = controllerApiIdMap[discoveredController.ClassName];
 
@@ -122,7 +102,7 @@ namespace Rock.Model
                 }
                 controller.ClassName = discoveredController.ClassName;
 
-                foreach(var discoveredAction in discoveredController.Actions)
+                foreach ( var discoveredAction in discoveredController.Actions )
                 {
                     var newFormatId = discoveredAction.ApiId;
                     var oldFormatId = apiIdMap[newFormatId];
@@ -138,17 +118,17 @@ namespace Rock.Model
                     if ( action == null )
                     {
                         action = new RestAction { ApiId = newFormatId };
-                            controller.Actions.Add( action );
+                        controller.Actions.Add( action );
                     }
                     action.Method = discoveredAction.Method;
                     action.Path = discoveredAction.Path;
                 }
 
-                var actions = discoveredController.Actions.Select( d => d.ApiId).ToList();
-                foreach( var action in controller.Actions.Where( a => !actions.Contains(a.ApiId)).ToList())
+                var actions = discoveredController.Actions.Select( d => d.ApiId ).ToList();
+                foreach ( var action in controller.Actions.Where( a => !actions.Contains( a.ApiId ) ).ToList() )
                 {
                     actionService.Delete( action );
-                    controller.Actions.Remove(action);
+                    controller.Actions.Remove( action );
                 }
             }
 
@@ -160,22 +140,5 @@ namespace Rock.Model
 
             rockContext.SaveChanges();
         }
-
-        /// <summary>
-        /// Gets the Guid for the RestController that has the specified Id
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public override Guid? GetGuid( int id )
-        {
-            var cacheItem = RestControllerCache.Get( id );
-            if ( cacheItem != null )
-            {
-                return cacheItem.Guid;
-            }
-
-            return null;
-        }
-
     }
 }

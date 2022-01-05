@@ -96,7 +96,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.WebFarmNode"/>.
@@ -116,50 +116,25 @@ namespace Rock.Model
         [DataMember]
         public virtual WebFarmNode WriterWebFarmNode { get; set; }
 
-        #endregion Virtual Properties
-
-        #region Entity Configuration
-
-        /// <summary>
-        /// WebFarmNodeLog Configuration class.
-        /// </summary>
-        public partial class WebFarmNodeLogConfiguration : EntityTypeConfiguration<WebFarmNodeLog>
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="WebFarmNodeLogConfiguration"/> class.
-            /// </summary>
-            public WebFarmNodeLogConfiguration()
-            {
-                HasRequired( wfnl => wfnl.WebFarmNode ).WithMany( wfn => wfn.WebFarmNodeLogs ).HasForeignKey( wfnl => wfnl.WebFarmNodeId ).WillCascadeOnDelete( true );
-                HasRequired( wfnl => wfnl.WriterWebFarmNode ).WithMany( wfn => wfn.WrittenWebFarmNodeLogs ).HasForeignKey( wfnl => wfnl.WriterWebFarmNodeId ).WillCascadeOnDelete( false );
-            }
-        }
-
-        #endregion Entity Configuration
-
-        #region Enumerations
-
-        /// <summary>
-        /// Represents the severity of the log entry.
-        /// </summary>
-        public enum SeverityLevel
-        {
-            /// <summary>
-            /// An informative log entry that may be useful for debugging
-            /// </summary>
-            Info = 0,
-
-            /// <summary>
-            /// A warning log entry that may require DevOps attention
-            /// </summary>
-            Warning = 1,
-
-            /// <summary>
-            /// A critical log entry that requires DevOps attention
-            /// </summary>
-            Critical = 2
-        }
-
-        #endregion Enumerations
+        #endregion
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// WebFarmNodeLog Configuration class.
+    /// </summary>
+    public partial class WebFarmNodeLogConfiguration : EntityTypeConfiguration<WebFarmNodeLog>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebFarmNodeLogConfiguration"/> class.
+        /// </summary>
+        public WebFarmNodeLogConfiguration()
+        {
+            HasRequired( wfnl => wfnl.WebFarmNode ).WithMany( wfn => wfn.WebFarmNodeLogs ).HasForeignKey( wfnl => wfnl.WebFarmNodeId ).WillCascadeOnDelete( true );
+            HasRequired( wfnl => wfnl.WriterWebFarmNode ).WithMany( wfn => wfn.WrittenWebFarmNodeLogs ).HasForeignKey( wfnl => wfnl.WriterWebFarmNodeId ).WillCascadeOnDelete( false );
+        }
+    }
+
+    #endregion Entity Configuration
 }
