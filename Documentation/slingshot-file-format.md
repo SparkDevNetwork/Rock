@@ -129,7 +129,7 @@ Example:
 `Id,Name,Description,Order,ParentGroupId,GroupTypeId,CampusId,Capacity,MeetingDay,MeetingTime,IsActive,IsPublic`
 
 Example:
-`3213213210,Activities,,0,9999,42,1,,2,19:00,1,0`
+`3213213210,Activities,,0,9999,42,1,,2,19:00,True,True`
 
 ## group-address.csv
 `GroupId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`
