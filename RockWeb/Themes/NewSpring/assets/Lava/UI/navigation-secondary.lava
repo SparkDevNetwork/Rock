@@ -1,7 +1,7 @@
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
 
 <!-- Secondary Nav -->
-<section class="nav-secondary bg-gray-dark hard flush shadowed hidden-xs hidden-sm">
+<section class="nav-secondary bg-gray-dark hard flush hidden-xs hidden-sm">
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
         <a href="{{ Page.Url }}" class="hidden-sm hidden-xs">
@@ -29,7 +29,7 @@
 </section>
 
 <!-- Mobile Secondary Nav -->
-<section class="bg-primary hard flush shadowed hidden-md hidden-lg">
+<section class="bg-primary hard flush hidden-md hidden-lg">
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
         <a id="mobileSecondaryNavTrigger" class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left flush-bottom" role="button" data-toggle="collapse" data-parent="#accordion" href="#mobileSecondaryNav" aria-expanded="false" aria-controls="mobileSecondaryNav">
