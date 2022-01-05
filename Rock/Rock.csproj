@@ -2303,10 +2303,10 @@
     <Compile Include="Model\Core\BinaryFileData\BinaryFileData.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFileService.cs" />
     <Compile Include="Model\Core\BinaryFileType\BinaryFileType.cs" />
-    <Compile Include="Model\Block.cs" />
-    <Compile Include="Model\BlockService.Partial.cs" />
-    <Compile Include="Model\BlockType.cs" />
-    <Compile Include="Model\BlockTypeService.Partial.cs" />
+    <Compile Include="Model\CMS\Block\Block.cs" />
+    <Compile Include="Model\CMS\Block\BlockService.Partial.cs" />
+    <Compile Include="Model\CMS\BlockType\BlockType.cs" />
+    <Compile Include="Model\CMS\BlockType\BlockTypeService.Partial.cs" />
     <Compile Include="Model\Core\Campus\Campus.cs" />
     <Compile Include="Model\Core\Campus\CampusService.cs" />
     <Compile Include="Model\Core\Category\Category.cs" />
@@ -2558,8 +2558,8 @@
     <Compile Include="Model\Group\GroupType\GroupTypeService.cs" />
     <Compile Include="Model\Core\History\History.cs" />
     <Compile Include="Model\Core\History\HistoryService.cs" />
-    <Compile Include="Model\HtmlContent.cs" />
-    <Compile Include="Model\HtmlContentService.Partial.cs" />
+    <Compile Include="Model\CMS\HtmlContent\HtmlContent.cs" />
+    <Compile Include="Model\CMS\HtmlContent\HtmlContentService.Partial.cs" />
     <Compile Include="Model\Core\Interaction\Interaction.cs" />
     <Compile Include="Model\Core\InteractionChannel\InteractionChannel.cs" />
     <Compile Include="Model\Core\InteractionComponent\InteractionComponent.cs" />
