@@ -777,6 +777,7 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
+    <Compile Include="Model\CMS\PageContext\PageContext.Logic.cs" />
     <Compile Include="Model\CMS\PageShortLink\PageShortLink.Logic.cs" />
     <Compile Include="Model\CMS\Page\DisplayInNavWhen.cs" />
     <Compile Include="Model\CMS\Page\Page.Logic.cs" />
@@ -2583,7 +2584,7 @@
     <Compile Include="Model\Communication\NotificationRecipient\NotificationRecipient.cs" />
     <Compile Include="Model\CMS\Page\Page.cs" />
     <Compile Include="Model\CMS\PageContext\PageContext.cs" />
-    <Compile Include="Model\CMS\PageContext\PageContextService.Partial.cs" />
+    <Compile Include="Model\CMS\PageContext\PageContextService.cs" />
     <Compile Include="Model\PageRoute.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
     <Compile Include="Model\CMS\Page\PageService.cs" />

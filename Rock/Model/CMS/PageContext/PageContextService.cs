@@ -21,7 +21,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access and service class for the <see cref="Rock.Model.PageContext"/> model object. This class inherits from the Service class.
     /// </summary>
-    public partial class PageContextService 
+    public partial class PageContextService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.PageContext"/> entities that are used on a page.

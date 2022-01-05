@@ -16,15 +16,12 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -39,7 +36,6 @@ namespace Rock.Model
     [DataContract]
     public partial class PageContext : Model<PageContext>, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -51,7 +47,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that this PageContext is used on. This property is required.
         /// </summary>
@@ -60,10 +56,10 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IX_PageId")]
-        [Index( "IX_PageIdEntityIdParameter", 0, IsUnique=true )]
+        [Index( "IX_PageId" )]
+        [Index( "IX_PageIdEntityIdParameter", 0, IsUnique = true )]
         public int PageId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the object type name of the entity object that is being shared through this PageContext. This property is required.
         /// </summary>
@@ -88,9 +84,9 @@ namespace Rock.Model
         [Index( "IX_PageIdEntityIdParameter", 2, IsUnique = true )]
         public string IdParameter { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Page"/> that this PageContext is used on.
@@ -101,47 +97,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Page Page { get; set; }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            // PageCache has PageContexts that could get stale if PageContext is modified
-            PageCache.UpdateCachedEntity( this.PageId, EntityState.Detached );
-        }
-
-        #endregion ICacheable
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> containing the Entity (type name) and IdParamenter that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" />  containing the Entity (type name) and IdParamenter that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0}:{1}", this.Entity, this.IdParameter );
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -156,10 +112,9 @@ namespace Rock.Model
         /// </summary>
         public PageContextConfiguration()
         {
-            this.HasRequired( p => p.Page ).WithMany( p => p.PageContexts ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Page ).WithMany( p => p.PageContexts ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
