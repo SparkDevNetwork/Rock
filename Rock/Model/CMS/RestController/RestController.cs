@@ -14,14 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -35,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class RestController : Model<RestController>, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -60,7 +58,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the actions.
@@ -85,7 +83,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this RestController.
@@ -96,29 +94,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return RestControllerCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            RestControllerCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion
@@ -140,5 +115,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

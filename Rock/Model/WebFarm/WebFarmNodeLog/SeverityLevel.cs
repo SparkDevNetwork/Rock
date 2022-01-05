@@ -14,28 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class RestActionService
-    {
-        /// <summary>
-        /// Gets the Guid for the RestAction that has the specified Id
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public override Guid? GetGuid( int id )
-        {
-            var campus = RestActionCache.Get( id );
-            if ( campus != null )
-            {
-                return campus.Guid;
-            }
-
-            return null;
-        }
-    }
+    
 }

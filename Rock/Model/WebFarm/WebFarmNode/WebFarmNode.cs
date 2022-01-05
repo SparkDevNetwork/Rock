@@ -146,7 +146,7 @@ namespace Rock.Model
 
         #endregion IHasActiveFlag
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the web farm node logs.
@@ -191,37 +191,22 @@ namespace Rock.Model
         private ICollection<WebFarmNodeLog> _writtenWebFarmNodeLogs;
 
         #endregion Virtual Properties
-
-        #region Methods
-
-        /// <summary>
-        /// Converts to string.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return NodeName.IsNullOrWhiteSpace() ? base.ToString() : NodeName;
-        }
-
-        #endregion Methods
-
-        #region Entity Configuration
-
-        /// <summary>
-        /// WebFarmNode Configuration class.
-        /// </summary>
-        public partial class WebFarmNodeConfiguration : EntityTypeConfiguration<WebFarmNode>
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="WebFarmNodeConfiguration"/> class.
-            /// </summary>
-            public WebFarmNodeConfiguration()
-            {
-            }
-        }
-
-        #endregion Entity Configuration
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// WebFarmNode Configuration class.
+    /// </summary>
+    public partial class WebFarmNodeConfiguration : EntityTypeConfiguration<WebFarmNode>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebFarmNodeConfiguration"/> class.
+        /// </summary>
+        public WebFarmNodeConfiguration()
+        {
+        }
+    }
+
+    #endregion Entity Configuration
 }
