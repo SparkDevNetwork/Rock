@@ -1,52 +1,23 @@
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
 
+{%- assign id = id | Default:uniqueid -%}
 {%- assign modalid = uniqueid -%}
-{% assign textalignment = textalignment | Trim %}
 
-{% if id != null and id != '' %}
 <style>
-    {% if backgroundcolor != null and backgroundcolor != '' %}
-        #{{ id }} {
-            color: #fff;
-        }
-
+    {% if backgroundcolor != '' %}
         #{{ id }} {
             background-color: {{ backgroundcolor }};
         }
-
-        #{{ id }} blockquote, blockquote footer, blockquote small, blockquote .small {
-            color: #fff;
-        }
-    {% endif %}
-
-    {% if foregroundcolor != null and foregroundcolor != '' %}
-        #{{ id }} a:not(.btn):not(.label) {
-            color: {{ foregroundcolor }};
-        }
-
-        #{{ id }} .btn {
-            background-color: {{ foregroundcolor }};
-            border-color: {{ foregroundcolor }};
-        }
+        {% if foregroundcolor == 'white' %}
+            #{{ id }} blockquote, blockquote footer, blockquote small, blockquote .small {
+                color: #fff;
+            }
+        {% endif %}
     {% endif %}
 </style>
-{% endif %}
 
-{% if linkurl != empty or linkedpageid != empty %}
-    {% capture linkurl %}
-        {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
-            /{{ linkedpageroute }}
-        {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
-            /page/{{ linkedpageid }}
-        {% else %}
-            {{ linkurl }}
-        {% endif %}
-    {% endcapture %}
-{% endif %}
-{% assign linkurl = linkurl | Trim %}
-
-    <section data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides soft-double-top xs-soft-top xs-hard-sides xs-push-half-bottom rounded-lg {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }} !important;"{% endif %}>
+    <section data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides hard xs-push-half-bottom rounded-lg text-{{ foregroundcolor }}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }} !important;"{% endif %}>
 
         {% if ratio and ratio != empty %}
         {% assign trimcopy = 'Yes' %}
@@ -58,11 +29,11 @@
                         <span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
                     {% endif %}
 
-                    <div class="bring-forward text-constrained {% if textalignment == 'Center' or imageurl == '' %}mx-auto{% endif %} {% if textalignment == 'Center' and imageurl == '' %}text-center{% elseif textalignment == 'Right' and imageurl != '' %}text-left pull-right{% elseif imageurl == '' and textalignment == 'Right' %}text-center{% endif %} xs-text-center soft-top soft-double-sides clearfix xs-soft-top xs-soft-sides xs-hard-bottom">
+                    <div class="bring-forward text-constrained {% if textalignment == 'Center' or imageurl == '' %}mx-auto{% endif %} {% if textalignment == 'Center' and imageurl == '' %}text-center{% elseif textalignment == 'Right' and imageurl != '' %}text-left pull-right{% elseif imageurl == '' and textalignment == 'Right' %}text-center{% endif %} xs-text-center soft-double-top soft-bottom soft-double-sides clearfix xs-soft-top xs-soft-sides xs-hard-bottom clearfix">
 
                         {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
 
-                            <div class="{% if imageurl == '' or imageurl != '' and textalignment == 'Center' %}text-center{% endif %}">
+                            <div class="{% if textalignment == 'Center' %}text-center{% endif %}">
                                 {% if label != null and label != '' %}
                                     <p><small class="label label-default circular sans-serif letter-spacing-condensed">{{ label }}</small></p>
                                 {% endif %}
@@ -120,6 +91,23 @@
         {% endif %}
 
     </section>
+
+{% if contentalignment == 'start' or contentalignment == 'end' and backgroundcolor != '' and gradientamount > 0 %}
+    {% assign gradientorientation = contentalignment |  Replace:'start','0' | Replace:'end','180' %}
+    <style>
+        #{{ id }} .background-cover:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgb(0,0,0);
+            background: linear-gradient({{ gradientorientation | Append:'deg' }}, transparent 0%, {{ backgroundcolor }} 100%);
+            opacity: {{ gradientamount }};
+        }
+    </style>
+{% endif %}
 
 {% if trimcopy == 'Yes' %}
     {% if length > 140 %}
