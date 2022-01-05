@@ -2585,8 +2585,8 @@
     <Compile Include="Model\CMS\Page\Page.cs" />
     <Compile Include="Model\CMS\PageContext\PageContext.cs" />
     <Compile Include="Model\CMS\PageContext\PageContextService.cs" />
-    <Compile Include="Model\PageRoute.cs" />
-    <Compile Include="Model\PageRouteService.Partial.cs" />
+    <Compile Include="Model\CMS\PageRoute\PageRoute.cs" />
+    <Compile Include="Model\CMS\PageRoute\PageRouteService.Partial.cs" />
     <Compile Include="Model\CMS\Page\PageService.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.cs" />
