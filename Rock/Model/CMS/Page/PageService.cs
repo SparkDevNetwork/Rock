@@ -28,7 +28,6 @@ namespace Rock.Model
     /// </summary>
     public partial class PageService 
     {
-
         /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Page" /> entities by the parent <see cref="Rock.Model.Page">Page's</see> Id.
         /// </summary>
@@ -81,8 +80,8 @@ namespace Rock.Model
                 select [a].* from [Page] [a]
                 inner join CTE pcte on pcte.Id = [a].[ParentPageId]
                 )
-                select * from CTE
-                ", parentPageId );
+                select * from CTE",
+                parentPageId );
         }
 
         /// <summary>

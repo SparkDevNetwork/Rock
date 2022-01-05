@@ -778,6 +778,9 @@
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
     <Compile Include="Model\CMS\PageShortLink\PageShortLink.Logic.cs" />
+    <Compile Include="Model\CMS\Page\DisplayInNavWhen.cs" />
+    <Compile Include="Model\CMS\Page\Page.Logic.cs" />
+    <Compile Include="Model\CMS\Page\Page.SaveHook.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.Logic.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetDataFormat.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetScriptType.cs" />
@@ -2583,7 +2586,7 @@
     <Compile Include="Model\PageContextService.Partial.cs" />
     <Compile Include="Model\PageRoute.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
-    <Compile Include="Model\CMS\Page\PageService.Partial.cs" />
+    <Compile Include="Model\CMS\Page\PageService.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.cs" />
     <Compile Include="Model\CRM\PersonAlias\PersonAlias.cs" />
