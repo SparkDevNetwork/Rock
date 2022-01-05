@@ -2582,8 +2582,8 @@
     <Compile Include="Model\Communication\Notification\Notification.cs" />
     <Compile Include="Model\Communication\NotificationRecipient\NotificationRecipient.cs" />
     <Compile Include="Model\CMS\Page\Page.cs" />
-    <Compile Include="Model\PageContext.cs" />
-    <Compile Include="Model\PageContextService.Partial.cs" />
+    <Compile Include="Model\CMS\PageContext\PageContext.cs" />
+    <Compile Include="Model\CMS\PageContext\PageContextService.Partial.cs" />
     <Compile Include="Model\PageRoute.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
     <Compile Include="Model\CMS\Page\PageService.cs" />
