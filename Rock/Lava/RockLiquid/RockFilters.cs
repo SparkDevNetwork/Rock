@@ -3046,7 +3046,8 @@ namespace Rock.Lava
                 IncludeInactive = includeInactive,
                 UseFormalNames = useFormalNames,
                 FinalSeparator = finalfinalSeparator,
-                Separator = separator
+                Separator = separator,
+                RockContext = GetRockContext( context )
             };
 
             return Person.CalculateFamilySalutation( person, args );
