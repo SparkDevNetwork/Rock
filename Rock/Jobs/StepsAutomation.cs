@@ -21,7 +21,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using Quartz;
 using Rock.Attribute;
@@ -45,6 +44,15 @@ namespace Rock.Jobs
         order: 1,
         key: AttributeKey.DuplicatePreventionDayRange )]
 
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (180).",
+        IsRequired = false,
+        DefaultIntegerValue = AttributeDefaultValue.CommandTimeout,
+        Category = "General",
+        Order = 7 )]
+
     [DisallowConcurrentExecution]
     public class StepsAutomation : IJob
     {
@@ -59,6 +67,19 @@ namespace Rock.Jobs
             /// The duplicate prevention day range
             /// </summary>
             public const string DuplicatePreventionDayRange = "DuplicatePreventionDayRange";
+
+            /// <summary>
+            /// The SQL Command Timeout
+            /// </summary>
+            public const string CommandTimeout = "CommandTimeout";
+        }
+
+        /// <summary>
+        /// Default Values for Attributes
+        /// </summary>
+        private static class AttributeDefaultValue
+        {
+            public const int CommandTimeout = 180;
         }
 
         #endregion Keys
@@ -84,6 +105,8 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            SqlCommandTimeoutSeconds = context.JobDetail.JobDataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
             var addedResults = new ConcurrentBag<int>();
@@ -96,17 +119,14 @@ namespace Rock.Jobs
             var minDaysBetweenSteps = GetDuplicatePreventionDayRange( context );
 
             // Loop through each step type and create steps based on what is in the dataview
-            Parallel.ForEach(
-                stepTypeViews,
-                stepTypeView =>
+            foreach ( var stepTypeView in stepTypeViews )
             {
                 ProcessStepType( stepTypeView, minDaysBetweenSteps, addedResults, updatedResults, out var errorsFromThisStepType );
-
                 if ( errorsFromThisStepType != null && errorsFromThisStepType.Any() )
                 {
                     errorsFromThisStepType.ForEach( errors.Add );
                 }
-            } );
+            }
 
             // Set the results for the job log
             var totalAdded = addedResults.Sum();
@@ -118,6 +138,8 @@ namespace Rock.Jobs
                 ThrowErrors( context, errors );
             }
         }
+
+        private int SqlCommandTimeoutSeconds = AttributeDefaultValue.CommandTimeout;
 
         /// <summary>
         /// Processes the step type. Add steps for everyone in the dataview
@@ -136,6 +158,7 @@ namespace Rock.Jobs
         {
             errorMessages = new List<string>();
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
 
             // Steps are created with a status of "complete", so if we need to know the status id
             var stepStatusId = stepTypeView.CompletedStepStatusIds.FirstOrDefault();
@@ -159,7 +182,8 @@ namespace Rock.Jobs
             // We can use the dataview to get the person alias id query
             var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
-                DbContext = rockContext
+                DbContext = rockContext,
+                DatabaseTimeoutSeconds = SqlCommandTimeoutSeconds
             };
 
             IQueryable<IEntity> dataviewQuery;
@@ -263,6 +287,7 @@ namespace Rock.Jobs
         {
             var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
             var stepTypeService = new StepTypeService( rockContext );
 
             var views = stepTypeService.Queryable().AsNoTracking()
