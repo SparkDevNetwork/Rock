@@ -866,6 +866,7 @@
     <Compile Include="Model\Core\EntitySetItem\EntitySetItem.Logic.cs" />
     <Compile Include="Model\Core\History\History.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
+    <Compile Include="Model\Core\PluginMigration\PluginMigration.cs" />
     <Compile Include="Model\Core\RelatedEntity\RelatedEntityPurposeKey.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
