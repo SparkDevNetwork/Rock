@@ -24,14 +24,13 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// The plugin migrations that have bee run
+    /// The plugin migrations that have been run.
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "PluginMigration" )]
     [DataContract]
     public partial class PluginMigration : Model<PluginMigration>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -41,7 +40,7 @@ namespace Rock.Model
         /// The name of the plugin assembly.
         /// </value>
         [Required]
-        [MaxLength(512)]
+        [MaxLength( 512 )]
         [DataMember( IsRequired = true )]
         public string PluginAssemblyName { get; set; }
 
@@ -65,32 +64,12 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string MigrationName { get; set; }
-        
-        #endregion
 
-        #region Virtual Properties
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this PluginMigration.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this PluginMigration.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0} ({1})", this.PluginAssemblyName, this.MigrationNumber );
-        }
-
-        #endregion
-
+        #endregion Entity Properties
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// PluginMigration Configuration class.
     /// </summary>
@@ -104,6 +83,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
