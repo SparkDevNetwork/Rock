@@ -2676,7 +2676,7 @@
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Core\SignalType\SignalType.cs" />
     <Compile Include="Model\CMS\SiteDomain\SiteDomain.cs" />
-    <Compile Include="Model\LavaShortCode.cs" />
+    <Compile Include="Model\CMS\LavaShortCode\LavaShortCode.cs" />
     <Compile Include="Model\CMS\PageShortLink\PageShortLinkService.cs" />
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowActionService.cs" />
     <Compile Include="Pbx\CdrRecord.cs" />
