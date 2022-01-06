@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -122,9 +121,9 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets a collection of  <see cref="Rock.Model.Block">Blocks</see> that are implementations of this BlockType.
@@ -148,42 +147,7 @@ namespace Rock.Model
         /// </value>
         public virtual EntityType EntityType { get; set; }
 
-        /// <summary>
-        /// Returns true if this block type is valid.
-        /// </summary>
-        /// <value>
-        /// A <see cref="T:System.Boolean" /> that is <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public override bool IsValid
-        {
-            get
-            {
-                if ( !base.IsValid )
-                {
-                    return false;
-                }
-
-                //
-                // If we have both, not valid.
-                //
-                if ( !string.IsNullOrWhiteSpace( Path ) && EntityTypeId.HasValue )
-                {
-                    return false;
-                }
-
-                //
-                // If we have neither, not valid.
-                //
-                if ( string.IsNullOrWhiteSpace( Path ) && !EntityTypeId.HasValue )
-                {
-                    return false;
-                }
-
-                return true;
-            }
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -198,30 +162,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return BlockTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            BlockTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
+        #endregion Public Methods
     }
 
     #region Entity Configuration
@@ -240,5 +181,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

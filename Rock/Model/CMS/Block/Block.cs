@@ -14,21 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -47,7 +42,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Block : Model<Block>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -198,7 +192,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BlockType"/> entity that this Block is implementing.
@@ -242,90 +236,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Site Site { get; set; }
 
-        /// <summary>
-        /// Gets the location where this Block is being implemented on (Page, Layout, or Site) 
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.BlockLocation"/> where this Block is being implemented on.
-        /// </value>
-        /// <example>
-        /// <c>BlockLocation.Page</c>
-        /// </example>
-        [DataMember]
-        [NotMapped]
-        public virtual BlockLocation BlockLocation
-        {
-            get
-            {
-                if ( this.PageId.HasValue )
-                {
-                    return BlockLocation.Page;
-                }
-                else if ( this.LayoutId.HasValue )
-                {
-                    return BlockLocation.Layout;
-                }
-                else if ( this.SiteId.HasValue )
-                {
-                    return BlockLocation.Site;
-                }
-                else
-                {
-                    return BlockLocation.None;
-                }
-            }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the securable object that security permissions should be inherited from based on BlockLocation (Page, Layout, or Site)
-        /// </summary>
-        /// <value>
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                switch ( this.BlockLocation )
-                {
-                    case BlockLocation.Page:
-                        return this.Page != null ? this.Page : base.ParentAuthority;
-                    case BlockLocation.Layout:
-                        return this.Layout != null ? this.Layout : base.ParentAuthority;
-                    case BlockLocation.Site:
-                        return this.Site != null ? this.Site : base.ParentAuthority;
-                    default:
-                        return base.ParentAuthority;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view the block." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit content on the block." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the block.  This includes setting properties of the block, setting security for the block, moving the block, and deleting block from the zone." );
-                }
-                return _supportedActions;
-            }
-        }
-        private Dictionary<string, string> _supportedActions;
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -341,78 +252,6 @@ namespace Rock.Model
         }
 
         #endregion
-
-        
-
-        #region ICacheable
-
-        private int? originalSiteId;
-        private int? originalLayoutId;
-        private int? originalPageId;
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( state == EntityState.Modified || state == EntityState.Deleted )
-            {
-                originalSiteId = entry.OriginalValues["SiteId"]?.ToString().AsIntegerOrNull();
-                originalLayoutId = entry.OriginalValues["LayoutId"]?.ToString().AsIntegerOrNull();
-                originalPageId = entry.OriginalValues["PageId"]?.ToString().AsIntegerOrNull();
-            }
-
-            base.PreSaveChanges( dbContext, entry, state );
-        }
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return BlockCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            BlockCache.UpdateCachedEntity( this.Id, entityState );
-
-            var model = this;
-
-            if ( model.SiteId.HasValue && model.SiteId != originalSiteId )
-            {
-                PageCache.FlushPagesForSite( model.SiteId.Value );
-            }
-            else if ( model.LayoutId.HasValue && model.LayoutId != originalLayoutId )
-            {
-                PageCache.FlushPagesForLayout( model.LayoutId.Value );
-            }
-
-            if ( originalSiteId.HasValue )
-            {
-                PageCache.FlushPagesForSite( originalSiteId.Value );
-            }
-            else if ( originalLayoutId.HasValue )
-            {
-                PageCache.FlushPagesForLayout( originalLayoutId.Value );
-            }
-            else if ( originalPageId.HasValue )
-            {
-                PageCache.FlushItem( originalPageId.Value );
-            }
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -436,37 +275,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The location where the Block is implemented
-    /// </summary>
-    [Serializable]
-    public enum BlockLocation
-    {
-        /// <summary>
-        /// Block is located in the layout (will be rendered for every page using the layout)
-        /// </summary>
-        Layout = 0,
-
-        /// <summary>
-        /// Block is located on the page
-        /// </summary>
-        Page = 1,
-
-        /// <summary>
-        /// Block is located in the site (will be rendered for every page of the site)
-        /// </summary>
-        Site = 2,
-
-        /// <summary>
-        /// Block is doesn't have a PageId, LayoutId, or a SiteId specific (shouldn't happen, but just in case)
-        /// </summary>
-        None = 3
-    }
-
-    #endregion
-
+#endregion
 }

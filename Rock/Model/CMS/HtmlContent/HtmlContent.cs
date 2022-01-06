@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -35,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class HtmlContent : Model<HtmlContent>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -127,7 +126,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Block"/> that this HTMLContent appears on. 
@@ -147,7 +146,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Model.PersonAlias ApprovedByPersonAlias { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -163,7 +162,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -184,5 +182,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
