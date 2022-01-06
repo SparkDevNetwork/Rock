@@ -20,7 +20,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -36,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FinancialBatch : Model<FinancialBatch>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -146,21 +144,9 @@ namespace Rock.Model
         [DataMember]
         public string Note { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialBatch"/> class.
-        /// </summary>
-        public FinancialBatch() : base()
-        {
-            Transactions = new Collection<FinancialTransaction>();
-        }
-
-        #endregion
-
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Campus"/> that this batch is associated with.
@@ -179,129 +165,18 @@ namespace Rock.Model
         /// A collection that contains the <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in the batch.
         /// </value>
         [DataMember]
-        public virtual ICollection<FinancialTransaction> Transactions { get; set; }
-
-        #endregion
-
-        #region ISecured overrides
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
+        public virtual ICollection<FinancialTransaction> Transactions
         {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "Delete", "The roles and/or users that can delete a batch." );
-                supportedActions.AddOrReplace( "ReopenBatch", "The roles and/or users that can reopen a closed batch." );
-                return supportedActions;
-            }
+            get { return _transactions ?? ( _transactions = new Collection<FinancialTransaction>() ); }
+            set { _transactions = value; }
         }
 
-        #endregion ISecured overrides
+        private ICollection<FinancialTransaction> _transactions;
 
-        #region Public Methods
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public override bool IsValid
-        {
-            get
-            {
-                var result = base.IsValid;
-                if ( result )
-                {
-                    if ( this.Status == BatchStatus.Closed )
-                    {
-                        var rockContext = new RockContext();
-                        if ( this.ControlAmount != this.GetTotalTransactionAmount( rockContext ) )
-                        {
-                            ValidationResults.Add( new ValidationResult( "Control variance must be 0 before closing a batch." ) );
-                            result = false;
-                        }
-
-                        if ( this.HasUnmatchedTransactions( rockContext ) )
-                        {
-                            ValidationResults.Add( new ValidationResult( "All transactions must be matched before closing a batch." ) );
-                            result = false;
-                        }
-                    }
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether [is valid batch status change] [the specified original status].
-        /// </summary>
-        /// <param name="origStatus">The original status.</param>
-        /// <param name="newStatus">The new status.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>
-        ///   <c>true</c> if [is valid batch status change] [the specified original status]; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsValidBatchStatusChange(BatchStatus origStatus, BatchStatus newStatus, Person currentPerson, out string errorMessage)
-        {
-            errorMessage = string.Empty;
-            if ( origStatus == BatchStatus.Closed && newStatus != BatchStatus.Closed )
-            {
-                if ( !this.IsAuthorized( "ReopenBatch", currentPerson ) )
-                {
-                    errorMessage = "User is not authorized to reopen a closed batch";
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Total transaction amount of all the transactions in the batch
-        /// </summary>
-        /// <returns></returns>
-        public virtual decimal GetTotalTransactionAmount( RockContext rockContext)
-        {
-            return new FinancialTransactionService(rockContext).Queryable()
-                .Where(a => a.BatchId == this.Id)
-                .Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M;
-        }
-
-        /// <summary>
-        /// Determines whether any of the transactions in the batch haven't been matched to a person yet
-        /// </summary>
-        /// <returns></returns>
-        public virtual bool HasUnmatchedTransactions( RockContext rockContext )
-        {
-            return new FinancialTransactionService(rockContext).Queryable()
-                .Where(a => a.BatchId == this.Id)
-                .Any( t => !t.AuthorizedPersonAliasId.HasValue );
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this FinancialBatch.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this FinancialBatch.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        #endregion
+        #endregion Navigation Properties
     }
 
-    #region EntityConfiguration
+    #region Entity Configuration
 
     /// <summary>
     /// Batch Configuration class.
@@ -317,68 +192,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The status of a batch
-    /// </summary>
-    public enum BatchStatus
-    {
-        /// <summary>
-        /// Pending
-        /// In the process of scanning the checks to it
-        /// </summary>
-        Pending = 0,
-
-        /// <summary>
-        /// Open
-        /// Transactions are all entered and are ready to be matched
-        /// </summary>
-        Open = 1,
-
-        /// <summary>
-        /// Closed
-        /// All is well and good
-        /// </summary>
-        Closed = 2
-    }
-
-    #endregion
-
-    #region Batch Classes
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [RockClientInclude( "Control Total Result from ~api/FinancialBatches/GetControlTotals/{id}" )]
-    public class ControlTotalResult
-    {
-        /// <summary>
-        /// Gets or sets the financial batch identifier.
-        /// </summary>
-        /// <value>
-        /// The financial batch identifier.
-        /// </value>
-        public int FinancialBatchId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the control total count.
-        /// </summary>
-        /// <value>
-        /// The control total count.
-        /// </value>
-        public int ControlTotalCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the control total amount.
-        /// </summary>
-        /// <value>
-        /// The control total amount.
-        /// </value>
-        public decimal ControlTotalAmount { get; set; }
-    }
-
-    #endregion Batch Classes
+    #endregion Entity Configuration
 }

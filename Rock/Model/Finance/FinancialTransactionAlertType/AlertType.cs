@@ -14,25 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Linq;
+using System.ComponentModel;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Service and data access class for <see cref="Rock.Model.FinancialPersonBankAccount"/> objects.
+    /// Alert Type
     /// </summary>
-    public partial class FinancialPersonBankAccountService
+    public enum AlertType
     {
         /// <summary>
-        /// Gets the specified bank account record.
+        /// Gratitude looks for amounts larger than normal, or transactions that are earlier than usual.
         /// </summary>
-        /// <param name="routingNumber">The routing number.</param>
-        /// <param name="accountNumber">The account number.</param>
-        /// <returns></returns>
-        public FinancialPersonBankAccount Get( string routingNumber, string accountNumber )
-        {
-            var encodedValue = FinancialPersonBankAccount.EncodeAccountNumber( routingNumber, accountNumber );
-            return this.Queryable().Where( a => a.AccountNumberSecured == encodedValue ).FirstOrDefault();
-        }
+        [Description( "Gratitude" )]
+        Gratitude = 0,
+
+        /// <summary>
+        /// Follow Up looks for amounts smaller than normal, or transactions later than usual (or stopped occurring)
+        /// </summary>
+        [Description( "Follow-up" )]
+        FollowUp = 1,
     }
 }

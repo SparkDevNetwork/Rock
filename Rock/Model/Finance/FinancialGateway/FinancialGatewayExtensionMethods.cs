@@ -18,24 +18,27 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Service/Data access class for <see cref="Rock.Model.FinancialGateway"/> entity objects.
+    /// FinancialGateway Extension Methods
     /// </summary>
-    public partial class FinancialGatewayService
+    public static partial class FinancialGatewayExtensionMethods
     {
         /// <summary>
-        /// Determines whether [is redirection gateway] [the specified gateway identifier].
+        /// Determines whether [is redirection gateway].
         /// </summary>
-        /// <param name="gatewayId">The gateway identifier.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
         /// <returns>
-        ///   <c>true</c> if [is redirection gateway] [the specified gateway identifier]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [is redirection gateway] [the specified financial gateway]; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsRedirectionGateway(int? gatewayId)
+        public static bool IsRedirectionGateway( this FinancialGateway financialGateway)
         {
-            // validate gateway
-            if ( gatewayId.HasValue )
+            if ( financialGateway != null )
             {
-                var financialGateway = Get( gatewayId.Value );
-                return financialGateway.IsRedirectionGateway();
+                var redirectionGateway = financialGateway.GetGatewayComponent() as Rock.Financial.IRedirectionGatewayComponent;
+
+                if ( redirectionGateway != null )
+                {
+                    return true;
+                }
             }
             return false;
         }

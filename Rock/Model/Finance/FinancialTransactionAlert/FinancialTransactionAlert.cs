@@ -19,12 +19,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Financial Transaction Alert
     /// </summary>
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionAlert" )]
@@ -182,7 +183,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the transaction that this financial transaction alert is associated with.
@@ -211,9 +212,9 @@ namespace Rock.Model
         [DataMember]
         public virtual FinancialTransactionAlertType FinancialTransactionAlertType { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Converts to string.
@@ -236,7 +237,7 @@ namespace Rock.Model
             return $"{FinancialTransactionAlertType.Name}: {PersonAlias.Person.FullName}";
         }
 
-        #endregion Methods
+        #endregion Public Methods
     }
 
     #region Entity Configuration

@@ -19,12 +19,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Lava;
 
@@ -281,30 +278,6 @@ namespace Rock.Model
         public string StatusMessage { get; set; }
 
         /// <summary>
-        /// Gets Sunday date.
-        /// </summary>
-        /// <value>
-        /// The Sunday date.
-        /// </value>
-        [DataMember]
-        [Column( TypeName = "Date" )]
-        [Index( "IX_SundayDate" )]
-        public DateTime? SundayDate
-        {
-            get
-            {
-                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
-                // Also, on an Insert/Update this will be the value saved to the database
-                return TransactionDateTime?.SundayDate();
-            }
-
-            set
-            {
-                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the non cash asset type <see cref="Rock.Model.DefinedValue"/> identifier.
         /// </summary>
         /// <value>
@@ -315,38 +288,6 @@ namespace Rock.Model
         public int? NonCashAssetTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets the transaction date key.
-        /// </summary>
-        /// <value>
-        /// The transaction date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? TransactionDateKey
-        {
-            get => ( TransactionDateTime == null || TransactionDateTime.Value == default ) ?
-                        ( int? ) null :
-                        TransactionDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the settled date key.
-        /// </summary>
-        /// <value>
-        /// The settled date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? SettledDateKey
-        {
-            get => ( SettledDate == null || SettledDate.Value == default ) ?
-                        ( int? ) null :
-                        SettledDate.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        /// <summary>
         /// Gets or sets the foreign currency code value identifier.
         /// </summary>
         /// <value>
@@ -355,9 +296,10 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
         public int? ForeignCurrencyCodeValueId { get; set; }
+
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the authorized <see cref="Rock.Model.PersonAlias"/>.
@@ -486,69 +428,6 @@ namespace Rock.Model
         private ICollection<FinancialTransactionRefund> _refunds;
 
         /// <summary>
-        /// Gets the total amount.
-        /// </summary>
-        /// <value>
-        /// The total amount.
-        /// </value>
-        [LavaVisible]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
-        public virtual decimal TotalAmount
-        {
-            get { return TransactionDetails.Sum( d => d.Amount ); }
-        }
-
-        /// <summary>
-        /// Gets the total fee amount.
-        /// </summary>
-        /// <value>
-        /// The total amount.
-        /// </value>
-        [LavaVisible]
-        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
-        public virtual decimal? TotalFeeAmount
-        {
-            get
-            {
-                var hasFeeInfo = false;
-                var totalFee = 0m;
-
-                foreach ( var detail in TransactionDetails )
-                {
-                    hasFeeInfo |= detail.FeeAmount.HasValue;
-                    totalFee += detail.FeeAmount ?? 0m;
-                }
-
-                return hasFeeInfo ? totalFee : ( decimal? ) null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the total fee coverage amount.
-        /// </summary>
-        /// <value>
-        /// The total amount.
-        /// </value>
-        [LavaVisible]
-        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
-        public virtual decimal? TotalFeeCoverageAmount
-        {
-            get
-            {
-                var hasFeeConverageInfo = false;
-                var totalFeeCoverage = 0m;
-
-                foreach ( var detail in TransactionDetails )
-                {
-                    hasFeeConverageInfo |= detail.FeeCoverageAmount.HasValue;
-                    totalFeeCoverage += detail.FeeCoverageAmount ?? 0m;
-                }
-
-                return hasFeeConverageInfo ? totalFeeCoverage : ( decimal? ) null;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the history change list.
         /// </summary>
         /// <value>
@@ -565,19 +444,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public virtual Dictionary<int, History.HistoryChangeList> BatchHistoryChangeList { get; set; }
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "Refund", "The roles and/or users that have access to refund a transaction." );
-                return supportedActions;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the non cash asset type <see cref="Rock.Model.DefinedValue"/>.
@@ -605,200 +471,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate SettledSourceDate { get; set; }
-        #endregion Virtual Properties
 
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this transaction.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this transaction.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.TotalAmount.ToStringSafe();
-        }
-
-        /// <summary>
-        /// Processes the refund.
-        /// </summary>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public FinancialTransaction ProcessRefund( out string errorMessage )
-        {
-            return this.ProcessRefund( null, null, string.Empty, true, string.Empty, out errorMessage );
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The database entity entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var rockContext = ( RockContext ) dbContext;
-
-            HistoryChangeList = new History.HistoryChangeList();
-            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList>();
-
-            switch ( entry.State )
-            {
-                case EntityState.Added:
-                    {
-                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" );
-
-                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
-
-                        History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
-                        History.EvaluateChange( HistoryChangeList, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", ( DateTime? ) null, TransactionDateTime );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Code", string.Empty, TransactionCode );
-                        History.EvaluateChange( HistoryChangeList, "Summary", string.Empty, Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", ( int? ) null, TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", ( int? ) null, SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", ( int? ) null, ScheduledTransactionId );
-                        History.EvaluateChange( HistoryChangeList, "Processed By", string.Empty, History.GetValue<PersonAlias>( ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", ( DateTime? ) null, ProcessedDateTime );
-                        History.EvaluateChange( HistoryChangeList, "Status", string.Empty, Status );
-                        History.EvaluateChange( HistoryChangeList, "Status Message", string.Empty, StatusMessage );
-
-                        int? batchId = Batch != null ? Batch.Id : BatchId;
-                        if ( batchId.HasValue )
-                        {
-                            var batchChanges = new History.HistoryChangeList();
-                            batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
-                            BatchHistoryChangeList.Add( batchId.Value, batchChanges );
-                        }
-
-                        break;
-                    }
-
-                case EntityState.Modified:
-                    {
-                        string origPerson = History.GetValue<PersonAlias>( null, entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
-                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
-                        History.EvaluateChange( HistoryChangeList, "Authorized Person", origPerson, person );
-
-                        int? origBatchId = entry.OriginalValues["BatchId"].ToStringSafe().AsIntegerOrNull();
-                        int? batchId = Batch != null ? Batch.Id : BatchId;
-                        if ( !batchId.Equals( origBatchId ) )
-                        {
-                            string origBatch = History.GetValue<FinancialBatch>( null, origBatchId, rockContext );
-                            string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
-                            History.EvaluateChange( HistoryChangeList, "Batch", origBatch, batch );
-                        }
-
-                        int? origGatewayId = entry.OriginalValues["FinancialGatewayId"].ToStringSafe().AsIntegerOrNull();
-                        if ( !FinancialGatewayId.Equals( origGatewayId ) )
-                        {
-                            History.EvaluateChange( HistoryChangeList, "Gateway", History.GetValue<FinancialGateway>( null, origGatewayId, rockContext ), History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        }
-
-                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", entry.OriginalValues["TransactionDateTime"].ToStringSafe().AsDateTime(), TransactionDateTime );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Code", entry.OriginalValues["TransactionCode"].ToStringSafe(), TransactionCode );
-                        History.EvaluateChange( HistoryChangeList, "Summary", entry.OriginalValues["Summary"].ToStringSafe(), Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", entry.OriginalValues["TransactionTypeValueId"].ToStringSafe().AsIntegerOrNull(), TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", entry.OriginalValues["SourceTypeValueId"].ToStringSafe().AsIntegerOrNull(), SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", entry.OriginalValues["ScheduledTransactionId"].ToStringSafe().AsIntegerOrNull(), ScheduledTransactionId );
-                        History.EvaluateChange( HistoryChangeList, "Processed By", entry.OriginalValues["ProcessedByPersonAliasId"].ToStringSafe().AsIntegerOrNull(), ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext );
-                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", entry.OriginalValues["ProcessedDateTime"].ToStringSafe().AsDateTime(), ProcessedDateTime );
-                        History.EvaluateChange( HistoryChangeList, "Status", entry.OriginalValues["Status"].ToStringSafe(), Status );
-                        History.EvaluateChange( HistoryChangeList, "Status Message", entry.OriginalValues["StatusMessage"].ToStringSafe(), StatusMessage );
-
-                        if ( !batchId.Equals( origBatchId ) )
-                        {
-                            var batchChanges = new History.HistoryChangeList();
-
-                            if ( origBatchId.HasValue )
-                            {
-                                batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
-                            }
-                            if ( batchId.HasValue )
-                            {
-                                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
-                            }
-
-                            BatchHistoryChangeList.Add( batchId.Value, batchChanges );
-                        }
-                        else
-                        {
-                            if ( batchId.HasValue )
-                            {
-                                var batchChanges = new History.HistoryChangeList();
-                                batchChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, $"Transaction Id:{Id}" );
-                                BatchHistoryChangeList.Add( batchId.Value, batchChanges );
-                            }
-                        }
-                        break;
-                    }
-
-                case EntityState.Deleted:
-                    {
-                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
-
-                        int? batchId = Batch != null ? Batch.Id : BatchId;
-                        if ( batchId.HasValue )
-                        {
-                            string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
-                            string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
-                            var batchChanges = new History.HistoryChangeList();
-                            batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
-
-                            BatchHistoryChangeList.Add( batchId.Value, batchChanges );
-                        }
-
-                        // since images have a cascade delete relationship, make sure the PreSaveChanges gets called
-                        var childImages = new FinancialTransactionImageService( dbContext as RockContext ).Queryable().Where( a => a.TransactionId == this.Id );
-                        foreach ( var image in childImages )
-                        {
-                            image.PreSaveChanges( dbContext, entry.State );
-                        }
-
-                        // If a FinancialPaymentDetail was linked to this FinancialTransaction and is now orphaned, delete it.
-                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
-
-                        break;
-                    }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            if ( HistoryChangeList?.Any() == true )
-            {
-                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
-            }
-
-            if ( BatchHistoryChangeList != null )
-            {
-                foreach ( var keyVal in BatchHistoryChangeList )
-                {
-                    if ( keyVal.Value.Any() )
-                    {
-                        HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
-                    }
-                }
-            }
-
-            if ( null != this.RefundDetails || this.TotalAmount <= 0 )
-            {
-                // The data context operation doesn't need to wait for this to compelete
-                Task.Run( () => StreakTypeService.HandleFinancialTransactionRecord( this.Id ) );
-            }
-
-            base.PostSaveChanges( dbContext );
-        }
-
-        #endregion
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -832,219 +506,4 @@ namespace Rock.Model
     }
 
     #endregion Entity Configuration
-
-    #region Enumerations
-
-    /// <summary>
-    /// The gender of a person
-    /// </summary>
-    public enum MICRStatus
-    {
-        /// <summary>
-        /// Success means the scanned MICR contains no invalid read chars ('!' for Canon and '?' for Magtek)
-        /// </summary>
-        Success = 0,
-
-        /// <summary>
-        /// Fail means the scanned MICR contains at least one invalid read char ('!' for Canon and '?' for Magtek)
-        /// but the user chose to Upload it anyway
-        /// </summary>
-        Fail = 1
-    }
-
-    /// <summary>
-    /// For giving analysis reporting
-    /// </summary>
-    public enum TransactionGraphBy
-    {
-        /// <summary>
-        /// The total
-        /// </summary>
-        Total = 0,
-
-        /// <summary>
-        /// The financial account
-        /// </summary>
-        FinancialAccount = 1,
-
-        /// <summary>
-        /// The campus
-        /// </summary>
-        Campus = 2,
-    }
-
-    #endregion
-
-    #region Helper Classes
-
-    /// <summary>
-    /// Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API.
-    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL)
-    /// with the plain text CheckMicr and the Rock server will encrypt prior to saving to database
-    /// </summary>
-    [DataContract]
-    [NotMapped]
-    [RockClientInclude( "Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API" )]
-    public class FinancialTransactionScannedCheck
-    {
-        /// <summary>
-        /// Gets or sets the financial transaction.
-        /// </summary>
-        /// <value>
-        /// The financial transaction.
-        /// </value>
-        [DataMember]
-        public FinancialTransaction FinancialTransaction { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scanned check MICR (the raw track data)
-        /// </summary>
-        /// <value>
-        /// The scanned check MICR.
-        /// </value>
-        [DataMember]
-        public string ScannedCheckMicrData { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scanned check parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber}
-        /// </summary>
-        /// <value>
-        /// The scanned check micr parts.
-        /// </value>
-        [DataMember]
-        public string ScannedCheckMicrParts { get; set; }
-    }
-
-    #endregion
-
-    #region Extension Methods
-
-    /// <summary>
-    ///
-    /// </summary>
-    public static partial class FinancialTransactionExtensionMethods
-    {
-        /// <summary>
-        /// Process a refund for a transaction.
-        /// </summary>
-        /// <param name="transaction">The refund transaction.</param>
-        /// <param name="amount">The amount.</param>
-        /// <param name="reasonValueId">The reason value identifier.</param>
-        /// <param name="summary">The summary.</param>
-        /// <param name="process">if set to <c>true</c> [process].</param>
-        /// <param name="batchNameSuffix">The batch name suffix.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public static FinancialTransaction ProcessRefund( this FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var service = new FinancialTransactionService( rockContext );
-                var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
-
-                if ( refundTransaction != null )
-                {
-                    rockContext.SaveChanges();
-                }
-
-                return refundTransaction;
-            }
-        }
-
-        /// <summary>
-        /// Distributes a total fee amount among the details of a transaction according to each detail's
-        /// percent of the total transaction amount.
-        /// For example, consider a $10 transaction has two details, one for $1 and another for $9.
-        /// If this method were called with a $1 fee, that fee would be distributed as 10 cents and
-        /// 90 cents respectively.
-        /// </summary>
-        /// <param name="transaction"></param>
-        /// <param name="totalFee">The total fee for the transaction</param>
-        public static void SetApportionedFeesOnDetails( this FinancialTransaction transaction, decimal? totalFee )
-        {
-            if ( transaction.TransactionDetails == null || !transaction.TransactionDetails.Any() )
-            {
-                return;
-            }
-
-            if ( !totalFee.HasValue )
-            {
-                foreach ( var detail in transaction.TransactionDetails )
-                {
-                    detail.FeeAmount = null;
-                }
-
-                return;
-            }
-
-            var totalAmount = transaction.TotalAmount;
-            var totalFeeRemaining = totalFee.Value;
-            var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
-
-            foreach ( var detail in transaction.TransactionDetails )
-            {
-                numberOfDetailsRemaining--;
-                var isLastDetail = numberOfDetailsRemaining == 0;
-
-                if ( isLastDetail )
-                {
-                    // Ensure that the full fee value is retained and some part of it
-                    // is not lost because of rounding
-                    detail.FeeAmount = totalFeeRemaining;
-                }
-                else
-                {
-                    var percentOfTotal = detail.Amount / totalAmount;
-                    var apportionedFee = Math.Round( percentOfTotal * totalFee.Value, 2 );
-
-                    detail.FeeAmount = apportionedFee;
-                    totalFeeRemaining -= apportionedFee;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Distributes the Organization's currency total amount among the details of a transaction according to each detail's
-        /// percent of the total transaction amount.
-        /// For example, consider a $10 transaction has two details, one for $1 and another for $9.
-        /// If this method were called with a $11 amount, the detail's amount would be set to $9.9 and $1.1 respectively.
-        /// </summary>
-        /// <param name="transaction"></param>
-        /// <param name="totalOrganizationCurrencyAmount">The total amount for the transaction in the organization's currency</param>
-        public static void SetApportionedDetailAmounts( this FinancialTransaction transaction, decimal totalOrganizationCurrencyAmount )
-        {
-            if ( transaction.TransactionDetails == null || !transaction.TransactionDetails.Any() )
-            {
-                return;
-            }
-
-            var totalAmount = transaction.TotalAmount;
-            var totalOrganizationCurrencyAmountRemaining = totalOrganizationCurrencyAmount;
-            var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
-
-            foreach ( var detail in transaction.TransactionDetails )
-            {
-                numberOfDetailsRemaining--;
-                var isLastDetail = numberOfDetailsRemaining == 0;
-
-                if ( isLastDetail )
-                {
-                    // Ensure that the full amount is retained and some part of it
-                    // is not lost because of rounding
-                    detail.Amount = totalOrganizationCurrencyAmountRemaining;
-                }
-                else
-                {
-                    var percentOfTotal = detail.Amount / totalAmount;
-                    var organizationCurrencyAmount = Math.Round( percentOfTotal * totalOrganizationCurrencyAmount, 2 );
-
-                    detail.Amount = organizationCurrencyAmount;
-                    totalOrganizationCurrencyAmountRemaining -= organizationCurrencyAmount;
-                }
-            }
-        }
-    }
-
-    #endregion
-
 }

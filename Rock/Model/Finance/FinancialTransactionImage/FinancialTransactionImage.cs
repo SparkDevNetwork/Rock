@@ -14,13 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -97,89 +92,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Pres the save.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var rockContext = (RockContext)dbContext;
-            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-            var binaryFile = binaryFileService.Get( BinaryFileId );
-
-            HistoryChangeList = new History.HistoryChangeList();
-
-            switch ( entry.State )
-            {
-                case EntityState.Added:
-                    {
-                        // if there is an binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=False
-                        if ( binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = false;
-                        }
-
-                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Image" );
-                        break;
-                    }
-
-                case EntityState.Modified:
-                    {
-                        // if there is an binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=False
-                        if ( binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = false;
-                        }
-
-                        HistoryChangeList.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Image" );
-                        break;
-                    }
-                case EntityState.Deleted:
-                    {
-                        // if deleting, and there is an binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=true 
-                        // so that it'll get cleaned up
-                        if ( !binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = true;
-                        }
-
-                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Image" );
-                        break;
-                    }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            if ( HistoryChangeList?.Any() == true )
-            {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
-
-                var txn = new FinancialTransactionService( (RockContext)dbContext ).Get( this.TransactionId );
-                if ( txn != null && txn.BatchId != null )
-                {
-                    var batchHistory = new History.HistoryChangeList();
-
-                    batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Transaction" );
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
-                }
-            }
-
-            base.PostSaveChanges( dbContext );
-        }
-
 
         #endregion
     }

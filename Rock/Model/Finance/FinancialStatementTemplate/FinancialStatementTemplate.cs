@@ -16,8 +16,6 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -127,7 +125,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the logo binary file.
@@ -156,44 +154,7 @@ namespace Rock.Model
         [NotMapped]
         public virtual FinancialStatementTemplateHeaderFooterSettings FooterSettings { get; set; } = new FinancialStatementTemplateHeaderFooterSettings();
 
-        #endregion Virtual Properties
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            if ( LogoBinaryFileId.HasValue )
-            {
-                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
-                var binaryFile = binaryFileService.Get( LogoBinaryFileId.Value );
-                if ( binaryFile != null )
-                {
-
-                    switch ( entry.State )
-                    {
-                        case EntityState.Added:
-                        case EntityState.Modified:
-                            {
-
-                                binaryFile.IsTemporary = false;
-
-                                break;
-                            }
-
-                        case EntityState.Deleted:
-                            {
-                                binaryFile.IsTemporary = true;
-                                break;
-                            }
-                    }
-                }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -212,5 +173,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

@@ -122,6 +122,5 @@ namespace Rock.Model
             rockContext.Database.CommandTimeout = 180;
             return new FinancialPledgeService( rockContext ).GetPledgeAnalyticsDataSet( accountId, start, end, minAmountPledged, maxAmountPledged, minComplete, maxComplete, minAmountGiven, maxAmountGiven, includePledges, includeGifts );
         }
-
     }
 }

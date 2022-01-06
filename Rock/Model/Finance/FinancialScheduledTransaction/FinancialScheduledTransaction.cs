@@ -19,15 +19,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
-using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -44,7 +41,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FinancialScheduledTransaction : Model<FinancialScheduledTransaction>, IHasActiveFlag
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -218,36 +214,6 @@ namespace Rock.Model
         public string GatewayScheduleId { get; set; }
 
         /// <summary>
-        /// The JSON for <see cref="PreviousGatewayScheduleIds"/>. If this is null,
-        /// there are no PreviousGatewayScheduleIds.
-        /// </summary>
-        /// <value></value>
-        [DataMember]
-        public string PreviousGatewayScheduleIdsJson
-        {
-            get
-            {
-                // If there are any PreviousGatewayScheduleIds, store them as JSON.
-                // Otherwise, store as NULL so it is easy to figure out which scheduled transaction have PreviousGatewayScheduleIds.
-                if ( PreviousGatewayScheduleIds != null && PreviousGatewayScheduleIds.Any() )
-                {
-                    // at least one PreviousGatewayScheduleId, so store it in the database
-                    return PreviousGatewayScheduleIds?.ToJson();
-                }
-                else
-                {
-                    // no PreviousGatewayScheduleIds, so leave PreviousGatewayScheduleIdsJson as null;
-                    return null;
-                }
-            }
-
-            set
-            {
-                PreviousGatewayScheduleIds = value.FromJsonOrNull<List<string>>() ?? new List<string>();
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the date to remind user to update scheduled transaction.
         /// </summary>
         /// <value>
@@ -285,9 +251,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? InactivateDateTime { get; set; }
-        #endregion
 
-        #region Virtual Properties
+        #endregion Entity Properties
+
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the authorized <see cref="Rock.Model.PersonAlias"/>.
@@ -353,7 +320,6 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue TransactionFrequencyValue { get; set; }
 
-
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialScheduledTransactionDetail">transaction details</see> for this scheduled transaction.
         /// </summary>
@@ -366,6 +332,7 @@ namespace Rock.Model
             get { return _scheduledTransactionDetails ?? ( _scheduledTransactionDetails = new Collection<FinancialScheduledTransactionDetail>() ); }
             set { _scheduledTransactionDetails = value; }
         }
+
         private ICollection<FinancialScheduledTransactionDetail> _scheduledTransactionDetails;
 
         /// <summary>
@@ -411,128 +378,10 @@ namespace Rock.Model
         [NotMapped]
         public virtual List<string> PreviousGatewayScheduleIds { get; set; } = new List<string>();
 
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this transaction.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this transaction.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.TotalAmount.ToStringSafe();
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The database entity entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var rockContext = (RockContext)dbContext;
-
-            HistoryChangeList = new History.HistoryChangeList();
-
-            switch ( entry.State )
-            {
-                case EntityState.Added:
-                    {
-                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" );
-
-                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
-
-                        History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
-                        History.EvaluateChange( HistoryChangeList, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Gateway Schedule Id", string.Empty, GatewayScheduleId );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Code", string.Empty, TransactionCode );
-                        History.EvaluateChange( HistoryChangeList, "Summary", string.Empty, Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", ( null as int? ), TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", ( null as int? ), SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Frequency", ( null as int? ), TransactionFrequencyValue, TransactionFrequencyValueId );
-                        History.EvaluateChange( HistoryChangeList, "Start Date", ( null as DateTime? ), StartDate );
-                        History.EvaluateChange( HistoryChangeList, "End Date", ( null as DateTime? ), EndDate );
-                        History.EvaluateChange( HistoryChangeList, "Number of Payments", ( null as int? ), NumberOfPayments );
-                        History.EvaluateChange( HistoryChangeList, "Is Active", ( null as bool? ), IsActive );
-                        History.EvaluateChange( HistoryChangeList, "Card Reminder Date", ( null as DateTime? ), CardReminderDate );
-                        History.EvaluateChange( HistoryChangeList, "Last Reminded Date", ( null as DateTime? ), LastRemindedDate );
-                        var isOrganizationCurrency = new RockCurrencyCodeInfo( ForeignCurrencyCodeValueId ).IsOrganizationCurrency;
-                        if ( !isOrganizationCurrency )
-                        {
-                            History.EvaluateChange( HistoryChangeList, "Currency Code", ( null as int? ), ForeignCurrencyCodeValue, ForeignCurrencyCodeValueId );
-                        }
-
-                        break;
-                    }
-
-                case EntityState.Modified:
-                    {
-                        string origPerson = History.GetValue<PersonAlias>( null, entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
-                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
-                        History.EvaluateChange( HistoryChangeList, "Authorized Person", origPerson, person );
-
-                        int? origGatewayId = entry.OriginalValues["FinancialGatewayId"].ToStringSafe().AsIntegerOrNull();
-                        if ( !FinancialGatewayId.Equals( origGatewayId ) )
-                        {
-                            History.EvaluateChange( HistoryChangeList, "Gateway", History.GetValue<FinancialGateway>( null, origGatewayId, rockContext ), History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        }
-
-                        History.EvaluateChange( HistoryChangeList, "Gateway Schedule Id", entry.OriginalValues["GatewayScheduleId"].ToStringSafe(), GatewayScheduleId );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Code", entry.OriginalValues["TransactionCode"].ToStringSafe(), TransactionCode );
-                        History.EvaluateChange( HistoryChangeList, "Summary", entry.OriginalValues["Summary"].ToStringSafe(), Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", entry.OriginalValues["TransactionTypeValueId"].ToStringSafe().AsIntegerOrNull(), TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", entry.OriginalValues["SourceTypeValueId"].ToStringSafe().AsIntegerOrNull(), SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Frequency", entry.OriginalValues["TransactionFrequencyValueId"].ToStringSafe().AsIntegerOrNull(), TransactionFrequencyValue, TransactionFrequencyValueId );
-                        History.EvaluateChange( HistoryChangeList, "Start Date", entry.OriginalValues["StartDate"].ToStringSafe().AsDateTime(), StartDate );
-                        History.EvaluateChange( HistoryChangeList, "End Date", entry.OriginalValues["EndDate"].ToStringSafe().AsDateTime(), EndDate );
-                        History.EvaluateChange( HistoryChangeList, "Number of Payments", entry.OriginalValues["EndDate"].ToStringSafe().AsIntegerOrNull(), NumberOfPayments );
-                        History.EvaluateChange( HistoryChangeList, "Is Active", entry.OriginalValues["IsActive"].ToStringSafe().AsBooleanOrNull(), IsActive );
-                        History.EvaluateChange( HistoryChangeList, "Card Reminder Date", entry.OriginalValues["CardReminderDate"].ToStringSafe().AsDateTime(), CardReminderDate );
-                        History.EvaluateChange( HistoryChangeList, "Last Reminded Date", entry.OriginalValues["LastRemindedDate"].ToStringSafe().AsDateTime(), LastRemindedDate );
-                        History.EvaluateChange( HistoryChangeList, "Currency Code", entry.OriginalValues["ForeignCurrencyCodeValueId"].ToStringSafe().AsIntegerOrNull(), ForeignCurrencyCodeValue, ForeignCurrencyCodeValueId );
-
-                        break;
-                    }
-
-                case EntityState.Deleted:
-                    {
-                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
-
-                        // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it.
-                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
-
-                        break;
-                    }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            if ( HistoryChangeList?.Any() == true )
-            {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialScheduledTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
-            }
-
-            base.PostSaveChanges( dbContext );
-        }
-
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
-
 
     /// <summary>
     /// Scheduled Transaction Configuration class.
@@ -554,46 +403,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The status of a Scheduled Transaction
-    /// </summary>
-    public enum FinancialScheduledTransactionStatus
-    {
-        /// <summary>
-        /// Scheduled Transaction is operating normally
-        /// </summary>
-        Active = 0,
-
-        /// <summary>
-        /// Scheduled Transaction completed
-        /// </summary>
-        Completed = 1,
-
-        /// <summary>
-        /// Scheduled Transaction is paused
-        /// </summary>
-        Paused = 2,
-
-        /// <summary>
-        /// Scheduled Transaction is cancelled
-        /// </summary>
-        Canceled = 3,
-
-        /// <summary>
-        /// Scheduled Transaction is failed
-        /// </summary>
-        Failed = 4,
-
-        /// <summary>
-        /// Scheduled Transaction is Past Due
-        /// </summary>
-        PastDue = 5
-    }
-
-    #endregion
-
+#endregion Entity Configuration
 }

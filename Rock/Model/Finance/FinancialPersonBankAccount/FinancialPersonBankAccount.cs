@@ -65,9 +65,9 @@ namespace Rock.Model
         [Required]
         public string AccountNumberMasked { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
@@ -78,35 +78,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual PersonAlias PersonAlias { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.AccountNumberMasked;
-        }
-
-        /// <summary>
-        /// Encodes the account number.
-        /// </summary>
-        /// <param name="routingNumber">The routing number.</param>
-        /// <param name="accountNumber">The account number.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
-        public static string EncodeAccountNumber( string routingNumber, string accountNumber )
-        {
-            string toHash = string.Format( "{0}|{1}", routingNumber.Trim(), accountNumber.Trim() );
-            return Rock.Security.Encryption.GetSHA1Hash( toHash );
-        }
-
-        #endregion
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -125,5 +97,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

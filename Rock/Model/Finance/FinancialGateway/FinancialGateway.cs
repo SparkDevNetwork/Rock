@@ -21,8 +21,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Financial;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -91,9 +89,9 @@ namespace Rock.Model
         [DataMember]
         public bool IsActive { get; set; } = true;
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the gateway entity.
@@ -104,59 +102,7 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Gets the gateway component.
-        /// </summary>
-        /// <returns></returns>
-        public virtual GatewayComponent GetGatewayComponent()
-        {
-            if ( EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( entityType != null )
-                {
-                    return GatewayContainer.GetComponent( entityType.Name );
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the batch time offset.
-        /// </summary>
-        /// <returns></returns>
-        public TimeSpan GetBatchTimeOffset()
-        {
-            return new TimeSpan( BatchTimeOffsetTicks );
-        }
-
-        /// <summary>
-        /// Sets the batch time offset.
-        /// </summary>
-        /// <param name="timespan">The timespan.</param>
-        public void SetBatchTimeOffset( TimeSpan? timespan )
-        {
-            BatchTimeOffsetTicks = timespan.HasValue ? timespan.Value.Ticks : 0;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this FinancialGateway.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this FinancialGateway.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -175,6 +121,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

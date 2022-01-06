@@ -509,42 +509,4 @@ namespace Rock.Model
             return monthlyAccountGivingHistoryList ?? new List<MonthlyAccountGivingHistory>();
         }
     }
-
-    /// <summary>
-    /// A POCO that represents a single month of giving history for a single financial account
-    /// </summary>
-    public sealed class MonthlyAccountGivingHistory
-    {
-        /// <summary>
-        /// Gets or sets the year.
-        /// </summary>
-        /// <value>
-        /// The year.
-        /// </value>
-        public int Year { get; set; }
-
-        /// <summary>
-        /// Gets or sets the month. 1 = January (not zero based)
-        /// </summary>
-        /// <value>
-        /// The month.
-        /// </value>
-        public int Month { get; set; }
-
-        /// <summary>
-        /// Gets or sets the account identifier.
-        /// </summary>
-        /// <value>
-        /// The account identifier.
-        /// </value>
-        public int AccountId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the amount.
-        /// </summary>
-        /// <value>
-        /// The amount.
-        /// </value>
-        public decimal Amount { get; set; }
-    }
 }

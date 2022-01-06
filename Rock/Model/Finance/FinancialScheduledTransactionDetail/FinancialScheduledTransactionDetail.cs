@@ -14,14 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -113,9 +108,10 @@ namespace Rock.Model
         [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
         [DecimalPrecision(18, 2)]
         public decimal? FeeCoverageAmount { get; set; }
-        #endregion
 
-        #region Virtual Properties
+        #endregion Entity Properties
+
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialScheduledTransaction"/> that this transaction detail belongs to.
@@ -153,7 +149,7 @@ namespace Rock.Model
         [NotMapped]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -168,85 +164,7 @@ namespace Rock.Model
             return this.Amount.ToStringSafe();
         }
 
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var rockContext = ( RockContext ) dbContext;
-            HistoryChangeList = new History.HistoryChangeList();
-
-            var scheduledTransaction = this.ScheduledTransaction ?? new FinancialScheduledTransactionService( dbContext as RockContext ).Get( this.ScheduledTransactionId );
-
-            switch ( entry.State )
-            {
-                case EntityState.Added:
-                    {
-                        string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Amount.FormatAsCurrency( scheduledTransaction?.ForeignCurrencyCodeValueId ) );
-                        break;
-                    }
-
-                case EntityState.Modified:
-                    {
-                        string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-
-                        int? accountId = this.Account != null ? this.Account.Id : this.AccountId;
-                        int? origAccountId = entry.OriginalValues["AccountId"].ToStringSafe().AsIntegerOrNull();
-                        if ( !accountId.Equals( origAccountId ) )
-                        {
-                            History.EvaluateChange( HistoryChangeList, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
-                        }
-
-                        var originalCurrencyCodeValueId = scheduledTransaction?.ForeignCurrencyCodeValueId;
-                        if ( scheduledTransaction != null )
-                        {
-                            var originalScheduledTransactionEntry = rockContext.ChangeTracker
-                                .Entries<FinancialScheduledTransaction>()
-                                .Where( s => ( int ) s.OriginalValues["Id"] == scheduledTransaction.Id )
-                                .FirstOrDefault();
-
-                            if ( originalScheduledTransactionEntry != null )
-                            {
-                                originalCurrencyCodeValueId = ( int? ) originalScheduledTransactionEntry.OriginalValues["ForeignCurrencyCodeValueId"];
-                            }
-                        }
-
-                        History.EvaluateChange( HistoryChangeList, acct + " Amount", entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency( originalCurrencyCodeValueId ), Amount.FormatAsCurrency( scheduledTransaction?.ForeignCurrencyCodeValueId ) );
-                        History.EvaluateChange( HistoryChangeList, acct + " Fee Coverage Amount", ( entry.OriginalValues["FeeCoverageAmount"] as int? ).FormatAsCurrency(), FeeCoverageAmount.FormatAsCurrency() );
-
-                        break;
-                    }
-                case EntityState.Deleted:
-                    {
-                        string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Amount.FormatAsCurrency( scheduledTransaction?.ForeignCurrencyCodeValueId ) );
-                        break;
-                    }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            if ( HistoryChangeList?.Any() == true )
-            {
-                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialScheduledTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.ScheduledTransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
-            }
-
-            base.PostSaveChanges( dbContext );
-        }
-
-
-        #endregion
-
+        #endregion Public Methods
     }
 
     #region Entity Configuration
@@ -267,6 +185,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

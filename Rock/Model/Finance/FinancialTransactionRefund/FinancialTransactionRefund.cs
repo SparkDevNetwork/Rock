@@ -31,7 +31,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FinancialTransactionRefund : Model<FinancialTransactionRefund>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -64,9 +63,9 @@ namespace Rock.Model
         [DataMember]
         public string RefundReasonSummary { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialTransaction"/>.
@@ -96,12 +95,10 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue RefundReasonValue { get; set; }
 
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
-
 
     /// <summary>
     /// Refund Transaction Configuration class.
@@ -118,6 +115,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

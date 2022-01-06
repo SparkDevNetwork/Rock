@@ -14,25 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Linq;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Service and data access class for <see cref="Rock.Model.FinancialPersonBankAccount"/> objects.
+    /// The MICR Status
     /// </summary>
-    public partial class FinancialPersonBankAccountService
+    public enum MICRStatus
     {
         /// <summary>
-        /// Gets the specified bank account record.
+        /// Success means the scanned MICR contains no invalid read chars ('!' for Canon and '?' for Magtek)
         /// </summary>
-        /// <param name="routingNumber">The routing number.</param>
-        /// <param name="accountNumber">The account number.</param>
-        /// <returns></returns>
-        public FinancialPersonBankAccount Get( string routingNumber, string accountNumber )
-        {
-            var encodedValue = FinancialPersonBankAccount.EncodeAccountNumber( routingNumber, accountNumber );
-            return this.Queryable().Where( a => a.AccountNumberSecured == encodedValue ).FirstOrDefault();
-        }
+        Success = 0,
+
+        /// <summary>
+        /// Fail means the scanned MICR contains at least one invalid read char ('!' for Canon and '?' for Magtek)
+        /// but the user chose to Upload it anyway
+        /// </summary>
+        Fail = 1
     }
 }

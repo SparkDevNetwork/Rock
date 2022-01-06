@@ -19,12 +19,11 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
-using Rock.Tasks;
-using System.Threading.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 

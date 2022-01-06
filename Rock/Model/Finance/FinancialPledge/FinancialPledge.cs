@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -34,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FinancialPledge : Model<FinancialPledge>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -136,9 +134,10 @@ namespace Rock.Model
             get => EndDate.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
-        #endregion
 
-        #region Virtual Properties
+        #endregion Entity Properties
+
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
@@ -194,44 +193,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate EndSourceDate { get; set; }
-        #endregion
 
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this pledge.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this pledge.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.TotalAmount.ToStringSafe();
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public override bool IsValid
-        {
-            get
-            {
-                var result = base.IsValid;
-                if ( result && TotalAmount < 0 )
-                {
-                    this.ValidationResults.Add( new ValidationResult( "Total Amount can't be negative." ) );
-                    return false;
-                }
-
-                return result;
-            }
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -256,9 +219,8 @@ namespace Rock.Model
             this.HasRequired( r => r.StartSourceDate ).WithMany().HasForeignKey( r => r.StartDateKey ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.EndSourceDate ).WithMany().HasForeignKey( r => r.EndDateKey ).WillCascadeOnDelete( false );
         }
-
     }
 
-    #endregion
+    #endregion Entity Configuration
 
 }

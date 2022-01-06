@@ -160,7 +160,7 @@ namespace Rock.Model
             return parameters;
         }
 
-        #endregion
+        #endregion Stored Procedure Queries
 
         #region Obsolete
 

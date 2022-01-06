@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using Rock.Data;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model

@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 
 using Rock.Data;
@@ -68,7 +67,7 @@ namespace Rock.Model
         /// Deletes the financial payment detail if it was linked to the referencing Entity and is now orphaned.
         /// </summary>
         /// <param name="referencingEntry">The referencing entry.</param>
-        public void DeleteOrphanedFinancialPaymentDetail( DbEntityEntry referencingEntry )
+        public void DeleteOrphanedFinancialPaymentDetail( IEntitySaveEntry referencingEntry )
         {
             var financialPaymentDetailId = referencingEntry.OriginalValues["FinancialPaymentDetailId"]?.ToString().AsIntegerOrNull();
             if ( financialPaymentDetailId.HasValue )
