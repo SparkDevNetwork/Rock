@@ -33,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -238,9 +237,9 @@ namespace Rock.Model
         [DataMember]
         public int? LanguageValueId { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the requested by person alias.
@@ -297,49 +296,7 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue LanguageValue { get; set; }
 
-        /// <summary>
-        /// Gets  full name of the person for who the prayer request is about.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the full name of the person who this prayer request is about.
-        /// </value>
-        public virtual string FullName
-        {
-            get
-            {
-                return string.Format( "{0} {1}", FirstName, LastName );
-            }
-        }
-
-        /// <summary>
-        /// Gets the full name of the person who this prayer request is about in Last Name, First Name format.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the full name of the person who this prayer request is about in last name first name format.
-        /// </value>
-        public virtual string FullNameReversed
-        {
-            get
-            {
-                return string.Format( "{0}, {1}", LastName, FirstName );
-            }
-        }
-
-        /// <summary>
-        /// Gets the name of the prayer request. The format for this is the EnteredDate - FullName. This is required to implement ICategorized
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the Name of prayer request. 
-        /// </value>
-        public virtual string Name
-        {
-            get
-            {
-                return string.Format( "{0} - {1:MM/dd/yy}", FullName, EnteredDateTime );
-            }
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -354,7 +311,7 @@ namespace Rock.Model
             return this.Text;
         }
 
-        #endregion
+        #endregion Public Methods
     }
 
     #region Entity Configuration
@@ -379,5 +336,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

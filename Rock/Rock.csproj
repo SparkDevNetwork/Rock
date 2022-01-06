@@ -1093,6 +1093,7 @@
     <Compile Include="Model\Core\Tag\Tag.Logic.cs" />
     <Compile Include="Model\Core\Tag\TagService.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsDimFamilyBase\AnalyticsDimFamilyBase.cs" />
     <Compile Include="Model\Reporting\AnalyticsDimPersonBase\AnalyticsDimPersonBase.cs" />
     <Compile Include="Model\Reporting\AnalyticsBaseAttendance\AnalyticsBaseAttendance.cs" />
@@ -2615,7 +2616,7 @@
     <Compile Include="Model\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.cs" />
-    <Compile Include="Model\Prayer\PrayerRequest\PrayerRequestService.partial.cs" />
+    <Compile Include="Model\Prayer\PrayerRequest\PrayerRequestService.cs" />
     <Compile Include="Model\RangeValue.cs" />
     <Compile Include="Model\Event\Registration\Registration.cs">
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>

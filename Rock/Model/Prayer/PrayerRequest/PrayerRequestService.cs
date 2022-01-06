@@ -20,7 +20,6 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Net;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -37,7 +36,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="categoryIds">A <see cref="System.Collections.Generic.List{Int32}"/> of
         /// the <see cref="Rock.Model.Category"/> IDs to retrieve PrayerRequests for.</param>
-        /// <param name="onlyApproved">set false to include un-approved requests.</param>
+        /// <param name="onlyApproved">set false to include unapproved requests.</param>
         /// <param name="onlyUnexpired">set false to include expired requests.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest"/> that
         /// are in the specified <see cref="Rock.Model.Category"/> or any of its subcategories.</returns>
