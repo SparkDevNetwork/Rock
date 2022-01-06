@@ -2614,8 +2614,8 @@
     <Compile Include="Model\PhoneNumber.cs" />
     <Compile Include="Model\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\PluginMigration.cs" />
-    <Compile Include="Model\PrayerRequest.cs" />
-    <Compile Include="Model\PrayerRequestService.partial.cs" />
+    <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.cs" />
+    <Compile Include="Model\Prayer\PrayerRequest\PrayerRequestService.partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
     <Compile Include="Model\Event\Registration\Registration.cs">
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
