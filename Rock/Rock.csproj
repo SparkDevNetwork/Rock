@@ -779,6 +779,8 @@
     <Compile Include="Model\CMS\ContentChannel\ContentChannel.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannelPath.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentControlType.cs" />
+    <Compile Include="Model\CMS\Layout\Layout.Logic.cs" />
+    <Compile Include="Model\CMS\Layout\LayoutService.cs" />
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
@@ -2602,7 +2604,6 @@
     <Compile Include="Model\Core\InteractionDeviceType\InteractionDeviceType.cs" />
     <Compile Include="Model\Core\InteractionSession\InteractionSession.cs" />
     <Compile Include="Model\CMS\Layout\Layout.cs" />
-    <Compile Include="Model\CMS\Layout\LayoutService.Partial.cs" />
     <Compile Include="Model\Location.cs" />
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\Reporting\MergeTemplate\MergeTemplate.cs" />

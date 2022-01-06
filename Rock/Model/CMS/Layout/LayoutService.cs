@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// The data access/service class for the <see cref="Rock.Model.Site"/> entity. This inherits from the Service class
+    /// The data access/service class for the <see cref="Rock.Model.Site"/> entity. This inherits from the Service class.
     /// </summary>
     public partial class LayoutService
     {
@@ -46,18 +46,18 @@ namespace Rock.Model
         /// <param name="site">The site.</param>
         public static void RegisterLayouts( string physWebAppPath, SiteCache site )
         {
-            // Dictionary for block types.  Key is path, value is friendly name
+            // Dictionary for block types.  Key is path, value is friendly name.
             var list = new Dictionary<string, string>();
 
             // Find all the layouts in theme layout folder...
-            string layoutFolder = Path.Combine(physWebAppPath, string.Format("Themes\\{0}\\Layouts", site.Theme));
+            string layoutFolder = Path.Combine( physWebAppPath, string.Format( "Themes\\{0}\\Layouts", site.Theme ) );
 
-            // search for all layouts (aspx files) under the physical path 
+            // Search for all layouts (aspx files) under the physical path.
             var layoutFiles = new List<string>();
             DirectoryInfo di = new DirectoryInfo( layoutFolder );
             if ( di.Exists )
             {
-                foreach(var file in di.GetFiles( "*.aspx", SearchOption.AllDirectories ))
+                foreach ( var file in di.GetFiles( "*.aspx", SearchOption.AllDirectories ) )
                 {
                     layoutFiles.Add( Path.GetFileNameWithoutExtension( file.Name ) );
                 }
@@ -102,5 +102,3 @@ namespace Rock.Model
         }
     }
 }
-
-

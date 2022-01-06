@@ -18,15 +18,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -40,7 +37,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Layout : Model<Layout>, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -124,9 +120,9 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Site" /> that this Layout Block is associated with.
@@ -149,6 +145,7 @@ namespace Rock.Model
             get { return _pages ?? ( _pages = new Collection<Page>() ); }
             set { _pages = value; }
         }
+
         private ICollection<Page> _pages;
 
         /// <summary>
@@ -163,23 +160,10 @@ namespace Rock.Model
             get { return _blocks ?? ( _blocks = new Collection<Block>() ); }
             set { _blocks = value; }
         }
+
         private ICollection<Block> _blocks;
 
-        /// <summary>
-        /// Gets the parent authority for the layout. Layout security is automatically inherited from the site.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Site != null ? this.Site : base.ParentAuthority;
-            }
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -194,31 +178,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// 
-        /// 
-        public IEntityCache GetCacheObject()
-        {
-            return LayoutCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            LayoutCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
+        #endregion Public Methods
     }
 
     #region Entity Configuration
@@ -238,5 +198,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
