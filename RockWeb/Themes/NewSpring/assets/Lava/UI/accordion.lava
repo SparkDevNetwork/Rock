@@ -21,12 +21,19 @@
 <script>
 $('.accordion .panel-heading').on('click',function(){
     var arrow = $(this).find('.js-accordion-icon');
-    if(arrow.hasClass('fa-plus')) {
+
+    if(arrow.hasClass('fa-minus')) {
+        var openPanelWasClosed = true;
+    };
+
+    arrow.closest('.accordion').find('.fa-minus').each(function(){
+        $(this).removeClass('fa-minus');
+        $(this).addClass('fa-plus');
+    });
+
+    if(!openPanelWasClosed) {
         arrow.removeClass('fa-plus');
         arrow.addClass('fa-minus');
-    } else {
-        arrow.addClass('fa-plus');
-        arrow.removeClass('fa-minus');
     }
 });
 </script>
