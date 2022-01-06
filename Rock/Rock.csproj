@@ -1583,7 +1583,7 @@
     <Compile Include="Model\CodeGenerated\AchievementTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.CodeGenerated.cs" />
     <Compile Include="Model\Core\DocumentType\DocumentTypeService.cs" />
-    <Compile Include="Model\EntityCampusFilter.cs" />
+    <Compile Include="Model\Core\EntityCampusFilter\EntityCampusFilter.cs" />
     <Compile Include="Model\Event\RegistrationInstance\RegistrationInstanceService.cs" />
     <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrantService.cs" />
     <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacement.cs" />
@@ -2544,8 +2544,8 @@
     <Compile Include="Model\Core\EntitySetItem\EntitySetItem.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItemService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySetService.cs" />
-    <Compile Include="Model\EntityType.cs" />
-    <Compile Include="Model\EntityTypeService.Partial.cs" />
+    <Compile Include="Model\Core\EntityType\EntityType.cs" />
+    <Compile Include="Model\Core\EntityType\EntityTypeService.Partial.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendar.cs" />
     <Compile Include="Model\Event\EventCalendarItem\EventCalendarItem.cs" />
     <Compile Include="Model\Event\EventItem\EventItem.cs" />
@@ -2555,8 +2555,8 @@
     <Compile Include="Model\Event\EventItemOccurrenceGroupMap\EventItemOccurrenceGroupMap.cs" />
     <Compile Include="Model\Core\ExceptionLog\ExceptionLog.cs" />
     <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.cs" />
-    <Compile Include="Model\FieldType.cs" />
-    <Compile Include="Model\FieldTypeService.Partial.cs" />
+    <Compile Include="Model\Core\FieldType\FieldType.cs" />
+    <Compile Include="Model\Core\FieldType\FieldTypeService.Partial.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.cs" />
     <Compile Include="Model\Finance\FinancialBatch\FinancialBatch.cs" />
     <Compile Include="Model\Finance\FinancialBatch\FinancialBatchService.cs" />
