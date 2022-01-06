@@ -2600,8 +2600,8 @@
     <Compile Include="Model\Core\InteractionComponent\InteractionComponent.cs" />
     <Compile Include="Model\Core\InteractionDeviceType\InteractionDeviceType.cs" />
     <Compile Include="Model\Core\InteractionSession\InteractionSession.cs" />
-    <Compile Include="Model\Layout.cs" />
-    <Compile Include="Model\LayoutService.Partial.cs" />
+    <Compile Include="Model\CMS\Layout\Layout.cs" />
+    <Compile Include="Model\CMS\Layout\LayoutService.Partial.cs" />
     <Compile Include="Model\Location.cs" />
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\Reporting\MergeTemplate\MergeTemplate.cs" />
@@ -2644,7 +2644,6 @@
     <Compile Include="Model\CRM\PersonViewed\PersonViewedService.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
     <Compile Include="Model\PhoneNumberService.Partial.cs" />
-    <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequestService.cs" />
     <Compile Include="Model\RangeValue.cs" />
