@@ -136,6 +136,14 @@ namespace Rock.ViewModel
         public int? NumberOfPayments { get; set; }
 
         /// <summary>
+        /// Gets or sets the PreviousGatewayScheduleIdsJson.
+        /// </summary>
+        /// <value>
+        /// The PreviousGatewayScheduleIdsJson.
+        /// </value>
+        public string PreviousGatewayScheduleIdsJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the SourceTypeValueId.
         /// </summary>
         /// <value>

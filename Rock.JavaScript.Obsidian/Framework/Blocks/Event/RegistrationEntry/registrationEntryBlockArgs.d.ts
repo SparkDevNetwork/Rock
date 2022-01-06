@@ -24,6 +24,7 @@ export type RegistrationEntryBlockArgs = {
     registrants: RegistrantInfo[];
     fieldValues: Record<Guid, unknown>;
     registrar: RegistrarInfo;
+    savedAccountGuid: Guid | null;
     gatewayToken: string;
     discountCode: string;
     amountToPayNow: number;

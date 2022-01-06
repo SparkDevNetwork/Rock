@@ -516,7 +516,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             var typicalGiftKpi = GetKpiShortCode(
                 "Typical Gift",
                 $"<span class=\"currency-span\">{giftAmountMedian}</span>",
-                $"{PlusOrMinus} {giftAmountIqr}",
+                $"{giftAmountIqr}",
                 "fa-fw fa-money-bill",
                 "left",
                 $"A typical gift amount has a median value of {giftAmountMedian} with an IQR variance of {giftAmountIqr}." );
@@ -532,7 +532,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             var typicalFrequencyKpi = GetKpiShortCode(
                 "Typical Frequency",
                 giftFrequencyDaysMean + "d",
-                $"{PlusOrMinus} {giftFrequencyDaysStdDev}d",
+                $"{PlusOrMinus}{giftFrequencyDaysStdDev}d",
                 "fa-fw fa-clock",
                 description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a standard deviation variance of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
 

@@ -139,6 +139,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS = "FD32833A-6FC8-43E6-8D36-0C840DBE99F8";
 
         /// <summary>
+        /// The Job to run Post v13.0 Data Migrations for Add InteractionComponentId index to Interaction
+        /// </summary>
+        public const string DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX = "1D7FADEC-2A8A-46FD-898E-58544E7FD9F2";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
@@ -210,5 +215,10 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.SyncMedia">media synchronize</see> job.
         /// </summary>
         public const string SYNC_MEDIA = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9";
+
+        /// <summary>
+        /// The Process Elevated Security Job. <see cref="Rock.Jobs.ProcessElevatedSecurity"/>
+        /// </summary>
+        public const string PROCESS_ELEVATED_SECURITY = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714";
     }
 }

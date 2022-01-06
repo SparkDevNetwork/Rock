@@ -29,6 +29,94 @@ namespace Rock.Model
     /// </summary>
     public partial class AnalyticsSourceDate
     {
+        #region Constants
+
+        /*
+         * 14-DEC-21 DMV
+         *
+         * Since this SQL script is needed by the Generate method here and the migration
+         * the recommendation to me was to create a constant string for it.
+         *
+         */
+
+        /// <summary>
+        /// The Sunday of the year SQL script.
+        /// </summary>
+        internal const string SundayOfTheYearSql =@"/*
+	Assumes the following new columns
+	* [WeekOfYear]
+	* [WeekCounter]
+	* [LeapYearIndicator]
+	* [SundayDateYear]
+*/
+
+DECLARE @FirstDayOfWeek INT;
+SELECT @FirstDayOfWeek = [DefaultValue]
+FROM [Attribute]
+WHERE [EntityTypeQualifierColumn] = 'SystemSetting' AND [Key] = 'core_StartDayOfWeek';
+
+IF @FirstDayOfWeek IS NULL
+BEGIN
+    SET @FirstDayOfWeek = 1;
+END
+
+-- IMPORTANT: This value should come from the Starting Day of Week setting here: https://prealpha.rocksolidchurchdemo.com/admin/system/configuration
+SET DATEFIRST @FirstDayOfWeek;
+
+-- Update the week of year for Sundays
+UPDATE [AnalyticsSourceDate]
+SET [WeekOfYear] = DATEPART(wk, [Date])
+WHERE [DayOfWeek] = 0;
+
+-- Create temp table of the Sunday dates (makes update below simplier)
+DECLARE @SundayLookup TABLE ([LookupDate] date, [LookupWeekOfYear] int );
+
+-- Insert values into lookup
+INSERT INTO @SundayLookup
+SELECT
+	[Date]
+	, [WeekOfYear]
+FROM [AnalyticsSourceDate]
+WHERE [DayOfWeek] = 0;
+
+-- Update WeekOfYear for all non-sundays
+UPDATE  a
+SET     a.[WeekOfYear] = b.[LookupWeekOfYear]
+FROM    [AnalyticsSourceDate] a
+        INNER JOIN @SundayLookup b
+           ON b.[LookupDate] = a.[SundayDate]
+WHERE [DayOfWeek] != 0;
+
+-- Add weekcounter
+DECLARE @WeekCounterLookup TABLE ([LookupYear] int, [LookupWeekOfYear] int, [LookupWeekCounter] int )
+INSERT INTO @WeekCounterLookup
+SELECT
+	*
+	, ROW_NUMBER() OVER( ORDER BY [Year], [WeekOfYear]) AS [WeekCounter]
+FROM (
+	SELECT
+		YEAR([SundayDate]) AS [Year]
+		, [WeekOfYear]
+	FROM  [AnalyticsSourceDate]
+	GROUP BY YEAR([SundayDate]), [WeekOfYear]
+) x;
+
+UPDATE  a
+SET     a.[WeekCounter] = b.[LookupWeekCounter]
+FROM    [AnalyticsSourceDate] a
+        INNER JOIN @WeekCounterLookup b
+           ON b.[LookupYear] = YEAR(a.[SundayDate]) AND b.[LookupWeekOfYear] = a.[WeekOfYear];
+
+-- Update Leap Year
+UPDATE [AnalyticsSourceDate]
+SET [LeapYearIndicator] = CASE WHEN ([CalendarYear] % 4 = 0 AND [CalendarYear] % 100 <> 0) OR [CalendarYear] % 400 = 0 THEN 1 ELSE 0 END;
+
+-- Sunday Date Year
+UPDATE [AnalyticsSourceDate]
+SET [SundayDateYear] = YEAR([SundayDate]);";
+
+        #endregion
+
         /// <summary>
         /// Determines the Fiscal Year (the calendar year in which the fiscal year ends) for the specified date and fiscal startmonth
         /// </summary>
@@ -69,7 +157,7 @@ namespace Rock.Model
 
             List<AnalyticsSourceDate> generatedDates = new List<AnalyticsSourceDate>();
 
-            // NOTE: AnalyticsSourceDate is not an Rock.Model.Entity table and therefore doesn't have a Service<T>, so just use update using rockContext.AnalyticsDimDates 
+            // NOTE: AnalyticsSourceDate is not an Rock.Model.Entity table and therefore doesn't have a Service<T>, so just use update using rockContext.AnalyticsDimDates
             var generateDate = startDate;
             var currentYear = generateDate.Year;
             var holidayDatesForYear = HolidayHelper.GetHolidayList( currentYear );
@@ -116,7 +204,7 @@ namespace Rock.Model
                 analyticsSourceDate.CalendarWeek = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek );
                 analyticsSourceDate.CalendarMonth = generateDate.Month;
                 analyticsSourceDate.CalendarMonthName = generateDate.ToString( "MMMM" );
-                analyticsSourceDate.CalendarMonthNameAbbrevated = generateDate.ToString( "MMM" );
+                analyticsSourceDate.CalendarMonthNameAbbreviated = generateDate.ToString( "MMM" );
 
                 analyticsSourceDate.CalendarYearMonth = generateDate.ToString( "yyyyMM" );
                 analyticsSourceDate.CalendarYearMonthName = generateDate.ToString( "yyyy MMM" );
@@ -145,7 +233,7 @@ namespace Rock.Model
                 analyticsSourceDate.FiscalWeek = fiscalWeek;
                 analyticsSourceDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
                 analyticsSourceDate.FiscalMonth = generateDate.ToString( "MMMM" );
-                analyticsSourceDate.FiscalMonthAbbrevated = generateDate.ToString( "MMM" );
+                analyticsSourceDate.FiscalMonthAbbreviated = generateDate.ToString( "MMM" );
                 analyticsSourceDate.FiscalMonthNumberInYear = generateDate.Month;
                 analyticsSourceDate.FiscalMonthYear = generateDate.ToString( "MM yyyy" );
                 analyticsSourceDate.FiscalQuarter = string.Format( "Q{0}", fiscalQuarter );
@@ -230,6 +318,9 @@ namespace Rock.Model
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
                 EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+
+                // Update the Sunday of the Year data
+                rockContext.Database.ExecuteSqlCommand( SundayOfTheYearSql );
             }
         }
     }

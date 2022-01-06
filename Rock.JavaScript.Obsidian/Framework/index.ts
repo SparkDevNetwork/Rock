@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { App, Component, createApp, markRaw } from "vue";
+import { App, Component, createApp, defineComponent, h, markRaw, VNode } from "vue";
 import RockBlock from "./rockBlock";
 import { useStore } from "./Store/index";
 import "./Rules/index";
@@ -29,6 +29,19 @@ type DebugTimingConfig = {
 };
 
 const store = useStore();
+
+/**
+ * This is a special use component that allows developers to include style
+ * tags inside a string-literal component (i.e. not an SFC). It should only
+ * be used temporarily until the styling team can move the styles into the
+ * LESS and CSS files.
+ */
+const developerStyle = defineComponent({
+    render(): VNode {
+        return h("style", {}, this.$slots.default ? this.$slots.default() : undefined);
+    }
+});
+
 
 /**
 * This should be called once per block on the page. The config contains configuration provided by the block's server side logic
@@ -81,6 +94,7 @@ export async function initializeBlock(config: BlockConfig): Promise<App> {
 <RockBlock v-else :config="config" :blockComponent="blockComponent" :startTimeMs="startTimeMs" />`
     });
 
+    app.component("v-style", developerStyle);
     app.mount(config.rootElement);
 
     return app;

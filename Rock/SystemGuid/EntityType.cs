@@ -320,6 +320,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CMS_STRUCTUREDCONTENTVIEW_BLOCK_TYPE = "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.Search"/>.
+        /// </summary>
+        public const string MOBILE_CORE_SEARCH_BLOCK_TYPE = "F81015CD-EBA9-4358-B930-4F1AB29AF879";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
         /// </summary>
         public const string MOBILE_EVENTS_CALENDAREVENTLIST_BLOCK_TYPE = "6FB9F1F4-5F24-4A22-A6EB-A7FA499179A9";
@@ -460,6 +465,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Workflow.Action.PersonGetCampusTeamMember entity
         /// </summary>
         public const string PERSON_GET_CAMPUS_TEAM_MEMBER = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E";
+
+        /// <summary>
+        /// The GUID for the Rock.Follow.Event.PersonNoteAdded entity
+        /// </summary>
+        public const string PERSON_NOTE_ADDED = "C4AB0F1B-E036-4D14-BFB7-30BAF12D648A";
 
         /// <summary>
         /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity

@@ -141,6 +141,13 @@ namespace RockWeb.Blocks.Finance
         Order = 12,
         Key = AttributeKey.EnableForeignCurrency )]
 
+    [BooleanField( "Show Days Since Last Transaction",
+        Description = "Show the number of days between the transaction and the transaction listed next to the transaction",
+        DefaultBooleanValue = false,
+        Order = 12,
+        Key = AttributeKey.ShowDaysSinceLastTransaction
+        )]
+
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
         #region Keys
@@ -219,6 +226,11 @@ namespace RockWeb.Blocks.Finance
             /// The enable foreign currency
             /// </summary>
             public const string EnableForeignCurrency = "EnableForeignCurrency";
+
+            /// <summary>
+            /// The show days since last transaction
+            /// </summary>
+            public const string ShowDaysSinceLastTransaction = "ShowDaysSinceLastTransaction";
         }
 
         #endregion Keys
@@ -869,29 +881,35 @@ namespace RockWeb.Blocks.Finance
             // block doesn't sacrifice much in query performance to get this value. The previous date could be
             // previous or next in the row order depending on how the data is sorted
             var lDaysSinceLastTransaction = e.Row.FindControl( "lDaysSinceLastTransaction" ) as Literal;
-            var transactionsShown = gTransactions.DataSourceAsList;
-            var transactionsShownCount = transactionsShown?.Count ?? 0;
-            var currentDate = txn.TransactionDateTime;
-
-            var nextTransactionIndex = e.Row.RowIndex + 1;
-            var nextTransaction = ( nextTransactionIndex >= 0 && nextTransactionIndex < transactionsShownCount ) ?
-                transactionsShown[nextTransactionIndex] as FinancialTransactionRow :
-                null;
-            var nextDate = nextTransaction?.TransactionDateTime;
-
-            var prevTransactionIndex = e.Row.RowIndex - 1;
-            var prevTransaction = ( prevTransactionIndex >= 0 && prevTransactionIndex < transactionsShownCount ) ?
-                transactionsShown[prevTransactionIndex] as FinancialTransactionRow :
-                null;
-            var prevDate = prevTransaction?.TransactionDateTime;
-
-            if ( nextDate.HasValue && nextDate.Value < currentDate && txn.Id != nextTransaction.Id )
+            if ( lDaysSinceLastTransaction != null )
             {
-                lDaysSinceLastTransaction.Text = ( currentDate - nextDate.Value ).TotalDays.ToString( "N1" );
-            }
-            else if ( prevDate.HasValue && prevDate.Value < currentDate && txn.Id != prevTransaction.Id )
-            {
-                lDaysSinceLastTransaction.Text = ( currentDate - prevDate.Value ).TotalDays.ToString( "N1" );
+                var transactionsShown = gTransactions.DataSourceAsList;
+                var transactionsShownCount = transactionsShown?.Count ?? 0;
+                var currentDate = txn.TransactionDateTime;
+
+                var nextTransactionIndex = e.Row.RowIndex + 1;
+                var nextTransaction = ( nextTransactionIndex >= 0 && nextTransactionIndex < transactionsShownCount ) ?
+                    transactionsShown[nextTransactionIndex] as FinancialTransactionRow :
+                    null;
+                var nextDate = nextTransaction?.TransactionDateTime;
+
+                var prevTransactionIndex = e.Row.RowIndex - 1;
+                var prevTransaction = ( prevTransactionIndex >= 0 && prevTransactionIndex < transactionsShownCount ) ?
+                    transactionsShown[prevTransactionIndex] as FinancialTransactionRow :
+                    null;
+                var prevDate = prevTransaction?.TransactionDateTime;
+                int? daysSinceLastTransaction = null;
+
+                if ( nextDate.HasValue && nextDate.Value < currentDate && txn.Id != nextTransaction.Id )
+                {
+                    daysSinceLastTransaction = ( int ) Math.Round( ( currentDate - nextDate.Value ).TotalDays, 0 );
+                }
+                else if ( prevDate.HasValue && prevDate.Value < currentDate && txn.Id != prevTransaction.Id )
+                {
+                    daysSinceLastTransaction = ( int ) Math.Round( ( currentDate - prevDate.Value ).TotalDays, 0 );
+                }
+
+                lDaysSinceLastTransaction.Text = daysSinceLastTransaction?.ToString();
             }
         }
 
@@ -1515,6 +1533,13 @@ namespace RockWeb.Blocks.Finance
 
             gTransactions.ColumnsOfType<RockBoundField>().First( c => c.DataField == "ForeignKey" ).Visible =
                 GetAttributeValue( AttributeKey.ShowForeignKey ).AsBoolean();
+
+            var lDaysSinceLastTransactionGridField = gTransactions.ColumnsOfType<RockLiteralField>().FirstOrDefault( c => c.ID == "lDaysSinceLastTransaction" );
+            if ( lDaysSinceLastTransactionGridField != null )
+            {
+
+                lDaysSinceLastTransactionGridField.Visible = GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean();
+            }
 
             var rockContext = new RockContext();
             _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BenevolenceRequest = IEntity & {
+    benevolenceTypeId?: number;
     campusId?: number | null;
     caseWorkerPersonAliasId?: number | null;
     cellPhoneNumber?: string | null;

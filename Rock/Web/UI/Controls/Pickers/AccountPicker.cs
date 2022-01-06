@@ -226,7 +226,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentIds = new List<int>();
+                var parentAccountIds = new List<int>();
 
                 foreach ( var account in accounts )
                 {
@@ -238,16 +238,16 @@ namespace Rock.Web.UI.Controls
                         var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccount );
                         foreach ( var accountParentId in accountParentIds )
                         {
-                            if ( !parentIds.Contains( accountParentId ) )
+                            if ( !parentAccountIds.Contains( accountParentId ) )
                             {
-                                parentIds.Add( accountParentId );
+                                parentAccountIds.Add( accountParentId );
                             }
                         }
                     }
                 }
 
                 // NOTE: Order is important (parents before children)
-                InitialItemParentIds = parentIds.AsDelimited( "," );
+                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }

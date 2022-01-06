@@ -167,6 +167,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the <see cref="DescriptionAttribute" /> value of first matching string const property with the specified value.
+        /// For example:
+        /// <code>
+        /// GetDescriptionOfStringConstant( typeof(RelatedEntityPurposeKey), RelatedEntityPurposeKey.FinancialAccountGivingAlert)</code> would return "Giving Alerts"
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="constantValue">The constant value.</param>
+        /// <returns>System.String.</returns>
+        public static string GetDescriptionOfStringConstant( Type type, string constantValue )
+        {
+            var fieldInfo = type.GetFields().Where( a => a.IsLiteral && ( string ) a.GetValue( null ) == constantValue ).FirstOrDefault();
+            return fieldInfo?.GetCustomAttribute<DescriptionAttribute>()?.Description;
+        }
+
+        /// <summary>
         /// Gets the appropriate DbContext based on the entity type
         /// </summary>
         /// <param name="entityType">Type of the Entity.</param>

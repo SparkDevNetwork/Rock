@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using Rock.Lava;
 
 namespace Rock.Utility
 {
@@ -22,7 +23,7 @@ namespace Rock.Utility
     /// Provides simplified details on when a prayer request was last prayed
     /// for and by whom.
     /// </summary>
-    public class PrayerRequestLastPrayedDetail
+    public class PrayerRequestLastPrayedDetail : LavaDataObject
     {
         /// <summary>
         /// Gets or sets the prayer request identifier.

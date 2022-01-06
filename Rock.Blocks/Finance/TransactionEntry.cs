@@ -19,12 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tasks;
 using Rock.Transactions;
 using Rock.ViewModel;
 using Rock.ViewModel.Controls;
@@ -353,7 +353,7 @@ namespace Rock.Blocks.Finance
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
         AllowMultiple = false,
-        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         IsRequired = true,
         Order = 4 )]
 
@@ -832,7 +832,7 @@ mission. We are so grateful for your commitment.</p>
         /// Gets the financial gateway component that is configured for this block
         /// </summary>
         /// <returns></returns>
-        private IObsidianFinancialGateway FinancialGatewayComponent
+        private IObsidianHostedGatewayComponent FinancialGatewayComponent
         {
             get
             {
@@ -841,14 +841,14 @@ mission. We are so grateful for your commitment.</p>
                     var financialGateway = FinancialGateway;
                     if ( financialGateway != null )
                     {
-                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IObsidianFinancialGateway;
+                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IObsidianHostedGatewayComponent;
                     }
                 }
 
                 return _financialGatewayComponent;
             }
         }
-        private IObsidianFinancialGateway _financialGatewayComponent = null;
+        private IObsidianHostedGatewayComponent _financialGatewayComponent = null;
 
         #endregion Gateway
 
@@ -866,13 +866,19 @@ mission. We are so grateful for your commitment.</p>
 
             var clientHelper = new Rock.ViewModel.Client.ClientHelper( rockContext, RequestContext.CurrentPerson );
 
+            var controlOptions = new HostedPaymentInfoControlOptions
+            {
+                EnableACH = GetAttributeValue( AttributeKey.EnableACH ).AsBoolean(),
+                EnableCreditCard = GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean()
+            };
+
             return new
             {
                 FinancialAccounts = GetAccountViewModels(),
                 GatewayControl = new GatewayControlViewModel
                 {
                     FileUrl = FinancialGatewayComponent?.GetObsidianControlFileUrl( FinancialGateway ),
-                    Settings = FinancialGatewayComponent?.GetObsidianControlSettings( FinancialGateway )
+                    Settings = FinancialGatewayComponent?.GetObsidianControlSettings( FinancialGateway, controlOptions )
                 },
                 Campuses = clientHelper.GetCampusesAsListItems(),
                 Frequencies = clientHelper.GetDefinedValuesAsListItems( SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() )

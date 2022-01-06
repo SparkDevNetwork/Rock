@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 
+using Rock.Mobile;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +39,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var navigationAction = value.FromJsonOrNull<MobileNavigationActionEditor.MobileNavigationAction>();
+            var navigationAction = value.FromJsonOrNull<MobileNavigationAction>();
 
             if ( navigationAction == null )
             {
@@ -52,19 +53,19 @@ namespace Rock.Field.Types
 
             switch ( navigationAction.Type )
             {
-                case MobileNavigationActionEditor.MobileNavigationActionType.None:
+                case MobileNavigationActionType.None:
                     return "None";
 
-                case MobileNavigationActionEditor.MobileNavigationActionType.PopPage:
+                case MobileNavigationActionType.PopPage:
                     return $"Pop {popCount} page{( popCount != 1 ? "s" : string.Empty )}";
 
-                case MobileNavigationActionEditor.MobileNavigationActionType.PushPage:
+                case MobileNavigationActionType.PushPage:
                     return $"Push '{pageCache?.InternalName}'";
 
-                case MobileNavigationActionEditor.MobileNavigationActionType.ReplacePage:
+                case MobileNavigationActionType.ReplacePage:
                     return $"Replace page with '{pageCache?.InternalName}'";
 
-                case MobileNavigationActionEditor.MobileNavigationActionType.ResetToPage:
+                case MobileNavigationActionType.ResetToPage:
                     return $"Reset to '{pageCache?.InternalName}'";
 
                 default:
@@ -98,7 +99,7 @@ namespace Rock.Field.Types
         {
             if ( control is MobileNavigationActionEditor actionEditor )
             {
-                actionEditor.NavigationAction = value.FromJsonOrNull<MobileNavigationActionEditor.MobileNavigationAction>();
+                actionEditor.NavigationAction = value.FromJsonOrNull<MobileNavigationAction>();
             }
         }
 

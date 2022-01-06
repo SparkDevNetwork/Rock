@@ -122,6 +122,8 @@ export const enum BlockType {
     MobileConnectionConnectionRequestList = "612E9E13-434F-4E47-958D-37E1C3EEF304",
     /** The mobile Connection &gt; Connection Request Detail block type. */
     MobileConnectionConnectionRequestDetail = "EF537CC9-5E53-4832-A473-0D5EA439C296",
+    /** The mobile Core &gt;  block type. */
+    MobileCoreSearch = "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
     /** The mobile Groups &gt; Group Registration block type. */
     MobileGroupsGroupRegistration = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912",
     /** The mobile Groups &gt; Group Finder block type. */

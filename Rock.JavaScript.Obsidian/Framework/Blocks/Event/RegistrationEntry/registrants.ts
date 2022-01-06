@@ -21,7 +21,7 @@ import { RegistrationEntryState } from "../registrationEntry";
 import Alert from "../../../Elements/alert";
 import { RegistrantInfo } from "./registrationEntryBlockViewModel";
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.Registrants",
     components: {
         Registrant,
@@ -29,8 +29,8 @@ export default defineComponent( {
     },
     setup() {
         return {
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState,
-            persistSession: inject( "persistSession" ) as () => Promise<void>
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState,
+            persistSession: inject("persistSession") as () => Promise<void>
         };
     },
     data () {
@@ -41,8 +41,8 @@ export default defineComponent( {
     methods: {
         /** The event that handles when the user clicks to move to the previous registrant */
         async onPrevious() {
-            if ( this.registrationEntryState.currentRegistrantIndex <= 0 ) {
-                this.$emit( "previous" );
+            if (this.registrationEntryState.currentRegistrantIndex <= 0) {
+                this.$emit("previous");
                 return;
             }
 
@@ -56,13 +56,13 @@ export default defineComponent( {
         async onNext() {
             const lastIndex = this.registrationEntryState.registrants.length - 1;
 
-            if ( this.registrationEntryState.currentRegistrantIndex >= lastIndex ) {
-                this.$emit( "next" );
+            if (this.registrationEntryState.currentRegistrantIndex >= lastIndex) {
+                this.$emit("next");
                 return;
             }
 
             // If the first registrant was just completed, then copy the common/shared values to other registrants
-            if ( this.registrationEntryState.currentRegistrantIndex === 0 ) {
+            if (this.registrationEntryState.currentRegistrantIndex === 0) {
                 this.copyCommonValuesFromFirstRegistrant();
             }
 
@@ -74,25 +74,25 @@ export default defineComponent( {
         /** Copy the common values from the first registrant to the others */
         copyCommonValuesFromFirstRegistrant () {
             // Only copy one time
-            if ( this.hasCopiedCommonValues ) {
+            if (this.hasCopiedCommonValues) {
                 return;
             }
 
             this.hasCopiedCommonValues = true;
             const firstRegistrant = this.registrants[ 0 ];
 
-            for ( let i = 1; i < this.registrants.length; i++ ) {
+            for (let i = 1; i < this.registrants.length; i++) {
                 const currentRegistrant = this.registrants[ i ];
 
-                for ( const form of this.registrationEntryState.viewModel.registrantForms ) {
-                    for ( const field of form.fields ) {
-                        if ( !field.isSharedValue ) {
+                for (const form of this.registrationEntryState.viewModel.registrantForms) {
+                    for (const field of form.fields) {
+                        if (!field.isSharedValue) {
                             continue;
                         }
 
                         const valueToShare = firstRegistrant.fieldValues[ field.guid ];
 
-                        if ( valueToShare && typeof valueToShare === "object" ) {
+                        if (valueToShare && typeof valueToShare === "object") {
                             currentRegistrant.fieldValues[ field.guid ] = { ...valueToShare };
                         }
                         else {
@@ -106,7 +106,7 @@ export default defineComponent( {
     computed: {
         /** Will some of the registrants have to be added to a waitlist */
         hasWaitlist(): boolean {
-            return this.registrationEntryState.registrants.some( r => r.isOnWaitList );
+            return this.registrationEntryState.registrants.some(r => r.isOnWaitList);
         },
 
         /** Will this registrant be added to the waitlist? */
@@ -117,7 +117,7 @@ export default defineComponent( {
 
         /** What are the registrants called? */
         registrantTerm(): string {
-            return ( this.registrationEntryState.viewModel.registrantTerm || "registrant" ).toLowerCase();
+            return (this.registrationEntryState.viewModel.registrantTerm || "registrant").toLowerCase();
         },
 
         registrants(): RegistrantInfo[] {
@@ -139,4 +139,4 @@ export default defineComponent( {
         <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" :isWaitList="isOnWaitlist" @next="onNext" @previous="onPrevious" />
     </template>
 </div>`
-} );
+});

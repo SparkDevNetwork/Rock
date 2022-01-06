@@ -343,7 +343,7 @@
                                 <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
                                 <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
                                 <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
-                                <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                <Rock:RockBoundField DataField="GroupNameWithRoleAndStatus" HeaderText="Group" />
                                 <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
                                 <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
                                 <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />

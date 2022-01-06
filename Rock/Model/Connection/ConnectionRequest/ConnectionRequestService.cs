@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Model.Connection.ConnectionRequest.Options;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -31,6 +32,56 @@ namespace Rock.Model
     /// </summary>
     public partial class ConnectionRequestService
     {
+        #region Default Options
+
+        /// <summary>
+        /// The default options to use if not specified. This saves a few
+        /// CPU cycles from having to create a new one each time.
+        /// </summary>
+        private static readonly ConnectionRequestQueryOptions DefaultGetConnectionTypesOptions = new ConnectionRequestQueryOptions();
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the connection requests queryable that is filtered correctly
+        /// to the provided options.
+        /// </summary>
+        /// <param name="options">The filter options to apply to the query.</param>
+        /// <returns>A queryable of <see cref="ConnectionRequest"/> objects.</returns>
+        /// <exception cref="System.InvalidOperationException">Context is not a RockContext.</exception>
+        public IQueryable<ConnectionRequest> GetConnectionRequestsQuery( ConnectionRequestQueryOptions options = null )
+        {
+            if ( !( Context is RockContext rockContext ) )
+            {
+                throw new InvalidOperationException( "Context is not a RockContext." );
+            }
+
+            options = options ?? DefaultGetConnectionTypesOptions;
+
+            var qry = Queryable();
+
+            if ( options.ConnectionOpportunityGuids != null && options.ConnectionOpportunityGuids.Any() )
+            { 
+                qry = qry.Where( r => options.ConnectionOpportunityGuids.Contains( r.ConnectionOpportunity.Guid ) );
+            }
+
+            if ( options.ConnectorPersonIds != null && options.ConnectorPersonIds.Any() )
+            {
+                qry = qry.Where( r => options.ConnectorPersonIds.Contains( r.ConnectorPersonAlias.PersonId ) );
+            }
+
+            if ( options.ConnectionStates != null && options.ConnectionStates.Any() )
+            {
+                qry = qry.Where( r => options.ConnectionStates.Contains( r.ConnectionState ) );
+            }
+
+            return qry;
+        }
+
+        #endregion
+
         #region Connection Board Helper Methods
 
         /// <summary>
@@ -334,6 +385,7 @@ namespace Rock.Model
                     PlacementGroupId = cr.AssignedGroupId,
                     PlacementGroupRoleId = cr.AssignedGroupMemberRoleId,
                     PlacementGroupMemberStatus = cr.AssignedGroupMemberStatus,
+                    PlacementGroupRoleName = cr.AssignedGroup.GroupType.DefaultGroupRole.Name,
                     Comments = cr.Comments,
                     StatusId = cr.ConnectionStatusId,
                     PersonId = cr.PersonAlias.PersonId,
@@ -497,6 +549,7 @@ namespace Rock.Model
                         PlacementGroupId = cr.PlacementGroupId,
                         PlacementGroupRoleId = cr.PlacementGroupRoleId,
                         PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                        PlacementGroupRoleName = cr.PlacementGroupRoleName,
                         Comments = cr.Comments,
                         StatusId = cr.StatusId,
                         PersonId = cr.PersonId,
@@ -544,6 +597,7 @@ namespace Rock.Model
                         PlacementGroupId = cr.PlacementGroupId,
                         PlacementGroupRoleId = cr.PlacementGroupRoleId,
                         PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                        PlacementGroupRoleName = cr.PlacementGroupRoleName,
                         Comments = cr.Comments,
                         StatusId = cr.StatusId,
                         PersonId = cr.PersonId,
@@ -605,6 +659,7 @@ namespace Rock.Model
                         PlacementGroupId = cr.PlacementGroupId,
                         PlacementGroupRoleId = cr.PlacementGroupRoleId,
                         PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                        PlacementGroupRoleName = cr.PlacementGroupRoleName,
                         Comments = cr.Comments,
                         StatusId = cr.StatusId,
                         PersonId = cr.PersonId,
@@ -746,6 +801,7 @@ namespace Rock.Model
                 PlacementGroupId = cr.PlacementGroupId,
                 PlacementGroupRoleId = cr.PlacementGroupRoleId,
                 PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                PlacementGroupRoleName = cr.PlacementGroupRoleName,
                 Comments = cr.Comments,
                 StatusId = cr.StatusId,
                 PersonId = cr.PersonId,

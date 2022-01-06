@@ -14,17 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.FinancialAccount"/> objects.
     /// </summary>
     public partial class FinancialAccountService
     {
-
         /// <summary>
         /// Gets immediate children of a account (id) or a rootGroupId. Specify 0 for both Id and rootGroupId to get top level accounts limited
         /// </summary>
@@ -72,6 +71,25 @@ namespace Rock.Model
 
             // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
             return result.OrderBy( a => 0 );
+        }
+
+        /// <summary>
+        /// Gets all descendent ids.
+        /// </summary>
+        /// <param name="parentAccountId">The parent account identifier.</param>
+        /// <returns>System.Collections.Generic.IEnumerable&lt;int&gt;.</returns>
+        public IEnumerable<int> GetAllDescendentIds( int parentAccountId )
+        {
+            return this.Context.Database.SqlQuery<int>(
+                @"
+                with CTE as (
+                select * from [FinancialAccount] where [ParentAccountId]={0}
+                union all
+                select [a].* from [FinancialAccount] [a]
+                inner join CTE pcte on pcte.Id = [a].[ParentAccountId]
+                )
+                select Id from CTE
+                ", parentAccountId );
         }
 
         /// <summary>
@@ -127,7 +145,79 @@ namespace Rock.Model
 
             // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
             return Context.Database.SqlQuery<FinancialAccount>( qry ).OrderBy( a => 0 );
+        }
 
+        /// <summary>
+        /// Returns a Queryable of <see cref="PersonAlias" /> of the Participants for the specified <see cref="FinancialAccount" /> and purpose key.
+        /// </summary>
+        /// <param name="financialAccountId">The financial account identifier.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <returns>IQueryable&lt;Person&gt;.</returns>
+        public IQueryable<PersonAlias> GetAccountParticipants( int financialAccountId, string purposeKey )
+        {
+            var accountParticipantsQuery = this.RelatedEntities.GetRelatedToSourceEntity<PersonAlias>( financialAccountId, purposeKey );
+            return accountParticipantsQuery;
+        }
+
+        /// <summary>
+        /// Gets the account participants and Purpose
+        /// </summary>
+        /// <param name="financialAccountId">The financial account identifier.</param>
+        /// <returns>IQueryable&lt;PersonAlias&gt;.</returns>
+        public IQueryable<PersonAliasAndPurposeKey> GetAccountParticipantsAndPurpose( int financialAccountId )
+        {
+            var purposeKeys = this.RelatedEntities.GetUsedPurposeKeys( financialAccountId ).ToList();
+
+            // get a query of participants where no purpose is specified
+            IQueryable<PersonAliasAndPurposeKey> accountParticipantsQuery = this.RelatedEntities.GetRelatedToSourceEntity<PersonAlias>( financialAccountId, null ).Select( s => new PersonAliasAndPurposeKey
+            {
+                PersonAlias = s,
+                PurposeKey = null
+            } );
+
+            // union with query of participants with all other purposes
+            foreach ( var purposeKey in purposeKeys )
+            {
+                var accountParticipantsQueryForPurpose = this.RelatedEntities.GetRelatedToSourceEntity<PersonAlias>( financialAccountId, purposeKey ).Select( s => new PersonAliasAndPurposeKey
+                {
+                    PersonAlias = s,
+                    PurposeKey = purposeKey
+                } );
+
+                accountParticipantsQuery = accountParticipantsQuery.Union( accountParticipantsQueryForPurpose );
+            }
+
+            return accountParticipantsQuery;
+        }
+
+        /// <summary>
+        /// Class PersonAliasAndPurposeKey.
+        /// </summary>
+        public class PersonAliasAndPurposeKey
+        {
+            /// <summary>
+            /// Gets or sets the person alias.
+            /// </summary>
+            /// <value>The person alias.</value>
+            public PersonAlias PersonAlias { get; set; }
+
+            /// <summary>
+            /// Gets or sets the purpose key.
+            /// </summary>
+            /// <value>The purpose key.</value>
+            public string PurposeKey { get; set; }
+        }
+
+
+        /// <summary>
+        /// Sets the participants (<see cref="PersonAlias" />) for the specified  <see cref="FinancialAccount" /> and purpose key
+        /// </summary>
+        /// <param name="financialAccountId">The financial account identifier.</param>
+        /// <param name="givingAlertParticipants">The giving alert participants.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        public void SetAccountParticipants( int financialAccountId, List<PersonAlias> givingAlertParticipants, string purposeKey )
+        {
+            this.RelatedEntities.SetRelatedToSourceEntity( financialAccountId, givingAlertParticipants, purposeKey );
         }
     }
 }

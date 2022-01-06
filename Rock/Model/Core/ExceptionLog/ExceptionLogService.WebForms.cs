@@ -147,30 +147,6 @@ namespace Rock.Model
                     cookies.Append( "</table>" );
                 }
 
-                StringBuilder formItems = new StringBuilder();
-                var formList = request.Form;
-
-                if ( formList.Count > 0 )
-                {
-                    formItems.Append( "<table class=\"form-items exception-table\">" );
-                    foreach ( string formItem in formList )
-                    {
-                        if ( formItem.IsNotNullOrWhiteSpace() )
-                        {
-                            string formValue = formList[formItem].EncodeHtml();
-                            string lc = formItem.ToLower();
-                            if ( IsKeySensitive( lc ) )
-                            {
-                                formValue = "***obfuscated***";
-                            }
-
-                            formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formValue + "</td></tr>" );
-                        }
-                    }
-
-                    formItems.Append( "</table>" );
-                }
-
                 StringBuilder serverVars = new StringBuilder();
 
                 // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists,
@@ -207,7 +183,11 @@ namespace Rock.Model
                 exceptionLog.PageUrl = request.UrlProxySafe().ToString();
                 exceptionLog.ServerVariables = serverVars.ToString();
                 exceptionLog.QueryString = request.UrlProxySafe().Query;
-                exceptionLog.Form = formItems.ToString();
+                /*
+                     SK - 11/24/2021
+                     We are commenting out below line as we have decided not to store form data from now on as it may contain sensative data.
+                     exceptionLog.Form = formItems.ToString();
+                */
             }
             catch
             {

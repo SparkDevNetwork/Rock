@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
-    public partial class GroupMemberDetail : RockBlock, IDetailBlock
+    public partial class GroupMemberDetail : RockBlock
     {
         private static class AttributeKey
         {

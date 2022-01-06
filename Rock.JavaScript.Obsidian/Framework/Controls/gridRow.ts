@@ -17,7 +17,7 @@
 import { defineComponent, PropType } from "vue";
 import { RowContext } from "./grid";
 
-export default defineComponent( {
+export default defineComponent({
     name: "GridRow",
     props: {
         rowContext: {
@@ -32,11 +32,11 @@ export default defineComponent( {
     },
     methods: {
         onRowClick () {
-            if ( !this.rowContext.isHeader ) {
-                this.$emit( "click:body", this.rowContext );
+            if (!this.rowContext.isHeader) {
+                this.$emit("click:body", this.rowContext);
             }
             else {
-                this.$emit( "click:header", this.rowContext );
+                this.$emit("click:header", this.rowContext);
             }
         }
     },
@@ -44,4 +44,4 @@ export default defineComponent( {
 <tr @click="onRowClick">
     <slot />
 </tr>`
-} );
+});

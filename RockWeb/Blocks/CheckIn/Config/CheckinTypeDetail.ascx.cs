@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.CheckIn.Config
     [Description( "Displays the details of a particular Check-in Type." )]
 
     [LinkedPage( "Schedule Page", "Page used to manage schedules for the check-in type." )]
-    public partial class CheckinTypeDetail : RockBlock, IDetailBlock
+    public partial class CheckinTypeDetail : RockBlock
     {
 
         #region Control Methods

@@ -197,7 +197,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetFirstName( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
+        public string GetFirstName( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.FirstName );
 
@@ -223,7 +223,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetLastName( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
+        public string GetLastName( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.LastName );
 
@@ -249,7 +249,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetEmail( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
+        public string GetEmail( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.Email );
 
@@ -276,7 +276,7 @@ namespace Rock.Model
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="personFieldType">Type of the person field.</param>
         /// <returns></returns>
-        public object GetPersonFieldValue( RegistrationSettings settings, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo, RegistrationPersonFieldType personFieldType )
+        public object GetPersonFieldValue( RegistrationSettings settings, Rock.ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationPersonFieldType personFieldType )
         {
             if ( settings != null && settings.Forms != null )
             {

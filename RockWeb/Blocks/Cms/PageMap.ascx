@@ -2,16 +2,19 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
-
-        <asp:HiddenField ID="hfExpandedIds" runat="server" ClientIDMode="Static" />
-        <asp:HiddenField ID="hfSelectedItemId" runat="server" />
+        <asp:HiddenField ID="hfRootPageId" runat="server" />
+        <asp:HiddenField ID="hfInitialPageId" runat="server" />
+        <asp:HiddenField ID="hfInitialPageParentIds" runat="server" />
+        <asp:HiddenField ID="hfSelectedPageId" runat="server" />
+        <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
+        <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
+        <asp:HiddenField ID="hfSiteTypeList" runat="server" />
         <div class="treeview js-pagestreeview">
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title">Pages</h1>
-                    <div class="treeview-actions" id="divTreeviewActions" runat="server">
-
-                        <div class="btn-group">
+                    <asp:Panel ID="divTreeviewActions" CssClass="panel-labels treeview-actions" runat="server">
+                        <div id="divAddPage" runat="server" class="btn-group">
                             <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown" title="<asp:Literal ID="ltAddPage" runat="server" Text=" Add Page" />">
                                 <i class="fa fa-plus"></i>
                             </button>
@@ -22,24 +25,17 @@
                                     <asp:LinkButton ID="lbAddPageChild" OnClick="lbAddPageChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                             </ul>
                         </div>
-
-                    </div>
+                    </asp:Panel>
                 </div>
-
-                <div class="panel-body">
-                    <!-- Keep the treeview hidden to avoid flashing while the RockTree is being rendered -->
-                    <div class="treeview-scroll scroll-container scroll-container-horizontal js-pages-scroll-container" style="visibility: hidden">
-
+                <div class="panel-body">                    
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
                         <div class="viewport">
                             <div class="overview">
                                 <div class="treeview-frame">
-                                    <asp:Panel ID="pnlTreeviewContent" runat="server">
-                                        <asp:Literal ID="lPages" runat="server" ViewStateMode="Disabled"></asp:Literal>
-                                    </asp:Panel>
+                                    <asp:Panel ID="pnlTreeviewContent" runat="server" />
                                 </div>
                             </div>
                         </div>
-
                         <div class="scrollbar">
                             <div class="track">
                                 <div class="thumb">
@@ -48,7 +44,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -56,17 +51,22 @@
         <script type="text/javascript">
             var <%=pnlTreeviewContent.ClientID%>IScroll = null;
 
-            var scrollbPage = $('#<%=pnlTreeviewContent.ClientID%>').closest('.treeview-scroll');
-            var scrollContainer = scrollbPage.find('.viewport');
-            var scrollIndicator = scrollbPage.find('.track');
-                <%=pnlTreeviewContent.ClientID%>IScroll = new IScroll(scrollContainer[0], {
+            function loadTreeView()
+            {
+                var $selectedId = $( '#<%=hfSelectedPageId.ClientID%>' ),
+                    $expandedIds = $( '#<%=hfInitialPageParentIds.ClientID%>' );
+
+                var scrollbPage = $( '#<%=pnlTreeviewContent.ClientID%>' ).closest( '.treeview-scroll' );
+                var scrollContainer = scrollbPage.find( '.viewport' );
+                var scrollIndicator = scrollbPage.find( '.track' );
+                    <%=pnlTreeviewContent.ClientID%>IScroll = new IScroll( scrollContainer[ 0 ], {
                     mouseWheel: false,
                     eventPassthrough: true,
                     preventDefault: false,
                     scrollX: true,
                     scrollY: false,
                     indicators: {
-                        el: scrollIndicator[0],
+                        el: scrollIndicator[ 0 ],
                         interactive: true,
                         resize: false,
                         listenX: true,
@@ -74,71 +74,75 @@
                     },
                     click: false,
                     preventDefaultException: { tagName: /.*/ }
-                });
+                } );
 
-            // resize scrollbar when the window resizes
-            $(document).ready(function () {
-                $(window).on('resize', function () {
-                    resizeScrollbar(scrollbPage);
-                });
-            });
+                // resize scrollbar when the window resizes
+                $( document ).ready( function ()
+                {
+                    $( window ).on( 'resize', function ()
+                    {
+                        resizeScrollbar( scrollbPage );
+                    } );
+                } );
 
-            $(function () {
+                $( '#<%=pnlTreeviewContent.ClientID%>' )
+                    .on( 'rockTree:selected', function ( e, id )
+                    {
+                        var itemSearch = '?Page=' + id;
+                        var currentItemId = $selectedId.val();
+                        var $li = $( this ).find( '[data-id="' + id + '"]' )
+                        var rockTree = $( this ).data( 'rockTree' );
 
-                var $selectedId = $('#<%=hfSelectedItemId.ClientID%>');
-                var $expandedIds = $('#<%=hfExpandedIds.ClientID%>')
-                var $pageTree = $('#<%=pnlTreeviewContent.ClientID%>');
+                        if ( currentItemId !== id )
+                        {
+                            // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
+                            var expandedDataIds = $( e.currentTarget ).find( '.rocktree-children' ).filter( ":visible" ).closest( '.rocktree-item' ).map( function ()
+                            {
+                                return $( this ).attr( 'data-id' )
+                            } ).get().join( ',' );
 
-                $pageTree.on('rockTree:selected', function (e, id) {
-
-                    var $li = $(this).find('[data-id="' + id + '"]')
-                    var rockTree = $(this).data('rockTree');
-
-                    // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
-                    var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
-                        var dataId = $(this).attr('data-id');
-                        if (dataId != id) {
-                            return dataId;
-                        }
-                    }).get().join(',');
-
-                    $('#hfExpandedIds').val(expandedDataIds);
+                            $( '#<%=hfInitialPageParentIds.ClientID%>' ).val( expandedDataIds );
 
 
-                    if ($li.length > 1) {
-                        for (i = 0; i < $li.length; i++) {
-                            if (!rockTree.selectedNodes[0].name === $li.find('span').text()) {
-                                $li = $li[i];
-                                break;
+                            if ( $li.length > 1 )
+                            {
+                                for ( i = 0; i < $li.length; i++ )
+                                {
+                                    if ( !rockTree.selectedNodes[ 0 ].name === $li.find( 'span' ).text() )
+                                    {
+                                        $li = $li[ i ];
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if ( itemSearch )
+                            {
+                                var locationUrl = window.location.href.split( '?' )[ 0 ] + itemSearch;
+                                locationUrl += "&ExpandedIds=" + encodeURIComponent( expandedDataIds ).toLowerCase();
+                                locationUrl += "&Redirect=false"
+                                if ( window.location != locationUrl )
+                                {
+                                    window.location = locationUrl;
+                                }
                             }
                         }
-                    }
-
-                    var itemSearch = '?Page=' + id;
-
-                    if (itemSearch) {
-                        var locationUrl = window.location.href.split('?')[0] + itemSearch;
-                        locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds).toLowerCase();
-                        locationUrl += "&Redirect=false"
-                        if (window.location != locationUrl) {
-                            window.location = locationUrl;
-                        }
-                    }
-                });
-
-                $pageTree.on('rockTree:rendered rockTree:expand rockTree:collapse', function () {
-
-                    // update viewport height
-                    resizeScrollbar(scrollbPage);
-                })
-
-                $pageTree.rockTree({
-                    selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
-                    expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
-                });
-
-                $('.js-pages-scroll-container').css("visibility", "visible");
-            });
+                    } )
+                    .on( 'rockTree:rendered rockTree:expand rockTree:collapse', function ()
+                    {
+                        // update viewport height
+                        resizeScrollbar( scrollbPage );
+                    } )
+                    .rockTree( {
+                        restUrl: '<%=ResolveUrl( "~/api/pages/getchildren/" ) %>',
+                        restParams: '?RootGroupId=' + ( $( '#<%=hfRootPageId.ClientID%>' ).val() || 0 )
+                            + '&siteType=' + ( $( '#<%=hfSiteTypeList.ClientID%>' ).val() || 0 )
+                            + '&$orderby=Order',
+                        multiSelect: false,
+                        selectedIds: $selectedId.val() ? $selectedId.val().split( ',' ) : null,
+                        expandedIds: $expandedIds.val() ? $expandedIds.val().split( ',' ) : null
+                    } );
+            }
 
             function resizeScrollbar(scrollControl) {
                 var overviewHeight = $(scrollControl).find('.overview').height();
@@ -148,6 +152,24 @@
                 if (<%=pnlTreeviewContent.ClientID%>IScroll) {
                         <%=pnlTreeviewContent.ClientID%>IScroll.refresh();
                 }
+            }
+
+            /*
+             * 2-DEC-2021: DMV
+             *
+             * JavaScript is not executed by AJAX on partial postbacks.
+             * The end request handler will ensure that the tree is reloaded when that happens.
+             * 
+             */
+
+            // This will run on initial page load
+            loadTreeView();
+
+            Sys.WebForms.PageRequestManager.getInstance().add_endRequest( endRequestHandler );
+            function endRequestHandler ( sender, args )
+            {
+                // This will run on any partial postback
+                loadTreeView();
             }
         </script>
     </ContentTemplate>

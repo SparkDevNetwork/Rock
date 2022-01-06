@@ -246,16 +246,9 @@ namespace Rock.WebStartup
         /// </summary>
         private static void InitializeRockGraduationDate()
         {
-            var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
-            if ( graduationDateWithCurrentYear < RockDateTime.Today )
-            {
-                // if the graduation date already occurred this year, return next year' graduation date
-                RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear.AddYears( 1 );
-            }
-            else
-            {
-                RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear;
-            }
+#pragma warning disable CS0618 // Type or member is obsolete
+            RockDateTime.CurrentGraduationDate = PersonService.GetCurrentGraduationDate();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

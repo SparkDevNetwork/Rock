@@ -2098,8 +2098,11 @@ namespace RockWeb.Blocks.Event
                 cost = RegistrationInstanceState.Cost ?? 0.0m;
             }
 
-            // If this is the first registrant being added and all are in the same family, default it to the current person
-            if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes )
+            // If this is the first registrant being added, default it to the current person.
+            // This will pre-fill in any "Show Current Values" on the registrant with values
+            // from the current person, so it should only run on the very first registrant added
+            // to the registration.
+            if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null )
             {
                 var registrant = new RegistrantInfo( RegistrationInstanceState, CurrentPerson );
                 if ( RegistrationTemplate.ShowCurrentFamilyMembers )
@@ -3523,7 +3526,13 @@ namespace RockWeb.Blocks.Event
             PaymentInfo paymentInfo = null;
             if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
             {
-                var savedAccount = new FinancialPersonSavedAccountService( rockContext ).Get( rblSavedCC.SelectedValueAsId().Value );
+                var savedAccount = new FinancialPersonSavedAccountService( rockContext )
+                    .Queryable()
+                    .Where( a => a.Id == rblSavedCC.SelectedValueAsId().Value
+                        && a.PersonAlias.PersonId == CurrentPersonId )
+                    .AsNoTracking()
+                    .FirstOrDefault();
+
                 if ( savedAccount != null )
                 {
                     paymentInfo = savedAccount.GetReferencePayment();

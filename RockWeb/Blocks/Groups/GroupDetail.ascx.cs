@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Groups
 
     #endregion Block Attributes
 
-    public partial class GroupDetail : ContextEntityBlock, IDetailBlock
+    public partial class GroupDetail : ContextEntityBlock
     {
         #region Attribute Keys
 
@@ -2225,7 +2225,7 @@ namespace RockWeb.Blocks.Groups
             {
                 hlElevatedSecurityLevel.Visible = true;
                 hlElevatedSecurityLevel.Text = $"Security Level: {group.ElevatedSecurityLevel.ConvertToString( true )}";
-                if ( group.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
+                if ( group.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
                 {
                     hlElevatedSecurityLevel.LabelType = LabelType.Danger;
                 }

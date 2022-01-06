@@ -1,12 +1,7 @@
 <%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-
-    <Rock:Lava ID="PageColor" runat="server">
-            {% assign pageColor = CurrentPage | Attribute:'PageColor' %}
-            <div class="position-fixed top-zero right-zero bottom-zero left-zero brand-bg" style="background-color: {{ pageColor }}; z-index: -1;"></div>
-    </Rock:Lava>
-
+    <div class="position-relative">
 
         <!-- Breadcrumbs -->
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
@@ -16,6 +11,11 @@
             <p><strong>Error</strong></p>
             <span class="ajax-error-message"></span>
         </div>
+
+        <Rock:Lava ID="PageColor" runat="server">
+            {% assign pageColor = CurrentPage | Attribute:'PageColor' %}
+            <div class="position-absolute full-screen" style="background-color: {{ pageColor }};"></div>
+        </Rock:Lava>
 
         <Rock:Zone Name="Feature" runat="server" />
 
@@ -37,4 +37,5 @@
 
         </div>
 
+    </div>
 </asp:Content>

@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.ContentChannel )]
 
     #endregion Block Attributes
-    public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
+    public partial class ContentChannelItemDetail : RockBlock
     {
         #region Attribute Keys
 

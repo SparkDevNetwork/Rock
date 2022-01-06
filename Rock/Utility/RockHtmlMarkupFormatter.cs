@@ -22,17 +22,22 @@ using AngleSharp.Html;
 
 namespace Rock.Utility
 {
-    class RockHtmlMarkupFormatter : HtmlMarkupFormatter
+    /// <summary>
+    /// Class RockHtmlMarkupFormatter.
+    /// Implements the <see cref="AngleSharp.Html.HtmlMarkupFormatter" />
+    /// </summary>
+    /// <seealso cref="AngleSharp.Html.HtmlMarkupFormatter" />
+    public class RockHtmlMarkupFormatter : HtmlMarkupFormatter
     {
         /// <inheritdoc />
-        public override String OpenTag( IElement element, Boolean selfClosing )
+        public override string OpenTag( IElement element, bool selfClosing )
         {
             bool allowSelfClose = IsValidSelfClose( element ) && selfClosing;
             return base.OpenTag( element, allowSelfClose );
         }
 
         /// <inheritdoc />
-        public override String CloseTag( IElement element, Boolean selfClosing )
+        public override string CloseTag( IElement element, bool selfClosing )
         {
             bool allowSelfClose = IsValidSelfClose( element ) && selfClosing;
             return base.CloseTag( element, allowSelfClose );
@@ -57,6 +62,5 @@ namespace Rock.Utility
 
             return false;
         }
-
     }
 }

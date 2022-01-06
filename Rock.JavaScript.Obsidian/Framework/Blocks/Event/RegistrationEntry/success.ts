@@ -20,14 +20,14 @@ import SaveFinancialAccountForm from "../../../Controls/saveFinancialAccountForm
 import { Guid } from "../../../Util/guid";
 import { RegistrationEntryState } from "../registrationEntry";
 
-export default defineComponent( {
+export default defineComponent({
     name: "Event.RegistrationEntry.Success",
     components: {
         SaveFinancialAccountForm
     },
     setup () {
         return {
-            registrationEntryState: inject( "registrationEntryState" ) as RegistrationEntryState
+            registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },
     computed: {
@@ -56,15 +56,23 @@ export default defineComponent( {
         /** The token returned for the payment method */
         gatewayPersonIdentifier (): string {
             return this.registrationEntryState.successViewModel?.gatewayPersonIdentifier || "";
+        },
+
+        enableSaveAccount(): boolean {
+            return this.registrationEntryState.viewModel.enableSaveAccount && this.registrationEntryState.savedAccountGuid === null;
         }
     },
     template: `
 <div>
     <div v-html="messageHtml"></div>
-    <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier" :gatewayGuid="gatewayGuid" :transactionCode="transactionCode" :gatewayPersonIdentifier="gatewayPersonIdentifier" class="well">
+    <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && enableSaveAccount"
+        :gatewayGuid="gatewayGuid"
+        :transactionCode="transactionCode"
+        :gatewayPersonIdentifier="gatewayPersonIdentifier"
+        class="well">
         <template #header>
             <h3>Make Payments Even Easier</h3>
         </template>
     </SaveFinancialAccountForm>
 </div>`
-} );
+});

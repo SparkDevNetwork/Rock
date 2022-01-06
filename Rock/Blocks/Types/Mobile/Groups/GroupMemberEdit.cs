@@ -225,7 +225,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Gets the delete navigation action.
         /// </summary>
         /// <value>The delete navigation action.</value>
-        internal Rock.Web.UI.Controls.MobileNavigationActionEditor.MobileNavigationAction DeleteNavigationAction => GetAttributeValue( AttributeKeys.DeleteNavigationAction ).FromJsonOrNull<Rock.Web.UI.Controls.MobileNavigationActionEditor.MobileNavigationAction>() ?? new Web.UI.Controls.MobileNavigationActionEditor.MobileNavigationAction();
+        internal MobileNavigationAction DeleteNavigationAction => GetAttributeValue( AttributeKeys.DeleteNavigationAction ).FromJsonOrNull<MobileNavigationAction>() ?? new MobileNavigationAction();
 
         #endregion
 

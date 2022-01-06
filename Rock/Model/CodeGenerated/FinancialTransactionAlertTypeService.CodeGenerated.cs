@@ -88,6 +88,7 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                AccountParticipantSystemCommunicationId = model.AccountParticipantSystemCommunicationId,
                 AlertSummaryNotificationGroupId = model.AlertSummaryNotificationGroupId,
                 AlertType = ( int ) model.AlertType,
                 AmountSensitivityScale = model.AmountSensitivityScale,
@@ -95,7 +96,9 @@ namespace Rock.Model
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 ContinueIfMatched = model.ContinueIfMatched,
                 DataViewId = model.DataViewId,
+                FinancialAccountId = model.FinancialAccountId,
                 FrequencySensitivityScale = model.FrequencySensitivityScale,
+                IncludeChildFinancialAccounts = model.IncludeChildFinancialAccounts,
                 MaximumDaysSinceLastGift = model.MaximumDaysSinceLastGift,
                 MaximumGiftAmount = model.MaximumGiftAmount,
                 MaximumMedianGiftAmount = model.MaximumMedianGiftAmount,
@@ -177,6 +180,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this FinancialTransactionAlertType target, FinancialTransactionAlertType source )
         {
             target.Id = source.Id;
+            target.AccountParticipantSystemCommunicationId = source.AccountParticipantSystemCommunicationId;
             target.AlertSummaryNotificationGroupId = source.AlertSummaryNotificationGroupId;
             target.AlertType = source.AlertType;
             target.AmountSensitivityScale = source.AmountSensitivityScale;
@@ -184,9 +188,11 @@ namespace Rock.Model
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ContinueIfMatched = source.ContinueIfMatched;
             target.DataViewId = source.DataViewId;
+            target.FinancialAccountId = source.FinancialAccountId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FrequencySensitivityScale = source.FrequencySensitivityScale;
+            target.IncludeChildFinancialAccounts = source.IncludeChildFinancialAccounts;
             target.MaximumDaysSinceLastGift = source.MaximumDaysSinceLastGift;
             target.MaximumGiftAmount = source.MaximumGiftAmount;
             target.MaximumMedianGiftAmount = source.MaximumMedianGiftAmount;

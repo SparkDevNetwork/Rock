@@ -66,23 +66,10 @@
         {%- endif -%}
 
         {% assign related_items = 'content_related' | PersistedDataset | Where:'Id', item.Id | Select:'Related' | First %}
-        {%- assign itemImageLandscape = item | Attribute:'ImageLandscape','Url' | Trim -%}
         {%- assign video = item | Attribute:'Video','RawValue' -%}
-        {%- capture itemVideoImageLandscape -%}{[ getImageFromVideoId id:'{{ item | Attribute:"Video","RawValue" }}' resolution:'2000x1000' ]}{%- endcapture -%}
-        {%- assign parentsSize = parents | Size -%}
-        {%- capture itemParentImageLandscape -%}{%- if parentsSize >= 1 -%}{[ getImageFromItemId id:'{{ parents | First | Property:"Id" }}' ratio:'' ]}{%- endif -%}{%- endcapture -%}
-        {%- assign itemChannelImageLandscape = item.ContentChannel | Attribute:'ChannelImageLandscape','Url' | Trim -%}
-        {%- capture imageLandscape -%}
-          {%- if itemImageLandscape and itemImageLandscape != empty -%}
-            {{ itemImageLandscape }}
-          {%- elseif video and video != empty and itemVideoImageLandscape and itemVideoImageLandscape != empty -%}
-            {{ itemVideoImageLandscape }}
-          {%- elseif parentsSize >= 1 and itemParentImageLandscape and itemParentImageLandscape != empty -%}
-            {{ itemParentImageLandscape }}
-          {%- elseif itemChannelImageLandscape and itemChannelImageLandscape != empty -%}
-            {{ itemChannelImageLandscape }}
-          {%- endif -%}
-        {%- endcapture -%}{% capture contentType %}{% if category and category != empty -%}{{ item.ContentChannel | Attribute:'ContentFormat' | Prepend:' ' | Prepend:category | ToJSON }}{%- else -%}{{ item.ContentChannel | Attribute:'ContentFormat' | ToJSON }}{%- endif -%}{% endcapture %}{
+        {%- capture videoImage -%}{[ getImageFromVideoId id:'{{ video }}' ]}{%- endcapture -%}
+        {% assign videoImage = videoImage | Trim | Split:'?' | First %}
+        {% capture contentType %}{% if category and category != empty -%}{{ item.ContentChannel | Attribute:'ContentFormat' | Prepend:' ' | Prepend:category | ToJSON }}{%- else -%}{{ item.ContentChannel | Attribute:'ContentFormat' | ToJSON }}{%- endif -%}{% endcapture %}{
         "Id": {{ item.Id }},
         "Title": {{ item.Title | Replace:"'","’" | ToJSON }},
         "Slug": {{ item.PrimarySlug | ToJSON }},
@@ -113,17 +100,20 @@
         "Subtitle": {{ item | Attribute:'Subtitle' | Replace:"'","’" | ToJSON }},
         "Summary": {{ item | Attribute:'Summary' | Replace:"'","’" | Escape | ToJSON }},
         "Video": {{ video | ToJSON }},
+        "VideoImageLandscape": {% if videoImage and videoImage != empty %}{{ videoImage | Trim | Append:'?image_crop_resized=2000x1000' | ToJSON }}{% endif %},
+        "VideoImageSquare": {% if videoImage and videoImage != empty %}{{ videoImage | Trim | Append:'?image_crop_resized=2000x2000' | ToJSON }}{% endif %},
+        "VideoImagePortrait":  {% if videoImage and videoImage != empty %}{{ videoImage | Trim | Append:'?image_crop_resized=1000x2000' | ToJSON }}{% endif %},
         "MetaTitle": {{ item | Attribute:'MetaTitle' | Replace:"'","’" | ToJSON }},
         "MetaDescription": {{ item | Attribute:'MetaDescription' | Replace:"'","’" | ToJSON }},
         "StartDateTime": {{ item | Attribute:'Dates','RawValue' | Split:',' | Index:'0' | WithFallback:'', null | ToJSON }},
         "EndDateTime": {{ item | Attribute:'Dates','RawValue' | Split:',' | Index:'1' | ToJSON }},
-        "ImageLandscape": {{ imageLandscape | StripNewlines | Trim | ToJSON }},
+        "ImageLandscape": {{ item | Attribute:'ImageLandscape' | ToJSON }},
         "ImageSquare": {{ item | Attribute:'ImageSquare' | ToJSON }},
         "ImagePortrait": {{ item | Attribute:'ImagePortrait' | ToJSON }},
         "ImageApp": {{ item | Attribute:'ImageApp' | ToJSON }},
         "BackgroundColor": {{ item | Attribute:'BackgroundColor' | Replace:'#','' | ToJSON }},
         "ForegroundColor": {{ item | Attribute:'ForegroundColor' | Replace:'#','' | ToJSON }},
-        "Campuses": "{{ item | Attribute:'Campuses','Name' | Replace:' ','' }}",
+        "Campuses": "{{ item | Attribute:'Campuses','Name' | Replace:', ',',' }}",
         "LinkUrl": {{ item | Attribute:'LinkUrl','RawValue' | ToJSON }},
         "RelatedItem": {{ item | Attribute:'RelatedEntry','RawValue' | ToJSON }},
         "VideoFileHigh": {{ item | Attribute:'VideoFileHigh' | ToJSON }},

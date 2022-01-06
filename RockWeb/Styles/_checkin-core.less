@@ -143,7 +143,20 @@ h1 {
 }
 
 .btn-barcode {
+  position: relative;
   margin-top: 40px;
+  overflow: hidden;
+
+  video {
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    height: 100%;
+  }
+
+  #qr-shaded-region {
+    bottom: -5px !important;
+  }
 }
 
 .btn-checkin-change {

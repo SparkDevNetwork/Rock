@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Model.Finance.FinancialPersonSavedAccountService.Options;
 
 namespace Rock.Model
 {
@@ -27,6 +28,15 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialPersonSavedAccountService
     {
+        #region Default Options
+
+        /// <summary>
+        /// The default financial person saved account query options.
+        /// </summary>
+        private static readonly FinancialPersonSavedAccountQueryOptions DefaultFinancialPersonSavedAccountQueryOptions = new FinancialPersonSavedAccountQueryOptions();
+
+        #endregion
+
         /// <summary>
         /// Returns an queryable collection of saved accounts (<see cref="Rock.Model.FinancialPersonSavedAccount"/> by PersonId
         /// </summary>
@@ -35,6 +45,50 @@ namespace Rock.Model
         public IQueryable<FinancialPersonSavedAccount> GetByPersonId( int personId )
         {
             return this.Queryable().Where( a => a.PersonAlias.PersonId == personId );
+        }
+
+        /// <summary>
+        /// Gets a standard query that matches the specified query options.
+        /// </summary>
+        /// <param name="options">The options to use when filtering results.</param>
+        /// <returns>A queryable of <see cref="FinancialPersonSavedAccount"/> objects that match the options.</returns>
+        public IQueryable<FinancialPersonSavedAccount> GetFinancialPersonSavedAccountsQuery( FinancialPersonSavedAccountQueryOptions options )
+        {
+            options = options ?? DefaultFinancialPersonSavedAccountQueryOptions;
+
+            // Build the query to get all the matching saved accounts for
+            // the specified person.
+            var savedAccountsQuery = Queryable()
+                .Where( a => !a.IsSystem );
+
+            // If the options includes any person identifiers then we limit our
+            // results to only records that match one of those people.
+            if ( options.PersonIds?.Any() ?? false )
+            {
+                savedAccountsQuery = savedAccountsQuery
+                    .Where( a => options.PersonIds.Contains( a.PersonAlias.PersonId ) );
+            }
+
+            // If the options includes any financial gateways then we limit our
+            // results to only records that match one of those gateways.
+            if ( options.FinancialGatewayGuids?.Any() ?? false )
+            {
+                savedAccountsQuery = savedAccountsQuery
+                    .Where( a => a.FinancialGatewayId.HasValue
+                        && options.FinancialGatewayGuids.Contains( a.FinancialGateway.Guid ) );
+            }
+
+            // If the options includes any currency types then we limit our
+            // results to only records that match one of those currency types.
+            if ( options.CurrencyTypeGuids?.Any() ?? false )
+            {
+                savedAccountsQuery = savedAccountsQuery
+                    .Where( a => a.FinancialPaymentDetailId.HasValue
+                        && a.FinancialPaymentDetail.CurrencyTypeValueId.HasValue
+                        && options.CurrencyTypeGuids.Contains( a.FinancialPaymentDetail.CurrencyTypeValue.Guid ) );
+            }
+
+            return savedAccountsQuery;
         }
 
         /// <summary>

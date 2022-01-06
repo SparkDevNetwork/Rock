@@ -21,10 +21,10 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.ClientService.Core.Campus;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModel.Client;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
@@ -364,7 +364,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>The edit view model that represents the request.</returns>
         private RequestEditViewModel GetRequestEditViewModel( ConnectionRequest request, RockContext rockContext )
         {
-            var clientHelper = new ClientHelper( rockContext, RequestContext.CurrentPerson );
+            var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
 
             // Get the list of connectors that are available to pick from
             // for the client to use.
@@ -381,7 +381,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 FutureFollowUpDate = request.FollowupDate?.ToRockDateTimeOffset(),
                 StatusGuid = request.ConnectionStatus.Guid,
                 Connectors = connectors,
-                Campuses = clientHelper.GetCampusesAsListItems(),
+                Campuses = campusClientService.GetCampusesAsListItems(),
                 PlacementGroups = GetRequestPlacementGroups( request ),
                 Statuses = GetOpportunityStatusListItems( request.ConnectionOpportunity.ConnectionType )
             };

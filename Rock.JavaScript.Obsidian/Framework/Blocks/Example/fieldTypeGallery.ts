@@ -30,7 +30,7 @@ import { ClientEditableAttributeValue, ListItem } from "../../ViewModels";
  * @param fieldTypeGuid
  * @param configValues
  */
-const getAttributeValueData = ( name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string> ): Array<ClientEditableAttributeValue> => {
+const getAttributeValueData = (name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Array<ClientEditableAttributeValue> => {
     const configurationValues = configValues;
 
     return [reactive({
@@ -64,7 +64,7 @@ const getAttributeValueData = ( name: string, initialValue: string, fieldTypeGui
 
 /** An inner component that describes the template used for each of the controls
  *  within this field type gallery */
-const galleryAndResult = defineComponent( {
+const galleryAndResult = defineComponent({
     name: "GalleryAndResult",
     components: {
         PanelWidget,
@@ -115,7 +115,7 @@ const galleryAndResult = defineComponent( {
         </div>
     </div>
 </PanelWidget>`
-} );
+});
 
 /**
  * Generate a gallery component for a specific field type
@@ -123,8 +123,8 @@ const galleryAndResult = defineComponent( {
  * @param fieldTypeGuid
  * @param configValues
  */
-const getFieldTypeGalleryComponent = ( name: string, initialValue: string, fieldTypeGuid: Guid, initialConfigValues: Record<string, string> ): Component => {
-    return defineComponent( {
+const getFieldTypeGalleryComponent = (name: string, initialValue: string, fieldTypeGuid: Guid, initialConfigValues: Record<string, string>): Component => {
+    return defineComponent({
         name: `${name}Gallery`,
         components: {
             GalleryAndResult: galleryAndResult,
@@ -134,7 +134,7 @@ const getFieldTypeGalleryComponent = ( name: string, initialValue: string, field
             return {
                 name,
                 configValues: { ...initialConfigValues } as Record<string, string>,
-                attributeValues: getAttributeValueData( name, initialValue, fieldTypeGuid, initialConfigValues )
+                attributeValues: getAttributeValueData(name, initialValue, fieldTypeGuid, initialConfigValues)
             };
         },
         computed: {
@@ -169,7 +169,7 @@ const getFieldTypeGalleryComponent = ( name: string, initialValue: string, field
 <GalleryAndResult :title="name" :attributeValues="attributeValues">
     <TextBox v-for="configKey in configKeys" :key="configKey" :label="configKey" v-model="configValues[configKey]" />
 </GalleryAndResult>`
-    } );
+    });
 };
 
 const galleryComponents: Record<string, Component> = {

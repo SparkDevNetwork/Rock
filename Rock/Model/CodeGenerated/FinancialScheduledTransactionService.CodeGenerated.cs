@@ -101,6 +101,7 @@ namespace Rock.Model
                 LastStatusUpdateDateTime = model.LastStatusUpdateDateTime,
                 NextPaymentDate = model.NextPaymentDate,
                 NumberOfPayments = model.NumberOfPayments,
+                PreviousGatewayScheduleIdsJson = model.PreviousGatewayScheduleIdsJson,
                 SourceTypeValueId = model.SourceTypeValueId,
                 StartDate = model.StartDate,
                 Status = ( int? ) model.Status,
@@ -193,6 +194,7 @@ namespace Rock.Model
             target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
             target.NextPaymentDate = source.NextPaymentDate;
             target.NumberOfPayments = source.NumberOfPayments;
+            target.PreviousGatewayScheduleIdsJson = source.PreviousGatewayScheduleIdsJson;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.StartDate = source.StartDate;
             target.Status = source.Status;

@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given exception." )]
 
-    public partial class ExceptionDetail : RockBlock, IDetailBlock
+    public partial class ExceptionDetail : RockBlock
     {
         #region Page Parameter Keys
 
@@ -306,11 +306,9 @@ namespace RockWeb.Blocks.Core
 
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
-            lFormData.Text = baseException.Form;
 
             btnShowCookies.Visible = !string.IsNullOrWhiteSpace( baseException.Cookies );
             btnShowVariables.Visible = !string.IsNullOrWhiteSpace( baseException.ServerVariables );
-            btnShowFormData.Visible = !string.IsNullOrWhiteSpace( baseException.Form );
 
             // Make sure we have a root-level exception so we can show the entire hierarchy.
             var rootException = GetOutermostException( baseException );
@@ -362,8 +360,6 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        #region IDetailBlock implementation
-
         /// <summary>
         /// Show the block detail content.
         /// </summary>
@@ -372,8 +368,6 @@ namespace RockWeb.Blocks.Core
         {
             ShowReadonlyDetail( exceptionId );
         }
-
-        #endregion
 
         #endregion
     }

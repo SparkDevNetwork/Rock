@@ -73,8 +73,8 @@ namespace RockWeb.Blocks.Finance
             gAlerts.GridRebind += gAlerts_GridRebind;
             gAlerts.GridReorder += gAlerts_GridReorder;
 
-            mdDetails.SaveClick += mdDetails_SaveClick;
-            mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+            mdAlertDetails.SaveClick += mdAlertDetails_SaveClick;
+            mdAlertDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfFinancialTransactionAlertTypeId.ClientID );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -214,6 +214,7 @@ namespace RockWeb.Blocks.Finance
                 actionHtml += string.Format( "<i class='margin-r-sm fa fa-comment' style='opacity: {0};' aria-hidden='true'></i>", alertType.SystemCommunicationId.HasValue ? 1 : 0 );
                 actionHtml += string.Format( "<i class='margin-r-sm fa fa-plug' style='opacity: {0};' aria-hidden='true'></i>", alertType.ConnectionOpportunityId.HasValue ? 1 : 0 );
                 actionHtml += string.Format( "<i class='margin-r-sm fa fa-bus' style='opacity: {0};' aria-hidden='true'></i>", alertType.SendBusEvent ? 1 : 0 );
+                actionHtml += string.Format( "<i class='margin-r-sm fa fa-building-o' style='opacity: {0};' aria-hidden='true'></i>", alertType.AccountParticipantSystemCommunicationId.HasValue ? 1 : 0 );
                 actionHtml += "</div>";
                 lActionsTaken.Text = actionHtml;
             }
@@ -252,13 +253,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void mdDetails_SaveClick( object sender, EventArgs e )
+        protected void mdAlertDetails_SaveClick( object sender, EventArgs e )
         {
-            int financialTransactionAlertTypeId = 0;
-            if ( hfIdValue.Value != string.Empty && !int.TryParse( hfIdValue.Value, out financialTransactionAlertTypeId ) )
-            {
-                financialTransactionAlertTypeId = 0;
-            }
+            int financialTransactionAlertTypeId = hfFinancialTransactionAlertTypeId.Value.AsIntegerOrNull() ?? 0;
 
             var rockContext = new RockContext();
             var financialTransactionAlertTypeService = new FinancialTransactionAlertTypeService( rockContext );
@@ -277,6 +274,8 @@ namespace RockWeb.Blocks.Finance
 
             financialTransactionAlertType.Name = tbName.Text;
             financialTransactionAlertType.CampusId = cpCampus.SelectedCampusId;
+            financialTransactionAlertType.FinancialAccountId = apAlertAccount.SelectedValueAsId();
+            financialTransactionAlertType.IncludeChildFinancialAccounts = cbAlertIncludeChildAccounts.Checked;
             financialTransactionAlertType.AlertType = rblAlertType.SelectedValueAsEnum<AlertType>();
             financialTransactionAlertType.ContinueIfMatched = cbContinueIfMatched.Checked;
             financialTransactionAlertType.RepeatPreventionDuration = nbRepeatPreventionDuration.Text.AsIntegerOrNull();
@@ -290,14 +289,15 @@ namespace RockWeb.Blocks.Finance
             financialTransactionAlertType.DataViewId = dvpPersonDataView.SelectedValueAsInt();
             financialTransactionAlertType.SendBusEvent = cbSendBusEvent.Checked;
             financialTransactionAlertType.ConnectionOpportunityId = ddlConnectionOpportunity.SelectedValueAsId();
-            financialTransactionAlertType.SystemCommunicationId = ddlSystemCommunication.SelectedValueAsId();
+            financialTransactionAlertType.SystemCommunicationId = ddlDonorSystemCommunication.SelectedValueAsId();
+            financialTransactionAlertType.AccountParticipantSystemCommunicationId = ddlAccountParticipantSystemCommunication.SelectedValueAsId();
             financialTransactionAlertType.WorkflowTypeId = wtpLaunchWorkflow.SelectedValueAsId();
             financialTransactionAlertType.AlertSummaryNotificationGroupId = gpNotificationGroup.GroupId;
             financialTransactionAlertType.RunDays = dwpDaysToRunAlertType.SelectedDaysOfWeekAsFlags();
             rockContext.SaveChanges();
 
-            hfIdValue.Value = string.Empty;
-            mdDetails.Hide();
+            hfFinancialTransactionAlertTypeId.Value = string.Empty;
+            mdAlertDetails.Hide();
 
             BindAlerts();
         }
@@ -314,17 +314,17 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            var selectedAccountIds = apAccounts.SelectedIds;
-            var accountGuids = new List<Guid>();
+            var selectedGivingAutomationAccountIds = apGivingAutomationAccounts.SelectedIds;
+            var selectedGivingAutomationAccountGuids = new List<Guid>();
 
-            if ( selectedAccountIds.Any() )
+            if ( selectedGivingAutomationAccountIds.Any() )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     var accountService = new FinancialAccountService( rockContext );
-                    accountGuids = accountService.Queryable()
+                    selectedGivingAutomationAccountGuids = accountService.Queryable()
                         .AsNoTracking()
-                        .Where( a => selectedAccountIds.Contains( a.Id ) )
+                        .Where( a => selectedGivingAutomationAccountIds.Contains( a.Id ) )
                         .Select( a => a.Guid )
                         .ToList();
                 }
@@ -334,8 +334,8 @@ namespace RockWeb.Blocks.Finance
 
             var givingAutomationSettings = GivingAutomationSettings.LoadGivingAutomationSettings();
 
-            givingAutomationSettings.FinancialAccountGuids = isCustomAccounts ? accountGuids : null;
-            givingAutomationSettings.AreChildAccountsIncluded = isCustomAccounts ? cbIncludeChildAccounts.Checked : ( bool? ) null;
+            givingAutomationSettings.FinancialAccountGuids = isCustomAccounts ? selectedGivingAutomationAccountGuids : null;
+            givingAutomationSettings.AreChildAccountsIncluded = isCustomAccounts ? cbGivingAutomationIncludeChildAccounts.Checked : ( bool? ) null;
             givingAutomationSettings.TransactionTypeGuids = cblTransactionTypes.SelectedValues.AsGuidList();
 
             // Main Giving Automation Settings
@@ -418,9 +418,9 @@ namespace RockWeb.Blocks.Finance
 
             // Sync the system setting values to the controls
             divAccounts.Visible = savedAccountGuids.Any();
-            apAccounts.SetValues( accounts );
+            apGivingAutomationAccounts.SetValues( accounts );
             rblAccountTypes.SetValue( savedAccountGuids.Any() ? AccountTypes_Custom : AccountTypes_AllTaxDeductible );
-            cbIncludeChildAccounts.Checked = areChildAccountsIncluded;
+            cbGivingAutomationIncludeChildAccounts.Checked = areChildAccountsIncluded;
             cblTransactionTypes.SetValues( savedTransactionTypeGuidStrings );
 
             // Main Giving Automation Settings
@@ -543,9 +543,14 @@ namespace RockWeb.Blocks.Finance
 
             BindControl();
             tbName.Text = financialTransactionAlertType.Name;
-            hfIdValue.Value = financialTransactionAlertType.Id.ToString();
+            hfFinancialTransactionAlertTypeId.Value = financialTransactionAlertType.Id.ToString();
             cpCampus.SetValue( financialTransactionAlertType.CampusId );
+            apAlertAccount.SetValue( financialTransactionAlertType.FinancialAccountId );
+            cbAlertIncludeChildAccounts.Checked = financialTransactionAlertType.IncludeChildFinancialAccounts;
             rblAlertType.SetValue( ( int ) financialTransactionAlertType.AlertType );
+
+            UpdateSensitivityDescriptions( financialTransactionAlertType.AlertType );
+
             cbContinueIfMatched.Checked = financialTransactionAlertType.ContinueIfMatched;
             nbRepeatPreventionDuration.Text = financialTransactionAlertType.RepeatPreventionDuration.ToStringSafe();
             nbAmountSensitivityScale.Text = financialTransactionAlertType.AmountSensitivityScale.ToStringSafe();
@@ -574,8 +579,9 @@ namespace RockWeb.Blocks.Finance
                 ddlConnectionType_SelectedIndexChanged( null, null );
             }
 
-            ddlSystemCommunication.SetValue( financialTransactionAlertType.SystemCommunicationId );
-            mdDetails.Show();
+            ddlDonorSystemCommunication.SetValue( financialTransactionAlertType.SystemCommunicationId );
+            ddlAccountParticipantSystemCommunication.SetValue( financialTransactionAlertType.AccountParticipantSystemCommunicationId );
+            mdAlertDetails.Show();
         }
 
         /// <summary>
@@ -585,18 +591,23 @@ namespace RockWeb.Blocks.Finance
         {
             rblAlertType.BindToEnum<AlertType>();
 
-            var connectionTypeService = new ConnectionTypeService( new RockContext() );
+            var rockContext = new RockContext();
+            var connectionTypeService = new ConnectionTypeService( rockContext );
+            ddlConnectionType.Items.Clear();
             ddlConnectionType.Items.Add( new ListItem() );
             ddlConnectionType.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
 
             dvpPersonDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
-            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( e => e.Title );
-            ddlSystemCommunication.Items.Clear();
-            ddlSystemCommunication.Items.Add( new ListItem() );
+            var systemCommunications = new SystemCommunicationService( rockContext ).Queryable().OrderBy( e => e.Title );
+            ddlDonorSystemCommunication.Items.Clear();
+            ddlDonorSystemCommunication.Items.Add( new ListItem() );
+            ddlAccountParticipantSystemCommunication.Items.Clear();
+            ddlAccountParticipantSystemCommunication.Items.Add( new ListItem() );
             if ( systemCommunications.Any() )
             {
-                ddlSystemCommunication.Items.AddRange( systemCommunications.Select( x => new ListItem { Text = x.Title, Value = x.Id.ToString() } ).ToArray() );
+                ddlDonorSystemCommunication.Items.AddRange( systemCommunications.Select( x => new ListItem { Text = x.Title, Value = x.Id.ToString() } ).ToArray() );
+                ddlAccountParticipantSystemCommunication.Items.AddRange( systemCommunications.Select( x => new ListItem { Text = x.Title, Value = x.Id.ToString() } ).ToArray() );
             }
         }
 
@@ -615,7 +626,7 @@ namespace RockWeb.Blocks.Finance
                     string errorMessage;
                     if ( !financialTransactionAlertTypeService.CanDelete( financialTransactionAlertType, out errorMessage ) )
                     {
-                        ShowError( errorMessage );
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 
@@ -651,5 +662,42 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblAlertType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblAlertType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateSensitivityDescriptions( rblAlertType.SelectedValueAsEnum<AlertType>() );
+        }
+
+        /// <summary>
+        /// Updates the sensitivity description.
+        /// </summary>
+        /// <param name="alertType">Type of the alert.</param>
+        private void UpdateSensitivityDescriptions( AlertType alertType )
+        {
+            /* 11-19-2021 MDP
+
+            AlertType drives the logic of how sensitivity values are used. (See notes and logic here https://github.com/SparkDevNetwork/Rock/blob/6dacabe84dcaf041450c3bc075164c7580151390/Rock/Jobs/GivingAutomation.cs#L1602)
+
+            Follow-Up uses sensitivity to look for 'worse than usual':
+                - Gifts with amounts that are significantly smaller than usual. For example, a $50 gift for somebody that usually gives $300 a week.
+                - Gifts that are significantly late. For example: a Weekly giver than hasn't given for several weeks
+
+            Gratitude uses sensitivity to look for 'better than usual':
+                - Gifts with amounts that are significantly larger than usual. For example, a $1200 gift for somebody that usually gives $300 a week.
+                - Gifts that are significantly early. For example: a monthly giver that gave 20 days earlier than usual.
+
+            In both cases, a positive value for sensitivity should be used.
+            A negative sensitivity could be entered if they really wanted to, but it'll do weird things such as express gratitude for a gift over $180 for a person that normally gives $200.
+
+            */
+
+            lFrequencySensitivityScaleHelp.Text = FinancialTransactionAlertType.GetFrequencySensitivityDescription( alertType );
+            lAmountSensitivityScaleHelp.Text = FinancialTransactionAlertType.GetAmountSensitivityDescription( alertType );
+        }
     }
 }

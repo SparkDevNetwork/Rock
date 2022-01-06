@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class FinancialTransactionAlertTypeViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the AccountParticipantSystemCommunicationId.
+        /// </summary>
+        /// <value>
+        /// The AccountParticipantSystemCommunicationId.
+        /// </value>
+        public int? AccountParticipantSystemCommunicationId { get; set; }
+
+        /// <summary>
         /// Gets or sets the AlertSummaryNotificationGroupId.
         /// </summary>
         /// <value>
@@ -88,12 +96,28 @@ namespace Rock.ViewModel
         public int? DataViewId { get; set; }
 
         /// <summary>
+        /// Gets or sets the FinancialAccountId.
+        /// </summary>
+        /// <value>
+        /// The FinancialAccountId.
+        /// </value>
+        public int? FinancialAccountId { get; set; }
+
+        /// <summary>
         /// Gets or sets the FrequencySensitivityScale.
         /// </summary>
         /// <value>
         /// The FrequencySensitivityScale.
         /// </value>
         public decimal? FrequencySensitivityScale { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IncludeChildFinancialAccounts.
+        /// </summary>
+        /// <value>
+        /// The IncludeChildFinancialAccounts.
+        /// </value>
+        public bool IncludeChildFinancialAccounts { get; set; }
 
         /// <summary>
         /// Gets or sets the MaximumDaysSinceLastGift.

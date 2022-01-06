@@ -29,7 +29,7 @@ h6:first-child {
 
 .highlight {
   background-image: linear-gradient(-100deg, rgba(255, 251, 134, .3), rgba(250,247,133,.7) 95%, rgba(250,247,133,.1));
-  border-radius: 1em 0 1em 0;
+  border-radius: 1em 0;
 }
 
 .form-control-focus(@color: @input-border-focus) {
@@ -76,7 +76,7 @@ h6:first-child {
   }
 }
 
-
+/* stylelint-disable no-duplicate-selectors */
 .button-variant(@color; @background; @border) {
   @box-shadow-rgba: rgba(red(@background), green(@background), blue(@background), .5);
   color: @color;
@@ -121,6 +121,7 @@ h6:first-child {
     background-color: @color;
   }
 }
+/* stylelint-enable no-duplicate-selectors */
 
 // Prevent Rock Modals from picking up button styles
 .rock-modal .btn {

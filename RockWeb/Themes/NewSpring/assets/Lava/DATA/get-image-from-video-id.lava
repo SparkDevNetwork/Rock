@@ -1,15 +1,15 @@
 {%- capture wistiaThumbnailUrl -%}
 
-{% sql %}
+{%- sql -%}
     SELECT TOP 1 ThumbnailUrl 'ImageUrl'
     FROM [_com_minecartstudio_WistiaIntegration_WistiaMedia]
     WHERE WistiaHashedId = '{{ id }}'
-{% endsql %}
+{%- endsql -%}
 
-{% for item in results %}
+{%- for item in results -%}
     {% assign thumbParts = item.ImageUrl | Split:'?' %}
-{% endfor %}
+{%- endfor -%}
 
-{{ thumbParts[0] }}{% if results != empty %}?image_crop_resized={{ resolution }}{% endif %}
+{{ thumbParts[0] }}{%- if results != empty -%}?image_crop_resized={{ resolution }}{%- endif -%}
 
 {%- endcapture -%}{{ wistiaThumbnailUrl | Trim }}
