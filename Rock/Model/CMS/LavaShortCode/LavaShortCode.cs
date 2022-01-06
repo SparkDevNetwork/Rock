@@ -16,7 +16,6 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -26,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Used to map a site and token to a specific url 
+    /// Used to map a site and token to a specific url.
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "LavaShortcode" )]
@@ -122,7 +121,7 @@ namespace Rock.Model
         /// The enabled lava commands.
         /// </value>
         [MaxLength( 500 )]
-        public string EnabledLavaCommands{ get; set; }
+        public string EnabledLavaCommands { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters.
@@ -132,46 +131,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2500 )]
         public string Parameters { get; set; }
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return LavaShortcodeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            LavaShortcodeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// Determines the type of tag (inline or block). Block type requires an end tag.
-    /// </summary>
-    public enum TagType
-    {
-        /// <summary>
-        /// The inline
-        /// </summary>
-        Inline = 1,
-        
-        /// <summary>
-        /// The block
-        /// </summary>
-        Block = 2
+        #endregion Entity Properties
     }
 
     #region Entity Configuration
@@ -186,9 +146,8 @@ namespace Rock.Model
         /// </summary>
         public LavaShortcodeConfiguration()
         {
-            
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }
