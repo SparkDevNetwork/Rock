@@ -128,13 +128,6 @@ namespace Rock.Model
 
                     var action = controller.Actions.Where( a => a.ApiId == newFormatId || a.ApiId == oldFormatId || a.Guid == apiGuid ).FirstOrDefault();
 
-                    if ( action?.ApiId != newFormatId )
-                    {
-                        // Update the ID to the new format
-                        // This will also take care of method signature changes
-                        action.ApiId = newFormatId;
-                    }
-
                     if ( action == null )
                     {
                         action = new RestAction { ApiId = newFormatId };
@@ -142,6 +135,13 @@ namespace Rock.Model
                     }
                     action.Method = discoveredAction.Method;
                     action.Path = discoveredAction.Path;
+
+                    if ( action.ApiId != newFormatId )
+                    {
+                        // Update the ID to the new format
+                        // This will also take care of method signature changes
+                        action.ApiId = newFormatId;
+                    }
 
                     if ( discoveredAction.GuidSetFromRockGuidAttribute &&
                          !action.Guid.Equals( discoveredAction.Guid ) )
