@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿                                                                                                                                                                                                                                                                      // <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 import DateKey from "../Services/dateKey";
 import { isEmail } from "../Services/email";
+import { isUrl } from "../Services/url";
 import { isNullOrWhiteSpace } from "../Services/string";
 import { defineRule } from "vee-validate";
 import { toNumberOrNull } from "../Services/number";
@@ -254,4 +255,43 @@ defineRule("ssn", (value: unknown) => {
     }
 
     return "must be a valid social security number";
+});
+
+defineRule("url", (value: unknown) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+   if (isUrl(String(value))) {
+        return true;
+    }
+
+    return "must be a valid URL";
+});
+
+defineRule("endswith", (value: unknown, [ending]: unknown[]) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    if (String(value).endsWith(String(ending))) {
+        return true;
+    }
+
+    return `must end with "${ending}"`;
+});
+
+defineRule("startswith", (value: unknown, [start]: unknown[]) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    if (String(value).startsWith(String(start))) {
+        return true;
+    }
+
+    return `must start with "${start}"`;
 });

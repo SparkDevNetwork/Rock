@@ -47,6 +47,7 @@ import NumberRangeBox from "../../Elements/numberRangeBox";
 import GenderDropDownList from "../../Elements/genderDropDownList";
 import SocialSecurityNumberBox from "../../Elements/socialSecurityNumberBox";
 import TimePicker from "../../Elements/timePicker";
+import UrlLinkBox from "../../Elements/urlLinkBox";
 import CheckBoxList from "../../Elements/checkBoxList";
 import Rating from "../../Elements/rating";
 import { toNumber } from "../../Services/number";
@@ -1014,6 +1015,37 @@ const itemsWithPreAndPostHtmlGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates a URL link box */
+const urlLinkBoxGallery = defineComponent({
+    name: "UrlLinkBoxGallery",
+    components: {
+        UrlLinkBox,
+        RockForm,
+        RockButton,
+        GalleryAndResult
+    },
+    data() {
+        return {
+            value: "/home/",
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        UrlLinkBox
+    </template>
+    <template #gallery>
+        <RockForm>
+            <UrlLinkBox label="URL" v-model="value" />
+            <RockButton btnType="primary" type="submit">Test</RockButton>
+        </RockForm>
+    </template>
+    <template #result>
+        {{value}}
+    </template>
+</GalleryAndResult>`
+});
+
 
 const galleryComponents: Record<string, Component> = {
     textBoxGallery,
@@ -1044,7 +1076,8 @@ const galleryComponents: Record<string, Component> = {
     addressControlGallery,
     toggleGallery,
     progressTrackerGallery,
-    itemsWithPreAndPostHtmlGallery
+    itemsWithPreAndPostHtmlGallery,
+    urlLinkBoxGallery
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");

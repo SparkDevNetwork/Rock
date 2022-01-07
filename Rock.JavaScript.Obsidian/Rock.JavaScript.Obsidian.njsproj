@@ -121,6 +121,9 @@
     <TypeScriptCompile Include="Framework\Controls\nmiGatewayControlTypes.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\pageDebugTimings.ts" />
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
+    <TypeScriptCompile Include="Framework\Elements\urlLinkBox.ts" />
+    <TypeScriptCompile Include="Framework\Fields\urlLinkField.ts" />
+    <TypeScriptCompile Include="Framework\Fields\urlLinkFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListField.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\utils.ts" />
@@ -234,6 +237,7 @@
     <TypeScriptCompile Include="Framework\Services\email.ts" />
     <TypeScriptCompile Include="Framework\Services\number.ts" />
     <TypeScriptCompile Include="Framework\Services\string.ts" />
+    <TypeScriptCompile Include="Framework\Services\url.ts" />
     <TypeScriptCompile Include="Framework\Store\index.ts" />
     <TypeScriptCompile Include="Framework\Store\state.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\achievementType.d.ts" />
@@ -276,6 +280,7 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\workflowType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\index.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\paneledBlockTemplate.ts" />
+    <TypeScriptCompile Include="Framework\Util\component.ts" />
     <TypeScriptCompile Include="Tests\Elements\rockFormFieldHelper.ts" />
     <TypeScriptCompile Include="Tests\Elements\textBox.spec.ts" />
     <TypeScriptCompile Include="Tests\Services\dateAspFormatTests.spec.ts" />
