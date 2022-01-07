@@ -19,13 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Dynamic;
-using System.Threading.Tasks;
 using System.Web;
+
 using AspNet.Security.OpenIdConnect.Primitives;
+
 using Microsoft.Owin.Security;
+
 using Owin;
 using Owin.Security.OpenIdConnect.Extensions;
-using Owin.Security.OpenIdConnect.Server;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -152,6 +154,7 @@ namespace RockWeb.Blocks.Security.Oidc
             {
                 return false;
             }
+
             return true;
         }
 
@@ -175,18 +178,22 @@ namespace RockWeb.Blocks.Security.Oidc
                         AcceptAuthorization();
                         return;
                     case "deny":
-                        DenyAuthorization();
+                        DenyAuthorization( "The+user+declined+claim+permissions" );
                         return;
                 }
             }
 
             CreateAntiForgeryToken();
 
-            Task.Run( async () =>
+            var authClient = GetAuthClient();
+            if ( authClient == null )
             {
-                await BindClientName();
-                BindScopes();
-            } ).Wait();
+                DenyAuthorization( "Invalid+client" );
+                return;
+            }
+
+            BindClientName();
+            BindScopes();
         }
 
         #endregion Base Control Methods
@@ -196,12 +203,12 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <summary>
         /// Denies the authorization.
         /// </summary>
-        private void DenyAuthorization()
+        private void DenyAuthorization( string errorDescription )
         {
             // Notify the client that the authorization grant has been denied by the resource owner.
             var owinContext = Context.GetOwinContext();
             var redirectUri = owinContext.Request.Query["redirect_uri"];
-            Response.Redirect( redirectUri + "?error=access_denied&error_description=The+user+declined+claim+permissions", true );
+            Response.Redirect( redirectUri + $"?error=access_denied&error_description={errorDescription.Replace( ' ', '+' )}", true );
             ApplicationInstance.CompleteRequest();
         }
 
@@ -222,9 +229,9 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <summary>
         /// Binds the name of the client.
         /// </summary>
-        private async Task BindClientName()
+        private void BindClientName()
         {
-            var authClient = await GetAuthClient();
+            var authClient = GetAuthClient();
 
             if ( authClient != null )
             {
@@ -294,14 +301,14 @@ namespace RockWeb.Blocks.Security.Oidc
         /// Gets the authentication client.
         /// </summary>
         /// <returns></returns>
-        private async Task<AuthClient> GetAuthClient()
+        private AuthClient GetAuthClient()
         {
             if ( _authClient == null )
             {
                 var rockContext = new RockContext();
                 var authClientService = new AuthClientService( rockContext );
                 var authClientId = PageParameter( PageParamKey.ClientId );
-                _authClient = await authClientService.GetByClientIdAsync( authClientId );
+                _authClient = authClientService.GetByClientId( authClientId );
             }
 
             return _authClient;
