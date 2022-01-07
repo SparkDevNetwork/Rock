@@ -19,9 +19,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Web;
+
 using AspNet.Security.OpenIdConnect.Primitives;
+
 using Owin.Security.OpenIdConnect.Extensions;
 using Owin.Security.OpenIdConnect.Server;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -43,17 +46,16 @@ namespace Rock.Oidc.Authorization
         public static ClaimsIdentity GetRockClaimsIdentity( UserLogin user, IDictionary<string, string> allowedClaims, string clientId )
         {
             var identity = new ClaimsIdentity(
-                        OpenIdConnectServerDefaults.AuthenticationType,
-                        OpenIdConnectConstants.Claims.Name,
-                        OpenIdConnectConstants.Claims.Role );
+                OpenIdConnectServerDefaults.AuthenticationType,
+                OpenIdConnectConstants.Claims.Name,
+                OpenIdConnectConstants.Claims.Role );
 
             var handledScopes = new HashSet<string> { OpenIdConnectConstants.Scopes.OpenId };
 
             // Note: the subject claim is always included in both identity and
             // access tokens, even if an explicit destination is not specified.
             identity.AddClaim( new Claim( OpenIdConnectConstants.Claims.Subject, user.Person.PrimaryAlias.Guid.ToString() )
-                    .SetDestinations( OpenIdConnectConstants.Destinations.AccessToken,
-                                OpenIdConnectConstants.Destinations.IdentityToken ) );
+                    .SetDestinations( OpenIdConnectConstants.Destinations.AccessToken, OpenIdConnectConstants.Destinations.IdentityToken ) );
 
             // Add the client id so we can get the client id for api authorization.
             identity.AddClaim( new Claim( OpenIdConnectConstants.Claims.ClientId, clientId )
@@ -64,7 +66,8 @@ namespace Rock.Oidc.Authorization
 
             var definedClaimValues = new Dictionary<string, Func<Person, string>>
             {
-                {OpenIdConnectConstants.Claims.Address, (p) =>
+                {
+                    OpenIdConnectConstants.Claims.Address, (p) =>
                     {
                         var userAddress = user.Person.GetMailingLocation();
                         var claimAddress = string.Empty;
@@ -81,11 +84,15 @@ namespace Rock.Oidc.Authorization
                             claimAddress = address.ToJson();
                                 return claimAddress;
                         }
+
                         return string.Empty;
                     }
                 },
-                {OpenIdConnectConstants.Claims.Email, (p) => p.Email},
-                {OpenIdConnectConstants.Claims.PhoneNumber, (p) =>
+                {
+                    OpenIdConnectConstants.Claims.Email, (p) => p.Email
+                },
+                {
+                    OpenIdConnectConstants.Claims.PhoneNumber, (p) =>
                     {
                         var claimPhoneNumber = string.Empty;
 
@@ -98,13 +105,26 @@ namespace Rock.Oidc.Authorization
                         return claimPhoneNumber;
                     }
                 },
-                {OpenIdConnectConstants.Claims.PreferredUsername, (p) => p.FullName},
-                {OpenIdConnectConstants.Claims.Name, (p) => p.FullName},
-                {OpenIdConnectConstants.Claims.GivenName, (p) => p.FirstName},
-                {OpenIdConnectConstants.Claims.MiddleName, (p) => p.MiddleName ?? string.Empty},
-                {OpenIdConnectConstants.Claims.FamilyName, (p) => p.LastName},
-                {OpenIdConnectConstants.Claims.Nickname, (p) => p.NickName},
-                {OpenIdConnectConstants.Claims.Picture, (p) =>
+                {
+                    OpenIdConnectConstants.Claims.PreferredUsername, (p) => p.FullName
+                },
+                {
+                    OpenIdConnectConstants.Claims.Name, (p) => p.FullName
+                },
+                {
+                    OpenIdConnectConstants.Claims.GivenName, (p) => p.FirstName
+                },
+                {
+                    OpenIdConnectConstants.Claims.MiddleName, (p) => p.MiddleName ?? string.Empty
+                },
+                {
+                    OpenIdConnectConstants.Claims.FamilyName, (p) => p.LastName
+                },
+                {
+                    OpenIdConnectConstants.Claims.Nickname, (p) => p.NickName
+                },
+                {
+                    OpenIdConnectConstants.Claims.Picture, (p) =>
                     {
                         if ( user.Person.PhotoId != null )
                         {
@@ -113,15 +133,18 @@ namespace Rock.Oidc.Authorization
 
                             return $"{publicAppRoot}GetImage.ashx?guid={photoGuid}";
                         }
+
                         return string.Empty;
                     }
                 },
-                {OpenIdConnectConstants.Claims.Gender, (p) => p.Gender.ToString()},
+                {
+                    OpenIdConnectConstants.Claims.Gender, (p) => p.Gender.ToString()
+                },
             };
 
             // Handle custom scopes
             var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, user.Person );
-            
+
             foreach ( var unprocessedClaim in allowedClaims )
             {
                 var claimValue = unprocessedClaim.Value;
@@ -212,12 +235,30 @@ namespace Rock.Oidc.Authorization
                 return emptyScopeList;
             }
 
-            var activeClientScopes = new AuthScopeService( rockContext )
+            var activeClientScopes = GetActiveAuthScopes( rockContext );
+
+            return parsedClientScopes.Intersect( activeClientScopes );
+        }
+
+        /// <summary>
+        /// Gets the active client scopes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
+        /// <exception cref="System.ArgumentException"></exception>
+        public static IEnumerable<string> GetActiveAuthScopes( RockContext rockContext )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentException( $"{nameof( rockContext )} cannot be null." );
+            }
+
+            var activeAuthScopes = new AuthScopeService( rockContext )
                 .Queryable()
                 .Where( s => s.IsActive )
                 .Select( s => s.Name );
 
-            return parsedClientScopes.Intersect( activeClientScopes );
+            return activeAuthScopes;
         }
 
         /// <summary>
@@ -262,6 +303,28 @@ namespace Rock.Oidc.Authorization
                 .Where( ac => allowedClientScopes.Contains( ac.Scope.Name ) )
                 .Where( ac => ac.Scope.IsActive )
                 .ToDictionary( vc => vc.Name, vc => vc.Value );
+        }
+
+        /// <summary>
+        /// Gets the active authentication claims.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="activeClientScopes">The active client scopes.</param>
+        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
+        /// <exception cref="System.ArgumentException"></exception>
+        public static IEnumerable<string> GetActiveAuthClaims( RockContext rockContext, IEnumerable<string> activeClientScopes )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentException( $"{nameof( rockContext )} cannot be null." );
+            }
+
+            return new AuthClaimService( rockContext )
+                .Queryable()
+                .Where( ac => ac.IsActive )
+                .Where( ac => activeClientScopes.Contains( ac.Scope.Name ) )
+                .Where( ac => ac.Scope.IsActive )
+                .Select( a => a.Name );
         }
     }
 }

@@ -21,9 +21,11 @@ using System.Data.Entity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -255,16 +257,19 @@ namespace Rock.Rest.Jwt
         {
             if ( !_configurationManagerCache.ContainsKey( jwksJsonFileUrl ) )
             {
+                var httpDocumentRetriever = new HttpDocumentRetriever();
+                httpDocumentRetriever.RequireHttps = !System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
                 var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                     jwksJsonFileUrl,
                     new OpenIdConnectConfigurationRetriever(),
-                    new HttpDocumentRetriever() );
+                   httpDocumentRetriever );
 
                 _configurationManagerCache[jwksJsonFileUrl] = configurationManager;
             }
 
             return _configurationManagerCache[jwksJsonFileUrl];
         }
+
         private static Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _configurationManagerCache = new Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>>();
     }
 }
