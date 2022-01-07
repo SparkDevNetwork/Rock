@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Financial
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class FinancialStatementGeneratorHelper
     {
@@ -109,9 +109,9 @@ namespace Rock.Financial
                         GroupId = a.Value
                     } ).Distinct();
 
-                // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
-                // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
-                // to determine which address(es) the statements need to be mailed to 
+                // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.
+                // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order
+                // to determine which address(es) the statements need to be mailed to
                 var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
                 var groupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
 
@@ -236,7 +236,7 @@ namespace Rock.Financial
                     {
                         var lookupValue = nickNameLastNameLookupByPersonId.GetValueOrNull( recipient.PersonId.Value );
 
-                        // lookupValue for individual giver should never be null, but just in case, do a null check 
+                        // lookupValue for individual giver should never be null, but just in case, do a null check
                         recipient.NickName = lookupValue?.NickName ?? string.Empty;
                         recipient.LastName = lookupValue?.LastName ?? string.Empty;
                     }
@@ -626,10 +626,10 @@ namespace Rock.Financial
             //// Pledges but organized by Account (in case more than one pledge goes to the same account)
             //// NOTE: In the case of multiple pledges to the same account (just in case they accidentally or intentionally had multiple pledges to the same account)
             ////  -- Date Range
-            ////    -- StartDate: Earliest StartDate of all the pledges for that account 
+            ////    -- StartDate: Earliest StartDate of all the pledges for that account
             ////    -- EndDate: Latest EndDate of all the pledges for that account
             ////  -- Amount Pledged: Sum of all Pledges to that account
-            ////  -- Amount Given: 
+            ////  -- Amount Given:
             ////    --  The sum of transaction amounts to that account between
             ////      -- Start Date: Earliest Start Date of all the pledges to that account
             ////      -- End Date: Whatever is earlier (Statement End Date or Pledges' End Date)
@@ -769,12 +769,16 @@ namespace Rock.Financial
             {
                 groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
                     .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue )
-                    .Where( a => a.GroupLocationTypeValueId == groupLocationTypeIdHome.Value || a.GroupLocationTypeValueId == groupLocationTypeIdWork.Value );
+                    .Where( a => a.GroupLocationTypeValueId == groupLocationTypeIdHome.Value || a.GroupLocationTypeValueId == groupLocationTypeIdWork.Value )
+                    .GroupBy( a => a.GroupId )
+                    .Select( v => v.Select( a => a ).OrderBy( a => a.GroupId ).ThenByDescending( a => a.Location.ModifiedDateTime ).FirstOrDefault() );
             }
             else
             {
                 groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
-                    .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue && groupLocationTypeIds.Contains( a.GroupLocationTypeValueId.Value ) );
+                    .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue && groupLocationTypeIds.Contains( a.GroupLocationTypeValueId.Value ) )
+                    .GroupBy( a => a.GroupId )
+                    .Select( v => v.Select( a => a ).OrderBy( a => a.GroupId ).ThenByDescending( a => a.Location.ModifiedDateTime ).FirstOrDefault() );
             }
 
             return groupLocationsQry;
@@ -865,7 +869,7 @@ namespace Rock.Financial
 
                         /* 06/23/2021 MDP
                          * Don't exclude pledges from Deceased. If the person pledged during the specified Date/Time range (probably while they weren't deceased), include them regardless of Deceased Status.
-                         * 
+                         *
                          * see https://app.asana.com/0/0/1200512694724244/f
                          */
                     }
@@ -1005,7 +1009,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="Rock.Utility.RockDynamic" />
         private class PledgeSummary : RockDynamic
@@ -1130,7 +1134,7 @@ namespace Rock.Financial
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="System.Exception" />
     public class FinancialGivingStatementException : Exception
@@ -1146,7 +1150,7 @@ namespace Rock.Financial
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="System.ArgumentException" />
     public class FinancialGivingStatementArgumentException : ArgumentException
