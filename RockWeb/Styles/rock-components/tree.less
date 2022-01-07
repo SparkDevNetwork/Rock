@@ -90,13 +90,6 @@ ul.rocktree-children {
     margin: 0;
   }
 
-  // .rocktree-name:hover,
-  // span:hover,
-  // span:hover a {
-  //   color: @tree-rollover-color;
-  //   background: @tree-rollover-bg;
-  // }
-
   .rocktree-name {
     position: relative;
     display: inline-block;
@@ -106,7 +99,8 @@ ul.rocktree-children {
     line-height: 30px;
     cursor: pointer;
     border-radius: 3px;
-    border-radius: var(--border-radius-base);
+    border-radius: var(--border-radius-base, 3px);
+    margin-right: 16px;
 
     i {
       margin-right: 2px;
@@ -134,7 +128,6 @@ ul.rocktree-children {
 
   .selected {
     color: @tree-selected-color;
-
 
     &::before {
       background: fade(@tree-selected-bg, 10%) !important;
@@ -179,7 +172,7 @@ ul.rocktree-children {
       padding: 8px 0;
 
       .overview {
-        width: 100%;
+        min-width: 100%;
       }
     }
   }
