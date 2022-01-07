@@ -14,15 +14,12 @@
 // limitations under the License.
 // </copyright>
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -69,7 +66,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -89,7 +86,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Campus Campus { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration

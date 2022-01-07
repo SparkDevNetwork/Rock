@@ -13,10 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -34,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FieldType : Model<FieldType>, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -89,11 +87,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Class { get; set; }
 
-        #endregion
-
-        #region Virtual Properties
-
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -108,31 +102,7 @@ namespace Rock.Model
             return Name;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return FieldTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            FieldTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
-
+        #endregion Methods
     }
 
     #region Entity Configuration

@@ -868,6 +868,8 @@
     <Compile Include="Model\Core\BinaryFile\BinaryFileService.WebForms.cs" />
     <Compile Include="Model\Core\Category\Category.Logic.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItem.Logic.cs" />
+    <Compile Include="Model\Core\EntityType\EntityType.Logic.cs" />
+    <Compile Include="Model\Core\FieldType\FieldType.Logic.cs" />
     <Compile Include="Model\Core\History\History.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
@@ -2545,7 +2547,7 @@
     <Compile Include="Model\Core\EntitySetItem\EntitySetItemService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySetService.cs" />
     <Compile Include="Model\Core\EntityType\EntityType.cs" />
-    <Compile Include="Model\Core\EntityType\EntityTypeService.Partial.cs" />
+    <Compile Include="Model\Core\EntityType\EntityTypeService.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendar.cs" />
     <Compile Include="Model\Event\EventCalendarItem\EventCalendarItem.cs" />
     <Compile Include="Model\Event\EventItem\EventItem.cs" />
@@ -2556,7 +2558,7 @@
     <Compile Include="Model\Core\ExceptionLog\ExceptionLog.cs" />
     <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.cs" />
     <Compile Include="Model\Core\FieldType\FieldType.cs" />
-    <Compile Include="Model\Core\FieldType\FieldTypeService.Partial.cs" />
+    <Compile Include="Model\Core\FieldType\FieldTypeService.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.cs" />
     <Compile Include="Model\Finance\FinancialBatch\FinancialBatch.cs" />
     <Compile Include="Model\Finance\FinancialBatch\FinancialBatchService.cs" />
