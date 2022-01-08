@@ -82,10 +82,12 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                AdditionalSettingsJson = model.AdditionalSettingsJson,
                 IsSystem = model.IsSystem,
                 Order = model.Order,
                 PurposeKey = model.PurposeKey,
                 QualifierValue = model.QualifierValue,
+                Quantity = model.Quantity,
                 SourceEntityId = model.SourceEntityId,
                 SourceEntityTypeId = model.SourceEntityTypeId,
                 TargetEntityId = model.TargetEntityId,
@@ -159,12 +161,14 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this RelatedEntity target, RelatedEntity source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.Order = source.Order;
             target.PurposeKey = source.PurposeKey;
             target.QualifierValue = source.QualifierValue;
+            target.Quantity = source.Quantity;
             target.SourceEntityId = source.SourceEntityId;
             target.SourceEntityTypeId = source.SourceEntityTypeId;
             target.TargetEntityId = source.TargetEntityId;
