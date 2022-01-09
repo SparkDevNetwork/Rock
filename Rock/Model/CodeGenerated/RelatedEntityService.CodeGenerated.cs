@@ -84,6 +84,7 @@ namespace Rock.Model
                 Guid = model.Guid,
                 AdditionalSettingsJson = model.AdditionalSettingsJson,
                 IsSystem = model.IsSystem,
+                Note = model.Note,
                 Order = model.Order,
                 PurposeKey = model.PurposeKey,
                 QualifierValue = model.QualifierValue,
@@ -165,6 +166,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
+            target.Note = source.Note;
             target.Order = source.Order;
             target.PurposeKey = source.PurposeKey;
             target.QualifierValue = source.QualifierValue;

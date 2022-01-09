@@ -138,6 +138,15 @@ namespace Rock.Model
         public int? Quantity { get; set; }
 
         /// <summary>
+        /// Gets or sets the note.
+        /// </summary>
+        /// <value>
+        /// The note.
+        /// </value>
+        [DataMember]
+        public string Note { get; set; }
+
+        /// <summary>
         /// Gets or sets the additional settings json.
         /// </summary>
         /// <value>

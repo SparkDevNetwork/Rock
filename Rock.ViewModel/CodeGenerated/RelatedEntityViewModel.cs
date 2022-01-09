@@ -48,6 +48,14 @@ namespace Rock.ViewModel
         public bool IsSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets the Note.
+        /// </summary>
+        /// <value>
+        /// The Note.
+        /// </value>
+        public string Note { get; set; }
+
+        /// <summary>
         /// Gets or sets the Order.
         /// </summary>
         /// <value>

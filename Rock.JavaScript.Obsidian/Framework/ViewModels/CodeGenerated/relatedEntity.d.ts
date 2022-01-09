@@ -24,10 +24,12 @@
 import { IEntity } from "../entity";
 
 export type RelatedEntity = IEntity & {
+    additionalSettingsJson?: string | null;
     isSystem?: boolean;
     order?: number;
     purposeKey?: string | null;
     qualifierValue?: string | null;
+    quantity?: number | null;
     sourceEntityId?: number;
     sourceEntityTypeId?: number;
     targetEntityId?: number;

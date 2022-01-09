@@ -52,6 +52,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string Note { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
@@ -113,6 +116,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Note = source.Note;
             this.Order = source.Order;
             this.PurposeKey = source.PurposeKey;
             this.QualifierValue = source.QualifierValue;

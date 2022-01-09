@@ -31,6 +31,7 @@ namespace Rock.Migrations
         {
             AddColumn("dbo.RelatedEntity", "Quantity", c => c.Int());
             AddColumn("dbo.RelatedEntity", "AdditionalSettingsJson", c => c.String());
+            AddColumn( "dbo.RelatedEntity", "Note", c => c.String() );
         }
         
         /// <summary>
@@ -38,6 +39,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            DropColumn( "dbo.RelatedEntity", "Note" );
             DropColumn("dbo.RelatedEntity", "AdditionalSettingsJson");
             DropColumn("dbo.RelatedEntity", "Quantity");
         }
