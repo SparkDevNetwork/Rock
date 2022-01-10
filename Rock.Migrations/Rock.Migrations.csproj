@@ -73,6 +73,10 @@
     <Compile Include="Migrations\202201101908185_RelatedEntity_Note.Designer.cs">
       <DependentUpon>202201101908185_RelatedEntity_Note.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202201101950100_ScheduleTransactionPersonPage.cs" />
+    <Compile Include="Migrations\202201101950100_ScheduleTransactionPersonPage.Designer.cs">
+      <DependentUpon>202201101950100_ScheduleTransactionPersonPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.Designer.cs">
       <DependentUpon>202112212311473_AddBenevolnceRequestNoteType.cs</DependentUpon>
@@ -923,6 +927,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202201101908185_RelatedEntity_Note.resx">
       <DependentUpon>202201101908185_RelatedEntity_Note.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202201101950100_ScheduleTransactionPersonPage.resx">
+      <DependentUpon>202201101950100_ScheduleTransactionPersonPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.resx">
       <DependentUpon>202112212311473_AddBenevolnceRequestNoteType.cs</DependentUpon>
