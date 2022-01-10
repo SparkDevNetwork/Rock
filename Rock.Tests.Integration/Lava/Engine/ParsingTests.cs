@@ -40,6 +40,13 @@ Text (lower) = {{ text }}, Text (upper) = {{ TEXT }}
             TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
         }
 
+        [TestMethod]
+        public void Variables_VariableNameBeginningWithNumber_IsValid()
+        {
+            TestHelper.AssertTemplateOutput( "first",
+                "{% assign 1st = 'first' %}{{ 1st }}",
+                new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
 
         [TestMethod]
         public void Whitespace_TrimInOutputTagWithVariable_RemovesWhitespace()
