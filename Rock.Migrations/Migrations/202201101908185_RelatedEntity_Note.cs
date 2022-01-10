@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,15 +22,14 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class RelatedEntityUpdatesQuantityAdditionSettings : Rock.Migrations.RockMigration
+    public partial class RelatedEntity_Note : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.RelatedEntity", "Quantity", c => c.Int());
-            AddColumn("dbo.RelatedEntity", "AdditionalSettingsJson", c => c.String());
+            AddColumn("dbo.RelatedEntity", "Note", c => c.String());
         }
         
         /// <summary>
@@ -38,8 +37,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.RelatedEntity", "AdditionalSettingsJson");
-            DropColumn("dbo.RelatedEntity", "Quantity");
+            DropColumn("dbo.RelatedEntity", "Note");
         }
     }
 }
