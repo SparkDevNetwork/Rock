@@ -128,6 +128,33 @@ namespace Rock.Model
         [MaxLength( 200 )]
         public string QualifierValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the quantity.
+        /// </summary>
+        /// <value>
+        /// The quantity.
+        /// </value>
+        [DataMember]
+        public int? Quantity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note.
+        /// </summary>
+        /// <value>
+        /// The note.
+        /// </value>
+        [DataMember]
+        public string Note { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings json.
+        /// </summary>
+        /// <value>
+        /// The additional settings json.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion
 
         #region Navigation Properties

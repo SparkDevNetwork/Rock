@@ -927,6 +927,7 @@
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerificationService.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKey.Logic.cs" />
     <Compile Include="Model\CRM\PersonViewed\PersonViewed.Logic.cs" />
+    <Compile Include="Model\CRM\Person\Person.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.Logic.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.SaveHook.cs" />
     <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.cs" />
@@ -2631,7 +2632,6 @@
     <Compile Include="Model\CMS\PageRoute\PageRoute.cs" />
     <Compile Include="Model\CMS\PageRoute\PageRouteService.cs" />
     <Compile Include="Model\CMS\Page\PageService.cs" />
-    <Compile Include="Model\Person.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.cs" />
     <Compile Include="Model\CRM\PersonAlias\PersonAlias.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDeviceService.cs" />
@@ -2642,16 +2642,16 @@
     <Compile Include="Model\CRM\PersonPreviousName\PersonPreviousName.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKey.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKeyService.cs" />
-    <Compile Include="Model\PersonService.Partial.cs" />
-    <Compile Include="Model\PersonSignal.cs" />
+    <Compile Include="Model\CRM\Person\PersonService.Partial.cs" />
+    <Compile Include="Model\Core\PersonSignal\PersonSignal.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.cs" />
     <Compile Include="Model\Core\PersonToken\PersonTokenService.cs" />
     <Compile Include="Model\CRM\PersonViewed\PersonViewed.cs" />
     <Compile Include="Model\CRM\PersonViewed\PersonViewedService.cs" />
-    <Compile Include="Model\PhoneNumber.cs" />
-    <Compile Include="Model\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequestService.cs" />
+    <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.cs" />
+    <Compile Include="Model\CRM\PhoneNumber\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
     <Compile Include="Model\Event\Registration\Registration.cs">
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
@@ -2667,15 +2667,15 @@
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateForm.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.cs" />
     <Compile Include="Model\Reporting\Report\Report.cs" />
-    <Compile Include="Model\ScheduleCategoryExclusion.cs" />
+    <Compile Include="Model\Core\ScheduleCategoryExclusion\ScheduleCategoryExclusion.cs" />
     <Compile Include="Model\Reporting\ReportField\ReportField.cs" />
     <Compile Include="Model\Reporting\Report\ReportService.cs" />
     <Compile Include="Model\CMS\RestAction\RestAction.cs" />
     <Compile Include="Model\CMS\RestAction\RestActionService.cs" />
     <Compile Include="Model\CMS\RestController\RestController.cs" />
     <Compile Include="Model\CMS\RestController\RestControllerService.cs" />
-    <Compile Include="Model\Schedule.cs" />
-    <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\Core\Schedule\Schedule.cs" />
+    <Compile Include="Model\Core\Schedule\ScheduleService.Partial.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Core\SignalType\SignalType.cs" />

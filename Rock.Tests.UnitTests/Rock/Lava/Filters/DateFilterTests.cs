@@ -1473,6 +1473,60 @@ namespace Rock.Tests.UnitTests.Lava
 
         #endregion
 
+        #region Filter Tests: TimeOfDay
+
+        [TestMethod]
+        public void TimeOfDay_InputInMorningRange_ReturnsMorning()
+        {
+            TestHelper.AssertTemplateOutput( "Morning", "{{ '2020-1-1 05:00:00 am' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Morning", "{{ '2020-1-1 06:30:00 am' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Morning", "{{ '2020-1-1 11:59:59 am' | TimeOfDay }}" );
+        }
+
+        [TestMethod]
+        public void TimeOfDay_InputInAfternoonRange_ReturnsAfternoon()
+        {
+            TestHelper.AssertTemplateOutput( "Afternoon", "{{ '2020-1-1 12:00:00 pm' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Afternoon", "{{ '2020-1-1 02:30:00 pm' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Afternoon", "{{ '2020-1-1 04:59:59 pm' | TimeOfDay }}" );
+        }
+
+        [TestMethod]
+        public void TimeOfDay_InputInEveningRange_ReturnsEvening()
+        {
+            TestHelper.AssertTemplateOutput( "Evening", "{{ '2020-1-1 05:00:00 pm' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Evening", "{{ '2020-1-1 07:30:00 pm' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Evening", "{{ '2020-1-1 08:59:59 pm' | TimeOfDay }}" );
+        }
+
+        [TestMethod]
+        public void TimeOfDay_InputInNightRange_ReturnsNight()
+        {
+            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1 09:00:00 pm' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1 11:30:00 pm' | TimeOfDay }}" );
+            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1 04:59:59 am' | TimeOfDay }}" );
+        }
+
+        [TestMethod]
+        public void TimeOfDay_InputIsTimeOnly_ReturnsCorrectTimeOfDay()
+        {
+            TestHelper.AssertTemplateOutput( "Morning", "{{ '6:30 AM' | TimeOfDay }}" );
+        }
+
+        [TestMethod]
+        public void TimeOfDay_InputIsDateOnly_ReturnsNight()
+        {
+            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1' | TimeOfDay }}" );
+        }
+
+        [TestMethod]
+        public void TimeOfDay_InputCannotBeParsedToValidDateTime_ReturnsEmptyString()
+        {
+            TestHelper.AssertTemplateOutput( string.Empty, "{{ 'This-is-not-a-date-time-string' | TimeOfDay }}" );
+        }
+
+        #endregion
+
         #region Filter Tests: ToMidnight
 
         /// <summary>
