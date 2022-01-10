@@ -18,6 +18,7 @@ import { defineComponent, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { useVModelPassthrough } from "../Util/component";
 import UrlLinkBox from "../Elements/urlLinkBox";
+import { asBooleanOrNull } from "../Services/boolean"
 
 export const EditComponent = defineComponent({
     name: "UrlLinkField.Edit",
@@ -35,7 +36,7 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         let value = useVModelPassthrough(props, "modelValue", emit);
 
-        let requiresTrailingSlash = computed(() => props.configurationValues.ShouldRequireTrailingForwardSlash === "true")
+        let requiresTrailingSlash = computed(() => asBooleanOrNull(props.configurationValues.ShouldRequireTrailingForwardSlash) ?? false)
 
         return { value, requiresTrailingSlash };
     },
