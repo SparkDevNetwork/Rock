@@ -28,7 +28,7 @@ namespace Rock.Model
     public partial class FinancialScheduledTransaction
     {
         /// <inheritdoc/>
-        internal class SaveHoook : EntitySaveHook<FinancialScheduledTransaction>
+        internal class SaveHook : EntitySaveHook<FinancialScheduledTransaction>
         {
             /// <inheritdoc/>
             protected override void PreSave()
@@ -69,29 +69,29 @@ namespace Rock.Model
 
                     case EntityContextState.Modified:
                         {
-                            string origPerson = History.GetValue<PersonAlias>( null, Entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
+                            string origPerson = History.GetValue<PersonAlias>( null, Entry.OriginalValues[nameof( Entity.AuthorizedPersonAliasId )].ToStringSafe().AsIntegerOrNull(), rockContext );
                             string person = History.GetValue<PersonAlias>( Entity.AuthorizedPersonAlias, Entity.AuthorizedPersonAliasId, rockContext );
                             History.EvaluateChange( Entity.HistoryChangeList, "Authorized Person", origPerson, person );
 
-                            int? origGatewayId = Entry.OriginalValues["FinancialGatewayId"].ToStringSafe().AsIntegerOrNull();
+                            int? origGatewayId = Entry.OriginalValues[nameof( Entity.FinancialGatewayId )].ToStringSafe().AsIntegerOrNull();
                             if ( !Entity.FinancialGatewayId.Equals( origGatewayId ) )
                             {
                                 History.EvaluateChange( Entity.HistoryChangeList, "Gateway", History.GetValue<FinancialGateway>( null, origGatewayId, rockContext ), History.GetValue<FinancialGateway>( Entity.FinancialGateway, Entity.FinancialGatewayId, rockContext ) );
                             }
 
-                            History.EvaluateChange( Entity.HistoryChangeList, "Gateway Schedule Id", Entry.OriginalValues["GatewayScheduleId"].ToStringSafe(), Entity.GatewayScheduleId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Transaction Code", Entry.OriginalValues["TransactionCode"].ToStringSafe(), Entity.TransactionCode );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Summary", Entry.OriginalValues["Summary"].ToStringSafe(), Entity.Summary );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Type", Entry.OriginalValues["TransactionTypeValueId"].ToStringSafe().AsIntegerOrNull(), Entity.TransactionTypeValue, Entity.TransactionTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Source", Entry.OriginalValues["SourceTypeValueId"].ToStringSafe().AsIntegerOrNull(), Entity.SourceTypeValue, Entity.SourceTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Frequency", Entry.OriginalValues["TransactionFrequencyValueId"].ToStringSafe().AsIntegerOrNull(), Entity.TransactionFrequencyValue, Entity.TransactionFrequencyValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Start Date", Entry.OriginalValues["StartDate"].ToStringSafe().AsDateTime(), Entity.StartDate );
-                            History.EvaluateChange( Entity.HistoryChangeList, "End Date", Entry.OriginalValues["EndDate"].ToStringSafe().AsDateTime(), Entity.EndDate );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Number of Payments", Entry.OriginalValues["EndDate"].ToStringSafe().AsIntegerOrNull(), Entity.NumberOfPayments );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Is Active", Entry.OriginalValues["IsActive"].ToStringSafe().AsBooleanOrNull(), Entity.IsActive );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Card Reminder Date", Entry.OriginalValues["CardReminderDate"].ToStringSafe().AsDateTime(), Entity.CardReminderDate );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Last Reminded Date", Entry.OriginalValues["LastRemindedDate"].ToStringSafe().AsDateTime(), Entity.LastRemindedDate );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Currency Code", Entry.OriginalValues["ForeignCurrencyCodeValueId"].ToStringSafe().AsIntegerOrNull(), Entity.ForeignCurrencyCodeValue, Entity.ForeignCurrencyCodeValueId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Gateway Schedule Id", Entry.OriginalValues[nameof( Entity.GatewayScheduleId )].ToStringSafe(), Entity.GatewayScheduleId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Transaction Code", Entry.OriginalValues[nameof( Entity.TransactionCode) ].ToStringSafe(), Entity.TransactionCode );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Summary", Entry.OriginalValues[nameof( Entity.Summary )].ToStringSafe(), Entity.Summary );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Type", Entry.OriginalValues[nameof( Entity.TransactionTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.TransactionTypeValue, Entity.TransactionTypeValueId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Source", Entry.OriginalValues[nameof( Entity.SourceTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.SourceTypeValue, Entity.SourceTypeValueId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Frequency", Entry.OriginalValues[nameof( Entity.TransactionFrequencyValueId )].ToStringSafe().AsIntegerOrNull(), Entity.TransactionFrequencyValue, Entity.TransactionFrequencyValueId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Start Date", Entry.OriginalValues[nameof( Entity.StartDate )].ToStringSafe().AsDateTime(), Entity.StartDate );
+                            History.EvaluateChange( Entity.HistoryChangeList, "End Date", Entry.OriginalValues[nameof( Entity.EndDate )].ToStringSafe().AsDateTime(), Entity.EndDate );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Number of Payments", Entry.OriginalValues[nameof( Entity.EndDate )].ToStringSafe().AsIntegerOrNull(), Entity.NumberOfPayments );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Is Active", Entry.OriginalValues[nameof( Entity.IsActive )].ToStringSafe().AsBooleanOrNull(), Entity.IsActive );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Card Reminder Date", Entry.OriginalValues[nameof( Entity.CardReminderDate )].ToStringSafe().AsDateTime(), Entity.CardReminderDate );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Last Reminded Date", Entry.OriginalValues[nameof( Entity.LastRemindedDate )].ToStringSafe().AsDateTime(), Entity.LastRemindedDate );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Currency Code", Entry.OriginalValues[nameof( Entity.ForeignCurrencyCodeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.ForeignCurrencyCodeValue, Entity.ForeignCurrencyCodeValueId );
 
                             break;
                         }
