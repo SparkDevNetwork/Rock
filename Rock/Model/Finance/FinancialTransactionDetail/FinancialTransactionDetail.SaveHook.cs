@@ -44,15 +44,15 @@ namespace Rock.Model
                             string acct = History.GetValue<FinancialAccount>( Entity.Account, Entity.AccountId, rockContext );
 
                             int? accountId = Entity.Account != null ? Entity.Account.Id : Entity.AccountId;
-                            int? origAccountId = Entry.OriginalValues["AccountId"].ToStringSafe().AsIntegerOrNull();
+                            int? origAccountId = OriginalValues[nameof( Entity.AccountId )].ToStringSafe().AsIntegerOrNull();
                             if ( !accountId.Equals( origAccountId ) )
                             {
                                 History.EvaluateChange( Entity.HistoryChangeList, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
                             }
 
-                            History.EvaluateChange( Entity.HistoryChangeList, acct, Entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.Amount.FormatAsCurrency() );
-                            History.EvaluateChange( Entity.HistoryChangeList, acct, Entry.OriginalValues["FeeAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeAmount.FormatAsCurrency() );
-                            History.EvaluateChange( Entity.HistoryChangeList, acct, Entry.OriginalValues["FeeCoverageAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeCoverageAmount.FormatAsCurrency() );
+                            History.EvaluateChange( Entity.HistoryChangeList, acct, OriginalValues[nameof( Entity.Amount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.Amount.FormatAsCurrency() );
+                            History.EvaluateChange( Entity.HistoryChangeList, acct, OriginalValues[nameof( Entity.FeeAmount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeAmount.FormatAsCurrency() );
+                            History.EvaluateChange( Entity.HistoryChangeList, acct, OriginalValues[nameof( Entity.FeeCoverageAmount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeCoverageAmount.FormatAsCurrency() );
 
                             break;
                         }

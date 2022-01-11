@@ -156,29 +156,29 @@ namespace Rock.Model
                 case EntityState.Modified:
                     {
                         string numberTypeName = DefinedValueCache.GetName( NumberTypeValueId );
-                        int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
+                        int? oldPhoneNumberTypeId = entry.OriginalValues[nameof( this.NumberTypeValueId )].ToStringSafe().AsIntegerOrNull();
                         if ( ( oldPhoneNumberTypeId ?? 0 ) == ( NumberTypeValueId ?? 0 ) )
                         {
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), NumberFormatted );
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), entry.OriginalValues[nameof( this.NumberFormatted )].ToStringSafe(), NumberFormatted );
                         }
                         else
                         {
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues[nameof( this.NumberFormatted )].ToStringSafe(), string.Empty );
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), string.Empty, NumberFormatted );
                         }
 
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", numberTypeName ), entry.OriginalValues["IsUnlisted"].ToStringSafe().AsBooleanOrNull(), IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", numberTypeName ), entry.OriginalValues["IsMessagingEnabled"].ToStringSafe().AsBooleanOrNull(), IsMessagingEnabled );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", numberTypeName ), entry.OriginalValues[nameof( this.IsUnlisted )].ToStringSafe().AsBooleanOrNull(), IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", numberTypeName ), entry.OriginalValues[nameof( this.IsMessagingEnabled )].ToStringSafe().AsBooleanOrNull(), IsMessagingEnabled );
 
                         break;
                     }
 
                 case EntityState.Deleted:
                     {
-                        personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
+                        personId = entry.OriginalValues[nameof( this.PersonId )].ToStringSafe().AsInteger();
                         PersonHistoryChanges.AddOrIgnore( personId, new History.HistoryChangeList() );
-                        int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+                        int? oldPhoneNumberTypeId = entry.OriginalValues[nameof( this.NumberTypeValueId )].ToStringSafe().AsIntegerOrNull();
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues[nameof( this.NumberFormatted )].ToStringSafe(), string.Empty );
 
                         return;
                     }

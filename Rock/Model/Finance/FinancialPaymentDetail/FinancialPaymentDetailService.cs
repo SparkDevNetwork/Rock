@@ -69,7 +69,7 @@ namespace Rock.Model
         /// <param name="referencingEntry">The referencing entry.</param>
         public void DeleteOrphanedFinancialPaymentDetail( IEntitySaveEntry referencingEntry )
         {
-            var financialPaymentDetailId = referencingEntry.OriginalValues["FinancialPaymentDetailId"]?.ToString().AsIntegerOrNull();
+            var financialPaymentDetailId = referencingEntry.OriginalValues[nameof( FinancialTransaction.FinancialPaymentDetailId )]?.ToString().AsIntegerOrNull();
             if ( financialPaymentDetailId.HasValue )
             {
                 var financialPaymentDetail = this.Get( financialPaymentDetailId.Value );

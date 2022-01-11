@@ -70,11 +70,11 @@ namespace Rock.Model
                         }
                     case EntityContextState.Modified:
                         {
-                            string origPerson = History.GetValue<PersonAlias>( null, Entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
+                            string origPerson = History.GetValue<PersonAlias>( null, Entry.OriginalValues[nameof( Entity.AuthorizedPersonAliasId )].ToStringSafe().AsIntegerOrNull(), rockContext );
                             string person = History.GetValue<PersonAlias>( Entity.AuthorizedPersonAlias, Entity.AuthorizedPersonAliasId, rockContext );
                             History.EvaluateChange( Entity.HistoryChangeList, "Authorized Person", origPerson, person );
 
-                            int? origBatchId = Entry.OriginalValues["BatchId"].ToStringSafe().AsIntegerOrNull();
+                            int? origBatchId = OriginalValues[nameof( Entity.BatchId )].ToStringSafe().AsIntegerOrNull();
                             int? batchId = Entity.Batch != null ? Entity.Batch.Id : Entity.BatchId;
                             if ( !batchId.Equals( origBatchId ) )
                             {
@@ -83,22 +83,22 @@ namespace Rock.Model
                                 History.EvaluateChange( Entity.HistoryChangeList, "Batch", origBatch, batch );
                             }
 
-                            int? origGatewayId = Entry.OriginalValues["FinancialGatewayId"].ToStringSafe().AsIntegerOrNull();
+                            int? origGatewayId = OriginalValues[nameof( Entity.FinancialGatewayId )].ToStringSafe().AsIntegerOrNull();
                             if ( !Entity.FinancialGatewayId.Equals( origGatewayId ) )
                             {
                                 History.EvaluateChange( Entity.HistoryChangeList, "Gateway", History.GetValue<FinancialGateway>( null, origGatewayId, rockContext ), History.GetValue<FinancialGateway>( Entity.FinancialGateway, Entity.FinancialGatewayId, rockContext ) );
                             }
 
-                            History.EvaluateChange( Entity.HistoryChangeList, "Transaction Date/Time", Entry.OriginalValues["TransactionDateTime"].ToStringSafe().AsDateTime(), Entity.TransactionDateTime );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Transaction Code", Entry.OriginalValues["TransactionCode"].ToStringSafe(), Entity.TransactionCode );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Summary", Entry.OriginalValues["Summary"].ToStringSafe(), Entity.Summary );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Type", Entry.OriginalValues["TransactionTypeValueId"].ToStringSafe().AsIntegerOrNull(), Entity.TransactionTypeValue, Entity.TransactionTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Source", Entry.OriginalValues["SourceTypeValueId"].ToStringSafe().AsIntegerOrNull(), Entity.SourceTypeValue, Entity.SourceTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Scheduled Transaction Id", Entry.OriginalValues["ScheduledTransactionId"].ToStringSafe().AsIntegerOrNull(), Entity.ScheduledTransactionId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Processed By", Entry.OriginalValues["ProcessedByPersonAliasId"].ToStringSafe().AsIntegerOrNull(), Entity.ProcessedByPersonAlias, Entity.ProcessedByPersonAliasId, rockContext );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Processed Date/Time", Entry.OriginalValues["ProcessedDateTime"].ToStringSafe().AsDateTime(), Entity.ProcessedDateTime );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Status", Entry.OriginalValues["Status"].ToStringSafe(), Entity.Status );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Status Message", Entry.OriginalValues["StatusMessage"].ToStringSafe(), Entity.StatusMessage );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Transaction Date/Time", OriginalValues[nameof( Entity.TransactionDateTime )].ToStringSafe().AsDateTime(), Entity.TransactionDateTime );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Transaction Code", OriginalValues[nameof( Entity.TransactionCode )].ToStringSafe(), Entity.TransactionCode );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Summary", OriginalValues[nameof( Entity.Summary )].ToStringSafe(), Entity.Summary );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Type", OriginalValues[nameof( Entity.TransactionTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.TransactionTypeValue, Entity.TransactionTypeValueId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Source", OriginalValues[nameof( Entity.SourceTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.SourceTypeValue, Entity.SourceTypeValueId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Scheduled Transaction Id", OriginalValues[nameof( Entity.ScheduledTransactionId )].ToStringSafe().AsIntegerOrNull(), Entity.ScheduledTransactionId );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Processed By", OriginalValues[nameof( Entity.ProcessedByPersonAliasId )].ToStringSafe().AsIntegerOrNull(), Entity.ProcessedByPersonAlias, Entity.ProcessedByPersonAliasId, rockContext );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Processed Date/Time", OriginalValues[nameof( Entity.ProcessedDateTime )].ToStringSafe().AsDateTime(), Entity.ProcessedDateTime );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Status", OriginalValues[nameof( Entity.Status )].ToStringSafe(), Entity.Status );
+                            History.EvaluateChange( Entity.HistoryChangeList, "Status Message", OriginalValues[nameof( Entity.StatusMessage )].ToStringSafe(), Entity.StatusMessage );
 
                             if ( !batchId.Equals( origBatchId ) )
                             {

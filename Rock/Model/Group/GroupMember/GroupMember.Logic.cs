@@ -387,9 +387,9 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        hasChanged = rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true
-                            || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
-                            || rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true;
+                        hasChanged = rockContext.Entry( this ).Property( nameof( this.GroupMemberStatus ) )?.IsModified == true
+                            || rockContext.Entry( this ).Property( nameof( this.GroupRoleId ) )?.IsModified == true
+                            || rockContext.Entry( this ).Property( nameof( this.IsArchived ) )?.IsModified == true;
                     }
                 }
 
@@ -426,12 +426,12 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null && entry.State != EntityState.Detached )
                     {
-                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"];
-                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"];
+                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues[nameof( this.GroupMemberStatus )];
+                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues[nameof (this.GroupMemberStatus )];
 
-                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
-                        || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
-                        || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() )
+                        hasChanged = rockContext.Entry( this ).Property( nameof( this.PersonId ) )?.IsModified == true
+                        || rockContext.Entry( this ).Property( nameof( this.GroupRoleId ) )?.IsModified == true
+                        || ( rockContext.Entry( this ).Property( nameof( this.IsArchived ) )?.IsModified == true && !rockContext.Entry( this ).Property( nameof( this.IsArchived ) ).ToStringSafe().AsBoolean() )
                         || ( originalStatus != GroupMemberStatus.Active && newStatus == GroupMemberStatus.Active );
                     }
                 }
