@@ -14,11 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -27,39 +26,21 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialScheduledTransaction : Model<FinancialScheduledTransaction>, IHasActiveFlag
     {
-        #region Entity Properties
+        #region Virtual Properties
 
         /// <summary>
-        /// The JSON for <see cref="PreviousGatewayScheduleIds"/>. If this is null,
-        /// there are no PreviousGatewayScheduleIds.
+        /// Gets the total amount.
         /// </summary>
-        /// <value></value>
-        [DataMember]
-        public string PreviousGatewayScheduleIdsJson
+        /// <value>
+        /// The total amount.
+        /// </value>
+        [LavaVisible]
+        public decimal TotalAmount 
         {
-            get
-            {
-                // If there are any PreviousGatewayScheduleIds, store them as JSON.
-                // Otherwise, store as NULL so it is easy to figure out which scheduled transaction have PreviousGatewayScheduleIds.
-                if ( PreviousGatewayScheduleIds != null && PreviousGatewayScheduleIds.Any() )
-                {
-                    // at least one PreviousGatewayScheduleId, so store it in the database
-                    return PreviousGatewayScheduleIds?.ToJson();
-                }
-                else
-                {
-                    // no PreviousGatewayScheduleIds, so leave PreviousGatewayScheduleIdsJson as null;
-                    return null;
-                }
-            }
-
-            set
-            {
-                PreviousGatewayScheduleIds = value.FromJsonOrNull<List<string>>() ?? new List<string>();
-            }
+            get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }
         }
 
-        #endregion Entity Properties
+        #endregion Virtual Properties
 
         #region Public Methods
 

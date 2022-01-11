@@ -297,6 +297,62 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
         public int? ForeignCurrencyCodeValueId { get; set; }
 
+        /// <summary>
+        /// Gets Sunday date.
+        /// </summary>
+        /// <value>
+        /// The Sunday date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        [Index( "IX_SundayDate" )]
+        public DateTime? SundayDate
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
+                // Also, on an Insert/Update this will be the value saved to the database
+                return TransactionDateTime?.SundayDate();
+            }
+
+            set
+            {
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this
+            }
+        }
+
+        /// <summary>
+        /// Gets the transaction date key.
+        /// </summary>
+        /// <value>
+        /// The transaction date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? TransactionDateKey
+        {
+            get => ( TransactionDateTime == null || TransactionDateTime.Value == default ) ?
+                        ( int? ) null :
+                        TransactionDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the settled date key.
+        /// </summary>
+        /// <value>
+        /// The settled date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? SettledDateKey
+        {
+            get => ( SettledDate == null || SettledDate.Value == default ) ?
+                        ( int? ) null :
+                        SettledDate.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
         #endregion Entity Properties
 
         #region Navigation Properties

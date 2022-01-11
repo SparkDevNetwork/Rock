@@ -252,6 +252,36 @@ namespace Rock.Model
         [DataMember]
         public DateTime? InactivateDateTime { get; set; }
 
+        /// <summary>
+        /// The JSON for <see cref="PreviousGatewayScheduleIds"/>. If this is null,
+        /// there are no PreviousGatewayScheduleIds.
+        /// </summary>
+        /// <value></value>
+        [DataMember]
+        public string PreviousGatewayScheduleIdsJson
+        {
+            get
+            {
+                // If there are any PreviousGatewayScheduleIds, store them as JSON.
+                // Otherwise, store as NULL so it is easy to figure out which scheduled transaction have PreviousGatewayScheduleIds.
+                if ( PreviousGatewayScheduleIds != null && PreviousGatewayScheduleIds.Any() )
+                {
+                    // at least one PreviousGatewayScheduleId, so store it in the database
+                    return PreviousGatewayScheduleIds?.ToJson();
+                }
+                else
+                {
+                    // no PreviousGatewayScheduleIds, so leave PreviousGatewayScheduleIdsJson as null;
+                    return null;
+                }
+            }
+
+            set
+            {
+                PreviousGatewayScheduleIds = value.FromJsonOrNull<List<string>>() ?? new List<string>();
+            }
+        }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -348,18 +378,6 @@ namespace Rock.Model
             set { _transactions = value; }
         }
         private ICollection<FinancialTransaction> _transactions;
-
-        /// <summary>
-        /// Gets the total amount.
-        /// </summary>
-        /// <value>
-        /// The total amount.
-        /// </value>
-        [LavaVisible]
-        public decimal TotalAmount 
-        {
-            get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }
-        }
 
         /// <summary>
         /// Gets or sets the history change list.
