@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,11 +23,9 @@ using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.BulkExport;
 using Rock.Data;
-using Rock.ViewModel;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -4801,27 +4800,5 @@ FROM (
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Person View Model Helper
-    /// </summary>
-    public partial class PersonViewModelHelper
-    {
-        /// <summary>
-        /// Applies the additional properties and security to view model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="viewModel">The view model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( Person model, PersonViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
-        {
-            model.PrimaryFamily = model.GetFamily();
-
-            viewModel.FullName = model.FullName;
-            viewModel.PhotoUrl = model.PhotoUrl;
-            viewModel.PrimaryFamilyGuid = model.PrimaryFamily?.Guid;
-        }
     }
 }

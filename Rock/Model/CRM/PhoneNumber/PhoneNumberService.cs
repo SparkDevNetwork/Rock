@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using Rock.Web.Cache;
 
 namespace Rock.Model

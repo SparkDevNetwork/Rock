@@ -871,11 +871,21 @@
     <Compile Include="Model\Core\EntityType\EntityType.Logic.cs" />
     <Compile Include="Model\Core\FieldType\FieldType.Logic.cs" />
     <Compile Include="Model\Core\History\History.Logic.cs" />
+    <Compile Include="Model\Core\PersonSignal\PersonSignal.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\Core\PluginMigration\PluginMigration.cs" />
     <Compile Include="Model\Core\PluginMigration\PluginMigration.Logic.cs" />
     <Compile Include="Model\Core\RelatedEntity\RelatedEntityPurposeKey.cs" />
+    <Compile Include="Model\Core\ScheduleCategoryExclusion\ScheduleCategoryExclusion.Logic.cs" />
+    <Compile Include="Model\Core\Schedule\CheckInTimes.cs" />
+    <Compile Include="Model\Core\Schedule\InetCalendarHelper.cs" />
+    <Compile Include="Model\Core\Schedule\Schedule.Logic.cs" />
+    <Compile Include="Model\Core\Schedule\Schedule.SaveHook.cs" />
+    <Compile Include="Model\Core\Schedule\ScheduleICalHelper.cs" />
+    <Compile Include="Model\Core\Schedule\ScheduleOccurrence.cs" />
+    <Compile Include="Model\Core\Schedule\ScheduleService.cs" />
+    <Compile Include="Model\Core\Schedule\ScheduleType.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
@@ -927,7 +937,19 @@
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerificationService.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKey.Logic.cs" />
     <Compile Include="Model\CRM\PersonViewed\PersonViewed.Logic.cs" />
+    <Compile Include="Model\CRM\Person\AgeClassification.cs" />
+    <Compile Include="Model\CRM\Person\EmailPreference.cs" />
+    <Compile Include="Model\CRM\Person\Gender.cs" />
+    <Compile Include="Model\CRM\Person\GetPersonPhotoImageTagArgs.cs" />
     <Compile Include="Model\CRM\Person\Person.cs" />
+    <Compile Include="Model\CRM\Person\Person.Logic.cs" />
+    <Compile Include="Model\CRM\Person\Person.SaveHook.cs" />
+    <Compile Include="Model\CRM\Person\Person.WebForms.cs" />
+    <Compile Include="Model\CRM\Person\PersonExtensionMethods.cs" />
+    <Compile Include="Model\CRM\Person\PersonService.cs" />
+    <Compile Include="Model\CRM\Person\PersonViewModelHelper.cs" />
+    <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.Logic.cs" />
+    <Compile Include="Model\CRM\PhoneNumber\PhoneNumberService.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.Logic.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.SaveHook.cs" />
     <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.cs" />
@@ -2642,7 +2664,6 @@
     <Compile Include="Model\CRM\PersonPreviousName\PersonPreviousName.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKey.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKeyService.cs" />
-    <Compile Include="Model\CRM\Person\PersonService.Partial.cs" />
     <Compile Include="Model\Core\PersonSignal\PersonSignal.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.cs" />
     <Compile Include="Model\Core\PersonToken\PersonTokenService.cs" />
@@ -2651,7 +2672,6 @@
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequestService.cs" />
     <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.cs" />
-    <Compile Include="Model\CRM\PhoneNumber\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
     <Compile Include="Model\Event\Registration\Registration.cs">
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
@@ -2675,7 +2695,6 @@
     <Compile Include="Model\CMS\RestController\RestController.cs" />
     <Compile Include="Model\CMS\RestController\RestControllerService.cs" />
     <Compile Include="Model\Core\Schedule\Schedule.cs" />
-    <Compile Include="Model\Core\Schedule\ScheduleService.Partial.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Core\SignalType\SignalType.cs" />
