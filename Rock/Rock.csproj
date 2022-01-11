@@ -1217,6 +1217,7 @@
     <Compile Include="Reporting\DataFilter\ConnectionRequest\GroupMemberDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\PersonDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\PlacementGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\DocumentTypeFilter.cs" />
     <Compile Include="Security\Options\PasswordRequirementOptions.cs" />
     <Compile Include="Security\Password.cs" />
     <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
