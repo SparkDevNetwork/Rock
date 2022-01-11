@@ -1037,7 +1037,7 @@
     <Compile Include="Model\Finance\FinancialPledge\FinancialPledge.Logic.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransactionDetail\FinancialScheduledTransactionDetail.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransaction.Logic.cs" />
-    <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransaction.SaveHoook.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransaction.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionStatus.cs" />
     <Compile Include="Model\Finance\FinancialStatementTemplate\FinancialStatementTemplate.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialTransactionAlertType\AlertType.cs" />
