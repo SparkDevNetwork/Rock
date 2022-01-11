@@ -234,7 +234,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                btnScheduledTransactionEdit.Visible = false;
                 btnScheduledTransactionInactivate.Visible = false;
             }
 
