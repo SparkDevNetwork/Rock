@@ -2634,8 +2634,8 @@
     <Compile Include="Model\Core\InteractionDeviceType\InteractionDeviceType.cs" />
     <Compile Include="Model\Core\InteractionSession\InteractionSession.cs" />
     <Compile Include="Model\CMS\Layout\Layout.cs" />
-    <Compile Include="Model\Location.cs" />
-    <Compile Include="Model\LocationService.Partial.cs" />
+    <Compile Include="Model\Core\Location\Location.cs" />
+    <Compile Include="Model\Core\Location\LocationService.Partial.cs" />
     <Compile Include="Model\Reporting\MergeTemplate\MergeTemplate.cs" />
     <Compile Include="Model\Meta\Metaphone\Metaphone.cs" />
     <Compile Include="Model\Reporting\Metric\Metric.cs" />
