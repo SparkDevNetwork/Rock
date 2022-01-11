@@ -160,19 +160,19 @@ namespace Rock.Lava.Fluid
             }
             else if ( scope == LavaContextRelativeScopeSpecifier.Parent )
             {
-                var parentScope = _scopeParentInternalField.GetValue( localScope ) as Scope ?? localScope;
+                var parentScope = localScope.Parent ?? localScope;
 
                 parentScope.SetValue( key, FluidValue.Create( value, _context.Options ) );
             }
             else if ( scope == LavaContextRelativeScopeSpecifier.Root )
             {
                 var parentScope = _contextScopeInternalField.GetValue( _context ) as Scope;
-                var outerScope = _scopeParentInternalField.GetValue( parentScope ) as Scope;
+                var outerScope = parentScope.Parent;
 
                 while ( outerScope != null )
                 {
                     parentScope = outerScope;
-                    outerScope = _scopeParentInternalField.GetValue( outerScope ) as Scope;
+                    outerScope = outerScope.Parent;
                 }
 
                 parentScope.SetValue( key, FluidValue.Create( value, _context.Options ) );
@@ -232,7 +232,6 @@ namespace Rock.Lava.Fluid
 
         #endregion
 
-        private static FieldInfo _scopeParentInternalField = typeof( Scope ).GetField( "_parent", BindingFlags.NonPublic | BindingFlags.Instance );
         private static PropertyInfo _contextScopeInternalField = typeof( TemplateContext ).GetProperty( "LocalScope", BindingFlags.NonPublic | BindingFlags.Instance );
 
         /// <summary>
@@ -253,7 +252,7 @@ namespace Rock.Lava.Fluid
                     dictionary.AddOrIgnore( key, properties[key] );
                 }
 
-                scope = _scopeParentInternalField.GetValue( scope ) as Scope;
+                scope = scope.Parent;
             }
 
             return dictionary;

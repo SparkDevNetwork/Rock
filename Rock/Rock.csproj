@@ -806,6 +806,7 @@
     <Compile Include="Model\CodeGenerated\BenevolenceTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceWorkflowService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\RemoteAuthenticationSessionService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientServiceExtensions.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientStatus.cs" />
@@ -886,6 +887,7 @@
     <Compile Include="Model\Core\Schedule\ScheduleOccurrence.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleService.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleType.cs" />
+    <Compile Include="Model\Core\RemoteAuthenticationSession\RemoteAuthenticationSession.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />

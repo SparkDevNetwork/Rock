@@ -49,6 +49,7 @@
     <Compile Include="CodeGenerated\BenevolenceTypeViewModel.cs" />
     <Compile Include="CodeGenerated\BenevolenceWorkflowViewModel.cs" />
     <Compile Include="CodeGenerated\ConnectionStatusAutomationViewModel.cs" />
+    <Compile Include="CodeGenerated\RemoteAuthenticationSessionViewModel.cs" />
     <Compile Include="Connection\ConnectionRequest\ConnectionRequestCountsViewModel.cs" />
     <Compile Include="NonEntities\ClientAttributeValueCategoryViewModel.cs" />
     <Compile Include="NonEntities\ClientEditableAttributeValueViewModel.cs" />
