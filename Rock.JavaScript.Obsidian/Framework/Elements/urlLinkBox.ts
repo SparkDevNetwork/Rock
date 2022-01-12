@@ -53,7 +53,10 @@ export default defineComponent({
             }
 
             if (props.requiresTrailingSlash) {
-                rules.push("endswith:/");
+                rules.push({
+                    name: "endswith",
+                    params: ["/"]
+                });
             }
 
             return rules;
