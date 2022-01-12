@@ -16,8 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 
+using Rock.Data;
+using Rock.Model.Core.Category.Options;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -27,6 +31,20 @@ namespace Rock.Model
     /// </summary>
     public partial class CategoryService
     {
+        #region Default Options
+
+        /// <summary>
+        /// The default child category query options.
+        /// </summary>
+        private static ChildCategoryQueryOptions DefaultChildCategoryQueryOptions = new ChildCategoryQueryOptions();
+
+        /// <summary>
+        /// The default categorized item query options.
+        /// </summary>
+        private static CategorizedItemQueryOptions DefaultCategorizedItemQueryOptions = new CategorizedItemQueryOptions();
+
+        #endregion
+
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Category">Categories</see> by parent <see cref="Rock.Model.Category"/> and <see cref="Rock.Model.EntityType"/>.
         /// </summary>
@@ -234,6 +252,159 @@ namespace Rock.Model
             return null;
         }
 
+        /// <summary>
+        /// Gets the child category query that contains the child categories that
+        /// match the specified options.
+        /// </summary>
+        /// <param name="options">The options for which child categories to be included.</param>
+        /// <returns>A <see cref="IQueryable{T}"/> of <see cref="Category"/> objects that matches the request.</returns>
+        public IQueryable<Category> GetChildCategoryQuery( ChildCategoryQueryOptions options = null )
+        {
+            options = options ?? DefaultChildCategoryQueryOptions;
+
+            // Initialize the basic query.
+            var qry = Queryable().AsNoTracking();
+
+            // Specify the "root" of our query from the ParentGuid if one was
+            // set.
+            if ( options.ParentGuid.HasValue )
+            {
+                qry = qry.Where( c => c.ParentCategory.Guid == options.ParentGuid.Value );
+            }
+            else
+            {
+                qry = qry.Where( c => c.ParentCategoryId == null );
+            }
+
+            // Limit the results to either IncludeCategoryGuids or ExcludeCategoryGuids.
+            // The two options are exclusive and IncludeCategoryGuids takes precedence.
+            if ( options.IncludeCategoryGuids?.Any() ?? false )
+            {
+                qry = qry.Where( c => options.IncludeCategoryGuids.Contains( c.Guid ) );
+            }
+            else if ( options.ExcludeCategoryGuids?.Any() ?? false )
+            {
+                qry = qry.Where( c => !options.ExcludeCategoryGuids.Contains( c.Guid ) );
+            }
+
+            // If we have been requested to limit the results to a specific entity
+            // type then apply those filters.
+            if ( options.EntityTypeGuid.HasValue )
+            {
+                qry = qry.Where( c => c.EntityType.Guid == options.EntityTypeGuid.Value );
+            }
+
+            // If they specified a qualifier column then make sure the results
+            // match those specifications.
+            if ( options.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
+            {
+                qry = qry.Where( c => string.Compare( c.EntityTypeQualifierColumn, options.EntityTypeQualifierColumn, true ) == 0 );
+
+                if ( options.EntityTypeQualifierValue.IsNotNullOrWhiteSpace() )
+                {
+                    qry = qry.Where( c => string.Compare( c.EntityTypeQualifierValue, options.EntityTypeQualifierValue, true ) == 0 );
+                }
+                else
+                {
+                    qry = qry.Where( c => c.EntityTypeQualifierValue == null || c.EntityTypeQualifierValue == string.Empty );
+                }
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the categorized item query that matches the options.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="options">The options that describe the current operation.</param>
+        /// <returns>A queryable of items in this category.</returns>
+        public IQueryable<ICategorized> GetCategorizedItemQuery( IService serviceInstance, CategorizedItemQueryOptions options )
+        {
+            options = options ?? DefaultCategorizedItemQueryOptions;
+
+            if ( serviceInstance != null )
+            {
+                var getMethod = serviceInstance.GetType()
+                    .GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+
+                if ( getMethod != null )
+                {
+                    var paramExpression = serviceInstance.ParameterExpression;
+                    BinaryExpression whereExpression;
+
+                    // Build the expression that checks the categoryGuid value for
+                    // a match.
+                    var categoryPropertyExpression = Expression.Property( paramExpression, "Category" );
+                    var categoryGuidPropertyExpression = Expression.Property( categoryPropertyExpression, "Guid" );
+
+                    if ( options.CategoryGuid.HasValue )
+                    {
+                        var categoryConstantExpression = Expression.Constant( options.CategoryGuid );
+                        whereExpression = Expression.Equal( categoryGuidPropertyExpression, categoryConstantExpression );
+                    }
+                    else
+                    {
+                        var categoryIdPropertyExpression = Expression.Property( paramExpression, "CategoryId" );
+                        var nullConstant = Expression.Constant( null, typeof( int? ) );
+
+                        whereExpression = Expression.Equal( categoryIdPropertyExpression, nullConstant );
+                    }
+
+                    // Exclude any inactive items. This value is only set if we
+                    // have already determined that the entity has an IsActive
+                    // property to query.
+                    if ( !options.IncludeInactiveItems && typeof( IHasActiveFlag ).IsAssignableFrom( paramExpression.Type ) )
+                    {
+                        var isActivePropertyExpression = Expression.Property( paramExpression, "IsActive" );
+                        var isActiveConstantExpression = Expression.Convert( Expression.Constant( true ), isActivePropertyExpression.Type );
+                        var isActiveExpression = Expression.Equal( isActivePropertyExpression, isActiveConstantExpression );
+                        whereExpression = Expression.And( whereExpression, isActiveExpression );
+                    }
+
+                    // Custom filtering based on property names and values provided
+                    // by the caller.
+                    if ( !string.IsNullOrEmpty( options.ItemFilterPropertyName ) )
+                    {
+                        var itemFilterPropertyNameExpression = Expression.Property( paramExpression, options.ItemFilterPropertyName );
+                        ConstantExpression itemFilterPropertyValueExpression;
+
+                        // Special checks for integer and Guid values supplied
+                        // by the caller. Otherwise treat it as a string.
+                        if ( itemFilterPropertyNameExpression.Type == typeof( int? ) || itemFilterPropertyNameExpression.Type == typeof( int ) )
+                        {
+                            itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsIntegerOrNull(), typeof( int? ) );
+                        }
+                        else if ( itemFilterPropertyNameExpression.Type == typeof( Guid? ) || itemFilterPropertyNameExpression.Type == typeof( Guid ) )
+                        {
+                            itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsGuidOrNull(), typeof( Guid? ) );
+                        }
+                        else
+                        {
+                            itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue );
+                        }
+
+                        // Build the comparison as a standard equality check.
+                        var binaryExpression = Expression.Equal( itemFilterPropertyNameExpression, itemFilterPropertyValueExpression );
+
+                        whereExpression = Expression.And( whereExpression, binaryExpression );
+                    }
+
+                    var result = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } ) as IQueryable<ICategorized>;
+
+                    // If they don't want to include entities without a name
+                    // then exclude them from the results.
+                    if ( !options.IncludeUnnamedEntityItems )
+                    {
+                        result = result.Where( a => a.Name != null && a.Name != string.Empty );
+                    }
+
+                    return result;
+                }
+            }
+
+            return null;
+        }
     }
 
     /// <summary>

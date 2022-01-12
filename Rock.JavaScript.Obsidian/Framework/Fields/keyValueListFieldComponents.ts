@@ -16,11 +16,12 @@
 //
 import { asBoolean } from "../Services/boolean";
 import { computed, defineComponent, ref, watch } from "vue";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
 import RockFormField from "../Elements/rockFormField";
 import TextBox from "../Elements/textBox";
 import { getFieldEditorProps } from "./utils";
 import { ClientValue, ConfigurationValueKey, ValueItem } from "./keyValueListField";
+import { ListItem } from "../ViewModels";
 
 function parseModelValue(modelValue: string | undefined): ClientValue[] {
     try {
@@ -55,8 +56,8 @@ export const EditComponent = defineComponent({
         });
 
         /** The options to choose from in the drop down list */
-        const options = computed((): DropDownListOption[] => {
-            const providedOptions: DropDownListOption[] = valueOptions.value.map(v => {
+        const options = computed((): ListItem[] => {
+            const providedOptions: ListItem[] = valueOptions.value.map(v => {
                 return {
                     text: v.text,
                     value: v.value

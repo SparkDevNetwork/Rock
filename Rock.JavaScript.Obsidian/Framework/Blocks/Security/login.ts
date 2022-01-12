@@ -15,7 +15,7 @@
 // </copyright>
 //
 import TextBox from "../../Elements/textBox";
-import CheckBox from "../../Elements/checkBox";
+import InlineCheckBox from "../../Elements/inlineCheckBox";
 import RockButton from "../../Elements/rockButton";
 import { defineComponent, inject } from "vue";
 import { InvokeBlockActionFunc } from "../../Util/block";
@@ -36,7 +36,7 @@ export default defineComponent({
     name: "Security.Login",
     components: {
         TextBox,
-        CheckBox,
+        InlineCheckBox,
         RockButton,
         Alert
     },
@@ -155,7 +155,7 @@ export default defineComponent({
         <form @submit.prevent="submitLogin">
             <TextBox label="Username" v-model="username" />
             <TextBox label="Password" v-model="password" type="password" />
-            <CheckBox label="Keep me logged in" v-model="rememberMe" />
+            <InlineCheckBox label="Keep me logged in" v-model="rememberMe" />
             <RockButton btnType="primary" :is-loading="isLoading" loading-text="Logging In..." type="submit">
                 Log In
             </RockButton>

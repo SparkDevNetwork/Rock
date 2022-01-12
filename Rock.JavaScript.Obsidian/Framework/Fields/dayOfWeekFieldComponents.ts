@@ -17,7 +17,8 @@
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { DayOfWeek } from "./dayOfWeekField";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
+import { ListItem } from "../ViewModels";
 
 export const EditComponent = defineComponent({
     name: "DayOfWeekField.Edit",
@@ -38,7 +39,7 @@ export const EditComponent = defineComponent({
          * Builds a list of the drop down options that are used to display
          * in the drop down list.
          */
-        options(): Array<DropDownListOption> {
+        options(): Array<ListItem> {
             return [
                 { text: "Sunday", value: DayOfWeek.Sunday.toString() },
                 { text: "Monday", value: DayOfWeek.Monday.toString() },

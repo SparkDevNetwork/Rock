@@ -57,7 +57,7 @@ export default defineComponent({
     :modelValue="total"
     formGroupClasses="margin-b-md number-up-down-group"
     name="numberupdowngroup">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div v-for="option in options" :key="option.key" class="margin-l-sm margin-b-sm">
                 <div v-if="option.label" class="margin-b-sm">

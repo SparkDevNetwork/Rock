@@ -54,7 +54,7 @@ export default defineComponent({
     :modelValue="modelValue"
     formGroupClasses="toggle"
     name="toggle">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="toggle-container">
                 <div class="btn-group btn-toggle">

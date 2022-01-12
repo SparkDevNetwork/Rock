@@ -15,8 +15,27 @@
 // </copyright>
 //
 
+import { Component, defineAsyncComponent } from "vue";
 import { FieldTypeBase } from "./fieldType";
 
-export class TextFieldType extends FieldTypeBase {
+export const enum ConfigurationValueKey {
+    /** Contains "True" if the text field is designed for password entry. */
+    IsPassword = "ispassword",
+
+    /** The maximum number of characters allowed in the text entry field. */
+    MaxCharacters = "maxcharacters",
+
+    /** Contains "True" if the text field should show the character countdown. */
+    ShowCountdown = "showcountdown"
 }
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./textFieldComponents")).ConfigurationComponent;
+});
+
+export class TextFieldType extends FieldTypeBase {
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
+    }
+}

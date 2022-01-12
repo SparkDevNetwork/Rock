@@ -16,11 +16,209 @@
 //
 import DateKey from "../Services/dateKey";
 import { isEmail } from "../Services/email";
+import { isUrl } from "../Services/url";
 import { isNullOrWhiteSpace } from "../Services/string";
-import { defineRule } from "vee-validate";
 import { toNumberOrNull } from "../Services/number";
+import { PropType } from "vue";
 
-export type ValidationRuleFunction = (value: unknown) => boolean | string | Promise<boolean | string>;
+
+/** The custom validation function signature. */
+export type ValidationRuleFunction = (value: unknown, params?: unknown[]) => ValidationResult;
+
+/** The return type allowed in a validation function. */
+export type ValidationResult = string | boolean;
+
+/**
+ * A reference to a defined validation rule with parameters. This is primarily
+ * an internal use type but is perfectly valid for public use as well.
+ */
+export type ValidationRuleReference = {
+    /** The name of the rule. */
+    name: string;
+
+    /** Any parameters that were found. */
+    params: unknown[];
+};
+
+/** The rule types that are valid to be processed during validation checks. */
+export type ValidationRule = string | ValidationRuleReference | ValidationRuleFunction;
+
+/** The currently defined rules by name. */
+const definedRules: Record<string, ValidationRuleFunction | undefined> = {};
+
+/** Defines the property type for a component's rules. */
+export const rulesPropType = {
+    type: [Array, Object, String] as PropType<ValidationRule | ValidationRule[]>,
+    default: ""
+};
+
+/**
+ * Parse a string into a valid rule reference. Basically this does the heavy
+ * lifting to take a string and spit out the rule name and parameters. This
+ * assumes the rule has already been normalized and does not contain multiple
+ * rules separated by a | character.
+ * 
+ * @param rule The rule to be parsed.
+ *
+ * @returns The rule reference that contains the name and parameters.
+ */
+export function parseRule(rule: string): ValidationRuleReference {
+    let name = "";
+    let params: unknown[] = [];
+
+    const colonIndex = rule.indexOf(":");
+    if (colonIndex === -1) {
+        name = rule;
+    }
+    else {
+        name = rule.substring(0, colonIndex);
+        params = rule.substring(colonIndex + 1).split(",");
+    }
+
+    return {
+        name,
+        params
+    };
+}
+
+/**
+ * Normalize a single rule or array of rules into a flat array of rules. This
+ * handles strings that contain multiple rules and splits them out into individual
+ * rule strings.
+ * 
+ * @param rules The rules to be normalized.
+ *
+ * @returns A flattened array that contains all the individual rules.
+ */
+export function normalizeRules(rules: ValidationRule | ValidationRule[]): ValidationRule[] {
+    if (typeof rules === "string") {
+        if (rules.indexOf("|") !== -1) {
+            return rules.split("|").filter(r => r !== "");
+        }
+        else if (rules !== "") {
+            return [rules];
+        }
+    }
+    else if (Array.isArray(rules)) {
+        // Normalize the rule, since it may contain a string like "required|notzero"
+        // which needs to be further normalized.
+        const normalizedRules: ValidationRule[] = [];
+
+        for (const r of rules) {
+            normalizedRules.push(...normalizeRules(r));
+        }
+
+        return normalizedRules;
+    }
+    else if (typeof rules === "function") {
+        return [rules];
+    }
+    else if (typeof rules === "object") {
+        return [rules];
+    }
+
+    return [];
+}
+
+/**
+ * Normalizes rules to callable functions. This is used to translate string
+ * and reference rules to their final function that will be called.
+ * 
+ * @param rules The ruels to be normalized to functions.
+ *
+ * @returns An array of rule functions that will perform validation checks.
+ */
+function normalizeRulesToFunctions(rules: ValidationRule[]): ValidationRuleFunction[] {
+    const ruleFunctions: ValidationRuleFunction[] = [];
+
+    for (const rule of rules) {
+        if (typeof rule === "string") {
+            const ruleRef = parseRule(rule);
+            const fn = definedRules[ruleRef.name];
+
+            if (fn) {
+                ruleFunctions.push((value) => fn(value, ruleRef.params));
+            }
+            else {
+                console.warn(`Attempt to validate with unknown rule ${rule}.`);
+            }
+        }
+        else if (typeof rule === "function") {
+            ruleFunctions.push(rule);
+        }
+        else if (typeof rule === "object") {
+            const fn = definedRules[rule.name];
+
+            if (fn) {
+                ruleFunctions.push((value) => fn(value, rule.params));
+            }
+            else {
+                console.warn(`Attempt to validate with unknown rule ${rule.name}.`);
+            }
+        }
+    }
+
+    return ruleFunctions;
+}
+
+/**
+ * Normalize a validation result into a useful text message that can be
+ * displayed to the user.
+ * 
+ * @param result The validation error message or a blank string if validation passed.
+ */
+function normalizeRuleResult(result: ValidationResult): string {
+    if (typeof result === "string") {
+        return result;
+    }
+    else if (result === true) {
+        return "";
+    }
+    else {
+        return "failed validation";
+    }
+}
+
+/**
+ * Runs validation on the value for all the rules provided.
+ * 
+ * @param value The value to be checked.
+ * @param rule The array of rules that will be used during validation.
+ *
+ * @returns An array of error messages, or empty if value passed.
+ */
+export function validateValue(value: unknown, rule: ValidationRule | ValidationRule[]): string[] {
+    const fns = normalizeRulesToFunctions(normalizeRules(rule));
+
+    const results: string[] = [];
+
+    for (const fn of fns) {
+        const result = normalizeRuleResult(fn(value));
+
+        if (result !== "") {
+            results.push(result);
+        }
+    }
+
+    return results;
+}
+
+
+
+/**
+ * Define a new rule by name and provide the validation function.
+ * 
+ * @param ruleName The name of the rule to be registered.
+ * @param validator The validation function.
+ */
+export function defineRule(ruleName: string, validator: ValidationRuleFunction): void {
+    if (definedRules[ruleName] !== undefined) {
+        console.warn(`Attempt to redefine validation rule ${ruleName}.`);
+    }
+    else {
+        definedRules[ruleName] = validator;
+    }
+}
 
 /**
  * Convert the string to a number
@@ -57,16 +255,10 @@ function isNumeric(value: unknown): boolean {
     return false;
 }
 
-export function ruleStringToArray (rulesString: string): string[] {
-    return rulesString.split("|");
-}
-
-export function ruleArrayToString (rulesArray: string[]): string {
-    return rulesArray.join("|");
-}
-
-defineRule("required", ((value: unknown, [ optionsJson ]: unknown[]) => {
-    const options = typeof optionsJson === "string" ? JSON.parse(optionsJson) : {};
+defineRule("required", (value: unknown, params?: unknown[]): ValidationResult => {
+    // This needs to be changed. JSON is not safe in rules because of the
+    // comma and pipe characters.
+    const options = params && params.length >= 1 && typeof params[1] === "string" ? JSON.parse(params[1]) : {};
 
     if (typeof value === "string") {
         const allowEmptyString = !!(options.allowEmptyString);
@@ -93,9 +285,9 @@ defineRule("required", ((value: unknown, [ optionsJson ]: unknown[]) => {
     }
 
     return true;
-}) as ValidationRuleFunction);
+});
 
-defineRule("email", (value => {
+defineRule("email", value => {
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
@@ -107,9 +299,11 @@ defineRule("email", (value => {
     }
 
     return true;
-}) as ValidationRuleFunction);
+});
 
-defineRule("notequal", ((value: unknown, [ compare ]: unknown[]) => {
+defineRule("notequal", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[1] : undefined;
+
     if (isNumeric(value) && isNumeric(compare)) {
         if (convertToNumber(value) !== convertToNumber(compare)) {
             return true;
@@ -120,9 +314,11 @@ defineRule("notequal", ((value: unknown, [ compare ]: unknown[]) => {
     }
 
     return `must not equal ${compare}`;
-}) as ValidationRuleFunction);
+});
 
-defineRule("equal", ((value: unknown, [ compare ]: unknown[]) => {
+defineRule("equal", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[1] : undefined;
+
     if (isNumeric(value) && isNumeric(compare)) {
         if (convertToNumber(value) === convertToNumber(compare)) {
             return true;
@@ -133,9 +329,11 @@ defineRule("equal", ((value: unknown, [ compare ]: unknown[]) => {
     }
 
     return `must equal ${compare}`;
-}) as ValidationRuleFunction);
+});
 
-defineRule("gt", ((value: unknown, [ compare ]: unknown[]) => {
+defineRule("gt", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[1] : undefined;
+
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
@@ -148,9 +346,11 @@ defineRule("gt", ((value: unknown, [ compare ]: unknown[]) => {
     }
 
     return `must be greater than ${compare}`;
-}) as ValidationRuleFunction);
+});
 
-defineRule("gte", ((value: unknown, [ compare ]: unknown[]) => {
+defineRule("gte", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[1] : undefined;
+
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
@@ -163,9 +363,11 @@ defineRule("gte", ((value: unknown, [ compare ]: unknown[]) => {
     }
 
     return `must not be less than ${compare}`;
-}) as ValidationRuleFunction);
+});
 
-defineRule("lt", ((value: unknown, [ compare ]: unknown[]) => {
+defineRule("lt", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[1] : undefined;
+
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
@@ -178,9 +380,11 @@ defineRule("lt", ((value: unknown, [ compare ]: unknown[]) => {
     }
 
     return `must be less than ${compare}`;
-}) as ValidationRuleFunction);
+});
 
-defineRule("lte", ((value: unknown, [ compare ]: unknown[]) => {
+defineRule("lte", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[1] : undefined;
+
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
@@ -193,9 +397,9 @@ defineRule("lte", ((value: unknown, [ compare ]: unknown[]) => {
     }
 
     return `must not be more than ${compare}`;
-}) as ValidationRuleFunction);
+});
 
-defineRule("datekey", (value => {
+defineRule("datekey", value => {
     const asString = value as string;
 
     if (!DateKey.getYear(asString)) {
@@ -211,7 +415,7 @@ defineRule("datekey", (value => {
     }
 
     return true;
-}) as ValidationRuleFunction);
+});
 
 defineRule("integer", (value: unknown) => {
     // Field is empty, should pass
@@ -245,13 +449,64 @@ defineRule("ssn", (value: unknown) => {
         return true;
     }
 
+    // Test for a format like 111-22-3333.
     if (/^[0-9]{3}-[0-9]{2}-[0-9]{4}$/.test(String(value))) {
         return true;
     }
 
+    // Test for a format like 111223333.
     if (/^[0-9]{9}$/.test(String(value))) {
         return true;
     }
 
     return "must be a valid social security number";
+});
+
+defineRule("url", (value: unknown) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    if (isUrl(String(value))) {
+        return true;
+    }
+
+    return "must be a valid URL";
+});
+
+defineRule("endswith", (value: unknown, params?: unknown[]) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    // No parameters, should pass
+    if (!params || params.length === 0) {
+        return true;
+    }
+
+    if (String(value).endsWith(String(params[0]))) {
+        return true;
+    }
+
+    return `must end with "${params[0]}"`;
+});
+
+defineRule("startswith", (value: unknown, params?: unknown[]) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    // No parameters, should pass
+    if (!params || params.length === 0) {
+        return true;
+    }
+
+    if (String(value).startsWith(String(params[0]))) {
+        return true;
+    }
+
+    return `must start with "${params[0]}"`;
 });
