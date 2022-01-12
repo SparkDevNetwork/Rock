@@ -912,11 +912,13 @@
 }
 
 // rockslide Vue transition
-.rockslide-enter-active, .rockslide-leave-active {
+.rockslide-enter-active,
+.rockslide-leave-active {
   transition: all .6s ease;
 }
 
-.rockslide-enter, .rockslide-leave-to {
-  transform: translateY(-100%);
+.rockslide-enter,
+.rockslide-leave-to {
   opacity: 0;
+  transform: translateY(-100%);
 }
