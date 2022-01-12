@@ -15,7 +15,7 @@
 // </copyright>
 
 import { defineComponent, PropType } from "vue";
-import { ruleArrayToString, ruleStringToArray } from "../Rules/index";
+import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
 import BasicTimePicker, { BasicTimePickerValue as TimePickerValue } from "./basicTimePicker";
 import RockFormField from "./rockFormField";
 
@@ -28,10 +28,7 @@ export default defineComponent({
         BasicTimePicker
     },
     props: {
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        },
+        rules: rulesPropType,
         modelValue: {
             type: Object as PropType<TimePickerValue>,
             default: {}
@@ -48,10 +45,10 @@ export default defineComponent({
     },
 
     computed: {
-        computedRules(): string {
-            const rules = ruleStringToArray(this.rules);
+        computedRules(): ValidationRule[] {
+            const rules = normalizeRules(this.rules);
 
-            return ruleArrayToString(rules);
+            return rules;
         }
     },
 
@@ -74,7 +71,7 @@ export default defineComponent({
     formGroupClasses="timepicker-input"
     name="time-picker"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="timepicker-input">
                 <BasicTimePicker v-model="internalValue" />

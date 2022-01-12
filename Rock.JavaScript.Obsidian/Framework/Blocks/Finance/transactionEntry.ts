@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import DropDownList, { DropDownListOption } from "../../Elements/dropDownList";
+import DropDownList from "../../Elements/dropDownList";
 import CurrencyBox from "../../Elements/currencyBox";
 import { defineComponent, inject } from "vue";
 import DatePicker from "../../Elements/datePicker";
@@ -25,7 +25,7 @@ import Alert from "../../Elements/alert";
 import { asFormattedString } from "../../Services/number";
 import { ConfigurationValues, InvokeBlockActionFunc, useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import Toggle from "../../Elements/toggle";
-import { FinancialAccount, Person } from "../../ViewModels";
+import { FinancialAccount, ListItem, Person } from "../../ViewModels";
 import { useStore } from "../../Store/index";
 import TextBox from "../../Elements/textBox";
 import { asCommaAnd } from "../../Services/string";
@@ -87,8 +87,8 @@ export default defineComponent({
 
     data() {
         const configurationValues = useConfigurationValues<ConfigurationValues>();
-        const campuses = configurationValues["campuses"] as DropDownListOption[] || [];
-        const frequencies = configurationValues["frequencies"] as DropDownListOption[] || [];
+        const campuses = configurationValues["campuses"] as ListItem[] || [];
+        const frequencies = configurationValues["frequencies"] as ListItem[] || [];
 
         return {
             loading: false,
@@ -163,12 +163,12 @@ export default defineComponent({
             return this.configurationValues["financialAccounts"] as FinancialAccount[] || [];
         },
 
-        campuses(): DropDownListOption[] {
-            return this.configurationValues["campuses"] as DropDownListOption[] || [];
+        campuses(): ListItem[] {
+            return this.configurationValues["campuses"] as ListItem[] || [];
         },
 
-        frequencies(): DropDownListOption[] {
-            return this.configurationValues["frequencies"] as DropDownListOption[] || [];
+        frequencies(): ListItem[] {
+            return this.configurationValues["frequencies"] as ListItem[] || [];
         },
 
         campusName(): string | null {

@@ -14,85 +14,132 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
-import { newGuid } from "../Util/guid";
+import { computed, defineComponent, nextTick, onMounted, PropType, ref, watch } from "vue";
+import { ListItem } from "../ViewModels";
 import RockFormField from "./rockFormField";
 
-export type DropDownListOption = {
-    value: string,
-    text: string
+type OptionGroup = {
+    text: string;
+
+    options: ListItem[];
 };
 
 export default defineComponent({
     name: "DropDownList",
+
     components: {
         RockFormField
     },
+
     props: {
         modelValue: {
             type: String as PropType<string>,
             required: true
         },
+
         options: {
-            type: Array as PropType<DropDownListOption[]>,
+            type: Array as PropType<ListItem[]>,
             required: true
         },
+
         showBlankItem: {
             type: Boolean as PropType<boolean>,
             default: true
         },
+
         blankValue: {
             type: String as PropType<string>,
             default: ""
         },
+
         formControlClasses: {
             type: String as PropType<string>,
             default: ""
         },
+
         enhanceForLongLists: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        grouped: {
             type: Boolean as PropType<boolean>,
             default: false
         }
     },
-    data: function () {
-        return {
-            uniqueId: `rock-dropdownlist-${newGuid()}`,
-            internalValue: this.blankValue,
-            isMounted: false
-        };
-    },
-    computed: {
-        /** The compiled list of CSS classes (props and calculated from other inputs) for the select element */
-        compiledFormControlClasses(): string {
-            if (this.enhanceForLongLists) {
-                return this.formControlClasses + " chosen-select";
+
+    setup(props, { emit }) {
+        let isMounted = false;
+
+        const internalValue = ref(props.modelValue);
+
+        /** The select element that will be used by the chosen plugin. */
+        const theSelect = ref<HTMLElement | null>(null);
+
+        /** The compiled list of CSS classes for the select element. */
+        const compiledFormControlClasses = computed((): string => {
+            if (props.enhanceForLongLists) {
+                return props.formControlClasses + " chosen-select";
             }
 
-            return this.formControlClasses;
-        }
-    },
-    methods: {
+            return props.formControlClasses;
+        });
+
+        const optionsWithoutGroup = computed((): ListItem[] => {
+            return props.options
+                .filter(o => !o.category);
+        });
+
+        const optionGroups = computed((): OptionGroup[] => {
+            const groups: OptionGroup[] = [];
+
+            for (const o of props.options) {
+                if (!o.category) {
+                    continue;
+                }
+
+                const matchedGroups = groups.filter(g => g.text == o.category);
+
+                if (matchedGroups.length >= 1) {
+                    matchedGroups[0].options.push(o);
+                }
+                else {
+                    groups.push({
+                        text: o.category,
+                        options: [o]
+                    });
+                }
+            }
+
+            return groups;
+        });
+
         /** Uses jQuery to get the chosen element */
-        getChosenJqueryEl() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const getChosenJqueryEl = (): any => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const jquery = <any>window[<any>"$"];
-            let $chosenDropDown = jquery(this.$refs["theSelect"]);
+            const $chosenDropDown = jquery(theSelect.value);
 
             if (!$chosenDropDown || !$chosenDropDown.length) {
-                $chosenDropDown = jquery(`#${this.uniqueId}`);
+                return undefined;
             }
 
             return $chosenDropDown;
-        },
+        };
 
-        createOrDestroyChosen() {
-            if (!this.isMounted) {
+        /**
+         * Create the destroy the chosen picker in accordance with our current
+         * settings in the properties.
+         */
+        const createOrDestroyChosen = (): void => {
+            if (!isMounted) {
                 return;
             }
 
-            const $chosenDropDown = this.getChosenJqueryEl();
+            const $chosenDropDown = getChosenJqueryEl();
 
-            if (this.enhanceForLongLists) {
+            if (props.enhanceForLongLists) {
                 $chosenDropDown
                     .chosen({
                         width: "100%",
@@ -101,66 +148,84 @@ export default defineComponent({
                         placeholder_text_single: " "
                     })
                     .change((ev: Event) => {
-                        this.internalValue = (ev.target as HTMLSelectElement).value;
+                        internalValue.value = (ev.target as HTMLSelectElement).value;
                     });
             }
             else {
                 $chosenDropDown.chosen("destroy");
             }
-        },
+        };
 
-        syncValue() {
-            this.internalValue = this.modelValue;
-            const selectedOption = this.options.find(o => o.value === this.internalValue) || null;
+        /**
+         * Synchronizes our internal value and then makes sure the chosen
+         * picker, if we have one, is synced up as well.
+         */
+        const syncInternalValue = (): void => {
+            internalValue.value = props.modelValue;
+            const selectedOption = props.options.find(o => o.value === internalValue.value) || null;
 
             if (!selectedOption) {
-                this.internalValue = this.showBlankItem ?
-                    this.blankValue :
-                    (this.options[0]?.value || this.blankValue);
+                internalValue.value = props.showBlankItem ?
+                    props.blankValue :
+                    (props.options[0]?.value || props.blankValue);
             }
 
-            if (this.enhanceForLongLists) {
-                this.$nextTick(() => {
-                    const $chosenDropDown = this.getChosenJqueryEl();
+            if (props.enhanceForLongLists) {
+                nextTick(() => {
+                    const $chosenDropDown = getChosenJqueryEl();
                     $chosenDropDown.trigger("chosen:updated");
                 });
             }
-        }
-    },
-    watch: {
-        modelValue: {
-            immediate: true,
-            handler() {
-                this.syncValue();
+        };
+
+        watch(() => props.modelValue, () => syncInternalValue());
+        watch(() => props.options, () => syncInternalValue());
+        watch(() => props.enhanceForLongLists, () => createOrDestroyChosen());
+        watch(internalValue, () => {
+            if (props.modelValue !== internalValue.value) {
+                emit("update:modelValue", internalValue.value);
             }
-        },
-        options: {
-            immediate: true,
-            handler() {
-                this.syncValue();
+        });
+
+        onMounted(() => {
+            isMounted = true;
+            createOrDestroyChosen();
+
+            // Fixup issues that may have cropped up during chosen initialization.
+            if (props.modelValue !== internalValue.value) {
+                emit("update:modelValue", internalValue.value);
             }
-        },
-        internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        enhanceForLongLists() {
-            this.createOrDestroyChosen();
-        }
+        });
+
+        syncInternalValue();
+
+        return {
+            compiledFormControlClasses,
+            internalValue,
+            optionGroups,
+            optionsWithoutGroup,
+            theSelect
+        };
     },
-    mounted() {
-        this.isMounted = true;
-        this.createOrDestroyChosen();
-    },
+
     template: `
 <RockFormField
     :modelValue="internalValue"
     formGroupClasses="rock-drop-down-list"
     name="dropdownlist">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" :disabled="disabled" v-bind="field" v-model="internalValue" ref="theSelect">
+            <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" v-bind="field" v-model="internalValue" ref="theSelect">
                 <option v-if="showBlankItem" :value="blankValue"></option>
-                <option v-for="o in options" :key="o.value" :value="o.value">{{o.text}}</option>
+
+                <template v-if="grouped">
+                    <option v-for="o in optionsWithoutGroup" :key="o.value" :value="o.value">{{o.text}}</option>
+                    <optgroup v-for="g in optionGroups" :key="g.text" :label="g.text">
+                        <option v-for="o in g.options" :key="o.value" :value="o.value">{{o.text}}</option>
+                    </optgroup>
+                </template>
+
+                <option v-else v-for="o in options" :key="o.value" :value="o.value">{{o.text}}</option>
             </select>
         </div>
     </template>

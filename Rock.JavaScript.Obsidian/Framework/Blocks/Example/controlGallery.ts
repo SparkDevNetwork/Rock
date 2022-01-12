@@ -35,8 +35,9 @@ import ProgressTracker, { ProgressTrackerItem } from "../../Elements/progressTra
 import RockForm from "../../Controls/rockForm";
 import RockButton from "../../Elements/rockButton";
 import RadioButtonList from "../../Elements/radioButtonList";
-import DropDownList, { DropDownListOption } from "../../Elements/dropDownList";
+import DropDownList from "../../Elements/dropDownList";
 import Dialog from "../../Controls/dialog";
+import InlineCheckBox from "../../Elements/inlineCheckBox";
 import CheckBox from "../../Elements/checkBox";
 import PhoneNumberBox from "../../Elements/phoneNumberBox";
 import HelpBlock from "../../Elements/helpBlock";
@@ -98,7 +99,7 @@ const phoneNumberBoxGallery = defineComponent({
     },
     data () {
         return {
-            phoneNumber: ""
+            phoneNumber: "8005551234"
         };
     },
     template: `
@@ -149,7 +150,7 @@ const dropDownListGallery = defineComponent({
                 { text: "B Text", value: "b" },
                 { text: "C Text", value: "c" },
                 { text: "D Text", value: "d" }
-            ] as DropDownListOption[]
+            ] as ListItem[]
         };
     },
     template: `
@@ -191,7 +192,7 @@ const radioButtonListGallery = defineComponent({
                 { text: "E Text", value: "e" },
                 { text: "F Text", value: "f" },
                 { text: "G Text", value: "g" }
-            ] as DropDownListOption[]
+            ] as ListItem[]
         };
     },
     template: `
@@ -231,9 +232,36 @@ const checkBoxGallery = defineComponent({
         CheckBox
     </template>
     <template #gallery>
-        <Toggle label="Inline" v-model="inline" />
-        <CheckBox label="Check 1" v-model="isChecked" :inline="inline" />
-        <CheckBox label="Check 2" v-model="isChecked" :inline="inline" />
+        <CheckBox label="Check 1" v-model="isChecked" />
+        <CheckBox label="Check 2" v-model="isChecked" />
+    </template>
+    <template #result>
+        {{isChecked}}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates an inline checkbox */
+const inlineCheckBoxGallery = defineComponent({
+    name: "InlineCheckBoxGallery",
+    components: {
+        GalleryAndResult,
+        InlineCheckBox
+    },
+    data() {
+        return {
+            isChecked: false,
+            inline: true
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        InlineCheckBox
+    </template>
+    <template #gallery>
+        <InlineCheckBox label="Check 1" v-model="isChecked" />
+        <InlineCheckBox label="Check 2" v-model="isChecked" />
     </template>
     <template #result>
         {{isChecked}}
@@ -1056,6 +1084,7 @@ const galleryComponents: Record<string, Component> = {
     radioButtonListGallery,
     dialogGallery,
     checkBoxGallery,
+    inlineCheckBoxGallery,
     checkBoxListGallery,
     listBoxGallery,
     phoneNumberBoxGallery,

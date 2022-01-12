@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { ruleStringToArray, ruleArrayToString } from "../Rules/index";
-import { useVModelPassthrough } from '../Util/component';
+import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
+import { useVModelPassthrough } from "../Util/component";
 import { defineComponent, PropType, computed } from "vue";
 import RockFormField from "./rockFormField";
 
@@ -31,10 +31,7 @@ export default defineComponent({
             type: String as PropType<string>,
             required: true
         },
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        },
+        rules: rulesPropType,
         requiresTrailingSlash: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -46,38 +43,41 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
-        let value = useVModelPassthrough(props, "modelValue", emit);
+        const value = useVModelPassthrough(props, "modelValue", emit);
 
-        let computedRules = computed(() => {
-            const rules = ruleStringToArray(props.rules);
+        const computedRules = computed((): ValidationRule[] => {
+            const rules = normalizeRules(props.rules);
 
             if (rules.indexOf("url") === -1) {
                 rules.push("url");
             }
 
             if (props.requiresTrailingSlash) {
-                rules.push("endswith:/")
+                rules.push("endswith:/");
             }
 
-            return ruleArrayToString(rules);
-        })
+            return rules;
+        });
 
-        return { value, computedRules}
+        return {
+            computedRules,
+            value
+        };
     },
 
     template: `
 <RockFormField
-    v-model="value"
+    :modelValue="value"
     formGroupClasses="url-link-box"
     name="urlbox"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, tabIndex, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="input-group">
                 <span class="input-group-addon">
                     <i class="fa fa-link"></i>
                 </span>
-                <input :id="uniqueId" class="form-control" v-bind="field" :disabled="disabled" :tabindex="tabIndex" type="url" />
+                <input v-model="value" :id="uniqueId" class="form-control" v-bind="field" type="url" />
             </div>
         </div>
     </template>

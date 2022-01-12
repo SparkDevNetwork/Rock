@@ -20,7 +20,7 @@ import Loading from "../../../Controls/loading";
 import { InvokeBlockActionFunc } from "../../../Util/block";
 import CurrencyBox from "../../../Elements/currencyBox";
 import HelpBlock from "../../../Elements/helpBlock";
-import { ruleArrayToString } from "../../../Rules/index";
+import { ValidationRule } from "../../../Rules/index";
 import { asFormattedString } from "../../../Services/number";
 import { RegistrationEntryState } from "../registrationEntry";
 import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
@@ -198,8 +198,8 @@ export default defineComponent({
         },
 
         /** The vee-validate rules for the amount to pay today */
-        amountToPayTodayRules(): string {
-            const rules: string[] = ["required"];
+        amountToPayTodayRules(): ValidationRule[] {
+            const rules: ValidationRule[] = ["required"];
             let min = this.amountDueToday;
             const max = this.maxAmountCanBePaid;
 
@@ -209,7 +209,8 @@ export default defineComponent({
 
             rules.push(`gte:${min}`);
             rules.push(`lte:${max}`);
-            return ruleArrayToString(rules);
+
+            return rules;
         },
     },
     methods: {

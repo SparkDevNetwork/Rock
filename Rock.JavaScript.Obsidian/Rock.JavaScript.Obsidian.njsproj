@@ -33,11 +33,12 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Core\.eslintrc.js" />
     <Content Include="Framework\.eslintrc.js" />
+    <Content Include="Framework\Controls\modal.ts" />
+    <Content Include="Framework\Util\treeItemProviders.ts" />
     <Content Include="Tests\tsconfig.json" />
     <Content Include="Framework\tsconfig.json" />
     <Content Include="Framework\Util\aspDateFormat.ts" />
     <Content Include="tsconfig.json" />
-    <Content Include="webpack-eol-plugin.js" />
     <Content Include="webpack.config.js" />
     <None Include="Core\core.ts" />
     <Content Include="package.json" />
@@ -54,11 +55,13 @@
     <Folder Include="Framework\Blocks\Example\" />
     <Folder Include="Framework\Blocks\Finance\" />
     <Folder Include="Framework\Blocks\Groups\" />
+    <Folder Include="Framework\Blocks\Core\" />
     <Folder Include="Framework\Blocks\Security\" />
     <Folder Include="Framework\Blocks\Utility\" />
     <Folder Include="Framework\Controls\" />
     <Folder Include="Framework\Elements\" />
     <Folder Include="Framework\Fields\" />
+    <Folder Include="Framework\Directives\" />
     <Folder Include="Framework\Rules\" />
     <Folder Include="Framework\Services\" />
     <Folder Include="Framework\Store\" />
@@ -66,6 +69,7 @@
     <Folder Include="Framework\SystemGuids\CodeGenerated\" />
     <Folder Include="Framework\Templates\" />
     <Folder Include="Build\" />
+    <Folder Include="Framework\ViewModels\Controls\" />
     <Folder Include="Tests\" />
     <Folder Include="Tests\Elements\" />
     <Folder Include="Tests\Services\" />
@@ -76,6 +80,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
     <TypeScriptCompile Include="Core\vendor.ts" />
+    <TypeScriptCompile Include="Framework\Blocks\Core\attributes.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\registrationEntry.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Event\RegistrationEntry\costSummary.ts" />
@@ -105,10 +110,13 @@
     <TypeScriptCompile Include="Framework\Blocks\Security\login.ts" />
     <TypeScriptCompile Include="Framework\Blocks\Utility\starkDetail.ts" />
     <TypeScriptCompile Include="Framework\Controls\addressControl.ts" />
+    <TypeScriptCompile Include="Framework\Controls\attributeEditor.ts" />
+    <TypeScriptCompile Include="Framework\Controls\categoryPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\fieldTypeEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeValuesContainer.ts" />
     <TypeScriptCompile Include="Framework\Controls\blockActionSourcedGrid.ts" />
-    <TypeScriptCompile Include="Framework\Controls\ComponentFromUrl.ts" />
-    <TypeScriptCompile Include="Framework\Controls\Dialog.ts" />
+    <TypeScriptCompile Include="Framework\Controls\componentFromUrl.ts" />
+    <TypeScriptCompile Include="Framework\Controls\dialog.ts" />
     <TypeScriptCompile Include="Framework\Controls\gatewayControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\grid.ts" />
     <TypeScriptCompile Include="Framework\Controls\gridColumn.ts" />
@@ -121,11 +129,15 @@
     <TypeScriptCompile Include="Framework\Controls\nmiGatewayControlTypes.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\pageDebugTimings.ts" />
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
+    <TypeScriptCompile Include="Framework\Controls\treeItemPicker.ts" />
+    <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
+    <TypeScriptCompile Include="Framework\Elements\inlineCheckBox.ts" />
+    <TypeScriptCompile Include="Framework\Elements\treeList.ts" />
     <TypeScriptCompile Include="Framework\Elements\urlLinkBox.ts" />
-    <TypeScriptCompile Include="Framework\Fields\urlLinkField.ts" />
-    <TypeScriptCompile Include="Framework\Fields\urlLinkFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListField.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListFieldComponents.ts" />
+    <TypeScriptCompile Include="Framework\Fields\urlLinkField.ts" />
+    <TypeScriptCompile Include="Framework\Fields\urlLinkFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\utils.ts" />
     <TypeScriptCompile Include="Framework\rockBlock.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockField.ts" />
@@ -281,6 +293,12 @@
     <TypeScriptCompile Include="Framework\SystemGuids\index.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\paneledBlockTemplate.ts" />
     <TypeScriptCompile Include="Framework\Util\component.ts" />
+    <TypeScriptCompile Include="Framework\Util\dialogs.ts" />
+    <TypeScriptCompile Include="Framework\Util\form.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditor.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\treeList.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\publicEditableAttribute.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\treeItem.d.ts" />
     <TypeScriptCompile Include="Tests\Elements\rockFormFieldHelper.ts" />
     <TypeScriptCompile Include="Tests\Elements\textBox.spec.ts" />
     <TypeScriptCompile Include="Tests\Services\dateAspFormatTests.spec.ts" />
@@ -518,8 +536,9 @@
     </TypeScriptCompile>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
-  <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean">
-    <Exec Command="npm install" Condition="'$(EnableTypeScript)' == 'true' And !Exists('$(QualifiedProjectHome)node_modules\.bin\tsc')" />
+  <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">
+    <Exec Command="npm install" />
+    <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="AfterCompile">
     <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build" EnvironmentVariables="CONFIGURATION=$(Configuration)" />

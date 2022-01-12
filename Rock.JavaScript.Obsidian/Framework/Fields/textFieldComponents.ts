@@ -14,33 +14,33 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
-import { getFieldEditorProps } from "./utils";
+import { computed, defineComponent, ref, watch } from "vue";
+import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import TextBox from "../Elements/textBox";
-import { asBooleanOrNull } from "../Services/boolean";
-
-enum ConfigurationValueKey {
-    IsPassword = "ispassword",
-    MaxCharacters = "maxcharacters",
-    ShowCountDown = "showcountdown"
-}
+import CheckBox from "../Elements/checkBox";
+import NumberBox from "../Elements/numberBox";
+import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "../Services/boolean";
+import { ConfigurationValueKey } from "./textField";
+import { toNumberOrNull } from "../Services/number";
 
 export const EditComponent = defineComponent({
     name: "TextField.Edit",
+
     components: {
         TextBox
     },
+
     props: getFieldEditorProps(),
-    data() {
-        return {
-            internalValue: ""
-        };
-    },
-    computed: {
-        configAttributes(): Record<string, number | boolean> {
+
+    setup(props, { emit }) {
+        // The internal value used by the text editor.
+        const internalValue = ref("");
+
+        // Configuration attributes passed to the text editor.
+        const configAttributes = computed((): Record<string, number | boolean> => {
             const attributes: Record<string, number | boolean> = {};
 
-            const maxCharsConfig = this.configurationValues[ConfigurationValueKey.MaxCharacters];
+            const maxCharsConfig = props.configurationValues[ConfigurationValueKey.MaxCharacters];
             if (maxCharsConfig) {
                 const maxCharsValue = Number(maxCharsConfig);
 
@@ -49,7 +49,7 @@ export const EditComponent = defineComponent({
                 }
             }
 
-            const showCountDownConfig = this.configurationValues[ConfigurationValueKey.ShowCountDown];
+            const showCountDownConfig = props.configurationValues[ConfigurationValueKey.ShowCountdown];
             if (showCountDownConfig && showCountDownConfig) {
                 const showCountDownValue = asBooleanOrNull(showCountDownConfig) || false;
 
@@ -59,24 +59,136 @@ export const EditComponent = defineComponent({
             }
 
             return attributes;
-        },
-        isPassword(): boolean {
-            const isPasswordConfig = this.configurationValues[ConfigurationValueKey.IsPassword];
-            return asBooleanOrNull(isPasswordConfig) || false;
-        }
+        });
+
+        // The type of text input field to use on the text editor.
+        const textType = computed((): string => {
+            const isPasswordConfig = props.configurationValues[ConfigurationValueKey.IsPassword];
+            const isPassword = asBooleanOrNull(isPasswordConfig) ?? false;
+
+            return isPassword ? "password" : "";
+
+        });
+
+        // Watch for changes from the parent component and update the text editor.
+        watch(() => props.modelValue, () => {
+            internalValue.value = props.modelValue;
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes from the text editor and update the parent component.
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
+        return {
+            configAttributes,
+            internalValue,
+            textType
+        };
     },
-    watch: {
-        internalValue(): void {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue: {
-            immediate: true,
-            handler(): void {
-                this.internalValue = this.modelValue || "";
-            }
-        }
-    },
+
     template: `
-<TextBox v-model="internalValue" v-bind="configAttributes" :type="isPassword ? 'password' : ''" />
+<TextBox v-model="internalValue" v-bind="configAttributes" :type="textType" />
+`
+});
+
+export const ConfigurationComponent = defineComponent({
+    name: "TextField.Configuration",
+
+    components: {
+        CheckBox,
+        NumberBox
+    },
+
+    props: getFieldConfigurationProps(),
+
+    setup(props, { emit }) {
+        // Define the properties that will hold the current selections.
+        const passwordField = ref(false);
+        const maxCharacters = ref<number | null>(null);
+        const showCountdown = ref(false);
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {};
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.IsPassword] = asTrueFalseOrNull(passwordField.value) ?? "False";
+            newValue[ConfigurationValueKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
+            newValue[ConfigurationValueKey.ShowCountdown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.IsPassword] !== (props.modelValue[ConfigurationValueKey.IsPassword] ?? "False")
+                || newValue[ConfigurationValueKey.MaxCharacters] !== (props.modelValue[ConfigurationValueKey.MaxCharacters] ?? "")
+                || newValue[ConfigurationValueKey.ShowCountdown] !== (props.modelValue[ConfigurationValueKey.ShowCountdown] ?? "False");
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         * 
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            passwordField.value = asBoolean(props.modelValue[ConfigurationValueKey.IsPassword]);
+            maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxCharacters]);
+            showCountdown.value = asBoolean(props.modelValue[ConfigurationValueKey.ShowCountdown]);
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        watch([], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(passwordField, () => maybeUpdateConfiguration(ConfigurationValueKey.IsPassword, asTrueFalseOrNull(passwordField.value) ?? "False"));
+        watch(maxCharacters, () => maybeUpdateConfiguration(ConfigurationValueKey.MaxCharacters, maxCharacters.value?.toString() ?? ""));
+        watch(showCountdown, () => maybeUpdateConfiguration(ConfigurationValueKey.ShowCountdown, asTrueFalseOrNull(showCountdown.value) ?? "False"));
+
+        return {
+            maxCharacters,
+            passwordField,
+            showCountdown
+        };
+    },
+
+    template: `
+<div>
+    <CheckBox v-model="passwordField" label="Password Field" text="Yes" help="When set, edit field will be masked." />
+    <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text." />
+    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" text="Yes" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
+</div>
 `
 });

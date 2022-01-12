@@ -130,7 +130,7 @@ export default defineComponent({
     :modelValue="internalValue"
     formGroupClasses="rock-rating"
     name="rock-rating">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="rating-input">
                 <i v-for="i in maxRating" :key="i" :class="classForRating(i)" @click="setRating(i)" @mouseover="setHover(i)" @mouseleave="clearHover()"></i>
