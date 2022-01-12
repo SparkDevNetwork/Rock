@@ -951,6 +951,7 @@
     <Compile Include="Model\CRM\Person\PersonService.cs" />
     <Compile Include="Model\CRM\Person\PersonViewModelHelper.cs" />
     <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.Logic.cs" />
+    <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.SaveHook.cs" />
     <Compile Include="Model\CRM\PhoneNumber\PhoneNumberService.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.Logic.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.SaveHook.cs" />
