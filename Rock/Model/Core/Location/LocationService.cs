@@ -18,11 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Linq;
-
-using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Field.Types;
 using Rock.Address;
+using Rock.Data;
+using Rock.Field.Types;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -169,7 +168,8 @@ namespace Rock.Model
             if ( foundLocation != null )
             {
                 // Check for casing 
-                if ( !String.Equals( street1, foundLocation.Street1 ) || !String.Equals( street2, foundLocation.Street2 ) || !String.Equals( city, foundLocation.City ) || !String.Equals( state, foundLocation.State ) || !String.Equals( postalCode, foundLocation.PostalCode ) || !String.Equals( country, foundLocation.Country ) )
+                if ( !string.Equals( street1, foundLocation.Street1 ) || !string.Equals( street2, foundLocation.Street2 ) || !string.Equals( city, foundLocation.City )
+                    || !string.Equals( state, foundLocation.State ) || !string.Equals( postalCode, foundLocation.PostalCode ) || !string.Equals( country, foundLocation.Country ) )
                 {
                     var context = new RockContext();
                     var location = new LocationService( context ).Get( foundLocation.Id );
@@ -183,6 +183,7 @@ namespace Rock.Model
                     context.SaveChanges();
                     return Get( location.Guid );
                 }
+
                 return foundLocation;
             }
 
@@ -231,7 +232,7 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
 
-            // refetch it from the database to make sure we get a valid .Id
+            // Re-fetch it from the database to make sure we get a valid Id.
             return Get( newLocation.Guid );
         }
 
@@ -250,12 +251,12 @@ namespace Rock.Model
             if ( group != null && group.GroupLocations.Any() )
             {
                 existingLocation = group.GroupLocations.Select( x => x.Location ).FirstOrDefault( t =>
-                    ( t.Street1 ?? "" ) == ( location.Street1 ?? "" ) &&
-                    ( t.Street2 ?? "" ) == ( location.Street2 ?? "" ) &&
-                    ( t.City ?? "" ) == ( location.City ?? "" ) &&
-                    ( t.State ?? "" ) == ( location.State ?? "" ) &&
-                    ( t.PostalCode ?? "" ) == ( location.PostalCode ?? "" ) &&
-                    ( t.Country ?? "" ) == ( location.Country ?? "" ) );
+                    ( t.Street1 ?? string.Empty ) == ( location.Street1 ?? string.Empty ) &&
+                    ( t.Street2 ?? string.Empty ) == ( location.Street2 ?? string.Empty ) &&
+                    ( t.City ?? string.Empty ) == ( location.City ?? string.Empty ) &&
+                    ( t.State ?? string.Empty ) == ( location.State ?? string.Empty ) &&
+                    ( t.PostalCode ?? string.Empty ) == ( location.PostalCode ?? string.Empty ) &&
+                    ( t.Country ?? string.Empty ) == ( location.Country ?? string.Empty ) );
 
                 if ( existingLocation != null )
                 {
@@ -265,12 +266,12 @@ namespace Rock.Model
 
             // If this location was not found on the specified group, or no group was specified, search for any instance of this location
             existingLocation = Queryable().FirstOrDefault( t =>
-                ( t.Street1 ?? "" ) == ( location.Street1 ?? "" ) &&
-                ( t.Street2 ?? "" ) == ( location.Street2 ?? "" ) &&
-                ( t.City ?? "" ) == ( location.City ?? "" ) &&
-                ( t.State ?? "" ) == ( location.State ?? "" ) &&
-                ( t.PostalCode ?? "" ) == ( location.PostalCode ?? "" ) &&
-                ( t.Country ?? "" ) == ( location.Country ?? "" ) );
+                ( t.Street1 ?? string.Empty ) == ( location.Street1 ?? string.Empty ) &&
+                ( t.Street2 ?? string.Empty ) == ( location.Street2 ?? string.Empty ) &&
+                ( t.City ?? string.Empty ) == ( location.City ?? string.Empty ) &&
+                ( t.State ?? string.Empty ) == ( location.State ?? string.Empty ) &&
+                ( t.PostalCode ?? string.Empty ) == ( location.PostalCode ?? string.Empty ) &&
+                ( t.Country ?? string.Empty ) == ( location.Country ?? string.Empty ) );
 
             if ( existingLocation != null )
             {
@@ -282,10 +283,10 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns a <see cref="Rock.Model.Location"/> by GeoPoint. If a match is not found,
-        /// a new Location will be added based on the Geopoint.
+        /// a new Location will be added based on the GeoPoint.
         /// </summary>
         /// <param name="point">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object
-        ///     representing the Geopoint for the location.</param>
+        ///     representing the GeoPoint for the location.</param>
         /// <returns>The first <see cref="Rock.Model.Location"/> that matches the specified GeoPoint.</returns>
         public Location GetByGeoPoint( DbGeography point )
         {
@@ -313,7 +314,7 @@ namespace Rock.Model
                 locationService.Add( newLocation );
                 rockContext.SaveChanges();
 
-                // refetch it from the database to make sure we get a valid .Id
+                // Re-fetch it from the database to make sure we get a valid Id.
                 return Get( newLocation.Guid );
             }
 
@@ -353,7 +354,7 @@ namespace Rock.Model
                 locationService.Add( newLocation );
                 rockContext.SaveChanges();
 
-                // refetch it from the database to make sure we get a valid .Id
+                // Re-fetch it from the database to make sure we get a valid Id.
                 return Get( newLocation.Guid );
             }
 
@@ -504,13 +505,13 @@ namespace Rock.Model
                         location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
                         location.StandardizeAttemptedResult = resultMsg;
 
-                        // As long as there wasn't a connection error, update the attempted datetime
+                        // As long as there wasn't a connection error, update the attempted DateTime.
                         if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
                         {
                             location.StandardizeAttemptedDateTime = RockDateTime.Now;
                         }
 
-                        // If location was successfully geocoded, update the timestamp
+                        // If location was successfully geocoded, update the time stamp.
                         if ( ( result & Address.VerificationResult.Standardized ) == Address.VerificationResult.Standardized )
                         {
                             location.StandardizedDateTime = RockDateTime.Now;
@@ -548,13 +549,13 @@ namespace Rock.Model
                         location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
                         location.GeocodeAttemptedResult = resultMsg;
 
-                        // As long as there wasn't a connection error, update the attempted datetime
+                        // As long as there wasn't a connection error, update the attempted DateTime.
                         if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
                         {
                             location.GeocodeAttemptedDateTime = RockDateTime.Now;
                         }
 
-                        // If location was successfully geocoded, update the timestamp
+                        // If location was successfully geocoded, update the time stamp.
                         if ( ( result & Address.VerificationResult.Geocoded ) == Address.VerificationResult.Geocoded )
                         {
                             location.GeocodedDateTime = RockDateTime.Now;
@@ -588,11 +589,10 @@ namespace Rock.Model
                     {
                         break;
                     }
-
                 }
             }
 
-            // If there is only one type of active service (standardization/geocoding) the other type's attempted datetime 
+            // If there is only one type of active service (standardization/geocoding) the other type's attempted DateTime
             // needs to be updated so that the verification job will continue to process additional locations vs just getting
             // stuck on the first batch and doing them over and over again because the other service type's attempted date is
             // never updated.
@@ -600,6 +600,7 @@ namespace Rock.Model
             {
                 location.GeocodeAttemptedDateTime = RockDateTime.Now;
             }
+
             if ( anyActiveGeocodingService && !anyActiveStandardizationService )
             {
                 location.StandardizeAttemptedDateTime = RockDateTime.Now;
@@ -611,16 +612,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the mapCoordinate from postalcode.
+        /// Gets the mapCoordinate from postal code.
         /// </summary>
-        /// <param name="postalCode">The postalcode.</param>
+        /// <param name="postalCode">The postal code.</param>
         /// <returns></returns>
         public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
         {
             Address.SmartyStreets smartyStreets = new Address.SmartyStreets();
             string resultMsg = string.Empty;
             var coordinate = smartyStreets.GetLocationFromPostalCode( postalCode, out resultMsg );
-            // Log the results of the service
+
+            // Log the results of the service.
             if ( !string.IsNullOrWhiteSpace( resultMsg ) )
             {
                 var rockContext = new RockContext();
@@ -635,6 +637,7 @@ namespace Rock.Model
                 logService.Add( log );
                 rockContext.SaveChanges();
             }
+
             return coordinate;
         }
 
@@ -655,11 +658,12 @@ namespace Rock.Model
                 )
                 SELECT L.* FROM CTE
                 INNER JOIN [Location] L ON L.[Id] = CTE.[Id]
-                ", parentLocationId ) );
+                ",
+                parentLocationId ) );
         }
 
         /// <summary>
-        /// Gets all descendent ids.
+        /// Gets all descendant ids.
         /// </summary>
         /// <param name="parentLocationId">The parent location identifier.</param>
         /// <returns></returns>
@@ -674,7 +678,8 @@ namespace Rock.Model
                     INNER JOIN  CTE pcte ON pcte.[Id] = [a].[ParentLocationId]
                 )
                 SELECT [Id] FROM CTE
-                ", parentLocationId ) );
+                ",
+                parentLocationId ) );
         }
 
         /// <summary>
@@ -695,7 +700,8 @@ namespace Rock.Model
                 SELECT * FROM CTE
                 WHERE [Name] IS NOT NULL 
                 AND [Name] <> ''
-                ", locationId ) );
+                ",
+                locationId ) );
         }
 
         /// <summary>
@@ -717,7 +723,8 @@ namespace Rock.Model
                 FROM CTE
                 WHERE [Name] IS NOT NULL 
                 AND [Name] <> ''
-                ", locationId ) );
+                ",
+                locationId ) );
         }
 
         /// <summary>
@@ -779,7 +786,7 @@ namespace Rock.Model
 	FROM [Location] [a]
         INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
         WHERE [a].[ParentLocationId] IS NOT NULL
-" : "";
+" : string.Empty;
 
             string deviceClause;
             if ( deviceIds == null )

@@ -19,16 +19,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -290,10 +286,10 @@ namespace Rock.Model
         public DateTime? GeocodedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets flag indicating if geopoint is locked (shouldn't be geocoded again)
+        /// Gets or sets flag indicating if GeoPoint is locked (shouldn't be geocoded again)
         /// </summary>
         /// <value>
-        /// is geo point locked.
+        /// is GeoPoint locked.
         /// </value>
         [DataMember]
         public bool? IsGeoPointLocked { get; set; }
@@ -336,7 +332,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or set this Location's parent Location.
@@ -361,7 +357,10 @@ namespace Rock.Model
             {
                 return !string.IsNullOrWhiteSpace( Name );
             }
-            private set { }
+
+            private set
+            {
+            }
         }
 
         /// <summary>
@@ -385,6 +384,7 @@ namespace Rock.Model
             get { return _childLocations ?? ( _childLocations = new Collection<Location>() ); }
             set { _childLocations = value; }
         }
+
         private ICollection<Location> _childLocations;
 
         /// <summary>
@@ -399,6 +399,7 @@ namespace Rock.Model
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
             set { _groupLocations = value; }
         }
+
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
@@ -444,59 +445,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the latitude ( use GeoPoint to set a latitude/longitude values ).
-        /// </summary>
-        /// <value>
-        /// The latitude.
-        /// </value>
-        [DataMember]
-        public virtual double? Latitude
-        {
-            get
-            {
-                return GeoPoint != null ? GeoPoint.Latitude : null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the longitude ( use GeoPoint to set a latitude/longitude values ).
-        /// </summary>
-        /// <value>
-        /// The longitude.
-        /// </value>
-        [DataMember]
-        public virtual double? Longitude
-        {
-            get
-            {
-                return GeoPoint != null ? GeoPoint.Longitude : null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the GeoFence coordinates.
-        /// </summary>
-        /// <value>
-        /// The geo fence coordinates.
-        /// </value>
-        [DataMember]
-        public virtual List<Double[]> GeoFenceCoordinates
-        {
-            get
-            {
-                if ( GeoFence != null )
-                {
-                    return GeoFence.Coordinates()
-                        .Where( c => c.Latitude.HasValue && c.Longitude.HasValue )
-                        .Select( c => new Double[] { c.Latitude.Value, c.Longitude.Value } )
-                        .ToList();
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Gets the campus that is at this location, or one of this location's parent location
         /// </summary>
         /// <value>
@@ -515,37 +463,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the campus that is at this location, or one of this location's parent location
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        private int? GetCampusId( RockContext rockContext )
-        {
-            var campuses = CampusCache.All( rockContext );
-
-            int? campusId = null;
-            Location loc = this;
-
-            while ( !campusId.HasValue && loc != null )
-            {
-                var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
-                if ( campus != null )
-                {
-                    campusId = campus.Id;
-                }
-                else
-                {
-                    loc = loc.ParentLocation;
-                }
-            }
-
-            return campusId;
-        }
-
-        /// <summary>
         /// Gets the distance (in miles). 
         /// Note, this just stores whatever value was passed into SetDistance
-        /// Some of the REST apis, such as Groups/ByLocation, will set this for you
+        /// Some of the REST APIs, such as Groups/ByLocation, will set this for you
         /// </summary>
         /// <value>
         /// The distance.
@@ -556,13 +476,14 @@ namespace Rock.Model
         {
             get { return _distance; }
         }
+
         private double _distance = 0.0D;
 
         /// <summary>
-        /// Gets the polygon for google maps.
+        /// Gets the polygon for Google maps.
         /// </summary>
         /// <value>
-        /// The polygon for google maps.
+        /// The polygon for Google maps.
         /// </value>
         [LavaVisible]
         public virtual string GooglePolygon
@@ -570,285 +491,9 @@ namespace Rock.Model
             get { return EncodeGooglePolygon(); }
         }
 
-        #endregion Virtual Properties
-
-        #region Override IsValid
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public override bool IsValid
-        {
-            get
-            {
-                var result = base.IsValid;
-                if ( result )
-                {
-                    // make sure it isn't getting saved with a recursive parent hierarchy
-                    var parentIds = new List<int>();
-                    parentIds.Add( this.Id );
-                    var parent = this.ParentLocationId.HasValue ? ( this.ParentLocation ?? new LocationService( new RockContext() ).Get( this.ParentLocationId.Value ) ) : null;
-                    while ( parent != null )
-                    {
-                        if ( parentIds.Contains( parent.Id ) )
-                        {
-                            this.ValidationResults.Add( new ValidationResult( "Parent Location cannot be a child of this Location (recursion)" ) );
-                            return false;
-                        }
-                        else
-                        {
-                            parentIds.Add( parent.Id );
-                            parent = parent.ParentLocation;
-                        }
-                    }
-                }
-
-                return result;
-            }
-        }
-
-        #endregion Override IsValid
+        #endregion Navigation Properties
 
         #region Public Methods
-
-        /// <summary>
-        /// Sets the location's GeoPoint from a latitude and longitude.
-        /// </summary>
-        /// <param name="latitude">A <see cref="System.Double"/> representing the latitude for this location.</param>
-        /// <param name="longitude">A <see cref="System.Double"/>representing the longitude for this location.</param>
-        public bool SetLocationPointFromLatLong( double latitude, double longitude )
-        {
-            try
-            {
-                this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Returns a Google Maps link to use for this Location
-        /// </summary>
-        /// <param name="title">A unused <see cref="System.String"/> containing the location name label.</param>
-        /// <returns>A <see cref="System.String"/> containing the link to Google Maps for this location.</returns>
-        public virtual string GoogleMapLink( string title )
-        {
-            string qParm = this.GetFullStreetAddress();
-
-            return "https://maps.google.com/maps?q=" +
-                System.Web.HttpUtility.UrlEncode( qParm );
-        }
-
-        /// <summary>
-        /// Pres the save changes.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
-        {
-            if ( ImageId.HasValue )
-            {
-                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
-                var binaryFile = binaryFileService.Get( ImageId.Value );
-                if ( binaryFile != null && binaryFile.IsTemporary )
-                {
-                    binaryFile.IsTemporary = false;
-                }
-            }
-
-            base.PreSaveChanges( dbContext, state );
-        }
-
-        /// <summary>
-        /// Return this location as a string. Set preferName to true
-        /// to return this location.Name (if it has one). Otherwise,
-        /// it will try to show the Full Address first.
-        /// </summary>
-        /// <param name="preferName">if set to <c>true</c> [prefer name].</param>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public string ToString( bool preferName )
-        {
-            if ( preferName && this.Name.IsNotNullOrWhiteSpace() )
-            {
-                return this.Name;
-            }
-
-            return this.ToString();
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> containing the Location's address that represents this instance.
-        /// If this location has a street address, that will be returned, otherwise the Name will be returned.
-        /// Use <see cref="ToString(bool)"/> to prefer returning the location's name vs address
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> containing the Location's address that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            string fullAddress = GetFullStreetAddress();
-
-            if ( fullAddress.IsNotNullOrWhiteSpace() )
-            {
-                /* 
-                    02/05/2021 MDP 
-
-                    Even if Location.Name has a value, return the Full Street Address
-                    for ToString() if there is a full address. This way we don't change
-                    the behavior of how this has worked before.
-
-                    UIs, etc, that should be showing Location.Name should use Location.Name instead
-                    of relying on ToString().
-                 */
-
-                return fullAddress;
-            }
-
-            if ( this.Name.IsNotNullOrWhiteSpace() )
-            {
-                return this.Name;
-            }
-
-            if ( this.GeoPoint != null )
-            {
-                return string.Format( "A point at {0}, {1}", this.GeoPoint.Latitude, this.GeoPoint.Longitude );
-            }
-
-            if ( this.GeoFence != null )
-            {
-                int pointCount = this.GeoFence.PointCount ?? 0;
-                return string.Format( "An area with {0} points", ( pointCount > 0 ? pointCount - 1 : 0 ) );
-            }
-
-            // this would only happen if Location didn't have a Name, Address, GeoPoint or GoeFence
-            return this.Name;
-        }
-
-        /// <summary>
-        /// Returns true if the Location has one of the following: Street1, Street2, City. Otherwise returns false.
-        /// </summary>
-        /// <returns>
-        ///   <c>true</c> if [is minimum viable address]; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsMinimumViableAddress()
-        {
-            if ( this.Street1.IsNullOrWhiteSpace() &&
-                this.Street2.IsNullOrWhiteSpace() &&
-                this.City.IsNullOrWhiteSpace() )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Gets <seealso cref="DbGeography">GeoPoint</seealso> from the specified latitude and longitude
-        /// </summary>
-        /// <param name="latitude">The latitude.</param>
-        /// <param name="longitude">The longitude.</param>
-        /// <returns></returns>
-        public static DbGeography GetGeoPoint( double latitude, double longitude )
-        {
-            return DbGeography.FromText( $"POINT({longitude} {latitude})" );
-        }
-
-        /// <summary>
-        /// Gets the full street address.
-        /// </summary>
-        /// <returns></returns>
-        public string GetFullStreetAddress()
-        {
-            if ( !IsMinimumViableAddress() )
-            {
-                return string.Empty;
-            }
-
-            string result = string.Format( "{0} {1} {2}, {3} {4}",
-                this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
-            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
-
-            if ( countryValue != null )
-            {
-                string format = countryValue.GetAttributeValue( "AddressFormat" );
-                if ( !string.IsNullOrWhiteSpace( format ) )
-                {
-                    var dict = this.ToDictionary();
-                    dict["Country"] = countryValue.Description;
-                    result = format.ResolveMergeFields( dict );
-                }
-            }
-
-            // Remove blank lines
-            while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
-            {
-                result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
-            }
-            while ( result.Contains( "\x0A\x0A" ) )
-            {
-                result = result.Replace( "\x0A\x0A", "\x0A" );
-            }
-
-            if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
-            {
-                return string.Empty;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Encodes the polygon for Google maps
-        /// from http://stackoverflow.com/a/3852420
-        /// </summary>
-        /// <returns></returns>
-        public virtual string EncodeGooglePolygon()
-        {
-            var str = new StringBuilder();
-
-            if ( this.GeoFence != null )
-            {
-                var encodeDiff = ( Action<int> ) ( diff =>
-                   {
-                       int shifted = diff << 1;
-                       if ( diff < 0 )
-                           shifted = ~shifted;
-                       int rem = shifted;
-                       while ( rem >= 0x20 )
-                       {
-                           str.Append( ( char ) ( ( 0x20 | ( rem & 0x1f ) ) + 63 ) );
-                           rem >>= 5;
-                       }
-                       str.Append( ( char ) ( rem + 63 ) );
-                   } );
-
-                int lastLat = 0;
-                int lastLng = 0;
-
-                foreach ( var coordinate in this.GeoFence.Coordinates() )
-                {
-                    if ( coordinate.Longitude.HasValue && coordinate.Latitude.HasValue )
-                    {
-                        int lat = ( int ) Math.Round( coordinate.Latitude.Value * 1E5 );
-                        int lng = ( int ) Math.Round( coordinate.Longitude.Value * 1E5 );
-                        encodeDiff( lat - lastLat );
-                        encodeDiff( lng - lastLng );
-                        lastLat = lat;
-                        lastLng = lng;
-                    }
-                }
-            }
-
-            return str.ToString();
-        }
 
         /// <summary>
         /// Sets the distance (in miles)
@@ -862,98 +507,7 @@ namespace Rock.Model
 
         #endregion Public Methods
 
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            if (this.Name.IsNotNullOrWhiteSpace())
-            {
-                return NamedLocationCache.Get( this.Id );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            // Make sure CampusCache.All is cached using the dbContext (to avoid deadlock if snapshot isolation is disabled)
-            var campusId = this.GetCampusId( dbContext as RockContext );
-
-            NamedLocationCache.FlushItem( this.Id );
-
-            // CampusCache has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
-            if ( this.CampusId.HasValue )
-            {
-                CampusCache.UpdateCachedEntity( this.CampusId.Value, EntityState.Detached );
-            }
-
-            // and also refresh the CampusCache for any Campus that uses this location
-            foreach ( var campus in CampusCache.All( dbContext as RockContext ).Where( c => c.LocationId == this.Id ) )
-            {
-                CampusCache.UpdateCachedEntity( campus.Id, EntityState.Detached );
-            }
-        }
-
-        #endregion ICacheable
-
-        #region 
-
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.Object"/>.
-        /// </value>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public override object this[object key]
-        {
-            get
-            {
-                string keyName = key.ToStringSafe();
-                switch ( keyName )
-                {
-                    case "GeoPoint":
-                        {
-                            if ( GeoPoint != null && GeoPoint.Latitude.HasValue && GeoPoint.Longitude.HasValue )
-                            {
-                                return string.Format( "{0},{1}", GeoPoint.Latitude.Value, GeoPoint.Longitude.Value );
-                            }
-                            break;
-                        }
-                    case "GeoFence":
-                        {
-                            if ( GeoFence != null )
-                            {
-                                return GeoFence.Coordinates()
-                                    .Select( c => c.Latitude.ToString() + "," + c.Longitude.ToString() )
-                                    .ToList()
-                                    .AsDelimited( "|" );
-                            }
-                            break;
-                        }
-                    default:
-                        {
-                            return base[key];
-                        }
-                }
-
-                return string.Empty;
-            }
-        }
-
-        #endregion
-
-        #region constants
+        #region Constants
 
         /// <summary>
         /// Meters per mile (1609.344)
@@ -961,14 +515,13 @@ namespace Rock.Model
         /// </summary>
         public const double MetersPerMile = 1609.344;
 
-
         /// <summary>
         /// Miles per meter 1/1609.344 (0.00062137505)
         /// NOTE: Geo Spatial distances are in meters
         /// </summary>
         public const double MilesPerMeter = 1 / MetersPerMile;
 
-        #endregion
+        #endregion Constants
     }
 
     #region Entity Configuration
@@ -989,136 +542,6 @@ namespace Rock.Model
             this.HasOptional( l => l.Image ).WithMany().HasForeignKey( p => p.ImageId ).WillCascadeOnDelete( false );
         }
     }
-
-    #endregion
-
-    #region Map Helper Classes
-
-    /// <summary>
-    /// Helper class to store map coordinates
-    /// </summary>
-    public class MapCoordinate
-    {
-        /// <summary>
-        /// Gets or sets the latitude.
-        /// </summary>
-        /// <value>
-        /// The latitude.
-        /// </value>
-        public double? Latitude { get; set; }
-
-        /// <summary>
-        /// Gets or sets the longitude.
-        /// </summary>
-        /// <value>
-        /// The longitude.
-        /// </value>
-        public double? Longitude { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MapCoordinate"/> class.
-        /// </summary>
-        public MapCoordinate()
-        {
-
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MapCoordinate"/> class.
-        /// </summary>
-        /// <param name="latitude">The latitude.</param>
-        /// <param name="longitude">The longitude.</param>
-        public MapCoordinate( double? latitude, double? longitude )
-        {
-            Latitude = latitude;
-            Longitude = longitude;
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class MapItem
-    {
-        /// <summary>
-        /// Gets or sets the entity type identifier.
-        /// </summary>
-        /// <value>
-        /// The entity type identifier.
-        /// </value>
-        public int EntityTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity identifier.
-        /// </summary>
-        /// <value>
-        /// The entity identifier.
-        /// </value>
-        public int EntityId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the location identifier.
-        /// </summary>
-        /// <value>
-        /// The location identifier.
-        /// </value>
-        public int LocationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the point.
-        /// </summary>
-        /// <value>
-        /// The point.
-        /// </value>
-        public MapCoordinate Point { get; set; }
-
-        /// <summary>
-        /// Gets or sets the polygon points.
-        /// </summary>
-        /// <value>
-        /// The polygon points.
-        /// </value>
-        public List<MapCoordinate> PolygonPoints { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MapItem"/> class.
-        /// </summary>
-        public MapItem()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MapItem"/> class.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        public MapItem( Location location )
-        {
-            PolygonPoints = new List<MapCoordinate>();
-
-            if ( location != null )
-            {
-                LocationId = location.Id;
-                if ( location.GeoPoint != null )
-                {
-                    Point = new MapCoordinate( location.GeoPoint.Latitude, location.GeoPoint.Longitude );
-                }
-
-                if ( location.GeoFence != null )
-                {
-                    PolygonPoints = location.GeoFence.Coordinates();
-                }
-            }
-        }
-    }
-
 
     #endregion
 }

@@ -876,6 +876,12 @@
     <Compile Include="Model\Core\EntityType\EntityType.Logic.cs" />
     <Compile Include="Model\Core\FieldType\FieldType.Logic.cs" />
     <Compile Include="Model\Core\History\History.Logic.cs" />
+    <Compile Include="Model\Core\Location\Location.Logic.cs" />
+    <Compile Include="Model\Core\Location\Location.SaveHook.cs" />
+    <Compile Include="Model\Core\Location\Location.WebForms.cs" />
+    <Compile Include="Model\Core\Location\LocationService.cs" />
+    <Compile Include="Model\Core\Location\MapCoordinate.cs" />
+    <Compile Include="Model\Core\Location\MapItem.cs" />
     <Compile Include="Model\Core\PersonSignal\PersonSignal.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
@@ -2641,7 +2647,6 @@
     <Compile Include="Model\Core\InteractionSession\InteractionSession.cs" />
     <Compile Include="Model\CMS\Layout\Layout.cs" />
     <Compile Include="Model\Core\Location\Location.cs" />
-    <Compile Include="Model\Core\Location\LocationService.Partial.cs" />
     <Compile Include="Model\Reporting\MergeTemplate\MergeTemplate.cs" />
     <Compile Include="Model\Meta\Metaphone\Metaphone.cs" />
     <Compile Include="Model\Reporting\Metric\Metric.cs" />
