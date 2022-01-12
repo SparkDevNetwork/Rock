@@ -88,7 +88,7 @@
 
                                         <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                             <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
-                                            <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
+                                            <Rock:FirstNameTextBox ID="txtFirstName" runat="server" Label="First Name" />
                                             <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
                                         </asp:PlaceHolder>
                                         <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
