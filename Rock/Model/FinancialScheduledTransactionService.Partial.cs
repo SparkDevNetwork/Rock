@@ -146,6 +146,13 @@ namespace Rock.Model
         /// <returns></returns>
         public bool GetStatus( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
+            /*
+             * 12-JAN-22 DMV
+             *
+             * This method introduces significant overhead to performance
+             * when run across many transactions.
+             *
+             */
             if ( scheduledTransaction != null &&
                 scheduledTransaction.FinancialGateway != null &&
                 scheduledTransaction.FinancialGateway.IsActive )
