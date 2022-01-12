@@ -382,34 +382,40 @@ namespace RockWeb.Blocks.Finance
                     workLocation.IsMailingLocation = true;
                 }
 
-                var personSearchKeyService = new PersonSearchKeyService( rockContext );
-
-                var validSearchTypes = GetValidSearchKeyTypes();
-                var databaseSearchKeys = personSearchKeyService
-                    .Queryable()
-                    .Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) && a.PersonAlias.PersonId == business.Id )
-                    .ToList();
-
-                foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !PersonSearchKeysState.Any( p => p.Guid == a.Guid ) ) )
-                {
-                    personSearchKeyService.Delete( deletedSearchKey );
-                }
-
-                foreach ( var personSearchKey in PersonSearchKeysState.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
-                {
-                    personSearchKey.PersonAliasId = business.PrimaryAliasId.Value;
-                    personSearchKeyService.Add( personSearchKey );
-                }
-
                 rockContext.SaveChanges();
-
+                
                 hfBusinessId.Value = business.Id.ToString();
             } );
 
+            /* Ethan Drotning 2022-01-11
+             * Need save the PersonSearchKeys outside of the transaction since the DB might not have READ_COMMITTED_SNAPSHOT enabled.
+             */
+
+            // PersonSearchKey
+            var personSearchKeyService = new PersonSearchKeyService( rockContext );
+            var validSearchTypes = GetValidSearchKeyTypes();
+            var databaseSearchKeys = personSearchKeyService.Queryable().Where( a => a.PersonAlias.PersonId == business.Id && validSearchTypes.Contains( a.SearchTypeValue.Guid ) ).ToList();
+
+            foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !PersonSearchKeysState.Any( p => p.Guid == a.Guid ) ) )
+            {
+                personSearchKeyService.Delete( deletedSearchKey );
+            }
+
+            foreach ( var personSearchKey in PersonSearchKeysState.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
+            {
+                personSearchKey.PersonAliasId = business.PrimaryAliasId.Value;
+                personSearchKeyService.Add( personSearchKey );
+            }
+
+            rockContext.SaveChanges();
+
             business.SaveAttributeValues();
 
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "BusinessId", hfBusinessId.Value );
+            var queryParams = new Dictionary<string, string>
+            {
+                { "BusinessId", hfBusinessId.Value }
+            };
+
             NavigateToCurrentPage( queryParams );
         }
 
