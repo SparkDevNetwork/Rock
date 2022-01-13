@@ -682,6 +682,9 @@ namespace RockWeb.Blocks.Core
                 tbEntityQualifierValue.Text = category.EntityTypeQualifierValue;
             }
 
+            entityTypePicker.RequiredFieldValidator.ErrorMessage = "Entity type is required.";
+            entityTypePicker.ValidationGroup = BlockValidationGroup;
+
             tbName.Text = category.Name;
             tbName.RequiredFieldValidator.ErrorMessage = "Name is required.";
             tbName.ValidationGroup = BlockValidationGroup;
