@@ -30,7 +30,7 @@ namespace Rock.Web.UI.Controls
     public class FirstNameTextBox : RockTextBox
     {
         private CustomValidator _customValidator;
-        private readonly List<string> _notAllowedStrings = new List<string> { "&", " & ", " and ", "-and-", "_and_" };
+        private readonly List<string> _notAllowedStrings = new List<string> { "&", " & ", " and ", "-and-", "_and_", " plus ", "+" };
         private readonly string _defaultDelimter = "^";
 
         /// <summary>
