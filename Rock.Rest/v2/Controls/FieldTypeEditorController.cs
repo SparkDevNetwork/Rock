@@ -46,6 +46,11 @@ namespace Rock.Rest.v2.Controls
             {
                 new ListItemViewModel
                 {
+                    Text = "Boolean",
+                    Value = Rock.SystemGuid.FieldType.BOOLEAN.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
                     Text = "Defined Value",
                     Value = Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid().ToString()
                 },
