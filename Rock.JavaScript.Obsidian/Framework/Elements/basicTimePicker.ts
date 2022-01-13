@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, ref, Ref } from "vue";
 import { toNumber } from "../Services/number";
 import { padLeft } from "../Services/string";
 
@@ -44,14 +44,28 @@ export default defineComponent({
         }
     },
 
-    data() {
+    setup() {
+        const internalHour: Ref<number | null> = ref(null);
+        const internalMinute: Ref<number | null> = ref(null);
+        const internalMeridiem: Ref<"AM" | "PM"> = ref("AM");
+        const internalValue: Ref<string> = ref("");
+
         return {
-            internalHour: null as number | null,
-            internalMinute: null as number | null,
-            internalMeridiem: "AM" as ("AM" | "PM"),
-            internalValue: ""
+            internalHour,
+            internalMinute,
+            internalMeridiem,
+            internalValue
         };
     },
+
+    //data() {
+    //    return {
+    //        internalHour: null as number | null,
+    //        internalMinute: null as number | null,
+    //        internalMeridiem: "AM" as ("AM" | "PM"),
+    //        internalValue: ""
+    //    };
+    //},
 
     methods: {
         keyPress(e: KeyboardEvent): boolean {
