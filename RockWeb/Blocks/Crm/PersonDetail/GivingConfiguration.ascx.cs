@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 
 using Humanizer;
@@ -733,34 +732,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var scheduledTransactionList = qry.ToList();
 
-            /*
-             * 12-JAN-22 DMV
-             *
-             * This call to GetStatus goes out to the financial gateway
-             * to update the status and next payment date on each transaction.
-             * This can add O^2 runtime to this data bind and cause it to run
-             * very slowly. #4871
-             *
-             * Secondary to that, only check the active schedules.
-             *
-             */
-            Parallel.ForEach( scheduledTransactionList, schedule =>
-            {
-                try
-                {
-                    // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
-                    if ( schedule.IsActive )
-                    {
-                        string errorMessage;
-                        financialScheduledTransactionService.GetStatus( schedule, out errorMessage );
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    // log and ignore
-                    LogException( ex );
-                }
-            } );
+            // Refresh the active transactions
+            financialScheduledTransactionService.GetStatus( scheduledTransactionList, true );
 
             rptScheduledTransaction.DataSource = scheduledTransactionList;
             rptScheduledTransaction.DataBind();
