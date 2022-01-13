@@ -15,7 +15,7 @@ module.exports = {
 
         /* The library will export into the global namespace prefixed with Rock.UI.StructuredContent. */
         libraryTarget: "assign-properties",
-        library: ["Rock", "UI", "StructuredContent"]
+        library: ["Rock", "UI", "StructuredContentEditor"]
     },
     /* Enable caching so rebuilds are faster. */
     cache: {

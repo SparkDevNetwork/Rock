@@ -420,13 +420,13 @@ namespace Rock.Web.UI.Controls
             var script = string.Format( @"
 ;(function() {{
 var fieldContent = $('#{1}').val();
-var editor = new Rock.UI.StructuredContent.EditorJS({{
+var editor = new Rock.UI.StructuredContentEditor.EditorJS({{
     holder: '{0}',
     tools: {2},
     defaultBlock: 'paragraph',
     data: JSON.parse(decodeURIComponent(fieldContent)),
     onReady: function() {{
-        new Rock.UI.StructuredContent.EditorDragDrop(editor);
+        new Rock.UI.StructuredContentEditor.EditorDragDrop(editor);
     }},
     onChange: function() {{
         editor.save().then( function(savedData) {{
