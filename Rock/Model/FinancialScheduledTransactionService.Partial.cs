@@ -23,7 +23,6 @@ using System.Text;
 using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
-using Rock.Tasks;
 using System.Threading.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -134,6 +133,68 @@ namespace Rock.Model
             }
 
             return scheduledTransaction;
+        }
+
+        /// <summary>
+        /// Gets the status of each of the <see cref="IEnumerable{FinancialScheduledTransaction}" /> from it's <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// If the schedule is no longer active on the gateway, <see cref="FinancialScheduledTransaction.IsActive"/> is set to <c>false</c>.
+        /// </summary>
+        /// <param name="financialScheduledTransactions">The financial scheduled transactions.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active scheduled transactions only].</param>
+        /// <returns>
+        ///   <c>true</c> if there are no error, <c>false</c> otherwise.</returns>
+        public bool GetStatus( IEnumerable<FinancialScheduledTransaction> financialScheduledTransactions, bool activeOnly )
+        {
+            return GetStatus( financialScheduledTransactions, activeOnly, out _ );
+        }
+
+        /// <summary>
+        /// Gets the status of each of the <see cref="IEnumerable{FinancialScheduledTransaction}" /> from it's <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// If the schedule is no longer active on the gateway, <see cref="FinancialScheduledTransaction.IsActive"/> is set to <c>false</c>.
+        /// If this method returns false, see <paramref name="errorMessages"/>.
+        /// </summary>
+        /// <param name="financialScheduledTransactions">The financial scheduled transactions.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active scheduled transactions only].</param>
+        /// <param name="errorMessages">The error messages. The <see cref="IDictionary{TKey, TValue}"/> is keyed by the schedule Id.</param>
+        /// <returns>
+        ///   <c>true</c> if there are no error, <c>false</c> otherwise.</returns>
+        public bool GetStatus( IEnumerable<FinancialScheduledTransaction> financialScheduledTransactions, bool activeOnly, out IDictionary<int, string> errorMessages )
+        {
+            errorMessages = new Dictionary<int, string>();
+            /*
+             * 13-JAN-22 DMV
+             *
+             * This call to GetStatus goes out to the financial gateway
+             * to update the status and next payment date on each transaction.
+             * This can add O^2 runtime to this data bind and cause it to run
+             * very slowly. #4871
+             *
+             */
+            foreach ( var schedule in financialScheduledTransactions )
+            {
+                try
+                {
+                    // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
+                    if ( activeOnly && !schedule.IsActive )
+                    {
+                        continue;
+                    }
+
+                    this.GetStatus( schedule, out string errMsg );
+
+                    if ( !string.IsNullOrEmpty( errMsg ) )
+                    {
+                        errorMessages.Add( schedule.Id, errMsg );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // log and ignore
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+
+            return errorMessages.Count > 0;
         }
 
         /// <summary>
