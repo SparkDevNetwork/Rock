@@ -305,8 +305,16 @@ $('#{0}').tooltip();
                 var days = ( groupScheduleRowInfo.OccurrenceEndDate - groupScheduleRowInfo.OccurrenceStartDate ).Days;
                 if ( days > 1 )
                 {
-                    scheduleDate = $"{scheduleDate} ({days} days)";
+                    scheduleDate = $"<span class='schedule-date'>{scheduleDate}</span> <span class='small'>({days} days)</span>";
                 }
+                else
+                {
+                    scheduleDate = $"<span class='schedule-date'>{scheduleDate}</span>";
+                }
+            }
+            else
+            {
+                scheduleDate = $"<span class='schedule-date'>{scheduleDate}</span>";
             }
 
             lScheduleDate.Text = scheduleDate;
@@ -891,7 +899,7 @@ $('#{0}').tooltip();
         /// <returns></returns>
         private string GetOccurrenceDetails( GroupScheduleRowInfo groupScheduleRowInfo )
         {
-            var occurenceDetail = string.Empty;
+            var occurenceDetail = "<span class='schedule-occurrence'>";
 
             if ( groupScheduleRowInfo.PersonAlias != null && groupScheduleRowInfo.PersonAlias.Person != null && groupScheduleRowInfo.PersonAlias.PersonId != this.SelectedPersonId )
             {
@@ -917,7 +925,7 @@ $('#{0}').tooltip();
                 occurenceDetail += groupScheduleRowInfo.Location.ToString();
             }
 
-            occurenceDetail += "<br/>" + GetOccurrenceScheduleName( groupScheduleRowInfo );
+            occurenceDetail += "</span><span class='schedule-occurrence-schedule'>" + GetOccurrenceScheduleName( groupScheduleRowInfo ) + "</span>";
 
             return occurenceDetail;
         }
