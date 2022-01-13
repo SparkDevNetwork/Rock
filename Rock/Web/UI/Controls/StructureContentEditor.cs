@@ -331,8 +331,8 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontent/editor.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontent/editor-tools.js" );
+                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontenteditor/editor.js" );
+                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js" );
             }
 
             EnsureChildControls();
@@ -383,8 +383,8 @@ namespace Rock.Web.UI.Controls
             // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                var editorUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontent/editor.js" );
-                var toolsUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontent/editor-tools.js" );
+                var editorUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor.js" );
+                var toolsUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js" );
 
                 ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs", editorUrl );
                 ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs-tools", toolsUrl );
