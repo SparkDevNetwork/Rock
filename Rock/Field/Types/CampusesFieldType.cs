@@ -32,7 +32,6 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
-        private const string REPEAT_COLUMNS = "repeatColumns";
         private const string FILTER_CAMPUS_TYPES_KEY = "filterCampusTypes";
         private const string FILTER_CAMPUS_STATUS_KEY = "filterCampusStatus";
         private const string SELECTABLE_CAMPUSES_KEY = "SelectableCampusIds";
@@ -121,41 +120,23 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", "Select how many columns the list should use before going to the next row. If blank 4 is used.", string.Empty ) );
             configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", "When set, inactive campuses will be included in the list.", string.Empty ) );
             configurationValues.Add( FILTER_CAMPUS_TYPES_KEY, new ConfigurationValue( "Filter Campus Types", string.Empty, string.Empty ) );
             configurationValues.Add( FILTER_CAMPUS_STATUS_KEY, new ConfigurationValue( "Filter Campus Status", string.Empty, string.Empty ) );
-            configurationValues.Add( SELECTABLE_CAMPUSES_KEY, new ConfigurationValue( " Selectable Campuses", "Specify the campuses eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
+            configurationValues.Add( SELECTABLE_CAMPUSES_KEY, new ConfigurationValue( "Selectable Campuses", "Specify the campuses eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
 
             if ( controls != null )
             {
-                NumberBox nbRepeatColumns = controls.Count > 0 ? controls[0] as NumberBox : null;
-                CheckBox cbIncludeInactive = controls.Count > 1 ? controls[1] as CheckBox : null;
-                RockCheckBoxList cblCampusTypes = controls.Count > 2 ? controls[2] as RockCheckBoxList : null;
-                RockCheckBoxList cblCampusStatuses = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
-                RockCheckBoxList cblSelectableValues = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
+                RockCheckBoxList cblCampusTypes = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
+                RockCheckBoxList cblCampusStatuses = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 5 ? controls[5] as RockCheckBoxList : null;
 
-                if ( nbRepeatColumns != null )
-                {
-                    configurationValues[REPEAT_COLUMNS].Value = ( ( NumberBox ) controls[0] ).Text;
-                }
-
-                if ( cbIncludeInactive != null )
-                {
-                    configurationValues[INCLUDE_INACTIVE_KEY].Value = ( ( CheckBox ) controls[1] ).Checked.ToString();
-                }
-                
-                if ( cblCampusTypes != null )
-                {
-                    configurationValues[FILTER_CAMPUS_TYPES_KEY].Value = string.Join( ",", ( ( RockCheckBoxList ) controls[2] ).SelectedValues );
-                }
-
-                if ( cblCampusStatuses != null )
-                {
-                    configurationValues[FILTER_CAMPUS_STATUS_KEY].Value = string.Join( ",", ( ( RockCheckBoxList ) controls[3] ).SelectedValues );
-                }
+                configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive != null ? cbIncludeInactive.Checked.ToString() : null;
+                configurationValues[FILTER_CAMPUS_TYPES_KEY].Value = cblCampusTypes != null ? string.Join( ",", cblCampusTypes.SelectedValues ) : null;
+                configurationValues[FILTER_CAMPUS_STATUS_KEY].Value = cblCampusStatuses != null ? string.Join( ",", cblCampusStatuses.SelectedValues ) : null;
 
                 if ( cblSelectableValues != null )
                 {
@@ -187,18 +168,14 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
+            base.SetConfigurationValues( controls, configurationValues );
+
             if ( controls != null && configurationValues != null )
             {
-                NumberBox nbRepeatColumns = controls.Count > 0 ? controls[0] as NumberBox : null;
-                CheckBox cbIncludeInactive = controls.Count > 1 ? controls[1] as CheckBox : null;
-                RockCheckBoxList cblCampusTypes = controls.Count > 2 ? controls[2] as RockCheckBoxList : null;
-                RockCheckBoxList cblCampusStatuses = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
-                RockCheckBoxList cblSelectableValues = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
-
-                if ( nbRepeatColumns != null )
-                {
-                    nbRepeatColumns.Text = configurationValues.GetValueOrNull( REPEAT_COLUMNS );
-                }
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
+                RockCheckBoxList cblCampusTypes = controls.Count > 3 ? controls[3] as RockCheckBoxList : null;
+                RockCheckBoxList cblCampusStatuses = controls.Count > 4 ? controls[4] as RockCheckBoxList : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 5 ? controls[5] as RockCheckBoxList : null;
 
                 if ( cbIncludeInactive != null )
                 {
@@ -231,7 +208,7 @@ namespace Rock.Field.Types
 
                 if (cblSelectableValues != null )
                 {
-                    var selectableValues = new List<string>( cblSelectableValues.SelectedValues );
+                    var selectableValues = configurationValues.GetValueOrNull( SELECTABLE_CAMPUSES_KEY )?.SplitDelimitedValues( false );
 
                     var activeCampuses = CampusCache.All( cbIncludeInactive.Checked ).Select( v => new { Text = v.Name, Value = v.Id } );
                     cblSelectableValues.DataSource = activeCampuses;

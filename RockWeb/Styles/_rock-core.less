@@ -729,8 +729,8 @@ th[align="right"] {
   }
 
   .filter-options {
-    border-bottom-left-radius: @panel-border-radius;
     border-right: 1px solid @panel-border;
+    border-bottom-left-radius: @panel-border-radius;
   }
 
   .analysis-types {
@@ -774,9 +774,9 @@ th[align="right"] {
   align-items: center;
   justify-content: flex-end;
   height: 38px;
+  padding: 0 24px;
   border-bottom: 1px solid @panel-border;
   background-color: @panel-badges-bg;
-  padding: 0 24px;
 
   &:empty {
     display: none;
@@ -886,6 +886,17 @@ th[align="right"] {
   }
 }
 
+.btn-pill {
+  border-radius: 999px;
+}
+
+.btn-overflow {
+  color: @text-muted;
+  &:hover,
+  &:focus {
+    color: @text-color;
+  }
+}
 
 .btn-minimal {
   padding: 0;
@@ -1127,12 +1138,12 @@ div.aspNetDisabled {
 // Rock Popovers
 .rock-popover {
   display: flex;
+  z-index: @zindex-modal;
   flex-wrap: wrap;
   width: 500px;
   max-width: 100%;
   font-size: 14px;
-  z-index: @zindex-modal;
-  border-radius: 4px;;
+  border-radius: 4px;
 
   @media (min-width: 480px) {
     flex-wrap: nowrap;
@@ -1165,8 +1176,8 @@ div.aspNetDisabled {
     }
 
     .popover-content {
-      overflow: auto;
       min-height: 100px;
+      overflow: auto;
     }
   }
 }

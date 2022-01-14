@@ -15,63 +15,62 @@
             </div>
 
             <div class="panel-body">
-                <asp:Panel ID="pnlToolbox" CssClass="row" runat="server">
+                <asp:Panel ID="pnlToolbox" CssClass="schedule-toolbox" runat="server">
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                             data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
-                            class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
+                            class="btn btn-info btn-xs btn-copy-to-clipboard mb-4"
                             onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                             <i class="fa fa-calendar-alt"></i> Copy Calendar Link
                     </button>
-                    <div class="row d-flex flex-column">
+                    <div class="schedule-toolbox-cards">
                         <asp:Repeater ID="rScheduleCards" runat="server" OnItemDataBound="rScheduleCards_ItemDataBound">
                             <ItemTemplate>
-                                <div class="row <%# Eval( "CardCssClass" ) %>">
-                                    <div class="col-md-9">
-                                        <div>
-                                            <strong><asp:Literal ID="lScheduleDate" runat="server" /></strong>
-                                        </div>
-                                        <div>
+                                <div class="card card-sm card-schedule <%# Eval( "CardCssClass" ) %>">
+                                    <div class="card-body d-flex">
+                                        <div class="flex-fill">
+                                            <span class="card-title">
+                                                <asp:Literal ID="lScheduleDate" runat="server" />
+                                            </span>
                                             <asp:Literal ID="lScheduleCardDetails" runat="server" />
                                         </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <asp:Panel ID="pnlPending" runat="server">
-                                            <asp:LinkButton ID="btnConfirmAttend" runat="server" CssClass="btn btn-xs btn-success" CommandName="AttendanceId" Text="Attend" OnClick="btnConfirmAttend_Click" />
-                                            <asp:LinkButton ID="btnDeclineAttend" runat="server" CssClass="btn btn-xs btn-danger" CommandName="AttendanceId" Text="Decline" OnClick="btnDeclineAttend_Click" />
-                                        </asp:Panel>
-                                        <asp:Panel ID="pnlSideMenu" runat="server">
-                                            <Rock:HighlightLabel ID="hlScheduleType" runat="server" />
-                                            <div class="btn-group dropdown-right">
-                                                <button type="button" class="btn btn-sm text-muted bg-white dropdown-toggle pr-0" data-toggle="dropdown">
-                                                    <i class="fa fa-ellipsis-h"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <asp:LinkButton ID="btnCancelConfirmAttend" runat="server" CommandName="AttendanceId" CssClass="btn btn-xs btn-link text-danger" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttend_Click" />
-                                                        <asp:LinkButton ID="btnDeleteScheduleExclusion" runat="server" CommandName="ScheduleExclusionId" CssClass="btn btn-xs btn-link text-danger" Text="Delete" OnClick="btnDeleteScheduleExclusion_Click" />
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </asp:Panel>
+                                            <asp:Panel ID="pnlPending" class="schedule-confirm" runat="server">
+                                                <asp:LinkButton ID="btnDeclineAttend" runat="server" CssClass="btn btn btn-pill btn-danger" CommandName="AttendanceId" Text="Decline" OnClick="btnDeclineAttend_Click" />
+                                                <asp:LinkButton ID="btnConfirmAttend" runat="server" CssClass="btn btn btn-pill btn-primary" CommandName="AttendanceId" Text="Accept" OnClick="btnConfirmAttend_Click" />
+                                            </asp:Panel>
+                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center flex-nowrap justify-content-end" runat="server">
+                                                <Rock:HighlightLabel ID="hlScheduleType" runat="server" />
+                                                <div class="btn-group dropdown-right ml-1">
+                                                    <button type="button" class="btn btn-link btn-overflow dropdown-toggle" data-toggle="dropdown">
+                                                        <i class="fa fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <asp:LinkButton ID="btnCancelConfirmAttend" runat="server" CommandName="AttendanceId" CssClass="text-danger" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttend_Click" />
+                                                            <asp:LinkButton ID="btnDeleteScheduleExclusion" runat="server" CommandName="ScheduleExclusionId" CssClass="text-danger" Text="Delete" OnClick="btnDeleteScheduleExclusion_Click" />
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </asp:Panel>
                                     </div>
                                 </div>
-                                <!-- col -->
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
-                    <asp:Literal ID="lActionHeader" runat="server" />
-                    <asp:LinkButton ID="btnScheduleUnavailablilty" runat="server" CssClass="btn btn-primary" Text="Schedule Unavailablilty" OnClick="btnScheduleUnavailablilty_Click" />
-                    <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-primary" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" />
-                    <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-primary" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" />
+                    <div class="schedule-actions">
+                        <asp:Literal ID="lActionHeader" runat="server" />
+                        <asp:LinkButton ID="btnScheduleUnavailablilty" runat="server" CssClass="btn btn-lg btn-default btn-block" Text="Schedule Unavailablilty" OnClick="btnScheduleUnavailablilty_Click" />
+                        <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-lg btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" />
+                        <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-lg btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" />
+                    </div>
                 </asp:Panel>
 
                 <%-- Sign-up --%>
-                <asp:Panel ID="pnlSignup" runat="server">
+                <asp:Panel ID="pnlSignup" CssClass="schedule-toolbox-signup" runat="server">
                     <asp:Literal ID="lSignupMsg" runat="server" />
                     <Rock:DynamicPlaceholder ID="phSignUpSchedules" runat="server" />
                 </asp:Panel>
                 <%-- Preferences --%>
-                <asp:Panel ID="pnlPreferences" runat="server">
+                <asp:Panel ID="pnlPreferences" CssClass="schedule-toolbox-preferences" runat="server">
                     <Rock:NotificationBox ID="nbNoScheduledGroups" runat="server" Visible="false" Text="You are currently not in any scheduled groups." NotificationBoxType="Info" />
 
                     <%-- Per Group Preferences --%>
@@ -142,7 +141,7 @@
                     </asp:Repeater>
                 </asp:Panel>
                 <%-- Unavailablity Schedule --%>
-                <asp:Panel ID="pnlUnavailablitySchedule" runat="server">
+                <asp:Panel ID="pnlUnavailablitySchedule" CssClass="schedule-toolbox-unavailability" runat="server">
                     <asp:ValidationSummary ID="valSummaryAddBlackoutDates" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="UnavailablitySchedule" />
                     <Rock:DateRangePicker ID="drpUnavailabilityDateRange" runat="server" Label="Date Range" ValidationGroup="UnavailablitySchedule" Required="true" RequiredErrorMessage="Date Range is required" />
                     <Rock:RockTextBox ID="tbUnavailabilityDateDescription" runat="server" Label="Description" MaxLength="100" Help="A short description of why you'll be unavailable" ValidationGroup="UnavailablitySchedule" />
