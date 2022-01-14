@@ -249,7 +249,7 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             // build a drop down list of defined types (the one that gets selected is
-            // used to build a list of defined values) 
+            // used to build a list of defined values)
             var ddlDefinedType = new RockDropDownList
             {
                 AutoPostBack = true,
@@ -704,6 +704,7 @@ namespace Rock.Field.Types
             bool allowAdd = configurationValues.ContainsKey( ALLOW_ADDING_NEW_VALUES_KEY ) && configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value.AsBoolean();
             bool enhanceForLongLists = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
             bool allowMultiple = configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
 
             int[] selectableValues = configurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && configurationValues[SELECTABLE_VALUES_KEY].Value.IsNotNullOrWhiteSpace()
                 ? configurationValues[SELECTABLE_VALUES_KEY].Value.Split( ',' ).Select( int.Parse ).ToArray()
@@ -721,7 +722,8 @@ namespace Rock.Field.Types
                         RepeatColumns = repeatColumns,
                         IsAllowAddDefinedValue = allowAdd,
                         EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
                     };
                 }
                 else
@@ -733,7 +735,8 @@ namespace Rock.Field.Types
                             ID = id,
                             DisplayDescriptions = useDescription,
                             DefinedTypeId = definedTypeId,
-                            SelectableDefinedValuesId = selectableValues
+                            SelectableDefinedValuesId = selectableValues,
+                            IncludeInactive = includeInactive
                         };
                     }
                     else
@@ -744,7 +747,8 @@ namespace Rock.Field.Types
                             DisplayDescriptions = useDescription,
                             DefinedTypeId = definedTypeId,
                             RepeatColumns = repeatColumns,
-                            SelectableDefinedValuesId = selectableValues
+                            SelectableDefinedValuesId = selectableValues,
+                            IncludeInactive = includeInactive
                         };
                     }
                 }
@@ -761,7 +765,8 @@ namespace Rock.Field.Types
                         DefinedTypeId = definedTypeId,
                         IsAllowAddDefinedValue = allowAdd,
                         EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
                     };
                 }
                 else
@@ -772,14 +777,10 @@ namespace Rock.Field.Types
                         DisplayDescriptions = useDescription,
                         DefinedTypeId = definedTypeId,
                         EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
                     };
                 }
-            }
-
-            if ( editControl is IDefinedValuePicker )
-            {
-                ( editControl as IDefinedValuePicker ).IncludeInactive = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
             }
 
             if ( definedTypeId.HasValue )
@@ -1126,7 +1127,7 @@ namespace Rock.Field.Types
                     return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
                 }
 
-                //// OR up the where clauses for each of the selected values 
+                //// OR up the where clauses for each of the selected values
                 //// and make sure to wrap commas around things so we don't collide with partial matches
                 //// so it'll do something like this:
                 ////
