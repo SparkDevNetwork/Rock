@@ -168,6 +168,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
+        // THIS IS JUST A PLACEHOLDER FOR - TEXT FIELD DOES NOT NEED THIS
         watch([], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");

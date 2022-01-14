@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, ref, computed, watch } from "vue";
-import { getFieldEditorProps } from "./utils";
+import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { asTrueFalseOrNull, asBoolean } from "../Services/boolean";
 import { ConfigurationValueKey } from "./booleanField";
 import DropDownList from "../Elements/dropDownList";
@@ -144,4 +144,101 @@ export const EditComponent = defineComponent({
 export const ConfigurationComponent = defineComponent({
     name: "BooleanField.Configuration",
 
+    components: { TextBox, DropDownList },
+
+    props: getFieldConfigurationProps(),
+
+    emits: ["update:modelValue", "updateConfiguration", "updateConfigurationValue"],
+
+    setup(props, { emit }) {
+        const trueText = ref("Yes");
+        const falseText = ref("No");
+        const controlType = ref<BooleanControlType>(BooleanControlType.DropDown);
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {};
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.TrueText] = trueText.value ?? "Yes";
+            newValue[ConfigurationValueKey.FalseText] = falseText.value ?? "No";
+            newValue[ConfigurationValueKey.BooleanControlType] = controlType.value?.toString() ?? BooleanControlType.DropDown.toString();
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.TrueText] !== (props.modelValue[ConfigurationValueKey.TrueText] ?? "Yes")
+                || newValue[ConfigurationValueKey.FalseText] !== (props.modelValue[ConfigurationValueKey.FalseText] ?? "No")
+                || newValue[ConfigurationValueKey.BooleanControlType] !== (props.modelValue[ConfigurationValueKey.BooleanControlType] ?? BooleanControlType.DropDown);
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         * 
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            trueText.value = props.modelValue[ConfigurationValueKey.TrueText];
+            falseText.value = props.modelValue[ConfigurationValueKey.FalseText];
+            controlType.value = parseInt(props.modelValue[ConfigurationValueKey.BooleanControlType], 10) || 0;
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        watch([], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(trueText, () => maybeUpdateConfiguration(ConfigurationValueKey.TrueText, trueText.value ?? "Yes"));
+        watch(falseText, () => maybeUpdateConfiguration(ConfigurationValueKey.FalseText, falseText.value ?? "No"));
+        watch(controlType, () => maybeUpdateConfiguration(ConfigurationValueKey.BooleanControlType, controlType.value?.toString() ?? "0"));
+
+
+
+
+        const controlTypeOptions = [
+            { text: "Drop Down", value: BooleanControlType.DropDown },
+            { text: "Checkbox", value: BooleanControlType.Checkbox },
+            { text: "Toggle", value: BooleanControlType.Toggle }
+        ];
+
+        return { controlTypeOptions, trueText, falseText, controlType };
+    },
+
+    template: `
+<div>
+    <TextBox v-model="trueText" label="True Text" help="The text to display when value is true" />
+    <TextBox v-model="falseText" label="False Text" help="The text to display when value is false" />
+    <DropDownList v-model="controlType" label="Control Type" help="The type of control to use when editing the value" :options="controlTypeOptions" :show-blank-item="false" />
+</div>
+`
 });
