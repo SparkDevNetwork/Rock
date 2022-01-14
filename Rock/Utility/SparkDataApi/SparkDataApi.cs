@@ -38,6 +38,7 @@ namespace Rock.Utility.SparkDataApi
         public SparkDataApi()
         {
             _client = new RestClient( SparkDataConfig.SPARK_SERVER );
+            _client.AddDefaultHeader( "Rock-VersionNumber", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
         }
 
         /// <summary>
