@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System;
 using System.Collections.Generic;
@@ -644,6 +643,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool AllowAnyChildGroupType { get; set; }
+
+         /// <summary>
+        /// Gets or sets a value indicating whether this instance is capacity required.
+        /// </summary>
+        /// <value><c>true</c> if this instance is capacity required; otherwise, <c>false</c>.</value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsCapacityRequired { get; set; } = false;
 
         #endregion Entity Properties
 

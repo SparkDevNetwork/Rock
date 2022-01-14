@@ -23,18 +23,16 @@
 
 import { IEntity } from "../entity";
 
-export type RelatedEntity = IEntity & {
-    additionalSettingsJson?: string | null;
-    isSystem?: boolean;
-    note?: string | null;
-    order?: number;
-    purposeKey?: string | null;
-    qualifierValue?: string | null;
-    quantity?: number | null;
-    sourceEntityId?: number;
-    sourceEntityTypeId?: number;
-    targetEntityId?: number;
-    targetEntityTypeId?: number;
+export type RemoteAuthenticationSession = IEntity & {
+    authenticationIpAddress?: string | null;
+    authorizedPersonAliasId?: number | null;
+    clientIpAddress?: string | null;
+    code?: string | null;
+    deviceUniqueIdentifier?: string | null;
+    sessionAuthenticatedDateTime?: string | null;
+    sessionEndDateTime?: string | null;
+    sessionStartDateTime?: string | null;
+    siteId?: number | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;
