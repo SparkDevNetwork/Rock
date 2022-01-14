@@ -968,7 +968,6 @@
     <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.cs" />
     <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.Logic.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementType.Logic.cs" />
-    <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.Logic.cs" />
     <Compile Include="Model\Engagement\StepProgram\StepProgram.Logic.cs" />
     <Compile Include="Model\Engagement\StepStatus\StepStatus.Logic.cs" />
     <Compile Include="Model\Engagement\StepType\StepType.Logic.cs" />
@@ -1068,7 +1067,6 @@
     <Compile Include="Model\Finance\FinancialTransaction\TransactionGraphBy.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
-    <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.Logic.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalSchedule.cs" />

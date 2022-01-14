@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Web.Cache;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -28,21 +27,7 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowType
     {
-        #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets a collection containing  the <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that will be executed/performed as part of this WorkflowType.
-        /// </summary>
-        /// <value>
-        /// A collection of <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that are executed/performed as part of this WorkflowType.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<WorkflowActivityType> ActivityTypes
-        {
-            get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
-            set { _activityTypes = value; }
-        }
-        private ICollection<WorkflowActivityType> _activityTypes;
+        #region Properties
 
         /// <summary>
         /// Gets a value indicating whether this instance has active forms.
@@ -78,7 +63,7 @@ namespace Rock.Model
             }
         }
 
-#endregion Virtual Properties
+        #endregion Properties
 
         #region Public Methods
 

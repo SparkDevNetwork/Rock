@@ -61,8 +61,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202201042325477_FinancialTransactionAlertCascadeDelete.cs" />
-    <Compile Include="Migrations\202201042325477_FinancialTransactionAlertCascadeDelete.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.cs" />
+    <Compile Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.Designer.cs">
       <DependentUpon>202201042325477_FinancialTransactionAlertCascadeDelete.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.cs" />
@@ -923,7 +923,7 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202201042325477_FinancialTransactionAlertCascadeDelete.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.resx">
       <DependentUpon>202201042325477_FinancialTransactionAlertCascadeDelete.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.resx">

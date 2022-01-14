@@ -16,6 +16,8 @@
 //
 using Rock.Data;
 using Rock.Web.Cache;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -239,6 +241,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing  the <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that will be executed/performed as part of this WorkflowType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that are executed/performed as part of this WorkflowType.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<WorkflowActivityType> ActivityTypes
+        {
+            get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
+            set { _activityTypes = value; }
+        }
+        private ICollection<WorkflowActivityType> _activityTypes;
 
         #endregion Navigation Properties
     }
