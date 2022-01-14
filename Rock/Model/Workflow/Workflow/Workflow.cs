@@ -17,6 +17,8 @@
 using Rock.Data;
 using Rock.Lava;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -179,6 +181,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias InitiatorPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing all the <see cref="Rock.Model.WorkflowActivity">WorkflowActivities</see> that are a part of this Workflow instance.
+        /// </summary>
+        /// <value>
+        /// A collection containing the <see cref="Rock.Model.WorkflowActivity">WorkflowActivities</see> that are a part of this Workflow instance.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<WorkflowActivity> Activities
+        {
+            get { return _activities ?? ( _activities = new Collection<WorkflowActivity>() ); }
+            set { _activities = value; }
+        }
+        private ICollection<WorkflowActivity> _activities;
 
         #endregion Navigation Properties
     }

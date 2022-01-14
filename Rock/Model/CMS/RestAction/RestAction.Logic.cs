@@ -15,10 +15,8 @@
 // </copyright>
 //
 
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Runtime.Serialization;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -27,28 +25,6 @@ namespace Rock.Model
     public partial class RestAction
     {
         #region Properties
-
-        private string _cacheControlHeaderSettings;
-        /// <summary>
-        /// Gets or sets the cache control header settings.
-        /// </summary>
-        /// <value>
-        /// The cache control header settings.
-        /// </value>
-        [MaxLength( 500 )]
-        [DataMember]
-        public string CacheControlHeaderSettings
-        {
-            get => _cacheControlHeaderSettings;
-            set
-            {
-                if ( _cacheControlHeaderSettings != value )
-                {
-                    _cacheControlHeader = null;
-                }
-                _cacheControlHeaderSettings = value;
-            }
-        }
 
         private RockCacheability _cacheControlHeader;
         /// <summary>

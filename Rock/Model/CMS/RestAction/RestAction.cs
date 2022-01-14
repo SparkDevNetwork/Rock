@@ -75,6 +75,28 @@ namespace Rock.Model
         [DataMember]
         public string Path { get; set; }
 
+        private string _cacheControlHeaderSettings;
+        /// <summary>
+        /// Gets or sets the cache control header settings.
+        /// </summary>
+        /// <value>
+        /// The cache control header settings.
+        /// </value>
+        [MaxLength( 500 )]
+        [DataMember]
+        public string CacheControlHeaderSettings
+        {
+            get => _cacheControlHeaderSettings;
+            set
+            {
+                if ( _cacheControlHeaderSettings != value )
+                {
+                    _cacheControlHeader = null;
+                }
+                _cacheControlHeaderSettings = value;
+            }
+        }
+
         #endregion
 
         #region Navigation Properties

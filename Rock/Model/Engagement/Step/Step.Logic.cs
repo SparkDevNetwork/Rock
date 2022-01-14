@@ -24,60 +24,6 @@ namespace Rock.Model
 {
     public partial class Step
     {
-        #region Entity Properties
-
-        /// <summary>
-        /// Gets the start date key.
-        /// </summary>
-        /// <value>
-        /// The start date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? StartDateKey
-        {
-            get => ( StartDateTime == null || StartDateTime.Value == default ) ?
-                        ( int? ) null :
-                        StartDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the end date key.
-        /// </summary>
-        /// <value>
-        /// The end date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? EndDateKey
-        {
-            get => ( EndDateTime == null || EndDateTime.Value == default ) ?
-                        ( int? ) null :
-                        EndDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the completed date key.
-        /// </summary>
-        /// <value>
-        /// The completed date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? CompletedDateKey
-        {
-            get => ( CompletedDateTime == null || CompletedDateTime.Value == default ) ?
-                        ( int? ) null :
-                        CompletedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-
-            private set { }
-        }
-
-        #endregion Entity Properties
 
         /// <summary>
         /// Indicates if this step has been completed
