@@ -195,6 +195,7 @@ import { RegistrationTemplateForm } from "./registrationTemplateForm";
 import { RegistrationTemplateFormField } from "./registrationTemplateFormField";
 import { RegistrationTemplatePlacement } from "./registrationTemplatePlacement";
 import { RelatedEntity } from "./relatedEntity";
+import { RemoteAuthenticationSession } from "./remoteAuthenticationSession";
 import { Report } from "./report";
 import { ReportField } from "./reportField";
 import { RestAction } from "./restAction";
@@ -414,6 +415,7 @@ export {
     RegistrationTemplateFormField,
     RegistrationTemplatePlacement,
     RelatedEntity,
+    RemoteAuthenticationSession,
     Report,
     ReportField,
     RestAction,
