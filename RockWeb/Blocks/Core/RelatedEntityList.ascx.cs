@@ -28,6 +28,33 @@ using Rock.Web.UI.Controls;
 using System.Reflection;
 using System.Collections.Generic;
 using Rock.Utility;
+using System.Web;
+
+/*
+    USAGE DOCUMENTATION
+
+    This uses several postback actions that require specific inputs.
+
+    DeleteRelationship
+    ---------------------
+    RelatedEntityGuid|PurposeKey|ConfirmationMessage
+
+    ConfirmationMessage (optional) - If you don't provide one no confirmation will be displayed. Be sure that this message is escaped if you think it could contain unsafe characters.
+    PurposeKey (optional) - If you don't provide one the first key from the block setting will be used.
+
+    AddRelationship
+    --------------------
+    SourceEntity(Id/Guid)|TargetEntity(Id/Guid)|PurposeKey|ConfirmationMessage
+
+    ConfirmationMessage (optional) - If you don't provide one no confirmation will be displayed. Be sure that this message is escaped if you think it could contain unsafe characters.
+    PurposeKey (optional) - If you don't provide one the first key from the block setting will be used.
+
+    Sample:
+    {% assign safeMinifigName = minifig.Value | EscapeDataString %}
+    {% assign postbackAddParm = CurrentPerson.PrimaryAliasId | Append:'|' | Append:minifig.Id | Append:'|PERSONAL_WANT|Do you really want the ' | Append:safeMinifigName | Append:' minifigure?' %}
+
+*/
+
 
 namespace RockWeb.Blocks.Core
 {
@@ -55,7 +82,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.TargetEntityType )]
 
     [TextField( "Purpose Key",
-        Description = "The purpose key to use for linking the two entities together. While this is not required, it is highly recommended that you provide one.",
+        Description = "Comma delimited list of purpose key(s) to use for linking the two entities together. While this is not required, it is highly recommended that you provide at least one.",
         IsRequired = false,
         DefaultValue = "",
         Order = 3,
@@ -91,13 +118,6 @@ namespace RockWeb.Blocks.Core
         Order = 7,
         Key = AttributeKey.HeaderIconCssClass )]
 
-    [TextField( "Delete Confirmation Text",
-        Description = "The text to display when deleting an item. The token {0} will be replaced with the value after the | of the Lava postback command.",
-        IsRequired = false,
-        DefaultValue = "Are you sure you want to delete the item {0}?",
-        Order = 7,
-        Key = AttributeKey.DeleteConfirmationText )]
-
     public partial class RelatedEntityList : RockBlock
     {
         public static class AttributeKey
@@ -110,7 +130,6 @@ namespace RockWeb.Blocks.Core
             public const string LavaTemplate = "LavaTemplate";
             public const string HeaderTitle = "HeaderTitle";
             public const string HeaderIconCssClass = "HeaderIconCssClass";
-            public const string DeleteConfirmationText = "DeleteConfirmationText";
         }
 
         public static class PageParameterKey
@@ -150,7 +169,19 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The purpose key.
         /// </value>
-        protected string PurposeKey => GetAttributeValue( AttributeKey.PurposeKey );
+        protected List<string> PurposeKeys
+        {
+            get
+            {
+                if ( _purposeKeys.IsNull() )
+                {
+                    _purposeKeys = GetAttributeValue( AttributeKey.PurposeKey ).Split(',').Select( p => p.Trim() ).ToList();
+                }
+
+                return _purposeKeys;
+            }
+        }
+        private List<string> _purposeKeys;
 
         /// <summary>
         /// Gets the type of the parameter.
@@ -184,14 +215,6 @@ namespace RockWeb.Blocks.Core
         /// </value>
         protected string HeaderTitle => GetAttributeValue( AttributeKey.HeaderTitle );
 
-        /// <summary>
-        /// Gets the delete confirmation text.
-        /// </summary>
-        /// <value>
-        /// The delete confirmation text.
-        /// </value>
-        protected string DeleteConfirmationText => GetAttributeValue( AttributeKey.DeleteConfirmationText );
-
         #endregion
 
         #region ViewState Properties
@@ -212,6 +235,63 @@ namespace RockWeb.Blocks.Core
             set
             {
                 ViewState["CurrentRelationshipId"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current source entity identifier.
+        /// </summary>
+        /// <value>
+        /// The current source entity identifier.
+        /// </value>
+        public int CurrentSourceEntityId
+        {
+            get
+            {
+                return ViewState["CurrentSourceEntityId"] as int? ?? 0;
+            }
+
+            set
+            {
+                ViewState["CurrentSourceEntityId"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current target entity identifier.
+        /// </summary>
+        /// <value>
+        /// The current target entity identifier.
+        /// </value>
+        public int CurrentTargetEntityId
+        {
+            get
+            {
+                return ViewState["CurrentTargetEntityId"] as int? ?? 0;
+            }
+
+            set
+            {
+                ViewState["CurrentTargetEntityId"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current purpose key.
+        /// </summary>
+        /// <value>
+        /// The current purpose key.
+        /// </value>
+        public string CurrentPurposeKey
+        {
+            get
+            {
+                return ViewState["CurrentPurposeKey"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                ViewState["CurrentPurposeKey"] = value;
             }
         }
 
@@ -328,7 +408,7 @@ namespace RockWeb.Blocks.Core
                 var sourceEntityGuid = PageParameter( PageParameterKey.Source ).AsGuid();
 
                 // Convert the guids to ids by looking them up in the database
-                sourceEntityId = GetEntityIdFromGuid( sourceEntityGuid, sourceEntityTypeId );
+                sourceEntityId = Reflection.GetEntityIdForEntityType( sourceEntityTypeGuid.Value, sourceEntityGuid );
 
                 if ( !sourceEntityId.HasValue )
                 {
@@ -358,40 +438,6 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Gets the entity id from the entity's guid.
-        /// </summary>
-        /// <param name="entityGuid">The entity unique identifier.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <returns></returns>
-        private int? GetEntityIdFromGuid( Guid entityGuid, int entityTypeId )
-        {
-            var rockContext = new RockContext();
-
-            var entityTypeCache = EntityTypeCache.Get( entityTypeId );
-
-            if ( entityTypeCache.IsNull() )
-            {
-                return 0;
-            }
-
-            Type entityType = entityTypeCache.GetEntityType();
-            IService serviceInstance = Reflection.GetServiceForEntityType( entityType, rockContext );
-
-            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
-
-            var getResult = getMethod.Invoke( serviceInstance, new object[] { entityGuid } );
-
-            if ( getResult.IsNull() )
-            {
-                return null;
-            }
-
-            var queryResult = getResult as IEntity;
-
-            return queryResult.Id;
-        }
-
-        /// <summary>
         /// Gets the existing relationship.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -414,7 +460,7 @@ namespace RockWeb.Blocks.Core
                                     .Where( r =>
                                         r.SourceEntityTypeId == sourceEntityTypeId
                                         && r.TargetEntityTypeId == targetEntityTypeId
-                                        && r.PurposeKey == PurposeKey
+                                        && PurposeKeys.Contains( r.PurposeKey )
                                     );
 
             // Add filters for EntityIds
@@ -434,6 +480,12 @@ namespace RockWeb.Blocks.Core
             return results;
         }
 
+        /// <summary>
+        /// Gets all person aliases for person by person alias.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="personAliasService">The person alias service.</param>
+        /// <returns></returns>
         private IQueryable<int> GetAllPersonAliasesForPersonByPersonAlias( int personAliasId, PersonAliasService personAliasService )
         {
             var qry = personAliasService.Queryable()
@@ -445,10 +497,9 @@ namespace RockWeb.Blocks.Core
                         .Select( pa => pa.Id );
         }
 
-        #endregion
-
-        #region Events
-
+        /// <summary>
+        /// Routes the action.
+        /// </summary>
         private void RouteAction()
         {
             var sm = ScriptManager.GetCurrent( Page );
@@ -459,19 +510,16 @@ namespace RockWeb.Blocks.Core
 
                 if ( eventArgs.Length == 2 )
                 {
-                    string action = eventArgs[0];
-                    string parameters = eventArgs[1];
-
-                    int argument = 0;
-                    int.TryParse( parameters, out argument );
+                    var action = eventArgs[0];
+                    var parameters = eventArgs[1].Split( '|' ).Select( p => p.Trim() ).ToList();
 
                     switch ( action )
                     {
                         case "DeleteRelationship":
-                            var parms = parameters.Split( '|' );
-                            var relationshipId = int.Parse( parms[0] );
-                            DisplayDeleteRelationship( relationshipId, parms[1] );
-                            sm.AddHistoryPoint( "Action", "DeleteRelationship" );
+                            ProcessDeleteRequest( parameters );
+                            break;
+                        case "AddRelationship":
+                            ProcessAddRequest( parameters );
                             break;
                     }
                 }
@@ -479,43 +527,150 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Displays the delete relationship.
+        /// Processes the add request.
         /// </summary>
-        /// <param name="relationshipId">The relationship identifier.</param>
-        private void DisplayDeleteRelationship( int relationshipId, string itemDescription )
+        /// <param name="parms">The parms.</param>
+        private void ProcessAddRequest( List<string> parms )
+        {
+            var confirmationMessage = string.Empty;
+            var purposeKey = PurposeKeys.First() ?? string.Empty;
+
+            Guid sourceEntityGuid;
+            Guid targetEntityGuid;
+
+            // Get source entity id
+            if ( Guid.TryParse( parms[0], out sourceEntityGuid ) )
+            {
+                var sourceEntityId = Reflection.GetEntityIdForEntityType( sourceEntityTypeId, sourceEntityGuid );
+                this.CurrentSourceEntityId = sourceEntityId.HasValue ? sourceEntityId.Value : 0;
+            }
+            else
+            {
+                this.CurrentSourceEntityId = parms[0].AsInteger();
+            }
+
+            // Get target entity id
+            if ( Guid.TryParse( parms[1], out targetEntityGuid ) )
+            {
+                var targetEntityId = Reflection.GetEntityIdForEntityType( targetEntityTypeId, targetEntityGuid );
+                this.CurrentTargetEntityId = targetEntityId.HasValue ? targetEntityId.Value : 0;
+            }
+            else
+            {
+                this.CurrentTargetEntityId = parms[1].AsInteger();
+            }
+
+            // Check that we have valid entity ids
+            if (this.CurrentSourceEntityId == 0 || this.CurrentTargetEntityId == 0 )
+            {
+                return;
+            }
+
+            // Get purpose key
+            if ( parms.Count >= 3 )
+            {
+                this.CurrentPurposeKey = parms[2];
+            }
+
+            // Get confirmation message
+            if ( parms.Count >= 4 )
+            {
+                confirmationMessage = parms[3];
+            }
+
+            // If no add confirmation requested just add the item
+            if ( confirmationMessage.IsNullOrWhiteSpace() )
+            {
+                AddRelationship();
+                return;
+            }
+
+            // Show confirmation message
+            lConfirmAddMsg.Text = HttpUtility.UrlDecode( confirmationMessage );
+            mdConfirmAdd.Show();
+        }
+
+        /// <summary>
+        /// Adds the relationship.
+        /// </summary>
+        private void AddRelationship()
         {
             var rockContext = new RockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
-            var relatedEntity = relatedEntityService.Get( relationshipId );
+            var relatedEntity = new RelatedEntity();
+
+            relatedEntityService.Add( relatedEntity );
+
+            relatedEntity.SourceEntityTypeId = sourceEntityTypeId;
+            relatedEntity.TargetEntityTypeId = targetEntityTypeId;
+            relatedEntity.SourceEntityId = CurrentSourceEntityId;
+            relatedEntity.TargetEntityId = CurrentTargetEntityId;
+            relatedEntity.PurposeKey = CurrentPurposeKey;
+
+            rockContext.SaveChanges();
+
+            ShowContent();
+        }
+
+        /// <summary>
+        /// Displays the delete relationship.
+        /// </summary>
+        /// <param name="relationshipId">The relationship identifier.</param>
+        private void ProcessDeleteRequest( List<string> parms )
+        {
+            var confirmationMessage = string.Empty;
+            var purposeKey = PurposeKeys.First() ?? string.Empty;
+
+            Guid relationshipGuid ;
+
+            if ( !Guid.TryParse( parms[0], out relationshipGuid ) )
+            {
+                return; // Invalid related entity guid provided
+            }
+
+            // Get purpose key
+            if ( parms.Count >= 2 )
+            {
+                purposeKey = parms[1];
+            }
+
+            // Get confirmation message
+            if ( parms.Count >= 3 )
+            {
+                confirmationMessage = parms[2];
+            }
+
+            var rockContext = new RockContext();
+            var relatedEntityService = new RelatedEntityService( rockContext );
+
+            var relatedEntity = relatedEntityService.Get( relationshipGuid );
             if ( relatedEntity != null )
             {
                 // Persist the relationship id for use in partial postbacks
                 this.CurrentRelationshipId = relatedEntity.Id;
+                this.CurrentPurposeKey = purposeKey;
 
-                if ( itemDescription.IsNotNullOrWhiteSpace() )
+                // If no confirmation message process delete now.
+                if ( confirmationMessage.IsNullOrWhiteSpace() )
                 {
-                    lConfirmDeleteMsg.Text = String.Format( DeleteConfirmationText, itemDescription );
+                    DeleteExistingRelationship();
+                    return;
                 }
                 else
                 {
-                    lConfirmDeleteMsg.Text = "Are you sure you want to delete this relationship?";
+                    lConfirmDeleteMsg.Text = HttpUtility.UrlDecode( confirmationMessage );
                 }
-                
 
                 mdConfirmDelete.Show();
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the mdConfirmDelete control.
+        /// Deletes the existing relationship.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdConfirmDelete_Click( object sender, EventArgs e )
+        private void DeleteExistingRelationship()
         {
-            mdConfirmDelete.Hide();
-
             var rockContext = new RockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
@@ -528,6 +683,33 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
 
             ShowContent();
+        }
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdConfirmAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdConfirmAdd_SaveClick( object sender, EventArgs e )
+        {
+            mdConfirmAdd.Hide();
+
+            AddRelationship();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the mdConfirmDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdConfirmDelete_Click( object sender, EventArgs e )
+        {
+            mdConfirmDelete.Hide();
+
+            DeleteExistingRelationship();
         }
 
         #endregion

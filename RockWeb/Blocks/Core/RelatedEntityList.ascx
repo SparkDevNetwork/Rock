@@ -26,6 +26,12 @@
             </Content>
         </Rock:ModalDialog>
 
+        <Rock:ModalDialog ID="mdConfirmAdd" runat="server" Title="Please Confirm" SaveButtonText="Yes" OnSaveClick="mdConfirmAdd_SaveClick">
+            <Content>
+                <asp:Literal ID="lConfirmAddMsg" runat="server" />
+            </Content>
+        </Rock:ModalDialog>
+
     </ContentTemplate>
 </asp:UpdatePanel>
 
