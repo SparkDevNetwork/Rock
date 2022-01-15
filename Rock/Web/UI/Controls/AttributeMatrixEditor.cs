@@ -645,6 +645,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 _gMatrixItems.DataSource = attributeMatrixItemList;
+                _gMatrixItems.RowItemText = "Item";
                 _gMatrixItems.DataBind();
 
                 _gMatrixItems.Actions.ShowAdd = true;
