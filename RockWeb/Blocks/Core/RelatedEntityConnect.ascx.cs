@@ -241,6 +241,29 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
+        #region ViewState Properties
+
+        /// <summary>
+        /// Gets or sets the current relationship identifier.
+        /// </summary>
+        /// <value>
+        /// The current relationship identifier.
+        /// </value>
+        public string PreviousUrl
+        {
+            get
+            {
+                return ViewState["PreviousUrl"].ToString();
+            }
+
+            set
+            {
+                ViewState["PreviousUrl"] = value;
+            }
+        }
+
+        #endregion
+
         #region Control Methods
 
         private int sourceEntityTypeId = 0;
@@ -366,7 +389,7 @@ namespace RockWeb.Blocks.Core
                 relatedEntity.SaveAttributeValues( rockContext );
             }
 
-            NavigateToParentPage();
+            Response.Redirect( PreviousUrl );
         }
 
         /// <summary>
@@ -376,7 +399,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage(); // TODO: this might need to be able to pass back query string parms
+            Response.Redirect( PreviousUrl );
         }
 
         #endregion
