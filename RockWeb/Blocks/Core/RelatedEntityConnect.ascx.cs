@@ -316,6 +316,8 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
+                // Set previous URL into ViewState so we can return back to it
+                PreviousUrl = Request.UrlReferrer.ToString();
 
                 // Ensure we're properly configured
                 if ( !configurationCorrect )
