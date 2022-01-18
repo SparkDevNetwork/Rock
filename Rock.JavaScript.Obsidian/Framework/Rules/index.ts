@@ -258,7 +258,7 @@ function isNumeric(value: unknown): boolean {
 defineRule("required", (value: unknown, params?: unknown[]): ValidationResult => {
     // This needs to be changed. JSON is not safe in rules because of the
     // comma and pipe characters.
-    const options = params && params.length >= 1 && typeof params[1] === "string" ? JSON.parse(params[1]) : {};
+    const options = params && params.length >= 1 && typeof params[0] === "string" ? JSON.parse(params[0]) : {};
 
     if (typeof value === "string") {
         const allowEmptyString = !!(options.allowEmptyString);
@@ -302,7 +302,7 @@ defineRule("email", value => {
 });
 
 defineRule("notequal", (value: unknown, params?: unknown[]) => {
-    const compare = params && params.length >= 1 ? params[1] : undefined;
+    const compare = params && params.length >= 1 ? params[0] : undefined;
 
     if (isNumeric(value) && isNumeric(compare)) {
         if (convertToNumber(value) !== convertToNumber(compare)) {
@@ -317,7 +317,7 @@ defineRule("notequal", (value: unknown, params?: unknown[]) => {
 });
 
 defineRule("equal", (value: unknown, params?: unknown[]) => {
-    const compare = params && params.length >= 1 ? params[1] : undefined;
+    const compare = params && params.length >= 1 ? params[0] : undefined;
 
     if (isNumeric(value) && isNumeric(compare)) {
         if (convertToNumber(value) === convertToNumber(compare)) {
@@ -332,7 +332,7 @@ defineRule("equal", (value: unknown, params?: unknown[]) => {
 });
 
 defineRule("gt", (value: unknown, params?: unknown[]) => {
-    const compare = params && params.length >= 1 ? params[1] : undefined;
+    const compare = params && params.length >= 1 ? params[0] : undefined;
 
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
@@ -349,7 +349,7 @@ defineRule("gt", (value: unknown, params?: unknown[]) => {
 });
 
 defineRule("gte", (value: unknown, params?: unknown[]) => {
-    const compare = params && params.length >= 1 ? params[1] : undefined;
+    const compare = params && params.length >= 1 ? params[0] : undefined;
 
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
@@ -366,7 +366,7 @@ defineRule("gte", (value: unknown, params?: unknown[]) => {
 });
 
 defineRule("lt", (value: unknown, params?: unknown[]) => {
-    const compare = params && params.length >= 1 ? params[1] : undefined;
+    const compare = params && params.length >= 1 ? params[0] : undefined;
 
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
@@ -383,7 +383,7 @@ defineRule("lt", (value: unknown, params?: unknown[]) => {
 });
 
 defineRule("lte", (value: unknown, params?: unknown[]) => {
-    const compare = params && params.length >= 1 ? params[1] : undefined;
+    const compare = params && params.length >= 1 ? params[0] : undefined;
 
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
