@@ -114,9 +114,7 @@ namespace RockWeb.Blocks.Connection
         </div>
        </a>
 {%endif %}
-{% endfor %}
-{{ 'Lava' | Debug }}
-";
+{% endfor %}";
 
         }
         #endregion Lava
