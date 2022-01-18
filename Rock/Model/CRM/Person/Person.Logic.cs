@@ -776,6 +776,19 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the number of days until their next anniversary. This is a computed column and can be used
+        /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside of
+        /// a linq query. Use DaysToAnniversary instead.
+        /// NOTE: If their anniversary is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their anniversary when doing this calculation
+        /// </summary>
+        /// <value>
+        /// The number of days until their next anniversary
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public int? DaysUntilAnniversary { get; set; }
+
+        /// <summary>
         /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
         /// </summary>
         /// <value>
