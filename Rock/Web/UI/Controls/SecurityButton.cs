@@ -89,7 +89,7 @@ namespace Rock.Web.UI.Controls
                 var titleSubString = title.SubstringSafe( 6 ).Trim();
 
                 // If there is a Title substring part and the controls Title property does not start with "Secure " <-- with a space
-                if ( !titleSubString.IsNullOrWhiteSpace() & !titleUpper.StartsWith( $"{SECURE_UPPER} " ) )
+                if ( !titleSubString.IsNullOrWhiteSpace() && !titleUpper.StartsWith( $"{SECURE_UPPER} " ) )
                 {
                     title = $"{SECURE_TITLE} {titleSubString}";
                 }
