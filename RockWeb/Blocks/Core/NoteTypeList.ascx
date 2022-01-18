@@ -29,7 +29,7 @@
                                 <Rock:BoolField DataField="NoteType.AllowsReplies" HeaderText="Allows Replies" ColumnPriority="DesktopLarge" />
                                 <Rock:BoolField DataField="NoteType.AllowsAttachments" HeaderText="Allows Attachments" ColumnPriority="DesktopLarge" />
                                 <Rock:BoolField DataField="NoteType.IsSystem" HeaderText="System" />
-                                <Rock:SecurityField />
+                                <Rock:SecurityField TitleField="NoteType.Name" />
                                 <Rock:DeleteField OnClick="gNoteTypes_Delete" />
                             </Columns>
                         </Rock:Grid>
