@@ -160,6 +160,15 @@ namespace Rock.Model
         [DataMember]
         public int? EntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Campus Id of the workflow campus
+        /// </summary>
+        /// <value>
+        /// The Campus Id
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -196,6 +205,15 @@ namespace Rock.Model
         }
         private ICollection<WorkflowActivity> _activities;
 
+        /// <summary>
+        /// Gets or sets the campus tied to the <see cref="CampusId"/>.
+        /// </summary>
+        /// <value>
+        /// The initiator person alias.
+        /// </value>
+        [DataMember]
+        public virtual Campus Campus { get; set; }
+
         #endregion Navigation Properties
     }
 
@@ -213,6 +231,7 @@ namespace Rock.Model
         {
             this.HasRequired( w => w.WorkflowType ).WithMany().HasForeignKey( w => w.WorkflowTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( w => w.InitiatorPersonAlias ).WithMany().HasForeignKey( w => w.InitiatorPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( w => w.Campus ).WithMany().HasForeignKey( w => w.CampusId ).WillCascadeOnDelete( false );
         }
     }
 

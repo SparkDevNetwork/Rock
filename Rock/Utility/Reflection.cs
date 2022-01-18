@@ -269,6 +269,21 @@ namespace Rock
             return entity;
         }
 
+
+        /// <summary>
+        /// Gets the type of the entity identifier for entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public static int? GetEntityIdForEntityType( int entityTypeId, Guid entityGuid, Data.DbContext dbContext = null )
+        {
+            var entityTypeGuid = EntityTypeCache.Get( entityTypeId ).Guid;
+
+            return GetEntityIdForEntityType( entityTypeGuid, entityGuid, dbContext );
+        }
+
         /// <summary>
         /// Gets the specified entity identifier given the entity type unique
         /// identifier and the entity unique identifier.

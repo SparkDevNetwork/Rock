@@ -241,6 +241,29 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
+        #region ViewState Properties
+
+        /// <summary>
+        /// Gets or sets the current relationship identifier.
+        /// </summary>
+        /// <value>
+        /// The current relationship identifier.
+        /// </value>
+        public string PreviousUrl
+        {
+            get
+            {
+                return ViewState["PreviousUrl"].ToString();
+            }
+
+            set
+            {
+                ViewState["PreviousUrl"] = value;
+            }
+        }
+
+        #endregion
+
         #region Control Methods
 
         private int sourceEntityTypeId = 0;
@@ -293,6 +316,8 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
+                // Set previous URL into ViewState so we can return back to it
+                PreviousUrl = Request.UrlReferrer.ToString();
 
                 // Ensure we're properly configured
                 if ( !configurationCorrect )
@@ -366,7 +391,7 @@ namespace RockWeb.Blocks.Core
                 relatedEntity.SaveAttributeValues( rockContext );
             }
 
-            NavigateToParentPage();
+            Response.Redirect( PreviousUrl );
         }
 
         /// <summary>
@@ -376,7 +401,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage(); // TODO: this might need to be able to pass back query string parms
+            Response.Redirect( PreviousUrl );
         }
 
         #endregion
@@ -419,8 +444,8 @@ namespace RockWeb.Blocks.Core
                 var targetEntityGuid = PageParameter( PageParameterKey.Target ).AsGuid();
 
                 // Convert the guids to ids by looking them up in the database
-                sourceEntityId = GetEntityIdFromGuid( sourceEntityGuid, sourceEntityTypeId );
-                targetEntityId = GetEntityIdFromGuid( targetEntityGuid, targetEntityTypeId );
+                sourceEntityId = Reflection.GetEntityIdForEntityType( sourceEntityTypeGuid.Value,  sourceEntityGuid );
+                targetEntityId = Reflection.GetEntityIdForEntityType( targetEntityTypeGuid.Value, targetEntityGuid );
 
                 if ( !sourceEntityId.HasValue || !targetEntityId.HasValue )
                 {
@@ -497,40 +522,6 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Gets the entity id from the entity's guid.
-        /// </summary>
-        /// <param name="entityGuid">The entity unique identifier.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <returns></returns>
-        private int? GetEntityIdFromGuid( Guid entityGuid, int entityTypeId )
-        {
-            var rockContext = new RockContext();
-
-            var entityTypeCache = EntityTypeCache.Get( entityTypeId );
-
-            if ( entityTypeCache.IsNull() )
-            {
-                return 0;
-            }
-
-            Type entityType = entityTypeCache.GetEntityType();
-            IService serviceInstance = Reflection.GetServiceForEntityType( entityType, rockContext );
-
-            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
-
-            var getResult = getMethod.Invoke( serviceInstance, new object[] { entityGuid } );
-
-            if ( getResult.IsNull() )
-            {
-                return null;
-            }
-
-            var queryResult = getResult as IEntity;
-
-            return queryResult.Id;
-        }
-
-        /// <summary>
         /// Gets the existing relationship.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -553,8 +544,8 @@ namespace RockWeb.Blocks.Core
             var personAliasEntityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PERSON_ALIAS ).Id;
             var personAliasService = new PersonAliasService( rockContext );
 
-            var personAliasSourceQry = GetAllPersonAliasesForPersonByPersonAlias( sourceEntityId.Value, personAliasService );
-            var personAliasTargetQry = GetAllPersonAliasesForPersonByPersonAlias( targetEntityId.Value, personAliasService );
+            var personAliasSourceQry = GetAllPersonAliasIdsForPersonByPersonAliasId( sourceEntityId.Value, personAliasService );
+            var personAliasTargetQry = GetAllPersonAliasIdsForPersonByPersonAliasId( targetEntityId.Value, personAliasService );
 
             var qry = relatedEntityService.Queryable()
                                     .Where( r =>
@@ -586,7 +577,7 @@ namespace RockWeb.Blocks.Core
             return qry.OrderBy( r => r.Order ).FirstOrDefault();
         }
 
-        private IQueryable<int> GetAllPersonAliasesForPersonByPersonAlias( int personAliasId, PersonAliasService personAliasService )
+        private IQueryable<int> GetAllPersonAliasIdsForPersonByPersonAliasId( int personAliasId, PersonAliasService personAliasService )
         {
             var qry = personAliasService.Queryable()
                         .Where( pa => pa.Id == personAliasId )
