@@ -136,6 +136,8 @@ export const enum BlockType {
     ObsidianExampleControlGallery = "3ED1B4B2-FD1C-4E4B-B4B9-2DE4E6EF8915",
     /** The obsidian event field type gallery */
     ObsidianExampleFieldTypeGallery = "B9C209C2-ABB8-4B48-A68E-944572007B03",
+    /** Data Views with persistence enabled block Guid */
+    PersistedDataViewList = "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE",
     /** The contribution statement lava (Legacy) */
     ContributionStatementLavaLegacy = "AF986B72-ADD9-4E05-971F-1DE4EBED8667",
 }
