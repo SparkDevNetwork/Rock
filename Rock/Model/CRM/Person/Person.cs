@@ -361,7 +361,8 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
-        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        // DV See also: Rock.Communication.EmailAddressFieldValidator _emailAddressRegex, make sure the two stay in sync. #4829, #4867
+        [RegularExpression( @"\s*(\w+(?:[-+.]*\w+)*@\w+(?:[-.]\w+)*\.\w+(?:[-.]\w+)*)\s*", ErrorMessage = "The Email address is invalid" )]
         [Index( "IX_Email" )]
         public string Email { get; set; }
 
@@ -2446,7 +2447,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public sealed class CalculateFamilySalutationArgs
         {
@@ -2759,7 +2760,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the person image tag.
-        /// NOTE: You might want to use <seealso cref="GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs) "/> instead 
+        /// NOTE: You might want to use <seealso cref="GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs) "/> instead
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="photoId">The photo identifier.</param>

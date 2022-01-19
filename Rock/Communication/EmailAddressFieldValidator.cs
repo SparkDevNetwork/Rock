@@ -25,7 +25,7 @@ namespace Rock.Communication
     public enum EmailFieldValidationResultSpecifier
     {
         /// <summary>
-        /// The field content is valid. 
+        /// The field content is valid.
         /// </summary>
         Valid = 0,
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock.Communication
         /// </summary>
         InvalidLavaNotAllowed = 2,
         /// <summary>
-        /// Multiple addresses are not allowed, but more than one address has been detected. 
+        /// Multiple addresses are not allowed, but more than one address has been detected.
         /// </summary>
         InvalidMultipleAddressesNotAllowed = 3,
     }
@@ -47,6 +47,14 @@ namespace Rock.Communication
     /// </summary>
     public class EmailAddressFieldValidator
     {
+        /*
+         * DV 19-Jan-2022
+         *
+         * When updating this regex make sure to also update the Rock.Model.Person.Email
+         * RegularExpression attribute to the same value. Otherwise, this will pass the
+         * UI check and fail to save to the database. #4829, #4867
+         *
+         */
         private const string _emailAddressRegex = @"\s*(\w+(?:[-+.]*\w+)*@\w+(?:[-.]\w+)*\.\w+(?:[-.]\w+)*)\s*";
         private const string _lavaVariableRegex = @"({{\s*[^}}]+\s*}})";
         private const string _lavaTagRegex = @"({%\s*[^%}]+\s*%})";
