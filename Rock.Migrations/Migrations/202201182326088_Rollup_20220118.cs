@@ -195,15 +195,15 @@ namespace Rock.Migrations
         /// CH: Add Connection WebView BlockTypes
         /// </summary>
         private void SetConnectionWebViewBlockTypes() {
+
+            // Add/Update WebView : Connection Opportunity List
+            RockMigrationHelper.UpdateBlockType( "Connection Opportunity List", "Displays the connection type opportunities in a lava formatted block.", "~/Blocks/Connection/WebConnectionOpportunityListLava.ascx", "Connection > WebView", "B2E0E4E3-30B1-45BD-B808-C55BCD540894" );
+
+            // Add/Update WebView : Connection Request List
+            RockMigrationHelper.UpdateBlockType( "Connection Request List", "Displays the connection request in a lava formatted block.", "~/Blocks/Connection/WebConnectionRequestListLava.ascx", "Connection > WebView", "E6BAA42C-D799-4189-ABC9-4A8CA1B91D5A" );
   
-            // Add WebView : Connection Opportunity List
-            RockMigrationHelper.AddBlockType( "Connection Opportunity List", "Displays the connection type opportunities in a lava formatted block.", "~/Blocks/Connection/WebConnectionOpportunityListLava.ascx", "Connection > WebView", "B2E0E4E3-30B1-45BD-B808-C55BCD540894" );
-  
-            // Add WebView : Connection Request List
-            RockMigrationHelper.AddBlockType( "Connection Request List", "Displays the connection request in a lava formatted block.", "~/Blocks/Connection/WebConnectionRequestListLava.ascx", "Connection > WebView", "E6BAA42C-D799-4189-ABC9-4A8CA1B91D5A" );
-  
-            // Add WebView : Connection Type List
-            RockMigrationHelper.AddBlockType( "Connection Type List", "Displays the connection types in a lava formatted block.", "~/Blocks/Connection/WebConnectionTypeListLava.ascx", "Connection > WebView", "887F66AF-944F-4959-87F0-087E3999BAC3" );
+            // Add/Update WebView : Connection Type List
+            RockMigrationHelper.UpdateBlockType( "Connection Type List", "Displays the connection types in a lava formatted block.", "~/Blocks/Connection/WebConnectionTypeListLava.ascx", "Connection > WebView", "887F66AF-944F-4959-87F0-087E3999BAC3" );
         }
     }
 }
