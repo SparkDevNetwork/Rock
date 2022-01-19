@@ -69,6 +69,14 @@ namespace Rock.Financial
         Key = AttributeKey.PromptForNameOnCard,
         DefaultBooleanValue = false,
         Order = 4 )]
+
+    [EnumsField(
+        "Gateway Mode",
+        Description = "Selected the gateway mode",
+        Key = AttributeKey.GatewayMode,
+        EnumSourceType = typeof( HostedGatewayMode ),
+        DefaultValue = "Unhosted",
+        Order = 5 )]
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent
     {
         #region Attribute Keys
@@ -83,6 +91,7 @@ namespace Rock.Financial
             public const string MaxExpirationYears = "MaxExpirationYears";
             public const string DeclinedCVV = "DeclinedCVV";
             public const string PromptForNameOnCard = "PromptForNameOnCard";
+            public const string GatewayMode = "GatewayMode";
         }
 
         #endregion
@@ -652,11 +661,14 @@ namespace Rock.Financial
         /// </value>
         public HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway )
         {
-            return new HostedGatewayMode[2] { HostedGatewayMode.Hosted, HostedGatewayMode.Unhosted };
+            return  this.GetAttributeValue( financialGateway, AttributeKey.GatewayMode )
+                .SplitDelimitedValues()
+                .Select( a => a.ConvertToEnum<HostedGatewayMode>() )?
+                .ToArray()
+                ?? new HostedGatewayMode[1] { HostedGatewayMode.Unhosted };
         }
 
         #endregion IHostedGatewayComponent
-
     }
 
     /// <summary>
