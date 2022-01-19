@@ -18,15 +18,16 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "31b2def4-1a6b-4d5f-978e-bdc14ef59bc7" )]
     public partial class WorkflowsController
     {
         /// <summary>
@@ -37,6 +38,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Workflows/WorkflowEntry/{WorkflowTypeId}" )]
+        [RockGuid( "16f650eb-59bb-4bfa-aff1-dd6e90fac8a4" )]
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();
@@ -47,7 +49,8 @@ namespace Rock.Rest.Controllers
                 var workflow = Rock.Model.Workflow.Activate( workflowType, "Workflow From REST" );
 
                 // set workflow attributes from querystring
-                foreach(var parm in Request.GetQueryStrings()){
+                foreach ( var parm in Request.GetQueryStrings() )
+                {
                     workflow.SetAttributeValue( parm.Key, parm.Value );
                 }
 
@@ -58,7 +61,7 @@ namespace Rock.Rest.Controllers
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
                 return workflow;
             }
-            else 
+            else
             {
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.NotFound );
             }

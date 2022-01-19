@@ -46,7 +46,7 @@ Example:
 
 ## business-address.csv
 
-`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,AddressType`
+`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`
 
 ## business-attribute.csv
 `Key,Name,FieldType,Category`
@@ -126,10 +126,10 @@ Example:
 
 ## group.csv
 
-`Id,Name,Order,ParentGroupId,GroupTypeId,CampusId`
+`Id,Name,Description,Order,ParentGroupId,GroupTypeId,CampusId,Capacity,MeetingDay,MeetingTime,IsActive,IsPublic`
 
 Example:
-`3213213210,Activities,0,0,9999,`
+`3213213210,Activities,,0,9999,42,1,,2,19:00,True,True`
 
 ## group-address.csv
 `GroupId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`

@@ -22,7 +22,7 @@
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <Rock:BoolField DataField="ShowFinancialResults" HeaderText="Show Financial Results" SortExpression="ShowFinancialResults" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
-                            <Rock:SecurityField />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField ID="dfBenevolenceType" OnClick="gBenevolenceType_Delete" />
                         </Columns>
                     </Rock:Grid>

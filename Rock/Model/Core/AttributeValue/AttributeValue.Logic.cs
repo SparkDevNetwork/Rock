@@ -311,7 +311,7 @@ namespace Rock.Model
             var entityId = EntityId;
             if ( !entityId.HasValue && ( entry.State == EntityState.Modified || entry.State == EntityState.Deleted ) )
             {
-                entityId = entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+                entityId = entry.OriginalValues[nameof( this.EntityId )].ToStringSafe().AsIntegerOrNull();
             }
 
             var caption = attributeCache.Name;
@@ -484,7 +484,7 @@ namespace Rock.Model
                 case EntityState.Modified:
                 case EntityState.Deleted:
                 default:
-                    return entry.OriginalValues["Value"].ToStringSafe();
+                    return entry.OriginalValues[nameof( Value )].ToStringSafe();
             }
         }
 

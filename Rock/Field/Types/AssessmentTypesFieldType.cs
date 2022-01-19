@@ -35,7 +35,6 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
-        private const string REPEAT_COLUMNS = "repeatColumns";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -75,25 +74,14 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
-            string description = "When set, inactive assessments will be included in the list.";
-            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Assessment Type", description, string.Empty ) );
-
-            description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
+            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Assessment Type", "When set, inactive assessments will be included in the list.", string.Empty ) );
 
             if ( controls != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is NumberBox )
-                {
-                    configurationValues[REPEAT_COLUMNS].Value = ( ( NumberBox ) controls[0] ).Text;
-                }
-
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
-                {
-                    configurationValues[INCLUDE_INACTIVE_KEY].Value = ( ( CheckBox ) controls[1] ).Checked.ToString();
-                }
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
+                configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive != null ? cbIncludeInactive.Checked.ToString() : null;
             }
 
             return configurationValues;
@@ -106,16 +94,15 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
+            base.SetConfigurationValues( controls, configurationValues );
+
             if ( controls != null && configurationValues != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) )
-                {
-                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
-                }
+                CheckBox cbIncludeInactive = controls.Count > 2 ? controls[2] as CheckBox : null;
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                if ( cbIncludeInactive != null )
                 {
-                    ( ( NumberBox ) controls[1] ).Text = configurationValues[REPEAT_COLUMNS].Value;
+                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
                 }
             }
         }

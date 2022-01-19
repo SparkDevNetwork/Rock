@@ -314,12 +314,12 @@ namespace RockWeb.Blocks.Finance
             We really don't want to actually delete a FinancialScheduledTransaction.
             Just inactivate it, even if there aren't FinancialTransactions associated with it.
             It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
-            If that happens, Rock won't be able to match a record for that downloaded transaction! 
+            If that happens, Rock won't be able to match a record for that downloaded transaction!
             We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
             so we'll need the ScheduledTransaction to do that.
 
             So, don't delete ScheduledTransactions.
-             
+
             */
 
             BootstrapButton bbtnDelete = ( BootstrapButton ) sender;
@@ -454,20 +454,8 @@ namespace RockWeb.Blocks.Finance
                     schedules = schedules.Where( s => s.FinancialGateway.Guid == gatewayFilterGuid );
                 }
 
-                foreach ( var schedule in schedules )
-                {
-                    try
-                    {
-                        // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
-                        string errorMessage;
-                        transactionService.GetStatus( schedule, out errorMessage );
-                    }
-                    catch ( Exception ex )
-                    {
-                        // log and ignore
-                        LogException( ex );
-                    }
-                }
+                // Refresh the active transactions
+                transactionService.GetStatus( schedules, true );
 
                 rptScheduledTransactions.DataSource = schedules.ToList();
                 rptScheduledTransactions.DataBind();

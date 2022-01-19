@@ -139,7 +139,7 @@
                                 </asp:Panel>
                                 <asp:Panel ID="pnlNotLoggedInNameEntry" runat="server">
                                     <div class="form-group">
-                                        <Rock:RockTextBox ID="tbFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" />
+                                        <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Placeholder="First Name" CssClass="margin-b-sm" Required="true" />
                                     </div>
                                     <div class="form-group">
                                         <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" CssClass="margin-b-sm" Required="true" />

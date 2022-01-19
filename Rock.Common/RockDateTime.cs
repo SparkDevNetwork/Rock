@@ -286,5 +286,34 @@ namespace Rock
 
             return sundayDate.Date;
         }
+
+        /// <summary>
+        /// Returns a human-friendly description of the time of day.
+        /// </summary>
+        /// <param name="inputDateTime">A valid date/time value</param>
+        /// <returns></returns>
+        public static string GetTimeOfDay( DateTime inputDateTime )
+        {
+            string response;
+            var hour = inputDateTime.Hour;
+            if ( hour >= 5 && hour < 12 )
+            {
+                response = "Morning";
+            }
+            else if ( hour >= 12 && hour < 17 )
+            {
+                response = "Afternoon";
+            }
+            else if ( hour >= 17 && hour < 21 )
+            {
+                response = "Evening";
+            }
+            else
+            {
+                response = "Night";
+            }
+
+            return response;
+        }
     }
 }

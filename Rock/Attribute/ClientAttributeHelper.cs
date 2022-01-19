@@ -55,13 +55,25 @@ namespace Rock.Attribute
         {
             var attribute = AttributeCache.Get( attributeValue.AttributeId );
 
+            return ToClientAttributeValue( attribute, attributeValue.Value );
+        }
+
+        /// <summary>
+        /// Converts an Attribute Value to a view model that can be sent to the client.
+        /// </summary>
+        /// <param name="attribute">The attribute the value is associated with.</param>
+        /// <param name="value">The value to be encoded for public use.</param>
+        /// <returns>A <see cref="ClientAttributeValueViewModel"/> instance.</returns>
+        /// <remarks>Internal until this is moved to a permanent location.</remarks>
+        internal static ClientAttributeValueViewModel ToClientAttributeValue( AttributeCache attribute, string value )
+        {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
             return new ClientAttributeValueViewModel
             {
                 FieldTypeGuid = attribute.FieldType.Guid,
                 AttributeGuid = attribute.Guid,
-                Name = attributeValue.AttributeName,
+                Name = attribute.Name,
                 Categories = attribute.Categories.Select( c => new ClientAttributeValueCategoryViewModel
                 {
                     Guid = c.Guid,
@@ -69,8 +81,8 @@ namespace Rock.Attribute
                     Order = c.Order
                 } ).ToList(),
                 Order = attribute.Order,
-                TextValue = fieldType.GetTextValue( attributeValue.Value, attribute.ConfigurationValues ),
-                Value = fieldType.GetClientValue( attributeValue.Value, attribute.ConfigurationValues )
+                TextValue = fieldType.GetTextValue( value, attribute.ConfigurationValues ),
+                Value = fieldType.GetClientValue( value, attribute.ConfigurationValues )
             };
         }
 

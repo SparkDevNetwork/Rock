@@ -14,69 +14,74 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
-import { newGuid } from "../Util/guid";
-import { ruleStringToArray } from "../Rules/index";
+import { defineComponent, PropType, ref, watch } from "vue";
+import RockFormField from "./rockFormField";
 
 export default defineComponent({
     name: "CheckBox",
+
+    components: {
+        RockFormField
+    },
+
     props: {
         modelValue: {
             type: Boolean as PropType<boolean>,
             required: true
         },
+
         label: {
             type: String as PropType<string>,
             required: true
         },
-        inline: {
-            type: Boolean as PropType<boolean>,
-            default: true
-        },
+
         rules: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        text: {
             type: String as PropType<string>,
             default: ""
         }
     },
-    data: function () {
+
+    setup(props, { emit }) {
+        const internalValue = ref(props.modelValue);
+
+        const toggle = (): void => {
+            internalValue.value = !internalValue.value;
+        };
+
+        watch(() => props.modelValue, () => {
+            internalValue.value = props.modelValue;
+        });
+
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
         return {
-            uniqueId: `rock-checkbox-${newGuid()}`,
-            internalValue: this.modelValue
+            internalValue,
+            toggle
         };
     },
-    methods: {
-        toggle() {
-            this.internalValue = !this.internalValue;
-        }
-    },
-    computed: {
-        isRequired() {
-            const rules = ruleStringToArray(this.rules);
-            return rules.indexOf("required") !== -1;
-        }
-    },
-    watch: {
-        modelValue() {
-            this.internalValue = this.modelValue;
-        },
-        internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        }
-    },
+
     template: `
-<div v-if="inline" class="checkbox">
-    <label title="">
-        <input type="checkbox" v-model="internalValue" />
-        <span class="label-text ">{{label}}</span>
-    </label>
-</div>
-<div v-else class="form-group rock-check-box" :class="isRequired ? 'required' : ''">
-    <label class="control-label" :for="uniqueId">{{label}}</label>
+<RockFormField
+    :modelValue="modelValue"
+    :label="label"
+    formGroupClasses="rock-check-box"
+    name="checkbox">
+    <template #default="{uniqueId, field}">
     <div class="control-wrapper">
-        <div class="rock-checkbox-icon" @click="toggle">
+        <span class="rock-checkbox-icon" @click="toggle">
             <i v-if="modelValue" class="fa fa-check-square-o fa-lg"></i>
             <i v-else class="fa fa-square-o fa-lg"></i>
-        </div>
+            <span v-if="text">&nbsp;{{ text }}</span>
+        </span>
     </div>
-</div>`
+    </template>
+</RockFormField>
+`
 });

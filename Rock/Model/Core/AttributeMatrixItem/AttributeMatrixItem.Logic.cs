@@ -60,7 +60,7 @@ namespace Rock.Model
             var rockContext = new RockContext();
             var matrixId = AttributeMatrixId != default ?
                 AttributeMatrixId :
-                entry.OriginalValues["AttributeMatrixId"].ToStringSafe().AsIntegerOrNull();
+                entry.OriginalValues[ nameof( this.AttributeMatrixId )].ToStringSafe().AsIntegerOrNull();
 
             var matrix = AttributeMatrix;
 

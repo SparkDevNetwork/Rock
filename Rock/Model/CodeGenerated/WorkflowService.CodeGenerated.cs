@@ -89,6 +89,7 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 ActivatedDateTime = model.ActivatedDateTime,
+                CampusId = model.CampusId,
                 CompletedDateTime = model.CompletedDateTime,
                 Description = model.Description,
                 EntityId = model.EntityId,
@@ -170,6 +171,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ActivatedDateTime = source.ActivatedDateTime;
+            target.CampusId = source.CampusId;
             target.CompletedDateTime = source.CompletedDateTime;
             target.Description = source.Description;
             target.EntityId = source.EntityId;

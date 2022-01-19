@@ -27,6 +27,7 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
+    [RockGuid( "485fa8f3-5804-47b8-a84c-9813f2e16b2e" )]
     public partial class AssetStorageProvidersController
     {
         /// <summary>
@@ -36,6 +37,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetChildren" )]
+        [RockGuid( "4d7b4ae1-82f3-46b9-99e3-bae03b2edfaa" )]
         public IQueryable<TreeViewItem> GetChildren( string assetFolderId )
         {
             var assetStorageService = new AssetStorageProviderService( new RockContext() );
@@ -48,7 +50,7 @@ namespace Rock.Rest.Controllers
                     var rootFolder = component.GetRootFolder( assetStorageProvider );
 
                     var treeViewItem = new TreeViewItem();
-                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{rootFolder},{true}");
+                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{rootFolder},{true}" );
                     treeViewItem.IconCssClass = component.IconCssClass;
                     treeViewItem.Name = assetStorageProvider.Name;
                     treeViewItem.HasChildren = true;
@@ -57,7 +59,7 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                var assetFolderIdParts = assetFolderId.Split(',').ToArray();
+                var assetFolderIdParts = assetFolderId.Split( ',' ).ToArray();
                 if ( assetFolderIdParts.Length > 0 )
                 {
                     int assetStorageProviderId = assetFolderIdParts[0].AsInteger();
@@ -101,6 +103,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetFolders" )]
+        [RockGuid( "8a2e7ec6-2a38-41ac-9a83-b74ff4b7fd45" )]
         public List<Asset> GetFolders( int assetStorageProviderId, string path )
         {
             var assetStorageProviderService = ( AssetStorageProviderService ) Service;
@@ -123,6 +126,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetFiles" )]
+        [RockGuid( "40defe35-2196-4a11-bd08-bcffce1c4240" )]
         public List<Asset> GetFiles( int assetStorageProviderId, string path )
         {
 

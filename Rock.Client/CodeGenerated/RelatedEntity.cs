@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -49,6 +52,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string Note { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
@@ -56,6 +62,9 @@ namespace Rock.Client
 
         /// <summary />
         public string QualifierValue { get; set; }
+
+        /// <summary />
+        public int? Quantity { get; set; }
 
         /// <summary />
         public int SourceEntityId { get; set; }
@@ -102,13 +111,16 @@ namespace Rock.Client
         public void CopyPropertiesFrom( RelatedEntity source )
         {
             this.Id = source.Id;
+            this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Note = source.Note;
             this.Order = source.Order;
             this.PurposeKey = source.PurposeKey;
             this.QualifierValue = source.QualifierValue;
+            this.Quantity = source.Quantity;
             this.SourceEntityId = source.SourceEntityId;
             this.SourceEntityTypeId = source.SourceEntityTypeId;
             this.TargetEntityId = source.TargetEntityId;

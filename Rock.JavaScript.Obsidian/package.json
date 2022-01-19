@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@types/dragula": "^3.7.1",
     "@types/jest": "^27.0.3",
     "@types/luxon": "^2.0.3",
     "@types/glob": "^7.2.0",

@@ -200,8 +200,8 @@ namespace Rock.Model
         {
             if ( state == EntityState.Modified || state == EntityState.Deleted )
             {
-                _originalGroupTypeId = entry.OriginalValues["GroupTypeId"]?.ToString().AsIntegerOrNull();
-                _originalIsSecurityRole = entry.OriginalValues["IsSecurityRole"]?.ToString().AsBooleanOrNull();
+                _originalGroupTypeId = entry.OriginalValues[nameof( this.GroupTypeId )]?.ToString().AsIntegerOrNull();
+                _originalIsSecurityRole = entry.OriginalValues[nameof( this.IsSecurityRole )]?.ToString().AsBooleanOrNull();
             }
 
             base.PreSaveChanges( dbContext, entry, state );

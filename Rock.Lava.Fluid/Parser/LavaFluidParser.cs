@@ -130,7 +130,7 @@ namespace Rock.Lava.Fluid
         private void DefineLavaTrueFalseAsCaseInsensitive()
         {
             // To redefine the True and False parsers, we need to rebuild the Fluid Primary expression parser.
-            // Fluid defines a Primary expression as: primary => NUMBER | STRING | BOOLEAN | MEMBER
+            // Fluid defines a Primary expression as: primary => STRING | BOOLEAN | EMPTY | MEMBER | NUMBER.
 
             // Reproduce the standard Fluid parsers that are internally defined by the default parser.
             var indexer = Between( LBracket, Primary, RBracket ).Then<MemberSegment>( x => new IndexerSegment( x ) );
@@ -150,11 +150,13 @@ namespace Rock.Lava.Fluid
             var falseParser = Terms.Text( "false", caseInsensitive: true );
 
             // Replace the default definition of the Fluid Primary parser.
-            Primary.Parser = Number.Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) )
-                .Or( String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) ) )
+            Primary.Parser = String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) )
                 .Or( trueParser.Then<Expression>( x => new LiteralExpression( BooleanValue.True ) ) )
                 .Or( falseParser.Then<Expression>( x => new LiteralExpression( BooleanValue.False ) ) )
-                .Or( member.Then<Expression>( x => x ) );
+                .Or( Empty.Then<Expression>( x => new LiteralExpression( EmptyValue.Instance ) ) )
+                .Or( Blank.Then<Expression>( x => new LiteralExpression( BlankValue.Instance ) ) )
+                .Or( member.Then<Expression>( x => x ) )
+                .Or( Number.Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) ) );
         }
 
         private void CreateLavaDocumentParsers()
@@ -428,7 +430,7 @@ namespace Rock.Lava.Fluid
 
             var context = new FluidParseContext( template );
 
-            var lavaTokens = LavaTokensListParser.Parse( template, context ).Select( x => x.ToString() ).ToList();
+            var lavaTokens = LavaTokensListParser.Parse( context ).Select( x => x.ToString() ).ToList();
 
             // If the template contains only literal text, add the entire content as a single text token.
             if ( !lavaTokens.Any()

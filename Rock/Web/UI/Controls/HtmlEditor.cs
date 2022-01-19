@@ -648,7 +648,7 @@ namespace Rock.Web.UI.Controls
             {
                 rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }
-            
+
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
             if ( this.UserSpecificRoot )
@@ -760,7 +760,7 @@ $(document).ready( function() {{
             // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.js", true ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true ) );
                 var bundleUrl = System.Web.Optimization.BundleResolver.Current.GetBundleUrl( "~/Scripts/Bundles/RockHtmlEditorPlugins" );
                 ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-plugins", bundleUrl );
             }

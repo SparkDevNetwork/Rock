@@ -710,6 +710,24 @@ namespace Rock.Lava.Filters
             }
         }
 
+        /// <summary>
+        /// Returns a human-friendly description of the time of day.
+        /// </summary>
+        /// <param name="input">A valid date/time value</param>
+        /// <returns></returns>
+        public static string TimeOfDay( object input )
+        {
+            var dtoInput = GetDateTimeOffsetFromInputParameter( input, null );
+
+            if ( dtoInput == null )
+            {
+                return string.Empty;
+            }
+
+            var response = RockDateTime.GetTimeOfDay( dtoInput.Value.DateTime );
+            return response;
+        }
+
         #region Support Functions
 
         /// <summary>

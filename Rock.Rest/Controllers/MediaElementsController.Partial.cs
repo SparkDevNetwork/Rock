@@ -33,6 +33,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// <see cref="MediaElement"/> REST API
     /// </summary>
+    [RockGuid( "c77504af-fbed-4009-b2d4-019911413693" )]
     public partial class MediaElementsController
     {
         /// <summary>
@@ -46,6 +47,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpGet]
         [System.Web.Http.Route( "api/MediaElements/WatchInteraction" )]
+        [RockGuid( "a73244a1-c0db-4efc-a895-1612cdaaf5c2" )]
         public MediaElementInteraction GetWatchInteraction( [FromUri] Guid? mediaElementGuid = null, [FromUri] Guid? personGuid = null, Guid? personAliasGuid = null )
         {
             var rockContext = Service.Context as RockContext;
@@ -137,6 +139,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/MediaElements/WatchInteraction" )]
+        [RockGuid( "2368c700-b501-457c-b52b-9786e038d47d" )]
         public MediaElementInteraction PostWatchInteraction( MediaElementInteraction mediaInteraction )
         {
             var rockContext = Service.Context as RockContext;

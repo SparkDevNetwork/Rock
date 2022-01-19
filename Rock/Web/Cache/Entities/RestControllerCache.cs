@@ -33,7 +33,6 @@ namespace Rock.Web.Cache
     [DataContract]
     public class RestControllerCache : ModelCache<RestControllerCache, RestController>
     {
-
         #region Properties
 
         private readonly object _obj = new object();
@@ -143,7 +142,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public new static RestControllerCache Get( string className )
         {
-            return Get( className, null );
+            return Get( className, Guid.Empty, null );
         }
 
         /// <summary>
@@ -154,26 +153,50 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestControllerCache Get( string className, RockContext rockContext )
         {
-            return className.IsNotNullOrWhiteSpace()
-                ? GetOrAddExisting( className, () => QueryDbByClassName( className, rockContext ) ) : null;
+            return Get( className, Guid.Empty, rockContext );
+        }
+
+        /// <summary>
+        /// Gets the specified API identifier.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="rockGuid">The unique identifier.</param>
+        /// <returns></returns>
+        public static RestControllerCache Get( string className, Guid rockGuid )
+        {
+            return Get( className, rockGuid, null );
+        }
+
+        /// <summary>
+        /// Gets the specified API identifier.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="rockGuid">The unique identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static RestControllerCache Get( string className, Guid rockGuid, RockContext rockContext )
+        {
+            return className.IsNullOrWhiteSpace() && rockGuid.IsEmpty()
+                ? null : GetOrAddExisting( className, () => QueryDbByClassName( className, rockGuid, rockContext ) );
         }
 
         /// <summary>
         /// Queries the database by API identifier.
         /// </summary>
         /// <param name="className">Name of the class.</param>
+        /// <param name="rockGuid">The unique identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static RestControllerCache QueryDbByClassName( string className, RockContext rockContext )
+        private static RestControllerCache QueryDbByClassName( string className, Guid rockGuid, RockContext rockContext )
         {
             if ( rockContext != null )
             {
-                return QueryDbByClassNameWithContext( className, rockContext );
+                return QueryDbByClassNameWithContext( className, rockGuid, rockContext );
             }
 
             using ( var newRockContext = new RockContext() )
             {
-                return QueryDbByClassNameWithContext( className, newRockContext );
+                return QueryDbByClassNameWithContext( className, rockGuid, newRockContext );
             }
         }
 
@@ -181,13 +204,14 @@ namespace Rock.Web.Cache
         /// Queries the database by id with context.
         /// </summary>
         /// <param name="className">Name of the class.</param>
+        /// <param name="rockGuid">The unique identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static RestControllerCache QueryDbByClassNameWithContext( string className, RockContext rockContext )
+        private static RestControllerCache QueryDbByClassNameWithContext( string className, Guid rockGuid, RockContext rockContext )
         {
             var service = new RestControllerService( rockContext );
             var entity = service.Queryable().AsNoTracking()
-                .FirstOrDefault( a => a.ClassName == className );
+                .FirstOrDefault( a => a.ClassName == className || a.Guid.Equals( rockGuid ) );
 
             if ( entity == null ) return null;
 
@@ -197,6 +221,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

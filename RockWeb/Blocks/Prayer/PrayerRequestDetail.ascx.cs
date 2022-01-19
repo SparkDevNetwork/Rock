@@ -37,8 +37,8 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a given Prayer Request for viewing or editing." )]
 
-    [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, "ExpireDays" )]
-    [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
+    [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, AttributeKey.ExpireDays )]
+    [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, AttributeKey.DefaultCategory )]
     [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situations.", false, order: 2 )]
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]
     [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "", 4)]
@@ -88,6 +88,31 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string RequireLastName = "RequireLastName";
+            public const string RequireCampus = "RequireCampus";
+            public const string DefaultToPublic = "DefaultToPublic";
+            public const string DefaultAllowCommentsChecked = "DefaultAllowCommentsChecked";
+            public const string SetCurrentPersonToRequester = "SetCurrentPersonToRequester";
+            public const string DefaultCategory = "DefaultCategory";
+            public const string ExpireDays = "ExpireDays";
+        }
+
+        #endregion
+
+        #region Page Parameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string PrayerRequestId = "PrayerRequestId";
+            public const string PersonId = "PersonId";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -125,8 +150,8 @@ namespace RockWeb.Blocks.Prayer
             string script = string.Format( scriptFormat, pnlStatus.ClientID, hfApprovedStatus.ClientID );
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
 
-            tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
-            cpCampus.Required = GetAttributeValue("RequireCampus").AsBooleanOrNull() ?? false;
+            tbLastName.Required = GetAttributeValue( AttributeKey.RequireLastName ).AsBooleanOrNull() ?? true;
+            cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBooleanOrNull() ?? false;
             cpCampus.Campuses = CampusCache.All( false );
         }
 
@@ -138,7 +163,7 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "PrayerRequestId" ).AsInteger() );
+                ShowDetail( PageParameter( PageParameterKey.PrayerRequestId ).AsInteger() );
             }
             else
             {
@@ -146,7 +171,7 @@ namespace RockWeb.Blocks.Prayer
                 {
                     var rockContext = new RockContext();
                     PrayerRequest prayerRequest;
-                    int? prayerRequestId = PageParameter( "PrayerRequestId" ).AsIntegerOrNull();
+                    int? prayerRequestId = PageParameter( PageParameterKey.PrayerRequestId ).AsIntegerOrNull();
                     if ( prayerRequestId.HasValue && prayerRequestId.Value > 0 )
                     {
                         prayerRequest = new PrayerRequestService( rockContext ).Get( prayerRequestId.Value );
@@ -201,9 +226,9 @@ namespace RockWeb.Blocks.Prayer
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             var queryParms = new Dictionary<string, string>();
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.PersonId ) ) )
             {
-                queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+                queryParms.Add( PageParameterKey.PersonId, PageParameter( PageParameterKey.PersonId ) );
             }
 
             NavigateToParentPage( queryParms );
@@ -243,9 +268,9 @@ namespace RockWeb.Blocks.Prayer
                 rockContext.SaveChanges();
 
                 var queryParms = new Dictionary<string, string>();
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.PersonId ) ) )
                 {
-                    queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+                    queryParms.Add( PageParameterKey.PersonId, PageParameter( PageParameterKey.PersonId ) );
                 }
                 NavigateToParentPage( queryParms );
             }
@@ -301,8 +326,8 @@ namespace RockWeb.Blocks.Prayer
 
             if ( prayerRequest == null )
             {
-                bool isPublic = GetAttributeValue( "DefaultToPublic" ).AsBoolean();
-                prayerRequest = new PrayerRequest { Id = 0, IsPublic = isPublic, IsActive = true, IsApproved = true, AllowComments = GetAttributeValue( "DefaultAllowCommentsChecked" ).AsBooleanOrNull() ?? true };
+                bool isPublic = GetAttributeValue( AttributeKey.DefaultToPublic ).AsBoolean();
+                prayerRequest = new PrayerRequest { Id = 0, IsPublic = isPublic, IsActive = true, IsApproved = true, AllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsChecked ).AsBooleanOrNull() ?? true };
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -352,6 +377,12 @@ namespace RockWeb.Blocks.Prayer
             lActionTitle.Text = string.Format( "{0} Prayer Request", prayerRequest.FullName ).FormatAsHtmlTitle();
 
             DescriptionList descriptionList = new DescriptionList();
+
+            if ( prayerRequest.Group != null )
+            {
+                descriptionList.Add( "Group", prayerRequest.Group.Name );
+            }
+
             if ( prayerRequest.RequestedByPersonAlias != null )
             {
                 descriptionList.Add( "Requested By", prayerRequest.RequestedByPersonAlias.Person.FullName );
@@ -412,7 +443,7 @@ namespace RockWeb.Blocks.Prayer
             else
             {
                 lActionTitle.Text = ActionTitle.Add( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
-                if ( CurrentPersonAlias != null && CurrentPerson != null && GetAttributeValue( "SetCurrentPersonToRequester" ).AsBoolean() )
+                if ( CurrentPersonAlias != null && CurrentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
                 {
                     prayerRequest.RequestedByPersonAlias = CurrentPersonAlias;
                     prayerRequest.FirstName = CurrentPerson.NickName;
@@ -427,7 +458,7 @@ namespace RockWeb.Blocks.Prayer
             var prayRequestCategory = prayerRequest.Category;
             if ( prayRequestCategory == null )
             {
-                var defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuidOrNull();
+                var defaultCategoryGuid = GetAttributeValue( AttributeKey.DefaultCategory ).AsGuidOrNull();
                 if ( defaultCategoryGuid.HasValue )
                 {
                     prayRequestCategory = new CategoryService( new RockContext() ).Get( defaultCategoryGuid.Value );
@@ -448,9 +479,9 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.PersonId ) ) )
                 {
-                    var requestor = new PersonService( new RockContext() ).Get( PageParameter( "PersonId" ).AsInteger() );
+                    var requestor = new PersonService( new RockContext() ).Get( PageParameter( PageParameterKey.PersonId ).AsInteger() );
                     ppRequestor.SetValue( requestor );
                     tbFirstName.Text = requestor.NickName;
                     tbLastName.Text = requestor.LastName;
@@ -465,7 +496,7 @@ namespace RockWeb.Blocks.Prayer
             // If no expiration date is set, then use the default setting.
             if ( !prayerRequest.ExpirationDate.HasValue )
             {
-                var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                var expireDays = Convert.ToDouble( GetAttributeValue( AttributeKey.ExpireDays ) );
                 dpExpirationDate.SelectedDate = RockDateTime.Now.AddDays( expireDays );
             }
             else
@@ -635,7 +666,7 @@ namespace RockWeb.Blocks.Prayer
             // If no expiration date was manually set, then use the default setting.
             if ( !dpExpirationDate.SelectedDate.HasValue )
             {
-                var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                var expireDays = Convert.ToDouble( GetAttributeValue( AttributeKey.ExpireDays ) );
                 prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
             }
             else
@@ -676,9 +707,9 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.SaveAttributeValues( rockContext );
 
             var queryParms = new Dictionary<string, string>();
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.PersonId ) ) )
             {
-                queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+                queryParms.Add( PageParameterKey.PersonId, PageParameter( PageParameterKey.PersonId ) );
             }
 
             NavigateToParentPage( queryParms );

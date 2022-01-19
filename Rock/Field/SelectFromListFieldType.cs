@@ -144,7 +144,7 @@ namespace Rock.Field.Types
 
             if ( controls != null && controls.Count >= 2 && configurationValues != null )
             {
-                var cbEnhanced = controls[1] as RockCheckBox;
+                var cbEnhanced = controls[0] as RockCheckBox;
                 var tbRepeatColumns = controls[1] as NumberBox;
 
                 cbEnhanced.Checked = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) ? configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() : cbEnhanced.Checked;

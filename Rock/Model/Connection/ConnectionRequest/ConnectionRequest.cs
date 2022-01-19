@@ -158,22 +158,20 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the history change list.
+        /// Gets the created date key.
         /// </summary>
         /// <value>
-        /// The history change list.
+        /// The created date key.
         /// </value>
-        [NotMapped]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
-        /// <summary>
-        /// Gets or sets the history change list.
-        /// </summary>
-        /// <value>
-        /// The history change list.
-        /// </value>
-        [NotMapped]
-        public virtual History.HistoryChangeList PersonHistoryChangeList { get; set; }
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? CreatedDateKey
+        {
+            get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?
+                        ( int? ) null :
+                        CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
 
         #endregion
 

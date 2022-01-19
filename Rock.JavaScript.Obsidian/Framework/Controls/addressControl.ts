@@ -16,10 +16,11 @@
 //
 import { defineComponent, PropType } from "vue";
 import RockFormField from "../Elements/rockFormField";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
 import RockLabel from "../Elements/rockLabel";
 import TextBox from "../Elements/textBox";
 import { newGuid } from "../Util/guid";
+import { ListItem } from "../ViewModels";
 
 export type AddressControlValue = {
     street1?: string;
@@ -37,7 +38,7 @@ export function getDefaultAddressControlModel(): AddressControlValue {
     };
 }
 
-const stateOptions: DropDownListOption[] = [
+const stateOptions: ListItem[] = [
     "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM",
     "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
     "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV",
@@ -105,7 +106,7 @@ export default defineComponent({
     },
 
     template: `
-<RockFormField formGroupClasses="address-control" #default="{uniqueId, field, disabled}" name="addresscontrol" v-model.lazy="modelValue">
+<RockFormField formGroupClasses="address-control" #default="{uniqueId, field}" name="addresscontrol" v-model.lazy="modelValue">
     <div class="control-wrapper">
         <AddressControlBase v-model.lazy="modelValue" v-bind="field" :disabled="disabled" />
     </div>

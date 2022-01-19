@@ -348,7 +348,7 @@
                                 <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
                                 <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
                                 <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                                <Rock:SecurityField />
+                                <Rock:SecurityField TitleField="PersonFullname" />
                                 <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
                                 <Rock:DeleteField OnClick="gRequests_Delete" />
                             </Columns>

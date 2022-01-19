@@ -146,7 +146,7 @@ namespace Rock.Model
 
                 if ( State == EntityContextState.Modified || State == EntityContextState.Deleted )
                 {
-                    oldBinaryFileGuid = Entry.OriginalValues["Value"]?.ToString().AsGuidOrNull();
+                    oldBinaryFileGuid = Entry.OriginalValues[ nameof( Entity.Value )]?.ToString().AsGuidOrNull();
                 }
 
                 if ( oldBinaryFileGuid.HasValue )
@@ -182,7 +182,7 @@ namespace Rock.Model
             private void PreSaveStructuredContent( RockContext rockContext )
             {
                 string content = State == EntityContextState.Added || State == EntityContextState.Modified ? Entity.Value : string.Empty;
-                string oldContent = State == EntityContextState.Modified ? Entry.OriginalValues["Value"] as string : string.Empty;
+                string oldContent = State == EntityContextState.Modified ? Entry.OriginalValues[nameof( Entity.Value )] as string : string.Empty;
 
                 var helper = new StructuredContentHelper( content );
                 var changes = helper.DetectChanges( oldContent );
@@ -231,11 +231,11 @@ namespace Rock.Model
                         AttributeValueId = Entity.Id,
                         Value = oldValue,
                         ValueFormatted = formattedOldValue,
-                        ValueAsNumeric = Entry.OriginalValues["ValueAsNumeric"] as decimal?,
-                        ValueAsDateTime = Entry.OriginalValues["ValueAsDateTime"] as DateTime?,
-                        ValueAsBoolean = Entry.OriginalValues["ValueAsBoolean"] as bool?,
-                        ValueAsPersonId = Entry.OriginalValues["ValueAsPersonId"] as int?,
-                        EffectiveDateTime = Entry.OriginalValues["ModifiedDateTime"] as DateTime? ?? RockDateTime.Now,
+                        ValueAsNumeric = Entry.OriginalValues[nameof( Entity.ValueAsNumeric )] as decimal?,
+                        ValueAsDateTime = Entry.OriginalValues[nameof( Entity.ValueAsDateTime )] as DateTime?,
+                        ValueAsBoolean = Entry.OriginalValues[nameof( Entity.ValueAsBoolean )] as bool?,
+                        ValueAsPersonId = Entry.OriginalValues[nameof( Entity.ValueAsPersonId )] as int?,
+                        EffectiveDateTime = Entry.OriginalValues[nameof( Entity.ModifiedDateTime )] as DateTime? ?? RockDateTime.Now,
                         CurrentRowIndicator = true,
                         ExpireDateTime = HistoricalTracking.MaxExpireDateTime
                     };

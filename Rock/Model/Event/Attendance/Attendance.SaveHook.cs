@@ -104,7 +104,7 @@ namespace Rock.Model
                 else if ( State == EntityContextState.Deleted )
                 {
                     preSavePersonAliasId = ( int? ) OriginalValues[nameof( attendance.PersonAliasId )];
-                    PersonAttendanceHistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, null );
+                    PersonAttendanceHistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Attendance" );
                 }
 
                 base.PreSave();

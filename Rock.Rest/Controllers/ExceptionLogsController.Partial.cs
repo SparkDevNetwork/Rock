@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.Http;
 
 using Rock.Chart;
+using Rock.Data;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
@@ -28,6 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// ExceptionLogs REST API
     /// </summary>
+    [RockGuid( "224d50d0-bb26-4512-bcf4-04407a9d84ed" )]
     public partial class ExceptionLogsController
     {
         /// <summary>
@@ -36,6 +38,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ExceptionLogs/GetChartData" )]
+        [RockGuid( "403444ae-0267-408a-b9a8-7e5d70aa594f" )]
         public IEnumerable<IChartData> GetChartData()
         {
             // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it
@@ -80,6 +83,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ExceptionLogs/LogException" )]
         [HttpPost]
+        [RockGuid( "3be0d16f-c372-4483-8a99-d5de9278bd41" )]
         public void LogException( Exception ex )
         {
             var personAlias = this.GetPersonAlias();
@@ -87,7 +91,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ExceptionChartData : IChartData
         {

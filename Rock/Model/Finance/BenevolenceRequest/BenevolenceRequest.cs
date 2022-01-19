@@ -219,6 +219,20 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int BenevolenceTypeId { get; set; }
 
+        /// <summary>
+        /// Gets the request date key.
+        /// </summary>
+        /// <value>
+        /// The request date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int RequestDateKey
+        {
+            get => RequestDateTime.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
         #endregion Entity Properties
 
         #region Constructors
@@ -323,6 +337,22 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.BenevolenceType BenevolenceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BenevolenceRequestDocument">documents</see>.
+        /// </summary>
+        /// <value>
+        /// The documents.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<BenevolenceRequestDocument> Documents
+        {
+            get { return _documents ?? ( _documents = new Collection<BenevolenceRequestDocument>() ); }
+            set { _documents = value; }
+        }
+
+        private ICollection<BenevolenceRequestDocument> _documents;
+
         #endregion Navigation Properties
 
         #region Public Methods

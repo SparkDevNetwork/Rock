@@ -36,7 +36,7 @@
                     <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
                     <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
 
-                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
+                    <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
                     <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender">

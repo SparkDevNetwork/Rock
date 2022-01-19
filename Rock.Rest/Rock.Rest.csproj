@@ -131,6 +131,7 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />
@@ -216,6 +217,7 @@
     <Compile Include="Controllers\CodeGenerated\WebFarmNodesController.CodeGenerated.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="v2\Controls\FieldTypeEditorController.cs" />
     <Compile Include="v2\Controls\ControlsControllerBase.cs" />
     <Compile Include="Controllers\DocumentsController.partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
@@ -470,6 +472,7 @@
     <Compile Include="Utility\ValueProviders\RockQueryStringValueProviderFactory.cs" />
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProvider.cs" />
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProviderFactory.cs" />
+    <Compile Include="v2\Controls\CategoryPickerController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -487,6 +490,10 @@
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+      <Project>{05BAAF85-9C53-4CCD-A535-036427B0DF72}</Project>
+      <Name>Rock.ViewModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>

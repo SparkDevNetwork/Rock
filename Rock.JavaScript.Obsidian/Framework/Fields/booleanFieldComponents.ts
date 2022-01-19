@@ -18,9 +18,10 @@ import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { asTrueFalseOrNull, asBoolean } from "../Services/boolean";
 import { ConfigurationValueKey } from "./booleanField";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
 import Toggle from "../Elements/toggle";
 import CheckBox from "../Elements/checkBox";
+import { ListItem } from "../ViewModels";
 
 enum BooleanControlType {
     DropDown,
@@ -87,14 +88,14 @@ export const EditComponent = defineComponent({
                 falseText: this.falseText
             };
         },
-        dropDownListOptions(): DropDownListOption[] {
+        dropDownListOptions(): ListItem[] {
             const trueVal = asTrueFalseOrNull(true);
             const falseVal = asTrueFalseOrNull(false);
 
             return [
                 { text: this.falseText, value: falseVal },
                 { text: this.trueText, value: trueVal }
-            ] as DropDownListOption[];
+            ] as ListItem[];
         }
     },
     watch: {
@@ -115,7 +116,7 @@ export const EditComponent = defineComponent({
     },
     template: `
 <Toggle v-if="isToggle" v-model="internalBooleanValue" v-bind="toggleOptions" />
-<CheckBox v-else-if="isCheckBox" v-model="internalBooleanValue" :inline="false" />
+<CheckBox v-else-if="isCheckBox" v-model="internalBooleanValue" />
 <DropDownList v-else v-model="internalValue" :options="dropDownListOptions" />
 `
 });

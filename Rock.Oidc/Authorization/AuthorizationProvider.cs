@@ -19,10 +19,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
+
 using AspNet.Security.OpenIdConnect.Primitives;
+
 using Microsoft.Owin.Security;
+
+using Owin;
 using Owin.Security.OpenIdConnect.Extensions;
 using Owin.Security.OpenIdConnect.Server;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -56,6 +62,7 @@ namespace Rock.Oidc.Authorization
                 {
                     var userLoginService = new UserLoginService( rockContext );
                     user = userLoginService.GetByUserName( context.Request.Username );
+
                     // Populate the entity type for use later.
                     _ = user.EntityType;
 
@@ -112,16 +119,14 @@ namespace Rock.Oidc.Authorization
                 // We don't need to validate the client id here because it was already validated in the ValidateTokenRequest method.
                 var identity = new ClaimsIdentity( OpenIdConnectServerDefaults.AuthenticationType );
 
-                identity.AddClaim( OpenIdConnectConstants.Claims.Subject, context.Request.ClientId,
-                    OpenIdConnectConstants.Destinations.AccessToken );
+                identity.AddClaim( OpenIdConnectConstants.Claims.Subject, context.Request.ClientId, OpenIdConnectConstants.Destinations.AccessToken );
 
                 // Create a new authentication ticket holding the user identity.
-                var ticket = new AuthenticationTicket(
-                    identity,
-                    new AuthenticationProperties() );
+                var ticket = new AuthenticationTicket( identity, new AuthenticationProperties() );
 
                 context.Validate( ticket );
             }
+
             return Task.FromResult( 0 );
         }
 
@@ -199,8 +204,7 @@ namespace Rock.Oidc.Authorization
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "Only authorization code and refresh token grant types " +
-                                 "are accepted by this authorization server." );
+                    description: "Only authorization code and refresh token grant types are accepted by this authorization server." );
 
                 return;
             }
@@ -263,6 +267,67 @@ namespace Rock.Oidc.Authorization
             }
 
             context.Validate();
+        }
+
+        /// <summary>
+        /// Represents an event called for each validated userinfo request
+        /// to allow the user code to decide how the request should be handled.
+        /// </summary>
+        /// <param name="context">The context instance associated with this event.</param>
+        /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation.</returns>
+        public override Task HandleUserinfoRequest( HandleUserinfoRequestContext context )
+        {
+            var result = base.HandleUserinfoRequest( context );
+            var clientId = context.Ticket?.Identity?.GetClaim( "client_id" );
+            var userName = context.Ticket?.Identity?.GetClaim( "username" );
+            if ( clientId.IsNullOrWhiteSpace() || userName.IsNullOrWhiteSpace() )
+            {
+                return result;
+            }
+
+            // Populate requested/allowed claims
+            // See https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server/issues/543
+            using ( var rockContext = new RockContext() )
+            {
+                var user = new UserLoginService( rockContext ).GetByUserName( userName );
+                if ( user == null )
+                {
+                    return result;
+                }
+
+                var requestedScopes = context.Ticket?.GetScopes();
+                var clientAllowedScopes = RockIdentityHelper.NarrowRequestedScopesToApprovedScopes( rockContext, clientId, requestedScopes );
+                var clientAllowedClaims = RockIdentityHelper.GetAllowedClientClaims( rockContext, clientId, clientAllowedScopes );
+                var claimsIdentity = RockIdentityHelper.GetRockClaimsIdentity( user, clientAllowedClaims, clientId );
+
+                foreach ( var claim in claimsIdentity?.Claims )
+                {
+                    context.Claims.Add( claim.Type, claim.Value );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Represents an event called for each validated configuration request
+        /// to allow the user code to decide how the request should be handled.
+        /// </summary>
+        /// <param name="context">The context instance associated with this event.</param>
+        /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation.</returns>
+        public override Task HandleConfigurationRequest( HandleConfigurationRequestContext context )
+        {
+            var result = base.HandleConfigurationRequest( context );
+            using ( var rockContext = new RockContext() )
+            {
+                var activeScopes = RockIdentityHelper.GetActiveAuthScopes( rockContext );
+                context.Scopes.UnionWith( activeScopes );
+
+                var activeClaims = RockIdentityHelper.GetActiveAuthClaims( rockContext, activeScopes );
+                context.Claims.UnionWith( activeClaims );
+            }
+
+            return result;
         }
     }
 }

@@ -16,7 +16,7 @@
 //
 import { defineComponent, inject } from "vue";
 import { getFieldEditorProps } from "./utils";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
 import RadioButtonList from "../Elements/radioButtonList";
 import { toNumberOrNull } from "../Services/number";
 import { ConfigurationValueKey } from "./singleSelectField";
@@ -46,16 +46,9 @@ export const EditComponent = defineComponent({
 
     computed: {
         /** The options to choose from in the drop down list */
-        options(): DropDownListOption[] {
+        options(): ListItem[] {
             try {
-                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
-
-                const providedOptions: DropDownListOption[] = valuesConfig.map(v => {
-                    return {
-                        text: v.text,
-                        value: v.value
-                    };
-                });
+                const providedOptions = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
 
                 if (this.isRadioButtons && !this.isRequired) {
                     providedOptions.unshift({

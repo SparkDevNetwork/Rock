@@ -30,17 +30,19 @@ body {
 .checkin-search-actions a {
   display: block;
   padding: 20px 30px;
+  line-height: 1;
+  white-space: normal;
   svg {
     margin: 0 auto;
   }
 
   @media (min-width: @screen-xs-min) {
     display: inline-block;
-    padding: 20px 150px;
+    padding: 20px;
   }
 
   @media (min-width: @screen-sm-min) {
-    padding: 20px 200px;
+    min-width: 520px;
   }
 }
 

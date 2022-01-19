@@ -1,3 +1,27 @@
+/*!
+ * 
+ * Super simple WYSIWYG editor v0.8.20
+ * https://summernote.org
+ *
+ *
+ * Copyright 2013- Alan Hong and contributors
+ * Summernote may be freely distributed under the MIT license.
+ *
+ * Date: 2021-10-14T21:15Z
+ *
+ */
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
 (function ($) {
   $.extend($.summernote.lang, {
     'id-ID': {
@@ -7,7 +31,10 @@
         underline: 'Garis bawah',
         clear: 'Bersihkan gaya',
         height: 'Jarak baris',
+        name: 'Jenis Tulisan',
         strikethrough: 'Coret',
+        subscript: 'Subscript',
+        superscript: 'Superscript',
         size: 'Ukuran font'
       },
       image: {
@@ -18,18 +45,26 @@
         resizeQuarter: 'Ukuran 25%',
         floatLeft: 'Rata kiri',
         floatRight: 'Rata kanan',
-        floatNone: 'Tidak ada perataan',
-        dragImageHere: 'Tarik gambar pada area ini',
+        floatNone: 'Tanpa perataan',
+        shapeRounded: 'Bentuk: Membundar',
+        shapeCircle: 'Bentuk: Bundar',
+        shapeThumbnail: 'Bentuk: Thumbnail',
+        shapeNone: 'Bentuk: Tidak ada',
+        dragImageHere: 'Tarik gambar ke area ini',
+        dropImage: 'Letakkan gambar atau teks',
         selectFromFiles: 'Pilih gambar dari berkas',
+        maximumFileSize: 'Ukuran maksimal berkas',
+        maximumFileSizeError: 'Ukuran maksimal berkas terlampaui.',
         url: 'URL gambar',
-        remove: 'Hapus Gambar'
+        remove: 'Hapus Gambar',
+        original: 'Original'
       },
       video: {
         video: 'Video',
         videoLink: 'Link video',
         insert: 'Sisipkan video',
         url: 'Tautan video',
-        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion, atau Youku)'
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion atau Youku)'
       },
       link: {
         link: 'Tautan',
@@ -41,14 +76,21 @@
         openInNewWindow: 'Buka di jendela baru'
       },
       table: {
-        table: 'Tabel'
+        table: 'Tabel',
+        addRowAbove: 'Tambahkan baris ke atas',
+        addRowBelow: 'Tambahkan baris ke bawah',
+        addColLeft: 'Tambahkan kolom ke kiri',
+        addColRight: 'Tambahkan kolom ke kanan',
+        delRow: 'Hapus baris',
+        delCol: 'Hapus kolom',
+        delTable: 'Hapus tabel'
       },
       hr: {
         insert: 'Masukkan garis horizontal'
       },
       style: {
         style: 'Gaya',
-        normal: 'Normal',
+        p: 'p',
         blockquote: 'Kutipan',
         pre: 'Kode',
         h1: 'Heading 1',
@@ -88,16 +130,55 @@
       },
       shortcut: {
         shortcuts: 'Jalan pintas',
-        close: 'Keluar',
+        close: 'Tutup',
         textFormatting: 'Format teks',
         action: 'Aksi',
         paragraphFormatting: 'Format paragraf',
-        documentStyle: 'Gaya dokumen'
+        documentStyle: 'Gaya dokumen',
+        extraKeys: 'Shortcut tambahan'
+      },
+      help: {
+        'insertParagraph': 'Tambahkan paragraf',
+        'undo': 'Urungkan perintah terakhir',
+        'redo': 'Kembalikan perintah terakhir',
+        'tab': 'Tab',
+        'untab': 'Untab',
+        'bold': 'Mengaktifkan gaya tebal',
+        'italic': 'Mengaktifkan gaya italic',
+        'underline': 'Mengaktifkan gaya underline',
+        'strikethrough': 'Mengaktifkan gaya strikethrough',
+        'removeFormat': 'Hapus semua gaya',
+        'justifyLeft': 'Atur rata kiri',
+        'justifyCenter': 'Atur rata tengah',
+        'justifyRight': 'Atur rata kanan',
+        'justifyFull': 'Atur rata kiri-kanan',
+        'insertUnorderedList': 'Nyalakan urutan tanpa nomor',
+        'insertOrderedList': 'Nyalakan urutan bernomor',
+        'outdent': 'Outdent di paragraf terpilih',
+        'indent': 'Indent di paragraf terpilih',
+        'formatPara': 'Ubah format gaya tulisan terpilih menjadi paragraf',
+        'formatH1': 'Ubah format gaya tulisan terpilih menjadi Heading 1',
+        'formatH2': 'Ubah format gaya tulisan terpilih menjadi Heading 2',
+        'formatH3': 'Ubah format gaya tulisan terpilih menjadi Heading 3',
+        'formatH4': 'Ubah format gaya tulisan terpilih menjadi Heading 4',
+        'formatH5': 'Ubah format gaya tulisan terpilih menjadi Heading 5',
+        'formatH6': 'Ubah format gaya tulisan terpilih menjadi Heading 6',
+        'insertHorizontalRule': 'Masukkan garis horizontal',
+        'linkDialog.show': 'Tampilkan Link Dialog'
       },
       history: {
         undo: 'Kembali',
         redo: 'Ulang'
+      },
+      specialChar: {
+        specialChar: 'KARAKTER KHUSUS',
+        select: 'Pilih karakter khusus'
       }
     }
   });
 })(jQuery);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});
+//# sourceMappingURL=summernote-id-ID.js.map

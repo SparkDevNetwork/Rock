@@ -15,25 +15,25 @@
 // </copyright>
 //
 
-import { defineComponent, inject, PropType } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { newGuid } from "../Util/guid";
-import { Field } from "vee-validate";
 import RockLabel from "./rockLabel";
-import { FormState } from "../Controls/rockForm";
+import { useFormState } from "../Util/form";
+import { normalizeRules, rulesPropType, validateValue } from "../Rules/index";
 
 export default defineComponent({
     name: "RockFormField",
+
+    inheritAttrs: false,
+
     components: {
-        Field,
         RockLabel
     },
-    setup() {
-        const formState = inject<FormState | null>("formState", null); 
 
-        return {
-            formState
-        };
+    compilerOptions: {
+        whitespace: "preserve"
     },
+
     props: {
         modelValue: {
             required: true
@@ -50,19 +50,8 @@ export default defineComponent({
             type: String as PropType<string>,
             default: ""
         },
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        },
-        disabled: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
+        rules: rulesPropType,
         formGroupClasses: {
-            type: String as PropType<string>,
-            default: ""
-        },
-        inputGroupClasses: {
             type: String as PropType<string>,
             default: ""
         },
@@ -70,61 +59,75 @@ export default defineComponent({
             type: String as PropType<string>,
             default: ""
         },
-        "class": {
-            type: String as PropType<string>,
-            default: ""
-        },
-        tabIndex: {
-            type: String as PropType<string>,
-            default: ""
-        }
     },
-    emits: [
-        "update:modelValue"
-    ],
-    data: function () {
+
+    setup(props) {
+        /** The reactive state of the form. */
+        const formState = useFormState();
+
+        /** The unique identifier used to identify this form field. */
+        const uniqueId = `rock-${props.name}-${newGuid()}`;
+
+        /** The internal value being tracked for the field. */
+        const internalValue = ref<unknown>("");
+
+        const internalRules = computed(() => normalizeRules(props.rules));
+
+        /** Determines if this field is marked as required. */
+        const isRequired = computed((): boolean => internalRules.value.includes("required"));
+
+        /** Holds the current error message for this form field. */
+        const currentError = ref("");
+
+        /** Any error classes to be applied to the field depending on the current state. */
+        const errorClasses = computed((): string[] => {
+            if (!formState || formState.submitCount < 1) {
+                return [];
+            }
+
+            return currentError.value !== "" ? ["has-error"] : [];
+        });
+
+        /** The text label to display to the user which identifies this field. */
+        const fieldLabel = computed((): string => {
+            return props.validationTitle || props.label;
+        });
+
+        // Watch for changes to the modelValue and update our internalValue.
+        watch(() => props.modelValue, () => {
+            internalValue.value = props.modelValue;
+
+            const errors = validateValue(internalValue.value, props.rules);
+
+            if (errors.length > 0) {
+                currentError.value = errors[0];
+                formState?.setError(fieldLabel.value, currentError.value);
+            }
+            else {
+                currentError.value = "";
+                formState?.setError(fieldLabel.value, "");
+            }
+        }, {
+            immediate: true
+        });
+
         return {
-            uniqueId: `rock-${this.name}-${newGuid()}`,
-            internalValue: this.modelValue
+            errorClasses,
+            fieldLabel,
+            formState,
+            isRequired,
+            uniqueId,
         };
     },
-    computed: {
-        isRequired(): boolean {
-            return this.rules.includes("required");
-        },
-        classAttr(): string {
-            return this.class;
-        },
-        errorClasses(): (formState: FormState | null, errors: Record<string, string>) => string {
-            return (formState: FormState | null, errors: Record<string, string>) => {
-                if (!formState || formState.submitCount < 1) {
-                    return "";
-                }
 
-                return Object.keys(errors).length ? "has-error" : "";
-            };
-        },
-        fieldLabel(): string {
-            return this.validationTitle || this.label;
-        }
-    },
-    watch: {
-        internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue() {
-            this.internalValue = this.modelValue;
-        }
-    },
     template: `
-<Field v-model="internalValue" :name="fieldLabel" :rules="rules" #default="{field, errors}">
-    <slot name="pre" />
-    <div class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses(formState, errors)]">
-        <RockLabel v-if="label || help" :for="uniqueId" :help="help">
-            {{label}}
-        </RockLabel>
-        <slot v-bind="{uniqueId, field, errors, disabled, inputGroupClasses, tabIndex, fieldLabel}" />
-    </div>
-    <slot name="post" />
-</Field>`
+<slot name="pre" />
+<div class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses]">
+    <RockLabel v-if="label || help" :for="uniqueId" :help="help">
+        {{label}}
+    </RockLabel>
+    <slot v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
+</div>
+<slot name="post" />
+`
 });

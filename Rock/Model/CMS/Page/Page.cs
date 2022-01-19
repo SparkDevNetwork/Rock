@@ -19,22 +19,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web.Routing;
 using Newtonsoft.Json;
-
 using Rock.Data;
+using Rock.Lava;
 using Rock.Security;
-using Rock.Tasks;
-using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -74,7 +66,7 @@ namespace Rock.Model
         public string PageTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the browser title to use for the page
+        /// Gets or sets the browser title to use for the page.
         /// </summary>
         /// <value>
         /// The browser title.
@@ -198,10 +190,10 @@ namespace Rock.Model
         /// Gets or sets a value indicating when the Page should be displayed in the navigation.
         /// </summary>
         /// <value>
-        /// An <see cref="DisplayInNavWhen"/> enum value that determines when to display in a navigation 
+        /// An <see cref="DisplayInNavWhen"/> enum value that determines when to display in a navigation.
         /// 0 = When Security Allows
         /// 1 = Always
-        /// 3 = Never   
+        /// 2 = Never   
         /// 
         /// Enum[DisplayInNavWhen].
         /// </value>
@@ -451,9 +443,12 @@ namespace Rock.Model
                 return _cacheControlHeader;
             }
         }
-        #endregion
 
-        #region Virtual Properties
+        private int? _originalParentPageId = null;
+
+        #endregion Entity Properties
+
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the Page entity for the parent page.
@@ -501,8 +496,8 @@ namespace Rock.Model
         public virtual Layout Layout { get; set; }
 
         /// <summary>
-        /// Gets the site identifier of the Page's Layout
-        /// NOTE: This is needed so that Page Attributes qualified by SiteId work
+        /// Gets the site identifier of the Page's Layout.
+        /// NOTE: This is needed so that Page Attributes qualified by SiteId work.
         /// </summary>
         /// <value>
         /// The site identifier.
@@ -576,108 +571,9 @@ namespace Rock.Model
 
         private ICollection<PageContext> _pageContexts;
 
-        /// <summary>
-        /// Gets the parent authority for the page. Page security is automatically inherited from the parent page, unless 
-        /// explicitly overridden.  If there is no parent page, it is inherited from the site (through the layout)
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.ParentPage != null )
-                {
-                    return this.ParentPage;
-                }
-                else if ( this.Layout != null && this.Layout.Site != null )
-                {
-                    return this.Layout.Site;
-                }
-                else
-                {
-                    return base.ParentAuthority;
-                }
-            }
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( state == EntityState.Modified || state == EntityState.Deleted )
-            {
-                _originalParentPageId = entry.Property( nameof( ParentPageId ) )?.OriginalValue?.ToString().AsIntegerOrNull();
-            }
-
-            if ( state == EntityState.Deleted )
-            {
-                Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add( "PageId", this.Id );
-
-                // since routes have a cascade delete relationship (their presave won't get called), delete routes from route table
-                var routes = RouteTable.Routes;
-                if ( routes != null )
-                {
-                    var routesToRemove = new List<Route>();
-
-                    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
-                    {
-                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
-                        if ( pageAndRouteIds.Any() )
-                        {
-                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                        }
-                        else
-                        {
-                            routesToRemove.Add( existingRoute );
-                        }
-                    }
-
-                    foreach ( var existingRoute in routesToRemove )
-                    {
-                        RouteTable.Routes.Remove( existingRoute );
-                    }
-                }
-            }
-            else if ( state == EntityState.Modified )
-            {
-                var previousInternalName = entry.Property( nameof( InternalName ) )?.OriginalValue.ToStringSafe();
-                _didNameChange = previousInternalName != InternalName;
-            }
-
-            base.PreSaveChanges( dbContext, state );
-        }
-
-        private bool _didNameChange = false;
-        private int? _originalParentPageId = null;
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            base.PostSaveChanges( dbContext );
-
-            if ( _didNameChange )
-            {
-                new AddPageRenameInteraction.Message()
-                {
-                    PageGuid = Guid
-                }.Send();
-            }
-        }
 
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
@@ -690,40 +586,7 @@ namespace Rock.Model
             return PageTitle;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return PageCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            PageCache.UpdateCachedEntity( this.Id, entityState );
-
-            if ( this.ParentPageId.HasValue )
-            {
-                PageCache.UpdateCachedEntity( this.ParentPageId.Value, EntityState.Detached );
-            }
-
-            if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
-            {
-                PageCache.UpdateCachedEntity( _originalParentPageId.Value, EntityState.Detached );
-            }
-        }
-
-        #endregion
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -744,30 +607,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents how a <see cref="Rock.Model.Page"/> should be displayed in the page navigation controls.
-    /// </summary>
-    public enum DisplayInNavWhen
-    {
-        /// <summary>
-        /// Display this page in navigation controls when allowed by security
-        /// </summary>
-        WhenAllowed = 0,
-
-        /// <summary>
-        /// Always display this page in navigation controls, regardless of security
-        /// </summary>
-        Always = 1,
-
-        /// <summary>
-        /// Never display this page in navigation controls
-        /// </summary>
-        Never = 2
-    }
-
-    #endregion
+    #endregion Entity Configuration
 }

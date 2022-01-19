@@ -152,7 +152,7 @@ namespace Rock.Lava.Fluid
                 // return the appropriate Fluid wrapper to short-circuit further conversion attempts.
                 if ( value is IDictionary<string, object> liquidDictionary )
                 {
-                    return new DictionaryValue( new ObjectDictionaryFluidIndexable( liquidDictionary, _templateOptions ) );
+                    return new DictionaryValue( new ObjectDictionaryFluidIndexable<object>( liquidDictionary, _templateOptions ) );
                 }
 
                 var valueType = value.GetType();

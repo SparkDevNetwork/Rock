@@ -20,7 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -30,9 +30,9 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
+    [RockGuid( "6cdb23b0-f531-4969-937a-f5f9640d7921" )]
     public partial class TaggedItemsController
     {
-
         /// <summary>
         /// Posts the specified entity type identifier.
         /// </summary>
@@ -46,6 +46,7 @@ namespace Rock.Rest.Controllers
         /// <param name="includeInactive">The include inactive.</param>
         /// <returns></returns>
         [Authenticate, Secured]
+        [RockGuid( "38974825-9693-479b-a5b0-29e4fd43a80a" )]
         public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );
@@ -61,7 +62,7 @@ namespace Rock.Rest.Controllers
                 if ( categoryGuid.HasValue )
                 {
                     var category = CategoryCache.Get( categoryGuid.Value );
-                    categoryId = category != null ? category.Id : (int?)null;
+                    categoryId = category != null ? category.Id : ( int? ) null;
                 }
 
                 tag = new Tag();
@@ -107,6 +108,7 @@ namespace Rock.Rest.Controllers
         /// </exception>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
+        [RockGuid( "d5378184-e340-4745-84c7-d6fdfb5ebd3b" )]
         public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );
@@ -133,7 +135,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( !taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, GetPerson( ( Rock.Data.RockContext ) Service.Context ) ))
+            if ( !taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, GetPerson( ( Rock.Data.RockContext ) Service.Context ) ) )
             {
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
