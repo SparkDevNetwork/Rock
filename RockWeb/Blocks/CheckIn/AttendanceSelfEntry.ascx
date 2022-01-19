@@ -72,7 +72,7 @@
                                         <div class="form-inline rollover-container margin-b-sm">
                                             <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Guid") %>' />
                                             <b><%# Eval("FullName") %></b> <span><%#Eval("RelationshipType") %></span>
-                                            <div class="rollover-item actions pull-right">
+                                            <div class="rollover-item control-actions pull-right">
                                                 <asp:LinkButton ID="lbDelete" runat="server" CommandName="delete" CommandArgument='<%# Eval("Guid") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                             </div>
                                         </div>
