@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -30,6 +31,8 @@ namespace Rock.Field.Types
     /// Field used to save and display a text value
     /// </summary>
     [Serializable]
+    [IconCssClass( "fa fa-font" )]
+    [FieldTypeUsage( FieldTypeUsage.Common )]
     public class TextFieldType : FieldType
     {
 

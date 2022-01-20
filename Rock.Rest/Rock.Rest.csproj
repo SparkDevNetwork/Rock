@@ -241,6 +241,7 @@
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="v2\Controls\PersonPickerController.cs" />
     <Compile Include="v2\Controls\SaveFinancialAccountFormsController.cs" />
     <Compile Include="Filters\RockCacheabilityAttribute.cs" />
     <Compile Include="Handler\RockAssembliesResolver.cs" />

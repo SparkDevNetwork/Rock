@@ -20,6 +20,7 @@ import { isUrl } from "../Services/url";
 import { isNullOrWhiteSpace } from "../Services/string";
 import { toNumberOrNull } from "../Services/number";
 import { PropType } from "vue";
+import { asBooleanOrNull } from "../Services/boolean";
 
 
 /** The custom validation function signature. */
@@ -309,6 +310,11 @@ defineRule("notequal", (value: unknown, params?: unknown[]) => {
             return true;
         }
     }
+    else if (typeof value === "boolean") {
+        if (value !== asBooleanOrNull(compare)) {
+            return true;
+        }
+    }
     else if (value !== compare) {
         return true;
     }
@@ -321,6 +327,11 @@ defineRule("equal", (value: unknown, params?: unknown[]) => {
 
     if (isNumeric(value) && isNumeric(compare)) {
         if (convertToNumber(value) === convertToNumber(compare)) {
+            return true;
+        }
+    }
+    else if (typeof value === "boolean") {
+        if (value === asBooleanOrNull(compare)) {
             return true;
         }
     }
@@ -476,37 +487,41 @@ defineRule("url", (value: unknown) => {
 });
 
 defineRule("endswith", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[0] : undefined;
+
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
     }
 
     // No parameters, should pass
-    if (!params || params.length === 0) {
+    if (!String(compare)) {
         return true;
     }
 
-    if (String(value).endsWith(String(params[0]))) {
+    if (String(value).endsWith(String(compare))) {
         return true;
     }
 
-    return `must end with "${params[0]}"`;
+    return `must end with "${compare}"`;
 });
 
 defineRule("startswith", (value: unknown, params?: unknown[]) => {
+    const compare = params && params.length >= 1 ? params[0] : undefined;
+
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
     }
 
     // No parameters, should pass
-    if (!params || params.length === 0) {
+    if (!String(compare)) {
         return true;
     }
 
-    if (String(value).startsWith(String(params[0]))) {
+    if (String(value).startsWith(String(compare))) {
         return true;
     }
 
-    return `must start with "${params[0]}"`;
+    return `must start with "${compare}"`;
 });

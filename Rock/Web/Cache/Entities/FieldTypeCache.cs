@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Data;
-using Rock.Model;
 using Rock.Lava;
+using Rock.Model;
 
 namespace Rock.Web.Cache
 {
@@ -81,6 +83,22 @@ namespace Rock.Web.Cache
         public string Class { get; private set; }
 
         /// <summary>
+        /// Gets the CSS class to use when displaying an icon that represents
+        /// this field type.
+        /// </summary>
+        /// <value>
+        /// The CSS class to use when displaying an icon that represents this
+        /// field type.
+        /// </value>
+        public string IconCssClass { get; private set; }
+
+        /// <summary>
+        /// Gets the ways this field type can be used and presented in the system.
+        /// If the field is not available then it will be assumed to be Advanced.
+        /// </summary>
+        public Rock.Field.FieldTypeUsage Usage { get; private set; }
+
+        /// <summary>
         /// Gets the field.
         /// </summary>
         /// <value>
@@ -113,13 +131,26 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var fieldType = entity as FieldType;
-            if ( fieldType == null ) return;
+            if ( fieldType == null )
+            {
+                return;
+            }
 
             IsSystem = fieldType.IsSystem;
             Name = fieldType.Name;
             Description = fieldType.Description;
             Assembly = fieldType.Assembly;
             Class = fieldType.Class;
+
+            var fieldTypeType = Field?.GetType();
+
+            if ( fieldTypeType != null )
+            {
+                IconCssClass = fieldTypeType.GetCustomAttribute<IconCssClassAttribute>()?.IconCssClass ?? string.Empty;
+
+                // Default to Advanced if the field type does not specify its usage.
+                Usage = fieldTypeType.GetCustomAttribute<FieldTypeUsageAttribute>()?.Usage ?? Rock.Field.FieldTypeUsage.Advanced;
+            }
         }
 
         /// <summary>

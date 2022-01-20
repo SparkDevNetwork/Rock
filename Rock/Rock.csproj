@@ -459,6 +459,7 @@
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\CheckinConfigurationTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\FieldTypeUsageAttribute.cs" />
     <Compile Include="Attribute\FinancialStatementTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\LocationListFieldAttribute.cs" />
     <Compile Include="Attribute\MobileNavigationActionFieldAttribute.cs" />
@@ -748,6 +749,7 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
+    <Compile Include="Field\FieldTypeUsage.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianHostedGatewayComponent.cs" />

@@ -73,10 +73,14 @@ namespace Rock.Rest.v2.Controls
         /// identifier from the unique identifier. Otherwise returns the original
         /// value.
         /// </summary>
+        /// <remarks>
+        /// At some point this needs to be moved into a ClientService layer, but
+        /// I'm not sure where since it isn't related to any one service.
+        /// </remarks>
         /// <param name="value">The value to be translated.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The qualifier value to use.</returns>
-        private string GetQualifierValueLookupResult( string value, RockContext rockContext )
+        private static string GetQualifierValueLookupResult( string value, RockContext rockContext )
         {
             if (value == null)
             {
