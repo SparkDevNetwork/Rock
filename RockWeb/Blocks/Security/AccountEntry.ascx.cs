@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Security
     [LinkedPage(
         "Login Page",
         Key = AttributeKey.LoginPage,
-        Description = "Page to navigate to when user elects to login (if blank will use 'Login' page route)",
+        Description = "Page to navigate to when a user elects to log in (if blank will use 'Login' page route)",
         IsRequired = false,
         Category = "Pages",
         Order = 9 )]
@@ -370,7 +370,7 @@ usernameTextbox.blur(function () {{
                 tbUserName.ClientID, //0
                 regexString, //1
                 usernameValidCaption, //2
-                tbUserName.Label //3 
+                tbUserName.Label //3
                 );
 
             ScriptManager.RegisterStartupScript( this, GetType(), "AccountEntry_" + this.ClientID, script, true );
@@ -412,7 +412,7 @@ usernameTextbox.blur(function () {{
                         cpCampus.Campuses = CampusCache.All( false );
                     }
                 }
-                
+
                 // set birthday picker required if minimum age > 0
                 if ( GetAttributeValue( AttributeKey.MinimumAge ).AsInteger() > 0 )
                 {

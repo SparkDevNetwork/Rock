@@ -63,7 +63,7 @@
             <Rock:HiddenFieldWithClass ID="hfLongitude" runat="server" CssClass="js-geolocation-longitude" />
 
             <%-- Main Panel --%>
-         
+
             <div class="checkin-header">
                 <h1>
                     <asp:Literal ID="lCheckinHeader" runat="server" Text="Mobile Check-in" /></h1>
@@ -80,7 +80,7 @@
 
                             <div class="controls">
                                 <Rock:BootstrapButton ID="bbtnPhoneLookup" runat="server" Text="Phone Lookup" OnClick="bbtnPhoneLookup_Click" CssClass="btn btn-primary btn-block" />
-                                <Rock:BootstrapButton ID="bbtnLogin" runat="server" Text="Login" OnClick="bbtnLogin_Click" CssClass="btn btn-default btn-block" />
+                                <Rock:BootstrapButton ID="bbtnLogin" runat="server" Text="Log In" OnClick="bbtnLogin_Click" CssClass="btn btn-default btn-block" />
                                 <Rock:BootstrapButton ID="bbtnGetGeoLocation" runat="server" Text="Next" OnClick="bbtnGetGeoLocation_Click" DataLoadingText="Getting Location..." CssClass="btn btn-primary btn-block js-get-geolocation" />
                                 <Rock:BootstrapButton ID="bbtnTryAgain" runat="server" Text="Try Again" OnClick="bbtnTryAgain_Click" DataLoadingText="Check-in..." CssClass="btn btn-primary btn-block js-checkin-tryagain" />
                                 <Rock:BootstrapButton ID="bbtnCheckin" runat="server" Text="Check-in" OnClick="bbtnCheckin_Click" DataLoadingText="Check-in..." CssClass="btn btn-primary btn-block js-checkin" />

@@ -81,9 +81,9 @@ namespace RockWeb.Blocks.CheckIn
 
     #region Block Attributes for Launcher Navigation
 
-    [LinkedPage( "Login Page",
+    [LinkedPage( "Log In Page",
         AttributeKey.LoginPage,
-        Description = "The page to use for logging in the person. If blank the login button will not be shown",
+        Description = "The page to use for logging in the person. If blank the log in button will not be shown",
         IsRequired = false,
         Category = "Mobile Person",
         Order = 100
@@ -406,7 +406,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 // unable to determine person from login or person cookie
                 lMessage.Text = GetMessageText( AttributeKey.IdentifyYouPromptTemplate );
-                
+
                 bbtnPhoneLookup.Visible = hasPhoneIdentificationPage;
                 bbtnLogin.Visible = hasLoginPage;
 

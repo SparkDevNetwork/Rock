@@ -116,7 +116,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the Description of the BlockType
         /// </value>
         /// <example>
-        /// Provides ability to login to site.
+        /// Provides ability to log into the site.
         /// </example>
         [DataMember]
         public string Description { get; set; }

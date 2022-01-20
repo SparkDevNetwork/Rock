@@ -1448,7 +1448,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         lbCacheControl.Text = "<i class='fa fa-running'></i>";
                         adminFooter.Controls.Add( lbCacheControl );
 
-                        // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
+                        // If the current user is Impersonated by another user, show a link on the admin bar to log back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null )
@@ -1684,7 +1684,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
 
                 if ( _pageNeedsObsidian )
-                { 
+                {
                     Page.Trace.Warn( "Finalizing Obsidian Page Timings" );
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
                     {
@@ -3088,14 +3088,14 @@ Sys.Application.add_load(function () {
 
                      The AddMetaTagToHead in the lava filter removes some of the existing Meta tag
                      from the Head section at the later stage in page cycle. So at the time of
-                     postback The control tree into which viewstate is being loaded doesn't match 
-                     the control tree that was used to save viewstate during the previous request. 
+                     postback The control tree into which viewstate is being loaded doesn't match
+                     the control tree that was used to save viewstate during the previous request.
 
                      So instead of removing it and adding some of the existing meta tag again at the
                      end, if we replace it with the new value at the same position, it will help
                      maintain the viewstate.
-    
-                     Reason: To fix issue #4560 (a viewstate error on any postback) 
+
+                     Reason: To fix issue #4560 (a viewstate error on any postback)
                 */
                 var isExisting = ReplaceHtmlMetaIfExists( page, htmlMeta );
 

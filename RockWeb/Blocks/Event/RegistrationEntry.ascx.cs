@@ -749,7 +749,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( CurrentPerson != null && CurrentPerson.IsBusiness() )
                 {
-                    ShowError( "Invalid Login", "Sorry, the login you are using doesn't appear to be tied to a valid person record. Try logging out and logging in with a different username, or create a new account before registering for the selected event." );
+                    ShowError( "Invalid Login", "Sorry, the login you are using is not associated with a valid person record. Try logging out and logging in with a different username, or create a new account before registering for the selected event." );
                 }
                 else
                 {
@@ -996,7 +996,7 @@ namespace RockWeb.Blocks.Event
                     ShowStart();
                     return;
                 }
-                
+
                 switch ( currentPanelIndex )
                 {
                     case PanelIndex.PanelRegistrationAttributesStart:
@@ -4065,7 +4065,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrant.OnWaitList )
                 {
                     /*
-                        1/31/2020 - NA 
+                        1/31/2020 - NA
                         This conditional if block below comes from SECC via PR #4071 (https://github.com/SparkDevNetwork/Rock/pull/4071).
                         I attempted to reproduce the problem described in the PR but was unable.
 

@@ -37,11 +37,11 @@ namespace Rock.Jobs
     /// <summary>
     /// This job synchronizes the members of a group with the people in a Rock data view based on
     /// the configuration of data view and role found in the group. It is also responsible for
-    /// sending any ExitSystemEmail or WelcomeSystemEmail as well as possibly creating any 
+    /// sending any ExitSystemEmail or WelcomeSystemEmail as well as possibly creating any
     /// user login for the person.
-    /// 
+    ///
     /// It should adhere to the following truth table:
-    /// 
+    ///
     ///     In         In Group   In Group
     ///     DataView   Archived   !Archived   Result
     ///     --------   --------   ---------   ----------------------------
@@ -59,11 +59,11 @@ namespace Rock.Jobs
     [Description( "Processes groups that are marked to be synced with a data view." )]
 
     [DisallowConcurrentExecution]
-    [BooleanField( "Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset" )]
+    [BooleanField( "Require Password Reset On New Logins", "Determines if new logins will require the individual to reset their password on the first log in.", Key = "RequirePasswordReset" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).", false, 3 * 60, "General", 1, "CommandTimeout" )]
     public class GroupSync : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -76,7 +76,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will sync groups.
-        /// 
+        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.

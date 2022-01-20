@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlLogin" runat="server" DefaultButton="btnLogin" CssClass="login-block">
 
             <fieldset>
-                <legend>Login</legend>
+                <legend>Log In</legend>
 
                 <div class="row">
                     <Rock:NotificationBox ID="nbAdminRedirectPrompt" runat="server" NotificationBoxType="Danger" Visible="false" />
@@ -25,7 +25,7 @@
                         <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Keep me logged in" />
 
                         <%-- To co-operate with Password Managers that allow auto-login, the login button should be rendered as: <input type="submit" value="Login">. --%>
-                        <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
+                        <asp:Button ID="btnLogin" runat="server" Text="Log In" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
 
                         <asp:Button ID="btnNewAccount" runat="server" Text="Register" CssClass="btn btn-action" OnClick="btnNewAccount_Click" CausesValidation="false" />
                         <asp:Button ID="btnHelp" runat="server" Text="Forgot Account" CssClass="btn btn-link" OnClick="btnHelp_Click" CausesValidation="false" />
