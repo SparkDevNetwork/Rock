@@ -14,41 +14,65 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType } from "vue";
 import JavaScriptAnchor from "./javaScriptAnchor";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
     name: "Toggle",
+
     components: {
         JavaScriptAnchor,
         RockFormField
     },
+
     props: {
         modelValue: {
             type: Boolean as PropType<boolean>,
             required: true
         },
+
         trueText: {
             type: String as PropType<string>,
             default: "On"
         },
+
         falseText: {
             type: String as PropType<string>,
             default: "Off"
+        },
+
+        btnSize: {
+            type: String as PropType<string>,
+            default: ""
         }
     },
-    data() {
+
+    setup(props, { emit }) {
+        const getButtonGroupClass = computed((): string[] => {
+            const classes = ["btn-group", "btn-toggle"];
+
+            if (props.btnSize) {
+                classes.push(`btn-group-${props.btnSize}`);
+            }
+
+            return classes;
+        });
+
+        const onClick = (isOn: boolean): void => {
+            if (isOn !== props.modelValue) {
+                emit("update:modelValue", isOn);
+            }
+        };
+
         return {
+            getButtonGroupClass,
+            onClick,
             selectedClasses: "active btn btn-primary",
             unselectedClasses: "btn btn-default"
         };
     },
-    methods: {
-        onClick(isOn: boolean) {
-            this.$emit("update:modelValue", isOn);
-        }
-    },
+
     template: `
 <RockFormField
     :modelValue="modelValue"
@@ -57,7 +81,7 @@ export default defineComponent({
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="toggle-container">
-                <div class="btn-group btn-toggle">
+                <div :class="getButtonGroupClass">
                     <JavaScriptAnchor :class="modelValue ? unselectedClasses : selectedClasses" @click="onClick(false)">
                         <slot name="off">{{falseText}}</slot>
                     </JavaScriptAnchor>

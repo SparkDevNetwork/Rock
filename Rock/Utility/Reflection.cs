@@ -311,6 +311,17 @@ namespace Rock
              * handles the cache for it or a GetIdFromCache method.
              */
 
+            /*
+             * 1/14/2022 -DSH
+             * 
+             * This should also be updated to build a new Guid<=>Id cache map that
+             * is fairly short lived (5-15 minutes). This cache would be used
+             * to improve performance further for items that would not normally
+             * be cached. It should then be tested if the ICachable logic is
+             * noticably slower than this new method and whichever is faster should
+             * be used as the primary source of truth.
+             */
+
             // Check to see if we might have this item in cache. This is unholy
             // but it will catch probably 95% of the cases where we have a cache
             // available for a model.

@@ -459,6 +459,7 @@
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\CheckinConfigurationTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\FieldTypeUsageAttribute.cs" />
     <Compile Include="Attribute\FinancialStatementTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\LocationListFieldAttribute.cs" />
     <Compile Include="Attribute\MobileNavigationActionFieldAttribute.cs" />
@@ -749,6 +750,7 @@
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Data\RockGuidAttribute.cs" />
+    <Compile Include="Field\FieldTypeUsage.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianHostedGatewayComponent.cs" />
@@ -1286,6 +1288,9 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
+    <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
+    <Compile Include="Tv\Classes\ApplicationSettings.cs" />
+    <Compile Include="Tv\TvHelper.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\CodeGenFeature.cs" />
     <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
@@ -3846,6 +3851,10 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Common.Tv\Rock.Common.Tv.csproj">
+      <Project>{7F838E11-3D48-496F-9BB6-B7A8C82E9385}</Project>
+      <Name>Rock.Common.Tv</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>

@@ -25,6 +25,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./decimalRangeFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./decimalRangeFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Decimal Range field.
  */
@@ -57,5 +62,9 @@ export class DecimalRangeFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

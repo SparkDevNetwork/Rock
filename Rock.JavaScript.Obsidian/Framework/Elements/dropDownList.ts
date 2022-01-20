@@ -39,7 +39,7 @@ export default defineComponent({
 
         options: {
             type: Array as PropType<ListItem[]>,
-            required: true
+            default: []
         },
 
         showBlankItem: {
