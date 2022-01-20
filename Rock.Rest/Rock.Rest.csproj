@@ -82,6 +82,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Common.Tv">
+      <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
+    </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.5.3\lib\net40\Swashbuckle.Core.dll</HintPath>
     </Reference>
@@ -132,6 +135,7 @@
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\TvController.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />

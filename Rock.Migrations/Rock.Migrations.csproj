@@ -77,6 +77,10 @@
     <Compile Include="Migrations\202201190043546_CodeGenerated_20220118.Designer.cs">
       <DependentUpon>202201190043546_CodeGenerated_20220118.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202201202058341_AddAdditionalContentPlatform.cs" />
+    <Compile Include="Migrations\202201202058341_AddAdditionalContentPlatform.Designer.cs">
+      <DependentUpon>202201202058341_AddAdditionalContentPlatform.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.cs" />
     <Compile Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.Designer.cs">
       <DependentUpon>202201042325477_FinancialTransactionAlertCascadeDelete.cs</DependentUpon>
@@ -950,6 +954,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202201190043546_CodeGenerated_20220118.resx">
       <DependentUpon>202201190043546_CodeGenerated_20220118.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202201202058341_AddAdditionalContentPlatform.resx">
+      <DependentUpon>202201202058341_AddAdditionalContentPlatform.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.resx">
       <DependentUpon>202201042325477_FinancialTransactionAlertCascadeDelete.cs</DependentUpon>
