@@ -46,13 +46,88 @@ namespace Rock.Rest.v2.Controls
             {
                 new ListItemViewModel
                 {
+                    Text = "Address",
+                    Value = Rock.SystemGuid.FieldType.ADDRESS.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Boolean",
+                    Value = Rock.SystemGuid.FieldType.BOOLEAN.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Currency",
+                    Value = Rock.SystemGuid.FieldType.CURRENCY.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Date Range",
+                    Value = Rock.SystemGuid.FieldType.DATE_RANGE.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Day of Week",
+                    Value = Rock.SystemGuid.FieldType.DAY_OF_WEEK.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Days of Week",
+                    Value = Rock.SystemGuid.FieldType.DAYS_OF_WEEK.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Decimal",
+                    Value = Rock.SystemGuid.FieldType.DECIMAL.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Decimal Range",
+                    Value = Rock.SystemGuid.FieldType.DECIMAL_RANGE.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
                     Text = "Defined Value",
                     Value = Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid().ToString()
                 },
                 new ListItemViewModel
                 {
+                    Text = "Email",
+                    Value = Rock.SystemGuid.FieldType.EMAIL.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Integer",
+                    Value = Rock.SystemGuid.FieldType.INTEGER.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Integer Range",
+                    Value = Rock.SystemGuid.FieldType.INTEGER_RANGE.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Month Day",
+                    Value = Rock.SystemGuid.FieldType.MONTH_DAY.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "SSN",
+                    Value = Rock.SystemGuid.FieldType.SSN.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Phone Number",
+                    Value = Rock.SystemGuid.FieldType.PHONE_NUMBER.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
                     Text = "Text",
                     Value = Rock.SystemGuid.FieldType.TEXT.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Time",
+                    Value = Rock.SystemGuid.FieldType.TIME.AsGuid().ToString()
                 },
                 new ListItemViewModel
                 {

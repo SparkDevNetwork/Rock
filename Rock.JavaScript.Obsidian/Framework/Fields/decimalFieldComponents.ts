@@ -60,3 +60,9 @@ export const EditComponent = defineComponent({
 <NumberBox v-model="internalValue" rules="decimal" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "DecimalField.Configuration",
+
+    template: ``
+});
