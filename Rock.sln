@@ -6,7 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.7.2"
-		ProjectReferences = "{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{69AC175C-3997-4514-8C9E-5D24811928C2}|SignNowSDK.dll;{c1dd2402-5fb2-411e-bf8d-5d9cb3a58e8b}|Rock.Slingshot.dll;{962944DE-8BF4-4175-B55A-E75CF7918272}|Rock.Slingshot.Model.dll;{42edf2dd-5284-4b64-93c3-5186619d2b14}|Rock.StatementGenerator.dll;{5055f482-72c7-4cc9-8ed0-a77090c777db}|Rock.Security.Authentication.Auth0.dll;{515e22e4-4b9b-4886-8477-e5b312b75eb4}|Rock.WebStartup.dll;{94a5f880-31ae-4889-b9be-ba1fdc258e83}|Rock.Checkr.dll;{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}|Rock.DownhillCss.dll;{13711bed-69dd-4182-9bb5-b3c9a4de32df}|Rock.MyWell.dll;{205f439a-2ccc-42c1-b1ab-09e1b629d88c}|Rock.SendGrid.dll;{8ccb8e2a-073c-48cb-b31a-621ec5430a42}|Rock.Oidc.dll;{704740D8-B539-4560-9F8C-681670C9D6AD}|Rock.Migrations.dll;{37E293DD-F282-4A34-91FA-5FB8503D5672}|Rock.Lava.dll;{8820CD93-70EE-496D-B17B-0C4C68DD4957}|Rock.Lava.Shared.dll;{50174698-828B-49FB-8DD6-6F9D1B4651A4}|Rock.Common.Web.dll;{13568622-324E-4493-B605-C9896E725D30}|Rock.Common.dll;{00EDCB8D-EF33-459C-AD62-02876BD24DFF}|DotLiquid.dll;{b62b27c8-1f77-43cf-8ee7-30de7f93facd}|Rock.Update.dll;{E8C5F154-201F-4C67-BCDC-34787DEFFEAE}|Rock.Blocks.dll;{05baaf85-9c53-4ccd-a535-036427b0df72}|Rock.ViewModel.dll;{79AA470A-DC63-4CB4-B0B6-77285F60C69B}|Rock.Lava.DotLiquid.dll;{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}|Rock.Lava.Fluid.dll;{7F838E11-3D48-496F-9BB6-B7A8C82E9385}|Rock.Common.Tv.dll;"
+		ProjectReferences = "{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{69AC175C-3997-4514-8C9E-5D24811928C2}|SignNowSDK.dll;{c1dd2402-5fb2-411e-bf8d-5d9cb3a58e8b}|Rock.Slingshot.dll;{962944DE-8BF4-4175-B55A-E75CF7918272}|Rock.Slingshot.Model.dll;{42edf2dd-5284-4b64-93c3-5186619d2b14}|Rock.StatementGenerator.dll;{5055f482-72c7-4cc9-8ed0-a77090c777db}|Rock.Security.Authentication.Auth0.dll;{515e22e4-4b9b-4886-8477-e5b312b75eb4}|Rock.WebStartup.dll;{94a5f880-31ae-4889-b9be-ba1fdc258e83}|Rock.Checkr.dll;{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}|Rock.DownhillCss.dll;{13711bed-69dd-4182-9bb5-b3c9a4de32df}|Rock.MyWell.dll;{205f439a-2ccc-42c1-b1ab-09e1b629d88c}|Rock.SendGrid.dll;{8ccb8e2a-073c-48cb-b31a-621ec5430a42}|Rock.Oidc.dll;{704740D8-B539-4560-9F8C-681670C9D6AD}|Rock.Migrations.dll;{37E293DD-F282-4A34-91FA-5FB8503D5672}|Rock.Lava.dll;{8820CD93-70EE-496D-B17B-0C4C68DD4957}|Rock.Lava.Shared.dll;{50174698-828B-49FB-8DD6-6F9D1B4651A4}|Rock.Common.Web.dll;{13568622-324E-4493-B605-C9896E725D30}|Rock.Common.dll;{00EDCB8D-EF33-459C-AD62-02876BD24DFF}|DotLiquid.dll;{b62b27c8-1f77-43cf-8ee7-30de7f93facd}|Rock.Update.dll;{E8C5F154-201F-4C67-BCDC-34787DEFFEAE}|Rock.Blocks.dll;{05baaf85-9c53-4ccd-a535-036427b0df72}|Rock.ViewModel.dll;{79AA470A-DC63-4CB4-B0B6-77285F60C69B}|Rock.Lava.DotLiquid.dll;{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}|Rock.Lava.Fluid.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_6229"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6229\"
@@ -102,8 +102,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lava.Fluid\Rock.Lava.Fluid.csproj", "{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}"
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian", "Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj", "{A4FB4B9B-3564-4C25-938C-4350A9515B24}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Common.Tv", "Rock.Common.Tv\Rock.Common.Tv.csproj", "{7F838E11-3D48-496F-9BB6-B7A8C82E9385}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -259,10 +257,6 @@ Global
 		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7F838E11-3D48-496F-9BB6-B7A8C82E9385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7F838E11-3D48-496F-9BB6-B7A8C82E9385}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7F838E11-3D48-496F-9BB6-B7A8C82E9385}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7F838E11-3D48-496F-9BB6-B7A8C82E9385}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

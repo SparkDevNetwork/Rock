@@ -304,6 +304,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Common.Tv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
+    </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
     </Reference>
@@ -3764,10 +3768,6 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Common.Tv\Rock.Common.Tv.csproj">
-      <Project>{7F838E11-3D48-496F-9BB6-B7A8C82E9385}</Project>
-      <Name>Rock.Common.Tv</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
