@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Reporting
         Key = AttributeKey.AddAdministrateSecurityToItemCreator,
         Description = "If enabled, the person who creates a new item will be granted 'Administrate' and 'Edit' security rights to the item.  This was the behavior in previous versions of Rock.  If disabled, the item creator will not be able to edit the report, its security settings, or possibly perform other functions without the Rock administrator settings up a role that is allowed to perform such functions.",
         DefaultBooleanValue = false,
-        Order = 0)]
+        Order = 0 )]
 
     [IntegerField( "Database Timeout",
         Key = AttributeKey.DatabaseTimeout,
@@ -153,16 +153,16 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 // Run the Report and show the results.
-                var reportService = new ReportService( new RockContext() );
+                var reportServiceReadOnly = new ReportService( new RockContextReadOnly() );
 
-                var report = reportService.Get( hfReportId.Value.AsInteger() );
+                var reportReadOnly = reportServiceReadOnly.Get( hfReportId.Value.AsInteger() );
 
-                if ( report == null )
+                if ( reportReadOnly == null )
                 {
                     return;
                 }
 
-                BindGrid( report, false );
+                BindGrid( reportReadOnly, false );
             }
         }
 
@@ -357,8 +357,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, GridRebindEventArgs e )
         {
-            var report = new ReportService( new RockContext() ).Get( hfReportId.ValueAsInt() );
-            BindGrid( report, e.IsCommunication );
+            var reportReadOnly = new ReportService( new RockContextReadOnly() ).Get( hfReportId.ValueAsInt() );
+            BindGrid( reportReadOnly, e.IsCommunication );
         }
 
         /// <summary>
@@ -390,7 +390,18 @@ namespace RockWeb.Blocks.Reporting
                     var entityType = EntityTypeCache.Get( report.EntityTypeId.Value );
                     if ( entityType != null )
                     {
-                        bindGridOptions.ReportDbContext = Reflection.GetDbContextForEntityType( entityType.GetEntityType() );
+                        var contextForEntityType = Reflection.GetDbContextForEntityType( entityType.GetEntityType() );
+
+                        // If the DbContext for the entity type returns a standard RockContext, proceed with the ReadOnly context here.
+                        // If it returns other than a RockContext, use that DbContext for the bindGridOptions.
+                        if ( contextForEntityType.GetType() == typeof( Rock.Data.RockContext ) )
+                        {
+                            bindGridOptions.ReportDbContext = new RockContextReadOnly();
+                        }
+                        else
+                        {
+                            bindGridOptions.ReportDbContext = contextForEntityType;
+                        }
                     }
                 }
 
@@ -699,7 +710,7 @@ namespace RockWeb.Blocks.Reporting
 
             rockContext.SaveChanges();
 
-            if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean())
+            if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean() )
             {
                 Rock.Security.Authorization.AllowPerson( report, Authorization.EDIT, this.CurrentPerson, rockContext );
                 Rock.Security.Authorization.AllowPerson( report, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
@@ -791,9 +802,9 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ReportService service = new ReportService( new RockContext() );
-                Report item = service.Get( reportId );
-                ShowReadonlyDetails( item );
+                ReportService serviceReadOnly = new ReportService( new RockContextReadOnly() );
+                Report itemReadOnly = serviceReadOnly.Get( reportId );
+                ShowReadonlyDetails( itemReadOnly );
             }
         }
 
@@ -813,10 +824,10 @@ namespace RockWeb.Blocks.Reporting
 
             if ( reportGuid.HasValue )
             {
-                var report = new ReportService( new RockContext() ).Get( reportGuid.Value );
-                if ( report != null )
+                var reportReadOnly = new ReportService( new RockContextReadOnly() ).Get( reportGuid.Value );
+                if ( reportReadOnly != null )
                 {
-                    reportId = report.Id;
+                    reportId = reportReadOnly.Id;
                 }
             }
 
@@ -866,7 +877,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Updates UI controls based on the selected entitytype
+        /// Updates UI controls based on the selected EntityType
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         private void UpdateControlsForEntityType( int? entityTypeId )
@@ -1174,7 +1185,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 return null;
             }
-                
+
             string dataSelectComponentTypeName = componentType.FullName;
 
             return DataSelectContainer.GetComponent( dataSelectComponentTypeName );
