@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
@@ -27,6 +28,16 @@ namespace Rock.Model
 {
     public partial class Document
     {
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        /// <exception cref="System.NotImplementedException"></exception>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing => true;
+
         #region Methods
 
         /// <summary>

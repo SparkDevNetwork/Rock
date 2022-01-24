@@ -140,9 +140,6 @@ namespace Rock.Model
         [DataMember]
         public virtual InteractionChannel InteractionChannel { get; set; }
 
-        [NotMapped]
-        private EntityState SaveState { get; set; }
-
         #endregion
     }
 

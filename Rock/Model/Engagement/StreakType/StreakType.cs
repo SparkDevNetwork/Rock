@@ -135,13 +135,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets or sets the structure settings.
-        /// </summary>
-        /// <value>The structure settings.</value>
-        [NotMapped]
-        public virtual Rock.Model.Engagement.StreakType.StreakTypeSettings StructureSettings { get; set; } = new Rock.Model.Engagement.StreakType.StreakTypeSettings();
-
         #endregion Entity Properties
 
         #region IHasActiveFlag

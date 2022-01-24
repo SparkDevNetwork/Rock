@@ -15,12 +15,22 @@
 // </copyright>
 //
 
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Rock.Model
 {
     public partial class Auth
     {
+        /// <summary>
+        /// Gets or sets the Audit Log.
+        /// </summary>
+        /// <value>
+        /// The Audit Log.
+        /// </value>
+        [NotMapped]
+        private AuthAuditLog AuthAuditLog { get; set; }
+
         #region Public Methods
 
         /// <summary>

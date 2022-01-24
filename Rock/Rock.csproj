@@ -904,6 +904,7 @@
     <Compile Include="Model\Core\Schedule\ScheduleService.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleType.cs" />
     <Compile Include="Model\Core\RemoteAuthenticationSession\RemoteAuthenticationSession.cs" />
+    <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.Logic.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
@@ -1057,6 +1058,7 @@
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransaction.Logic.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransaction.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionStatus.cs" />
+    <Compile Include="Model\Finance\FinancialStatementTemplate\FinancialStatementTemplate.Logic.cs" />
     <Compile Include="Model\Finance\FinancialStatementTemplate\FinancialStatementTemplate.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialTransactionAlertType\AlertType.cs" />
     <Compile Include="Model\Finance\FinancialTransactionAlertType\FinancialTransactionAlertType.Logic.cs" />

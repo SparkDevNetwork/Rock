@@ -126,24 +126,6 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<ContentChannel> Channels { get; set; }
 
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        [NotMapped]
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve." );
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
-                return supportedActions;
-            }
-        }
-
         #endregion Navigation Properties
 
         #region Constructors

@@ -18,7 +18,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -83,27 +82,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? StorageEntityTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets a flag indicating whether to allow caching on any <see cref="Rock.Model.BinaryFile"/> child entities.
-        /// </summary>
-        /// <value>
-        ///  A <see cref="System.Boolean"/> value that is <c>true</c> if caching is allowed; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.11" )]
-        [System.Obsolete( "Use CacheToServerFileSystem instead." )]
-        [NotMapped]
-        public bool AllowCaching
-        {
-            get
-            {
-                return CacheToServerFileSystem;
-            }
-            set
-            {
-                CacheToServerFileSystem = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets a flag indicating whether the file on any <see cref="Rock.Model.BinaryFile"/> child entities should be cached to the server.
@@ -200,24 +178,7 @@ namespace Rock.Model
         }
 
         private RockCacheability _cacheControlHeader;
-        /// <summary>
-        /// Gets the cache control header.
-        /// </summary>
-        /// <value>
-        /// The cache control header.
-        /// </value>
-        [NotMapped]
-        public RockCacheability CacheControlHeader
-        {
-            get
-            {
-                if ( _cacheControlHeader == null )
-                {
-                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
-                }
-                return _cacheControlHeader;
-            }
-        }
+       
         #endregion
 
         #region Constructors

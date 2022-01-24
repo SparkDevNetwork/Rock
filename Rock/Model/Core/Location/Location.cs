@@ -344,26 +344,6 @@ namespace Rock.Model
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is a named location.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is a named location; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        [NotMapped]
-        public virtual bool IsNamedLocation
-        {
-            get
-            {
-                return !string.IsNullOrWhiteSpace( Name );
-            }
-
-            private set
-            {
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the location type value.
         /// </summary>
         /// <value>

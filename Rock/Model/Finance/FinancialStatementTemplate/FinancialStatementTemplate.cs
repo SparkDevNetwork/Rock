@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Financial;
 
@@ -135,24 +135,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile LogoBinaryFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the report setting.
-        /// </summary>
-        /// <value>
-        /// The report setting.
-        /// </value>
-        [NotMapped]
-        public virtual FinancialStatementTemplateReportSettings ReportSettings { get; set; } = new FinancialStatementTemplateReportSettings();
-
-        /// <summary>
-        /// Gets or sets the footer settings.
-        /// </summary>
-        /// <value>
-        /// The footer settings.
-        /// </value>
-        [NotMapped]
-        public virtual FinancialStatementTemplateHeaderFooterSettings FooterSettings { get; set; } = new FinancialStatementTemplateHeaderFooterSettings();
 
         #endregion Navigation Properties
     }

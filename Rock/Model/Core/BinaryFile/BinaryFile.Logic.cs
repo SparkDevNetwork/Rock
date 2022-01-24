@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -26,6 +28,75 @@ namespace Rock.Model
     /// </summary>
     public partial class BinaryFile : Model<BinaryFile>
     {
+        /// <summary>
+        /// Gets the storage provider.
+        /// </summary>
+        /// <value>
+        /// The storage provider.
+        /// </value>
+        [NotMapped]
+        [LavaVisible]
+        public virtual Storage.ProviderComponent StorageProvider { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the content stream.
+        /// </summary>
+        /// <value>
+        /// The content stream.
+        /// </value>
+        [NotMapped]
+        [HideFromReporting]
+        public virtual Stream ContentStream
+        {
+            get
+            {
+                if ( _stream == null )
+                {
+                    if ( StorageProvider != null )
+                    {
+                        _stream = StorageProvider.GetContentStream( this );
+                    }
+                }
+                else
+                {
+                    if ( _stream.CanSeek )
+                    {
+                        _stream.Position = 0;
+                    }
+                    else
+                    {
+                        _stream = StorageProvider.GetContentStream( this );
+                    }
+                }
+
+                return _stream;
+            }
+            set
+            {
+                _stream = value;
+                ContentIsDirty = true;
+                ContentLastModified = RockDateTime.Now;
+            }
+        }
+        private Stream _stream;
+        internal bool ContentIsDirty = false;
+
+        /// <summary>
+        /// Gets the storage settings.
+        /// </summary>
+        /// <value>
+        /// The storage settings.
+        /// </value>
+        [NotMapped]
+        [HideFromReporting]
+        public virtual Dictionary<string, string> StorageSettings
+        {
+            get
+            {
+                return StorageEntitySettings.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            }
+        }
+
         /// <summary>
         /// Sets the type of the storage entity.
         /// Should only be set by the BinaryFileService

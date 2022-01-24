@@ -94,6 +94,25 @@ namespace Rock.Model
 
         private Dictionary<string, string> _supportedActions;
 
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        /// <exception cref="System.NotImplementedException"></exception>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing => true;
+
+        /// <summary>
+        /// Gets or sets the history change list.
+        /// </summary>
+        /// <value>
+        /// The history change list.
+        /// </value>
+        [NotMapped]
+        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
+
         #endregion Properties
 
         #region Indexing Methods

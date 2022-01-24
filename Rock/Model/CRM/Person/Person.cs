@@ -557,22 +557,6 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see>.
-        /// </summary>
-        /// <value>
-        /// The primary alias.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual PersonAlias PrimaryAlias
-        {
-            get
-            {
-                return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a collection containing the Person's <see cref="Rock.Model.UserLogin">UserLogins</see>.
         /// </summary>
         /// <value>
@@ -780,21 +764,6 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public int? DaysUntilBirthday { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether [allows interactive bulk indexing].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
-        /// </value>
-        [NotMapped]
-        public bool AllowsInteractiveBulkIndexing
-        {
-            get
-            {
-                return true;
-            }
-        }
 
         #endregion
 
