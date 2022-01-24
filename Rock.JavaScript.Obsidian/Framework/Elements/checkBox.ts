@@ -75,11 +75,12 @@ export default defineComponent({
     name="checkbox">
     <template #default="{uniqueId, field}">
     <div class="control-wrapper">
-        <span class="rock-checkbox-icon" @click="toggle">
-            <i v-if="modelValue" class="fa fa-check-square-o fa-lg"></i>
-            <i v-else class="fa fa-square-o fa-lg"></i>
-            <span v-if="text">&nbsp;{{ text }}</span>
-        </span>
+        <div class="checkbox">
+            <label class="rock-checkbox-icon">
+                <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" />
+                <span v-if="text" class="label-text">&nbsp;{{ text }}</span>
+            </label>
+        </div>
     </div>
     </template>
 </RockFormField>
