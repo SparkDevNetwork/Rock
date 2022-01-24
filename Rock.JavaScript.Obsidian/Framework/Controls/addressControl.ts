@@ -82,9 +82,9 @@ export const AddressControlBase = defineComponent({
     <TextBox placeholder="Address Line 1" :rules="rules" v-model="modelValue.street1" validationTitle="Address Line 1" />
     <TextBox placeholder="Address Line 2" v-model="modelValue.street2" validationTitle="Address Line 2" />
     <div class="form-row">
-        <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" class="col-sm-6" validationTitle="City" />
-        <DropDownList :showBlankItem="false" v-model="modelValue.state" class="col-sm-3" :options="stateOptions" />
-        <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" class="col-sm-3" validationTitle="Zip" />
+        <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" form-group-classes="col-sm-6" validationTitle="City" />
+        <DropDownList :showBlankItem="false" v-model="modelValue.state" form-group-classes="col-sm-3" :options="stateOptions" />
+        <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" form-group-classes="col-sm-3" validationTitle="Zip" />
     </div>
 </div>
 `

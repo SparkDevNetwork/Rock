@@ -56,8 +56,18 @@ namespace Rock.Rest.v2.Controls
                 },
                 new ListItemViewModel
                 {
+                    Text = "Color",
+                    Value = Rock.SystemGuid.FieldType.COLOR.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
                     Text = "Currency",
                     Value = Rock.SystemGuid.FieldType.CURRENCY.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Date",
+                    Value = Rock.SystemGuid.FieldType.DATE.AsGuid().ToString()
                 },
                 new ListItemViewModel
                 {

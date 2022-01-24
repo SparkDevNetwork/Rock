@@ -52,6 +52,11 @@ export default defineComponent({
             default: ""
         },
 
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         formControlClasses: {
             type: String as PropType<string>,
             default: ""
@@ -204,14 +209,15 @@ export default defineComponent({
             internalValue,
             optionGroups,
             optionsWithoutGroup,
-            theSelect
+            theSelect,
+            props
         };
     },
 
     template: `
 <RockFormField
     :modelValue="internalValue"
-    formGroupClasses="rock-drop-down-list"
+    :formGroupClasses="'rock-drop-down-list ' + props.formGroupClasses"
     name="dropdownlist">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
