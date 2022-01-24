@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Connection
                             <p><strong>ConnectionRequest, CurrentPerson, Context, PageParameter, Campuses</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
-        DefaultValue = Lava.ConnectionRequestDetails, // For Testing Only
+        //DefaultValue = Lava.ConnectionRequestDetails, // For Testing Only
         IsRequired = false,
         Order = 8 )]
 
@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Connection
       {% endif %}
    {% endif %}
 
-    <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionTypeGuid={{ connectionType.Guid }}' stretched-link>
+    <a href='javascript:void(0);' stretched-link>
         <div class='card mb-2'>
             <div class='card-body'>
                 <div class='row pt-2' style='height:60px;'>
