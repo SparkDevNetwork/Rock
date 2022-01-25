@@ -33,6 +33,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./dateTimeFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./dateTimeFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Date Time field.
  */
@@ -84,6 +89,10 @@ export class DateTimeFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 
     private isCurrentDateValue(value: ClientAttributeValue): boolean {

@@ -76,6 +76,11 @@ namespace Rock.Rest.v2.Controls
                 },
                 new ListItemViewModel
                 {
+                    Text = "Date Time",
+                    Value = Rock.SystemGuid.FieldType.DATE_TIME.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
                     Text = "Day of Week",
                     Value = Rock.SystemGuid.FieldType.DAY_OF_WEEK.AsGuid().ToString()
                 },
