@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Connection
                        <small class='pl-1 text-muted'>{{ connectionRequest.Campus.Name | Default: 'Main Campus' }}</small>
                        </br>
                        {% assign lastActivity = connectionRequest.ConnectionRequestActivities | Last %}
-                       <small class='text-muted'>Last Activity: {{ lastActivity.Note | Default: 'No Activity' | Capitalize  }}
+                       <small class='text-muted'>Last Activity: {{ lastActivity.Note | Default: '' | Capitalize  }}
                            {% if lastActivity.CreatedDateTime %}
                                ({{ lastActivity.CreatedDateTime | DaysFromNow }})
                            {% endif %}
