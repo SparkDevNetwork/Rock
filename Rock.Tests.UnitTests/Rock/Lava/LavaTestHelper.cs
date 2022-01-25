@@ -323,7 +323,7 @@ namespace Rock.Tests.UnitTests.Lava
                 {
                     Debug.Write( $"**\n** ERROR\n**\n{ex.Message}" );
 
-                    exceptions.Add( ex );
+                    exceptions.Add( new Exception( $"Engine \"{ engine.EngineName }\" reported an error.", ex ) );
                 }
             }
 
