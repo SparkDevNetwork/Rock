@@ -747,6 +747,7 @@ namespace Rock
         /// <param name="mergeObjects">The merge objects.</param>
         /// <param name="currentPersonOverride">The current person override.</param>
         /// <param name="enabledLavaCommands">A comma-delimited list of the lava commands that are enabled for this template.</param>
+        /// <param name="encodeStringOutput">if set to <c>true</c> [encode string output].</param>
         /// <returns>If lava present returns merged string, if no lava returns original string, if null returns empty string</returns>
         private static LavaRenderResult ResolveMergeFieldsWithCurrentLavaEngine( string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStringOutput )
         {

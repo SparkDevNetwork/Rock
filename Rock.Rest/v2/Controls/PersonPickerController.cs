@@ -47,20 +47,51 @@ namespace Rock.Rest.v2.Controls
 
         #region Options
 
+        /// <summary>
+        /// Class SearchOptions.
+        /// </summary>
         public class SearchOptions
         {
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>The name.</value>
             public string Name { get; set; }
 
+            /// <summary>
+            /// Gets or sets the address.
+            /// </summary>
+            /// <value>The address.</value>
             public string Address { get; set; }
 
+            /// <summary>
+            /// Gets or sets the phone.
+            /// </summary>
+            /// <value>The phone.</value>
             public string Phone { get; set; }
 
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>The email.</value>
             public string Email { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [include details].
+            /// </summary>
+            /// <value><c>true</c> if [include details]; otherwise, <c>false</c>.</value>
             public bool IncludeDetails { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [include businesses].
+            /// </summary>
+            /// <value><c>true</c> if [include businesses]; otherwise, <c>false</c>.</value>
             public bool IncludeBusinesses { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [include deceased].
+            /// </summary>
+            /// <value><c>true</c> if [include deceased]; otherwise, <c>false</c>.</value>
             public bool IncludeDeceased { get; set; }
         }
 
