@@ -15,7 +15,7 @@
 // </copyright>
 
 using System;
-using System.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
 using Owin;
 using Rock.Model;
