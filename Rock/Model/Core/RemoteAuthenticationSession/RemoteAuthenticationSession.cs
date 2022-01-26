@@ -30,7 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "RemoteAuthenticationSession" )]
     [DataContract]
-    public partial class RemoteAuthenticationSession : Model<RemoteAuthenticationSession>, IRockEntity
+    public partial class RemoteAuthenticationSession : Model<RemoteAuthenticationSession>
     {
         #region Entity Properties
 
