@@ -885,6 +885,7 @@ namespace Rock.Rest.Controllers
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="personSearchResult">The person search result.</param>
         /// <param name="person">The person.</param>
+        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
         private static void GetPersonSearchDetails( RockContext rockContext, PersonSearchResult personSearchResult, Person person, bool includeHtml )
         {
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );

@@ -300,7 +300,7 @@ namespace Rock.Rest.Controllers
                 response.StatusCode = HttpStatusCode.OK;
                 return response;
             }
-            catch ( Exception ex )
+            catch
             {
                 // Ooops...
                 response.StatusCode = HttpStatusCode.InternalServerError;
@@ -556,7 +556,7 @@ namespace Rock.Rest.Controllers
                 }
 
                 // Remove bad sequences
-                foreach ( var badSequence in AttendanceCodeService.noGood )
+                foreach ( var badSequence in AttendanceCodeService.NoGood )
                 {
                     if ( authCode.Contains( badSequence ) )
                     {
