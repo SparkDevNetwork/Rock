@@ -24,6 +24,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./genderFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./genderFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Gender field.
  */
@@ -51,5 +56,9 @@ export class GenderFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

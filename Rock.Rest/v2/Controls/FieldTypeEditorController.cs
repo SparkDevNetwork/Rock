@@ -111,6 +111,11 @@ namespace Rock.Rest.v2.Controls
                 },
                 new ListItemViewModel
                 {
+                    Text = "Gender",
+                    Value = Rock.SystemGuid.FieldType.GENDER.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
                     Text = "Integer",
                     Value = Rock.SystemGuid.FieldType.INTEGER.AsGuid().ToString()
                 },
@@ -118,6 +123,11 @@ namespace Rock.Rest.v2.Controls
                 {
                     Text = "Integer Range",
                     Value = Rock.SystemGuid.FieldType.INTEGER_RANGE.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
+                    Text = "Memo",
+                    Value = Rock.SystemGuid.FieldType.MEMO.AsGuid().ToString()
                 },
                 new ListItemViewModel
                 {
