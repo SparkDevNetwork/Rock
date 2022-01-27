@@ -43,6 +43,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the previous edit value.
+        /// </summary>
+        /// <value>The previous edit value.</value>
+        public string PreviousEditValue
+        {
+            get => ViewState["PreviousEditValue"] as string;
+            set => ViewState["PreviousEditValue"] = value;
+        }
+
+        /// <summary>
         /// Get the form field
         /// </summary>
         /// <returns></returns>
@@ -85,10 +95,21 @@ namespace Rock.Web.UI.Controls
         public void UpdateVisibility( Dictionary<int, AttributeValueCache> attributeValues, Dictionary<RegistrationPersonFieldType, string> personFieldValues )
         {
             var visible = FieldVisibilityRules.Evaluate( attributeValues, personFieldValues );
-            if ( visible == false && this.Visible )
+            if ( !visible && this.Visible )
             {
+                // Store the previous value since we are force removing the value here.
+                this.PreviousEditValue = EditValue;
+
                 // if hiding this field, set the value to null since we don't want to save values that aren't shown
                 this.EditValue = null;
+            }
+            else if ( visible && !this.Visible )
+            {
+                // if showing this field, reset the previous value, if available
+                if ( !string.IsNullOrEmpty( this.PreviousEditValue ) )
+                {
+                    this.EditValue = this.PreviousEditValue;
+                }
             }
 
             this.Visible = visible;
@@ -175,7 +196,7 @@ namespace Rock.Web.UI.Controls
         public event EventHandler<FieldEventArgs> EditValueUpdated;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="System.EventArgs" />
         public class FieldEventArgs : EventArgs
