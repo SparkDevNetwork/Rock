@@ -292,7 +292,7 @@ Rock.controls.tagList.initialize({{
 
                     var isPersonal = currentPersonId.HasValue && item.OwnerPersonAlias?.PersonId == currentPersonId.Value;
                     var tagCssClass = isPersonal ? "personal" : string.Empty;
-                    var serializedTag = SerializeTag( item.Name, tagCssClass, item.IconCssClass, item.BackgroundColor );
+                    var serializedTag = SerializeTag( item.Name, tagCssClass, item.IconCssClass, item.BackgroundColorHex );
                     serializedTags.Add( serializedTag );
                 }
             }
