@@ -482,6 +482,26 @@ export default defineComponent({
             }
 
             return true;
+        },
+
+        isFull(): boolean {
+            if (!this.viewModel || this.viewModel.spotsRemaining === null) {
+                return false;
+            }
+
+            return this.viewModel.spotsRemaining < 1 && !this.viewModel.waitListEnabled;
+        },
+
+        registrationTerm(): string {
+            return (this.viewModel?.registrationTerm || "registration").toLowerCase();
+        },
+
+        registrationTermPlural(): string {
+            return (this.viewModel?.pluralRegistrationTerm || "registrations").toLowerCase();
+        },
+
+        registrationTermTitleCase(): string {
+            return toTitleCase(this.registrationTerm);
         }
     },
     methods: {
@@ -624,6 +644,12 @@ export default defineComponent({
     <Alert v-else-if="isInvalidGateway" alertType="warning">
         <strong>Incorrect Configuration</strong>
         <p>This registration has costs/fees associated with it but the configured payment gateway is not supported.</p>
+    </Alert>
+    <Alert v-else-if="isFull" class="text-left" alertType="warning">
+        <strong>{{registrationTermTitleCase}} Full</strong>
+        <p>
+            There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.
+        </p>
     </Alert>
     <template v-else>
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
