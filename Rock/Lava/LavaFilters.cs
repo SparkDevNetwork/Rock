@@ -1153,35 +1153,35 @@ namespace Rock.Lava
             var endDate = startDateTime.Value.AddYears( 1 );
 
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
-
-            var tzName = RockDateTime.OrgTimeZoneInfo.Id;
-
             var calendarEvent = calendar.Events[0] as Event;
 
             List<DateTimeOffset> dates;
 
+            // Get the UTC offset of the start date, and apply that offset to all of the dates in the sequence.
+            // This ensures that the scheduled event time remains the same if the sequence of dates crosses
+            // a Daylight Saving Time (DST) boundary.
             // To avoid any confusion where the local timezone, Rock timezone and calendar timezone are not the same,
             // express the start and end dates for the occurrence period in UTC.
+            var tsOffset = startDateTime.Value.Offset;
+
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
-                    .Select( d => new DateTimeOffset( d.Period.StartTime.ToTimeZone( tzName ).Value ) )
+                    .Select( d => new DateTimeOffset( d.Period.StartTime.Ticks, tsOffset ) )
                     .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
                 dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
-                    .Select( d => new DateTimeOffset( d.Period.EndTime.ToTimeZone( tzName ).Value ) )
+                    .Select( d => new DateTimeOffset( d.Period.EndTime.Ticks, tsOffset ) )
                     .ToList();
             }
             else
             {
                 dates = new List<DateTimeOffset>();
             }
-
-            dates = dates.Select( x => x.ToOffset( RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ) ).ToList();
 
             return dates;
         }
