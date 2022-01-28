@@ -2108,25 +2108,39 @@ Sys.Application.add_load(function () {
         {
             try
             {
-                string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
-                if ( scriptTemplate == null )
+                // If the script has already been loaded then don't do it again
+                if ( Application["GoogleAnalyticsScript"] is string scriptTemplate )
                 {
-                    string scriptFile = MapPath( "~/Assets/Misc/GoogleAnalytics.txt" );
-                    if ( File.Exists( scriptFile ) )
-                    {
-                        scriptTemplate = File.ReadAllText( scriptFile );
-                        Application["GoogleAnalyticsScript"] = scriptTemplate;
-                    }
+                    return;
                 }
 
-                if ( scriptTemplate != null )
+                // Parse the list of codes, we want the "G-" codes to be first because the first code is used as the default in the <script> src property.
+                var gtagCodes = code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "G-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>();
+
+                // Add the measurement codes that start with 'UA' to the gtag script. If there are multiple measurement IDs the first one is used as the default.
+                gtagCodes.AddRange( code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "UA-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>() );
+
+                if( gtagCodes.Any() )
                 {
-                    string script = scriptTemplate.Contains( "{0}" ) ? string.Format( scriptTemplate, code ) : scriptTemplate;
-                    AddScriptToHead( this.Page, script, true );
+                    var sb = new StringBuilder();
+                    sb.Append( $@"
+    <!-- BEGIN Global site tag (gtag.js) - Google Analytics -->
+    <script async src=""https://www.googletagmanager.com/gtag/js?id={gtagCodes.First()}""></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{window.dataLayer.push(arguments);}}
+      gtag('js', new Date());");
+                    sb.AppendLine( "" );
+                    gtagCodes.ForEach( a => sb.AppendLine( $"      gtag('config', '{a}');" ) );
+                    sb.AppendLine( "    </script>" );
+                    sb.AppendLine( "    <!-- END Global site tag (gtag.js) - Google Analytics -->" );
+
+                    AddScriptToHead( this.Page, sb.ToString(), false );
                 }
             }
             catch ( Exception ex )
             {
+                // Log any error but still let the page load.
                 LogException( ex );
             }
         }
