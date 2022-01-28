@@ -30,35 +30,38 @@ namespace Rock.Model
         /// <inheritdoc/>
         internal class SaveHook : EntitySaveHook<FinancialPaymentDetail>
         {
+
+            private History.HistoryChangeList HistoryChangeList { get; set; }
+
             /// <inheritdoc/>
             protected override void PreSave()
             {
                 var rockContext = ( RockContext ) DbContext;
-                Entity.HistoryChangeList = new History.HistoryChangeList();
+                HistoryChangeList = new History.HistoryChangeList();
 
                 switch ( Entry.State )
                 {
                     case EntityContextState.Added:
                         {
-                            History.EvaluateChange( Entity.HistoryChangeList, "Account Number", string.Empty, Entity.AccountNumberMasked );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Currency Type", ( int? ) null, Entity.CurrencyTypeValue, Entity.CurrencyTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Credit Card Type", ( int? ) null, Entity.CreditCardTypeValue, Entity.CreditCardTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Name On Card", string.Empty, Entity.NameOnCard );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Expiration Month", string.Empty, Entity.ExpirationMonth.ToStringSafe(), true );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Expiration Year", string.Empty, Entity.ExpirationYear.ToStringSafe(), true );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Billing Location", string.Empty, History.GetValue<Location>( Entity.BillingLocation, Entity.BillingLocationId, rockContext ) );
+                            History.EvaluateChange( HistoryChangeList, "Account Number", string.Empty, Entity.AccountNumberMasked );
+                            History.EvaluateChange( HistoryChangeList, "Currency Type", ( int? ) null, Entity.CurrencyTypeValue, Entity.CurrencyTypeValueId );
+                            History.EvaluateChange( HistoryChangeList, "Credit Card Type", ( int? ) null, Entity.CreditCardTypeValue, Entity.CreditCardTypeValueId );
+                            History.EvaluateChange( HistoryChangeList, "Name On Card", string.Empty, Entity.NameOnCard );
+                            History.EvaluateChange( HistoryChangeList, "Expiration Month", string.Empty, Entity.ExpirationMonth.ToStringSafe(), true );
+                            History.EvaluateChange( HistoryChangeList, "Expiration Year", string.Empty, Entity.ExpirationYear.ToStringSafe(), true );
+                            History.EvaluateChange( HistoryChangeList, "Billing Location", string.Empty, History.GetValue<Location>( Entity.BillingLocation, Entity.BillingLocationId, rockContext ) );
                             break;
                         }
                     case EntityContextState.Modified:
                     case EntityContextState.Deleted:
                         {
-                            History.EvaluateChange( Entity.HistoryChangeList, "Account Number", Entry.OriginalValues[nameof( Entity.AccountNumberMasked )].ToStringSafe(), Entity.AccountNumberMasked );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Currency Type", Entry.OriginalValues[nameof( Entity.CurrencyTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.CurrencyTypeValue, Entity.CurrencyTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Credit Card Type", Entry.OriginalValues[nameof( Entity.CreditCardTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.CreditCardTypeValue, Entity.CreditCardTypeValueId );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Name On Card", Entry.OriginalValues[nameof( Entity.NameOnCard )].ToStringSafe(), Entity.NameOnCard );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Expiration Month", Entry.OriginalValues[nameof( Entity.ExpirationMonth )].ToStringSafe(), Entity.ExpirationMonth.ToStringSafe(), true );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Expiration Year", Entry.OriginalValues[nameof( Entity.ExpirationYear )].ToStringSafe(), Entity.ExpirationYear.ToStringSafe(), true );
-                            History.EvaluateChange( Entity.HistoryChangeList, "Billing Location", History.GetValue<Location>( null, Entry.OriginalValues[nameof( Entity.BillingLocationId )].ToStringSafe().AsIntegerOrNull(), rockContext ), History.GetValue<Location>( Entity.BillingLocation, Entity.BillingLocationId, rockContext ) );
+                            History.EvaluateChange( HistoryChangeList, "Account Number", Entry.OriginalValues[nameof( Entity.AccountNumberMasked )].ToStringSafe(), Entity.AccountNumberMasked );
+                            History.EvaluateChange( HistoryChangeList, "Currency Type", Entry.OriginalValues[nameof( Entity.CurrencyTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.CurrencyTypeValue, Entity.CurrencyTypeValueId );
+                            History.EvaluateChange( HistoryChangeList, "Credit Card Type", Entry.OriginalValues[nameof( Entity.CreditCardTypeValueId )].ToStringSafe().AsIntegerOrNull(), Entity.CreditCardTypeValue, Entity.CreditCardTypeValueId );
+                            History.EvaluateChange( HistoryChangeList, "Name On Card", Entry.OriginalValues[nameof( Entity.NameOnCard )].ToStringSafe(), Entity.NameOnCard );
+                            History.EvaluateChange( HistoryChangeList, "Expiration Month", Entry.OriginalValues[nameof( Entity.ExpirationMonth )].ToStringSafe(), Entity.ExpirationMonth.ToStringSafe(), true );
+                            History.EvaluateChange( HistoryChangeList, "Expiration Year", Entry.OriginalValues[nameof( Entity.ExpirationYear )].ToStringSafe(), Entity.ExpirationYear.ToStringSafe(), true );
+                            History.EvaluateChange( HistoryChangeList, "Billing Location", History.GetValue<Location>( null, Entry.OriginalValues[nameof( Entity.BillingLocationId )].ToStringSafe().AsIntegerOrNull(), rockContext ), History.GetValue<Location>( Entity.BillingLocation, Entity.BillingLocationId, rockContext ) );
                             break;
                         }
                 }
@@ -78,7 +81,7 @@ namespace Rock.Model
             /// <inheritdoc/>
             protected override void PostSave()
             {
-                if ( Entity.HistoryChangeList?.Any() == true )
+                if ( HistoryChangeList?.Any() == true )
                 {
                     var rockContext = ( RockContext ) DbContext;
                     var associatedTransactions = new FinancialTransactionService( rockContext )
@@ -95,7 +98,7 @@ namespace Rock.Model
                             typeof( FinancialTransaction ),
                             Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
                             transaction.Id,
-                            Entity.HistoryChangeList,
+                            HistoryChangeList,
                             true,
                             Entity.ModifiedByPersonAliasId,
                             DbContext.SourceOfChange );

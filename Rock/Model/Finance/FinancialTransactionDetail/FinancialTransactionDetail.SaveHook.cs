@@ -25,18 +25,20 @@ namespace Rock.Model
         /// <inheritdoc/>
         internal class SaveHook : EntitySaveHook<FinancialTransactionDetail>
         {
+            public History.HistoryChangeList HistoryChangeList { get; set; }
+
             /// <inheritdoc/>
             protected override void PreSave()
             {
                 var rockContext = ( RockContext ) DbContext;
-                Entity.HistoryChangeList = new History.HistoryChangeList();
+                HistoryChangeList = new History.HistoryChangeList();
 
                 switch ( Entry.State )
                 {
                     case EntityContextState.Added:
                         {
                             string acct = History.GetValue<FinancialAccount>( Entity.Account, Entity.AccountId, rockContext );
-                            Entity.HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Entity.Amount.FormatAsCurrency() );
+                            HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Entity.Amount.FormatAsCurrency() );
                             break;
                         }
                     case EntityContextState.Modified:
@@ -47,19 +49,19 @@ namespace Rock.Model
                             int? origAccountId = OriginalValues[nameof( Entity.AccountId )].ToStringSafe().AsIntegerOrNull();
                             if ( !accountId.Equals( origAccountId ) )
                             {
-                                History.EvaluateChange( Entity.HistoryChangeList, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
+                                History.EvaluateChange( HistoryChangeList, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
                             }
 
-                            History.EvaluateChange( Entity.HistoryChangeList, acct, OriginalValues[nameof( Entity.Amount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.Amount.FormatAsCurrency() );
-                            History.EvaluateChange( Entity.HistoryChangeList, acct, OriginalValues[nameof( Entity.FeeAmount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeAmount.FormatAsCurrency() );
-                            History.EvaluateChange( Entity.HistoryChangeList, acct, OriginalValues[nameof( Entity.FeeCoverageAmount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeCoverageAmount.FormatAsCurrency() );
+                            History.EvaluateChange( HistoryChangeList, acct, OriginalValues[nameof( Entity.Amount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.Amount.FormatAsCurrency() );
+                            History.EvaluateChange( HistoryChangeList, acct, OriginalValues[nameof( Entity.FeeAmount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeAmount.FormatAsCurrency() );
+                            History.EvaluateChange( HistoryChangeList, acct, OriginalValues[nameof( Entity.FeeCoverageAmount )].ToStringSafe().AsDecimal().FormatAsCurrency(), Entity.FeeCoverageAmount.FormatAsCurrency() );
 
                             break;
                         }
                     case EntityContextState.Deleted:
                         {
                             string acct = History.GetValue<FinancialAccount>( Entity.Account, Entity.AccountId, rockContext );
-                            Entity.HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Entity.Amount.FormatAsCurrency() );
+                            HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Entity.Amount.FormatAsCurrency() );
                             break;
                         }
                 }
@@ -72,14 +74,14 @@ namespace Rock.Model
             {
                 var rockContext = ( RockContext ) DbContext;
 
-                if ( Entity.HistoryChangeList?.Any() == true )
+                if ( HistoryChangeList?.Any() == true )
                 {
                     // Save transaction history.
                     HistoryService.SaveChanges( rockContext,
                         typeof( FinancialTransaction ),
                         Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
                         Entity.TransactionId,
-                        Entity.HistoryChangeList,
+                        HistoryChangeList,
                         true,
                         Entity.ModifiedByPersonAliasId );
 
