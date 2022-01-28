@@ -2116,11 +2116,12 @@ Sys.Application.add_load(function () {
 
                 // Parse the list of codes, we want the "G-" codes to be first because the first code is used as the default in the <script> src property.
                 var gtagCodes = code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "G-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>();
+
+                // Add the measurement codes that start with 'UA' to the gtag script. If there are multiple measurement IDs the first one is used as the default.
                 gtagCodes.AddRange( code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "UA-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>() );
 
                 if( gtagCodes.Any() )
                 {
-                    // Add the measurement codes that start with 'GA' to the gtag script. If there are multiple measurement IDs the first one is used as the default.
                     var sb = new StringBuilder();
                     sb.Append( $@"
     <!-- BEGIN Global site tag (gtag.js) - Google Analytics -->
