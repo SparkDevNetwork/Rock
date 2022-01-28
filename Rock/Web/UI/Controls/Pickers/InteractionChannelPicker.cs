@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var channel in channels )
             {
-                var li = new ListItem( $"{channel.Name} ({channel.ChannelTypeMediumValue.Value})", channel.Id.ToString() );
+                var li = new ListItem( $"{channel.Name} ({(channel.ChannelTypeMediumValue != null ? channel.ChannelTypeMediumValue.Value : string.Empty )})", channel.Id.ToString() );
                 li.Selected = selectedItems.Contains( channel.Id );
                 picker.Items.Add( li );
             }

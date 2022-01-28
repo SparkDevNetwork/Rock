@@ -607,11 +607,22 @@ namespace Rock.Lava.Fluid
                 templateContext.FluidContext.Options.TimeZone = parameters.TimeZone;
             }
 
+            // Set the render options for encoding.
+            System.Text.Encodings.Web.TextEncoder encoder;
+            if ( parameters.ShouldEncodeStringsAsXml )
+            {
+                encoder = System.Text.Encodings.Web.HtmlEncoder.Default;
+            }
+            else
+            {
+                encoder = NullEncoder.Default;
+            }
+
             var writer = new StringWriter( sb );
 
             try
             {
-                template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
+                template.Render( templateContext.FluidContext, encoder, writer );
 
                 writer.Flush();
                 result.Text = sb.ToString();

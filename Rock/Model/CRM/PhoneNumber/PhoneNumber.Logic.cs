@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -80,6 +81,8 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
         private Dictionary<int, History.HistoryChangeList> PersonHistoryChanges { get; set; }
 
         #endregion

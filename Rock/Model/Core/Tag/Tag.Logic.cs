@@ -16,6 +16,9 @@
 //
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Drawing;
+using Rock.Lava;
 using Rock.Security;
 
 namespace Rock.Model
@@ -70,7 +73,61 @@ namespace Rock.Model
 
         private Dictionary<string, string> _supportedActions;
 
+        /// <summary>
+        /// Returns a hexidecimal value for the BackgroundColor value.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        [NotMapped]
+        [LavaVisible]
+        public string BackgroundColorHex
+        {
+            get
+            {
+                if ( string.IsNullOrEmpty( this.BackgroundColor ) )
+                {
+                    return null;
+                }
+
+                // Already HEX
+                if ( this.BackgroundColor.StartsWith( "#" ) )
+                {
+                    return this.BackgroundColor;
+                }
+
+                // rgb(...) or rgba(...) string
+                if ( this.BackgroundColor.ToLowerInvariant().StartsWith( "rgb" ) )
+                {
+                    var startParen = this.BackgroundColor.IndexOf( "(" ) + 1;
+                    var bgColor = this.BackgroundColor.SubstringSafe(
+                        startParen, this.BackgroundColor.LastIndexOf( ")" ) - startParen );
+                    if ( !string.IsNullOrEmpty( bgColor ) )
+                    {
+                        var colorArray = bgColor.Split( ',' );
+                        switch ( colorArray.Length )
+                        {
+                            case 3:
+                                {
+                                    // R,G,B from our color picker
+                                    var color = Color.FromArgb( colorArray[0].AsInteger(), colorArray[1].AsInteger(), colorArray[2].AsInteger() );
+                                    return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                                }
+                            case 4:
+                                {
+                                    // R,G,B,A from our color picker
+                                    var color = Color.FromArgb( ( int ) ( 255 * colorArray[3].AsDouble() ), colorArray[0].AsInteger(), colorArray[1].AsInteger(), colorArray[2].AsInteger() );
+                                    return $"#{color.R:X2}{color.G:X2}{color.B:X2}{color.A:X2}";
+                                }
+                        }
+                    }
+                }
+
+                // If all else fails just return the original string value.
+                return this.BackgroundColor;
+            }
+        }
+
         #endregion Properties
+
         #region Methods
 
         /// <summary>

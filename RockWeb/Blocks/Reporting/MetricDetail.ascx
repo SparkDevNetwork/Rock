@@ -151,7 +151,11 @@
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
-                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security pull-right" />
+                        <span class="pull-right">
+                            <Rock:ModalAlert ID="mdManualRunInfo" runat="server" />
+                            <asp:LinkButton ID="btnManualRun" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManualRun_Click" ToolTip="Run Now"><i class="fa fa-play"></i></asp:LinkButton>
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
+                        </span>
                     </div>
 
                 </fieldset>
@@ -183,6 +187,12 @@
                 </Content>
             </Rock:ModalDialog>
 
+            <!-- Manual Run Modal -->
+            <Rock:ModalDialog ID="mdManualRunConfirm" runat="server" Title="Confirm Manual Run" OnSaveClick="mdManualRunConfirm_SaveClick" SaveButtonText="Run" Visible="false">
+                <Content>
+                    <p class="alert alert-warning">Note: Running this metric manually could create duplicate metric values if it's also set to run on a schedule.</p>
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
     </ContentTemplate>

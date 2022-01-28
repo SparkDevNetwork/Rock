@@ -94,6 +94,17 @@ namespace RockWeb.Blocks.Core
                 nbRepoWarning.Visible = true;
             }
 
+            if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
+            {
+                // Display a warning here but don't prevent them from going forward. This will be checked again after clicking update.
+                nbCompileThreadsIssue.Visible = true;
+            }
+            else
+            {
+                // Hide the warning
+                nbCompileThreadsIssue.Visible = false;
+            }
+
             DisplayRockVersion();
             if ( !IsPostBack )
             {
@@ -472,6 +483,14 @@ namespace RockWeb.Blocks.Core
 
         protected void mdConfirmInstall_SaveClick( object sender, EventArgs e )
         {
+            if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
+            {
+                // Show message here and return
+                nbCompileThreadsIssue.Visible = true;
+                return;
+            }
+
+            nbCompileThreadsIssue.Visible = false;
             mdConfirmInstall.Hide();
             Update( hdnInstallVersion.Value );
         }

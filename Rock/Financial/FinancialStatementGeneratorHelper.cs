@@ -392,31 +392,53 @@ namespace Rock.Financial
                 string salutation;
                 if ( personId.HasValue )
                 {
+                    // Gives as Individual
                     // if the person gives as an individual, the salutation should be just the person's name
-                    salutation = person.FullName;
+                    salutation = person.FullNameFormal;
                 }
                 else
                 {
-                    // if giving as a group, the salutation is family title
-                    string familyTitle;
+                    // Gives as Giving Group
+                    Group primaryFamily;
                     if ( person != null && person.PrimaryFamilyId == groupId )
                     {
-                        // this is how familyTitle should able to be determined in most cases
-                        familyTitle = person.PrimaryFamily.GroupSalutation;
+                        // this is how PrimaryFamily should able to be determined in most cases
+                        primaryFamily = person.PrimaryFamily;
                     }
                     else
                     {
                         // This could happen if the person is from multiple families, and specified groupId is not their PrimaryFamily
-                        familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
+                        primaryFamily = new GroupService( rockContext ).Get( groupId );
                     }
 
-                    if ( familyTitle.IsNullOrWhiteSpace() )
+                    /*
+                        MP 1/27/2022
+                        Note that the Statement Generator wants Formal Names, and also has an option to include inactive individuals.
+                        So, we can't use Group.GroupSalution since that is NickNames and only includes active individuals.
+
+                        In the case of the Statement generator, most of the performance hit is the PDF generation, and is also multithreaded, so manually calculating
+                        givingSalutation shouldn't be a noticable performance impact.
+                    */
+
+                    string givingSalutation;
+
+                    var calculateFamilySalutationArgs = new Person.CalculateFamilySalutationArgs( false )
+                    {
+                        RockContext = rockContext,
+                        IncludeInactive = !financialStatementGeneratorOptions.ExcludeInActiveIndividuals,
+                        UseFormalNames = true,
+                        IncludeChildren = false,
+                    };
+
+                    givingSalutation = GroupService.CalculateFamilySalutation( primaryFamily, calculateFamilySalutationArgs );
+
+                    if ( givingSalutation.IsNullOrWhiteSpace() )
                     {
                         // shouldn't happen, just in case the familyTitle is blank, just return the person's name
-                        familyTitle = person.FullName;
+                        givingSalutation = person.FullNameFormal;
                     }
 
-                    salutation = familyTitle;
+                    salutation = givingSalutation;
                 }
 
                 mergeFields.Add( MergeFieldKey.Salutation, salutation );
@@ -866,7 +888,6 @@ namespace Rock.Financial
                             // Pledges from Giving Groups should always be included regardless of the ExcludeInActiveIndividuals option.
                             // See https://app.asana.com/0/0/1200512694724254/f
                             pledgeQry = pledgeQry.Where( a => ( a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive ) || a.PersonAlias.Person.GivingGroupId.HasValue );
-
                         }
 
                         /* 06/23/2021 MDP

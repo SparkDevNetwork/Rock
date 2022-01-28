@@ -125,6 +125,9 @@ export type RegistrationEntryBlockViewModel = {
     startAtBeginning: boolean;
     gatewayGuid: Guid | null;
     campuses: ListItem[];
+    maritalStatuses: ListItem[];
+    connectionStatuses: ListItem[];
+    grades: ListItem[];
     enableSaveAccount: boolean;
     savedAccounts: SavedFinancialAccountListItem[] | null;
 };

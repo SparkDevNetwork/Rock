@@ -135,6 +135,9 @@
         $('#component-button-buttonfontsize').val(buttonFontSize);
         $('#component-button-buttonpadding').val(buttonPadding);
         $('#component-button-buttonradius').val(buttonRadius);
+
+        // Return this to the previous function caller
+        return Rock.controls.emailEditor.$currentButtonComponent;
       },
       setButtonText: function ()
       {

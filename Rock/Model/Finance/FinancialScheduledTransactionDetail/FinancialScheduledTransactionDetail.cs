@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -147,6 +148,8 @@ namespace Rock.Model
         /// The history change list.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         #endregion Navigation Properties

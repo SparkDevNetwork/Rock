@@ -129,7 +129,7 @@
             <p>
                 The connection to Power BI could not be established. Please attempt to log in again.
             </p>
-            <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
+            <asp:Button ID="btnLogin" runat="server" Text="Log In" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

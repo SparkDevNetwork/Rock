@@ -49,7 +49,7 @@
                         <label>Comments</label>
                         <Rock:NoteContainer ID="notesCommentsTimeline" runat="server" UsePersonIcon="true" AddAllowed="true" DisplayType="Full" />
                         <asp:Literal ID="lNoLoginNoCommentsYet" runat="server" ><br /><i>No comments yet.</i></asp:Literal>
-                        <asp:LinkButton ID="btnLoginToComment" CssClass="btn btn-link pull-right" runat="server" Text="Log in to Comment" OnClick="btnLoginToComment_Click" />
+                        <asp:LinkButton ID="btnLoginToComment" CssClass="btn btn-link pull-right" runat="server" Text="Log In to Comment" OnClick="btnLoginToComment_Click" />
                     </div>
                 </asp:Panel>
 

@@ -490,6 +490,8 @@ namespace Rock.Model
         /// The history change list.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         /// <summary>
@@ -499,6 +501,8 @@ namespace Rock.Model
         /// The batch history change list.
         /// </value>
         [NotMapped]
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
         public virtual Dictionary<int, History.HistoryChangeList> BatchHistoryChangeList { get; set; }
 
         /// <summary>
