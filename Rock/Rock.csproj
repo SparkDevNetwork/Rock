@@ -471,6 +471,7 @@
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
+    <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelInteractionComponentFieldAttribute.cs" />
@@ -1205,6 +1206,7 @@
     <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
     <Compile Include="Plugin\HotFixes\142_AddMobileGroupFinderBlock.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
+    <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />

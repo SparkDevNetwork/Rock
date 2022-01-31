@@ -14,35 +14,31 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 namespace Rock.Utility
 {
     /// <summary>
-    /// The time period of the day.
+    /// The front-end platforms that are known and supported by Rock. This enum
+    /// allows different types to specify what platforms they have built-in
+    /// support for.
     /// </summary>
-    public enum TimePeriodOfDay
+    /// <seealso cref="Rock.Attribute.RockPlatformSupportAttribute"/>
+    [Flags]
+    public enum RockPlatform
     {
-        /// <summary>
-        /// The period of time is considered the morning.
-        /// </summary>
-        /// <remarks>
-        /// This is defined as having an hour value &lt; 12pm.
-        /// </remarks>
-        Morning = 0,
+        #region Web Platform Flags 0x0001 - 0x0080
 
         /// <summary>
-        /// The period of time is considered the afternoon.
+        /// Available and supported on the WebForms web platform.
         /// </summary>
-        /// <remarks>
-        /// This is defined as having an hour value &gt;= 12pm and &lt; 5pm.
-        /// </remarks>
-        Afternoon = 1,
+        WebForms = 0x0001,
 
         /// <summary>
-        /// The period of time is considered the evening.
+        /// Available and supported on the Obsidian web platform.
         /// </summary>
-        /// <remarks>
-        /// This is defined as having an hour value &gt;= 5pm.
-        /// </remarks>
-        Evening = 2
+        Obsidian = 0x0002,
+
+        #endregion
     }
 }
