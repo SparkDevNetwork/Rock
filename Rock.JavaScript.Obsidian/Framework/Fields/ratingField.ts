@@ -28,10 +28,14 @@ export type RatingValue = {
     maxValue?: number;
 };
 
-
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./ratingFieldComponents")).EditComponent;
+});
+
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./ratingFieldComponents")).ConfigurationComponent;
 });
 
 /**
@@ -79,5 +83,9 @@ export class RatingFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

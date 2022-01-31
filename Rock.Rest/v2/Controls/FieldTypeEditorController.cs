@@ -136,6 +136,11 @@ namespace Rock.Rest.v2.Controls
                 },
                 new ListItemViewModel
                 {
+                    Text = "Rating",
+                    Value = Rock.SystemGuid.FieldType.RATING.AsGuid().ToString()
+                },
+                new ListItemViewModel
+                {
                     Text = "SSN",
                     Value = Rock.SystemGuid.FieldType.SSN.AsGuid().ToString()
                 },
