@@ -9,7 +9,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-map-marker"></i>&nbsp;Dynamic Map</h1>
-                <a class="btn btn-xs btn-default pull-right margin-l-sm" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a>
+                <div class="panel-labels"><a class="btn btn-xs btn-square btn-default" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a></div>
             </div>
             <asp:Panel ID="pnlOptions" runat="server" Title="Options" CssClass="panel-body js-options" Style="display: none">
                 <div class="row">
@@ -71,7 +71,6 @@
         </asp:Panel>
 
         <script>
-
             function toggleOptions() {
                 $('.js-options').slideToggle();
             }

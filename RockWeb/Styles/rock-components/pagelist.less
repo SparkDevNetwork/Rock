@@ -13,7 +13,8 @@
     display: inline-block;
     width: 100%;
     margin: 0 0 6px;
-    font-size: 14px;
+    font-size: @font-size-small;
+    font-weight: @font-weight-base;
     word-wrap: break-word;
   }
 
@@ -23,7 +24,7 @@
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
     padding: 0;
-    margin: 16px -(@grid-gutter-width / 2) 0;
+    margin: (@grid-gutter-width / 2) -(@grid-gutter-width / 4) -(@grid-gutter-width / 2);
     list-style: none;
 
     li {
@@ -31,8 +32,8 @@
       -ms-flex: 0 0 50%;
       flex: 0 0 50%;
       max-width: 50%;
-      padding-right: (@grid-gutter-width / 2);
-      padding-left: (@grid-gutter-width / 2);
+      padding-right: (@grid-gutter-width / 4);
+      padding-left: (@grid-gutter-width / 4);
       margin-bottom: (@grid-gutter-width / 2);
 
       @media (min-width: @screen-sm-min) {
@@ -76,7 +77,6 @@
         -webkit-transition: background-color 200ms linear, border-color 200ms linear;
         -moz-transition: background-color 200ms linear, border-color 200ms linear;
         -ms-transition: background-color 200ms linear, border-color 200ms linear;
-        -o-transition: background-color 200ms linear, border-color 200ms linear;
         transition: background-color 200ms linear, border-color 200ms linear;
 
         i {
@@ -87,6 +87,7 @@
 
         &:hover {
           color: @listasblocks-rollover-text-color;
+          text-decoration: none;
           background-color: @listasblocks-rollover-bg;
           border-color: @listasblocks-rollover-border-color;
 
@@ -101,7 +102,9 @@
           right: -6px;
 
           .label {
-            padding: 2px 6px;
+            padding: 2px 8px;
+            color: @white;
+            background: @label-danger-bg;
             border-radius: 36px;
           }
         }
@@ -147,7 +150,7 @@
       right: 1px;
       display: block;
       width: 25px;
-      font-size: 12px;
+      font-size: @font-size-xs;
       color: #fff;
       text-align: center;
     }

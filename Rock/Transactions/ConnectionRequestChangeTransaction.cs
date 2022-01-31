@@ -29,6 +29,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a connection request change workflow
     /// </summary>
+    [Obsolete( "Use ProcessConnectionRequestChange Task instead." )]
+    [RockObsolete( "1.13" )]
     public class ConnectionRequestChangeTransaction : ITransaction
     {
         private EntityState State;

@@ -109,7 +109,7 @@ namespace Rock.Security.ExternalAuthentication
             _returnUrl = FormsAuthentication.DefaultUrl;
             if ( !string.IsNullOrWhiteSpace( request.QueryString.ToString() ) )
             {
-                _returnUrl = HttpUtility.UrlDecode( request.Url.GetLeftPart( UriPartial.Authority ) + request.QueryString["returnurl"] );
+                _returnUrl = HttpUtility.UrlDecode( request.UrlProxySafe().GetLeftPart( UriPartial.Authority ) + request.QueryString["returnurl"] );
             }
 
             string redirectUri = GetRedirectUrl( request );
@@ -208,7 +208,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         private string GetRedirectUrl( HttpRequest request )
         {
-            Uri uri = new Uri( request.Url.ToString() );
+            Uri uri = new Uri( request.UrlProxySafe().ToString() );
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
 

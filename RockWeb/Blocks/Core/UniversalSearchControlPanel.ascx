@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <div class="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-search-plus"></i> Universal Search</h1>
 
@@ -14,28 +14,28 @@
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbMessages" runat="server" NotificationBoxType="Warning" />
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockLiteral ID="lIndexLocation" runat="server" Label="Index Location" />
                     </div>
                     <div class="col-md-6">
-                        
+
                     </div>
                 </div>
 
-                <div class="actions">
+                <div class="panel-actions">
                     <!--
                     <asp:LinkButton ID="lbClearIndex" runat="server" CssClass="btn btn-default"><i class="fa fa-refresh"></i> Clear Index</asp:LinkButton>
                     <asp:LinkButton ID="lbBulkLoad" runat="server" CssClass="btn btn-default"><i class="fa fa-download"></i> Bulk Load Entities</asp:LinkButton>
                     -->
                 </div>
             </div>
-        
+
         </div>
 
         <div class="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-search"></i> Smart Search Settings</h1>
             </div>
@@ -55,7 +55,7 @@
                     <div class="actions">
                         <asp:LinkButton ID="lbSmartSearchEdit" runat="server" CssClass="btn btn-primary" OnClick="lbSmartSearchEdit_Click">Edit</asp:LinkButton>
                     </div>
-                
+
                 </asp:Panel>
 
                 <asp:Panel ID="pnlSmartSearchEdit" runat="server" Visible="false">
@@ -73,13 +73,13 @@
                         <asp:LinkButton ID="lbSmartSearchSave" runat="server" CssClass="btn btn-primary" OnClick="lbSmartSearchSave_Click">Save</asp:LinkButton>
                         <asp:LinkButton ID="lbSmartSearchCancel" runat="server" CssClass="btn btn-link" OnClick="lbSmartSearchCancel_Click">Cancel</asp:LinkButton>
                     </div>
-                
+
                 </asp:Panel>
             </div>
         </div>
 
         <div class="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-square"></i> Indexable Entities</h1>
             </div>
@@ -90,8 +90,8 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Entity Name" SortExpression="Name" />
                             <Rock:BoolField DataField="IsIndexingEnabled" HeaderText="Indexing Enabled" SortExpression="IsIndexingEnabled" />
-                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Bulk Load Documents" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='fa fa-download'></i>" OnClick="gBulkLoad_Click" /> 
-                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Recreate Index" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='fa fa-refresh'></i>" OnClick="gRefresh_Click" />                 
+                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Bulk Load Documents" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='fa fa-download'></i>" OnClick="gBulkLoad_Click" />
+                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Recreate Index" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='fa fa-refresh'></i>" OnClick="gRefresh_Click" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -13,7 +13,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-bullhorn"></i> My Content</h1>
 
-                <div class="pull-right">
+                <div class="panel-labels">
                     <Rock:Toggle ID="tglStatus" runat="server" OnText="Pending" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All Items" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                 </div>
 

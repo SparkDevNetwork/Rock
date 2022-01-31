@@ -20,12 +20,11 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-
 using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -44,15 +43,14 @@ namespace RockWeb.Blocks.Reporting
     [LinkedPage( "Session List Page", "Page reference to the session list page. This will be included as a variable in the Lava.", false, order: 0 )]
     [LinkedPage( "Component List Page", "Page reference to the component list page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"{% if InteractionChannel != null and InteractionChannel != '' %}
-    <a href = '{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}' >
-        <div class='panel panel-widget'>
+    <a href='{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}'>
+        <div class='panel panel-widget collapsed'>
             <div class='panel-heading clearfix'>
                 {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ InteractionChannel.Name }}</h1>{% endif %}
 
-                <div class='pull-right margin-l-md'><i class='fa fa-chevron-right'></i></div>
-                
-                <div class='panel-labels'> 
+                <div class='panel-labels d-flex align-items-center'>
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
+                    <i class='fa fa-chevron-right margin-l-md'></i>
                 </div>
             </div>
         </div>
@@ -214,8 +212,23 @@ namespace RockWeb.Blocks.Reporting
                     channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponent.InteractionChannelId == a.Id ) );
                 }
 
-                // Parse the default template so that it does not need to be parsed multiple times
-                var defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
+                // Parse the default template so that it does not need to be parsed multiple times.
+                Template defaultTemplate = null;
+                ILavaTemplate defaultLavaTemplate = null;
+
+                if ( LavaService.RockLiquidIsEnabled )
+                {
+                    defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
+
+                    LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "DefaultTemplate" ) );
+                }
+                else
+                {
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
+
+                    defaultLavaTemplate = parseResult.Template;
+                }
+
                 var options = new Rock.Lava.CommonMergeFieldsOptions();
                 options.GetPageContext = false;
                 options.GetLegacyGlobalMergeFields = false;
@@ -225,24 +238,50 @@ namespace RockWeb.Blocks.Reporting
                 mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );
 
                 var channelItems = new List<ChannelItem>();
-                foreach ( var channel in channelQry )
+
+                if ( LavaService.RockLiquidIsEnabled )
                 {
-                    if ( !channel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    foreach ( var channel in channelQry )
                     {
-                        continue;
+                        if ( !channel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            continue;
+                        }
+                        var channelMergeFields = new Dictionary<string, object>( mergeFields );
+                        channelMergeFields.Add( "InteractionChannel", channel );
+
+                        string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
+                            channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
+                            defaultTemplate.Render( Hash.FromDictionary( channelMergeFields ) );
+
+                        channelItems.Add( new ChannelItem
+                        {
+                            Id = channel.Id,
+                            ChannelHtml = html
+                        } );
                     }
-                    var channelMergeFields = new Dictionary<string, object>( mergeFields );
-                    channelMergeFields.Add( "InteractionChannel", channel );
-
-                    string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
-                        channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
-                        defaultTemplate.Render( Hash.FromDictionary( channelMergeFields ) );
-
-                    channelItems.Add( new ChannelItem
+                }
+                else
+                {
+                    foreach ( var channel in channelQry )
                     {
-                        Id = channel.Id,
-                        ChannelHtml = html
-                    } );
+                        if ( !channel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            continue;
+                        }
+                        var channelMergeFields = new Dictionary<string, object>( mergeFields );
+                        channelMergeFields.Add( "InteractionChannel", channel );
+
+                        string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
+                            channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
+                            LavaService.RenderTemplate( defaultLavaTemplate, channelMergeFields ).Text;
+
+                        channelItems.Add( new ChannelItem
+                        {
+                            Id = channel.Id,
+                            ChannelHtml = html
+                        } );
+                    }
                 }
 
                 rptChannel.DataSource = channelItems;
@@ -273,7 +312,7 @@ namespace RockWeb.Blocks.Reporting
 	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
 	            }
 			}
-			
+
             return personId;
         }
 

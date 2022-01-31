@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Block for editing a linkage associated to an event registration instance." )]
 
-    public partial class RegistrationInstanceLinkageDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class RegistrationInstanceLinkageDetail : Rock.Web.UI.RockBlock
     {
         #region Keys
 

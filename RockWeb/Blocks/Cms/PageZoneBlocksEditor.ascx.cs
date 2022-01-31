@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Page/Zone Blocks Editor" )]
     [Category( "CMS" )]
     [Description( "Edit the Blocks for a Zone on a specific page/layout." )]
-    public partial class PageZoneBlocksEditor : RockBlock, IDetailBlock, ISecondaryBlock
+    public partial class PageZoneBlocksEditor : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -426,7 +426,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="pnlLayoutItem">The PNL layout item.</param>
         private void AddAdminControls( BlockCache block, Panel pnlLayoutItem )
         {
-            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right actions" };
+            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right control-actions" };
 
             // Block Properties
             Literal btnBlockProperties = new Literal();
@@ -469,11 +469,14 @@ namespace RockWeb.Blocks.Cms
             IEnumerable<WebControl> customAdminControls = new List<WebControl>();
             try
             {
-                blockControl = this.Page.TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                blockControl.SetBlock( block.Page, block, true, true );
-                var adminControls = blockControl.GetAdministrateControls( true, true );
-                string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
-                customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+                if ( block.BlockType.Path.IsNotNullOrWhiteSpace() )
+                {
+                    blockControl = this.Page.TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                    blockControl.SetBlock( block.Page, block, true, true );
+                    var adminControls = blockControl.GetAdministrateControls( true, true );
+                    string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
+                    customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+                }
             }
             catch (Exception ex)
             {
@@ -569,7 +572,7 @@ namespace RockWeb.Blocks.Cms
                     mdBlockMove.Title = string.Format( "Move {0} Block", block.Name );
 
                     ddlMoveToZoneList.SetValue( block.Zone );
-                    cblBlockMovePageOrLayout.Items.Clear();
+                    cblBlockMovePageLayoutOrSite.Items.Clear();
 
                     var page = PageCache.Get( hfPageId.Value.AsInteger() );
 
@@ -579,12 +582,18 @@ namespace RockWeb.Blocks.Cms
                     listItemPage.Selected = block.PageId.HasValue;
 
                     var listItemLayout = new ListItem();
-                    listItemLayout.Text = string.Format( "All Pages use the '{0}' Layout", page.Layout );
+                    listItemLayout.Text = string.Format( "All Pages that use the '{0}' Layout", page.Layout );
                     listItemLayout.Value = "Layout";
                     listItemLayout.Selected = block.LayoutId.HasValue;
 
-                    cblBlockMovePageOrLayout.Items.Add( listItemPage );
-                    cblBlockMovePageOrLayout.Items.Add( listItemLayout );
+                    var listItemSite = new ListItem();
+                    listItemSite.Text = string.Format( "All Pages that use the '{0}' Site", page.Layout?.Site );
+                    listItemSite.Value = "Site";
+                    listItemSite.Selected = block.SiteId.HasValue;
+
+                    cblBlockMovePageLayoutOrSite.Items.Add( listItemPage );
+                    cblBlockMovePageLayoutOrSite.Items.Add( listItemLayout );
+                    cblBlockMovePageLayoutOrSite.Items.Add( listItemSite );
 
                     mdBlockMove.Show();
                 }
@@ -734,10 +743,16 @@ namespace RockWeb.Blocks.Cms
             if ( block != null )
             {
                 block.Zone = ddlMoveToZoneList.SelectedValue;
-                if ( cblBlockMovePageOrLayout.SelectedValue == "Page" )
+                if ( cblBlockMovePageLayoutOrSite.SelectedValue == "Page" )
                 {
                     block.PageId = page.Id;
                     block.LayoutId = null;
+                }
+                else if ( cblBlockMovePageLayoutOrSite.SelectedValue == "Site" && page.Layout?.SiteId != null )
+                {
+                    block.PageId = null;
+                    block.LayoutId = null;
+                    block.SiteId = page.Layout?.SiteId;
                 }
                 else
                 {

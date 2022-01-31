@@ -13,10 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -38,11 +37,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view connection requests of a particular person." )]
 
-    [BooleanField(
-        "Hide Inactive Connection Requests",
-        Key = AttributeKey.HideInactiveConnectionRequests,
-        Description = "Show only connection requests that are active?",
-        DefaultBooleanValue = false,
+    [EnumsField(
+        "Hide Connection Requests With These States",
+        Key = AttributeKey.HideRequestStates,
+        Description = "Any of the states you select here will be excluded from the list.",
+        EnumSourceType = typeof( ConnectionState ),
+        IsRequired = false,
         Order = 0 )]
 
     [LinkedPage(
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Key = AttributeKey.ConnectionRequestDetail,
         Description = "The Connection Request Detail page.",
         Order = 1 )]
+
     [BooleanField(
         "Use Connection Request Detail Page From Connection Type",
         Key = AttributeKey.UseConnectionRequestDetailPageFromConnectionType,
@@ -61,13 +62,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Attribute Keys
         private static class AttributeKey
         {
-            public const string HideInactiveConnectionRequests = "HideInactive";
+            public const string HideRequestStates = "HideRequestStates";
             public const string ConnectionRequestDetail = "ConnectionRequestDetail";
             public const string UseConnectionRequestDetailPageFromConnectionType = "UseConnectionRequestDetailPageFromConnectionType";
         }
         #endregion Attribute Keys
 
-        DateTime _midnightTomorrow = RockDateTime.Today.AddDays( 1 );
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upPanel );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -90,6 +104,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 upPanel.Visible = false;
             }
         }
+
+        #endregion
+
+        #region Events
+
+        // Handlers called by the controls on your block.
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindData();
+        }
+
+        #endregion
 
         /// <summary>
         /// Handles the ItemDataBound event of the rConnectionTypes control.
@@ -124,7 +156,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( connectRequest.CampusId.HasValue )
                     {
-
                         connectionName = string.Format( "{0} ({1})", connectRequest.ConnectionOpportunity, CampusCache.Get( connectRequest.CampusId.Value ) );
                     }
                     else
@@ -163,8 +194,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             // Close previous connection type.
                             headerHtml = "</ul></li>" + headerHtml;
                         }
+
                         listHtml = headerHtml + listHtml;
                     }
+
                     lConnectionOpportunityList.Text = listHtml;
                 }
             }
@@ -179,7 +212,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
-                var hideInactive = GetAttributeValue( AttributeKey.HideInactiveConnectionRequests ).AsBoolean();
+                var hideRequestStates = GetAttributeValue( AttributeKey.HideRequestStates ).SplitDelimitedValues().ToList().Select( x => Enum.Parse( typeof( ConnectionState ), x ) );
                 using ( var rockContext = new RockContext() )
                 {
                     var connectionTypeService = new ConnectionTypeService( rockContext );
@@ -205,16 +238,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         } )
                         .Where( crvm => crvm.PersonId == Person.Id );
 
-                    if ( hideInactive )
+                    // If hiding inactive ConnectionRequest.ConnectionStatus also filter out inactive ConnectionOpportunity instances (ConnectionOpportunity.IsActive).
+                    if ( hideRequestStates.Contains( ConnectionState.Inactive ) )
                     {
-                        connectionTypesList = connectionTypesList
-                            .Where( t => t.IsActive )
-                            .Where( t => t.ConnectionState == ConnectionState.Active ||
-                                            ( t.ConnectionState == ConnectionState.FutureFollowUp && t.FollowupDate.HasValue && t.FollowupDate.Value <= _midnightTomorrow ) );
+                        connectionTypesList = connectionTypesList.Where( t => t.IsActive );
                     }
 
                     rConnectionTypes.DataSource = connectionTypesList
                         .ToList()
+                        .Where( crm => !hideRequestStates.Contains( crm.ConnectionState ) )
                         .Where( crm => crm.ConnectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         .Where( crm => crm.ConnectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         .OrderBy( a => a.ConnectionType.Order )
@@ -225,12 +257,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         private int _currentConnectionTypeId = 0;
+
         protected bool ShowNewConnectionType(int connectionTypeId )
         {
-            if(_currentConnectionTypeId == connectionTypeId )
+            if (_currentConnectionTypeId == connectionTypeId )
             {
                 return false;
             }
+
             _currentConnectionTypeId = connectionTypeId;
             return true;
         }
@@ -239,16 +273,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected class ConnectionRequestViewModel
         {
             public int? CampusId { get; set; }
+
             public int ConnectionRequestId { get; set; }
+
             public ConnectionState ConnectionRequestConnectionState { get; set; }
+
             public ConnectionOpportunity ConnectionOpportunity { get; set; }
+
             public int? ConnectionRequestDetailPageId { get; set; }
+
             public int? ConnectionRequestDetailPageRouteId { get; set; }
+
             public ConnectionStatus ConnectionStatus { get; set; }
+
             public int PersonId { get; set; }
+
             public bool IsActive { get; set; }
+
             public ConnectionState ConnectionState { get; set; }
+
             public DateTime? FollowupDate { get; set; }
+
             public ConnectionType ConnectionType { get; set; }
         }
     }

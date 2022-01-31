@@ -79,6 +79,14 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Key = AttributeKeys.MaxResults,
         Order = 5 )]
 
+    [BooleanField( "Include Group Requests",
+        Description = "Includes prayer requests that are attached to a group.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.IncludeGroupRequests,
+        Order = 6 )]
+
     #endregion
 
     public class MyPrayerRequests : RockMobileBlockType
@@ -119,6 +127,11 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             /// The maximum results key.
             /// </summary>
             public const string MaxResults = "MaxResults";
+
+            /// <summary>
+            /// The include group requests key.
+            /// </summary>
+            public const string IncludeGroupRequests = "IncludeGroupRequests";
         }
 
         /// <summary>
@@ -168,6 +181,38 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// The maximum results to pass to Lava.
         /// </value>
         protected int? MaxResults => GetAttributeValue( AttributeKeys.MaxResults ).AsIntegerOrNull();
+
+        /// <summary>
+        /// Gets a value that specifies if group requests should be included by default.
+        /// If <c>false</c> and no group is specified in the page parameters then any
+        /// requests that are attached to a group will be excluded.
+        /// </summary>
+        /// <value>
+        /// A value that specifies if group requests should be included by default.
+        /// </value>
+        protected bool IncludeGroupRequests => GetAttributeValue( AttributeKeys.IncludeGroupRequests ).AsBoolean( false );
+
+        #endregion
+
+        #region Page Parameters
+
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// The unique identifier to limit results to when specified.
+            /// </summary>
+            public const string GroupGuid = "GroupGuid";
+        }
+
+        /// <summary>
+        /// Gets the unique group identifier that will be used when limiting results
+        /// or <c>null</c> if no filtering by group should be performed.
+        /// </summary>
+        /// <value>
+        /// The unique group identifier that will be used when limiting results or
+        /// <c>null</c>.
+        /// </value>
+        protected Guid? GroupGuid => RequestContext.GetPageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
 
         #endregion
 
@@ -230,6 +275,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     // back they want to include.
                     if ( DaysBackToShow.HasValue )
                     {
+                        limitDate = RockDateTime.Now.AddDays( -DaysBackToShow.Value );
                     }
 
                     // Build the basic query to filter prayer requests that
@@ -244,6 +290,21 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     {
                         prayerRequestQuery = prayerRequestQuery
                             .Where( a => !a.ExpirationDate.HasValue || a.ExpirationDate.Value > RockDateTime.Now );
+                    }
+
+                    // Filter by group if it has been specified.
+                    if ( GroupGuid.HasValue )
+                    {
+                        prayerRequestQuery = prayerRequestQuery
+                            .Where( a => a.Group.Guid == GroupGuid.Value );
+                    }
+
+                    // If we are not filtering by group, then exclude any group requests
+                    // unless the block setting including them is enabled.
+                    if ( !GroupGuid.HasValue && !IncludeGroupRequests )
+                    {
+                        prayerRequestQuery = prayerRequestQuery
+                            .Where( a => !a.GroupId.HasValue );
                     }
 
                     // Limit results to the maximum number requested.

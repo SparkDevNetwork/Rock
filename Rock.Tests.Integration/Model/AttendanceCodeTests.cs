@@ -61,7 +61,6 @@ namespace Rock.Tests.Integration.Model
         {
             using ( var rockContext = new RockContext() )
             {
-
                 var acService = new AttendanceCodeService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
 
@@ -80,10 +79,12 @@ namespace Rock.Tests.Integration.Model
                     {
                         attendanceService.DeleteRange( todayTestAttendance );
                     }
+
                     acService.DeleteRange( todaysCodes );
                     rockContext.SaveChanges();
                 }
             }
+
             AttendanceCodeService.FlushTodaysCodes();
         }
 
@@ -91,6 +92,9 @@ namespace Rock.Tests.Integration.Model
 
         #region Alpha-numeric codes
 
+        /// <summary>
+        /// Runs the test three times.
+        /// </summary>
         [Ignore("Sometimes with caching you have to throw out the first result.")]
         [TestMethod]
         public void RunTestThreeTimes()
@@ -131,7 +135,7 @@ namespace Rock.Tests.Integration.Model
 
         private void ClearAttendanceService()
         {
-            using( var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( "delete from AttendanceCode" );
             }
@@ -154,7 +158,7 @@ namespace Rock.Tests.Integration.Model
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) ).Any();
+            bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
             Assert.That.IsFalse( hasMatchIsBad );
 
             stopWatch.Stop();
@@ -392,7 +396,7 @@ namespace Rock.Tests.Integration.Model
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) ).Any();
+            bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
             Assert.That.IsFalse( hasMatchIsBad );
         }
@@ -413,10 +417,10 @@ namespace Rock.Tests.Integration.Model
             // 4847 (17*17*17 minus ~50 bad codes) possible combinations of 17 letters
             for ( int i = 0; i < 4860; i++ )
             {
-                //System.Diagnostics.Debug.WriteIf( i > 4700, "code number " + i + " took... " );
+                ////System.Diagnostics.Debug.WriteIf( i > 4700, "code number " + i + " took... " );
                 code = AttendanceCodeService.GetNew( 0, 3, 0, false );
                 codeList.Add( code.Code );
-                //System.Diagnostics.Debug.WriteLineIf( i > 4700, "" );
+                ////System.Diagnostics.Debug.WriteLineIf( i > 4700, "" );
             }
 
             var duplicates = codeList.GroupBy( x => x )
@@ -469,12 +473,12 @@ namespace Rock.Tests.Integration.Model
                     codeList.Add( code.Code );
                 }
 
-                var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
+                var matches = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) );
                 bool hasMatchIsBad = matches.Any();
 
                 Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
             }
-            catch( TimeoutException )
+            catch ( TimeoutException )
             {
                 // If an infinite loop was detected, but we tried at least 600 codes then
                 // we'll consider this a pass.
@@ -513,7 +517,7 @@ namespace Rock.Tests.Integration.Model
                 codeList.Add( code.Code );
             }
 
-            var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
+            var matches = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) );
             bool hasMatchIsBad = matches.Any();
             Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
 
@@ -540,9 +544,9 @@ namespace Rock.Tests.Integration.Model
                 codeList.Add( code.Code );
             }
 
-            var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
+            var matches = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) );
             bool hasMatchIsBad = matches.Any();
-            Assert.That.IsFalse( hasMatchIsBad , "bad codes were: " + string.Join(", ", matches ) );
+            Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join(", ", matches ) );
 
             stopWatch.Stop();
             System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
@@ -567,9 +571,9 @@ namespace Rock.Tests.Integration.Model
                 codeList.Add( code.Code );
             }
 
-            var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
+            var matches = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) );
             bool hasMatchIsBad = matches.Any();
-            Assert.That.IsFalse( hasMatchIsBad , "bad codes were: " + string.Join(", ", matches ) );
+            Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join(", ", matches ) );
 
             stopWatch.Stop();
             System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
@@ -577,6 +581,5 @@ namespace Rock.Tests.Integration.Model
         }
         
         #endregion
-
     }
 }

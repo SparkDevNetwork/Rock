@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
-    public partial class GroupMemberDetail : RockBlock, IDetailBlock
+    public partial class GroupMemberDetail : RockBlock
     {
         private static class AttributeKey
         {
@@ -664,7 +664,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    // This role is not being sync'd but the group has sync'd roles. So remove the sync'd roles and display a tool tip explaining their absense.
+                    // This role is not being sync'd but the group has sync'd roles. So remove the sync'd roles and display a tool tip explaining their absence.
                     groupTypeRoles = groupTypeRoles.Where( r => !syncdRoles.Contains( r.Id ) );
 
                     ddlGroupRole.ToolTip = "Roles used for Group Sync cannot be used for manual additions and so are not being displayed.";
@@ -785,7 +785,7 @@ namespace RockWeb.Blocks.Groups
                 Note = _FundRaisingBatchNote,
                 Status = BatchStatus.Open,
                 ControlAmount = 0,
-                BatchStartDateTime = DateTime.Now,
+                BatchStartDateTime = RockDateTime.Now,
                 Guid = Guid.NewGuid()
             };
 

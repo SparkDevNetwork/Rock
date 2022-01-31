@@ -30,7 +30,9 @@ namespace Rock.Migrations
         public override void Up()
         {
             // Add/Update EntityType Rock.Blocks.Types.Mobile.Groups.AddToGroup
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.UpdateEntityType("Rock.Blocks.Types.Mobile.Groups.AddToGroup", "Add To Group", "Rock.Blocks.Types.Mobile.Groups.AddToGroup, Rock, Version=1.12.4.1, Culture=neutral, PublicKeyToken=null", false, false, Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_ADD_TO_GROUP );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add/Update Mobile Block Type:Add To Group
             RockMigrationHelper.UpdateMobileBlockType("Add To Group", "Adds the current person to a group passed by query string parameter.", "Rock.Blocks.Types.Mobile.Groups.AddToGroup", "Mobile > Groups", "8A42E4FA-9FE1-493C-B6D8-7A766D96E912");
@@ -113,7 +115,9 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType("8A42E4FA-9FE1-493C-B6D8-7A766D96E912"); // Add To Group
 
             // Delete the EntityType Add To Group
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_ADD_TO_GROUP );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }

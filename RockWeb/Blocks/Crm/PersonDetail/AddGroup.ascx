@@ -24,17 +24,8 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h4><%=_groupTypeName %> Members</h4>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:NewGroupMembers ID="nfmMembers" runat="server" OnAddGroupMemberClick="nfmMembers_AddGroupMemberClick" />
-                        </div>
-                    </div>
+                    <h4 class="mt-0"><%=_groupTypeName %> Members</h4>
+                    <Rock:NewGroupMembers ID="nfmMembers" runat="server" OnAddGroupMemberClick="nfmMembers_AddGroupMemberClick" />
 
                     <div class="row">
                         <div class="col-md-4">
@@ -105,8 +96,10 @@
                 <Rock:NotificationBox ID="nbMessages" runat="server"></Rock:NotificationBox>
 
                 <div class="actions clearfix">
-                    <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click" />
-                    <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link pull-right" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
+                    <div class="pull-right">
+                        <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
+                        <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
+                    </div>
                 </div>
             </div>
         </div>

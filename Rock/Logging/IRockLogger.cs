@@ -33,6 +33,14 @@ namespace Rock.Logging
         IRockLogConfiguration LogConfiguration { get; }
 
         /// <summary>
+        /// Determins if the logger is enabled for the specified RockLogLevel and Domain.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="domain">The domain.</param>
+        /// <returns></returns>
+        bool ShouldLogEntry( RockLogLevel logLevel, string domain );
+
+        /// <summary>
         /// Gets the log files.
         /// </summary>
         /// <value>

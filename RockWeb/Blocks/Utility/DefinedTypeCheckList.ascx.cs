@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Utility
 $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (e) {
     e.stopImmediatePropagation();
     e.preventDefault();
+    $(this).closest('.panel-widget').toggleClass('collapsed');
     var $header = $(this).closest('header');
     $header.siblings('.panel-body').slideToggle();
     $header.find('i').toggleClass('fa-chevron-up fa-chevron-down');
@@ -176,7 +177,9 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
 
                     if ( displayValues.Any() || !hideBlockWhenEmpty )
                     {
-                        lTitle.Text = "<h4>" + GetAttributeValue( "ChecklistTitle" ) + "</h4>";
+                        if ( !GetAttributeValue( "ChecklistTitle" ).IsNullOrWhiteSpace() ) {
+                            lTitle.Text = "<h4>" + GetAttributeValue( "ChecklistTitle" ) + "</h4>";
+                        }
                         lDescription.Text = GetAttributeValue( "ChecklistDescription" );
                     }
                     else

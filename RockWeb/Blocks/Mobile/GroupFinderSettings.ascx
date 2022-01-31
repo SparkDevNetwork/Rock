@@ -35,3 +35,10 @@
         </Columns>
     </Rock:Grid>
 </Rock:RockControlWrapper>
+
+<Rock:RockCheckBoxList
+    ID="cblAttributeFilters"
+    runat="server"
+    Label="Attribute Filters"
+    Help="Attributes to make available for the user to filter groups by."
+    RepeatDirection="Horizontal" />

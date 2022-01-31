@@ -148,11 +148,11 @@ namespace RockWeb.Blocks.Security
     [DefinedValueField(
         "Connection Status",
         Key = AttributeKey.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default = 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
         DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = "368DD475-242C-49C4-A42C-7278BE690CC2",
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Order = 13 )]
 
     [DefinedValueField(
@@ -338,7 +338,7 @@ usernameTextbox.blur(function () {{
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: Rock.settings.get('baseUrl') + 'api/userlogins/available/' + escape($(this).val()),
+                url: Rock.settings.get('baseUrl') + 'api/userlogins/available?username=' + encodeURIComponent($(this).val()),
                 success: function (getData, status, xhr) {{
 
                     if (getData) {{
@@ -347,7 +347,7 @@ usernameTextbox.blur(function () {{
                         usernameUnavailable.removeClass('alert-warning');
                     }} else {{
                         availabilityMessageRow.show();
-                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is already taken!');
+                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is already taken.');
                         usernameUnavailable.addClass('alert-warning');
                         usernameUnavailable.removeClass('alert-success');
                     }}
@@ -358,7 +358,7 @@ usernameTextbox.blur(function () {{
             }});
         }}
     }} else {{
-        usernameUnavailable.html(usernameFieldLabel + ' is required!');
+        usernameUnavailable.html(usernameFieldLabel + ' is required.');
         usernameUnavailable.addClass('alert-warning');
         usernameUnavailable.removeClass('alert-success');
     }}
@@ -521,6 +521,16 @@ usernameTextbox.blur(function () {{
                         return;
                     }
                 }
+                else
+                {
+                    var regexString = Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
+                    var match = System.Text.RegularExpressions.Regex.Match( tbUserName.Text, regexString );
+                    if ( !match.Success )
+                    {
+                        ShowErrorMessage( GetAttributeValue( AttributeKey.UsernameFieldLabel ) + " is not valid. " + Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) );
+                        return;
+                    }
+                }
 
                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
@@ -533,7 +543,7 @@ usernameTextbox.blur(function () {{
                     }
                     else
                     {
-                        ShowErrorMessage( "Username already exists" );
+                        ShowErrorMessage( "That " + GetAttributeValue( AttributeKey.UsernameFieldLabel ) + " is already taken." );
                     }
                 }
                 else
@@ -564,6 +574,20 @@ usernameTextbox.blur(function () {{
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return;
+            }
+
             int personId = Request.Form["DuplicatePerson"].AsInteger();
             if ( personId > 0 )
             {
@@ -681,6 +705,20 @@ usernameTextbox.blur(function () {{
         /// <param name="direction">The direction.</param>
         private void DisplayDuplicates( Direction direction )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return;
+            }
+
             bool displayed = false;
 
             if ( Convert.ToBoolean( GetAttributeValue( AttributeKey.Duplicates ) ) )

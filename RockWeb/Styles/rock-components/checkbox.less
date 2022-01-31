@@ -182,6 +182,9 @@
         height: @custom-control-indicator-size;
         pointer-events: none;
         content: "";
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
         user-select: none;
         background-color: @custom-control-indicator-bg;
         border: @custom-control-indicator-border-width solid @custom-control-indicator-border-color;
@@ -229,6 +232,11 @@
             background-color: @custom-control-indicator-disabled-bg;
           }
         }
+      }
+
+      &:checked:disabled ~ .label-text::before {
+        background-color: @custom-control-indicator-checked-color;
+        opacity: .5;
       }
     }
 

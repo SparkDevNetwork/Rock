@@ -80,17 +80,16 @@ namespace Rock.Tests.Integration.Communications.Sms
         [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromKnownNamelessPerson_ReturnsMatchedPerson()
         {
-            var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.UnknownPerson1MobileNumber );
-
             var dataContext = new RockContext();
 
             var personService = new PersonService( dataContext );
+            var fromNumber = PhoneNumber.FormattedNumber( "1", TestGuids.Communications.UnknownPerson1MobileNumber, true );
 
             // Verify that we have a new Unnamed Person record associated with the new mobile number.
-            var unnamedPerson1 = personService.GetPersonFromMobilePhoneNumber( message.FromNumber, createNamelessPersonIfNotFound: true );
+            var unnamedPerson1 = personService.GetPersonFromMobilePhoneNumber( fromNumber, createNamelessPersonIfNotFound: true );
 
             // Retrieve the same sender a second time.
-            var unnamedPerson2 = personService.GetPersonFromMobilePhoneNumber( message.FromNumber, true );
+            var unnamedPerson2 = personService.GetPersonFromMobilePhoneNumber( fromNumber, true );
 
             // Verify that the same record has been retrieved both times.
             Assert.That.AreEqual( unnamedPerson1.Id, unnamedPerson2.Id, "Multiple Unnamed Person records created for the same mobile number." );
@@ -170,11 +169,6 @@ namespace Rock.Tests.Integration.Communications.Sms
         private SmsMessage GetTestIncomingSmsMessage( string fromNumber )
         {
             var message = new SmsMessage();
-
-            // Get Known SMS Recipient.
-            var smsSenderValue = DefinedValueCache.Get( TestGuids.Communications.TestSmsSenderGuid );
-
-            message.ToNumber = smsSenderValue.Value;
 
             message.FromNumber = fromNumber;
 

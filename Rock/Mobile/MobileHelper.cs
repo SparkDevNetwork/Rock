@@ -21,6 +21,7 @@ using System.Text;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
@@ -70,22 +71,8 @@ namespace Rock.Mobile
             if ( validateApiKey )
             {
                 var requestApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
-                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
-                //
-                // Ensure we have valid site configuration.
-                //
-                if ( additionalSettings == null || !additionalSettings.ApiKeyId.HasValue )
-                {
-                    return null;
-                }
-
-                rockContext = rockContext ?? new Data.RockContext();
-
-                // Get user login for the app and verify that it matches the request's key
-                var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
-
-                if ( appUserLogin != null && appUserLogin.ApiKey == requestApiKey )
+                if ( GetMobileApplicationUser( site, requestApiKey ) != null )
                 {
                     return site;
                 }
@@ -97,6 +84,61 @@ namespace Rock.Mobile
             else
             {
                 return site;
+            }
+        }
+
+        /// <summary>
+        /// Gets the mobile application user associated with the application identifier and api key.
+        /// </summary>
+        /// <param name="appId">The application (site) identifier.</param>
+        /// <param name="mobileApiKey">The mobile API key.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="UserLogin"/> associated with the parameters or <c>null</c> if no match was found.</returns>
+        public static UserLogin GetMobileApplicationUser( int appId, string mobileApiKey, RockContext rockContext = null )
+        {
+            //
+            // Lookup the site from the App Id.
+            //
+            var site = SiteCache.Get( appId );
+            if ( site == null )
+            {
+                return null;
+            }
+
+            return GetMobileApplicationUser( site, mobileApiKey, rockContext );
+        }
+
+        /// <summary>
+        /// Gets the mobile application user associated with the site and api key.
+        /// </summary>
+        /// <param name="site">The site.</param>
+        /// <param name="mobileApiKey">The mobile API key.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="UserLogin"/> associated with the parameters or <c>null</c> if no match was found.</returns>
+        private static UserLogin GetMobileApplicationUser( SiteCache site, string mobileApiKey, RockContext rockContext = null )
+        {
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            //
+            // Ensure we have valid site configuration.
+            //
+            if ( additionalSettings == null || !additionalSettings.ApiKeyId.HasValue )
+            {
+                return null;
+            }
+
+            rockContext = rockContext ?? new Data.RockContext();
+
+            // Get user login for the app and verify that it matches the request's key
+            var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
+
+            if ( appUserLogin != null && appUserLogin.ApiKey == mobileApiKey )
+            {
+                return appUserLogin;
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -277,7 +319,8 @@ namespace Rock.Mobile
             var definedTypeGuids = new[]
             {
                 SystemGuid.DefinedType.LOCATION_COUNTRIES,
-                SystemGuid.DefinedType.LOCATION_ADDRESS_STATE
+                SystemGuid.DefinedType.LOCATION_ADDRESS_STATE,
+                SystemGuid.DefinedType.PERSON_MARITAL_STATUS
             };
             var definedValues = new List<MobileDefinedValue>();
             foreach ( var definedTypeGuid in definedTypeGuids )
@@ -382,19 +425,27 @@ namespace Rock.Mobile
             //
             // Load all the pages.
             //
+            var blockIds = new List<int>();
             using ( var rockContext = new RockContext() )
             {
                 AddPagesToUpdatePackage( package, applicationRoot, rockContext, new[] { PageCache.Get( site.DefaultPageId.Value ) } );
+
+                blockIds = new BlockService( rockContext ).Queryable()
+                    .Where( b => b.Page != null && b.Page.Layout.SiteId == site.Id && b.BlockType.EntityTypeId.HasValue )
+                    .OrderBy( b => b.Order )
+                    .Select( b => b.Id )
+                    .ToList();
             }
 
             //
             // Load all the blocks.
             //
-            foreach ( var block in BlockCache.All().Where( b => b.Page != null && b.Page.SiteId == site.Id && b.BlockType.EntityTypeId.HasValue ).OrderBy( b => b.Order ) )
+            foreach ( var blockId in blockIds )
             {
-                var blockEntityType = block.BlockType.EntityType.GetEntityType();
+                var block = BlockCache.Get( blockId );
+                var blockEntityType = block?.BlockType.EntityType.GetEntityType();
 
-                if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockEntityType ) )
+                if ( blockEntityType != null && typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockEntityType ) )
                 {
                     var additionalBlockSettings = block.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
@@ -415,7 +466,7 @@ namespace Rock.Mobile
                         BlockGuid = block.Guid,
                         RequiredAbiVersion = mobileBlockEntity.RequiredMobileAbiVersion,
                         BlockType = mobileBlockEntity.MobileBlockType,
-                        ConfigurationValues = mobileBlockEntity.GetMobileConfigurationValues(),
+                        ConfigurationValues = mobileBlockEntity.GetBlockInitialization( Blocks.RockClientType.Mobile ),
                         Order = block.Order,
                         AttributeValues = GetMobileAttributeValues( block, attributes ),
                         PreXaml = block.PreHtml,
@@ -505,7 +556,9 @@ namespace Rock.Mobile
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) ),
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
                     ShowFullScreen = additionalPageSettings.ShowFullScreen,
-                    AutoRefresh = additionalPageSettings.AutoRefresh
+                    AutoRefresh = additionalPageSettings.AutoRefresh,
+                    PageType = additionalPageSettings.PageType,
+                    WebPageUrl = additionalPageSettings.WebPageUrl
                 };
 
                 package.Pages.Add( mobilePage );
@@ -787,7 +840,7 @@ namespace Rock.Mobile
         /// <returns></returns>
         public static string GetCheckBoxFieldXaml( string name, string label, bool isChecked )
         {
-            return $"<Rock:CheckBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"true\" IsChecked=\"{isChecked}\" />";
+            return $"<Rock:CheckBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"false\" IsChecked=\"{isChecked}\" />";
         }
 
         #endregion

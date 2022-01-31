@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -279,7 +280,8 @@ namespace RockWeb.Blocks.Connection
             var template = GetAttributeValue( AttributeKey.OpportunitySummaryTemplate );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
+
+            mergeFields.Add( "OpportunitySummary", opportunitySummary );
 
             string result = null;
             using ( var rockContext = new RockContext() )
@@ -645,7 +647,7 @@ namespace RockWeb.Blocks.Connection
         #region Helper Classes
 
         [Serializable]
-        public class ConnectionTypeSummary
+        public class ConnectionTypeSummary : LavaDataObject
         {
             public int Id { get; set; }
             public string Name { get; set; }
@@ -658,7 +660,7 @@ namespace RockWeb.Blocks.Connection
         }
 
         [Serializable]
-        public class OpportunitySummary
+        public class OpportunitySummary : LavaDataObject
         {
             public int Id { get; set; }
             public int Order { get; set; }

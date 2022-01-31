@@ -28,6 +28,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -372,7 +373,7 @@ namespace Rock.Model
         /// The expiration date.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public string ExpirationDate
         {
             get
@@ -460,18 +461,6 @@ namespace Rock.Model
                 return sb.ToString();
             }
         }
-
-
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList", true )]
-        public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
         /// Gets or sets the history changes.
@@ -563,8 +552,10 @@ namespace Rock.Model
                 var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
 
                 string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
+
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
                 var newLocation = new LocationService( rockContext ).Get(
-                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
+                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
                 if ( NameOnCard.IsNullOrWhiteSpace() && nameOnCard.IsNotNullOrWhiteSpace() )
                 {
@@ -607,8 +598,9 @@ namespace Rock.Model
             }
             else
             {
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
                 var newLocation = new LocationService( rockContext ).Get(
-                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country );
+                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
                 if ( !BillingLocationId.HasValue && newLocation != null )
                 {

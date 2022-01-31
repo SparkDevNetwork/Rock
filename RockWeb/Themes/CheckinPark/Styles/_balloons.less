@@ -1,0 +1,60 @@
+#balloon-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3000;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1em;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.balloon {
+  position: relative;
+  width: 105px;
+  height: 125px;
+  border-radius: 75% 75% 70% 70%;
+  opacity: 0;
+}
+
+.balloon::before {
+  position: absolute;
+  top: 125px;
+  right: 0;
+  left: 0;
+  display: block;
+  width: 1px;
+  height: 75px;
+  padding: 1px;
+  margin: auto;
+  content: "";
+  background-color: #fdfd96;
+}
+
+.balloon::after {
+  position: absolute;
+  top: 120px;
+  right: 0;
+  left: 0;
+  display: block;
+  margin: auto;
+  color: inherit;
+  text-align: center;
+  content: "▲";
+}
+
+@keyframes float {
+  0% {
+    opacity: 1;
+    transform: translateY(100vh);
+  }
+  90% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translateY(-300vh);
+  }
+}

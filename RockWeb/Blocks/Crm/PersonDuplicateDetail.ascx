@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonDuplicateDetail.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDuplicateDetail" %>
-
+<%@ Import Namespace="Rock.Utility.Enums" %>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -21,7 +21,12 @@
                                     <%# GetConfidenceScoreColumnHtml((double?)Eval("ConfidenceScore")) %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-
+                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
+                            <Rock:RockTemplateField HeaderText="Account Protection Profile" SortExpression="AccountProtectionProfile">
+                                <ItemTemplate>
+                                    <%# GetAccountProtectionProfileColumnHtml((AccountProtectionProfile)Eval("DuplicatePerson.AccountProtectionProfile")) %>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="DuplicatePerson.FirstName" HeaderText="First Name" SortExpression="DuplicatePerson.FirstName, DuplicatePerson.LastName" />
                             <Rock:RockBoundField DataField="DuplicatePerson.LastName" HeaderText="Last Name" SortExpression="DuplicatePerson.LastName, DuplicatePerson.FirstName" />
                             <Rock:RockBoundField DataField="DuplicatePerson.Email" HeaderText="Email" SortExpression="DuplicatePerson.Email" />
@@ -29,21 +34,7 @@
 
                             <Rock:RockBoundField DataField="DuplicatePerson.Age" HeaderText="Age" SortExpression="DuplicatePerson.Age" />
 
-                            <Rock:RockTemplateField HeaderText="Campus">
-                                <ItemTemplate>
-                                    <ul class="list-unstyled">
-                                        <asp:Repeater ID="rptrCampuses" runat="server" DataSource='<%# GetCampuses(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
-                                            <ItemTemplate>
-                                                <li class="campus clearfix">
-                                                    <p>
-                                                        <%# Eval("Name") %>
-                                                    </p>
-                                                </li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
+                            
                             <Rock:RockTemplateField HeaderText="Addresses">
                                 <ItemTemplate>
                                     <ul class="list-unstyled">
@@ -81,13 +72,13 @@
                             <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right"  HeaderStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
                                     <p>
-                                        <a class="btn btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="fa fa-user fa-fw"></i></a>
+                                        <a class="btn btn-square btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="fa fa-user fa-fw"></i></a>
                                     </p>
                                     <p>
-                                        <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-default js-not-duplicate" data-toggle="tooltip" title="Not Duplicate" OnClick="btnNotDuplicate_Click" CommandName="NotDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-ban fa-fw"></i></asp:LinkButton>
+                                        <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-square btn-default js-not-duplicate" data-toggle="tooltip" title="Not Duplicate" OnClick="btnNotDuplicate_Click" CommandName="NotDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-ban fa-fw"></i></asp:LinkButton>
                                     </p>
                                     <p>
-                                        <asp:LinkButton runat="server" ID="btnIgnoreDuplicate" CssClass="btn btn-default js-ignore-duplicate" data-toggle="tooltip" title="Ignore" OnClick="btnIgnoreDuplicate_Click" CommandName="IgnoreDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-bell-slash fa-fw"></i></asp:LinkButton>
+                                        <asp:LinkButton runat="server" ID="btnIgnoreDuplicate" CssClass="btn btn-square btn-default js-ignore-duplicate" data-toggle="tooltip" title="Ignore" OnClick="btnIgnoreDuplicate_Click" CommandName="IgnoreDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-bell-slash fa-fw"></i></asp:LinkButton>
                                     </p>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>

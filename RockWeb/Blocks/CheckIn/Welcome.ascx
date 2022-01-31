@@ -24,27 +24,48 @@
 
         <Rock:HiddenFieldWithClass ID="hfLocalDeviceConfiguration" runat="server" CssClass="js-local-device-configuration" />
 
-        <Rock:HiddenFieldWithClass ID="hfCameraMode" runat="server" CssClass="js-camera-mode" />
+        <Rock:HiddenFieldWithClass ID="hfIPadCameraMode" runat="server" CssClass="js-ipad-camera-mode" />
+        <Rock:HiddenFieldWithClass ID="hfKioskType" CssClass="js-kiosk-type" runat="server" />
 
         <script>
 
             Sys.WebForms.PageRequestManager.getInstance().add_pageLoading(function () {
-                // Note: We need to destroy the old countdown timer so that it does not generate multiplier
+                // Note: We need to destroy the old countdown timer so that it does not generate multiple
                 // expire events. There is a visual anomaly with doing this. Depending on when the response
                 // from the server is received the displayed time could display the same second for more
                 // than one second and/or skip displaying a second entirely.
                 $('.js-countdown-timer').countdown('destroy');
-                if (timeout)
-                {
+                if (timeout) {
                     window.clearTimeout(timeout)
                 }
             });
 
-            function PostRefresh() {
+            function PostRefresh () {
                 window.location = "javascript:__doPostBack('<%=lbTimerRefresh.UniqueID %>','')";
             }
 
-            function GetLabelTypeSelection() {
+            function IsIpadAppWithCamera () {
+                var kioskType = $('.js-kiosk-type').val();
+
+                // If KioskType is not null, honor KioskType setting, otherwise use 'auto-detect' logic.
+                var isIPadAppWithCamera = false;
+                if ('' == kioskType) {
+                    // kioskType is not defined, so autodetect
+                    isIPadAppWithCamera = typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined';
+                }
+                else if ('IPad' == kioskType) {
+                    // kioskType is defined, so double check if really is
+                    isIPadAppWithCamera = typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined';
+                }
+                else {
+                    // kioskType is set, but isn't set to IPad
+                    isIPadAppWithCamera = false;
+                }
+
+                return isIPadAppWithCamera;
+            }
+
+            function GetLabelTypeSelection () {
                 var ids = '';
                 $('div.js-label-list').find('i.fa-check-square').each(function () {
                     ids += $(this).closest('a').attr('data-label-guid') + ',';
@@ -76,7 +97,7 @@
                 var isGettingConfigurationStatus = false;
                 timeout = window.setInterval(checkForConfigurationChange, timeoutSeconds * 1000);
 
-                function checkForConfigurationChange() {
+                function checkForConfigurationChange () {
                     if (isGettingConfigurationStatus) {
                         return;
                     }
@@ -112,7 +133,7 @@
                     });
                 }
 
-                function refreshKiosk() {
+                function refreshKiosk () {
                     $('.js-countdown-timer').countdown('destroy')
 
                     setTimeout(function () {
@@ -185,9 +206,24 @@
 
                 });
 
-                function submitFamilyIdSearch( familyIds ) {
+                function submitFamilyIdSearch (familyIds) {
                     $('#hfSearchEntry').val(familyIds);
                     window.location = "javascript:__doPostBack('hfWedgeEntry', 'Family_Id_Search')";
+                }
+
+                function submitScannedCodeSearch (scannedCode) {
+                    if (scannedCode.startsWith('PCL+')) {
+                        // If using the HTML5 Camera, ignore PCL (Pre-Checkin Labels) QR Codes.
+                        // Note that IPad app will print labels for PCL's, but HTML5 camera won't (yet)
+                        return;
+                    }
+
+                    if (!swipeProcessing) {
+                        $('#hfSearchEntry').val(scannedCode);
+                        swipeProcessing = true;
+                        console.log('processing');
+                        window.location = "javascript:__doPostBack('hfSearchEntry', 'Wedge_Entry')";
+                    }
                 }
 
                 // try to find the start button using js-start-button hook, otherwise, just hook to the first anchor tag
@@ -201,7 +237,7 @@
                     window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
                 });
 
-                // Notify the host-app what check-in device we are.
+                // If the IPad App is detected, notify the host-app what check-in device we are.
                 if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.SetKioskId !== 'undefined') {
                     var localDeviceConfiguration = JSON.parse($('.js-local-device-configuration').val());
 
@@ -210,31 +246,118 @@
 
                 // Install function the host-app can call to pass the scanned barcode.
                 window.PerformScannedCodeSearch = function (code) {
-                    if (!swipeProcessing) {
-                        $('#hfSearchEntry').val(code);
-                        swipeProcessing = true;
-                        console.log('processing');
-                        window.location = "javascript:__doPostBack('hfSearchEntry', 'Wedge_Entry')";
+
+                    var modalIsShowing = $('.modal-open').length > 0;
+                    if (modalIsShowing) {
+                        // don't do anything if there is a modal open
+                        return;
                     }
+
+                    submitScannedCodeSearch(code);
                 }
 
-                // handle click of scan button
-                $('.js-camera-button').on('click', function (a) {
-                    a.preventDefault();
-                    if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined') {
-                        // Reset the swipe processing as it may have failed silently.
-                        swipeProcessing = false;
-                        window.RockCheckinNative.StartCamera(false);
+                function startHtml5Camera (cameraButtonId) {
+                    var $cameraButton = $('#' + cameraButtonId);
+                    var cameraDeviceId = localStorage.CameraDeviceId;
+                    if (!cameraDeviceId) {
+                        $cameraButton.hide();
+                        return;
                     }
-                });
+
+                    const html5QrCode = new Html5Qrcode(cameraButtonId);
+
+                    var lastScannedQRCode = '';
+                    // use setTimeout to start QRCode scanner so it happens after other rending operations
+                    setTimeout(() => {
+
+                        html5QrCode.start(
+                            cameraDeviceId,     // retreived in the previous step.
+                            {
+                                fps: 10,    // sets the framerate to 10 frame per second
+                                qrbox: { width: 250, height: 250 }
+                            },
+                            (decodedText, decodedResult) => {
+                                var modalIsShowing = $('.modal-open').length > 0;
+                                if (modalIsShowing) {
+                                    // don't do anything if there is a modal open
+                                    return;
+                                }
+
+                                if (lastScannedQRCode != decodedText) {
+                                    lastScannedQRCode = decodedText;
+                                    submitScannedCodeSearch(decodedText);
+                                }
+                                else {
+                                    // already scanned this 
+                                }
+                            },
+                            errorMessage => {
+                                // ignore it, probably partially read qr code or something
+                            })
+                            .catch(err => {
+                                // Start failed, could be because selected camera isn't enabled or doesn't exist anymore
+                                console.log(`Unable to start scanning, error: ${err}`);
+                                $cameraButton.hide();
+                            });
+                    }, 0);
+                }
+
+                var isIPadAppWithCamera = IsIpadAppWithCamera();
+
+                var $cameraButton = $('.js-camera-button');
+                var themeSupportsHtmlCamera = $('body').hasClass('js-camera-supported');
+
+                // handle click of scan button
+                // Limit HTML5 camera to theme support, but allow the IPad Camera to be used on any theme (since it would be full screen or passive)
+                if (themeSupportsHtmlCamera || isIPadAppWithCamera) {
+                    $cameraButton.on('click', function (a) {
+                        a.preventDefault();
+                        if (isIPadAppWithCamera) {
+                            // Reset the swipe processing as it may have failed silently.
+                            swipeProcessing = false;
+                            window.RockCheckinNative.StartCamera(false);
+                        }
+                    });
+                }
 
                 // auto-show or auto-enable camera if configured to do so.
-                if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined') {
-                    if ($('.js-camera-mode').val() === 'AlwaysOn') {
+                if (isIPadAppWithCamera) {
+                    // note: RockCheckinNative means this is running the iPad Checkin app
+                    if ($('.js-ipad-camera-mode').val() === 'AlwaysOn') {
                         window.RockCheckinNative.StartCamera(false);
                     }
-                    else if ($('.js-camera-mode').val() === 'Passive') {
+                    else if ($('.js-ipad-camera-mode').val() === 'Passive') {
                         window.RockCheckinNative.StartCamera(true);
+                    }
+                }
+                else if (themeSupportsHtmlCamera && $cameraButton.length > 0) {
+                    // using browser or windows checkin client
+                    // Lava creates the js-camera-button html, but it probably doesn't
+                    // have an id assigned to it, so set it if it isn't set
+                    var cameraButtonId = $cameraButton.prop('id');
+                    if (cameraButtonId == '') {
+                        cameraButtonId = 'cameraButton';
+                        $cameraButton.prop('id', 'cameraButton')
+                    }
+
+                    var url = new URL(window.location.href);
+                    var cameraIndexFromUrl = parseInt(url.searchParams.get("CameraIndex"));
+                    if (!isNaN(cameraIndexFromUrl) && cameraIndexFromUrl >= 0) {
+                        Html5Qrcode.getCameras().then(devices => {
+                            if (devices.length >= cameraIndexFromUrl - 1) {
+                                var cameraDeviceFromIndex = devices[ cameraIndexFromUrl ];
+                                if (cameraDeviceFromIndex) {
+                                    if (cameraDeviceFromIndex.id != localStorage.CameraDeviceId) {
+                                        localStorage.CameraDeviceId = cameraDeviceFromIndex.id;
+                                    }
+                                }
+                            }
+
+                            startHtml5Camera(cameraButtonId)
+                        });
+                    }
+                    else {
+                        startHtml5Camera(cameraButtonId);
                     }
                 }
 
@@ -260,8 +383,7 @@
                         }
                     }
                 }
-                else
-                {
+                else {
                     // set focus to body if the manager login (ten-key) isn't visible, to fix buttons not working after showing the ten-key panel
                     $('body').focus();
                 }
@@ -284,14 +406,16 @@
         <%-- Panel for no schedules --%>
         <asp:Panel ID="pnlNotActive" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header">
-                <h1><asp:Literal ID="lNotActiveTitle" runat="server" /></h1>
+                <h1>
+                    <asp:Literal ID="lNotActiveTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body">
 
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <h1><asp:Literal ID="lNotActiveCaption" runat="server" /></h1>
+                        <h1>
+                            <asp:Literal ID="lNotActiveCaption" runat="server" /></h1>
                     </div>
                 </div>
 
@@ -301,7 +425,8 @@
         <%-- Panel for schedule not active yet --%>
         <asp:Panel ID="pnlNotActiveYet" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header">
-                <h1><asp:Literal ID="lNotActiveYetTitle" runat="server" /></h1>
+                <h1>
+                    <asp:Literal ID="lNotActiveYetTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body">
@@ -310,7 +435,9 @@
                     <div class="scroller">
 
                         <!-- NOTE: lNotActiveYetCaption will rendered with a css class of 'js-countdown-timer'  -->
-                        <p><asp:Literal ID="lNotActiveYetCaption" runat="server" /></p>
+                        <p>
+                            <asp:Literal ID="lNotActiveYetCaption" runat="server" />
+                        </p>
                         <asp:HiddenField ID="hfActiveTime" runat="server" />
 
                     </div>
@@ -322,13 +449,16 @@
         <%-- Panel for location closed --%>
         <asp:Panel ID="pnlClosed" runat="server" CssClass="checkin-inactive">
             <div class="checkin-header checkin-closed-header">
-                <h1><asp:Literal ID="lClosedTitle" runat="server" /></h1>
+                <h1>
+                    <asp:Literal ID="lClosedTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body checkin-closed-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p><asp:Literal ID="lClosedCaption" runat="server" /></p>
+                        <p>
+                            <asp:Literal ID="lClosedCaption" runat="server" />
+                        </p>
                     </div>
                 </div>
             </div>
@@ -365,7 +495,7 @@
                         <asp:Repeater ID="rLocations" runat="server" OnItemCommand="rLocations_ItemCommand" OnItemDataBound="rLocations_ItemDataBound">
                             <ItemTemplate>
                                 <div class="controls kioskmanager-location">
-                                    <div ID="divLocationToggle" runat="server" class="btn-group kioskmanager-location-toggle">
+                                    <div id="divLocationToggle" runat="server" class="btn-group kioskmanager-location-toggle">
                                         <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
                                         <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
 
@@ -405,11 +535,11 @@
 
                             <asp:Panel ID="pnlSearchName" CssClass="clearfix center-block" runat="server">
                                 <Rock:RockTextBox ID="tbNameOrPhone" runat="server" Label="Phone or Name" AutoCompleteType="Disabled" spellcheck="false" autocorrect="off" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
-                                <Rock:ScreenKeyboard id="skKeyboard" runat="server" ControlToTarget="tbNameOrPhone" KeyboardType="TenKey" KeyCssClass="checkin btn btn-default btn-lg btn-keypad digit" WrapperCssClass="center-block" ></Rock:ScreenKeyboard>
+                                <Rock:ScreenKeyboard ID="skKeyboard" runat="server" ControlToTarget="tbNameOrPhone" KeyboardType="TenKey" KeyCssClass="checkin btn btn-default btn-lg btn-keypad digit" WrapperCssClass="center-block"></Rock:ScreenKeyboard>
                             </asp:Panel>
 
                             <div class="checkin-actions margin-t-md">
-                                <Rock:BootstrapButton CssClass="btn btn-primary btn-block" ID="lbManagerReprintSearch" runat="server" OnClick="lbManagerReprintSearch_Click" Text="Search" DataLoadingText="Searching..." ></Rock:BootstrapButton>
+                                <Rock:BootstrapButton CssClass="btn btn-primary btn-block" ID="lbManagerReprintSearch" runat="server" OnClick="lbManagerReprintSearch_Click" Text="Search" DataLoadingText="Searching..."></Rock:BootstrapButton>
                                 <asp:LinkButton CssClass="btn btn-default btn-block btn-cancel" ID="lbReprintCancelBack" runat="server" OnClick="lbManagerCancel_Click" Text="Cancel" />
                             </div>
 
@@ -425,17 +555,18 @@
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
 
-                    <div class="control-group checkin-body-container">
-                        <label class="control-label"><asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
-                        <div class="controls">
-                            <asp:Repeater ID="rReprintLabelPersonResults" runat="server" OnItemCommand="rReprintLabelPersonResults_ItemCommand">
-                                <ItemTemplate>
-                                    <asp:HiddenField ID="hfAttendanceIds" runat="server" Value='<%#String.Join(",",((Rock.Utility.ReprintLabelPersonResult)Container.DataItem).AttendanceIds )%>' />
-                                    <Rock:BootstrapButton ID="lbSelectPersonForReprint" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandName='<%# Eval("AttendanceIds") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select text-left" DataLoadingText="Loading..." />
-                                </ItemTemplate>
-                            </asp:Repeater>
+                        <div class="control-group checkin-body-container">
+                            <label class="control-label">
+                                <asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
+                            <div class="controls">
+                                <asp:Repeater ID="rReprintLabelPersonResults" runat="server" OnItemCommand="rReprintLabelPersonResults_ItemCommand">
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="hfAttendanceIds" runat="server" Value='<%#String.Join(",",((Rock.Utility.ReprintLabelPersonResult)Container.DataItem).AttendanceIds )%>' />
+                                        <Rock:BootstrapButton ID="lbSelectPersonForReprint" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandName='<%# Eval("AttendanceIds") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select text-left" DataLoadingText="Loading..." />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
                         </div>
-                    </div>
 
                     </div>
                 </div>
@@ -455,32 +586,34 @@
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
 
-                    <div class="control-group checkin-body-container">
-                        <label class="control-label">Select Tags to Reprint</label>
-                        <div class="controls">
+                        <div class="control-group checkin-body-container">
+                            <label class="control-label">Select Tags to Reprint</label>
+                            <div class="controls">
 
-                           <div class="controls js-label-list">
-                                <asp:Repeater ID="rReprintLabelTypeSelection" runat="server" OnItemDataBound="rReprintLabelTypeSelection_ItemDataBound">
-                                    <ItemTemplate>
-                                        <div class="row">
+                                <div class="controls js-label-list">
+                                    <asp:Repeater ID="rReprintLabelTypeSelection" runat="server" OnItemDataBound="rReprintLabelTypeSelection_ItemDataBound">
+                                        <ItemTemplate>
+                                            <div class="row">
                                                 <a data-label-guid='<%# Eval("FileGuid") %>' class="btn btn-primary btn-checkin-select btn-block js-label-select <%# GetSelectedClass( false ) %>">
                                                     <div class="row">
                                                         <div class="col-md-1 col-sm-2 col-xs-3 checkbox-container">
                                                             <i class='fa fa-3x <%# GetCheckboxClass( false ) %>'></i>
                                                         </div>
-                                                        <asp:Panel ID="pnlLabel" runat="server"><asp:Literal ID="lLabelButton" runat="server"></asp:Literal></asp:Panel>
+                                                        <asp:Panel ID="pnlLabel" runat="server">
+                                                            <asp:Literal ID="lLabelButton" runat="server"></asp:Literal>
+                                                        </asp:Panel>
                                                     </div>
                                                 </a>
 
-                                            <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-9 col-sm-3 col-md-2" Visible="false">
-                                                <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block" CommandArgument='<%# Eval("FileGuid") %>' CommandName="Change">Change</asp:LinkButton>
-                                            </asp:Panel>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+                                                <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-9 col-sm-3 col-md-2" Visible="false">
+                                                    <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block" CommandArgument='<%# Eval("FileGuid") %>' CommandName="Change">Change</asp:LinkButton>
+                                                </asp:Panel>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
                     </div>
                 </div>
@@ -503,7 +636,8 @@
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <h2><asp:Literal ID="lReprintResultsHtml" runat="server" /></h2>
+                        <h2>
+                            <asp:Literal ID="lReprintResultsHtml" runat="server" /></h2>
                     </div>
                 </div>
             </div>

@@ -32,7 +32,7 @@ insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description]
 values ( 1, @TypeId, 0, 'Inactive', '', newid() )
 
 insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
-values ( 1, @TypeId, 0, 'Web Prospect', '', newid() )
+values ( 1, @TypeId, 0, 'Prospect', '', newid() )
 
 insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
 values ( 1, @TypeId, 0, 'Unknown', '', newid() )

@@ -150,9 +150,30 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var timeUnit = isDaily ? "day" : "week";
-            var timeUnits = isDaily ? "days" : "weeks";
+            var timeUnit = string.Empty;
+            var timeUnits = string.Empty;
+
+            switch ( streakTypeCache.OccurrenceFrequency )
+            {
+                case StreakOccurrenceFrequency.Daily:
+                    timeUnit = "day";
+                    timeUnits = "days";
+                    break;
+                case StreakOccurrenceFrequency.Weekly:
+                    timeUnit = "week";
+                    timeUnits = "weeks";
+                    break;
+                case StreakOccurrenceFrequency.Monthly:
+                    timeUnit = "month";
+                    timeUnits = "months";
+                    break;
+                case StreakOccurrenceFrequency.Yearly:
+                    timeUnit = "year";
+                    timeUnits = "years";
+                    break;
+                default:
+                    throw new NotImplementedException( string.Format( "StreakOccurrenceFrequency '{0}' is not implemented", streakTypeCache.OccurrenceFrequency ) );
+            }
 
             var unitsToDisplay = GetAttributeValue( badge, AttributeKey.BarCount ).AsIntegerOrNull() ?? AttributeDefault.BarCount;
             var doAnimateBars = GetAttributeValue( badge, AttributeKey.AnimateBars ).AsBooleanOrNull() ?? AttributeDefault.AnimateBars;

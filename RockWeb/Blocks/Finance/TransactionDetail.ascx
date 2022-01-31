@@ -101,7 +101,7 @@
                         </div>
                     </div>
 
-                    <Rock:DataTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" ValidateRequestMode="Disabled"
+                    <Rock:DataTextBox ID="tbComments" runat="server" Label="Comments" TextMode="MultiLine" Rows="2" ValidateRequestMode="Disabled"
                         SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
 
                     <div class="actions">

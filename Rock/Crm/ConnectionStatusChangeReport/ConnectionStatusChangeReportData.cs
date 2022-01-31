@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Rock.Lava;
 
 namespace Rock.Crm.ConnectionStatusChangeReport
 {
@@ -24,6 +25,7 @@ namespace Rock.Crm.ConnectionStatusChangeReport
     /// A Lava data object that holds summary information about Group Membership for a given time period.
     /// </summary>
     [Serializable]
+    [LavaType]
     [DotLiquid.LiquidType]
     public class ConnectionStatusChangeReportData
     {

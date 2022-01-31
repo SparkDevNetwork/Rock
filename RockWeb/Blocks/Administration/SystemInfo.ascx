@@ -68,8 +68,13 @@
 
         <h4>Details</h4>
         <p>
-           <strong>Database:</strong><br />
-           <asp:Literal ID="lDatabase" runat="server"></asp:Literal>
+            <strong>Database:</strong><br />
+            <asp:Literal ID="lDatabase" runat="server"></asp:Literal>
+        </p>
+
+        <p>
+            <strong>Lava Engine:</strong><br />
+            <asp:Literal ID="lLavaEngine" runat="server"></asp:Literal>
         </p>
 
         <p>
@@ -85,6 +90,11 @@
         <p>
             <strong>Process Start Time:</strong><br />
             <asp:Literal ID="lProcessStartTime" runat="server" />
+        </p>
+
+        <p>
+            <strong>Rock Application Start Time:</strong><br />
+            <asp:Literal ID="lRockApplicationStartTime" runat="server" />
         </p>
 
         <p>

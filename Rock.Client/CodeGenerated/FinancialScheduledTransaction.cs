@@ -85,6 +85,9 @@ namespace Rock.Client
         public int? NumberOfPayments { get; set; }
 
         /// <summary />
+        public string PreviousGatewayScheduleIdsJson { get; set; } = @"[]";
+
+        /// <summary />
         public int? SourceTypeValueId { get; set; }
 
         /// <summary />
@@ -157,6 +160,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NextPaymentDate = source.NextPaymentDate;
             this.NumberOfPayments = source.NumberOfPayments;
+            this.PreviousGatewayScheduleIdsJson = source.PreviousGatewayScheduleIdsJson;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
             this.Status = source.Status;
@@ -185,6 +189,9 @@ namespace Rock.Client
 
         /// <summary />
         public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
+
+        /// <summary />
+        public DefinedValue ForeignCurrencyCodeValue { get; set; }
 
         /// <summary />
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }

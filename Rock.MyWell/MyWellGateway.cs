@@ -30,15 +30,15 @@ using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
 using Rock.MyWell.Controls;
-using Rock.Security;
 using Rock.Web.Cache;
+
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer.
 using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
 
 namespace Rock.MyWell
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Financial.GatewayComponent" />
     [Description( "The My Well Gateway is the primary gateway to use with My Well giving." )]
@@ -60,6 +60,13 @@ namespace Rock.MyWell
         Description = "The public API Key used for web client operations",
         Order = 2 )]
 
+    [TextField(
+        "Card Sync Webhook Signature",
+        Key = AttributeKey.CardSyncWebhookSignature,
+        IsRequired = false,
+        Description = "The Webhook Signature for CardSync. This field is required if using CardSync. See <a href='https://sandbox.gotnpgateway.com/docs/webhooks/#security'>webhook security documentation.</a>",
+        Order = 3 )]
+
     [CustomRadioListField(
         "Mode",
         Key = AttributeKey.Mode,
@@ -67,7 +74,7 @@ namespace Rock.MyWell
         ListSource = "Live,Sandbox",
         IsRequired = true,
         DefaultValue = "Live",
-        Order = 3 )]
+        Order = 4 )]
 
     [DecimalField(
         "Credit Card Fee Coverage Percentage",
@@ -75,7 +82,7 @@ namespace Rock.MyWell
         Description = @"The credit card fee percentage that will be used to determine what to add to the person's donation, if they want to cover the fee.",
         IsRequired = false,
         DefaultValue = null,
-        Order = 4 )]
+        Order = 5 )]
 
     [CurrencyField(
         "ACH Transaction Fee Coverage Amount",
@@ -83,10 +90,10 @@ namespace Rock.MyWell
         Description = "The  dollar amount to add to an ACH transaction, if they want to cover the fee.",
         IsRequired = false,
         DefaultValue = null,
-        Order = 5 )]
+        Order = 6 )]
 
     #endregion Component Attributes
-    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent/*, IObsidianFinancialGateway*/
     {
         #region Attribute Keys
 
@@ -119,9 +126,46 @@ namespace Rock.MyWell
             /// The ach transaction fee coverage amount
             /// </summary>
             public const string ACHTransactionFeeCoverageAmount = "ACHTransactionFeeCoverageAmount";
+
+            /// <summary>
+            /// The card sync webhook signature
+            /// See https://sandbox.gotnpgateway.com/docs/webhooks/#security
+            /// </summary>
+            public const string CardSyncWebhookSignature = "CardSyncWebhookSignature";
         }
 
         #endregion Attribute Keys
+
+        #region Obsidian
+
+        ///// <summary>
+        ///// Gets the Obsidian control file URL.
+        ///// </summary>
+        ///// <param name="financialGateway">The financial gateway.</param>
+        ///// <returns></returns>
+        ///// <value>
+        ///// The control file URL.
+        ///// </value>
+        //public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        //{
+        //    return "/Obsidian/Controls/MyWellGatewayControl.js";
+        //}
+
+        ///// <summary>
+        ///// Gets the obsidian control settings.
+        ///// </summary>
+        ///// <param name="financialGateway">The financial gateway.</param>
+        ///// <returns></returns>
+        //public object GetObsidianControlSettings( FinancialGateway financialGateway )
+        //{
+        //    return new
+        //    {
+        //        PublicApiKey = GetPublicApiKey( financialGateway ),
+        //        GatewayUrl = GetGatewayUrl( financialGateway )
+        //    };
+        //}
+
+        #endregion Obsidian
 
         /// <summary>
         /// Gets the gateway URL.
@@ -165,6 +209,106 @@ namespace Rock.MyWell
         private string GetPrivateApiKey( FinancialGateway financialGateway )
         {
             return this.GetAttributeValue( financialGateway, AttributeKey.PrivateApiKey );
+        }
+
+        /// <summary>
+        /// Gets the CardSync signature.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns>System.String.</returns>
+        private string GetCardSyncSignature( FinancialGateway financialGateway )
+        {
+            return this.GetAttributeValue( financialGateway, AttributeKey.CardSyncWebhookSignature );
+        }
+
+        /// <summary>
+        /// Verifies the signature of a POST to a webhook,
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="postedSignature">The posted signature.</param>
+        /// <param name="postedBody">The posted body.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public bool VerifySignature( FinancialGateway financialGateway, string postedSignature, string postedBody )
+        {
+            if ( postedSignature.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            // From C# example at https://sandbox.gotnpgateway.com/docs/webhooks/#security
+
+            // ClientSecret is the 'Signature' from the WebHook at https://app.gotnpgateway.com/merchant/settings/webhooks/search
+            string clientSecret = GetCardSyncSignature( financialGateway );
+            if (clientSecret.IsNullOrWhiteSpace())
+            {
+                // no CardSyncSignature specified, so don't do signature validation
+                return true;
+            }
+
+            byte[] clientSecretBytes = Encoding.ASCII.GetBytes( clientSecret );
+
+            // From C# example at https://sandbox.gotnpgateway.com/docs/webhooks/#security
+            // NOTE: The MyWell API may include a linefeed character ('\n' = 10 = 0x0A).
+            //       If you do not include this linefeed character but we do, your
+            //       signature will not match. To test with this linefeed character,
+            //       add '\n' to the end of the string.
+            //
+            //       For example, the string below would change to:
+            //       var body = "{\"data\":\"this is test data\"}\n";
+            //
+            //       If you're reading in the request body, in byte form, then you
+            //       shouldn't have to change anything as it should include this
+            //       linefeed if sent in the body.
+
+            byte[] bodyBytes = Encoding.ASCII.GetBytes( postedBody );
+
+            // Hash body to create signature.
+            var hash = new System.Security.Cryptography.HMACSHA256( clientSecretBytes );
+            byte[] signature = hash.ComputeHash( bodyBytes );
+
+            // Base64 decode test signature.
+            byte[] testSignature = Base64UrlDecode( postedSignature );
+
+            // Compare signatures.
+            if ( !signature.SequenceEqual( testSignature ) )
+            {
+                // Signatures do not match"
+                return false;
+            }
+
+            // "Signatures match"
+            return true;
+        }
+
+        /// <summary>
+        /// Decodes an RFC4648 Base64 URL encoded string.
+        /// </summary>
+        private static byte[] Base64UrlDecode( string s )
+        {
+            // From C# example at https://sandbox.gotnpgateway.com/docs/webhooks/#security
+
+            // 62nd char of encoding.
+            s = s.Replace( '-', '+' );
+
+            // 63rd char of encoding.
+            s = s.Replace( '_', '/' );
+
+            // Check for padding.
+            switch ( s.Length % 4 )
+            {
+                case 0:
+                    break;
+                case 2:
+                    s += "==";
+                    break;
+                case 3:
+                    s += "=";
+                    break;
+                default:
+                    throw new InvalidOperationException( "could not add padding" );
+            }
+
+            return Convert.FromBase64String( s );
         }
 
         #region IAutomatedGatewayComponent
@@ -743,7 +887,7 @@ namespace Rock.MyWell
                 billingFrequency = BillingFrequency.twice_monthly;
 
                 /* 2020-07-30 MDP
-                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it, 
+                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it,
                     but it really end up posting on whatever the next 1st or 15th lands on (which is what we want to happen).
                     For example, if we set up a 1st/15th schedule to start on July 23rd, it'll report that the NextBillDate is July 23rd,
                     but it won't really bill until Aug 1st. From then on, the NextBillDate will get reported as whatever the next 1st and 15th is.
@@ -1018,7 +1162,7 @@ namespace Rock.MyWell
         #region Exceptions
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="System.Exception" />
         public class ReferencePaymentInfoRequired : Exception
@@ -1032,7 +1176,7 @@ namespace Rock.MyWell
             }
         }
 
-        #endregion 
+        #endregion
 
         #region GatewayComponent implementation
 

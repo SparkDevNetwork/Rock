@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Finance
         DefaultBooleanValue = false,
         Order = 6,
         Key = AttributeKey.EnableForeignCurrency )]
-    public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class TransactionDetail : Rock.Web.UI.RockBlock
     {
         #region Keys
 
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Finance
 
         private bool ShowForeignCurrencyFields
         {
-            get { return GetAttributeValue(AttributeKey.EnableForeignCurrency).AsBoolean() && _foreignCurrencyCodeDefinedValueId != 0; }
+            get { return GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean() && _foreignCurrencyCodeDefinedValueId != 0; }
         }
 
         private List<int> TransactionImagesState { get; set; }
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Finance
                 TransactionImagesState = new List<int>();
             }
 
-            _foreignCurrencyCodeDefinedValueId = (int) ViewState["ForeignCurrencyCodeDefinedValueId"];
+            _foreignCurrencyCodeDefinedValueId = ( int ) ViewState["ForeignCurrencyCodeDefinedValueId"];
         }
 
         /// <summary>
@@ -480,7 +480,7 @@ namespace RockWeb.Blocks.Finance
                     txn.ForeignCurrencyCodeValueId = dvpForeignCurrencyCode.SelectedValue.AsIntegerOrNull();
                 }
 
-                txn.Summary = tbSummary.Text;
+                txn.Summary = tbComments.Text;
                 var singleAccountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value;
                 var feeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
                 decimal totalAmount;
@@ -1534,7 +1534,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                detailsLeft.Add( "Summary", txn.Summary.ConvertCrLfToHtmlBr() );
+                detailsLeft.Add( "Comments", txn.Summary.ConvertCrLfToHtmlBr() );
 
                 if ( txn.RefundDetails != null )
                 {
@@ -1886,7 +1886,7 @@ namespace RockWeb.Blocks.Finance
 
                 BindAccounts();
 
-                tbSummary.Text = txn.Summary;
+                tbComments.Text = txn.Summary;
 
                 BindImages();
 
@@ -1966,7 +1966,7 @@ namespace RockWeb.Blocks.Finance
 
         private void SetForeignCurrencyCodeVisibility( FinancialTransaction txn )
         {
-            dvpForeignCurrencyCode.Visible = GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean() && (txn == null || txn.Id == 0 || txn.ForeignCurrencyCodeValueId != null);
+            dvpForeignCurrencyCode.Visible = GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean() && ( txn == null || txn.Id == 0 || txn.ForeignCurrencyCodeValueId != null );
         }
 
         /// <summary>
@@ -1989,6 +1989,12 @@ namespace RockWeb.Blocks.Finance
             var foreignCurrencyColumn = GetForeignCurrencyColumn( gAccountsEdit, "ForeignCurrencyAmount" );
             foreignCurrencyColumn.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
             foreignCurrencyColumn.Visible = ShowForeignCurrencyFields;
+
+            if ( UseSimpleAccountMode )
+            {
+                var txnDetail = TransactionDetailsState.FirstOrDefault();
+                ApplyFeeValueToField( tbSingleAccountFeeAmount, txnDetail );
+            }
 
             if ( UseSimpleAccountMode && TransactionDetailsState.Count() == 1 )
             {
@@ -2043,6 +2049,7 @@ namespace RockWeb.Blocks.Finance
                     ForeignCurrencyAmount = totalForeignCurrencyAmount
                 } );
 
+                feeColumn.Visible = hasFeeInfo;
                 gAccountsEdit.DataSource = accounts;
                 gAccountsEdit.DataBind();
                 feeColumn.Visible = hasFeeInfo;
@@ -2387,6 +2394,16 @@ namespace RockWeb.Blocks.Finance
             {
                 tbAccountAmountMinusFeeCoverageAmount.Value = accountAmount;
             }
+        }
+
+        /// </summary>
+        /// <param name="field">The tb single account fee amount.</param>
+        /// <param name="transactionDetail">The transaction detail.</param>
+        private void ApplyFeeValueToField( CurrencyBox field, FinancialTransactionDetail transactionDetail )
+        {
+            var hasFeeInfo = TransactionDetailsState.Any( d => d.FeeAmount.HasValue );
+            field.Visible = hasFeeInfo;
+            field.Value = transactionDetail.FeeAmount;
         }
 
         /// <summary>

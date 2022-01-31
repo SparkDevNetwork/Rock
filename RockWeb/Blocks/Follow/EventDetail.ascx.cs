@@ -37,13 +37,13 @@ namespace RockWeb.Blocks.Follow
     [DisplayName( "Event Detail" )]
     [Category( "Follow" )]
     [Description( "Block for editing following event types." )]
-    public partial class EventDetail : RockBlock, IDetailBlock
+    public partial class EventDetail : RockBlock
     {
 
         #region Properties
 
         public int EventId { get; set; }
-        public int? EventEntityTypeId { get; set; } 
+        public int? EventEntityTypeId { get; set; }
 
         #endregion
 
@@ -114,6 +114,13 @@ namespace RockWeb.Blocks.Follow
                 followingEvent.Description = tbDescription.Text;
                 followingEvent.EntityTypeId = cpEventType.SelectedEntityTypeId;
                 followingEvent.SendOnWeekends = !cbSendOnFriday.Checked;
+
+                var eventEntityTypeGuid = EntityTypeCache.Get( cpEventType.SelectedEntityTypeId.Value ).Guid.ToString();
+                if ( string.Equals( eventEntityTypeGuid, Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    followingEvent.IncludeNonPublicRequests = cbIncludeNonPublicRequests.Checked;
+                }
+
                 followingEvent.IsNoticeRequired = cbRequireNotification.Checked;
                 followingEvent.EntityNotificationFormatLava = ceNotificationFormat.Text;
 
@@ -156,6 +163,22 @@ namespace RockWeb.Blocks.Follow
         protected void cpEventType_SelectedIndexChanged( object sender, EventArgs e )
         {
             var followingEvent = new FollowingEventType { Id = EventId, EntityTypeId = cpEventType.SelectedEntityTypeId };
+
+            if ( cpEventType.SelectedEntityTypeId.HasValue )
+            {
+                var eventEntityTypeGuid = EntityTypeCache.Get( cpEventType.SelectedEntityTypeId.Value ).Guid.ToString();
+                if ( string.Equals( eventEntityTypeGuid, Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    cbIncludeNonPublicRequests.Visible = true;
+                    cbIncludeNonPublicRequests.Checked = followingEvent.IncludeNonPublicRequests;
+                }
+                else
+                {
+                    cbIncludeNonPublicRequests.Visible = false;
+                    cbIncludeNonPublicRequests.Checked = false;
+                }
+            }
+
             BuildDynamicControls( followingEvent, true );
         }
 
@@ -232,6 +255,19 @@ namespace RockWeb.Blocks.Follow
             tbDescription.Text = followingEvent.Description;
             cpEventType.SetValue( followingEvent.EntityType != null ? followingEvent.EntityType.Guid.ToString().ToUpper() : string.Empty );
             cbSendOnFriday.Checked = !followingEvent.SendOnWeekends;
+            cbIncludeNonPublicRequests.Visible = false;
+            cbIncludeNonPublicRequests.Checked = false;
+
+            if ( followingEvent.EntityType != null )
+            {
+                var eventEntityTypeGuid = EntityTypeCache.Get( followingEvent.EntityType.Id )?.Guid.ToString();
+                if ( string.Equals( eventEntityTypeGuid, Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    cbIncludeNonPublicRequests.Visible = true;
+                    cbIncludeNonPublicRequests.Checked = followingEvent.IncludeNonPublicRequests;
+                }
+            }
+
             cbRequireNotification.Checked = followingEvent.IsNoticeRequired;
             ceNotificationFormat.Text = followingEvent.EntityNotificationFormatLava;
 
@@ -259,6 +295,12 @@ namespace RockWeb.Blocks.Follow
 
             descriptionList.Add( "Require Notification", followingEvent.IsNoticeRequired ? "Yes" : "No" );
             descriptionList.Add( "Send Weekend Notices on Friday", followingEvent.SendOnWeekends ? "No" : "Yes" );
+
+            var eventEntityTypeGuid = EntityTypeCache.Get( followingEvent.EntityType.Id ).Guid.ToString();
+            if ( followingEvent.EntityType != null && string.Equals( eventEntityTypeGuid, Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST, StringComparison.OrdinalIgnoreCase ) )
+            {
+                descriptionList.Add( "Include Non-Public Requests", followingEvent.IncludeNonPublicRequests ? "Yes" : "No" );
+            }
 
             lblMainDetails.Text = descriptionList.Html;
         }

@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using Rock.Bus;
+
 using Rock.Bus.Message;
 using Rock.Communication;
 using Rock.Data;
@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Handles any actions that an alert should trigger after it has been created.
+    /// Handles any actions for the specified <see cref="FinancialTransactionAlert" /> that trigger after it the alert has been created.
     /// </summary>
     public sealed class ProcessTransactionAlertActions : BusStartedTask<ProcessTransactionAlertActions.Message>
     {
@@ -78,7 +78,11 @@ namespace Rock.Tasks
                 // Launch workflow if configured
                 if ( alertType.WorkflowTypeId.HasValue )
                 {
-                    alert.LaunchWorkflow( alertType.WorkflowTypeId );
+                    var workflowAttributeValues = new Dictionary<string, string>();
+                    workflowAttributeValues.Add( nameof( FinancialTransactionAlert ), alert.Guid.ToString() );
+                    workflowAttributeValues.Add( nameof( FinancialTransactionAlertType ), alertType.Guid.ToString() );
+                    workflowAttributeValues.Add( nameof( Person ), person.Guid.ToString() );
+                    alert.LaunchWorkflow( alertType.WorkflowTypeId, string.Empty, workflowAttributeValues, null );
                 }
 
                 // Add the person to a connection opportunity if configured
@@ -134,6 +138,26 @@ namespace Rock.Tasks
                     if ( person != null && systemCommunication != null )
                     {
                         CommunicationHelper.SendMessage( person, ( int ) person.CommunicationPreference, systemCommunication, mergeObjects );
+                    }
+                }
+
+                // Send a communication to account followers if an Account Participant System Communication and Account is specified
+                // for this alert type
+                if ( alertType.AccountParticipantSystemCommunicationId.HasValue && alertType.FinancialAccountId.HasValue )
+                {
+                    var systemCommunicationService = new SystemCommunicationService( rockContext );
+                    var financialAccountService = new FinancialAccountService( rockContext );
+                    var accountParticipantSystemCommunication = systemCommunicationService.Get( alertType.AccountParticipantSystemCommunicationId.Value );
+                    if ( accountParticipantSystemCommunication != null )
+                    {
+                        var accountFollowers = financialAccountService
+                            .GetAccountParticipants( alertType.FinancialAccountId.Value, RelatedEntityPurposeKey.FinancialAccountGivingAlert )
+                            .Select( a => a.Person );
+
+                        foreach ( var accountFollower in accountFollowers )
+                        {
+                            CommunicationHelper.SendMessage( accountFollower, ( int ) accountFollower.CommunicationPreference, accountParticipantSystemCommunication, mergeObjects );
+                        }
                     }
                 }
 

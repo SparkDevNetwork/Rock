@@ -14,7 +14,7 @@
         <div class="panel-body">
 
             <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-            <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
+            <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Validation" Visible="false" />
 
             <div id="pnlEditDetails" runat="server">
 
@@ -64,13 +64,15 @@
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="btnDelete_Click"/>
-                        <button id="btnCopy" runat="server"
-                            data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy to Clipboard"
-                            class="btn btn-sm btn-square btn-default js-copy-clipboard pull-right"
-                            onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
-                            <i class='fa fa-clipboard'></i>
-                        </button>
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click"/>
+                        <div class="pull-right">
+                            <button id="btnCopy" runat="server"
+                                data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy to Clipboard"
+                                class="btn btn-sm btn-square btn-default js-copy-clipboard"
+                                onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
+                                <i class='fa fa-clipboard'></i>
+                            </button>
+                        </div>
                     </div>
 
                 </fieldset>

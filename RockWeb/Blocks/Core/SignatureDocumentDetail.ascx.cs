@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a given signature document." )]
 
-    public partial class SignatureDocumentDetail : RockBlock, IDetailBlock
+    public partial class SignatureDocumentDetail : RockBlock
     {
         #region Base Control Methods
 

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 
 namespace Rock.Utility.Settings
@@ -24,6 +23,20 @@ namespace Rock.Utility.Settings
     public static class RockInstanceConfig
     {
         private static RockInstanceConfigurationService _serviceInstance = new RockInstanceConfigurationService();
+
+        /// <summary>
+        /// Sets the application started date time.
+        /// </summary>
+        /// <param name="rockDateTime">The date time.</param>
+        public static void SetApplicationStartedDateTime( DateTime rockDateTime )
+        {
+            ApplicationStartedDateTime = rockDateTime;
+        }
+
+        /// <summary>
+        /// The time that Rock started
+        /// </summary>
+        public static DateTime ApplicationStartedDateTime { get; private set; }
 
         static RockInstanceConfig()
         {
@@ -83,6 +96,17 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
+        /// </summary>
+        public static DateTimeOffset RockDateTimeOffset
+        {
+            get
+            {
+                return _serviceInstance.RockDateTimeOffset;
+            }
+        }
+
+        /// <summary>
         /// Returns the date and time of the application host server.
         /// </summary>
         public static DateTime SystemDateTime
@@ -119,7 +143,7 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is clustered.
+        /// Gets a value indicating whether this instance is clustered using RockWebFarm or Redis.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
@@ -129,6 +153,17 @@ namespace Rock.Utility.Settings
             get
             {
                 return _serviceInstance.IsClustered;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the rendering engine that is currently used to render Lava templates.
+        /// </summary>
+        public static string LavaEngineName
+        {
+            get
+            {
+                return _serviceInstance.LavaEngineName;
             }
         }
     }

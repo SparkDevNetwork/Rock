@@ -88,21 +88,23 @@ namespace Rock.Web.UI.Controls
             if ( DefinedTypeId.HasValue )
             {
                 var definedTypeCache = DefinedTypeCache.Get( DefinedTypeId.Value );
-                var definedValuesList = definedTypeCache?.DefinedValues
-                    .Where( a => a.IsActive || IncludeInactive || SelectedDefinedValuesId.Contains( a.Id ) )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .ToList();
+                var definedValuesList = definedTypeCache?.DefinedValues.Where( a => a.IsActive || IncludeInactive || SelectedDefinedValuesId.Contains( a.Id ) );
 
-                if ( definedValuesList != null && definedValuesList.Any() )
+                if ( SelectableDefinedValuesId != null && SelectableDefinedValuesId.Any() )
+                {
+                    definedValuesList = definedValuesList.Where( a => SelectableDefinedValuesId.Contains( a.Id ) );
+                }
+
+                var filteredList = definedValuesList.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+                if ( filteredList != null && filteredList.Any() )
                 {
                     if ( EnhanceForLongLists )
                     {
-                        LoadListBox( definedValuesList );
+                        LoadListBox( filteredList );
                     }
                     else
                     {
-                        LoadCheckBoxList( definedValuesList );
+                        LoadCheckBoxList( filteredList );
                     }
                 }
             }
@@ -171,6 +173,17 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
+            if ( this.Required )
+            {
+                this.RequiredFieldValidator = new RequiredFieldValidator();
+                this.RequiredFieldValidator.ID = this.ID + "_rfv";
+                this.RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+                this.RequiredFieldValidator.CssClass = "validation-error help-inline";
+                this.RequiredFieldValidator.Enabled = true;
+                this.RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
+                Controls.Add( this.RequiredFieldValidator );
+            }
+
             if ( EnhanceForLongLists )
             {
                 _lboxDefinedValues = new RockListBox();
@@ -179,6 +192,11 @@ namespace Rock.Web.UI.Controls
                 _lboxDefinedValues.AutoPostBack = true;
                 _lboxDefinedValues.SelectedIndexChanged += lboxDefinedValues_SelectedIndexChanged;
                 Controls.Add( _lboxDefinedValues );
+
+                if ( this.Required )
+                {
+                    this.RequiredFieldValidator.ControlToValidate = _lboxDefinedValues.ID;
+                }
             }
             else
             {
@@ -190,6 +208,11 @@ namespace Rock.Web.UI.Controls
                 _cblDefinedValues.AutoPostBack = true;
                 _cblDefinedValues.SelectedIndexChanged += cblDefinedValues_SelectedIndexChanged;
                 Controls.Add( _cblDefinedValues );
+
+                if ( this.Required )
+                {
+                    this.RequiredFieldValidator.ControlToValidate = _cblDefinedValues.ID;
+                }
             }
 
             LinkButtonAddDefinedValue = new LinkButton();

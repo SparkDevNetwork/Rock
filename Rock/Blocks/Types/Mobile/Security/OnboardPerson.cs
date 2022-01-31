@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.Http;
 
 using Rock.Attribute;
 using Rock.Common.Mobile;
@@ -29,6 +28,8 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Security
@@ -54,11 +55,11 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 0 )]
 
     [DefinedValueField( "Default Connection Status",
-        Description = "The connection status to use for new individuals (default = 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Key = AttributeKeys.DefaultConnectionStatus,
         Order = 1 )]
 
@@ -102,6 +103,13 @@ namespace Rock.Blocks.Types.Mobile.Security
         DefaultIntegerValue = IdentityVerification.DefaultMaxFailedMatchAttemptCount,
         Key = AttributeKeys.ValidationCodeAttempts,
         Order = 7 )]
+
+    [EnumsField( "Disable Matching for the Following Protection Profiles",
+        Description = "This disables matching on people with one of the selected protection profiles. A person with a selected protection profile will be required to login by username and password.",
+        EnumSourceType = typeof( AccountProtectionProfile ),
+        DefaultValue = "2,3",
+        Key = AttributeKeys.DisableMatchingProtectionProfiles,
+        Order = 8 )]
 
     #region Campus Block Attributes
 
@@ -484,6 +492,11 @@ namespace Rock.Blocks.Types.Mobile.Security
             public const string ValidationCodeAttempts = "ValidationCodeAttempts";
 
             /// <summary>
+            /// The disable matching protection profiles key.
+            /// </summary>
+            public const string DisableMatchingProtectionProfiles = "DisableMatchingProtectionProfiles";
+
+            /// <summary>
             /// The display campus types key.
             /// </summary>
             public const string DisplayCampusTypes = "DisplayCampusTypes";
@@ -722,6 +735,12 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// The maximum validation code attempts.
         /// </value>
         public int ValidationCodeAttempts => GetAttributeValue( AttributeKeys.ValidationCodeAttempts ).AsInteger();
+
+        /// <summary>
+        /// Gets the protection profiles that will be used to prevent matching.
+        /// </summary>
+        /// <value>The protection profiles that will be used to prevent matching.</value>
+        public List<AccountProtectionProfile> DisableMatchingProtectionProfiles => GetAttributeValue( AttributeKeys.DisableMatchingProtectionProfiles ).SplitDelimitedValues().AsEnumList<AccountProtectionProfile>();
 
         /// <summary>
         /// Gets the display campus type guids.
@@ -1402,7 +1421,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             person.Email = details.Email;
 
             var familyGroup = person.GetFamily( rockContext );
-            if ( familyGroup != null )
+            if ( familyGroup != null && details.CampusGuid.HasValue )
             {
                 familyGroup.CampusId = CampusCache.Get( details.CampusGuid.Value ).Id;
             }
@@ -1563,11 +1582,35 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// Sends a one-time use verification code to the email or phone number.
         /// </summary>
+        /// <param name="sendSms"><c>true</c> if the code should be sent via SMS.</param>
+        /// <param name="sendEmail"><c>true</c> if the code should be sent via e-mail.</param>
+        /// <param name="phoneNumber">The phone number to send the code to.</param>
+        /// <param name="email">The e-mail address to send the code to.</param>
+        /// <returns>A <see cref="SendCodeResponse"/> object or an error message.</returns>
+        /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
+        [RockObsolete( "1.13" )]
+        [Obsolete]
+        [BlockAction( "SendCode" )]
+        public BlockActionResult SendCodeLegacy( bool sendSms, bool sendEmail, string phoneNumber, string email )
+        {
+            var request = new SendCodeRequest
+            {
+                SendSms = sendSms,
+                SendEmail = sendEmail,
+                PhoneNumber = phoneNumber,
+                Email = email
+            };
+
+            return SendCode( request );
+        }
+
+        /// <summary>
+        /// Sends a one-time use verification code to the email or phone number.
+        /// </summary>
         /// <param name="request">The code request.</param>
         /// <returns>A <see cref="SendCodeResponse"/> object or an error message.</returns>
         [BlockAction]
-        [HttpPost]
-        public BlockActionResult SendCode( [FromBody] SendCodeRequest request )
+        public BlockActionResult SendCode( SendCodeRequest request )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1610,6 +1653,16 @@ namespace Rock.Blocks.Types.Mobile.Security
                     return ActionBadRequest( "Missing required information to send code." );
                 }
 
+                // If we have a matching person, check if it is a protected
+                // profile account that must not be used.
+                if ( person != null )
+                {
+                    if ( DisableMatchingProtectionProfiles.Contains( person.AccountProtectionProfile ) )
+                    {
+                        return ActionBadRequest( "It appears you have an account in our system that has security access which requires you to login with a username and password." );
+                    }
+                }
+
                 // Generate the identify verification code that the user will need to enter.
                 var identityVerification = identityVerificationService.CreateIdentityVerificationRecord( RequestContext.ClientInformation.IpAddress, IPThrottleLimit, refNumber );
                 bool success = false;
@@ -1627,11 +1680,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // on in the event of an error.
                 if ( !success )
                 {
-                    return ActionOk( new SendCodeResponse
-                    {
-                        IsSuccess = false,
-                        Message = "Unable to send code."
-                    } );
+                    return ActionInternalServerError( "Unable to send code." );
                 }
 
                 // Create our encrypted state to track where we are in the process.
@@ -1652,11 +1701,31 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// Verifies the code entered by the user.
         /// </summary>
+        /// <param name="state">The custom state data that was sent to the client.</param>
+        /// <param name="code">The code entered by the individual.</param>
+        /// <returns>A <see cref="VerifyCodeResponse"/> object or an error message.</returns>
+        /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
+        [RockObsolete( "1.13" )]
+        [Obsolete]
+        [BlockAction( "VerifyCode" )]
+        public BlockActionResult VerifyCodeLegacy( string state, string code )
+        {
+            var request = new VerifyCodeRequest
+            {
+                State = state,
+                Code = code
+            };
+
+            return VerifyCode( request );
+        }
+
+        /// <summary>
+        /// Verifies the code entered by the user.
+        /// </summary>
         /// <param name="request">The code request.</param>
         /// <returns>A <see cref="VerifyCodeResponse"/> object or an error message.</returns>
         [BlockAction]
-        [HttpPost]
-        public BlockActionResult VerifyCode( [FromBody] VerifyCodeRequest request )
+        public BlockActionResult VerifyCode( VerifyCodeRequest request )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1692,11 +1761,33 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// Attempts to perform final login of the person.
         /// </summary>
+        /// <param name="state">The custom state data that was sent to the client.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier that the client has been assigned.</param>
+        /// <param name="details">The details that the individual filled out.</param>
+        /// <returns>A <see cref="CreatePersonResponse"/> that contains the login result or an error object.</returns>
+        /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
+        [RockObsolete( "1.13" )]
+        [Obsolete]
+        [BlockAction( "CreatePerson" )]
+        public BlockActionResult CreatePersonLegacy( string state, Guid? personalDeviceGuid, OnboardDetails details )
+        {
+            var request = new CreatePersonRequest
+            {
+                State = state,
+                PersonalDeviceGuid = personalDeviceGuid,
+                Details = details
+            };
+
+            return CreatePerson( request );
+        }
+
+        /// <summary>
+        /// Attempts to perform final login of the person.
+        /// </summary>
         /// <param name="request">The details of the request.</param>
         /// <returns>A <see cref="CreatePersonResponse"/> that contains the login result or an error object.</returns>
         [BlockAction]
-        [HttpPost]
-        public BlockActionResult CreatePerson( [FromBody] CreatePersonRequest request )
+        public BlockActionResult CreatePerson( CreatePersonRequest request )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1779,6 +1870,16 @@ namespace Rock.Blocks.Types.Mobile.Security
                         {
                             CreateUser( person, request.Details.UserName, request.Details.Password, true, rockContext );
                         }
+                        else if ( username == null )
+                        {
+                            // No existing username, no manually created username.
+                            // We need to generate a user so that we can properly
+                            // log them in.
+                            var newPassword = Password.GeneratePassword();
+                            username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
+
+                            CreateUser( person, username, newPassword, true, rockContext );
+                        }
 
                         if ( request.Details.Interests.Any() )
                         {
@@ -1803,16 +1904,9 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                     var mobilePerson = MobileHelper.GetMobilePerson( person, siteCache );
 
-                    // Set the authentication token to either a normal token or
-                    // an impersonated token if we don't have a normal user name.
-                    if ( username.IsNotNullOrWhiteSpace() )
-                    {
-                        mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
-                    }
-                    else
-                    {
-                        mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( person.GetImpersonationParameter() );
-                    }
+                    // Set the authentication token to either a normal token so
+                    // they can login.
+                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
 
                     return ActionOk( new CreatePersonResponse
                     {
@@ -1820,8 +1914,10 @@ namespace Rock.Blocks.Types.Mobile.Security
                         Person = mobilePerson
                     } );
                 }
-                catch
+                catch ( Exception ex )
                 {
+                    ExceptionLogService.LogException( ex );
+
                     return ActionOk( new CreatePersonResponse
                     {
                         IsSuccess = false,
@@ -1831,7 +1927,89 @@ namespace Rock.Blocks.Types.Mobile.Security
             }
         }
 
+        /// <summary>
+        /// Updates the current person and returns the person's details.
+        /// </summary>
+        /// <param name="details">The details to be updated.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
+        /// <returns>The result of the block action.</returns>
+        [BlockAction]
+        public BlockActionResult UpdateCurrentPerson( UpdateCurrentPersonDetails details, Guid? personalDeviceGuid )
+        {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized( "Must be logged in to perform this action." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var person = new PersonService( rockContext ).Get( RequestContext.CurrentPerson.Id );
+                var username = RequestContext.CurrentUser.UserName;
+
+                if ( username == null )
+                {
+                    username = person.Users.FirstOrDefault( a => ( a.IsConfirmed ?? true ) && !( a.IsLockedOut ?? false ) )?.UserName;
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    // Update the campus if we can.
+                    if ( details.CampusGuid != null )
+                    {
+                        var campusId = CampusCache.Get( details.CampusGuid.Value )?.Id;
+
+                        if ( campusId.HasValue )
+                        {
+                            person.GetFamily( rockContext ).CampusId = campusId;
+                        }
+                    }
+
+                    if ( details.Interests.Any() )
+                    {
+                        UpdatePersonInterests( person, details.Interests.AsGuidList(), rockContext );
+                    }
+
+                    // Update the personal device to indicate it's owned by this
+                    // person.
+                    if ( personalDeviceGuid.HasValue )
+                    {
+                        var personalDevice = new PersonalDeviceService( rockContext ).Get( personalDeviceGuid.Value );
+
+                        if ( personalDevice != null )
+                        {
+                            personalDevice.PersonAliasId = person.PrimaryAliasId;
+                            personalDevice.DeviceRegistrationId = details.PushToken;
+                        }
+                    }
+
+                    if ( username == null )
+                    {
+                        // No existing username. We need to generate a user
+                        // so that we can properly log them in.
+                        var newPassword = Password.GeneratePassword();
+                        username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
+
+                        CreateUser( person, username, newPassword, true, rockContext );
+                    }
+
+                    rockContext.SaveChanges();
+                } );
+
+                var mobilePerson = MobileHelper.GetMobilePerson( person, PageCache.Layout.Site );
+
+                // Set the authentication token so they get/stay logged in.
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
+
+                return ActionOk( new
+                {
+                    Person = mobilePerson
+                } );
+            }
+        }
+
         #endregion
+
+        #region Support Classes
 
         /// <summary>
         /// Encrypted state that is sent to the client to ensure
@@ -1855,5 +2033,42 @@ namespace Rock.Blocks.Types.Mobile.Security
             /// </value>
             public int? MatchedPersonId { get; set; }
         }
+
+        #endregion
+
+        #region Action Classes
+
+        /// <summary>
+        /// The data that should be updated on the person's record for the
+        /// UpdateCurrentPerson action.
+        /// </summary>
+        public class UpdateCurrentPersonDetails
+        {
+            /// <summary>
+            /// Gets or sets the campus unique identifier.
+            /// </summary>
+            /// <value>
+            /// The campus unique identifier.
+            /// </value>
+            public Guid? CampusGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the interests.
+            /// </summary>
+            /// <value>
+            /// The interests.
+            /// </value>
+            public List<string> Interests { get; set; }
+
+            /// <summary>
+            /// Gets or sets the push notification token.
+            /// </summary>
+            /// <value>
+            /// The push notification token.
+            /// </value>
+            public string PushToken { get; set; }
+        }
+
+        #endregion
     }
 }

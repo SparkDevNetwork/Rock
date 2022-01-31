@@ -347,6 +347,7 @@ namespace RockWeb.Blocks.Communication
             {
                 nbWarningMessage.NotificationBoxType = NotificationBoxType.Warning;
                 nbWarningMessage.Text = "Rock.SystemGuid.InteractionChannel.COMMUNICATION not found in database";
+                nbWarningMessage.Visible = true;
                 return false;
             }
 

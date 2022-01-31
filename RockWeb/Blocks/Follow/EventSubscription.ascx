@@ -9,15 +9,16 @@
             </div>
 
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbSaved" runat="server" NotificationBoxType="Success" Text="Your settings have been saved." Dismissable="true" Visible="false" />
 
                 <asp:Repeater ID="rptEntityType" runat="server" OnItemDataBound="rptEntityType_ItemDataBound">
                     <ItemTemplate>
-                        <h4><%# Eval("FriendlyName").ToString().Replace(" Alias", "") %> Events</h4>
-                        <div class="clearfix margin-l-md">    
+                        <h4 class="mt-0"><%# Eval("FriendlyName").ToString().Replace(" Alias", "") %> Events</h4>
+                        <div class="clearfix margin-l-md">
                             <ul class="list-unstyled">
                                 <asp:Repeater ID="rptEvent" runat="server" >
                                     <ItemTemplate>
-                                        <li class="margin-b-sm">
+                                        <li class="mb-2">
                                             <asp:HiddenField ID="hfEvent" runat="server" Value='<%# Eval("Id") %>' />
                                             <Rock:RockCheckBox ID="cbEvent" runat="server" Checked='<%# (bool)Eval("Selected") %>'  Enabled='<%# !(bool)Eval("IsNoticeRequired") %>'
                                                 Text='<%# Eval("Name") %>' SelectedIconCssClass="fa fa-check-square-o fa-lg fa-fw" UnSelectedIconCssClass="fa fa-square-o fa-lg fa-fw" />
@@ -29,13 +30,10 @@
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
-                
-                <div class="actions margin-b-md">
+
+                <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                 </div>
-
-                <Rock:NotificationBox ID="nbSaved" runat="server" NotificationBoxType="Success" Text="Your settings have been saved." Dismissable="true" Visible="false" />
-                
             </div>
         </div>
 

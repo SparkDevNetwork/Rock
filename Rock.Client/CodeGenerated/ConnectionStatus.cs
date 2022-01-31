@@ -132,6 +132,9 @@ namespace Rock.Client
     /// </summary>
     public partial class ConnectionStatus : ConnectionStatusEntity
     {
+        /// <summary />
+        public ICollection<ConnectionStatusAutomation> ConnectionStatusAutomations { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

@@ -232,6 +232,15 @@ namespace RockWeb.Blocks.Utility
 
             if ( !this.IsPostBack )
             {
+                // handle custom ajax post
+                if ( Request.Params["getSelectedFileResult"].AsBoolean() )
+                {
+                    string fileSelectedResult = getSelectedFileResult( this.Request.Form["selectedFileId"] );
+
+                    Response.Write( fileSelectedResult );
+                    Response.End();
+                }
+
                 pnlFileBrowser.CssClass = "is-postback";
                 pnlModalHeader.Visible = PageParameter( PageParameterKey.ModalMode ).AsBoolean();
                 pnlModalFooterActions.Visible = PageParameter( PageParameterKey.ModalMode ).AsBoolean();
@@ -272,15 +281,6 @@ namespace RockWeb.Blocks.Utility
                         DeleteFile( fileRelativePath );
                     }
                 }
-            }
-
-            // handle custom ajax post
-            if ( Request.Params["getSelectedFileResult"].AsBoolean() )
-            {
-                string fileSelectedResult = getSelectedFileResult( this.Request.Form["selectedFileId"] );
-
-                Response.Write( fileSelectedResult );
-                Response.End();
             }
         }
 

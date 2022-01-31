@@ -26,6 +26,8 @@ namespace Rock.Transactions
     /// Transaction to execute when a page's name is changed
     /// </summary>
     /// <seealso cref="ITransaction" />
+    [Obsolete( "Use AddPageRenameInteraction Task instead." )]
+    [RockObsolete( "1.13" )]
     public class PageRenameTransaction : ITransaction
     {
         /// <summary>

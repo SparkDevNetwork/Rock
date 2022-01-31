@@ -52,12 +52,6 @@ namespace RockWeb.Blocks.CheckIn
             {
                 NavigateToHomePage();
             }
-
-            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
-            if ( bodyTag != null )
-            {
-                bodyTag.AddCssClass( "checkin-search-bg" );
-            }
         }
 
         /// <summary>

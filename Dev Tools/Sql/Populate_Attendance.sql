@@ -1,32 +1,22 @@
---delete from attendance
-/*select ao.OccurrenceDate, count(*), min(StartDateTime), max(StartDateTime) 
- from Attendance a
- join AttendanceOccurrence ao on a.OccurrenceId = ao.Id
- group by ao.OccurrenceDate
- order by count(*) desc*/
-
 set nocount on
+
 -- configuration
 declare
     @populateStartDateTimeLastHour datetime = DateAdd(hour, -1, GetDate()),
     @populateStartDateTimeLast12Months datetime = DateAdd(MONTH, -12, GetDate()),
-    @populateStartDateTimeLast5Years datetime = DateAdd(MONTH, -60, GetDate())
+    @populateStartDateTimeLast5Years datetime = DateAdd(YEAR, -5, GetDate())
 
 declare
     -- set this to @populateStartDateTimeLastHour or @populateStartDateTimeLast12Months (or custom), depending on what you need
     @populateStartDateTime datetime = @populateStartDateTimeLast5Years,
-    @avgAttendanceCountPerDay int = 100, 
-    
     @populateEndDateTime datetime  = DateAdd(hour, 0, GetDate()),
     
-
     @limitToChildren bit = 1, -- set this to true to only add attendance for children
     
     @populateGroupScheduling int = 0, -- set this to true if the attendance records should be for scheduling attendences
-    
+    @maxAttendanceCount int = 5000, 
     @personSampleSize int = 10000, -- number of people to use when randomly assigning a person to each attendance. You might want to set this lower or higher depending on what type of data you want
     @checkinAreaGroupTypeId int = (SELECT Id FROM GroupType WHERE [Guid] = 'FEDD389A-616F-4A53-906C-63D8255631C5') -- Weekly Service Checkin
-    
     
 declare
     @attendanceCounter int = 0,
@@ -45,12 +35,25 @@ declare
     @categoryServiceTimes int = (select id from Category where [Guid] = '4FECC91B-83F9-4269-AE03-A006F401C47E'),
     @randomSeed int = 1,
     @millisecondsPerDay int = 86400000
-    
 
 declare
   @CheckinDateTime datetime = @populateStartDateTime,
   @PresentDateTime datetime = @populateStartDateTime,
-  @CheckoutDateTime datetime
+  @CheckoutDateTime datetime,
+  @attendancesPerDay int = @maxAttendanceCount/(DateDiff(day, @populateStartDateTime, @populateEndDateTime) +1)
+
+  if (@attendancesPerDay = 0) begin
+    set @attendancesPerDay = 1;
+  end
+
+declare
+  @millsecondsIncrement int = null
+
+  if (DateDiff(DAY, @populateStartDateTime, @populateEndDateTime) < 2) begin
+    set @millsecondsIncrement = (DateDiff(ms, @populateStartDateTime, @populateEndDateTime))/@attendancesPerDay
+  end else begin
+    set @millsecondsIncrement = @millisecondsPerDay/@attendancesPerDay
+  end
 
 declare
     @attendanceGroupIds table ( id Int );
@@ -171,25 +174,20 @@ begin
 		       fetch next from scheduleIdCursor into @ScheduleId;
 		    end
         end
-
-        set @randomSeed = CHECKSUM(newid())
         
-        declare 
-            @secondsIncrement int = ((RAND(@randomSeed)*86000)/@avgAttendanceCountPerDay)*2;
-        
-        set @CheckinDateTime = DATEADD(SECOND, @secondsIncrement, @CheckinDateTime)
+        set @CheckinDateTime = DATEADD(ms, @millsecondsIncrement, @CheckinDateTime)
         set @PresentDateTime = @CheckinDateTime
         set @CheckoutDateTime = null
 		set @OccurrenceDate = convert(date, @CheckinDateTime);
-        
+        set @randomSeed = CHECKSUM(newid())
         set @DidAttend = (select case when FLOOR(rand(@randomSeed) * 50) > 10 then 1 else 0 end) -- select random didattend with ~80% true
 
         set @randomSeed = CHECKSUM(newid());
 
 		set @AttendanceOccurrenceId = (select top 1 id from AttendanceOccurrence where GroupId = @GroupId and ScheduleId = @ScheduleId and LocationId = @LocationId and OccurrenceDate = @OccurrenceDate);
 		if (@AttendanceOccurrenceId is null) begin
-			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, SundayDate, OccurrenceDateKey, [Guid]) 
-            values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, dbo.ufnUtility_GetSundayDate(@OccurrenceDate), CONVERT(INT, (CONVERT(CHAR(8), @OccurrenceDate, 112))), newid());
+			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, SundayDate, OccurrenceDateKey, [Guid] ,[CreatedDateTime] ,[ModifiedDateTime]) 
+            values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, dbo.ufnUtility_GetSundayDate(@OccurrenceDate), CONVERT(INT, (CONVERT(CHAR(8), @OccurrenceDate, 112))), newid(), @OccurrenceDate, SYSDATETIME());
 			set @AttendanceOccurrenceId = @@IDENTITY;
 		end
 
@@ -256,10 +254,19 @@ begin
         )
 
 		if (@attendanceCounter % 10000 = 0) begin
-		print @attendanceCounter
+          print @attendanceCounter
+          insert into Attendance 
+            ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, PresentDateTime, EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] ) 
+            select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, [at].StartDateTime, [at].PresentDateTime, [at].EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] 
+            from @attendanceTable [at] order by at.StartDateTime
+            delete from @attendanceTable
 		end
         
 		set @attendanceCounter += 1;
+
+        if (@attendanceCounter > @maxAttendanceCount) begin
+          break;
+        end
     end
 
 	close personAliasIdCursor;
@@ -267,8 +274,8 @@ begin
     close attendanceCodeIdCursor;
 
     insert into Attendance 
-        ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, PresentDateTime, EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] ) 
-    select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, [at].StartDateTime, [at].PresentDateTime, [at].EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] 
+        ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, PresentDateTime, EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid],[CreatedDateTime],[ModifiedDateTime] ) 
+    select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, [at].StartDateTime, [at].PresentDateTime, [at].EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid], [at].StartDateTime, SYSDATETIME()
         from @attendanceTable [at] order by at.StartDateTime
 
     update AttendanceOccurrence set OccurrenceDateKey = CONVERT(INT, (CONVERT(CHAR(8), OccurrenceDate, 112)) ) where OccurrenceDateKey = 0

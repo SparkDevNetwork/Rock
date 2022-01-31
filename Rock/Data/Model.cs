@@ -23,17 +23,18 @@ using System.Data.Services;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-
+using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Data
 {
     /// <summary>
-    /// Represents an entity that can be secured and have attributes. 
+    /// Represents an entity that can be secured and have attributes.
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     [IgnoreModelErrors( new[] { "ParentAuthority" } )]
@@ -111,7 +112,7 @@ namespace Rock.Data
         /// <value>
         /// The created by person identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual int? CreatedByPersonId
         {
@@ -131,7 +132,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the created by person.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual string CreatedByPersonName
         {
@@ -151,7 +152,7 @@ namespace Rock.Data
         /// <value>
         /// The modified by person identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual int? ModifiedByPersonId
         {
@@ -171,7 +172,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the modified by person.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual string ModifiedByPersonName
         {
@@ -273,7 +274,25 @@ namespace Rock.Data
         {
             if ( HistoryItems?.Any() == true )
             {
-                new SaveHistoryTransaction( HistoryItems ).Enqueue();
+                if ( HistoryItems.Any() )
+                {
+                    Task.Run( async () =>
+                    {
+                        // Wait 1 second to allow all post save actions to complete
+                        await Task.Delay( 1000 );
+                        try
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                rockContext.BulkInsert( HistoryItems );
+                            }
+                        }
+                        catch ( SystemException ex )
+                        {
+                            ExceptionLogService.LogException( ex, null );
+                        }
+                    } );
+                }
             }
         }
 
@@ -328,7 +347,7 @@ namespace Rock.Data
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check the default authorization on the current type, and 
+        /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
         [NotMapped]
@@ -466,8 +485,8 @@ namespace Rock.Data
         /// <remarks>
         /// This method is necessary to support getting AttributeValues in Lava templates and
         /// to support the old way of getting attribute values in Lava templates
-        /// (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
-        /// removed and only the new method of using the Attribute filter is 
+        /// (e.g. {{ Person.BaptismData }} ).  Once support for this method is
+        /// removed and only the new method of using the Attribute filter is
         /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be
         /// trimmed to only support the AttributeValues key.
         /// </remarks>
@@ -497,10 +516,10 @@ namespace Rock.Data
                         return AttributeValues.Select( a => a.Value ).ToList();
                     }
 
-                    // The remainder of this method is only necessary to support the old way of getting attribute 
-                    // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
-                    // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-                    // supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
+                    // The remainder of this method is only necessary to support the old way of getting attribute
+                    // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is
+                    // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is
+                    // supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method
                     // can be removed
 
                     if ( lavaSupportLevel == Lava.LavaSupportLevel.NoLegacy )
@@ -559,18 +578,34 @@ namespace Rock.Data
         /// Determines whether the specified key contains key.
         /// </summary>
         /// <remarks>
-        /// This method is only necessary to support the old way of getting attribute values in 
-        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
-        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+        /// This method is only necessary to support the old way of getting attribute values in
+        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is
+        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is
         /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete("Use ContainsKey(string) instead.")]
+        [RockObsolete( "1.13.0" )]
         public override bool ContainsKey( object key )
         {
-            string attributeKey = key.ToStringSafe();
+            return ContainsKey( key.ToStringSafe() );
+        }
 
-            if ( attributeKey == "AttributeValues" )
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <remarks>
+        /// This method is only necessary to support the old way of getting attribute values in
+        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is
+        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override bool ContainsKey( string key )
+        {
+            if ( key == "AttributeValues" )
             {
                 return true;
             }
@@ -584,18 +619,18 @@ namespace Rock.Data
                     this.LoadAttributes();
                 }
 
-                if ( attributeKey.EndsWith( "_unformatted" ) )
+                if ( key.EndsWith( "_unformatted" ) )
                 {
-                    attributeKey = attributeKey.Replace( "_unformatted", "" );
+                    key = key.Replace( "_unformatted", "" );
                 }
-                else if ( attributeKey.EndsWith( "_url" ) )
+                else if ( key.EndsWith( "_url" ) )
                 {
-                    attributeKey = attributeKey.Replace( "_url", "" );
+                    key = key.Replace( "_url", "" );
                 }
 
-                if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
+                if ( this.Attributes != null && this.Attributes.ContainsKey( key ) )
                 {
-                    var attribute = this.Attributes[attributeKey];
+                    var attribute = this.Attributes[key];
                     if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                     {
                         return true;
@@ -623,7 +658,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
@@ -634,7 +669,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>

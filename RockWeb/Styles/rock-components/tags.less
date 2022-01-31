@@ -19,7 +19,7 @@
     padding: 2px;
     margin: 0 auto;
     clear: both;
-    font-size: 13px;
+    font-size: @font-size-xs;
     color: #8f8f8f !important; /* needed as script adds element value */
     background: transparent;
     border: 1px solid transparent;
@@ -64,7 +64,7 @@
     padding: 1px 12px 0;
     margin-right: 8px;
     margin-bottom: @spacing-sm-px;
-    font-size: 13px;
+    font-size: @font-size-xs;
     line-height: 18px;
     color: @tag-text-color;
     text-decoration: none;
@@ -108,7 +108,7 @@
     }
 
     small {
-      font-size: 11px;
+      font-size: @font-size-xs;
     }
 
     &:hover {
@@ -134,8 +134,8 @@
 }
 
 .not_valid {
-  color: #90111a !important;
-  background: #fbd8db !important;
+  color: @state-danger-text !important;
+  background: @state-danger-bg !important;
 }
 
 .tag-wrap {

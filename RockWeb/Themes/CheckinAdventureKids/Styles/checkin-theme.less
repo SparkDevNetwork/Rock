@@ -19,6 +19,17 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 
+
+:root {
+  --celebration-1: @celebration-color-1;
+  --celebration-2: @celebration-color-2;
+  --celebration-3: @celebration-color-3;
+  --celebration-4: @celebration-color-4;
+  --celebration-5: @celebration-color-5;
+  --celebration-6: @celebration-color-6;
+}
+
+
 // Fonts
 // -------------------------
 
@@ -86,6 +97,14 @@
 // Custom Overrides
 // --------------------------------------------------
 
+@media (min-width: 768px) {
+  .body-content {
+    width: 100% !important;
+    padding: 0 30px;
+  }
+}
+
+
 .administration {
   .checkin-scroll-panel {
     background: @btn-default-bg;
@@ -107,16 +126,43 @@
   }
 }
 
-.checkin-body-container {
-  width: 80%; // keep items from going into the bamboo
-}
-
 body {
   display: none;
   -ms-touch-action: none !important;
   touch-action: none;   /* Disable any special actions on tap/touch */
 
   -ms-content-zooming: none; /* Disables zooming */
+}
+
+.lion-cage {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lion {
+  background-image: @lion-image;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 500px;
+  height: 500px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: lion-jump 3s cubic-bezier(0.46, 0.03, 0.52, 0.96) forwards;
+  z-index: 3000;
+  opacity: 0;
+}
+
+@keyframes lion-jump {
+  0% {transform: scale(1) translate(-500px,-250px);opacity: 1;}
+  99% {opacity: 1;}
+  100% {transform: scale(3) translate(160%,100%);opacity: 0; display: none;}
 }
 
 @import "_css-overrides.less";

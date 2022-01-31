@@ -15,14 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -118,6 +121,27 @@ namespace RockWeb.Blocks.Crm
             {
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Gets the account protection profile column HTML.
+        /// </summary>
+        /// <param name="accountProtectionProfile">The account protection profile.</param>
+        /// <returns></returns>
+        public string GetAccountProtectionProfileColumnHtml( AccountProtectionProfile accountProtectionProfile )
+        {
+            var cssMap = new Dictionary<AccountProtectionProfile, string>
+            {
+                { AccountProtectionProfile.Extreme, "danger" },
+                { AccountProtectionProfile.High, "primary" },
+                { AccountProtectionProfile.Medium, "warning" },
+                { AccountProtectionProfile.Low, "success" }
+            };
+
+            var css = $"label label-{cssMap[accountProtectionProfile]}";
+
+
+            return $"<span class='{css}'>{accountProtectionProfile.ConvertToString()}</span>";
         }
 
         #region Base Control Methods
@@ -236,7 +260,9 @@ namespace RockWeb.Blocks.Crm
                     PersonModifiedDateTime = person.ModifiedDateTime,
                     CreatedByPerson = person.CreatedByPersonAlias.Person.FirstName + " " + person.CreatedByPersonAlias.Person.LastName,
                     personDuplicate.MatchCount,
-                    personDuplicate.MaxConfidenceScore
+                    personDuplicate.MaxConfidenceScore,
+                    person.AccountProtectionProfile,
+                    Campus = person.PrimaryCampus.Name
                 } );
 
             SortProperty sortProperty = gList.SortProperty;
@@ -247,6 +273,13 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 qry = qry.OrderByDescending( a => a.MaxConfidenceScore ).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
+            }
+
+            var hasMultipleCampuses = CampusCache.All().Count( c => c.IsActive ?? true ) > 1;
+            if ( !hasMultipleCampuses )
+            {
+                var campustColumn = gList.Columns.OfType<RockBoundField>().First( a => a.DataField == "Campus" );
+                campustColumn.Visible = false;
             }
 
             // NOTE: Because the .Count() in the SetLinqDataSource() sometimes creates SQL that takes *significantly* 

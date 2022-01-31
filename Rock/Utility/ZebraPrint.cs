@@ -269,7 +269,7 @@ namespace Rock.Utility
             // Print client labels
             if ( printFromClient.Any() )
             {
-                var urlRoot = string.Format( "{0}://{1}", request.Url.Scheme, request.Url.Authority );
+                var urlRoot = string.Format( "{0}://{1}", request.UrlProxySafe().Scheme, request.UrlProxySafe().Authority );
 
                 /*
                                 // This is extremely useful when debugging with ngrok and an iPad on the local network.

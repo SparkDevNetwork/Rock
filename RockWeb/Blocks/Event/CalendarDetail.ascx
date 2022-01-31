@@ -15,7 +15,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><asp:Literal ID="lCalendarIcon" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                <div class="pull-right">
+                <div class="panel-labels">
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Feed URL to Clipboard"
                         class="btn btn-info btn-xs btn-copy-to-clipboard"

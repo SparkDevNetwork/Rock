@@ -23,8 +23,9 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Rock.Bus.Message;
 using Rock.Model;
-using Rock.Transactions;
+using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -185,7 +186,7 @@ namespace Rock.Web
 
                                             string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
 
-                                            var transaction = new ShortLinkTransaction
+                                            var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
                                             {
                                                 PageShortLinkId = pageShortLink.Id,
                                                 Token = pageShortLink.Token,
@@ -196,7 +197,8 @@ namespace Rock.Web
                                                 UserName = requestContext.HttpContext.User?.Identity.Name
                                             };
 
-                                            RockQueue.TransactionQueue.Enqueue( transaction );
+
+                                            addShortLinkInteractionMsg.Send();
 
                                             requestContext.HttpContext.Response.Redirect( trimmedUrl, false );
                                             requestContext.HttpContext.ApplicationInstance.CompleteRequest();
@@ -269,7 +271,7 @@ namespace Rock.Web
                         if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
                             Rock.Model.ExceptionLogService.LogException(
-                                new Exception( $"404 Error: {routeHttpRequest.Url.AbsoluteUri}" ),
+                                new Exception( $"404 Error: {routeHttpRequest.UrlProxySafe().AbsoluteUri}" ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 
@@ -392,6 +394,7 @@ namespace Rock.Web
         {
             RemoveRockPageRoutes();
             RegisterRoutes();
+            PageRouteWasUpdatedMessage.Publish();
         }
 
         /// <summary>

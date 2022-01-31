@@ -33,6 +33,20 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Empty;
+            }
+
+            var daysOfWeek = value.Split( ',' ).Select( a => ( DayOfWeek ) a.AsInteger() ).ToList();
+            var dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
+
+            return dayNames.AsDelimited( ", " );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -43,16 +57,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
-                List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
-                return dayNames.AsDelimited( ", " );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

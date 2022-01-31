@@ -164,7 +164,7 @@
                                 <Rock:HiddenFieldWithClass ID="hfOriginalTotalAmount" runat="server" CssClass="js-original-total-amount" />
                                 <Rock:HiddenFieldWithClass ID="hfCurrencySymbol" runat="server" CssClass="js-currencysymbol" />
 
-                                <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
+                                <Rock:RockTextBox ID="tbComments" runat="server" Label="Comments" TextMode="MultiLine" Rows="2" />
                             </div>
                         </div>
                     </div>

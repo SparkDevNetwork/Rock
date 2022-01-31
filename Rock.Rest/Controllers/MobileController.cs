@@ -85,8 +85,21 @@ namespace Rock.Rest.Controllers
                 return NotFound();
             }
 
+            // Ensure the user login is still active, otherwise log them out.
+            var principal = ControllerContext.Request.GetUserPrincipal();
+            if ( person != null && !principal.Identity.Name.StartsWith( "rckipid=" ) )
+            {
+                var userLogin = new UserLoginService( rockContext ).GetByUserName( principal.Identity.Name );
+
+                if ( userLogin?.IsConfirmed != true || userLogin?.IsLockedOut == true )
+                {
+                    person = null;
+                }
+            }
+
             var launchPacket = new LaunchPacket
             {
+                RockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber(),
                 LatestVersionId = additionalSettings.LastDeploymentVersionId ?? ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
                 IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
             };
@@ -106,7 +119,7 @@ namespace Rock.Rest.Controllers
 
             if ( person != null )
             {
-                var principal = ControllerContext.Request.GetUserPrincipal();
+                //var principal = ControllerContext.Request.GetUserPrincipal();
 
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );

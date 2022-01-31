@@ -1,0 +1,29 @@
+.tc-setting {
+  --color-default: #000;
+  --color-active: #388ae5;
+  --color-background: #eff2f5;
+
+  width: 52px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--color-default);
+  transition: background-color .3s ease;
+  will-change: background-color;
+  
+  &--active {
+    color: var(--color-active);
+  }
+
+  &:first-child {
+    margin-right: 4px;
+  }
+
+  &:hover {
+    background-color: var(--color-background);
+    transition: background-color 0s;
+  }
+}

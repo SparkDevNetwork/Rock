@@ -78,7 +78,7 @@
                             <li id="liNavItem" runat="server" class="list-group-item d-flex align-items-center cursor-pointer clearfix" >
                                 <div class="d-flex align-items-center"><asp:Literal ID="imgPerson" runat="server" />
                                 <div>
-                                    <span class="js-checkin-person-name"><%# Eval("Name") %></span><asp:Literal ID="lAge" runat="server" />
+                                    <span class="checkin-person-name  js-checkin-person-name"><%# Eval("Name") %></span><asp:Literal ID="lAge" runat="server" />
                                     <%# Eval("ScheduleGroupNames") %>
                                 </div>
                                 </div>

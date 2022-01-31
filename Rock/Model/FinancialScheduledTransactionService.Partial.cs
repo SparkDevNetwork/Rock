@@ -20,8 +20,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Tasks;
+using System.Threading.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -86,7 +89,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sets the status.
+        /// Gets the status of the <see cref="FinancialScheduledTransaction"/> from it's <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// If the schedule is no longer active on the gateway, <see cref="FinancialScheduledTransaction.IsActive"/> is set to <c>false</c>.
+        /// If this method returns false, see <paramref name="errorMessages"/>.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessages">The error messages.</param>
@@ -147,7 +152,13 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    return gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages );
+                    bool isReactivated = gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages );
+                    if ( isReactivated )
+                    {
+                        Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+                    }
+
+                    return isReactivated;
                 }
             }
 
@@ -156,7 +167,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Cancels the specified scheduled transaction.
+        /// Cancels the specified scheduled transaction on the <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// After doing this, the next call to <see cref="FinancialScheduledTransactionService.GetStatus(FinancialScheduledTransaction, out string)"/>
+        /// will set <see cref="FinancialScheduledTransaction.IsActive" /> to <c>false</c>
+        /// if is it successfully cancelled.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessages">The error messages.</param>
@@ -175,7 +189,13 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    return gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages );
+                    bool isCanceled = gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages );
+                    if ( isCanceled )
+                    {
+                        Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftInactivated ) );
+                    }
+
+                    return isCanceled;
                 }
             }
 
@@ -569,15 +589,15 @@ namespace Rock.Model
             }
 
             // Queue a transaction to update the status of all affected scheduled transactions
-            var updatePaymentStatusTxn = new Rock.Transactions.UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
+            var updatePaymentStatusTxn = new UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
+            RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
 
             if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
                 // Queue a transaction to send receipts
                 var newTransactionIds = newTransactionsForReceiptEmails.Select( t => t.Id ).ToList();
-                var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
+                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
 
             // Queue transactions to launch failed payment workflow
@@ -587,16 +607,16 @@ namespace Rock.Model
                 {
                     // Queue a transaction to send payment failure
                     var newTransactionIds = failedPayments.Select( t => t.Id ).ToList();
-                    var sendPaymentFailureTxn = new Rock.Transactions.SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
+                    var sendPaymentFailureTxn = new SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
+                    RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
                 }
 
                 if ( failedPaymentWorkflowType.HasValue )
                 {
                     // Queue a transaction to launch workflow
                     var workflowDetails = failedPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
-                    var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                    var launchWorkflowsTxn = new LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
+                    RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
             }
 

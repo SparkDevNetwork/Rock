@@ -69,6 +69,15 @@ namespace Rock.Search.Person
             }
         }
 
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
+
+            return new PersonService( new RockContext() )
+                .GetByFullNameOrdered( searchTerm, true, false, allowFirstNameSearch, out _);
+        }
+
         /// <summary>
         /// Returns a list of matching people
         /// </summary>

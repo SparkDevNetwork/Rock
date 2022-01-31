@@ -12,6 +12,7 @@
                 </div>
                 <div class="panel-body">
 
+                    <Rock:ModalAlert ID="mdWarningAlert" runat="server" />
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfSettings" runat="server">
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" Label="Amount Range" NumberType="Double" />

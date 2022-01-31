@@ -3,7 +3,7 @@
     <ToolsOptions>
         <ToolsOptionsCategory name="TextEditor" RegisteredName="TextEditor">
             <ToolsOptionsSubCategory name="TypeScript Specific" RegisteredName="TypeScript Specific" PackageName="Microsoft.VisualStudio.LanguageServices.TypeScript.TypeScriptPackage, Microsoft.VisualStudio.LanguageServices.TypeScript, Version=16.0.0.0, Culture=neutral">
-                <PropertyValue name="QuotePreferenceDouble">false</PropertyValue>
+                <PropertyValue name="QuotePreferenceDouble">true</PropertyValue>
                 <PropertyValue name="UseES2015CodeGenerationForModulesThatAreNotPartOfAProject">false</PropertyValue>
                 <PropertyValue name="InsertSpaceAfterConstructor">false</PropertyValue>
                 <PropertyValue name="IncludePackageJsonAutoImportsAuto">true</PropertyValue>
@@ -12,16 +12,16 @@
                 <PropertyValue name="JsxEmitForLooseFiles">2</PropertyValue>
                 <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces">false</PropertyValue>
                 <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingNonemptyBraces">true</PropertyValue>
-                <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis">true</PropertyValue>
+                <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis">false</PropertyValue>
                 <PropertyValue name="FormatOnPaste">true</PropertyValue>
-                <PropertyValue name="IsLinterEnabled">false</PropertyValue>
+                <PropertyValue name="IsLinterEnabled">true</PropertyValue>
                 <PropertyValue name="SemicolonPreference">0</PropertyValue>
                 <PropertyValue name="IncludePackageJsonAutoImportsOff">false</PropertyValue>
                 <PropertyValue name="ShowVirtualProjectsInSolutionExplorerWhenNoSolution">true</PropertyValue>
                 <PropertyValue name="InsertSpaceAfterTypeAssertion">false</PropertyValue>
                 <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingEmptyBraces">true</PropertyValue>
                 <PropertyValue name="InsertSpaceAfterCommaDelimiter">true</PropertyValue>
-                <PropertyValue name="PlaceOpenBraceOnNewLineForFunctions">true</PropertyValue>
+                <PropertyValue name="PlaceOpenBraceOnNewLineForFunctions">false</PropertyValue>
                 <PropertyValue name="ModuleKindForLooseFiles">0</PropertyValue>
                 <PropertyValue name="FormatCompletedLineOnEnter">true</PropertyValue>
                 <PropertyValue name="IncludePackageJsonAutoImports">0</PropertyValue>
@@ -33,16 +33,16 @@
                 <PropertyValue name="UseCommonJSCodeGenerationForModulesThatAreNotPartOfAProject">false</PropertyValue>
                 <PropertyValue name="EnableSuggestionDiagnostics">true</PropertyValue>
                 <PropertyValue name="ShowJSSyntaxErrors">true</PropertyValue>
-                <PropertyValue name="QuotePreference">0</PropertyValue>
+                <PropertyValue name="QuotePreference">2</PropertyValue>
                 <PropertyValue name="ImportModuleSpecifierPreference">1</PropertyValue>
                 <PropertyValue name="QuotePreferenceSingle">false</PropertyValue>
                 <PropertyValue name="UseJsxPreserveForFilesThatAreNotPartOfAProject">false</PropertyValue>
-                <PropertyValue name="InsertSpaceBeforeFunctionParenthesis">true</PropertyValue>
+                <PropertyValue name="InsertSpaceBeforeFunctionParenthesis">false</PropertyValue>
                 <PropertyValue name="ES5ForFilesThatAreNotPartOfAProject">false</PropertyValue>
                 <PropertyValue name="EcmaScriptForFilesThatAreNotPartOfAProject">2</PropertyValue>
                 <PropertyValue name="SemicolonPreferenceIgnore">true</PropertyValue>
                 <PropertyValue name="ImportModuleSpecifierPreferenceProjectRelative">false</PropertyValue>
-                <PropertyValue name="QuotePreferenceAuto">true</PropertyValue>
+                <PropertyValue name="QuotePreferenceAuto">false</PropertyValue>
                 <PropertyValue name="IncludePackageJsonAutoImportsOn">false</PropertyValue>
                 <PropertyValue name="IncludeCompletionsForModuleExports">true</PropertyValue>
                 <PropertyValue name="NoClosedFileDiagnostics">false</PropertyValue>
@@ -57,8 +57,8 @@
                 <PropertyValue name="InsertSpaceAfterFunctionKeywordForAnonymousFunctions">true</PropertyValue>
                 <PropertyValue name="ImportModuleSpecifierPreferenceNonRelative">false</PropertyValue>
                 <PropertyValue name="OnlyAnalyzeProjectsWithOpenDocuments">false</PropertyValue>
-                <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets">true</PropertyValue>
-                <PropertyValue name="PlaceOpenBraceOnNewLineForControlBlocks">true</PropertyValue>
+                <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets">false</PropertyValue>
+                <PropertyValue name="PlaceOpenBraceOnNewLineForControlBlocks">false</PropertyValue>
                 <PropertyValue name="LintClosedFiles">false</PropertyValue>
                 <PropertyValue name="ShowJSErrorsAsWarnings">true</PropertyValue>
                 <PropertyValue name="ImportModuleSpecifierPreferenceRelative">true</PropertyValue>
@@ -95,30 +95,10 @@
                 <PropertyValue name="ShowLineNumbers">true</PropertyValue>
                 <PropertyValue name="WordWrap">false</PropertyValue>
                 <PropertyValue name="IndentSize">4</PropertyValue>
-                <PropertyValue name="PlaceOpenBraceOnNewLineForFunctionsAndClasses">true</PropertyValue>
                 <PropertyValue name="BraceCompletion">true</PropertyValue>
                 <PropertyValue name="ShowHorizontalScrollBar">true</PropertyValue>
                 <PropertyValue name="CutCopyBlankLines">true</PropertyValue>
                 <PropertyValue name="AutoListParams">true</PropertyValue>
-            </ToolsOptionsSubCategory>
-            <ToolsOptionsSubCategory name="JavaScript Specific" RegisteredName="JavaScript Specific" PackageName="Microsoft.VisualStudio.JSLS.JavaScriptLanguageServicePackage, Microsoft.VisualStudio.JSLS, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-                <PropertyValue name="ImplicitReferencesString">Implicit (Windows)|$(VSInstallDir)\JavaScript\References\libhelp.js|$(VSInstallDir)\JavaScript\References\domWindows.js|$(VSInstallDir)\JavaScript\References\underscorefilter.js|$(VSInstallDir)\JavaScript\References\showPlainComments.js;Implicit (Windows 8.1)|$(VSInstallDir)\JavaScript\References\libhelp.js|$(VSInstallDir)\JavaScript\References\sitetypesWindows.js|$(VSInstallDir)\JavaScript\References\domWindows_8.1.js|$(VSInstallDir)\JavaScript\References\underscorefilter.js|$(VSInstallDir)\JavaScript\References\showPlainComments.js;Implicit (Windows Phone 8.1)|$(VSInstallDir)\JavaScript\References\libhelp.js|$(VSInstallDir)\JavaScript\References\sitetypesWindows.js|$(VSInstallDir)\JavaScript\References\domWindowsPhone_8.1.js|$(VSInstallDir)\JavaScript\References\underscorefilter.js|$(VSInstallDir)\JavaScript\References\showPlainComments.js;Implicit (Web)|$(VSInstallDir)\JavaScript\References\libhelp.js|$(VSInstallDir)\JavaScript\References\sitetypesWeb.js|$(VSInstallDir)\JavaScript\References\domWeb.js|$(VSInstallDir)\JavaScript\References\underscorefilter.js|$(VSInstallDir)\JavaScript\References\showPlainComments.js;Dedicated Worker|$(VSInstallDir)\JavaScript\References\libhelp.js|$(VSInstallDir)\JavaScript\References\dedicatedworker.js|$(VSInstallDir)\JavaScript\References\underscorefilter.js|$(VSInstallDir)\JavaScript\References\showPlainComments.js;Generic|$(VSInstallDir)\JavaScript\References\libhelp.js|$(VSInstallDir)\JavaScript\References\underscorefilter.js|$(VSInstallDir)\JavaScript\References\showPlainComments.js;Implicit (Apache Cordova)|$(VSInstallDir)\JavaScript\References\libhelp.js|$(VSInstallDir)\JavaScript\References\sitetypesWeb.js|$(VSInstallDir)\JavaScript\References\domWeb.js|$(VSInstallDir)\JavaScript\References\underscorefilter.js|$(VSInstallDir)\JavaScript\References\showPlainComments.js|$(VSInstallDir)\JavaScript\References\multiDeviceApps.js;</PropertyValue>
-                <PropertyValue name="InsertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis">true</PropertyValue>
-                <PropertyValue name="FormatOnPaste">true</PropertyValue>
-                <PropertyValue name="InsertSpaceAfterCommaDelimiter">true</PropertyValue>
-                <PropertyValue name="PlaceOpenBraceOnNewLineForFunctionsAndClasses">true</PropertyValue>
-                <PropertyValue name="FormatCompletedLineOnEnter">true</PropertyValue>
-                <PropertyValue name="InsertSpaceAfterKeywordsInControlFlowStatements">true</PropertyValue>
-                <PropertyValue name="FormatCompletedBlockOnRightCurlyBrace">true</PropertyValue>
-                <PropertyValue name="InsertSpaceBeforeAndAfterBinaryOperators">true</PropertyValue>
-                <PropertyValue name="DownloadRemoteReferences">false</PropertyValue>
-                <PropertyValue name="FormatCompletedStatementOnSemicolon">true</PropertyValue>
-                <PropertyValue name="OnlyUseTaborEnterToCommit">true</PropertyValue>
-                <PropertyValue name="ShowErrorsAsWarnings">true</PropertyValue>
-                <PropertyValue name="InsertSpaceAfterFunctionKeywordForAnonymousFunctions">true</PropertyValue>
-                <PropertyValue name="PlaceOpenBraceOnNewLineForControlBlocks">true</PropertyValue>
-                <PropertyValue name="ShowSyntaxErrors">true</PropertyValue>
-                <PropertyValue name="InsertSpaceAfterSemicolonInForStatements">true</PropertyValue>
             </ToolsOptionsSubCategory>
             <ToolsOptionsSubCategory name="CSharp" RegisteredName="CSharp" PackageName="Text Management Package">
                 <PropertyValue name="TabSize">4</PropertyValue>

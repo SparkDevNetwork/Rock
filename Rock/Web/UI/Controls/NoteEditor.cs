@@ -611,6 +611,8 @@ namespace Rock.Web.UI.Controls
 
             _avcNoteAttributes.AddEditControls( tempNoteForNewAttributes, Authorization.EDIT, rockPage?.CurrentPerson );
             _hasAttributes = tempNoteForNewAttributes.Attributes.Any();
+
+            this.IsEditing = true;
         }
 
         /// <summary>
@@ -632,6 +634,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            if ( !this.Visible )
+            {
+                return;
+            }
+
             var script =
 $@"Rock.controls.noteEditor.initialize({{
     id: '{this.ClientID}',
@@ -640,8 +647,6 @@ $@"Rock.controls.noteEditor.initialize({{
     isEditing: {this.IsEditing.ToJavaScriptValue()},
 }});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "noteEditor-script" + this.ClientID, script, true );
-
-            var noteType = NoteTypeId.HasValue ? NoteTypeCache.Get( NoteTypeId.Value ) : null;
 
             // Add Note Validation Group here since the ClientID is now resolved
             AddNoteValidationGroup();
@@ -762,9 +767,11 @@ $@"Rock.controls.noteEditor.initialize({{
 
             if ( NoteOptions.DisplayType == NoteDisplayType.Full )
             {
-                if ( NoteOptions.ShowSecurityButton )
+                // Don't show the security button when adding because the ID is not set.
+                if ( NoteOptions.ShowSecurityButton && this.NoteId != 0)
                 {
                     _aSecurity.Attributes["data-title"] = this.Label;
+                    _aSecurity.Attributes["data-entity-id"] = this.NoteId.ToString();
                     _aSecurity.RenderControl( writer );
                 }
             }

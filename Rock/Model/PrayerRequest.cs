@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -266,7 +267,7 @@ namespace Rock.Model
         /// <value>
         /// The request's group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -284,7 +285,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>

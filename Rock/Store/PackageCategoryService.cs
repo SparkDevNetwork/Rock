@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
 using RestSharp;
 
 
@@ -29,8 +28,8 @@ namespace Rock.Store
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageCategoryService"/> class.
         /// </summary>
-        public PackageCategoryService() :base()
-        {}
+        public PackageCategoryService() : base()
+        { }
 
         /// <summary>
         /// Gets the categories.
@@ -47,20 +46,14 @@ namespace Rock.Store
         /// </summary>
         /// <param name="errorResponse">The error response.</param>
         /// <returns></returns>
-        public IEnumerable<PackageCategory> GetCategories(out string errorResponse)
+        public IEnumerable<PackageCategory> GetCategories( out string errorResponse )
         {
             errorResponse = string.Empty;
 
-            // setup REST call
-            var client = new RestClient(_rockStoreUrl);
-            client.Timeout = _clientTimeout;
-            string requestUrl = "api/PackageCategories/List";
-            var request = new RestRequest(requestUrl, Method.GET);
-
             // deserialize to list of packages
-            var response = client.Execute<List<PackageCategory>>(request);
+            var response = ExecuteRestGetRequest<List<PackageCategory>>( $"api/PackageCategories/List" );
 
-            if ( response.ResponseStatus == ResponseStatus.Completed )
+            if ( response.ResponseStatus == ResponseStatus.Completed && response.Data != null )
             {
                 return response.Data;
             }

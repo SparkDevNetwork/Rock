@@ -69,6 +69,11 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 
         /// <summary>
+        /// The benevolence type
+        /// </summary>
+        public const string BENEVOLENCE_TYPE = "A612BF6F-EF9C-4625-AF68-3C6BC4AE7C46";
+
+        /// <summary>
         /// The Block entity type
         /// </summary>
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
@@ -210,6 +215,11 @@ namespace Rock.SystemGuid
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
 
         /// <summary>
+        /// The guid for the <see cref="Rock.Model.History">Rock.Model.History</see> entity.
+        /// </summary>
+        public const string HISTORY = "546D5F43-1184-47C9-8265-2D7BF4E1BCA5";
+
+        /// <summary>
         /// The HTTP module component
         /// </summary>
         public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
@@ -265,6 +275,31 @@ namespace Rock.SystemGuid
         public const string MOBILE_LOGIN_BLOCK_TYPE = "6CE2D3D7-18D8-49FF-8C39-0CA98EB5DEB4";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes
+        /// </summary>
+        public const string MOBILE_CORE_NOTES_BLOCK_TYPE = "2FED71D1-4A60-4EB5-B971-530B5D1FC041";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_TYPE_LIST_BLOCK_TYPE = "F30667AC-5FAA-429C-AD7F-D4B7C0C5C293";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST_BLOCK_TYPE = "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_REQUEST_LIST_BLOCK_TYPE = "E1C52624-898F-46EF-98B0-3C06B6D81654";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF";
+
+        /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests"/>.
         /// </summary>
         public const string MOBILE_MY_PRAYER_REQUESTS_BLOCK_TYPE = "E644DE6A-44CA-48AC-BF33-5429DA8052C6";
@@ -293,6 +328,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView
         /// </summary>
         public const string MOBILE_CMS_STRUCTUREDCONTENTVIEW_BLOCK_TYPE = "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.Search"/>.
+        /// </summary>
+        public const string MOBILE_CORE_SEARCH_BLOCK_TYPE = "F81015CD-EBA9-4358-B930-4F1AB29AF879";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
@@ -335,8 +375,10 @@ namespace Rock.SystemGuid
         public const string MOBILE_EVENTS_PRAYER_SESSION_SETUP_BLOCK_TYPE = "51431866-FF92-433C-8B0F-0F6BBAD9BCE7";
 
         /// <summary>
-        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.AddToGroup
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupRegistration
         /// </summary>
+        [Obsolete( "Use MOBILE_GROUPS_GROUP_REGISTRATION_BLOCK_TYPE instead." )]
+        [RockObsolete( "1.13" )]
         public const string MOBILE_GROUPS_GROUP_ADD_TO_GROUP = "E0664BDC-9583-44F2-AC8D-23AE48603EAB";
 
         /// <summary>
@@ -395,6 +437,21 @@ namespace Rock.SystemGuid
         public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";
 
         /// <summary>
+        /// The obsidian event registration entry
+        /// </summary>
+        public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
+
+        /// <summary>
+        /// The obsidian event control gallery
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_CONTROL_GALLERY = "7B916FEC-9395-4877-9856-427419C50AB5";
+
+        /// <summary>
+        /// The obsidian event field type gallery
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "82F9C803-C998-46B2-B354-783D4D1E3B43";
+
+        /// <summary>
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
@@ -418,6 +475,16 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Workflow.Action.PersonGetCampusTeamMember entity
         /// </summary>
         public const string PERSON_GET_CAMPUS_TEAM_MEMBER = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E";
+
+        /// <summary>
+        /// The GUID for the Rock.Follow.Event.PersonNoteAdded entity
+        /// </summary>
+        public const string PERSON_NOTE_ADDED = "C4AB0F1B-E036-4D14-BFB7-30BAF12D648A";
+
+        /// <summary>
+        /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity
+        /// </summary>
+        public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
 
         /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity
@@ -508,6 +575,11 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.Workflow"/>
         /// </summary>
         public const string WORKFLOW = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowActivity"/>
+        /// </summary>
+        public const string WORKFLOW_ACTIVITY = "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowType"/>

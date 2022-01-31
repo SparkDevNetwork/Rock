@@ -25,7 +25,7 @@ namespace Rock.Financial
     /// Base class for financial provider components. 
     /// </summary>
     [RockObsolete( "1.9" )]
-    [Obsolete( "Use IThreeStepGatewayComponent instead.", false )]
+    [Obsolete( "Use IThreeStepGatewayComponent instead.", true )]
     public abstract class ThreeStepGatewayComponent : GatewayComponent, IThreeStepGatewayComponent
     {
         /// <summary>

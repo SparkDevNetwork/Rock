@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -25,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -164,6 +166,27 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Gets the account protection profile column HTML.
+        /// </summary>
+        /// <param name="accountProtectionProfile">The account protection profile.</param>
+        /// <returns></returns>
+        public string GetAccountProtectionProfileColumnHtml( AccountProtectionProfile accountProtectionProfile )
+        {
+            var cssMap = new Dictionary<AccountProtectionProfile, string>
+            {
+                { AccountProtectionProfile.Extreme, "danger" },
+                { AccountProtectionProfile.High, "primary" },
+                { AccountProtectionProfile.Medium, "warning" },
+                { AccountProtectionProfile.Low, "success" }
+            };
+
+            var css = $"label label-{cssMap[accountProtectionProfile]}";
+
+
+            return $"<span class='{css}'>{accountProtectionProfile.ConvertToString()}</span>";
+        }
+
+        /// <summary>
         /// Gets the person view onclick.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -174,16 +197,6 @@ namespace RockWeb.Blocks.Crm
 
             // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
             return string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
-        }
-
-        /// <summary>
-        /// Gets the campus.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public List<Campus> GetCampuses( Person person )
-        {
-            return person.GetFamilies().Select( a => a.Campus ).ToList();
         }
 
         /// <summary>
@@ -211,6 +224,13 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGrid()
         {
+            var hasMultipleCampuses = CampusCache.All().Count( c => c.IsActive ?? true ) > 1;
+            if ( !hasMultipleCampuses )
+            {
+                var campustColumn = gList.Columns.OfType<RockBoundField>().First( a => a.DataField == "Campus" );
+                campustColumn.Visible = false;
+            }
+
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
             var personService = new PersonService( rockContext );
@@ -234,13 +254,14 @@ namespace RockWeb.Blocks.Crm
             }
 
             var qry = qryPersonDuplicates.Select( s => new
-                {
-                    PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
-                    PersonDuplicateId = s.Id,
-                    DuplicatePerson = s.DuplicatePersonAlias.Person,
-                    s.ConfidenceScore,
-                    IsComparePerson = true
-                } );
+            {
+                PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
+                PersonDuplicateId = s.Id,
+                DuplicatePerson = s.DuplicatePersonAlias.Person,
+                s.ConfidenceScore,
+                IsComparePerson = true,
+                Campus = s.DuplicatePersonAlias.Person.PrimaryCampus.Name
+            } );
 
             double? confidenceScoreLow = GetAttributeValue( AttributeKey.ConfidenceScoreLow ).AsDoubleOrNull();
             if ( confidenceScoreLow.HasValue )
@@ -253,7 +274,7 @@ namespace RockWeb.Blocks.Crm
             var gridList = qry.ToList();
 
             // put the person we are comparing the duplicates to at the top of the list
-            var person = personService.Get( personId );
+            var person = personService.Queryable().Include(p => p.PrimaryCampus).Where(p => p.Id == personId ).FirstOrDefault();
             if ( person != null )
             {
                 gridList.Insert(
@@ -261,10 +282,11 @@ namespace RockWeb.Blocks.Crm
                     new
                     {
                         PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
-                    PersonDuplicateId = 0,
+                        PersonDuplicateId = 0,
                         DuplicatePerson = person,
                         ConfidenceScore = ( double? ) null,
-                        IsComparePerson = false
+                        IsComparePerson = false,
+                        Campus = person.PrimaryCampus?.Name
                     } );
 
                 nbNoDuplicatesMessage.Visible = gridList.Count == 1;
@@ -290,7 +312,7 @@ namespace RockWeb.Blocks.Crm
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var person = e.Row.DataItem.GetPropertyValue( "DuplicatePerson" );
-                bool isComparePerson = (bool)e.Row.DataItem.GetPropertyValue( "IsComparePerson" );
+                bool isComparePerson = ( bool ) e.Row.DataItem.GetPropertyValue( "IsComparePerson" );
 
                 // If this is the main person for the compare, select them, but then hide the checkbox. 
                 var row = e.Row;

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-
 using Rock.Bus.Queue;
 using Rock.Logging;
+using Rock.Model;
+using Rock.Utility.Settings;
 
 namespace Rock.Bus.Message
 {
@@ -72,7 +72,7 @@ namespace Rock.Bus.Message
         public string Region { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the cache type.
+        /// Gets or sets the <seealso cref="System.Type.AssemblyQualifiedName"/> type name of the cache type.
         /// </summary>
         /// <value>
         /// The name of the cache type.
@@ -88,6 +88,48 @@ namespace Rock.Bus.Message
         public string SenderNodeName { get; set; }
 
         /// <summary>
+        /// Gets as debug string.
+        /// </summary>
+        /// <returns></returns>
+        internal string ToDebugString()
+        {
+            string debugString;
+            
+
+            if ( this.CacheTypeName.IsNotNullOrWhiteSpace() )
+            {
+                try
+                {
+                    debugString = $"CacheType: {System.Type.GetType( this.CacheTypeName, false )}. (";
+                }
+                catch
+                {
+                    debugString = $"CacheType: {this.CacheTypeName}. (";
+                }
+            }
+            else
+            {
+                debugString = $"CacheType (";
+            }
+
+            if ( this.Key.IsNotNullOrWhiteSpace() )
+            {
+                debugString += $"Key: {this.Key}";
+            }
+            else
+            {
+                debugString += $"Key: null";
+            }
+
+            if ( this.Region.IsNotNullOrWhiteSpace() )
+            {
+                debugString += $", Region: {this.Region}";
+            }
+
+            return debugString + ")";
+        }
+
+        /// <summary>
         /// Publishes the specified entity.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -95,22 +137,36 @@ namespace Rock.Bus.Message
         /// <param name="region">The region.</param>
         public static void Publish<T>( string key = null, string region = null )
         {
-            if ( !RockMessageBus.IsRockStarted )
-            {
-                // Don't publish cache events until Rock is all the way started
-                return;
-            }
-
             var message = new CacheWasUpdatedMessage
             {
                 Key = key,
                 Region = region,
-                CacheTypeName = typeof( T ).AssemblyQualifiedName
+                CacheTypeName = typeof( T )?.AssemblyQualifiedName,
+                SenderNodeName = RockMessageBus.NodeName
             };
+
+            if ( !RockMessageBus.IsRockStarted )
+            {
+                // Don't publish cache events until Rock is all the way started
+                var logMessage = $"Cache Update message was not published because Rock is not fully started yet. {message.ToDebugString()}.";
+
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+                if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
+                {
+                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    ExceptionLogService.LogException( new BusException( logMessage ) );
+                }
+                else
+                {
+                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                }
+
+                return;
+            }
 
             _ = RockMessageBus.PublishAsync<CacheEventQueue, CacheWasUpdatedMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published Cache Update message. Key: {message.Key}, Region: {message.Region}, CacheTypeName: {message.CacheTypeName}." );
+            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published Cache Update message. {message.ToDebugString()}." );
         }
     }
 }

@@ -32,6 +32,7 @@ using Attribute = Rock.Model.Attribute;
 using Rock.Security;
 using Rock.Web.Cache;
 using Newtonsoft.Json;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.WorkFlow
 {
@@ -41,7 +42,7 @@ namespace RockWeb.Blocks.WorkFlow
 
     [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type." )]
     [LinkedPage( "Detail Page", "Page used to display details about a workflow." )]
-    [WorkflowTypeField("Default WorkflowType", "The default workflow type to use. If provided the query string will be ignored.")]
+    [WorkflowTypeField( "Default WorkflowType", "The default workflow type to use. If provided the query string will be ignored." )]
     public partial class WorkflowList : RockBlock, ICustomGridColumns
     {
         #region Fields
@@ -49,6 +50,7 @@ namespace RockWeb.Blocks.WorkFlow
         private bool _canView = false;
         private bool _canEdit = false;
         private WorkflowType _workflowType = null;
+        BootstrapButton _bbtnDelete = new BootstrapButton();
 
         #endregion
 
@@ -99,6 +101,10 @@ namespace RockWeb.Blocks.WorkFlow
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlSettings );
 
+                _bbtnDelete.Text = "Delete";
+                _bbtnDelete.Click += new EventHandler( bbtnDelete_Click );
+                _bbtnDelete.CssClass = "btn btn-xs btn-default btn-grid-custom-action pull-left";
+                gWorkflows.Actions.AddCustomActionControl( _bbtnDelete );
                 gWorkflows.DataKeyNames = new string[] { "Id" };
                 gWorkflows.Actions.ShowAdd = _canEdit;
                 gWorkflows.Actions.AddClick += gWorkflows_Add;
@@ -116,7 +122,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( !string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
                 {
-                    lHeadingIcon.Text = string.Format("<i class='{0}'></i>", _workflowType.IconCssClass);
+                    lHeadingIcon.Text = string.Format( "<i class='{0}'></i>", _workflowType.IconCssClass );
                 }
             }
             else
@@ -134,6 +140,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
+            nbResult.Visible = false;
             if ( !Page.IsPostBack && _canView )
             {
                 SetFilter();
@@ -154,11 +161,14 @@ namespace RockWeb.Blocks.WorkFlow
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            if (!string.IsNullOrWhiteSpace(GetAttributeValue("DefaultWorkflowType"))) {
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
+            {
                 Guid workflowTypeGuid = Guid.Empty;
                 Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
                 _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
-            } else {
+            }
+            else
+            {
                 int workflowTypeId = 0;
                 workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
                 _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
@@ -365,6 +375,44 @@ namespace RockWeb.Blocks.WorkFlow
             }
         }
 
+        /// <summary>
+        /// Marks the selected workflow to delete.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void bbtnDelete_Click( object sender, EventArgs e )
+        {
+            var workflowsSelected = new List<int>();
+            gWorkflows.SelectedKeys.ToList().ForEach( b => workflowsSelected.Add( b.ToString().AsInteger() ) );
+
+            if ( !workflowsSelected.Any() )
+            {
+                nbResult.Text = string.Format( "At least one workflow must be selected." );
+                nbResult.NotificationBoxType = NotificationBoxType.Warning;
+                nbResult.Visible = true;
+                return;
+            }
+
+            var deleteWorkflowsMsg = new DeleteWorkflows.Message
+            {
+                WorkflowIds = workflowsSelected
+            };
+
+            deleteWorkflowsMsg.Send();
+            BindGrid();
+            mdAlert.Show();
+        }
+
+        /// <summary>
+        /// Handles the OkClick event of the mdAlert control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAlert_OkClick( object sender, EventArgs e )
+        {
+            Response.Redirect( Request.RawUrl );
+        }
+
         #endregion
 
         #region Methods
@@ -394,13 +442,13 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             // no items were selected (not good)
-            if (!selectedItems.Any())
+            if ( !selectedItems.Any() )
             {
                 return "None";
             }
 
             // Only one item was selected, return it's value
-            if (selectedItems.Count() == 1)
+            if ( selectedItems.Count() == 1 )
             {
                 return selectedItems[0];
             }
@@ -433,7 +481,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             string state = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( "State" ) );
-            foreach( ListItem li in cblState.Items )
+            foreach ( ListItem li in cblState.Items )
             {
                 li.Selected = string.IsNullOrWhiteSpace( state ) || state.Contains( li.Value );
             }
@@ -485,7 +533,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         if ( control is IRockControl )
                         {
-                            var rockControl = (IRockControl)control;
+                            var rockControl = ( IRockControl ) control;
                             rockControl.Label = attribute.Name;
                             rockControl.Help = attribute.Description;
                             phAttributeFilters.Controls.Add( control );
@@ -555,7 +603,7 @@ namespace RockWeb.Blocks.WorkFlow
             stateField.HtmlEncode = false;
             stateField.OnFormatDataValue += ( sender, e ) =>
             {
-                if ( (bool)e.DataValue )
+                if ( ( bool ) e.DataValue )
                 {
                     e.FormattedValue = "<span class='label label-default'>Completed</span>";
                 }
@@ -584,6 +632,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         /// <summary>
         /// Binds the grid.
+        /// 
         /// </summary>
         private void BindGrid()
         {
@@ -725,6 +774,15 @@ namespace RockWeb.Blocks.WorkFlow
                 } );
 
                 gWorkflows.SetLinqDataSource( qryGrid );
+                if ( qryGrid.Count() == 0 )
+                {
+                    _bbtnDelete.Visible = false;
+                }
+                else
+                {
+                    _bbtnDelete.Visible = true;
+                }
+
                 gWorkflows.DataBind();
             }
             else

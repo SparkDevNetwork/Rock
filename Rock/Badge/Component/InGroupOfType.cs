@@ -117,7 +117,6 @@ $.ajax({{
                     var restGroup = data.GroupList.length - 5;
                     labelText = labelText + ' <br/> (...and ' + restGroup.toString() + ' more)';
                 }}
-                labelText = '<p>' + labelText + '</p>';
 
 
             }} else {{

@@ -39,7 +39,7 @@ namespace Rock.Net
         /// The browser information is lazy loaded since it can take a few
         /// milliseconds to parse the regex and is only rarely used.
         /// </summary>
-        private Lazy<ClientInfo> _browser;
+        private readonly Lazy<ClientInfo> _browser;
 
         #endregion
 
@@ -76,7 +76,7 @@ namespace Rock.Net
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientInformation"/> class.
         /// </summary>
-        /// <param name="request">The request to initalize from.</param>
+        /// <param name="request">The request to initialize from.</param>
         internal ClientInformation( HttpRequest request )
         {
             //
@@ -107,7 +107,7 @@ namespace Rock.Net
             }
 
             UserAgent = request.UserAgent;
-            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.UserAgent ) );
+            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Rock.Net
             }
 
             UserAgent = request.Headers.UserAgent.ToString();
-            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.Headers.UserAgent.ToString() ) );
+            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
         }
 
         #endregion

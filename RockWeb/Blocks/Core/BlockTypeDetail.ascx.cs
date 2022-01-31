@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Block Type Detail" )]
     [Category( "Core" )]
     [Description( "Shows the details of a selected block type." )]
-    public partial class BlockTypeDetail : RockBlock, IDetailBlock
+    public partial class BlockTypeDetail : RockBlock
     {
         #region Control Methods
 
@@ -224,7 +224,13 @@ namespace RockWeb.Blocks.Core
             }
 
             string blockPath = Request.MapPath( blockType.Path );
-            if ( !System.IO.File.Exists( blockPath ) )
+
+            if ( blockType.Path == null && blockType.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( blockType.EntityTypeId.Value );
+                lblStatus.Text = string.Format( "<span class='label label-info'>{0}</span>", entityType.Name );
+            }
+            else if ( !System.IO.File.Exists( blockPath ) )
             {
                 lblStatus.Text = string.Format( "<span class='label label-danger'>The file '{0}' [{1}] does not exist.</span>", blockType.Path, blockType.Guid );
             }

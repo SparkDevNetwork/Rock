@@ -133,6 +133,10 @@ namespace Rock.SystemKey
         /// </summary>
         public const string CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES = "core_checkin_AchievementTypes";
 
+        /// <summary>
+        /// Attribute key for grouptypes location selection strategy (Ask, Fill in order, balance).
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY = "core_LocationSelectionStrategy";
         #endregion
 
         #region Display

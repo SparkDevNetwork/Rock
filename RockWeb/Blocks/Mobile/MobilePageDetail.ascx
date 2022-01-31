@@ -20,7 +20,9 @@
                 <h3 class="panel-title"><i class="fa fa-mobile"></i> <asp:Literal ID="lPageName" runat="server" /></h3>
 
                 <div class="panel-labels">
-                    <button id="btnCopyToClipboard" runat="server" 
+                    <Rock:HighlightLabel ID="hlInternalWebPage" runat="server" Text="Internal Web Page" LabelType="Warning" />
+                    <Rock:HighlightLabel ID="hlExternalWebPage" runat="server" Text="External Web Page" LabelType="Warning" />
+                    <button id="btnCopyToClipboard" runat="server"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Page Guid to Clipboard"
                         class="btn btn-info btn-xs btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Page Guid to Clipboard');return false;">
@@ -34,7 +36,7 @@
                     <asp:Literal ID="ltDetails" runat="server" />
                 </div>
 
-                <div class="actions margin-t-md">
+                <div class="actions">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
                     <asp:LinkButton ID="lbBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="lbBack_Click" CausesValidation="false" />
 
@@ -79,49 +81,71 @@
                 <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbCssClass" runat="server"
-                                              SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass"
-                                              Label="Body CSS Class"
-                                              Help="The CSS class to add to the page." />
+                            <Rock:RockDropDownList ID="ddlPageType" runat="server"
+                                Label="Page Type"
+                                Required="true"
+                                ValidationGroup="EditPage"
+                                Help="The type of page to be displayed. A native page is controlled by the blocks on the page. A web page will send the user to a web browser to view the page url."
+                                OnSelectedIndexChanged="ddlPageType_SelectedIndexChanged"
+                                AutoPostBack="true" />
                         </div>
 
                         <div class="col-md-6">
-                            <asp:PlaceHolder ID="phContextPanel" runat="server">
-                                <fieldset>
-                                    <h4>Context Parameters</h4>
-                                    <p>
-                                        There are one or more blocks on this page that can load content based on a 'context' parameter.  
-                                        Please enter the route parameter name or query string parameter name that will contain the id for 
-                                        each of the objects below.
-                                    </p>
-                                    <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
-                                </fieldset>
-                            </asp:PlaceHolder>
+                            <Rock:UrlLinkBox ID="tbWebPageUrl" runat="server"
+                                Label="Page URL"
+                                Required="true"
+                                ValidationGroup="EditPage"
+                                Help="The URL that the user will be sent to when opening this page." />
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbHideNavigationBar" runat="server" Label="Hide Navigation Bar" Help="Hides the Navigation Bar and makes the Status Bar background color transparent. Page content will reach to the top edge of the screen." />
+                    <asp:Panel ID="pnlNativePageAdvancedSettings" runat="server">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbCssClass" runat="server"
+                                                  SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass"
+                                                  Label="Body CSS Class"
+                                                  Help="The CSS class to add to the page." />
+                            </div>
+
+                            <div class="col-md-6">
+                                <asp:PlaceHolder ID="phContextPanel" runat="server">
+                                    <fieldset>
+                                        <h4>Context Parameters</h4>
+                                        <p>
+                                            There are one or more blocks on this page that can load content based on a 'context' parameter.
+                                            Please enter the route parameter name or query string parameter name that will contain the id for
+                                            each of the objects below.
+                                        </p>
+                                        <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
+                                    </fieldset>
+                                </asp:PlaceHolder>
+                            </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbShowFullScreen" runat="server" Label="Show Full Screen" Help="When enabled the page will replace the entire shell to prevent the user from navigating via the flyout or tab bar." />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbHideNavigationBar" runat="server" Label="Hide Navigation Bar" Help="Hides the Navigation Bar and makes the Status Bar background color transparent. Page content will reach to the top edge of the screen." />
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbShowFullScreen" runat="server" Label="Show Full Screen" Help="When enabled the page will replace the entire shell to prevent the user from navigating via the flyout or tab bar." />
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbAutoRefresh" runat="server" Label="Auto Refresh" Help="When enabled the page will automatically reload whenever it becomes visible." />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbAutoRefresh" runat="server" Label="Auto Refresh" Help="When enabled the page will automatically reload whenever it becomes visible." />
+                            </div>
                         </div>
-                    </div>
 
-                    <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
+                        <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
-                    <Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Page Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements on this page." />
+                        <Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Page Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements on this page." />
+                    </asp:Panel>
                 </Rock:PanelWidget>
 
-                <div class="actions margin-t-md">
+                <div class="actions">
                     <asp:LinkButton ID="lbSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbSave_Click" ValidationGroup="EditPage" />
                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" />
                 </div>
@@ -135,7 +159,7 @@
 
             <div class="panel-body padding-all-none">
                 <div class="row row-eq-height row-no-gutters">
-                    <div class="col-lg-3 col-sm-4 hidden-xs js-mobile-block-types" style="background: #f3f3f3;">
+                    <div class="col-lg-3 col-sm-4 hidden-xs mobile-block-types js-mobile-block-types" style="background: #f3f3f3;">
                         <Rock:RockDropDownList ID="ddlBlockTypeCategory" runat="server" OnSelectedIndexChanged="ddlBlockTypeCategory_SelectedIndexChanged" AutoPostBack="true" CausesValidation="false" />
                         <ul class="components-list list-unstyled">
                             <li>
@@ -166,14 +190,12 @@
                                         <div class="drag-container js-drag-container list-unstyled panel-body mobile-pages-container" style="min-height: 100px;">
                                             <asp:Repeater ID="rptrBlocks" runat="server" OnItemCommand="rptrBlocks_ItemCommand" OnItemDataBound="rptrBlocks_ItemDataBound">
                                                 <ItemTemplate>
-                                                    <div class="panel panel-widget">
+                                                    <div class="panel panel-widget collapsed">
                                                         <div class="panel-heading js-block clearfix" data-block-id="<%# Eval( "Id" ) %>">
 
-                                                            <div class="pull-left">
-                                                                <i class="<%# Eval( "IconCssClass" ) %>"></i>
-                                                            </div>
-                                                                
-                                                            <div class="pull-left margin-l-md leading-snug">
+                                                            <i class="<%# Eval( "IconCssClass" ) %>"></i>
+
+                                                            <div class="margin-l-md leading-snug">
                                                                 <span><%# Eval( "Name" ) %></span> <br /><small class="margin-t-none"><%# Eval( "Type" ) %></small>
                                                             </div>
 
@@ -186,10 +208,10 @@
                                                                 <asp:PlaceHolder ID="phAdminButtons" runat="server" />
                                                             </div>
 
-                                                            <div class="pull-right padding-t-sm margin-r-lg">
+                                                            <div class="pull-right margin-r-lg">
                                                                 <asp:PlaceHolder ID="phSettings" runat="server" />
                                                             </div>
-                                                            
+
                                                         </div>
                                                     </div>
                                                 </ItemTemplate>
@@ -241,9 +263,11 @@
         // Setup dragula to allow re-ordering within the actions.
         //
         var reorderOldIndex = -1;
+        var reorderOldZone = "";
         var reorderDrake = dragula(componentContainers, {
             moves: function (el, source, handle, sibling) {
                 reorderOldIndex = $(source).children().index(el);
+                reorderOldZone = $(el).closest('.js-block-zone').data('zone-name');
                 return $(handle).hasClass('js-reorder');
             },
             revertOnSpill: true
@@ -253,7 +277,7 @@
             var newIndex = $(target).children().index(el);
             var zone = $(el).closest('.js-block-zone').data('zone-name');
             var blockId = $(el).find('.js-block').data('block-id');
-            if (reorderOldIndex !== newIndex) {
+            if (reorderOldIndex !== newIndex || reorderOldZone !== zone) {
                 var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'reorder-block|" + zone + "|" + blockId + "|" + newIndex + "')";
                 window.location = postback;
             }

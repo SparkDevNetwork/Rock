@@ -45,6 +45,12 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
+    [LinkedPage(
+        "Add Page",
+        IsRequired = false,
+        Key = AttributeKey.AddPage,
+        Order = 1 )]
+
     public partial class MediaElementList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Attribute Keys
@@ -55,6 +61,8 @@ namespace RockWeb.Blocks.Cms
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+
+            public const string AddPage = "AddPage";
         }
 
         #endregion Attribute Keys
@@ -235,7 +243,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gElementList_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.MediaElementId, 0, PageParameterKey.MediaFolderId, _mediaFolder.Id );
+            var pageKey = GetAttributeValue( AttributeKey.AddPage ).IsNotNullOrWhiteSpace() ? AttributeKey.AddPage : AttributeKey.DetailPage;
+
+            NavigateToLinkedPage( pageKey, PageParameterKey.MediaElementId, 0, PageParameterKey.MediaFolderId, _mediaFolder.Id );
         }
 
         /// <summary>

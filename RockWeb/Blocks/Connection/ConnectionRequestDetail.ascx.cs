@@ -13,16 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Data.Entity;
 using Newtonsoft.Json;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -31,7 +32,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
 
 namespace RockWeb.Blocks.Connection
 {
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Connection
         Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         Order = 7 )]
     #endregion Block Attributes
-    public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
+    public partial class ConnectionRequestDetail : PersonBlock
     {
         #region Attribute Keys
 
@@ -695,7 +695,8 @@ namespace RockWeb.Blocks.Connection
 
                     ddlTransferOpportunity.Items.Clear();
                     foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
-                        .OrderBy( o => o.Name ) )
+                        .OrderBy( o => o.Order )
+                        .ThenBy( o => o.Name ) )
                     {
                         ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     }
@@ -895,6 +896,7 @@ namespace RockWeb.Blocks.Connection
                         nbTranferFailed.Visible = true;
                         return;
                     }
+
                     nbTranferFailed.Visible = false;
 
                     var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
@@ -1621,7 +1623,7 @@ namespace RockWeb.Blocks.Connection
         {
             bool editAllowed = false;
 
-            // autoexpand the person picker if this is an add
+            // Auto-expand the person picker if this is an add.
             this.Page.ClientScript.RegisterStartupScript(
                 this.GetType(),
                 "StartupScript",
@@ -2050,8 +2052,7 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            // Comments
-            tbComments.Text = connectionRequest.Comments; //.SanitizeHtml();
+            tbComments.Text = connectionRequest.Comments;
 
             // Status
             rblStatus.Items.Clear();

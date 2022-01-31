@@ -207,6 +207,8 @@ namespace Rock.Web.UI.Controls
                 toggle.OffCssClass = toggleField.OffCssClass;
 
                 //toggle.EnableViewState = true; // TODO remove if unnecessary
+                // Use d-flex to prevent the toggle from ever wrapping inside the grid.
+                toggle.ButtonGroupCssClass = "d-flex";
                 toggle.ActiveButtonCssClass = toggleField.ActiveButtonCssClass;
                 toggle.ButtonSizeCssClass = toggleField.ButtonSizeCssClass;
                 toggle.CheckedChanged += toggle_CheckedChanged;

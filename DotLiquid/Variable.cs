@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -83,10 +84,13 @@ namespace DotLiquid
 #else
 					outputString = string.Join(string.Empty, ((IEnumerable)output).Cast<object>());
 #endif
-				else if (output is bool)
-					outputString = output.ToString().ToLower();
-				else
-					outputString = output.ToString();
+                else if (output is bool)
+                    outputString = output.ToString().ToLower();
+                else if (output is DateTimeOffset dto)
+                    // Change the default output for a DateTimeOffset to omit the timezone offset.
+                    outputString = dto.ToString( "G" );
+                else
+                    outputString = output.ToString();
 				result.Write(outputString);
 			}
 		}
@@ -98,7 +102,10 @@ namespace DotLiquid
 
 			object output = context[Name];
 
-			Filters.ToList().ForEach(filter =>
+            // Apply any required transforms to the context value prior to passing it to the filter pipeline.
+            output = ApplyValueTypeTransforms( context, output );
+
+            Filters.ToList().ForEach(filter =>
 			{
 				List<object> filterArgs = filter.Arguments.Select(a => context[a]).ToList();
 				try
@@ -118,12 +125,42 @@ namespace DotLiquid
 			return output;
 		}
 
-		/// <summary>
-		/// Primarily intended for testing.
-		/// </summary>
-		/// <param name="context"></param>
-		/// <returns></returns>
-		internal object Render(Context context)
+        /// <summary>
+        /// Apply custom transformations to the specified value.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private object ApplyValueTypeTransforms( Context context, object value )
+        {
+            if ( value == null )
+            {
+                return null;
+            }
+
+            // Check if this context has a ValueTypeTranformer defined for the value.
+            var transformer = context.GetValueTypeTransformer( value.GetType() );
+
+            if ( transformer == null )
+            {
+                // If the context doesn't define a ValueTypeTranformer for the type, check for a global transformer.
+                transformer = Template.GetValueTypeTransformer( value.GetType() );
+            }
+
+            if ( transformer != null )
+            {
+                return transformer( value );
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Primarily intended for testing.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        internal object Render(Context context)
 		{
 			return RenderInternal(context);
 		}

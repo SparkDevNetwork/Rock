@@ -213,7 +213,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get => ViewState["ValidationGroup"] as string ?? "DefinedValueValidationGroup";
+            get => ViewState["ValidationGroup"] as string ?? $"{this.ClientID}_DefinedValueValidationGroup";
             set => ViewState["ValidationGroup"] = value;
         }
 
@@ -480,6 +480,20 @@ namespace Rock.Web.UI.Controls
             if ( this.Parent is DefinedValuePickerWithAdd )
             {
                 var picker = this.Parent as DefinedValuePickerWithAdd;
+
+                if ( picker.AttributeId != null )
+                {
+                    // Save the updated list to the AttributeQualifier
+                    var attributeQualifierService = new AttributeQualifierService( rockContext );
+                    var selectableValuesAttributeQualifier = attributeQualifierService.Queryable().Where( q => q.AttributeId == picker.AttributeId && q.Key == "SelectableDefinedValuesId" ).FirstOrDefault();
+                    if ( selectableValuesAttributeQualifier != null && selectableValuesAttributeQualifier.Value.IsNotNullOrWhiteSpace() )
+                    {
+                        selectableValuesAttributeQualifier.Value += $",{definedValue.Id}";
+                        rockContext.SaveChanges();
+
+                        picker.SelectableDefinedValuesId = selectableValuesAttributeQualifier.Value.Split( ',' ).AsIntegerList().ToArray();
+                    }
+                }
 
                 if ( this.IsMultiSelection )
                 {

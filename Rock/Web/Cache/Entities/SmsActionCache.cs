@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
+using Rock.Lava;
 
 namespace Rock.Web.Cache
 {
@@ -93,7 +94,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The field.
         /// </value>
-		[LavaInclude]
+		[LavaVisible]
         public SmsActionComponent SmsActionComponent
         {
             get

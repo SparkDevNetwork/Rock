@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 using Rock.Data;
@@ -25,6 +26,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a Workflow after a Scheduled Attendance record is Declined if the GroupType has a Cancellation Workflow configured
     /// </summary>
+    [Obsolete( "Use LaunchGroupScheduleCancellationWorkflow Task instead." )]
+    [RockObsolete( "1.13" )]
     public class GroupScheduleCancellationTransaction : ITransaction
     {
         /// <summary>
@@ -82,6 +85,7 @@ namespace Rock.Transactions
             if (!attendance.IsScheduledPersonDeclined())
             {
                 // attendance record wasn't actually canceled, or isn't canceled anymore, so nothing to do
+                return;
             }
 
             var workflowType = WorkflowTypeCache.Get( attendanceInfo.ScheduleCancellationWorkflowTypeId.Value );

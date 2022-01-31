@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 
@@ -35,24 +36,12 @@ namespace Rock.Web.Cache
     /// <seealso cref="EntityCache{T, TT}" />
     /// <seealso cref="Rock.Security.ISecured" />
     /// <seealso cref="Rock.Attribute.IHasAttributes" />
-    /// <seealso cref="Rock.Lava.ILiquidizable" />
+    /// <seealso cref="Rock.Lava.ILavaDataDictionary" />
     [Serializable]
     [DataContract]
-    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable where T : IEntityCache, new()
+    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, ILavaDataDictionary, Rock.Lava.ILiquidizable where T : IEntityCache, new()
         where TT : Model<TT>, new()
     {
-
-        /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Use SetFromEntity instead", true )]
-        public virtual void CopyFromModel( Rock.Data.IEntity model )
-        {
-            this.SetFromEntity( model );
-        }
-
         /// <summary>
         /// Set's the cached objects properties from the model/entities properties.
         /// </summary>
@@ -103,7 +92,7 @@ namespace Rock.Web.Cache
         /// The type id.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual int TypeId { get; private set; }
 
         /// <summary>
@@ -112,7 +101,7 @@ namespace Rock.Web.Cache
         /// qualified name of the class.
         /// </summary>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual string TypeName { get; private set; }
 
         /// <summary>
@@ -137,7 +126,7 @@ namespace Rock.Web.Cache
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ISecured ParentAuthority
         {
             get
@@ -155,14 +144,14 @@ namespace Rock.Web.Cache
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ISecured ParentAuthorityPre => null;
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, string> SupportedActions { get; private set; } = new Dictionary<string, string>();
 
         /// <summary>
@@ -238,7 +227,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attributes.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public Dictionary<string, AttributeCache> Attributes
         {
             get
@@ -279,14 +268,14 @@ namespace Rock.Web.Cache
         /// The attribute ids
         /// </summary>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
@@ -295,7 +284,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute defaults.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, string> AttributeValueDefaults => null;
 
         /// <summary>
@@ -376,60 +365,9 @@ namespace Rock.Web.Cache
             }
         }
 
-        /// <summary>
-        /// Reloads the attribute values.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed. The Attributes will get reloaded automatically.", true )]
-        public virtual void ReloadAttributeValues()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var service = new Service<TT>( rockContext );
-                var model = service.Get( Id );
-
-                if ( model == null ) return;
-
-                model.LoadAttributes( rockContext );
-
-                AttributeValues = model.AttributeValues;
-                Attributes = model.Attributes;
-            }
-        }
-
-        /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
-        public void LoadAttributes( RockContext rockContext )
-        {
-            ReloadAttributeValues();
-        }
-
-        /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
-        public void LoadAttributes()
-        {
-            ReloadAttributeValues();
-        }
-
         #endregion
 
-        #region ILiquidizable Implementation
-
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this;
-        }
+        #region ILavaDataDictionary Implementation
 
         /// <summary>
         /// Gets the available keys (for debugging info).
@@ -437,8 +375,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaIgnore]
-        public virtual List<string> AvailableKeys => ( from propInfo in GetType().GetProperties() where propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() select propInfo.Name ).ToList();
+        [LavaHidden]
+        public virtual List<string> AvailableKeys => ( from propInfo in GetType().GetProperties() where propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any() select propInfo.Name ).ToList();
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -448,7 +386,20 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaIgnore]
+        public object GetValue( string key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
         public virtual object this[object key]
         {
             get
@@ -461,7 +412,7 @@ namespace Rock.Web.Cache
                 }
 
                 var propInfo = GetType().GetProperty( key.ToStringSafe() );
-                if ( propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() )
+                if ( propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any() )
                 {
                     var propValue = propInfo.GetValue( this, null );
                     return ( propValue as Guid? )?.ToString() ?? propValue;
@@ -520,7 +471,7 @@ namespace Rock.Web.Cache
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public virtual bool ContainsKey( object key )
+        public virtual bool ContainsKey( string key )
         {
             string attributeKey = key.ToStringSafe();
 
@@ -530,7 +481,7 @@ namespace Rock.Web.Cache
             }
 
             var propInfo = GetType().GetProperty( key.ToStringSafe() );
-            if ( propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() )
+            if ( propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any() )
             {
                 return true;
             }
@@ -555,6 +506,44 @@ namespace Rock.Web.Cache
             var attribute = Attributes[attributeKey];
 
             return attribute.IsAuthorized( Authorization.VIEW, null );
+        }
+
+        #endregion
+
+        #region ILiquidizable Implementation
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public virtual bool ContainsKey( object key )
+        {
+            return ContainsKey( key.ToStringSafe() );
         }
 
         #endregion

@@ -31,6 +31,7 @@ using Ical.Net.DataTypes;
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -197,7 +198,7 @@ namespace Rock.Model
         /// <value>
         /// The weekly time of day in friendly text or an empty string if not valid.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public string WeeklyTimeOfDayText => WeeklyTimeOfDay?.ToTimeString() ?? string.Empty;
 
         /*
@@ -210,12 +211,14 @@ namespace Rock.Model
         */
 
         /// <summary>
-        /// Gets a value indicating whether this schedule is currently active.
+        /// Gets a value indicating whether this schedule is currently active. This
+        /// is based on <see cref="RockDateTime.Now" />. Use <see cref="Campus.CurrentDateTime"/> and <see cref="WasScheduleActive(DateTime)"/>
+        /// to get this based on the Campus's current datetime. 
         /// </summary>
         /// <value>
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool IsScheduleActive
         {
             get
@@ -225,12 +228,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a value indicating whether check-in is currently active for this Schedule.
+        /// Gets a value indicating whether check-in is currently active for this schedule. This
+        /// is based on <see cref="RockDateTime.Now" />. Use <see cref="Campus.CurrentDateTime"/> and <see cref="WasCheckInActive(DateTime)"/>
+        /// to get this based on the Campus's current datetime. 
         /// </summary>
         /// <value>
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool IsCheckInActive
         {
             get
@@ -239,23 +244,21 @@ namespace Rock.Model
             }
         }
 
-        #endregion
-
         /// <summary>
-        /// Gets a value indicating whether this schedule (or it's check-in window) is currently active.
+        /// Gets the next start time based on <see cref="RockDateTime.Now" />. Use <see cref="Campus.CurrentDateTime"/>
+        /// and <see cref="GetNextStartDateTime(DateTime)"/> to get this based on the Campus's current datetime. 
         /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is schedule or checkin active; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", true )]
-        public virtual bool IsScheduleOrCheckInActive
+        /// <returns></returns>
+        [LavaVisible]
+        public virtual DateTime? NextStartDateTime
         {
             get
             {
-                return WasScheduleOrCheckInActive( RockDateTime.Now );
+                return GetNextStartDateTime( RockDateTime.Now );
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Gets the type of the schedule.
@@ -278,22 +281,6 @@ namespace Rock.Model
                     return WeeklyDayOfWeek.HasValue ?
                         ScheduleType.Weekly : ScheduleType.None;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets the next start time.
-        /// </summary>
-        /// <returns></returns>
-        [NotMapped]
-        [LavaInclude]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead.", true )]
-        public virtual DateTime? NextStartDateTime
-        {
-            get
-            {
-                return GetNextStartDateTime( RockDateTime.Now );
             }
         }
 
@@ -363,7 +350,7 @@ namespace Rock.Model
         /// The first start date time.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual DateTime? FirstStartDateTime => GetFirstStartDateTime();
 
         /// <summary>
@@ -373,7 +360,7 @@ namespace Rock.Model
         /// The first start date time this week.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual DateTime? FirstStartDateTimeThisWeek
         {
             get
@@ -391,7 +378,7 @@ namespace Rock.Model
         /// <value>
         /// The start time of day.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual TimeSpan StartTimeOfDay
         {
             get
@@ -417,7 +404,7 @@ namespace Rock.Model
         /// <value>
         /// The duration in minutes.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int DurationInMinutes
         {
             get
@@ -447,7 +434,7 @@ namespace Rock.Model
         /// <value>
         /// The friendly schedule text.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [DataMember]
         public virtual string FriendlyScheduleText
         {
@@ -546,10 +533,13 @@ namespace Rock.Model
             var originalEffectiveEndDate = EffectiveEndDate;
             var originalEffectiveStartDate = EffectiveStartDate;
 
+            // Set initial values for start and end dates.
+            // End date is set to MaxValue as a placeholder - infinitely repeating schedules should be stored with
+            // a null end date value.
             DateTime? effectiveStartDateTime = calEvent.DtStart?.Value.Date;
-            DateTime? effectiveEndDateTime = null;
+            DateTime? effectiveEndDateTime = DateTime.MaxValue;
 
-            // In Rock it is possible to set a rule with an end date, no end date (which is actually end date of max value) or a number
+            // In Rock it is possible to set a rule with an end date, no end date or a number
             // of occurrences. The count property in the iCal rule refers to the count of occurrences.
             var endDateRules = calEvent.RecurrenceRules.Where( rule => rule.Count <= 0 );
             var countRules = calEvent.RecurrenceRules.Where( rule => rule.Count > 0 );
@@ -566,7 +556,7 @@ namespace Rock.Model
             {
                 if ( endDateRules.Any( rule => RockDateTime.IsMinDate( rule.Until ) ) )
                 {
-                    effectiveEndDateTime = DateTime.MaxValue;
+                    effectiveEndDateTime = null;
                 }
                 else
                 {
@@ -580,7 +570,7 @@ namespace Rock.Model
                 {
                     // If there is a count rule greater than 999 (limit in the UI), and no end date rule was applied,
                     // we don't want to calculate occurrences because it will be too costly. Treat this as no end date.
-                    effectiveEndDateTime = DateTime.MaxValue;
+                    effectiveEndDateTime = null;
                 }
                 else
                 {
@@ -594,17 +584,18 @@ namespace Rock.Model
             // if it occurs after the Effective End Date required by the recurrence rules.
             if ( hasDates )
             {
-                // If the Schedule does not have any other rules, reset the Effective End Date to ensure it is recalculated.
+                // If the Schedule does not have any other rules, reset the Effective End Date to the placeholder value
+                // to ensure it is recalculated.
                 if ( !hasRuleWithEndDate && !hasRuleWithCount )
                 {
-                    effectiveEndDateTime = null;
+                    effectiveEndDateTime = DateTime.MaxValue;
                 }
 
                 adjustEffectiveDateForLastOccurrence = true;
             }
 
             if ( adjustEffectiveDateForLastOccurrence
-                 && effectiveEndDateTime != DateTime.MaxValue )
+                 && effectiveEndDateTime != null )
             {
                 var occurrences = GetICalOccurrences( DateTime.MinValue, DateTime.MaxValue );
 
@@ -614,7 +605,7 @@ namespace Rock.Model
                         ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Value
                         : effectiveStartDateTime;
 
-                    if ( effectiveEndDateTime == null
+                    if ( effectiveEndDateTime == DateTime.MaxValue
                          || lastOccurrenceDate > effectiveEndDateTime )
                     {
                         effectiveEndDateTime = lastOccurrenceDate;
@@ -623,7 +614,7 @@ namespace Rock.Model
             }
 
             // At this point, if no EffectiveEndDate is set then assume this is a one-time event and set the EffectiveEndDate to the EffectiveStartDate.
-            if ( effectiveEndDateTime == null && !adjustEffectiveDateForLastOccurrence )
+            if ( effectiveEndDateTime == DateTime.MaxValue && !adjustEffectiveDateForLastOccurrence )
             {
                 effectiveEndDateTime = effectiveStartDateTime;
             }
@@ -638,7 +629,7 @@ namespace Rock.Model
             EffectiveStartDate = effectiveStartDateTime?.Date;
             EffectiveEndDate = effectiveEndDateTime?.Date;
 
-            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date) || (EffectiveStartDate?.Date != originalEffectiveStartDate?.Date);
+            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date ) || ( EffectiveStartDate?.Date != originalEffectiveStartDate?.Date );
         }
 
         /// <summary>
@@ -648,7 +639,7 @@ namespace Rock.Model
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetICalEvent() instead " )]
+        [Obsolete( "Use GetICalEvent() instead ", true )]
         public virtual DDay.iCal.Event GetCalenderEvent()
         {
             return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
@@ -1172,7 +1163,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns value indicating if the schedule was active at a current time.
+        /// Returns value indicating if the schedule was active at the specified time.
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
@@ -1201,7 +1192,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns value indicating if check-in was active at a current time for this schedule.
+        /// Returns value indicating if check-in was active at the specified time.
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
@@ -1284,7 +1275,7 @@ namespace Rock.Model
 
             // Check if the end time spilled over to a different day...
             int checkOutEndDateCompare = checkOutEnd.Date.CompareTo( checkInStart.Date );
-            
+
             if ( checkOutEndDateCompare < 0 )
             {
                 // invalid condition, end before the start
@@ -1663,7 +1654,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <returns></returns>
-        [RockObsolete( "12.4" )]
+        [RockObsolete( "1.12.4" )]
         [Obsolete( "Use CreateCalendarEvent instead" )]
         public static Ical.Net.Event GetCalendarEvent( string iCalendarContent )
         {
@@ -1694,6 +1685,33 @@ namespace Rock.Model
             }
 
             return calendarEvent;
+        }
+
+        /// <summary>
+        /// Gets the occurrences.
+        /// </summary>
+        /// <param name="icalEvent">The ical event.</param>
+        /// <param name="startTime">The start time.</param>
+        /// <returns></returns>
+        [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
+        [RockObsolete( "1.12.4" )]
+        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime )
+        {
+            return icalEvent.GetOccurrences( startTime ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the occurrences.
+        /// </summary>
+        /// <param name="icalEvent">The ical event.</param>
+        /// <param name="startTime">The start time.</param>
+        /// <param name="endTime">The end time.</param>
+        /// <returns></returns>
+        [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
+        [RockObsolete( "1.12.4" )]
+        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime, DateTime endTime )
+        {
+            return icalEvent.GetOccurrences( startTime, endTime ).ToList();
         }
 
         /// <summary>
@@ -1779,7 +1797,7 @@ namespace Rock.Model
     /// <summary>
     /// DDay.ical LoadFromStream is not threadsafe, so use locking
     /// </summary>
-    [RockObsolete( "v1.12" )]
+    [RockObsolete( "1.12" )]
     [Obsolete( "Use InetCalendarHelper instead." )]
     public static class ScheduleICalHelper
     {
@@ -1797,7 +1815,7 @@ namespace Rock.Model
         /// <param name="iCalendarContent">Content of the i calendar.</param>
         /// <returns></returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
+        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead ", true )]
         public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
         {
             return GetCalendarEvent( iCalendarContent );

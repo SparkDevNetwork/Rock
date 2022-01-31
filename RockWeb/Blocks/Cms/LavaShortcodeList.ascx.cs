@@ -24,9 +24,10 @@ using Rock.Model;
 using Rock.Web.UI;
 using System.ComponentModel;
 using Rock.Security;
-using DotLiquid;
+
 using System.Web.UI.WebControls;
 using Rock.Lava.Shortcodes;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -82,7 +83,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                LoadShortcodes();
+                LoadLavaShortcodes();
             }
 
             base.OnLoad( e );
@@ -99,7 +100,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void Block_BlockUpdated( object sender, EventArgs e )
         {
-            LoadShortcodes();
+            LoadLavaShortcodes();
         }
 
         /// <summary>
@@ -144,13 +145,13 @@ namespace RockWeb.Blocks.Cms
             if ( lavaShortcode != null )
             {
                 // unregister the shortcode
-                Template.UnregisterShortcode( lavaShortcode.TagName );
+                LavaService.DeregisterShortcode( lavaShortcode.TagName );
 
                 lavaShortcodeService.Delete( lavaShortcode );
                 rockContext.SaveChanges();
             }
 
-            LoadShortcodes();
+            LoadLavaShortcodes();
         }
 
         protected void rptShortcodes_ItemDataBound( object sender, RepeaterItemEventArgs e )
@@ -192,12 +193,81 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglShowActive_CheckedChanged( object sender, EventArgs e )
         {
-            LoadShortcodes();
+            LoadLavaShortcodes();
         }
 
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Loads the shortcodes.
+        /// </summary>
+        private void LoadLavaShortcodes()
+        {
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                LoadShortcodes();
+                return;
+            }
+
+            LavaShortcodeService lavaShortcodeService = new LavaShortcodeService( new RockContext() );
+            var lavaShortcodes = lavaShortcodeService.Queryable();
+
+            if ( tglShowActive.Checked )
+            {
+                lavaShortcodes = lavaShortcodes.Where( s => s.IsActive == true );
+            }
+
+            // To list the items from the database as we now need to add
+            // items in c# assemblies
+            var shortcodeList = lavaShortcodes.ToList();
+
+            // Start with block items
+            var shortcodeTypes = Rock.Reflection.FindTypes( typeof( ILavaShortcode ) ).Values.ToList();
+
+            foreach ( var shortcode in shortcodeTypes )
+            {
+                var shortcodeMetadataAttribute = shortcode.GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true ).FirstOrDefault() as LavaShortcodeMetadataAttribute;
+
+                // ignore shortcodes with no metadata
+                if ( shortcodeMetadataAttribute == null )
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var shortcodeInstance = Activator.CreateInstance( shortcode ) as ILavaShortcode;
+
+                    var shortcodeType = shortcodeInstance.ElementType;
+
+                    shortcodeList.Add( new LavaShortcode
+                    {
+                        Id = -1,
+                        Name = shortcodeMetadataAttribute.Name,
+                        TagName = shortcodeMetadataAttribute.TagName,
+                        TagType = ( shortcodeType == LavaShortcodeTypeSpecifier.Inline ) ? TagType.Inline : TagType.Block,
+                        IsActive = true,
+                        IsSystem = true,
+                        Description = shortcodeMetadataAttribute.Description,
+                        Documentation = shortcodeMetadataAttribute.Documentation
+                    } );
+
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+
+            rptShortcodes.DataSource = shortcodeList.ToList().OrderBy( s => s.Name );
+            rptShortcodes.DataBind();
+        }
+
+        #endregion
+
+        #region RockLiquid Lava implementation
 
         /// <summary>
         /// Loads the shortcodes.
@@ -221,14 +291,15 @@ namespace RockWeb.Blocks.Cms
             {
                 var shortcode = shortcodeInCode.Value;
                 var shortcodeMetadataAttribute = shortcode.GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true ).FirstOrDefault() as LavaShortcodeMetadataAttribute;
-                
+
                 // ignore shortcodes with no metadata
                 if ( shortcodeMetadataAttribute == null )
                 {
                     continue;
                 }
 
-                shortcodeList.Add( new LavaShortcode {
+                shortcodeList.Add( new LavaShortcode
+                {
                     Id = -1,
                     Name = shortcodeMetadataAttribute.Name,
                     TagName = shortcodeMetadataAttribute.TagName,

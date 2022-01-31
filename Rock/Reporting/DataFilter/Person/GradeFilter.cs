@@ -268,7 +268,7 @@ function() {{
             int? gradeOffset = gradeDefinedValue != null ? gradeDefinedValue.Value.AsIntegerOrNull() : null;
 
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
-            int currentSchoolYear = RockDateTime.CurrentGraduationYear;
+            int currentSchoolYear = PersonService.GetCurrentGraduationYear();
 
             if ( hasGradeTransitionDate && gradeOffset.HasValue )
             {

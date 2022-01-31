@@ -45,6 +45,16 @@ a.aspNetDisabled {
   opacity: .5;
 }
 
+.picker.aspNetDisabled {
+  opacity: 1;
+}
+
+a.aspNetDisabled.picker-label,
+.picker.aspNetDisabled .picker-label {
+  background: @input-bg-disabled;
+  opacity: 1;
+}
+
 .form-group.rock-literal,
 .rock-control-wrapper {
 
@@ -63,11 +73,6 @@ a.aspNetDisabled {
   -webkit-transform: translateY(-@form-group-margin-bottom);
   -ms-transform: translateY(-@form-group-margin-bottom);
   transform: translateY(-@form-group-margin-bottom);
-}
-
-.form-group .checkbox:last-child {
-  // used to adjust checkboxes to look better with labels above
-  margin-bottom: 30px;
 }
 
 .form-group > .form-group {
@@ -242,8 +247,8 @@ a.aspNetDisabled {
 
 dl:not(.dl-horizontal) {
   dt {
-    margin-top: 16px;
-    margin-bottom: 2px;
+    margin-top: @description-term-margin-top;
+    margin-bottom: @description-term-margin-bottom;
     font-weight: @font-weight-bold;
 
     &:first-child {
@@ -306,9 +311,17 @@ dl:not(.dl-horizontal) {
     margin-right: 6px;
   }
 
+  // Nested form controls get too much margin
+  .input-group > .form-control {
+    margin-right: 0;
+  }
+
   & > span {
     float: left;
-    margin: 8px 6px 0 0;
+    margin: (@input-padding-y - 1) 6px (@input-padding-y + 1) 0;
+    font-size: @input-font-size;
+    line-height: @input-line-height;
+    color: @text-muted;
   }
 
   & > label {
@@ -332,6 +345,11 @@ dl:not(.dl-horizontal) {
   .input-group {
     margin-top: -6px;
     margin-bottom: -6px;
+  }
+
+  .picker-daterange .input-group {
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
@@ -358,8 +376,9 @@ dl:not(.dl-horizontal) {
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
     height: @input-height-base;
-    margin: -(@padding-base-vertical + 1) -(@padding-base-horizontal + 1);
+    margin: -(@input-padding-y + 1) -(@input-padding-x + 1);
     border-radius: @input-border-radius;
 
     &:focus {
@@ -399,10 +418,11 @@ dl:not(.dl-horizontal) {
 
 .month-year-picker .separator,
 .month-day-picker .separator {
-  float: left;
-  margin: 4px 8px 0 -2px;
-  font-size: 20px;
-  color: lighten(@text-color, 35%);
+  @separator-margin: ((@input-height-base - @font-size-lg) / 2);
+  margin: @separator-margin 6px @separator-margin 0;
+  font-size: @font-size-lg;
+  line-height: 1;
+  color: @text-muted;
 }
 
 .rock-check-box {
@@ -440,6 +460,8 @@ dl:not(.dl-horizontal) {
 
 /* SK Add margin in ListItems */
 .list-items-rows .controls-row {
+  display: flex;
+  align-items: center;
   margin-bottom: 6px;
 }
 

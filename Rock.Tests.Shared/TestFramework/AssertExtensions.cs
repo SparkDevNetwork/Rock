@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Rock.Tests.Shared
@@ -42,8 +43,7 @@ namespace Rock.Tests.Shared
         /// <param name="actual">The actual sting.</param>
         public static void AreEqualIgnoreWhitespace( this Assert assert, string expected, string actual )
         {
-            if ( expected == null
-                 && actual == null )
+            if ( expected == null && actual == null )
             {
                 return;
             }
@@ -56,7 +56,10 @@ namespace Rock.Tests.Shared
                 throw new NullReferenceException( "The actual string was null" );
             }
 
-            Assert.AreEqual( expected.ToStripNewlines().RemoveSpaces(), actual.ToStripNewlines().RemoveSpaces() );
+            expected = Regex.Replace( expected, @"\s*", string.Empty );
+            actual = Regex.Replace( actual, @"\s*", string.Empty );
+
+            Assert.AreEqual( expected, actual );
         }
 
         public static void AreEqual<T>( this Assert assert, T expected, T actual )

@@ -38,6 +38,9 @@ namespace Rock.Client
         public bool ContinueAfterProcessing { get; set; }
 
         /// <summary />
+        public DateTime? ExpireDate { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -97,6 +100,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ContinueAfterProcessing = source.ContinueAfterProcessing;
+            this.ExpireDate = source.ExpireDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;

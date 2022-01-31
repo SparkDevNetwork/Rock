@@ -10,6 +10,16 @@
 // 1. Contributions
 // -------------------------
 
+// Decrease the size of the currency symbol. Used on Giving Overview KPIs.
+.currency-span {
+  display: inline-block;
+
+  &::first-letter {
+    font-size: .6em;
+    vertical-align: top;
+  }
+}
+
 .contribution-payment .tab-content {
   margin-top: @spacing-md-px;
 }
@@ -300,20 +310,27 @@
 .trend-bar {
   height: 11px;
   margin-top: 4px;
+
+  li {
+    float: left;
+    height: 100%;
+
+    span {
+      display: flex;
+      height: 100%;
+      margin-right: 2px;
+      background: @persondetails-badge-color;
+    }
+  }
 }
 
-.trend-bar li {
-  float: left;
-  height: 100%;
+.percentile-giving {
+  @media (min-width: @screen-sm) {
+    border-left: 1px solid @panel-border;
+  }
+
+  @media (min-width: @screen-lg) {
+    padding-left: 6rem;
+  }
 }
 
-.trend-bar li span {
-  display: flex;
-  height: 100%;
-  margin-right: 2px;
-  background: @persondetails-badge-color;
-}
-
-.percentile-giving .stat-label {
-  line-height: 1;
-}

@@ -33,6 +33,7 @@ using Rock.UniversalSearch;
 using System.Reflection;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Transactions;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Core
 {
@@ -201,10 +202,12 @@ namespace RockWeb.Blocks.Core
                     IndexContainer.CreateIndex( entityType.IndexModelType );
 
                     // call for bulk indexing
-                    BulkIndexEntityTypeTransaction bulkIndexTransaction = new BulkIndexEntityTypeTransaction();
-                    bulkIndexTransaction.EntityTypeId = entityType.Id;
+                    var processEntityTypeBulkIndexMsg = new ProcessEntityTypeBulkIndex.Message
+                    {
+                        EntityTypeId = entityType.Id
+                    };
 
-                    RockQueue.TransactionQueue.Enqueue( bulkIndexTransaction );
+                    processEntityTypeBulkIndexMsg.Send();
                 }
                 else
                 {
@@ -278,12 +281,14 @@ namespace RockWeb.Blocks.Core
         {
             var entityType = EntityTypeCache.Get( e.RowKeyId );
 
-            if (entityType != null )
+            if ( entityType != null )
             {
-                BulkIndexEntityTypeTransaction bulkIndexTransaction = new BulkIndexEntityTypeTransaction();
-                bulkIndexTransaction.EntityTypeId = entityType.Id;
+                var processEntityTypeBulkIndexMsg = new ProcessEntityTypeBulkIndex.Message
+                {
+                    EntityTypeId = entityType.Id
+                };
 
-                RockQueue.TransactionQueue.Enqueue( bulkIndexTransaction );
+                processEntityTypeBulkIndexMsg.Send();
 
                 maMessages.Show( string.Format("A request has been sent to index {0}.", entityType.FriendlyName.Pluralize()), ModalAlertType.Information );
             }

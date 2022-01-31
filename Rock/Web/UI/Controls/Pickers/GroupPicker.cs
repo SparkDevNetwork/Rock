@@ -171,8 +171,8 @@ namespace Rock.Web.UI.Controls
             {
                 ItemId = group.Id.ToString();
 
-                var parentIds = GetGroupAncestorsIdList( group.ParentGroup );
-                InitialItemParentIds = parentIds.AsDelimited( "," );
+                var parentGroupIds = GetGroupAncestorsIdList( group.ParentGroup );
+                InitialItemParentIds = parentGroupIds.AsDelimited( "," );
                 ItemName = group.Name;
             }
             else
@@ -225,7 +225,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentIds = new List<int>();
+                var parentGroupIds = new List<int>();
 
                 foreach ( var group in groups )
                 {
@@ -233,15 +233,15 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( group.Id.ToString() );
                         names.Add( group.Name );
-                        if ( group.ParentGroup != null && !parentIds.Contains( group.ParentGroup.Id ) )
+                        if ( group.ParentGroup != null && !parentGroupIds.Contains( group.ParentGroup.Id ) )
                         {
                             var parentGroup = group.ParentGroup;
                             var groupParentIds = GetGroupAncestorsIdList( parentGroup );
                             foreach ( var groupParentId in groupParentIds )
                             {
-                                if ( !parentIds.Contains( groupParentId ) )
+                                if ( !parentGroupIds.Contains( groupParentId ) )
                                 {
-                                    parentIds.Add( groupParentId );
+                                    parentGroupIds.Add( groupParentId );
                                 }
                             }
                         }
@@ -249,7 +249,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // NOTE: Order is important (parents before children) since the GroupTreeView loads on demand
-                InitialItemParentIds = parentIds.AsDelimited( "," );
+                InitialItemParentIds = parentGroupIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }

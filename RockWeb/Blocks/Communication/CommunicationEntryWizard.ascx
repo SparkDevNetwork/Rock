@@ -52,24 +52,23 @@
                                         </div>
                                         <div class="col-sm-4">
                                             <asp:LinkButton
-                                                ID="btnManualList"
+                                                ID="btnRecipientList"
                                                 CausesValidation="false"
                                                 runat="server"
                                                 CssClass="btn btn-link btn-xs text-primary pull-right"
-                                                Text="Manual List"
-                                                OnClick="btnManualList_Click" />
+                                                OnClick="btnRecipientList_Click" />
                                         </div>
                                     </div>
 
                                     <hr />
                                 </div>
 
-                                <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgRecipientSelection" CssClass="alert alert-warning" />
+                                <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgRecipientSelection" CssClass="alert alert-validation" />
 
                                 <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
                                 <div class="row">
-                                    <asp:Panel ID="pnlListSelectionList" runat="server" CssClass="col-lg-6">
+                                    <asp:Panel ID="pnlListSelectionList" runat="server" CssClass="col-lg-8">
                                         <Rock:RockDropDownList
                                             ID="ddlCommunicationGroupList"
                                             runat="server"
@@ -81,16 +80,17 @@
                                             AutoPostBack="true" />
 
                                         <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
-                                            <label>Segments</label>
-                                            <p>Optionally, further refine your recipients by filtering by segment.</p>
-                                            <asp:CheckBoxList
-                                                ID="cblCommunicationGroupSegments"
-                                                runat="server"
-                                                RepeatDirection="Horizontal"
-                                                CssClass="margin-b-lg"
-                                                ValidationGroup="vgRecipientSelection"
-                                                OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged"
-                                                AutoPostBack="true" />
+                                            <label class="control-label mb-0">Segments</label>
+                                            <p class="text-sm">Optionally, further refine your recipients by filtering by segment.</p>
+                                            <div class="margin-b-lg">
+                                                <Rock:RockCheckBoxList
+                                                    ID="cblCommunicationGroupSegments"
+                                                    runat="server"
+                                                    RepeatDirection="Horizontal"
+                                                    ValidationGroup="vgRecipientSelection"
+                                                    OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged"
+                                                    AutoPostBack="true" />
+                                            </div>
 
                                             <Rock:RockRadioButtonList
                                                 ID="rblCommunicationGroupSegmentFilterType"
@@ -134,6 +134,22 @@
                             OnClick="btnRecipientSelectionNext_Click" />
                     </div>
 
+                     <%-- Recipient Selection: Communication List Recipients Modal --%>
+                    <Rock:ModalDialog Id="mdCommunicationListRecipients" runat="server" Title="Communication List Recipients">
+                        <Content>
+                            <Rock:NotificationBox ID="nbListWarning" runat="server" NotificationBoxType="Info" />
+                            <Rock:Grid ID="gRecipientList" runat="server" OnRowDataBound="gRecipientList_RowDataBound">
+                                <Columns>
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName"  />
+                                    <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlert" HeaderText="Notes" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlertEmail" HeaderText="Email" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlertSMS" HeaderText="SMS" />
+                                </Columns>
+                            </Rock:Grid>
+                        </Content>
+                    </Rock:ModalDialog>
+
                 </asp:Panel>
 
                 <%-- Recipient List --%>
@@ -156,15 +172,20 @@
                                         NotificationBoxType="Validation" />
 
                                     <div class="d-flex margin-b-md">
-                                        <div class="ml-sm-auto">
+                                        <div class="mr-sm-auto">
                                             <Rock:PersonPicker
                                                 ID="ppAddPerson"
                                                 runat="server"
-                                                CssClass="picker-menu-right"
+                                                CssClass="picker-menu-left"
                                                 Label="Person"
                                                 PersonName="Add Person"
                                                 OnSelectPerson="ppAddPerson_SelectPerson"
                                                 EnableSelfSelection="true" />
+                                        </div>
+                                        <div class="ml-sm-auto mt-auto form-group">
+                                            <asp:Panel ID="pnlIndividualRecipientListCount" runat="server" CssClass="label label-info">
+                                                <asp:Literal ID="lIndividualRecipientListCount" runat="server" Text="" />
+                                            </asp:Panel>
                                         </div>
                                     </div>
                                 </div>
@@ -188,10 +209,10 @@
                                     </Rock:Grid>
                                     </div>
                                 </div>
-                                <div class="mt-3">
+                                <div class="my-3">
                                         <asp:LinkButton ID="btnDeleteSelectedRecipients"
                                             runat="server"
-                                            CssClass="btn btn-sm btn-outline-primary"
+                                            CssClass="btn btn-xs btn-outline-primary"
                                             OnClick="btnDeleteSelectedRecipients_Click"
                                             Text="Remove Selected" />
                                 </div>
@@ -247,7 +268,7 @@
                                             RepeatDirection="Horizontal"
                                             CssClass="js-medium-radio" />
 
-                                        <span class="small help-block js-medium-recipientpreference-notification" style="display: none">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
+                                        <span class="small help-block js-medium-recipientpreference-notification" style="display: none">Selecting 'Recipient Preference' will require adding content for email and SMS mediums.</span>
                                     </div>
                                 </div>
 
@@ -295,7 +316,7 @@
                                     <hr/>
                                 </div>
 
-                                <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
+                                <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Validation" Visible="false" />
                                 <div class="row template-selection">
                                     <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
                                         <ItemTemplate>
@@ -330,9 +351,6 @@
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" CssClass="js-navigation-panel emaileditor-wrapper d-flex flex-column h-100 " runat="server" Visible="false">
-
-
-
 
                         <section id="emaileditor" class="panel-fill-body position-relative flex-fill styled-scroll">
                             <div id="emaileditor-designer" style="visibility:hidden;opacity: 0;">
@@ -512,6 +530,12 @@
                                                 <div class="form-group">
                                                     <label class="control-label" for="component-image-link">Link</label>
                                                     <input type="url" id="component-image-link" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-image-alt">Alt Text</label>
+                                                    <input type="text" id="component-image-alt" class="form-control" />
                                                 </div>
                                             </div>
                                         </div>
@@ -1147,7 +1171,7 @@
                             </div>
                         </div>
 
-                    <div class="actions clearfix mt-3">
+                    <div class="actions clearfix mt-0">
                         <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
                         <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>
@@ -1161,8 +1185,8 @@
                                 <Content>
                                     <div class="text-center margin-v-md">
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-default js-preview-desktop"><i class="fa fa-desktop"></i>Desktop</button>
-                                            <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i>Mobile</button>
+                                            <button type="button" class="btn btn-default js-preview-desktop"><i class="fa fa-desktop"></i> Desktop</button>
+                                            <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i> Mobile</button>
                                         </div>
                                     </div>
                                     <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview device-browser center-block">
@@ -1193,7 +1217,7 @@
                                         <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'></span>" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" />
+                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'>" />
                                         <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                                         <div class="pull-right">
                                             <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>
@@ -1204,7 +1228,7 @@
                                 <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" Style="display: none">
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" AllowLava="true" />
+                                            <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" AllowLava="true" MaxLength="100" Help="<span class='tip tip-lava'>" />
                                         </div>
                                         <div class="col-md-6">
                                         </div>
@@ -1262,7 +1286,7 @@
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
                                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
-                                <div class="actions margin-t-sm pull-right">
+                                <div class="control-actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
                                     <asp:LinkButton ID="btnSMSEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default" Text="Save" OnClick="btnSMSEditorSaveDraft_Click" />
                                     <div class="js-sms-sendtest-inputs" style="display: none">
@@ -1277,7 +1301,7 @@
                             <Rock:NotificationBox ID="nbMobileAttachmentFileTypeWarning" runat="server" NotificationBoxType="Warning" Text="" Dismissable="true" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <div class="device device-mobile hidden-sm hidden-xs">
+                            <div class="device device-mobile hidden-sm hidden-xs mb-5">
                                 <div class="sms">
                                     <header>
                                         <span class="left">Messages</span><h2>
@@ -1397,7 +1421,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <div class="device device-mobile hidden-sm hidden-xs">
+                                                    <div class="device device-mobile hidden-sm hidden-xs mb-5">
                                                         <div class="sms">
                                                             <header>
                                                                 <span class="left">Messages</span><h2>

@@ -3,23 +3,24 @@
 // the UI has the mouse rolls-over a container.
 // --------------------------------------------------
 
-.rollover-container {
+.rollover-container,
+.rollover-container-nested {
   position: relative;
-
-  & > .rollover-item {
-    opacity: 0;
-    -webkit-transition: opacity .5s ease-out;
-    -moz-transition: opacity .5s ease-out;
-    -o-transition: opacity .5s ease-out;
-    transition: opacity .5s ease-out;
-  }
-
-  &:hover {
-    & > .rollover-item {
-      opacity: 1;
-    }
-  }
 }
+
+.rollover-container > .rollover-item,
+.rollover-container-nested .rollover-item {
+  opacity: 0;
+  -webkit-transition: opacity .5s ease-out;
+  -moz-transition: opacity .5s ease-out;
+  transition: opacity .5s ease-out;
+}
+
+.rollover-container:hover > .rollover-item,
+.rollover-container-nested:hover .rollover-item {
+  opacity: 1;
+}
+
 
 // always show item if on touch device
 .touch .rollover-item {

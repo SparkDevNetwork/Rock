@@ -42,12 +42,23 @@ namespace Rock
         /// The call ms total
         /// </summary>
         public static double CallMSTotal => Interlocked.Read( ref _callMicrosecondsTotal ) / 1000.0;
+
         private static long _callMicrosecondsTotal = 0;
+
+        private static StringBuilder _sqlOutput = new StringBuilder();
 
         /// <summary>
         /// Just output timings, don't include the SQL or Stack trace
         /// </summary>
         public static bool TimingsOnly = false;
+
+        /// <summary>
+        /// Returns true if there Logging is actively enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsEnabled { get; private set; } = false;
 
         private static string SessionId = null;
 
@@ -55,7 +66,7 @@ namespace Rock
         /// Limits Debug Output to the current asp.net SessionId
         /// </summary>
         /// <param name="enable">if set to <c>true</c> [enable].</param>
-        public static void LimitToSessionId( bool enable = true)
+        public static void LimitToSessionId( bool enable = true )
         {
             if ( enable )
             {
@@ -75,7 +86,16 @@ namespace Rock
         private class DebugHelperUserState
         {
             public int CallNumber { get; set; }
+
             public Stopwatch Stopwatch { get; set; }
+
+            public double CommandExecutedStopwatchMS { get; internal set; }
+
+            public double CommandExecutedSqlExecutionTimeMS { get; internal set; }
+
+            public double StatementCompletedStopwatchMS { get; internal set; }
+
+            public double StatementCompletedSqlExecutionTimeMS { get; internal set; }
         }
 
         /// <summary>
@@ -180,6 +200,12 @@ namespace Rock
                     return;
                 }
 
+                if ( !( command is System.Data.SqlClient.SqlCommand ) )
+                {
+                    // not a SQL command. Nothing is going to the Database. Probably interception.
+                    return;
+                }
+
                 if ( SessionId.IsNotNullOrWhiteSpace() )
                 {
                     if ( System.Web.HttpContext.Current?.Session?.SessionID != SessionId )
@@ -193,6 +219,7 @@ namespace Rock
                 if ( !TimingsOnly && !SummaryOnly )
                 {
                     StringBuilder sbDebug = GetSQLBlock( command, incrementedCallCount );
+                    _sqlOutput.Append( sbDebug );
                     System.Diagnostics.Debug.Write( sbDebug.ToString() );
                 }
 
@@ -214,11 +241,15 @@ namespace Rock
                 sbDebug.AppendLine( "\n" );
 
                 StackTrace st = new StackTrace( 2, true );
-                var frames = st.GetFrames().Where( a => a.GetFileName() != null );
+                var frames = st.GetFrames().Where( a => a.GetFileName() != null && !a.GetFileName().Contains( "DebugHelper.cs" ) );
+                var stackTraceMessage = frames.ToList().AsDelimited( "" );
 
-                sbDebug.AppendLine( string.Format( "/* Call# {0}*/", incrementedCallCount ) );
-
-                sbDebug.AppendLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited( "" ) ) );
+                sbDebug.Append( $@"
+/*
+Call# {incrementedCallCount}
+StackTrace:
+{stackTraceMessage}
+*/" );
 
                 sbDebug.AppendLine( "BEGIN\n" );
 
@@ -291,22 +322,84 @@ namespace Rock
             /// <param name="userState">State of the user.</param>
             public void CommandExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext interceptionContext, object userState )
             {
+                var sqlReaderContext = interceptionContext as System.Data.Entity.Infrastructure.Interception.DbCommandInterceptionContext<System.Data.Common.DbDataReader>;
+                var sqlCommand = command as System.Data.SqlClient.SqlCommand;
+
                 var debugHelperUserState = userState as DebugHelperUserState;
                 if ( debugHelperUserState != null )
                 {
+                    bool outputOnStatementCompleted = sqlCommand != null;
+                    if ( outputOnStatementCompleted )
+                    {
+                        sqlCommand.StatementCompleted += ( object sender, System.Data.StatementCompletedEventArgs e ) =>
+                        {
+                            HandleStatementCompleted( sqlCommand, sender, debugHelperUserState );
+                        };
+                    }
+
                     debugHelperUserState.Stopwatch.Stop();
+
+                    var sqlConnection = command.Connection as System.Data.SqlClient.SqlConnection;
+                    var stats = sqlConnection.RetrieveStatistics();
+
+                    var commandExecutionTimeInMs = ( long ) stats["ExecutionTime"];
+                    debugHelperUserState.CommandExecutedStopwatchMS = debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds;
+                    debugHelperUserState.CommandExecutedSqlExecutionTimeMS = commandExecutionTimeInMs;
+                    var totalMicroSeconds = ( long ) Math.Round( debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds * 1000 );
+                    Interlocked.Add( ref _callMicrosecondsTotal, totalMicroSeconds );
 
                     if ( !SummaryOnly )
                     {
-                        var sqlConnection = command.Connection as System.Data.SqlClient.SqlConnection;
-                        var stats = sqlConnection.RetrieveStatistics();
-                        sqlConnection.StatisticsEnabled = false;
-                        var commandExecutionTimeInMs = ( long ) stats["ExecutionTime"];
-                        System.Diagnostics.Debug.Write( $"\n/* Call# {debugHelperUserState.CallNumber}: ElapsedTime [{debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds}ms], SQLConnection.Statistics['ExecutionTime'] = [{commandExecutionTimeInMs}ms] */\n" );
+                        string commandExecutionTimeText = $"{debugHelperUserState.CommandExecutedSqlExecutionTimeMS,6:0}     ms";
+                        var commandExecutedElaspedTimeMS = debugHelperUserState.CommandExecutedStopwatchMS;
+
+                        // SQL server rounds to the nearest millisecond, which means it'll be meaningless compared to our ElapsedTime if it is less than 2ms
+                        if ( debugHelperUserState.CommandExecutedSqlExecutionTimeMS < 2 )
+                        {
+                            commandExecutionTimeText = "-   ".PadLeft( 13 );
+                        }
+
+                        var statsMessage = $@"
+-- Call# {debugHelperUserState.CallNumber} Timings:
+--  [{commandExecutionTimeText}] ExecutionTime (CommandExecuted)
+--  [{commandExecutedElaspedTimeMS,10:0.000} ms] ElapsedTime   (CommandExecuted)".Trim();
+
+                        _sqlOutput.Append( statsMessage );
+                        System.Diagnostics.Debug.WriteLine( statsMessage );
                     }
 
-                    var totalMicroSeconds = ( long ) Math.Round( debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds * 1000 );
-                    Interlocked.Add( ref _callMicrosecondsTotal, totalMicroSeconds );
+                    debugHelperUserState.Stopwatch.Start();
+                }
+            }
+
+            private static void HandleStatementCompleted( System.Data.SqlClient.SqlCommand sqlCommand, object sender, DebugHelperUserState debugHelperUserState )
+            {
+                // handle StatementCompleted Event
+                debugHelperUserState.Stopwatch.Stop();
+                var eventSqlConnection = sqlCommand.Connection as System.Data.SqlClient.SqlConnection;
+                var eventStats = eventSqlConnection.RetrieveStatistics();
+
+                var eventCommandExecutionTimeInMs = ( long ) eventStats["ExecutionTime"];
+                debugHelperUserState.StatementCompletedStopwatchMS = debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds;
+                debugHelperUserState.StatementCompletedSqlExecutionTimeMS = eventCommandExecutionTimeInMs - debugHelperUserState.CommandExecutedSqlExecutionTimeMS;
+                eventSqlConnection.StatisticsEnabled = false;
+                string statementExecutionTimeText = $"{debugHelperUserState.StatementCompletedSqlExecutionTimeMS,6:0}     ms";
+
+                if ( debugHelperUserState.StatementCompletedSqlExecutionTimeMS < 2 )
+                {
+                    statementExecutionTimeText = "-   ".PadLeft( 13 );
+                }
+
+                var statementCompletedElapsedTimeMS = debugHelperUserState.StatementCompletedStopwatchMS - debugHelperUserState.CommandExecutedStopwatchMS;
+
+                if ( !SummaryOnly )
+                {
+                    var summary = $@"
+--  [{statementExecutionTimeText}] ExecutionTime (StatementCompleted)
+--  [{statementCompletedElapsedTimeMS,10:0.000} ms] ElapsedTime   (StatementCompleted)
+--  [{debugHelperUserState.StatementCompletedStopwatchMS,10:0.000} ms] Total".Trim();
+
+                    System.Diagnostics.Debug.WriteLine( summary );
                 }
             }
         }
@@ -342,6 +435,8 @@ namespace Rock
             _callCounts = 0;
             _callMicrosecondsTotal = 0;
             SQLLoggingStop();
+            IsEnabled = true;
+            _sqlOutput.Clear();
 
             if ( dbContext != null )
             {
@@ -356,10 +451,20 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the SQL output generated since SqlLoggingStart was called
+        /// </summary>
+        /// <returns></returns>
+        public static string GetSqlOutput()
+        {
+            return _sqlOutput.ToString();
+        }
+
+        /// <summary>
         /// Stops logging all EF SQL Calls to the Debug Output Window
         /// </summary>
         public static void SQLLoggingStop()
         {
+            IsEnabled = false;
             if ( _callCounts != 0 )
             {
                 Debug.WriteLine( $"/* ####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{CallMSTotal}, _callMSTotal/_callCounts:{CallMSTotal / _callCounts}#### */" );

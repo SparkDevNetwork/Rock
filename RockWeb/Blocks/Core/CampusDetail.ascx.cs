@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular campus." )]
-    public partial class CampusDetail : RockBlock, IDetailBlock
+    public partial class CampusDetail : RockBlock
     {
         #region PageParameterKeys
 

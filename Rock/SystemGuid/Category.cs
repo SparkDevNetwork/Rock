@@ -64,6 +64,11 @@ namespace Rock.SystemGuid
         public const string HISTORY_PERSON = "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7";
 
         /// <summary>
+        /// The history attendance changes for a person
+        /// </summary>
+        public const string HISTORY_ATTENDANCE_CHANGES = "BF6ABCD3-AD41-4D54-998F-B83C302756E3";
+
+        /// <summary>
         /// History of person demographic changes
         /// </summary>
         public const string HISTORY_PERSON_DEMOGRAPHIC_CHANGES = "51D3EC5A-D079-45ED-909E-B0AB2FD06835";
@@ -82,6 +87,11 @@ namespace Rock.SystemGuid
         /// History of connection request
         /// </summary>
         public const string HISTORY_PERSON_CONNECTION_REQUEST = "4B472C6A-1ACF-481E-A2D4-9C44436BBCF5";
+
+        /// <summary>
+        /// History of step
+        /// </summary>
+        public const string HISTORY_PERSON_STEP = "517BB2D3-0A50-4132-818E-63BB3C81EAE9";
 
         /// <summary>
         /// History of person communications
@@ -167,14 +177,26 @@ namespace Rock.SystemGuid
         public const string PERSON_ATTRIBUTES_DISC = "0B187C81-2106-4875-82B6-FBF1277AE23B";
 
         /// <summary>
+        /// The category for the Check-in Manager Roster Alert Icons
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_CHECK_IN_ROSTER_ALERT_ICON = "367571D1-62D3-4948-B588-C0FDCE00CF27";
+
+        /// <summary>
         /// The category for person attributes for Personality Assessment Data
         /// </summary>
         public const string PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969";
 
         /// <summary>
-        /// The person attributes giving analytics
+        /// Obsolete. Use <see cref="PERSON_ATTRIBUTES_GIVING_OVERVIEW"/> instead
         /// </summary>
-        public const string PERSON_ATTRIBUTES_GIVING_ANALYTICS = "61823196-8EA1-4C2B-A7DF-1654BD085667";
+        [RockObsolete("1.13")]
+        [Obsolete( "Use PERSON_ATTRIBUTES_GIVING_OVERVIEW instead" )]
+        public const string PERSON_ATTRIBUTES_GIVING_ANALYTICS = PERSON_ATTRIBUTES_GIVING_OVERVIEW;
+
+        /// <summary>
+        /// Person Attribute Category for Giving Overview
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_GIVING_OVERVIEW = "61823196-8EA1-4C2B-A7DF-1654BD085667";
 
         #endregion
 

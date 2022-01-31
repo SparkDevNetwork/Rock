@@ -67,13 +67,14 @@ namespace Rock.Web.UI.Controls
             var rockContext = new RockContext();
             var interactionChannelService = new InteractionChannelService( rockContext );
             var channels = interactionChannelService.Queryable().AsNoTracking()
+                .Include( "ChannelTypeMediumValue" )
                 .Where( ic => ic.IsActive )
                 .OrderBy( ic => ic.Name )
                 .ToList();
 
             foreach ( var channel in channels )
             {
-                var li = new ListItem( channel.Name, channel.Id.ToString() );
+                var li = new ListItem( $"{channel.Name} ({(channel.ChannelTypeMediumValue != null ? channel.ChannelTypeMediumValue.Value : string.Empty )})", channel.Id.ToString() );
                 li.Selected = selectedItems.Contains( channel.Id );
                 picker.Items.Add( li );
             }

@@ -291,8 +291,6 @@ namespace RockWeb.Blocks.Communication
             var template = service.Get( e.RowKeyId );
             if ( template != null )
             {
-                var templateCopy = template.Clone( false );
-                templateCopy.Id = 0;
                 int copyNumber = 0;
                 var copyName = "Copy of " + template.Name;
                 while ( service.Queryable().Any( a => a.Name == copyName ) )
@@ -301,17 +299,12 @@ namespace RockWeb.Blocks.Communication
                     copyName = string.Format( "Copy({0}) of {1}", copyNumber, template.Name );
                 }
 
+                var templateCopy = template.CloneWithoutIdentity();
                 templateCopy.Name = copyName.Truncate( 100 );
                 templateCopy.IsSystem = false;
-                templateCopy.Guid = Guid.NewGuid();
-                templateCopy.CreatedByPersonAlias = null;
-                templateCopy.CreatedByPersonAliasId = null;
-                templateCopy.ModifiedByPersonAlias = null;
-                templateCopy.ModifiedByPersonAliasId = null;
                 templateCopy.LogoBinaryFileId = null;
                 templateCopy.ImageFileId = null;
-                templateCopy.CreatedDateTime = RockDateTime.Now;
-                templateCopy.ModifiedDateTime = RockDateTime.Now;
+
                 service.Add( templateCopy );
                 rockContext.SaveChanges();
             }

@@ -152,7 +152,7 @@ namespace Rock.Logging
             }
 
             LogPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Logs\\Rock.log" );
-            LastUpdated = DateTime.Now;
+            LastUpdated = RockDateTime.Now;
         }
 
         private void UpdateConfigIfRequired()

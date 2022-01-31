@@ -193,6 +193,7 @@ namespace Rock.Tests.Integration.Interactions
         [Description( "Test performance of logging PageView interactions" )]
         public void PerformanceTest1()
         {
+            _allPages = PageCache.All();
             DoTestRound("Round 1");
             DoTestRound( "Round 2" );
             DoTestRound( "Round 3" );

@@ -641,7 +641,8 @@ namespace Rock.Web.UI.Controls
             else if ( selectedField != null && FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
             {
                 var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( selectedField.PersonFieldType );
-                var filterControl = fieldType.Field.FilterControl( null, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );
+
+                var filterControl = fieldType.Field.FilterControl( new Dictionary<string, ConfigurationValue>(), $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );
                 if ( filterControl != null )
                 {
                     filterControlPlaceholder.Controls.Add( filterControl );

@@ -396,7 +396,10 @@ namespace Rock.Workflow.Action
         }
 
         /// <summary>
-        /// Updates the email status.
+        /// Updates the email status which is potentially being used/watched by a Workflow action.
+        /// NOTE: This method would be called by one of the SMTP web-hooks (such as TwilioSendGrid.ashx
+        /// or Mailgun.ashx) when they pass back the actionGuid via the workflow_action_guid property
+        /// in the data bundle they return to us in their payload.
         /// </summary>
         /// <param name="actionGuid">The action unique identifier.</param>
         /// <param name="status">The status.</param>

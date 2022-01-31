@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -107,6 +108,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
+        [TypeScriptType( "string" )]
         public string Key { get; set; }
 
         /// <summary>
@@ -187,6 +189,14 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// The color to visually distinguish the attribute. For example, <see cref="AttributeColor"/> might be used to set the color for the <seealso cref="IconCssClass"/> of the icon.
+        /// </summary>
+        /// <value>The color of the attribute.</value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string AttributeColor { get; set; }
 
         /// <summary>
         /// Gets or sets whether this Attribute should be used in 'search by attribute value' UIs. 

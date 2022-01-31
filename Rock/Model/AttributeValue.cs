@@ -28,8 +28,11 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
+using Rock.Cms.StructuredContent;
 
 namespace Rock.Model
 {
@@ -80,7 +83,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [LavaIgnore]
+        [LavaHidden]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -139,7 +142,7 @@ namespace Rock.Model
         /// <value>
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public decimal? ValueAsNumeric
         {
             get
@@ -182,7 +185,7 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
@@ -193,7 +196,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public bool? ValueAsBoolean { get; internal set; }
 
         /// <summary>
@@ -209,7 +212,7 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public int? ValueAsPersonId { get; private set; }
 
         /// <summary>
@@ -244,7 +247,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Attribute Attribute { get; set; }
 
         /// <summary>
@@ -254,7 +257,7 @@ namespace Rock.Model
         /// The attribute values historical.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ICollection<AttributeValueHistorical> AttributeValuesHistorical { get; set; } = new Collection<AttributeValueHistorical>();
 
         /// <summary>
@@ -263,7 +266,7 @@ namespace Rock.Model
         /// <value>
         /// The value formatted.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string ValueFormatted
         {
             get
@@ -288,7 +291,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the attribute.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeName
         {
             get
@@ -313,7 +316,7 @@ namespace Rock.Model
         /// <value>
         /// The attribute key.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeKey
         {
             get
@@ -338,7 +341,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if [attribute is grid column]; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool AttributeIsGridColumn
         {
             get
@@ -392,6 +395,13 @@ namespace Rock.Model
                     PreSaveBinaryFile( dbContext, entry );
                 }
 
+                // Check to see if this attribute value is for a StructureContentEditorFieldType.
+                // If so then we need to detect any changes in the content blocks.
+                if ( field is Field.Types.StructureContentEditorFieldType )
+                {
+                    PreSaveStructuredContent( dbContext, entry );
+                }
+
                 // Save to the historical table if history is enabled
                 if ( attributeCache.EnableHistory )
                 {
@@ -428,13 +438,28 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
 
-            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with
+            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with.
+            // For example, if the FavoriteColor attribute of Ted Decker is changed from Red to Blue, we'll update Ted's Person.ModifiedDateTime.
             if ( this.EntityId.HasValue && AttributeCache.Get( this.AttributeId )?.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id )
             {
+                // since this could get called several times (one for each of changed Attributes on a person), do a direct SQL to minimize overhead
                 var currentDateTime = RockDateTime.Now;
                 int personId = this.EntityId.Value;
-                var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId );
-                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
+                if ( this.ModifiedByPersonAliasId.HasValue )
+                {
+                    rockContext.Database.ExecuteSqlCommand(
+                        $"UPDATE [Person] SET [ModifiedDateTime] = @modifiedDateTime, [ModifiedByPersonAliasId] = @modifiedByPersonAliasId WHERE [Id] = @personId",
+                        new System.Data.SqlClient.SqlParameter( "@modifiedDateTime", currentDateTime ),
+                        new System.Data.SqlClient.SqlParameter( "@modifiedByPersonAliasId", this.ModifiedByPersonAliasId.Value),
+                        new System.Data.SqlClient.SqlParameter( "@personId", personId ) );
+                }
+                else
+                {
+                    rockContext.Database.ExecuteSqlCommand(
+                        $"UPDATE [Person] SET [ModifiedDateTime] = @modifiedDateTime, [ModifiedByPersonAliasId] = NULL WHERE [Id] = @personId",
+                        new System.Data.SqlClient.SqlParameter( "@modifiedDateTime", currentDateTime ),
+                        new System.Data.SqlClient.SqlParameter( "@personId", personId ) );
+                }
             }
 
             base.PostSaveChanges( dbContext );
@@ -479,8 +504,12 @@ namespace Rock.Model
             {
                 if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
                 {
-                    var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    var deleteBinaryFileAttributeMsg = new DeleteBinaryFileAttribute.Message()
+                    {
+                        BinaryFileGuid = oldBinaryFileGuid.Value
+                    };
+
+                    deleteBinaryFileAttributeMsg.Send();
                 }
             }
 
@@ -492,6 +521,27 @@ namespace Rock.Model
                 {
                     binaryFile.IsTemporary = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Processes the PreSave event when this value is for
+        /// <see cref="Field.Types.StructureContentEditorFieldType"/>. Detect any
+        /// changes to the internal content and apply them to the database as well.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        private void PreSaveStructuredContent( Rock.Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( dbContext is RockContext rockContext )
+            {
+                string content = entry.State == EntityState.Added || entry.State == EntityState.Modified ? Value : string.Empty;
+                string oldContent = entry.State == EntityState.Modified ? entry.OriginalValues["Value"] as string : string.Empty;
+
+                var helper = new StructuredContentHelper( content );
+                var changes = helper.DetectChanges( oldContent );
+
+                helper.ApplyDatabaseChanges( changes, rockContext );
             }
         }
 
@@ -789,17 +839,16 @@ namespace Rock.Model
             var attributeValueService = new AttributeValueService( rockContext );
 
             var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
-                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId )
-            ).Select( am => am.Guid.ToString() );
+                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) )
+                .Select( am => am.Guid.ToString() );
 
             var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
             var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
-                a.FieldTypeId == matrixFieldType.Id
-            ).Select( a => a.Id );
+                a.FieldTypeId == matrixFieldType.Id )
+                .Select( a => a.Id );
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                 attributeIdQuery.Contains( av.AttributeId ) && matrixGuidQuery.Contains( av.Value )
-            );
+                 attributeIdQuery.Contains(av.AttributeId) && matrixGuidQuery.Contains( av.Value ) );
 
             return attributeValue;
         }

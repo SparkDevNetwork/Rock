@@ -31,6 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
@@ -786,14 +787,12 @@ $(document).ready(function() {
                     rssLink.Attributes.Add( "title", contentItemList.Select( c => c.ContentChannel.Name ).FirstOrDefault() );
 
                     var context = HttpContext.Current;
-                    string channelRssUrl = string.Format( "{0}://{1}{2}{3}{4}",
-                                        context.Request.Url.Scheme,
-                                        WebRequestHelper.GetHostNameFromRequest( context ),
-                                        context.Request.Url.Port == 80
-                                            ? string.Empty
-                                            : ":" + context.Request.Url.Port,
-                                        RockPage.ResolveRockUrl( "~/GetChannelFeed.ashx?ChannelId=" ),
-                                        contentItemList.Select( c => c.ContentChannelId ).FirstOrDefault() );
+                    var proxySafeUrl = context.Request.UrlProxySafe();
+                    var proxySafeHostName = WebRequestHelper.GetHostNameFromRequest( context );
+                    var proxySafePort = proxySafeUrl.Port == 80 ? string.Empty : ":" + proxySafeUrl.Port;
+                    var resolvedRockUrl = RockPage.ResolveRockUrl( "~/GetChannelFeed.ashx?ChannelId=" );
+                    var contentChannelItem = contentItemList.Select( c => c.ContentChannelId ).FirstOrDefault();
+                    var channelRssUrl = $"{proxySafeUrl.Scheme}://{proxySafeHostName}{proxySafePort}{resolvedRockUrl}{contentChannelItem}";
 
                     rssLink.Attributes.Add( "href", channelRssUrl );
                     RockPage.Header.Controls.Add( rssLink );
@@ -818,21 +817,36 @@ $(document).ready(function() {
 
                     if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
+                        var proxySafeUri = Request.UrlProxySafe();
+
                         HtmlMeta metaDescription = new HtmlMeta();
                         metaDescription.Name = "og:image";
-                        metaDescription.Content = string.Format( "{0}://{1}/GetImage.ashx?guid={2}", Request.Url.Scheme, Request.Url.Authority, attributeValue );
+                        metaDescription.Content = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}";
                         RockPage.Header.Controls.Add( metaDescription );
 
                         HtmlLink imageLink = new HtmlLink();
                         imageLink.Attributes.Add( "rel", "image_src" );
-                        imageLink.Attributes.Add( "href", string.Format( "{0}://{1}/GetImage.ashx?guid={2}", Request.Url.Scheme, Request.Url.Authority, attributeValue ) );
+                        imageLink.Attributes.Add( "href", $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}" );
                         RockPage.Header.Controls.Add( imageLink );
                     }
                 }
 
-                var template = GetTemplate();
+                if ( LavaService.RockLiquidIsEnabled )
+                {
+                    var template = GetTemplate();
 
-                outputContents = template.Render( Hash.FromDictionary( mergeFields ) );
+                    outputContents = template.Render( Hash.FromDictionary( mergeFields ) );
+                }
+                else
+                {
+                    var template = GetLavaTemplate();
+
+                    var lavaContext = LavaService.NewRenderContext( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ).SplitDelimitedValues() );
+
+                    var renderResult = LavaService.RenderTemplate( template, lavaContext );
+
+                    outputContents = renderResult.Text;
+                }
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
@@ -873,6 +887,53 @@ $(document).ready(function() {
         /// <summary>
         /// Gets the template.
         /// </summary>
+        /// <returns>a Lava Template</returns>
+        /// <returns>A <see cref="Rock.Lava.ILavaTemplate"/></returns>
+        private ILavaTemplate GetLavaTemplate()
+        {
+            ILavaTemplate template = null;
+
+            try
+            {
+                // only load from the cache if a cacheDuration was specified
+                if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
+                {
+                    template = GetCacheItem( TEMPLATE_CACHE_KEY, true ) as ILavaTemplate;
+                }
+
+                if ( template == null )
+                {
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.Template ) );
+
+                    if ( parseResult.HasErrors )
+                    {
+                        throw parseResult.GetLavaException();
+                    }
+
+                    template = parseResult.Template;
+
+                    if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
+                    {
+                        string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                var parseResult = LavaService.ParseTemplate( string.Format( "Lava error: {0}", ex.Message ) );
+
+                template = parseResult.Template;
+            }
+
+            return template;
+        }
+
+        #region RockLiquid Lava implementation
+
+        /// <summary>
+        /// Gets the template.
+        /// </summary>
         /// <returns>a DotLiquid Template</returns>
         /// <returns>A <see cref="DotLiquid.Template"/></returns>
         private Template GetTemplate()
@@ -891,6 +952,8 @@ $(document).ready(function() {
                 {
                     template = Template.Parse( GetAttributeValue( AttributeKey.Template ) );
 
+                    LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
+
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
                         string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
@@ -908,6 +971,8 @@ $(document).ready(function() {
 
             return template;
         }
+
+        #endregion
 
         /// <summary>
         /// Gets the content channel items from the item-cache (if there), or from 
@@ -1484,7 +1549,7 @@ $(document).ready(function() {
 
         #region Helper Classes
 
-        private class TagModel : DotLiquid.Drop
+        private class TagModel : RockDynamic
         {
             public int Id { get; set; }
             public Guid Guid { get; set; }
@@ -1507,7 +1572,7 @@ $(document).ready(function() {
             public List<ArchiveSummaryModel> ArchiveSumaries { get; set; }
         }
 
-        public class Pagination : DotLiquid.Drop
+        public class Pagination : RockDynamic
         {
 
             /// <summary>
@@ -1630,7 +1695,7 @@ $(document).ready(function() {
         /// <summary>
         /// 
         /// </summary>
-        public class PaginationPage : DotLiquid.Drop
+        public class PaginationPage : RockDynamic
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="PaginationPage"/> class.

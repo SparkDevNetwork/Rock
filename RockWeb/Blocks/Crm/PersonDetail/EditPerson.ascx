@@ -184,7 +184,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockControlWrapper ID="rcwPreviousNames" runat="server" Label="Previous Last Names">
-                                        <Rock:Grid ID="grdPreviousNames" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false">
+                                        <Rock:Grid ID="grdPreviousNames" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false" ShowHeader="false">
                                             <Columns>
                                                 <Rock:RockBoundField DataField="LastName" />
                                                 <Rock:DeleteField OnClick="grdPreviousNames_Delete" />
@@ -227,7 +227,7 @@
                             </Content>
                         </Rock:ModalDialog>
 
-                        <div class="actions">
+                        <div class="panel-actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>

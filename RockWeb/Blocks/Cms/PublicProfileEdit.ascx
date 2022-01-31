@@ -129,27 +129,28 @@
                                 <Rock:NotificationBox ID="nbCommunicationPreferenceWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                             </div>
 
-
-
                             <asp:Panel ID="pnlAddress" runat="server">
                                 <div class="clearfix mb-2">
-                                    <span class="control-label pull-left"><asp:Literal ID="lAddressTitle" runat="server" /></span>
+                                    <span class="control-label pull-left">
+                                        <asp:Literal ID="lAddressTitle" runat="server" /></span>
                                     <asp:Literal ID="lPreviousAddress" runat="server" />
                                     <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs pull-right" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
                                 </div>
-                                    <asp:HiddenField ID="hfStreet1" runat="server" />
-                                    <asp:HiddenField ID="hfStreet2" runat="server" />
-                                    <asp:HiddenField ID="hfCity" runat="server" />
-                                    <asp:HiddenField ID="hfState" runat="server" />
-                                    <asp:HiddenField ID="hfPostalCode" runat="server" />
-                                    <asp:HiddenField ID="hfCountry" runat="server" />
+                                <asp:HiddenField ID="hfStreet1" runat="server" />
+                                <asp:HiddenField ID="hfStreet2" runat="server" />
+                                <asp:HiddenField ID="hfCity" runat="server" />
+                                <asp:HiddenField ID="hfState" runat="server" />
+                                <asp:HiddenField ID="hfPostalCode" runat="server" />
+                                <asp:HiddenField ID="hfCountry" runat="server" />
 
-                                    <Rock:AddressControl ID="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
+                                <Rock:AddressControl ID="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
 
-                                    <div class="row form-row -mt-form-group">
-                                        <div class="col-md-6"><Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" /></div>
-                                        <div class="col-md-6"><Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" /></div>
-                                    </div>
+                                <div class="row form-row -mt-form-group">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" /></div>
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" /></div>
+                                </div>
                             </asp:Panel>
 
                             <div class="actions">

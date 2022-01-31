@@ -26,6 +26,7 @@ using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -560,6 +561,8 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
+            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
+
             //
             // Setup the Details panel information.
             //
@@ -569,8 +572,18 @@ namespace RockWeb.Blocks.Mobile
             var fields = new List<KeyValuePair<string, string>>();
 
             fields.Add( new KeyValuePair<string, string>( "Title", page.PageTitle ) );
-            fields.Add( new KeyValuePair<string, string>( "Layout", page.Layout.Name ) );
+
+            if ( additionalSettings.PageType == MobilePageType.NativePage )
+            {
+                fields.Add( new KeyValuePair<string, string>( "Layout", page.Layout.Name ) );
+            }
+            else
+            {
+                fields.Add( new KeyValuePair<string, string>( "Page URL", additionalSettings.WebPageUrl ) );
+            }
+
             fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed ? "<i class='fa fa-check'></i>" : string.Empty ) );
+
             if ( page.IconBinaryFileId.HasValue )
             {
                 fields.Add( new KeyValuePair<string, string>( "Icon", GetImageTag( page.IconBinaryFileId, 200, 200, isThumbnail: true ) ) );
@@ -637,9 +650,15 @@ namespace RockWeb.Blocks.Mobile
             BindBlockTypeRepeater();
             BindZones();
 
+            hlInternalWebPage.ToolTip = string.Format( "This page will open {0} in an internal browser window.", additionalSettings.WebPageUrl );
+            hlExternalWebPage.ToolTip = string.Format( "This page will open {0} in an external browser application.", additionalSettings.WebPageUrl );
+
+            // Update the visibility of all controls to match our current state.
+            hlInternalWebPage.Visible = additionalSettings.PageType == MobilePageType.InternalWebPage;
+            hlExternalWebPage.Visible = additionalSettings.PageType == MobilePageType.ExternalWebPage;
             pnlDetails.Visible = true;
             pnlEditPage.Visible = false;
-            pnlBlocks.Visible = true;
+            pnlBlocks.Visible = additionalSettings.PageType == MobilePageType.NativePage;
         }
 
         /// <summary>
@@ -708,6 +727,10 @@ namespace RockWeb.Blocks.Mobile
             ceCssStyles.Text = additionalSettings.CssStyles;
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
+            ddlPageType.BindToEnum<MobilePageType>();
+            ddlPageType.SetValue( additionalSettings.PageType.ConvertToInt() );
+            tbWebPageUrl.Text = additionalSettings.WebPageUrl;
+
             // Configure the layout options.
             var siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
             ddlLayout.Items.Add( new ListItem() );
@@ -721,6 +744,8 @@ namespace RockWeb.Blocks.Mobile
             pnlEditPage.Visible = true;
             pnlDetails.Visible = false;
             pnlBlocks.Visible = false;
+
+            UpdateAdvancedSettingsVisibility();
         }
 
         /// <summary>
@@ -819,6 +844,211 @@ namespace RockWeb.Blocks.Mobile
             return contextTypesRequired;
         }
 
+        /// <summary>
+        /// Adds the controls that will be displayed with the block. These indicate various
+        /// states and features that are enabled or disabled on the block.
+        /// </summary>
+        /// <param name="block">The block.</param>
+        /// <param name="pnlLayoutItem">The placeholder to add the controls to.</param>
+        private void AddSettingsControls( BlockCache block, PlaceHolder pnlLayoutItem )
+        {
+            var additionalSettings = block.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
+
+            var markup = new StringBuilder();
+
+            if ( additionalSettings.ProcessLavaOnServer && additionalSettings.ProcessLavaOnClient )
+            {
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
+            }
+            else if ( additionalSettings.ProcessLavaOnServer )
+            {
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
+            }
+            else if ( additionalSettings.ProcessLavaOnClient )
+            {
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+            }
+
+            if ( additionalSettings.CacheDuration != 0 )
+            {
+                markup.Append( string.Format( "<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", additionalSettings.CacheDuration ) );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-memory margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Cache not set.'></i> " );
+            }
+
+            // Show on phone
+            if ( additionalSettings.ShowOnPhone )
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on phones.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
+            }
+
+            // Show on tablet
+            if ( additionalSettings.ShowOnTablet )
+            {
+                markup.Append( "<i class='fa fa-tablet-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on tablets.'></i> " );
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
+            }
+
+            // Requires Internet
+            if ( additionalSettings.RequiresNetwork )
+            {
+                if ( additionalSettings.NoNetworkContent.IsNullOrWhiteSpace() )
+                {
+                    markup.Append( "<i class='fa fa-wifi margin-r-sm text-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
+                }
+                else
+                {
+                    markup.Append( string.Format( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet. Content: {0}...'></i> ", additionalSettings.NoNetworkContent.Left( 250 ) ) );
+                }
+            }
+            else
+            {
+                markup.Append( "<i class='fa fa-wifi margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
+            }
+
+            pnlLayoutItem.Controls.Add( new Literal { Text = markup.ToString() } );
+        }
+
+        /// <summary>
+        /// Adds the admin controls.
+        /// </summary>
+        /// <param name="block">The block.</param>
+        /// <param name="pnlLayoutItem">The PNL layout item.</param>
+        private void AddAdminControls( BlockCache block, PlaceHolder pnlLayoutItem )
+        {
+            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right block-config-buttons" };
+
+            // Block Properties
+            var btnBlockProperties = new Literal
+            {
+                Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default btn-square properties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>", block.Id )
+            };
+            pnlAdminButtons.Controls.Add( btnBlockProperties );
+
+            // Block Security
+            int entityTypeBlockId = EntityTypeCache.Get<Rock.Model.Block>().Id;
+            var btnBlockSecurity = new SecurityButton
+            {
+                ID = "btnBlockSecurity",
+                EntityTypeId = entityTypeBlockId,
+                EntityId = block.Id,
+                Title = "Edit Security"
+            };
+            btnBlockSecurity.AddCssClass( "btn btn-sm btn-square btn-security" );
+            pnlAdminButtons.Controls.Add( btnBlockSecurity );
+
+            // Delete Block
+            LinkButton btnDeleteBlock = new LinkButton
+            {
+                ID = string.Format( "btnDeleteBlock_{0}", block.Id ),
+                CommandName = "Delete",
+                CommandArgument = block.Id.ToString(),
+                CssClass = "btn btn-sm btn-square btn-danger",
+                Text = "<i class='fa fa-times'></i>",
+                ToolTip = "Delete Block"
+            };
+            btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Block.FriendlyTypeName );
+
+            pnlAdminButtons.Controls.Add( btnDeleteBlock );
+
+            pnlLayoutItem.Controls.Add( pnlAdminButtons );
+
+            RockBlock blockControl = null;
+            IEnumerable<WebControl> customAdminControls = new List<WebControl>();
+            try
+            {
+                if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
+                {
+                    blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                }
+                else if ( block.BlockType.EntityTypeId.HasValue )
+                {
+                    var blockEntity = Activator.CreateInstance( block.BlockType.EntityType.GetEntityType() );
+
+                    var wrapper = new RockBlockTypeWrapper
+                    {
+                        Page = RockPage,
+                        Block = ( Rock.Blocks.IRockBlockType ) blockEntity
+                    };
+
+                    wrapper.InitializeAsUserControl( RockPage );
+                    wrapper.AppRelativeTemplateSourceDirectory = "~";
+
+                    blockControl = wrapper;
+                }
+
+                blockControl.SetBlock( block.Page, block, true, true );
+                var adminControls = blockControl.GetAdministrateControls( true, true );
+                string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
+                customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+            }
+            catch ( Exception ex )
+            {
+                // if the block doesn't compile, just ignore it since we are just trying to get the admin controls
+                Literal lblBlockError = new Literal();
+                lblBlockError.Text = string.Format( "<span class='label label-danger'>ERROR: {0}</span>", ex.Message );
+                pnlLayoutItem.Controls.Add( lblBlockError );
+            }
+
+            foreach ( var customAdminControl in customAdminControls )
+            {
+                if ( customAdminControl is LinkButton )
+                {
+                    LinkButton btn = customAdminControl as LinkButton;
+                    if ( btn != null )
+                    {
+                        // ensure custom link button looks like a button
+                        btn.AddCssClass( "btn" );
+                        btn.AddCssClass( "btn-sm" );
+                        btn.AddCssClass( "btn-default" );
+                        btn.AddCssClass( "btn-square" );
+
+                        // some admincontrols will toggle the BlockConfig bar, but this isn't a block config bar, so remove the javascript
+                        if ( btn.Attributes["onclick"] != null )
+                        {
+                            btn.Attributes["onclick"] = btn.Attributes["onclick"].Replace( "Rock.admin.pageAdmin.showBlockConfig()", string.Empty );
+                        }
+                    }
+                }
+
+                pnlLayoutItem.Controls.Add( customAdminControl );
+            }
+
+            if ( customAdminControls.Any() && blockControl != null )
+            {
+                pnlBlocksHolder.Controls.Add( blockControl );
+            }
+        }
+
+        /// <summary>
+        /// Updates the advanced settings controls visibility states to match
+        /// the current selections in the UI.
+        /// </summary>
+        private void UpdateAdvancedSettingsVisibility()
+        {
+            var pageType = ddlPageType.SelectedValueAsEnum<MobilePageType>( MobilePageType.NativePage );
+
+            if ( pageType == MobilePageType.NativePage )
+            {
+                tbWebPageUrl.Visible = false;
+                pnlNativePageAdvancedSettings.Visible = true;
+            }
+            else
+            {
+                tbWebPageUrl.Visible = true;
+                pnlNativePageAdvancedSettings.Visible = false;
+            }
+        }
+
         #endregion
 
         #region Event Handlers
@@ -855,6 +1085,8 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.HideNavigationBar = cbHideNavigationBar.Checked;
             additionalSettings.ShowFullScreen = cbShowFullScreen.Checked;
             additionalSettings.AutoRefresh = cbAutoRefresh.Checked;
+            additionalSettings.PageType = ddlPageType.SelectedValueAsEnum<MobilePageType>( MobilePageType.NativePage );
+            additionalSettings.WebPageUrl = tbWebPageUrl.Text;
 
             page.InternalName = tbInternalName.Text;
             page.BrowserTitle = tbName.Text;
@@ -1032,185 +1264,6 @@ namespace RockWeb.Blocks.Mobile
             }
         }
 
-        private void AddSettingsControls( BlockCache block, PlaceHolder pnlLayoutItem )
-        {
-            var additionalSettings = block.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
-
-            var markup = new StringBuilder();
-
-            if ( additionalSettings.ProcessLavaOnServer && additionalSettings.ProcessLavaOnClient )
-            {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
-            }
-            else if ( additionalSettings.ProcessLavaOnServer )
-            {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
-            }
-            else if ( additionalSettings.ProcessLavaOnClient )
-            {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
-            }
-
-            if ( additionalSettings.CacheDuration != 0  )
-            {
-                markup.Append( string.Format("<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", additionalSettings.CacheDuration ) );
-            }
-            else
-            {
-                markup.Append( "<i class='fa fa-memory margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Cache not set.'></i> " );
-            }
-
-            // Show on phone
-            if ( additionalSettings.ShowOnPhone )
-            {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on phones.'></i> " );
-            }
-            else
-            {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
-            }
-
-            // Show on tablet
-            if ( additionalSettings.ShowOnTablet )
-            {
-                markup.Append( "<i class='fa fa-tablet-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on tablets.'></i> " );
-            }
-            else
-            {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
-            }
-
-            // Requires Internet
-            if ( additionalSettings.RequiresNetwork )
-            {
-                if ( additionalSettings.NoNetworkContent.IsNullOrWhiteSpace() )
-                {
-                    markup.Append( "<i class='fa fa-wifi margin-r-sm text-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
-                }
-                else
-                {
-                    markup.Append( string.Format( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet. Content: {0}...'></i> ", additionalSettings.NoNetworkContent.Left(250)) );
-                }
-            }
-            else
-            {
-                markup.Append( "<i class='fa fa-wifi margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
-            }
-
-            pnlLayoutItem.Controls.Add( new Literal { Text = markup.ToString() } ) ;
-        }
-
-        /// <summary>
-        /// Adds the admin controls.
-        /// </summary>
-        /// <param name="block">The block.</param>
-        /// <param name="pnlLayoutItem">The PNL layout item.</param>
-        private void AddAdminControls( BlockCache block, PlaceHolder pnlLayoutItem )
-        {
-            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right actions" };
-
-            // Block Properties
-            var btnBlockProperties = new Literal
-            {
-                Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default btn-square properties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>", block.Id )
-            };
-            pnlAdminButtons.Controls.Add( btnBlockProperties );
-
-            // Block Security
-            int entityTypeBlockId = EntityTypeCache.Get<Rock.Model.Block>().Id;
-            var btnBlockSecurity = new SecurityButton
-            {
-                ID = "btnBlockSecurity",
-                EntityTypeId = entityTypeBlockId,
-                EntityId = block.Id,
-                Title = "Edit Security"
-            };
-            btnBlockSecurity.AddCssClass( "btn btn-sm btn-square btn-security" );
-            pnlAdminButtons.Controls.Add( btnBlockSecurity );
-
-            // Delete Block
-            LinkButton btnDeleteBlock = new LinkButton
-            {
-                ID = string.Format( "btnDeleteBlock_{0}", block.Id ),
-                CommandName = "Delete",
-                CommandArgument = block.Id.ToString(),
-                CssClass = "btn btn-sm btn-square btn-danger",
-                Text = "<i class='fa fa-times'></i>",
-                ToolTip = "Delete Block"
-            };
-            btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Block.FriendlyTypeName );
-
-            pnlAdminButtons.Controls.Add( btnDeleteBlock );
-
-            pnlLayoutItem.Controls.Add( pnlAdminButtons );
-
-            RockBlock blockControl = null;
-            IEnumerable<WebControl> customAdminControls = new List<WebControl>();
-            try
-            {
-                if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
-                {
-                    blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                }
-                else if ( block.BlockType.EntityTypeId.HasValue )
-                {
-                    var blockEntity = Activator.CreateInstance( block.BlockType.EntityType.GetEntityType() );
-
-                    var wrapper = new RockBlockTypeWrapper
-                    {
-                        Page = RockPage,
-                        Block = ( Rock.Blocks.IRockBlockType ) blockEntity
-                    };
-
-                    wrapper.InitializeAsUserControl( RockPage );
-                    wrapper.AppRelativeTemplateSourceDirectory = "~";
-
-                    blockControl = wrapper;
-                }
-
-                blockControl.SetBlock( block.Page, block, true, true );
-                var adminControls = blockControl.GetAdministrateControls( true, true );
-                string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
-                customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
-            }
-            catch ( Exception ex )
-            {
-                // if the block doesn't compile, just ignore it since we are just trying to get the admin controls
-                Literal lblBlockError = new Literal();
-                lblBlockError.Text = string.Format( "<span class='label label-danger'>ERROR: {0}</span>", ex.Message );
-                pnlLayoutItem.Controls.Add( lblBlockError );
-            }
-
-            foreach ( var customAdminControl in customAdminControls )
-            {
-                if ( customAdminControl is LinkButton )
-                {
-                    LinkButton btn = customAdminControl as LinkButton;
-                    if ( btn != null )
-                    {
-                        // ensure custom link button looks like a button
-                        btn.AddCssClass( "btn" );
-                        btn.AddCssClass( "btn-sm" );
-                        btn.AddCssClass( "btn-default" );
-                        btn.AddCssClass( "btn-square" );
-
-                        // some admincontrols will toggle the BlockConfig bar, but this isn't a block config bar, so remove the javascript
-                        if ( btn.Attributes["onclick"] != null )
-                        {
-                            btn.Attributes["onclick"] = btn.Attributes["onclick"].Replace( "Rock.admin.pageAdmin.showBlockConfig()", string.Empty );
-                        }
-                    }
-                }
-
-                pnlLayoutItem.Controls.Add( customAdminControl );
-            }
-
-            if ( customAdminControls.Any() && blockControl != null )
-            {
-                pnlBlocksHolder.Controls.Add( blockControl );
-            }
-        }
-
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlBlockTypeCategory control.
         /// </summary>
@@ -1221,6 +1274,11 @@ namespace RockWeb.Blocks.Mobile
             BindBlockTypeRepeater();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlPageList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlPageList_SelectedIndexChanged( object sender, EventArgs e )
         {
             var queryString = new Dictionary<string, string>();
@@ -1228,6 +1286,16 @@ namespace RockWeb.Blocks.Mobile
             queryString.Add( PageParameterKeys.Page, ddlPageList.SelectedValue );
 
             NavigateToCurrentPage( queryString );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlPageType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlPageType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateAdvancedSettingsVisibility();
         }
 
         #endregion

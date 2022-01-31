@@ -34,28 +34,49 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Displays a list of families to select for checkin." )]
 
     [TextField( "Title",
-        description: "Title to display.",
-        required: false,
-        defaultValue: "Families",
-        category: "Text",
-        order: 5,
-        key: "Title" )]
+        Description = "Title to display.",
+        IsRequired = false,
+        DefaultValue = "Families",
+        Category = "Text",
+        Order = 5,
+        Key = AttributeKey.Title )]
+
     [TextField( "Caption",
-        description: "Caption to display.",
-        required: false,
-        defaultValue: "Select Your Family",
-        category: "Text",
-        order: 6,
-        key: "Caption" )]
+        Description = "Caption to display.",
+        IsRequired = false,
+        DefaultValue = "Select Your Family",
+        Category = "Text",
+        Order = 6,
+        Key = AttributeKey.Caption )]
+
     [TextField( "No Option Message",
-        description: "Text to display when there is not anyone in the family that can check-in",
-        required: false,
-        defaultValue: "Sorry, no one in your family is eligible to check-in at this location.",
-        category: "Text",
-        order: 7,
-        key: "NoOptionMessage" )]
+        Description = "Text to display when there is not anyone in the family that can check-in",
+        IsRequired = false,
+        DefaultValue = "Sorry, no one in your family is eligible to check-in at this location.",
+        Category = "Text",
+        Order = 7,
+        Key = AttributeKey.NoOptionMessage )]
+
+    [BooleanField( "Prioritize families for this campus",
+        Description = "If enabled, families matching this kiosk's campus will appear first. Otherwise families will appear in alphabetical order regardless of their campus.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 8,
+        Key = AttributeKey.PrioritizeFamiliesForThisCampus )]
+
     public partial class FamilySelect : CheckInBlock
     {
+        /* 2021-08/13 ETD
+         * Use new here because the parent CheckInBlock also has inherited class AttributeKey.
+         */
+        private new static class AttributeKey
+        {
+            public const string Title = "Title";
+            public const string Caption = "Caption";
+            public const string NoOptionMessage = "NoOptionMessage";
+            public const string PrioritizeFamiliesForThisCampus = "PrioritizeFamiliesForThisCampus";
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -65,12 +86,6 @@ namespace RockWeb.Blocks.CheckIn
             base.OnLoad( e );
 
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
-
-            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
-            if ( bodyTag != null )
-            {
-                bodyTag.AddCssClass( "checkin-familyselect-bg" );
-            }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -140,14 +155,37 @@ namespace RockWeb.Blocks.CheckIn
 
         private void BindResults()
         {
-            lTitle.Text = GetAttributeValue( "Title" );
-            lCaption.Text = GetAttributeValue( "Caption" );
+            lTitle.Text = GetAttributeValue( AttributeKey.Title );
+            lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
-            rSelection.DataSource = CurrentCheckInState.CheckIn.Families
-                .OrderBy( f => f.Caption )
-                .ThenBy( f => f.SubCaption )
-                .ToList();
+            List<CheckInFamily> checkInFamilies = new List<CheckInFamily>();
 
+            if ( GetAttributeValue( AttributeKey.PrioritizeFamiliesForThisCampus ).AsBoolean() == true )
+            {
+                // Get the families in the same campus as the kiosk so they appear first.
+                checkInFamilies = CurrentCheckInState.CheckIn.Families
+                    .Where( f => f.Group.CampusId == CurrentCheckInState.Kiosk.CampusId )
+                    .OrderBy( f => f.Caption)
+                    .ThenBy( f => f.SubCaption )
+                    .ToList();
+
+                // Now get all the other families ordered by family name and append them to the list.
+                checkInFamilies.AddRange( CurrentCheckInState.CheckIn.Families
+                    .Where( f => f.Group.CampusId != CurrentCheckInState.Kiosk.CampusId )
+                    .OrderBy( f => f.Caption)
+                    .ThenBy( f => f.SubCaption )
+                    .ToList() );
+            }
+            else
+            {
+                // This list will be campus agnostic, so fetch everyone and order by family name.
+                checkInFamilies = CurrentCheckInState.CheckIn.Families
+                    .OrderBy( f => f.Caption )
+                    .ThenBy( f => f.SubCaption )
+                    .ToList();
+            }
+
+            rSelection.DataSource = checkInFamilies;
             rSelection.DataBind();
         }
 
@@ -187,6 +225,7 @@ namespace RockWeb.Blocks.CheckIn
             pnlSelectFamilyPostback.Attributes["data-target"] = Page.ClientScript.GetPostBackEventReference( rSelection, checkInFamily.Group.Id.ToString() );
             pnlSelectFamilyPostback.Attributes["data-loading-text"] = "Loading...";
             Literal lSelectFamilyButtonHtml = e.Item.FindControl( "lSelectFamilyButtonHtml" ) as Literal;
+
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             mergeFields.Add( "Family", checkInFamily );
             mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
@@ -199,10 +238,10 @@ namespace RockWeb.Blocks.CheckIn
                     .AsNoTracking()
                     .Where( a => a.GroupId == checkInFamily.Group.Id )
                     .OrderBy( m => m.GroupRole.Order )
-                                    .ThenBy( m => m.Person.BirthYear )
-                                    .ThenBy( m => m.Person.BirthMonth )
-                                    .ThenBy( m => m.Person.BirthDay )
-                                    .ThenBy( m => m.Person.Gender );
+                    .ThenBy( m => m.Person.BirthYear )
+                    .ThenBy( m => m.Person.BirthMonth )
+                    .ThenBy( m => m.Person.BirthDay )
+                    .ThenBy( m => m.Person.Gender );
 
                 var familySelectLavaTemplate = CurrentCheckInState.CheckInType.FamilySelectLavaTemplate;
 
@@ -285,7 +324,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             get
             {
-                string conditionMessage = string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionMessage" ) );
+                string conditionMessage = string.Format( "<p>{0}</p>", GetAttributeValue( AttributeKey.NoOptionMessage ) );
                 return conditionMessage;
             }
         }

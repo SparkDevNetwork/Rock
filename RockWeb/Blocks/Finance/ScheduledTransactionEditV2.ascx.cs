@@ -18,11 +18,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
@@ -104,17 +106,27 @@ namespace RockWeb.Blocks.Finance
 
     #endregion Text Options
 
-    #region Advanced options
+    #region Editing Options
 
     [BooleanField(
-        "Impersonation",
+        "Impersonator",
         Key = AttributeKey.AllowImpersonation,
         Description = "Should the current user be able to view and edit other people's transactions? IMPORTANT: This should only be enabled on an internal page that is secured to trusted users.",
         TrueText = "Allow (only use on an internal page used by staff)",
         FalseText = "Don't Allow",
         DefaultBooleanValue = false,
-        Category = AttributeCategory.Advanced,
+        Category = AttributeCategory.EditingOptions,
         Order = 1 )]
+
+    [BooleanField(
+        "Impersonator can see saved accounts",
+        Key = AttributeKey.ImpersonatorCanSeeSavedAccounts,
+        Description = "Should the current user be able to view other people's saved accounts?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
+        TrueText = "Allow (only use on an internal page used by staff)",
+        FalseText = "Don't Allow",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.EditingOptions,
+        Order = 2 )]
 
     #endregion Advanced options
 
@@ -266,6 +278,8 @@ mission. We are so grateful for your commitment.</p>
 
             public const string AllowImpersonation = "AllowImpersonation";
 
+            public const string ImpersonatorCanSeeSavedAccounts = "ImpersonatorCanSeeSavedAccounts";
+
             public const string GiftTerm = "GiftTerm";
 
             public const string AskForCampusIfKnown = "AskForCampusIfKnown";
@@ -285,6 +299,8 @@ mission. We are so grateful for your commitment.</p>
 
             public const string TextOptions = "Text Options";
 
+            public const string EditingOptions = "Editing Options";
+
             public const string Advanced = "Advanced";
         }
 
@@ -295,6 +311,7 @@ mission. We are so grateful for your commitment.</p>
         public static class PageParameterKey
         {
             public const string ScheduledTransactionId = "ScheduledTransactionId";
+            public const string Person = "Person";
         }
 
         #endregion PageParameterKeys
@@ -320,6 +337,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 // NOTE: Also verified in ShowDetails()
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Scheduled Transaction not found." );
+                pnlPromptForChanges.Visible = false;
                 return;
             }
 
@@ -411,7 +429,44 @@ mission. We are so grateful for your commitment.</p>
                 return null;
             }
 
-            FinancialScheduledTransaction scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetInclude( scheduledTransactionId.Value, i => i.AuthorizedPersonAlias.Person );
+            Person targetPerson = null;
+
+            // If impersonation is allowed, and a valid person key was used, set the target to that person
+            if ( GetAttributeValue( AttributeKey.AllowImpersonation ).AsBoolean() )
+            {
+                string personKey = PageParameter( PageParameterKey.Person );
+                if ( !string.IsNullOrWhiteSpace( personKey ) )
+                {
+                    targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
+                }
+            }
+
+            if ( targetPerson == null )
+            {
+                targetPerson = CurrentPerson;
+            }
+
+            if ( targetPerson == null )
+            {
+                return null;
+            }
+
+            var personService = new PersonService( rockContext );
+
+            // get the giving ids for the target person, as well as giving ids associated with any businesses associated with the target person
+            var validGivingIds = new List<string> { targetPerson.GivingId };
+            validGivingIds.AddRange( personService.GetBusinesses( targetPerson.Id ).Select( b => b.GivingId ) );
+
+            // Get scheduledTransaction by scheduledTransactionId, but also check to see if is valid
+            // for the target person's giving Ids
+            FinancialScheduledTransaction scheduledTransaction = new FinancialScheduledTransactionService( rockContext )
+                .Queryable().Include( i => i.AuthorizedPersonAlias.Person )
+                .Where( t =>
+                     t.Id == scheduledTransactionId &&
+                     t.AuthorizedPersonAlias != null &&
+                     t.AuthorizedPersonAlias.Person != null &&
+                     validGivingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) )
+                .FirstOrDefault();
 
             if ( scheduledTransaction != null )
             {
@@ -516,8 +571,8 @@ mission. We are so grateful for your commitment.</p>
                     - If 'Change' is clicked, existing payment info prompt will disappear and hosted payment will be displayed
                 - Has Saved Accounts
                     - Show RadioButtons with first item with the existing payment as the option, followed by saved accounts
-                    - Then under the Radiobuttons show a 'Add Method'.
-                    - If 'Add Method' is clicked, radiobuttons will disappear and hosted payment will be displayed
+                    - Then under the RadioButtons show a 'Add Method'.
+                    - If 'Add Method' is clicked, RadioButtons will disappear and hosted payment will be displayed
              */
 
             string paymentName;
@@ -634,6 +689,10 @@ mission. We are so grateful for your commitment.</p>
             caapPromptForAccountAmounts.CampusId = defaultCampusId;
         }
 
+        /// <summary>
+        /// Gets the saved accounts.
+        /// </summary>
+        /// <returns></returns>
         private List<FinancialPersonSavedAccount> GetSavedAccounts()
         {
             var financialGateway = this.FinancialGateway;
@@ -646,6 +705,14 @@ mission. We are so grateful for your commitment.</p>
 
             var scheduledTransaction = this.GetFinancialScheduledTransaction( rockContext );
             var targetPersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId;
+
+            if ( targetPersonId != CurrentPersonId )
+            {
+                if ( GetAttributeValue( AttributeKey.ImpersonatorCanSeeSavedAccounts ).AsBoolean() == false )
+                {
+                    return new List<FinancialPersonSavedAccount>();
+                }
+            }
 
             var personSavedAccountsQuery = new FinancialPersonSavedAccountService( rockContext )
                 .GetByPersonId( targetPersonId )
@@ -832,11 +899,12 @@ mission. We are so grateful for your commitment.</p>
                 }
 
                 rockContext.SaveChanges();
+                Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( financialScheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
             }
             catch ( Exception )
             {
                 // if the GatewayScheduleId was updated, but there was an exception,
-                // make sure we save the  financialScheduledTransaction record with the updated GatewaayScheduleId so we don't orphan it
+                // make sure we save the  financialScheduledTransaction record with the updated GatewayScheduleId so we don't orphan it
                 if ( financialScheduledTransaction.GatewayScheduleId.IsNotNullOrWhiteSpace() && ( originalGatewayScheduleId != financialScheduledTransaction.GatewayScheduleId ) )
                 {
                     rockContext.SaveChanges();
@@ -848,7 +916,7 @@ mission. We are so grateful for your commitment.</p>
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
 
-            // refetch financialScheduledTransaction with a new rockcontex from database to ensure that lazy loaded fields will be populated
+            // re-fetch financialScheduledTransaction with a new RockContext from database to ensure that lazy loaded fields will be populated
             using ( var rockContextForSummary = new RockContext() )
             {
                 if ( pnlHostedPaymentControl.Visible && hfSaveNewAccount.Value.AsInteger() == 1 && tbSaveAccount.Text.IsNotNullOrWhiteSpace() )

@@ -23,7 +23,7 @@
 
                 <Rock:NotificationBox ID="nbNotification" runat="server" NotificationBoxType="Warning" />
 
-                <div class="grid">
+                <div class="grid grid-panel">
                     <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" OnRowDataBound="gGroupLocationSchedule_RowDataBound" >
                         <Columns>
 		                    <Rock:RockLiteralField ID="lGroupName" HeaderText="Group" SortExpression="Group.Name" />

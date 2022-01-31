@@ -61,7 +61,7 @@ namespace Rock.Tests.Integration.DotLiquidTests
                     }
                     catch
                     {
-                        failures.Add( DateTime.Now );
+                        failures.Add( RockDateTime.Now );
                     }
                 }
             );

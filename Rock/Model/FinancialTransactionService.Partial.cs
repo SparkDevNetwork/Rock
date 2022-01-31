@@ -21,8 +21,7 @@ using System.Linq;
 
 using Rock.BulkExport;
 using Rock.Data;
-using Rock.SystemKey;
-using Rock.Utility.Settings.GivingAnalytics;
+using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,17 +32,6 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialTransactionService
     {
-        /// <summary>
-        /// Gets a transaction by its transaction code.
-        /// </summary>
-        /// <param name="transactionCode">The transaction code.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code", true )]
-        public FinancialTransaction GetByTransactionCode( string transactionCode )
-        {
-            return this.GetByTransactionCode( null, transactionCode );
-        }
 
         /// <summary>
         /// Gets a transaction by its transaction code.
@@ -360,21 +348,29 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the giving analytics (see Giving Analytics job) source transaction query.
+        /// Gets the giving automation source transaction query by giving identifier.
+        /// </summary>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <returns>IQueryable&lt;FinancialTransaction&gt;.</returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryByGivingId( string givingId )
+        {
+            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
+
+            return GetGivingAutomationSourceTransactionQuery().Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
+        }
+
+        /// <summary>
+        /// Gets the giving automation source transaction query.
+        /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
         /// </summary>
         /// <returns></returns>
-        public IQueryable<FinancialTransaction> GetGivingAnalyticsSourceTransactionQuery()
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQuery()
         {
             var query = Queryable().AsNoTracking();
-            var settings =
-                Web.SystemSettings.GetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION ).FromJsonOrNull<GivingAnalyticsSetting>() ??
-                new GivingAnalyticsSetting();
+            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
 
             // Filter by transaction type (defaults to contributions only)
-            var transactionTypeGuids =
-                settings.TransactionTypeGuids ??
-                new List<Guid> { SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
-            var transactionTypeIds = transactionTypeGuids.Select( DefinedValueCache.Get ).Select( dv => dv.Id ).ToList();
+            var transactionTypeIds = settings.TransactionTypeGuids.Select( DefinedValueCache.Get ).Select( dv => dv.Id ).ToList();
 
             if ( transactionTypeIds.Count() == 1 )
             {
@@ -386,51 +382,96 @@ namespace Rock.Model
                 query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
             }
 
-            // Filter accounts, defaults to tax deductible only
-            var accountGuids = settings.FinancialAccountGuids ?? new List<Guid>();
+            List<int> accountIds;
+            if ( settings.FinancialAccountGuids?.Any() == true )
+            {
+                accountIds = new FinancialAccountService( this.Context as RockContext ).GetByGuids( settings.FinancialAccountGuids ).Select( a => a.Id ).ToList();
+            }
+            else
+            {
+                accountIds = new List<int>();
+            }
 
-            if ( !accountGuids.Any() )
+            // Filter accounts, defaults to tax deductible only
+            if ( !accountIds.Any() )
             {
                 query = query.Where( t => t.TransactionDetails.Any( td => td.Account.IsTaxDeductible ) );
             }
             else if ( settings.AreChildAccountsIncluded == true )
             {
-                query = query.Where( t => t.TransactionDetails.Any( td =>
-                    accountGuids.Contains( td.Account.Guid ) ||
-                    accountGuids.Contains( td.Account.ParentAccount.Guid ) ) );
+                if ( accountIds.Count() == 1 )
+                {
+                    var accountId = accountIds[0];
+                    query = query.Where( t => t.TransactionDetails.Any( td => td.AccountId == accountId ||
+                        ( td.Account.ParentAccountId.HasValue && accountId == td.Account.ParentAccountId.Value ) ) );
+
+                }
+                else
+                {
+                    query = query.Where( t => t.TransactionDetails.Any( td =>
+                        accountIds.Contains( td.AccountId ) ||
+                        ( td.Account.ParentAccountId.HasValue && accountIds.Contains( td.Account.ParentAccountId.Value ) ) ) );
+                }
             }
             else
             {
-                query = query.Where( t => t.TransactionDetails.Any( td => accountGuids.Contains( td.Account.Guid ) ) );
+                if ( accountIds.Count() == 1 )
+                {
+                    var accountId = accountIds[0];
+                    query = query.Where( t => t.TransactionDetails.Any( td => accountId == td.AccountId ) );
+                }
+                else
+                {
+                    query = query.Where( t => t.TransactionDetails.Any( td => accountIds.Contains( td.AccountId ) ) );
+                }
             }
 
             // Remove transactions that have refunds
             query = query.Where( t => !t.Refunds.Any() );
 
             // Remove transactions with $0 or negative amounts
-            query = query.Where( t => t.TransactionDetails.Sum( d => d.Amount ) > 0M );
+            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
 
             return query;
         }
 
         /// <summary>
-        /// Gets the giving analytics monthly account giving history. This is used for the Giving Overview block's monthly
+        /// Gets the giving automation monthly account giving history. This is used for the Giving Overview block's monthly
         /// bar chart and also yearly summary.
         /// </summary>
         /// <returns></returns>
-        public List<MonthlyAccountGivingHistory> GetGivingAnalyticsMonthlyAccountGivingHistory( string givingId )
+        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId )
         {
-            var personAliasIdQry = new PersonAliasService( this.Context as RockContext )
+            return GetGivingAutomationMonthlyAccountGivingHistory( givingId, null );
+        }
+
+        /// <summary>
+        /// Gets the giving automation monthly account giving history. This is used for the Giving Overview block's monthly
+        /// bar chart and also yearly summary.
+        /// </summary>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <returns>List&lt;MonthlyAccountGivingHistory&gt;.</returns>
+        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId, DateTime? startDateTime )
+        {
+            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext )
                 .Queryable()
                 .Where( a => a.Person.GivingId == givingId )
                 .Select( a => a.Id );
 
-            var views = GetGivingAnalyticsSourceTransactionQuery()
+            var qry = GetGivingAutomationSourceTransactionQuery()
                 .AsNoTracking()
                 .Where( t =>
                     t.TransactionDateTime.HasValue &&
                     t.AuthorizedPersonAliasId.HasValue &&
-                    personAliasIdQry.Contains( t.AuthorizedPersonAliasId.Value ) )
+                    givingIdPersonAliasIdQuery.Contains( t.AuthorizedPersonAliasId.Value ) );
+
+            if ( startDateTime.HasValue )
+            {
+                qry = qry.Where( t => t.TransactionDateTime >= startDateTime );
+            }
+
+            var views = qry
                 .SelectMany( t => t.TransactionDetails.Select( td => new
                 {
                     TransactionDateTime = t.TransactionDateTime.Value,
@@ -439,7 +480,7 @@ namespace Rock.Model
                 } ) )
                 .ToList();
 
-            var objects = views
+            var monthlyAccountGivingHistoryList = views
                 .GroupBy( a => new { a.TransactionDateTime.Year, a.TransactionDateTime.Month, a.AccountId } )
                 .Select( t => new MonthlyAccountGivingHistory
                 {
@@ -452,18 +493,20 @@ namespace Rock.Model
                 .ThenByDescending( a => a.Month )
                 .ToList();
 
-            return objects;
+            return monthlyAccountGivingHistoryList;
         }
 
         /// <summary>
-        /// Gets the giving analytics monthly account giving history that was stored as JSON in an attribute. This is used for the
+        /// Gets the giving automation monthly account giving history that was stored as JSON in an attribute. This is used for the
         /// Giving Overview block's monthly bar chart and also yearly summary.
         /// </summary>
         /// <returns></returns>
-        public static List<MonthlyAccountGivingHistory> GetGivingAnalyticsMonthlyAccountGivingHistoryFromJson( string json )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use GetGivingAutomationMonthlyAccountGivingHistory instead" )]
+        public static List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistoryFromJson( string json )
         {
-            var objects = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
-            return objects ?? new List<MonthlyAccountGivingHistory>();
+            var monthlyAccountGivingHistoryList = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
+            return monthlyAccountGivingHistoryList ?? new List<MonthlyAccountGivingHistory>();
         }
     }
 

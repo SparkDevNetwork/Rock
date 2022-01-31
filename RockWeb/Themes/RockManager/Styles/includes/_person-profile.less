@@ -99,6 +99,9 @@
 
 .widget-gender {
   width: 50px;
+  div {
+    z-index: 1;
+  }
 
   &::before {
     position: absolute;
@@ -109,7 +112,7 @@
     font-size: 38px;
     font-weight: @fa-theme-weight;
     line-height: 1;
-    color: rgba(0,0,0,.05);
+    color: @badge-bg;
     content: @fa-var-restroom;
   }
 }

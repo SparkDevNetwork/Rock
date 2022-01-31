@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -55,6 +56,13 @@ namespace Rock.Field
         public virtual List<string> ConfigurationKeys()
         {
             return new List<string>();
+        }
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        {
+            return configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
         }
 
         /// <summary>
@@ -95,6 +103,34 @@ namespace Rock.Field
         public virtual HorizontalAlign AlignValue
         {
             get { return HorizontalAlign.Left; }
+        }
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return value;
+        }
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return GetTextValue( value, configurationValues );
+        }
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return GetTextValue( value, configurationValues ).Truncate( 100 );
+        }
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual string GetCondensedHtmlValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return GetCondensedTextValue( value, configurationValues );
         }
 
         /// <summary>
@@ -172,6 +208,18 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // by default, get the field type's value
+            return value;
+        }
+
+        /// <summary>
         /// Returns the value that should be used for sorting, using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -206,6 +254,27 @@ namespace Rock.Field
         /// <c>true</c> if this instance has default control; otherwise, <c>false</c>.
         /// </value>
         public virtual bool HasDefaultControl => true;
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return value;
+        }
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual string GetClientEditValue( string value, Dictionary<string, string> configurationValues )
+        {
+            return GetClientValue( value, configurationValues );
+        }
+
+        /// <inheritdoc/>
+        [RockInternal]
+        public virtual string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        {
+            return clientValue;
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-
+using Rock.Utility;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -27,28 +27,26 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="DotLiquid.Drop" />
-    public class NoteOptions : DotLiquid.Drop
+    public class NoteOptions : RockDynamic
     {
         private StateBag _containerViewState;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteOptions"/> class.
         /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( " Use NoteOptions( NoteContainer noteContainer ) instead", true )]
-        public NoteOptions() : this( null )
+        /// <param name="noteContainer">The note container.</param>
+        public NoteOptions( NoteContainer noteContainer )
+            : this( noteContainer?.ContainerViewState )
         {
-
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteOptions"/> class.
         /// </summary>
-        /// <param name="noteContainer">The note container.</param>
-        public NoteOptions( NoteContainer noteContainer )
+        /// <param name="containerViewState">The ViewState of the parent control</param>
+        public NoteOptions( StateBag containerViewState )
         {
-            _containerViewState = noteContainer?.ContainerViewState ?? new StateBag();
+            _containerViewState = containerViewState;
             _noteTypeIds = new List<int>();
         }
 

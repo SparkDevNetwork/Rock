@@ -24,7 +24,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-line-chart"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" Text="Email Analytics" /></h1>
 
-                <div class="pull-right">
+                <div class="panel-labels">
 
                     <asp:HiddenField ID="hfSelectedMonthsDateRange" runat="server" />
                     <%-- If not specific communication(s) were selected, limit the date range --%>
@@ -43,7 +43,7 @@
                     <div class="col-md-12">
                         <%-- Main Opens/Clicks Line Chart --%>
                         <div class="chart-container">
-                            <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
+                            <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" CssClass="my-4" NotificationBoxType="Info" Text="No Communication Activity" />
                             <canvas id="openClicksLineChartCanvas" runat="server" style="height: 450px;" />
                         </div>
                     </div>

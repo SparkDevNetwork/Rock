@@ -4,20 +4,20 @@
     <ContentTemplate>
 
         <div class="persondetails-grouplist js-grouplist-sort-container">
-            
+
             <asp:Repeater ID="rptrGroups" runat="server" >
             <ItemTemplate>
 
                 <asp:Panel ID="pnlGroup" runat="server" CssClass="persondetails-group js-persondetails-group panel-widget">
                     <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("Id") %>' />
                     <header>
-                        <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs panel-widget-reorder pull-left js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
+                        <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs panel-widget-reorder align-self-center pull-left js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
                         <h1><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></h1>
 
                         <div class="action-wrapper">
                             <asp:HyperLink ID="hlShowMoreAttributes" runat="server" CssClass="action js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></asp:HyperLink>
                             <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="action"><i class="fa fa-pencil"></i></asp:HyperLink>
-                        </div>              
+                        </div>
                     </header>
 
                     <asp:Literal ID="lGroupHeader" runat="server" />
@@ -84,7 +84,7 @@
 
             </ItemTemplate>
         </asp:Repeater>
-            
+
         </div>
 
         <script>

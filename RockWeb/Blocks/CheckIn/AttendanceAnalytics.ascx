@@ -17,16 +17,16 @@
                 </h1>
 
                 <div class="panel-labels">
-                    <asp:Button ID="btnCheckinDetails" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnCheckinDetails_Click" Text="Check-in Detail" />
-                    <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()">
-                        <i class='fa fa-question-circle'></i>
+                    <a href="#" class="btn btn-default btn-xs btn-square" onclick="$('.js-slidingdaterange-help').slideToggle()">
+                        <i class='fa fa-question'></i>
                     </a>
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
-                        class="btn btn-link padding-all-none btn-copy-to-clipboard"
+                        class="btn btn-default btn-xs btn-square btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
+                    <asp:Button ID="btnCheckinDetails" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnCheckinDetails_Click" Text="Check-in Detail" />
                 </div>
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
@@ -35,8 +35,9 @@
                 Text="<p>You've selected an invalid group id, or you do not have authorization to view attendance for the selected group.</p>" />
             <asp:Panel ID="pnlContent" runat="server">
 
-                <div class="panel-info">
-                    <div class="alert alert-info js-slidingdaterange-help margin-v-none" style="display: none">
+                <div class="panel-collapsable p-0">
+                    <div class="panel-drawer js-slidingdaterange-help border-bottom border-panel p-3" style="display: none">
+                        <h5 class="mt-0 mb-4">Sliding Date Range Help</h5>
                         <asp:Literal ID="lSlidingDateRangeHelp" runat="server" />
                     </div>
                 </div>

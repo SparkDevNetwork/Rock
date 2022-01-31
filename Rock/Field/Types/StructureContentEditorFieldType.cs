@@ -15,15 +15,18 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
+using Rock.Cms.StructuredContent;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    ///
+    /// Field type to encapsulate a structured content editor which allows
+    /// the individual a nice UI interface to editing content.
     /// </summary>
     public class StructureContentEditorFieldType : FieldType
     {
@@ -80,19 +83,25 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
+        {
+            var helper = new StructuredContentHelper( value );
+
+            return helper.Render();
+        }
+
         /// <summary>
         /// Formats the value as HTML.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condesed].</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            var structureContentEditor = new StructureContentEditor();
-            structureContentEditor.StructuredContent = value;
-            return structureContentEditor.HtmlContent;
+            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         /// <summary>
@@ -107,9 +116,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            var structureContentEditor = new StructureContentEditor();
-            structureContentEditor.StructuredContent = value;
-            return structureContentEditor.HtmlContent;
+            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

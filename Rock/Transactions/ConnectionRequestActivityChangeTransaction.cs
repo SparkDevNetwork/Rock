@@ -54,6 +54,21 @@ namespace Rock.Transactions
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionRequestActivityChangeTransaction"/> class.
+        /// </summary>
+        /// <param name="connectionRequestActivity">The connectionRequestActivity.</param>
+        public ConnectionRequestActivityChangeTransaction( ConnectionRequestActivity connectionRequestActivity )
+        {
+            if ( connectionRequestActivity != null )
+            {
+                ConnectionRequestActivityGuid = connectionRequestActivity.Guid;
+                ConnectionRequestId = connectionRequestActivity.ConnectionRequestId;
+                ConnectionOpportunityId = connectionRequestActivity.ConnectionOpportunityId;
+                ConnectionActivityTypeId = connectionRequestActivity.ConnectionActivityTypeId;
+            }
+        }
+
+        /// <summary>
         /// Execute method to check for any workflows to launch.
         /// </summary>
         public void Execute()

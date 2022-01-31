@@ -35,6 +35,9 @@ namespace Rock.Utility.Settings.DataAutomation
             IsNoAttendanceInGroupTypeEnabled = true;
             NoAttendanceInGroupTypeDays = 500;
 
+            IsNotRegisteredInAnyEventEnabled = true;
+            NotRegisteredInAnyEventDays = 500;
+
             IsNoSiteLoginEnabled = true;
             NoSiteLoginPeriod = 500;
 
@@ -96,6 +99,22 @@ namespace Rock.Utility.Settings.DataAutomation
         /// The no attendance in group type days.
         /// </value>
         public int NoAttendanceInGroupTypeDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether enabled to check if not registered in any event.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enabled to check if not registered in any event; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsNotRegisteredInAnyEventEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the period in which there is no registration for any event.
+        /// </summary>
+        /// <value>
+        /// The period in which there is no registration for any event.
+        /// </value>
+        public int NotRegisteredInAnyEventDays { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is no site login enabled.

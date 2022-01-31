@@ -67,7 +67,7 @@ namespace Rock.Migrations
                 UPDATE [AttributeValue] 
             	SET [Value] = ''
             	WHERE [AttributeId] = @AttributeId AND [Value] NOT IN ('DotLiquid','Fluid','FluidVerification')
-                
+
                 UPDATE [Attribute] SET [DefaultValue] = '' WHERE [Id] = @AttributeId"
             );
         }

@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -198,6 +199,7 @@ namespace RockWeb.Blocks.Steps
 
             gStepList.DataKeyNames = new[] { "id" };
             gStepList.GridRebind += gStepList_GridRebind;
+            gStepList.RowDataBound += gStepList_RowDataBound;
 
             var campusField = gStepList.ColumnsOfType<CampusField>().First();
             if ( campusField != null )
@@ -237,6 +239,16 @@ namespace RockWeb.Blocks.Steps
 
             RenderStepsPerRow();
             DisplayStepTerm();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
             RenderViewMode();
         }
 
@@ -260,6 +272,32 @@ namespace RockWeb.Blocks.Steps
         private void gStepList_GridRebind( object sender, GridRebindEventArgs e )
         {
             RenderGridView();
+        }
+
+        /// <summary>
+        /// Handle the rebind event for the step list grid
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void gStepList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var stepGridRowViewModel = e.Row.DataItem as StepGridRowViewModel;
+
+            // Allow Edit if authorized to edit the block or the Step Type.
+            /*
+             Block Authorization is removed once the parent authority for Step is Set as Step Type.
+             */
+            bool canEdit = stepGridRowViewModel.Step.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
+            var deleteFieldColumn = gStepList.ColumnsOfType<DeleteField>().FirstOrDefault();
+            if ( deleteFieldColumn != null )
+            {
+                deleteFieldColumn.Visible = canEdit;
+            }
         }
 
         /// <summary>
@@ -454,7 +492,11 @@ namespace RockWeb.Blocks.Steps
         {
             var stepId = e.CommandArgument.ToStringSafe().AsInteger();
             DeleteStep( stepId );
-            RenderCardView();
+
+            // Redirect the browser to reload the page so that the POST data associated with this request is cleared from the cache.
+            // This prevents the delete operation from being repeated if the page is reloaded, which is usually accompanied by
+            // an unwanted postback alert dialog.
+            Response.Redirect( Request.Url.ToString(), false );
         }
 
         /// <summary>
@@ -528,7 +570,7 @@ namespace RockWeb.Blocks.Steps
             var lbCardAddStep = e.Item.FindControl( "lbCardAddStep" ) as LinkButton;
 
             lbCardAddStep.Visible = cardData.CanAddStep;
-            pnlPrereqs.Visible = UserCanEdit && !cardData.HasMetPrerequisites;
+            pnlPrereqs.Visible = cardData.CanEdit && !cardData.HasMetPrerequisites;
 
             // Existing step records panel
             var steps = GetPersonStepsOfType( stepTypeId );
@@ -538,12 +580,14 @@ namespace RockWeb.Blocks.Steps
             var data = steps.Select( s => new CardStepViewModel
             {
                 StepId = s.Id,
-                CanEdit = canEdit,
-                CanDelete = canDelete,
+                CanEdit = s.IsAuthorized( Authorization.EDIT, CurrentPerson ) || s.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson ),
                 StatusHtml = string.Format( "{0}<br /><small>{1}</small>",
                     s.StepStatus != null ? s.StepStatus.Name : string.Empty,
                     s.CompletedDateTime.HasValue ? s.CompletedDateTime.Value.ToShortDateString() : string.Empty )
-            } );
+            } ).ToList();
+
+
+            data.ForEach( a => a.CanDelete = a.CanEdit );
 
             var rSteps = e.Item.FindControl( "rSteps" ) as Repeater;
             rSteps.DataSource = data;
@@ -885,7 +929,8 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private bool CanAddStep( StepType stepType )
         {
-            if ( !stepType.AllowManualEditing || !UserCanEdit )
+            bool canEdit = CanEditStep( stepType );
+            if ( !stepType.AllowManualEditing || !canEdit )
             {
                 return false;
             }
@@ -902,6 +947,16 @@ namespace RockWeb.Blocks.Steps
 
             var exisitingSteps = GetPersonStepsOfType( stepType.Id );
             return !exisitingSteps.Any();
+        }
+
+        /// <summary>
+        /// Can a step of the given step type be edited for the person.
+        /// </summary>
+        /// <param name="stepType"></param>
+        /// <returns></returns>
+        private bool CanEditStep( StepType stepType )
+        {
+            return stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
         }
 
         /// <summary>
@@ -1059,6 +1114,7 @@ namespace RockWeb.Blocks.Steps
                 var latestStepStatus = latestStep == null ? null : latestStep.StepStatus;
                 var isComplete = personStepsOfType.Any( s => s.IsComplete );
                 var canAddStep = CanAddStep( stepType );
+                var canEditStep = CanEditStep( stepType );
                 var hasMetPrerequisites = HasMetPrerequisites( stepType.Id );
 
                 var rendered = stepType.CardLavaTemplate.ResolveMergeFields( new Dictionary<string, object> {
@@ -1106,6 +1162,7 @@ namespace RockWeb.Blocks.Steps
                     StepTerm = stepTerm,
                     CardCssClass = cardCssClasses.JoinStrings( " " ),
                     CanAddStep = canAddStep,
+                    CanEdit = canEditStep,
                     HasMetPrerequisites = hasMetPrerequisites
                 } );
             }
@@ -1475,6 +1532,14 @@ namespace RockWeb.Blocks.Steps
             ///   <c>true</c> if this instance can add step; otherwise, <c>false</c>.
             /// </value>
             public bool CanAddStep { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can be edited.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance can be edited; otherwise, <c>false</c>.
+            /// </value>
+            public bool CanEdit { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether this instance has met prerequisites.
