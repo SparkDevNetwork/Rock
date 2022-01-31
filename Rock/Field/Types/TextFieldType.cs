@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     [Serializable]
     [IconCssClass( "fa fa-font" )]
     [FieldTypeUsage( FieldTypeUsage.Common )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class TextFieldType : FieldType
     {
 

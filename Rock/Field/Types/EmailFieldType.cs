@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// Field used to save and display an email address
     /// </summary>
     [Serializable]
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class EmailFieldType : FieldType
     {
 
