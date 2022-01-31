@@ -15,8 +15,8 @@
 
                             <Rock:RockDropDownList ID="ddlTheme" runat="server" Label="Theme" />
                             <Rock:RockDropDownList ID="ddlCheckinType" runat="server" Label="Check-in Configuration" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" AutoPostBack="true" />
-
                             <Rock:RockListBox ID="lbAreas" runat="server" Label="Check-in Areas" Help="The check-in areas that will be used for the checkin process" />
+                            <Rock:RockCheckBox ID="cbDisableLocationServices" runat="server" Label="Disable Location Services" Help="If disabled, the mobile device’s location services will not be used and instead a list of active campuses will be shown. The selected campus will be used to find a matching device from the Devices block setting." />
                         </ContentTemplate>
                     </asp:UpdatePanel>
                 </Content>
@@ -27,33 +27,39 @@
         <asp:Panel ID="pnlView" runat="server">
 
             <script>
-                function tryGeoLocation() {
-                    if (geo_position_js.init()) {
-                        geo_position_js.getCurrentPosition(geoLocationSuccess_callback, geoLocationError_callback, { enableHighAccuracy: true });
+                function tryGeoLocation ()
+                {
+                    if ( geo_position_js.init() )
+                    {
+                        geo_position_js.getCurrentPosition( geoLocationSuccess_callback, geoLocationError_callback, { enableHighAccuracy: true } );
                     }
-                    else {
-                        geoLocationError_callback(null);
+                    else
+                    {
+                        geoLocationError_callback( null );
                     }
                 }
 
-                function geoLocationSuccess_callback(p) {
-                    $(".js-geolocation-latitude").val(p.coords.latitude.toFixed(4));
-                    $(".js-geolocation-longitude").val(p.coords.longitude.toFixed(4));
+                function geoLocationSuccess_callback ( p )
+                {
+                    $( ".js-geolocation-latitude" ).val( p.coords.latitude.toFixed( 4 ) );
+                    $( ".js-geolocation-longitude" ).val( p.coords.longitude.toFixed( 4 ) );
 
                     window.location = "javascript:__doPostBack('<%=upnlContent.ClientID %>', 'GeoLocationCallback|Success')"
                 }
 
                 function geoLocationError_callback(p) {
-                    window.location = "javascript:__doPostBack('<%=upnlContent.ClientID %>', 'GeoLocationCallback|Error|" + encodeURIComponent(p.message) + "')";
+                    window.location = "javascript:__doPostBack('<%=upnlContent.ClientID %>', 'GeoLocationCallback|Error|" + encodeURIComponent( p.message ) + "')";
                 }
 
-                Sys.Application.add_load(function () {
-                    if ($('.js-get-geo-location').val() == "true") {
-                        var $getGeoLocationButton = $(".js-get-geolocation");
-                        Rock.controls.bootstrapButton.showLoading($getGeoLocationButton);
+                Sys.Application.add_load( function ()
+                {
+                    if ( $( '.js-get-geo-location' ).val() == "true" )
+                    {
+                        var $getGeoLocationButton = $( ".js-get-geolocation" );
+                        Rock.controls.bootstrapButton.showLoading( $getGeoLocationButton );
                         tryGeoLocation();
                     }
-                });
+                } );
             </script>
 
 
@@ -63,7 +69,7 @@
             <Rock:HiddenFieldWithClass ID="hfLongitude" runat="server" CssClass="js-geolocation-longitude" />
 
             <%-- Main Panel --%>
-         
+
             <div class="checkin-header">
                 <h1>
                     <asp:Literal ID="lCheckinHeader" runat="server" Text="Mobile Check-in" /></h1>
@@ -80,10 +86,15 @@
 
                             <div class="controls">
                                 <Rock:BootstrapButton ID="bbtnPhoneLookup" runat="server" Text="Phone Lookup" OnClick="bbtnPhoneLookup_Click" CssClass="btn btn-primary btn-block" />
-                                <Rock:BootstrapButton ID="bbtnLogin" runat="server" Text="Login" OnClick="bbtnLogin_Click" CssClass="btn btn-default btn-block" />
+                                <Rock:BootstrapButton ID="bbtnLogin" runat="server" Text="Log In" OnClick="bbtnLogin_Click" CssClass="btn btn-default btn-block" />
                                 <Rock:BootstrapButton ID="bbtnGetGeoLocation" runat="server" Text="Next" OnClick="bbtnGetGeoLocation_Click" DataLoadingText="Getting Location..." CssClass="btn btn-primary btn-block js-get-geolocation" />
                                 <Rock:BootstrapButton ID="bbtnTryAgain" runat="server" Text="Try Again" OnClick="bbtnTryAgain_Click" DataLoadingText="Check-in..." CssClass="btn btn-primary btn-block js-checkin-tryagain" />
                                 <Rock:BootstrapButton ID="bbtnCheckin" runat="server" Text="Check-in" OnClick="bbtnCheckin_Click" DataLoadingText="Check-in..." CssClass="btn btn-primary btn-block js-checkin" />
+                                <asp:Repeater ID="rCampuses" runat="server" OnItemCommand="rCampuses_ItemCommand">
+                                    <ItemTemplate>
+                                        <Rock:BootstrapButton ID="lbCampusSelect" runat="server" Text='<%# Eval("CampusName") %>' CommandName='Device' CommandArgument='<%# Eval("DeviceId") %>' CssClass="btn btn-primary btn-block" DataLoadingText="Loading..." />
+                                    </ItemTemplate>
+                                </asp:Repeater>
                             </div>
 
                             <asp:Literal ID="lCheckinQRCodeHtml" runat="server" />

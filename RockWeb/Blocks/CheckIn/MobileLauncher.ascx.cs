@@ -77,13 +77,21 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = true,
         Description = "The check-in areas to use." )]
 
+    [BooleanField(
+        "Disable Location Services",
+        Key = AttributeKey.DisableLocationServices,
+        Category = "CustomSetting",
+        IsRequired = true,
+        DefaultBooleanValue = false,
+        Description = "If disabled, the mobile device’s location services will not be used and instead a list of active campuses will be shown. The selected campus will be used to find a matching device from the Devices block setting." )]
+
     #endregion Block Attributes
 
     #region Block Attributes for Launcher Navigation
 
-    [LinkedPage( "Login Page",
-        AttributeKey.LoginPage,
-        Description = "The page to use for logging in the person. If blank the login button will not be shown",
+    [LinkedPage( "Log In Page",
+        AttributeKey.LogInPage,
+        Description = "The page to use for logging in the person. If blank the log in button will not be shown",
         IsRequired = false,
         Category = "Mobile Person",
         Order = 100
@@ -192,6 +200,16 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Text",
         Order = 8 )]
 
+    [CodeEditorField(
+        "No Campuses Found <span class='tip tip-lava'></span>",
+        Key = AttributeKey.NoCampusesFoundTemplate,
+        Category = "Text",
+        DefaultValue = "Hi {{ CurrentPerson.NickName }}! Currently, There are currently no active campuses ready for check-in at this time.",
+        EditorHeight = 100,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        IsRequired = true,
+        Order = 9 )]
+
     #endregion Block Attributes for Text options
     public partial class MobileLauncher : CheckInBlock
     {
@@ -206,6 +224,8 @@ namespace RockWeb.Blocks.CheckIn
 
             public const string CheckinTheme = "CheckinTheme";
 
+            public const string DisableLocationServices = "DisableLocationServices";
+
             /// <summary>
             /// The checkin configuration unique identifier (which is a GroupType)
             /// </summary>
@@ -218,7 +238,7 @@ namespace RockWeb.Blocks.CheckIn
 
             public const string PhoneIdentificationPage = "PhoneIdentificationPage";
 
-            public const string LoginPage = "LoginPage";
+            public const string LogInPage = "LogInPage";
 
             public const string MobileCheckinHeader = "MobileCheckinHeader";
 
@@ -235,6 +255,8 @@ namespace RockWeb.Blocks.CheckIn
             public const string UnableToDetermineMobileLocationTemplate = "UnableToDetermineMobileLocationTemplate";
 
             public const string NoDevicesFoundTemplate = "NoDevicesFoundTemplate";
+
+            public const string NoCampusesFoundTemplate = "NoCampusesFoundTemplate";
 
             public const string NoPeopleMessage = "NoPeopleMessage";
         }
@@ -350,6 +372,49 @@ namespace RockWeb.Blocks.CheckIn
 
         #endregion Base Control Methods
 
+        #region Events
+
+        protected void rCampuses_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            var deviceId = e.CommandArgument.ToString().AsIntegerOrNull();
+
+            if ( deviceId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var device = new DeviceService( rockContext ).Get( deviceId.Value );
+
+                if ( device == null )
+                {
+                    lMessage.Text = GetMessageText( AttributeKey.NoDevicesFoundTemplate );
+                    return;
+                }
+
+                // device found for mobile person's location
+                LocalDeviceConfig.CurrentKioskId = device.Id;
+                LocalDeviceConfig.AllowCheckout = false;
+
+                LocalDeviceConfig.SaveToCookie();
+
+                // create new checkin state since we are starting a new checkin sessions
+                this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
+
+                SaveState();
+
+                CheckinConfigurationHelper.CheckinStatus checkinStatus = CheckinConfigurationHelper.CheckinStatus.Closed;
+                if ( CurrentCheckInState.Kiosk != null )
+                {
+                    checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState );
+                }
+
+                RefreshCheckinStatusInformation( checkinStatus );
+                bbtnCheckin.Visible = true;
+                bbtnTryAgain.Visible = false;
+                rCampuses.Visible = false;
+            }
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -364,6 +429,7 @@ namespace RockWeb.Blocks.CheckIn
             bbtnTryAgain.Visible = false;
             bbtnCheckin.Visible = false;
             hfGetGeoLocation.Value = false.ToJavaScriptValue();
+            rCampuses.Visible = false;
 
             if ( this.ConfigurationRenderModeIsEnabled )
             {
@@ -381,7 +447,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var configuredTheme = this.GetAttributeValue( AttributeKey.CheckinTheme );
             var hasPhoneIdentificationPage = GetAttributeValue( AttributeKey.PhoneIdentificationPage ).IsNotNullOrWhiteSpace();
-            var hasLoginPage = GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace();
+            var hasLoginPage = GetAttributeValue( AttributeKey.LogInPage ).IsNotNullOrWhiteSpace();
 
             SetSelectedTheme( configuredTheme );
 
@@ -406,27 +472,84 @@ namespace RockWeb.Blocks.CheckIn
             {
                 // unable to determine person from login or person cookie
                 lMessage.Text = GetMessageText( AttributeKey.IdentifyYouPromptTemplate );
-                
+
                 bbtnPhoneLookup.Visible = hasPhoneIdentificationPage;
                 bbtnLogin.Visible = hasLoginPage;
 
                 return;
             }
 
-            bool alreadyHasGeolocation = Request.Cookies[CheckInCookieKey.RockHasLocationApproval] != null;
-            if ( !alreadyHasGeolocation )
+            if ( GetAttributeValue( AttributeKey.DisableLocationServices ).AsBoolean() )
             {
-                // the RockHasLocationApproval cookie indicates that location access hasn't been allowed yet
-                lMessage.Text = GetMessageText( AttributeKey.AllowLocationPermissionPromptTemplate );
-                bbtnGetGeoLocation.Visible = true;
+                lMessage.Text = "Please select a campus to let us know where you are:";
+                BindCampuses();
+            }
+            else
+            {
+                bool alreadyHasGeolocation = Request.Cookies[CheckInCookieKey.RockHasLocationApproval] != null;
+                if ( !alreadyHasGeolocation )
+                {
+                    // the RockHasLocationApproval cookie indicates that location access hasn't been allowed yet
+                    lMessage.Text = GetMessageText( AttributeKey.AllowLocationPermissionPromptTemplate );
+                    bbtnGetGeoLocation.Visible = true;
+                    return;
+                }
+
+                // they already approved location permissions so let the Geo Location JavaScript return the current lat/long,
+                // then ProcessGeolocationCallback will take care of the rest of the logic
+                // this might take a few seconds, so display a progress message
+                lMessage.Text = GetMessageText( AttributeKey.LocationProgress );
+                EnableGeoLocationScript();
+            }
+        }
+
+        private void BindCampuses()
+        {
+            List<int> allowedDeviceIds = this.GetAttributeValue( AttributeKey.DeviceIdList ).SplitDelimitedValues().AsIntegerList();
+            if ( !allowedDeviceIds.Any() )
+            {
+                lMessage.Text = GetMessageText( AttributeKey.NoDevicesFoundTemplate );
                 return;
             }
+            else
+            {
+                var rockContext = new RockContext();
+                int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
+                var deviceQry = new DeviceService( rockContext )
+                    .Queryable()
+                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId && d.IsActive == true );
+                deviceQry = deviceQry.Where( a => allowedDeviceIds.Contains( a.Id ) );
 
-            // they already approved location permissions so let the Geo Location JavaScript return the current lat/long,
-            // then ProcessGeolocationCallback will take care of the rest of the logic
-            // this might take a few seconds, so display a progress message
-            lMessage.Text = GetMessageText( AttributeKey.LocationProgress );
-            EnableGeoLocationScript();
+                var deviceCampuses = new List<DeviceCampus>();
+                var campuses = CampusCache.All();
+                foreach ( var device in deviceQry.AsEnumerable() )
+                {
+                    var location = device.Locations.Where( a => a.CampusId.HasValue ).FirstOrDefault();
+                    if ( location != null )
+                    {
+                        var campus = campuses.FirstOrDefault( a => a.Id == location.CampusId );
+                        if ( campus != null && !deviceCampuses.Any( a => a.CampusId == campus.Id ) )
+                        {
+                            var deviceCampus = new DeviceCampus()
+                            {
+                                DeviceId = device.Id,
+                                CampusName = campus.Name,
+                                CampusId = campus.Id
+                            };
+                            deviceCampuses.Add( deviceCampus );
+                        }
+                    }
+                }
+
+                if ( !deviceCampuses.Any() )
+                {
+                    lMessage.Text = GetMessageText( AttributeKey.NoCampusesFoundTemplate );
+                    return;
+                }
+                rCampuses.DataSource = deviceCampuses.ToList();
+                rCampuses.DataBind();
+                rCampuses.Visible = true;
+            }
         }
 
         /// <summary>
@@ -762,6 +885,7 @@ namespace RockWeb.Blocks.CheckIn
             BindAreas( selectedDevicesIds );
 
             lbAreas.SetValues( configuredAreas_GroupTypeIds );
+            cbDisableLocationServices.Checked = this.GetAttributeValue( AttributeKey.DisableLocationServices ).AsBoolean();
 
             pnlEditSettings.Visible = true;
             mdEditSettings.Show();
@@ -910,24 +1034,27 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            var latitude = hfLatitude.Value.AsDoubleOrNull();
-            var longitude = hfLongitude.Value.AsDoubleOrNull();
-            if ( latitude == null || longitude == null )
+            if ( !GetAttributeValue( AttributeKey.DisableLocationServices ).AsBoolean() )
             {
-                // shouldn't happen
-                return;
+                var latitude = hfLatitude.Value.AsDoubleOrNull();
+                var longitude = hfLongitude.Value.AsDoubleOrNull();
+                if ( latitude == null || longitude == null )
+                {
+                    // shouldn't happen
+                    return;
+                }
+
+                var device = GetFirstMatchingKioskByGeoFencing( latitude.Value, longitude.Value );
+
+                if ( device == null )
+                {
+                    // shouldn't happen
+                    return;
+                }
+
+                LocalDeviceConfig.CurrentKioskId = device.Id;
+                SaveState();
             }
-
-            var device = GetFirstMatchingKioskByGeoFencing( latitude.Value, longitude.Value );
-
-            if ( device == null )
-            {
-                // shouldn't happen
-                return;
-            }
-
-            LocalDeviceConfig.CurrentKioskId = device.Id;
-            SaveState();
 
             var checkInState = CurrentCheckInState;
 
@@ -1011,7 +1138,7 @@ namespace RockWeb.Blocks.CheckIn
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "returnUrl", context.Server.UrlEncode( PersonToken.RemoveRockMagicToken( context.Request.RawUrl ) ) );
 
-            NavigateToLinkedPage( AttributeKey.LoginPage, queryParams );
+            NavigateToLinkedPage( AttributeKey.LogInPage, queryParams );
         }
 
         /// <summary>
@@ -1073,6 +1200,7 @@ namespace RockWeb.Blocks.CheckIn
             this.SetAttributeValue( AttributeKey.CheckinTheme, ddlTheme.SelectedValue );
             this.SetAttributeValue( AttributeKey.DeviceIdList, lbDevices.SelectedValues.AsDelimited( "," ) );
             this.SetAttributeValue( AttributeKey.ConfiguredAreas_GroupTypeIds, lbAreas.SelectedValues.AsDelimited( "," ) );
+            this.SetAttributeValue( AttributeKey.DisableLocationServices, cbDisableLocationServices.Checked.ToString() );
             this.SaveAttributeValues();
             mdEditSettings.Hide();
             pnlEditSettings.Visible = false;
@@ -1102,4 +1230,37 @@ namespace RockWeb.Blocks.CheckIn
 
         #endregion Edit Settings Events
     }
+
+    #region Nested Classes
+    public class DeviceCampus
+    {
+        /// <summary>
+        /// Gets or sets the campus name.
+        /// </summary>
+        /// <value>
+        /// The campus name.
+        /// </value>
+        public string CampusName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+
+        public int CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device identifier.
+        /// </summary>
+        /// <value>
+        /// The device identifier.
+        /// </value>
+
+        public int DeviceId { get; set; }
+
+    }
+
+    #endregion
 }
