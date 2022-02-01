@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.CheckIn
     #region Block Attributes for Launcher Navigation
 
     [LinkedPage( "Log In Page",
-        AttributeKey.LogInPage,
+        Key = AttributeKey.LogInPage,
         Description = "The page to use for logging in the person. If blank the log in button will not be shown",
         IsRequired = false,
         Category = "Mobile Person",
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.CheckIn
         )]
 
     [LinkedPage( "Phone Identification Page",
-        AttributeKey.PhoneIdentificationPage,
+        Key = AttributeKey.PhoneIdentificationPage,
         Description = "Page to use for identifying the person by phone number. If blank the button will not be shown.",
         IsRequired = false,
         Category = "Mobile Person",
@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.CheckIn
         "No Campuses Found <span class='tip tip-lava'></span>",
         Key = AttributeKey.NoCampusesFoundTemplate,
         Category = "Text",
-        DefaultValue = "Hi {{ CurrentPerson.NickName }}! Currently, There are currently no active campuses ready for check-in at this time.",
+        DefaultValue = "Hi {{ CurrentPerson.NickName }}! There are currently no active campuses ready for check-in at this time.",
         EditorHeight = 100,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         IsRequired = true,
@@ -407,8 +407,6 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 RefreshCheckinStatusInformation( checkinStatus );
-                bbtnCheckin.Visible = true;
-                bbtnTryAgain.Visible = false;
                 rCampuses.Visible = false;
             }
         }
@@ -482,7 +480,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( GetAttributeValue( AttributeKey.DisableLocationServices ).AsBoolean() )
             {
                 lMessage.Text = "Please select a campus to let us know where you are:";
-                BindCampuses();
+                BindCampuses( mobilePerson );
             }
             else
             {
@@ -503,7 +501,7 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        private void BindCampuses()
+        private void BindCampuses( Person mobilePerson )
         {
             List<int> allowedDeviceIds = this.GetAttributeValue( AttributeKey.DeviceIdList ).SplitDelimitedValues().AsIntegerList();
             if ( !allowedDeviceIds.Any() )
@@ -546,6 +544,17 @@ namespace RockWeb.Blocks.CheckIn
                     lMessage.Text = GetMessageText( AttributeKey.NoCampusesFoundTemplate );
                     return;
                 }
+
+                deviceCampuses = deviceCampuses.OrderBy( a => a.CampusName ).ToList();
+                var familyCampusId = mobilePerson.PrimaryCampusId;
+                var currentIndex = deviceCampuses.FindIndex( a => a.CampusId == familyCampusId );
+                if ( currentIndex >= 0 )
+                {
+                    var deviceCampus = deviceCampuses[currentIndex];
+                    deviceCampuses.RemoveAt( currentIndex );
+                    deviceCampuses.Insert( 0, deviceCampus );
+                }
+
                 rCampuses.DataSource = deviceCampuses.ToList();
                 rCampuses.DataBind();
                 rCampuses.Visible = true;
@@ -812,6 +821,7 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     nextActiveTime = filteredGroupTypes.Select( g => g.NextActiveTime ).Min();
                 }
+
                 mergeFields.Add( "NextActiveTime", nextActiveTime );
             }
 
