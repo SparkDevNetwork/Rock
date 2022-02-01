@@ -40,6 +40,14 @@ namespace Rock.ViewModel
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the CampusId.
+        /// </summary>
+        /// <value>
+        /// The CampusId.
+        /// </value>
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the CompletedDateTime.
         /// </summary>
         /// <value>

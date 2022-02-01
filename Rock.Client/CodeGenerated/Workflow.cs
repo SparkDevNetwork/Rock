@@ -38,6 +38,9 @@ namespace Rock.Client
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
@@ -115,6 +118,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ActivatedDateTime = source.ActivatedDateTime;
+            this.CampusId = source.CampusId;
             this.CompletedDateTime = source.CompletedDateTime;
             this.Description = source.Description;
             this.EntityId = source.EntityId;
@@ -146,6 +150,9 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<WorkflowActivity> Activities { get; set; }
+
+        /// <summary />
+        public Campus Campus { get; set; }
 
         /// <summary />
         public PersonAlias InitiatorPersonAlias { get; set; }
