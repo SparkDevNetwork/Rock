@@ -96,7 +96,22 @@ namespace Rock.Web.Cache
         /// Gets the ways this field type can be used and presented in the system.
         /// If the field is not available then it will be assumed to be Advanced.
         /// </summary>
+        /// <value>
+        /// The ways this field type can be used and presented in the system.
+        /// </value>
         public Rock.Field.FieldTypeUsage Usage { get; private set; }
+
+        /// <summary>
+        /// Gets the front-end platform(s) that this field type supports. All
+        /// field types should fallback to a "Text" field type for view and edit
+        /// mode if they are not supported. This property in particular
+        /// specifies which platforms support creating/configurating this field
+        /// type.
+        /// </summary>
+        /// <value>
+        /// The front-end platform(s) that this field type supports.
+        /// </value>
+        public Utility.RockPlatform Platform { get; private set; }
 
         /// <summary>
         /// Gets the field.
@@ -142,14 +157,20 @@ namespace Rock.Web.Cache
             Assembly = fieldType.Assembly;
             Class = fieldType.Class;
 
-            var fieldTypeType = Field?.GetType();
+            // Can't use the "Field" property because it will return a TextFieldType
+            // if the real field type implementation cannot be found.
+            var fieldTypeImplementationType = Type.GetType( $"{fieldType.Class}, {fieldType.Assembly}" );
 
-            if ( fieldTypeType != null )
+            // If we found the field C# type check for the custom attributes. Do not
+            // use inherited attributes since that could have unintended consequences.
+            if ( fieldTypeImplementationType != null )
             {
-                IconCssClass = fieldTypeType.GetCustomAttribute<IconCssClassAttribute>()?.IconCssClass ?? string.Empty;
+                IconCssClass = fieldTypeImplementationType.GetCustomAttribute<IconCssClassAttribute>( false )?.IconCssClass ?? string.Empty;
 
                 // Default to Advanced if the field type does not specify its usage.
-                Usage = fieldTypeType.GetCustomAttribute<FieldTypeUsageAttribute>()?.Usage ?? Rock.Field.FieldTypeUsage.Advanced;
+                Usage = fieldTypeImplementationType.GetCustomAttribute<FieldTypeUsageAttribute>( false )?.Usage ?? Rock.Field.FieldTypeUsage.Advanced;
+
+                Platform = fieldTypeImplementationType.GetCustomAttribute<RockPlatformSupportAttribute>( false )?.Platform ?? 0;
             }
         }
 

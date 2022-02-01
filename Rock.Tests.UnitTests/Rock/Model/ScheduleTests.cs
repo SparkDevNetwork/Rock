@@ -47,9 +47,7 @@ namespace Rock.Tests.Rock.Model
 
             var nextMonth = RockDateTime.Now.AddMonths( 1 ).Month;
 
-            // These dates don't work well with Feburary so use March instead.
-            nextMonth = nextMonth == 2 ? 3 : nextMonth;
-
+            // Add specific dates that exist for every month of the year.
             _specificDates = new List<DateTime>();
             _specificDates.Add( new DateTime( today.Year, nextMonth, 1 ) );
             _specificDates.Add( new DateTime( today.Year, nextMonth, 3 ) );
@@ -57,7 +55,7 @@ namespace Rock.Tests.Rock.Model
             _specificDates.Add( new DateTime( today.Year, nextMonth, 7 ) );
             _specificDates.Add( new DateTime( today.Year, nextMonth, 10 ) );
             _specificDates.Add( new DateTime( today.Year, nextMonth, 20 ) );
-            _specificDates.Add( new DateTime( today.Year, nextMonth, 30 ) );
+            _specificDates.Add( new DateTime( today.Year, nextMonth, 28 ) );
 
             var recurrenceDates = new PeriodList();
 

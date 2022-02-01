@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display an address value
     /// </summary>
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class AddressFieldType : FieldType, IEntityFieldType
     {
 

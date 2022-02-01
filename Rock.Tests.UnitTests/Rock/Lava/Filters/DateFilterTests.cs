@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Ical.Net;
 using Ical.Net.DataTypes;
 using Ical.Net.Interfaces.DataTypes;
@@ -683,6 +684,13 @@ namespace Rock.Tests.UnitTests.Lava
 
         private void VerifyDatesExistInDatesFromICalResult( string iCalString, List<DateTime> dates, string filterOption = "all" )
         {
+            var dateTimeOffsets = dates.Select( x => LavaDateTime.ConvertToDateTimeOffset( x ) ).ToList();
+
+            VerifyDatesExistInDatesFromICalResult( iCalString, dateTimeOffsets, filterOption );
+        }
+
+        private void VerifyDatesExistInDatesFromICalResult( string iCalString, List<DateTimeOffset> dates, string filterOption = "all" )
+        {
             var mergeValues = new LavaDataDictionary { { "iCalString", iCalString } };
 
             var template = @"
@@ -703,8 +711,6 @@ namespace Rock.Tests.UnitTests.Lava
                 // Verify that the result contains the expected entries.
                 foreach ( var date in dates )
                 {
-                    TestHelper.AssertDateIsUtc( date );
-
                     var rockDateTimeString = LavaDateTime.ToString( date, "yyyy-MM-dd HH:mm:ss tt" );
 
                     if ( !output.Contains( $"<li>{ rockDateTimeString }</li>" ) )
@@ -721,10 +727,10 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void DatesFromICal_SingleDayEventWithInfiniteRecurrencePattern_ReturnsRequestedOccurrences()
         {
-            // Create a new schedule starting at 11am today Rock time.            
+            // Create a new schedule starting at 11am today Rock time.
             var now = RockDateTime.Now;
 
-            var startDateTime = LavaDateTime.NewUtcDateTime( now.Year, now.Month, now.Day, 11, 0, 0 );
+            var startDateTime = LavaDateTime.NewDateTimeOffset( now.Year, now.Month, now.Day, 11, 0, 0 );
 
             var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
                 endDate: null,
@@ -732,7 +738,7 @@ namespace Rock.Tests.UnitTests.Lava
                 null );
 
             VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
-                new List<DateTime> { startDateTime, startDateTime.AddDays( 1 ), startDateTime.AddDays( 2 ) },
+                new List<DateTimeOffset> { startDateTime, startDateTime.AddDays( 1 ), startDateTime.AddDays( 2 ) },
                 $"3,'','{startDateTime.Date:u}'" );
         }
 
@@ -797,6 +803,43 @@ namespace Rock.Tests.UnitTests.Lava
             VerifyDatesExistInDatesFromICalResult( _iCalStringFirstSaturdayOfMonth,
              new List<DateTime> { expectedDateTime },
              "12,'enddatetime'" );
+        }
+
+        /// <summary>
+        /// A schedule that specifies a recurring event across a Daylight Saving Time (DST) boundary should return times that remain unadjusted.
+        /// </summary>
+        [TestMethod]
+        public void DatesFromICal_RecurringEventAcrossDstBoundary_HasUnchangedEventTime()
+        {
+            // Set the Rock server to a timezone that supports Daylight Saving Time (DST).
+            // DST begins on 13/03/2022 02:00 in this timezone.
+            var tzCurrent = RockDateTime.OrgTimeZoneInfo;
+            var tzDst = TimeZoneInfo.FindSystemTimeZoneById( "Central Standard Time" );
+            Assert.That.IsNotNull( tzDst, "Timezone is not available in this environment." );
+
+            try
+            {
+                RockDateTime.Initialize( tzDst );
+
+                // Create a schedule that spans the DST boundary date.
+                var startDateTime = LavaDateTime.NewDateTimeOffset( 2022, 03, 12, 11, 0, 0 );
+
+                var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
+                    endDate: null,
+                    eventDuration: new TimeSpan( 1, 0, 0 ),
+                    null );
+
+                // The time expressed in the schedule is nominal rather than absolute - it should not be adjusted for DST,
+                // because all future event in the schedule should have the same start time.
+                VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
+                    new List<DateTimeOffset> { startDateTime, startDateTime.AddDays( 1 ), startDateTime.AddDays( 2 ) },
+                    $"3,'','{startDateTime.Date:u}'" );
+            }
+            finally
+            {
+                // Restore the default time zone.
+                RockDateTime.Initialize( tzCurrent );
+            }
         }
 
         #endregion
