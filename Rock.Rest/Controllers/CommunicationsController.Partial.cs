@@ -51,7 +51,7 @@ namespace Rock.Rest.Controllers
         /// <param name="importCommunications">The communication payload.</param>
         [Authenticate, Secured]
         [HttpPost]
-        [Route( "api/Communications/ImportSent" )]
+        [System.Web.Http.Route( "api/Communications/ImportSent" )]
         public virtual async Task<HttpResponseMessage> ImportSent( [FromBody] IEnumerable<ImportSentCommunicationApiModel> importCommunications )
         {
             if ( importCommunications == null || importCommunications.Count() == 0 )
