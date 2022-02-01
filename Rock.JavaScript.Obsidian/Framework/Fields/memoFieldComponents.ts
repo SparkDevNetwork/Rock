@@ -84,7 +84,11 @@ export const ConfigurationComponent = defineComponent({
 
     props: getFieldConfigurationProps(),
 
-    emits: ["update:modelValue", "updateConfiguration", "updateConfigurationValue"],
+    emits: [
+        "update:modelValue",
+        "updateConfiguration",
+        "updateConfigurationValue"
+    ],
 
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.

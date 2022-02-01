@@ -66,7 +66,9 @@ export const EditComponent = defineComponent({
         ColorPicker
     },
     props: getFieldEditorProps(),
-    emits: ["update:modelValue"],
+    emits: [
+        "update:modelValue"
+    ],
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
@@ -82,7 +84,12 @@ export const EditComponent = defineComponent({
             return props.configurationValues[ConfigurationValueKey.ColorControlType] !== ConfigurationValueKey.ColorPicker;
         });
 
-        return { internalValue, dropDownListOptions, isNamedPicker, isColorPicker };
+        return {
+            internalValue,
+            dropDownListOptions,
+            isNamedPicker,
+            isColorPicker
+        };
     },
     template: `
 <DropDownList v-if="isNamedPicker" v-model="internalValue" :options="dropDownListOptions" />

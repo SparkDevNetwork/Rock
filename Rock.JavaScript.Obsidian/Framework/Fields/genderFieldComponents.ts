@@ -87,7 +87,11 @@ export const ConfigurationComponent = defineComponent({
 
     props: getFieldConfigurationProps(),
 
-    emits: ["update:modelValue", "updateConfiguration", "updateConfigurationValue"],
+    emits: [
+        "update:modelValue",
+        "updateConfiguration",
+        "updateConfigurationValue"
+    ],
 
     setup(props, { emit }) {
         const hideUnknownGender = ref(false);

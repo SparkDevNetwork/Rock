@@ -92,14 +92,13 @@ export default defineComponent({
             internalValue,
             isTextarea,
             charsRemaining,
-            countdownClass,
-            props
+            countdownClass
         };
     },
     template: `
 <RockFormField
     v-model="internalValue"
-    :formGroupClasses="'rock-text-box ' + props.formGroupClasses"
+    :formGroupClasses="'rock-text-box ' + formGroupClasses"
     name="textbox">
     <template #pre>
         <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">
