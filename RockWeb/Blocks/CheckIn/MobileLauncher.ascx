@@ -90,9 +90,9 @@
                                 <Rock:BootstrapButton ID="bbtnGetGeoLocation" runat="server" Text="Next" OnClick="bbtnGetGeoLocation_Click" DataLoadingText="Getting Location..." CssClass="btn btn-primary btn-block js-get-geolocation" />
                                 <Rock:BootstrapButton ID="bbtnTryAgain" runat="server" Text="Try Again" OnClick="bbtnTryAgain_Click" DataLoadingText="Check-in..." CssClass="btn btn-primary btn-block js-checkin-tryagain" />
                                 <Rock:BootstrapButton ID="bbtnCheckin" runat="server" Text="Check-in" OnClick="bbtnCheckin_Click" DataLoadingText="Check-in..." CssClass="btn btn-primary btn-block js-checkin" />
-                                <asp:Repeater ID="rCampuses" runat="server" OnItemCommand="rCampuses_ItemCommand">
+                                <asp:Repeater ID="rCampuses" runat="server" OnItemCommand="rCampuses_ItemCommand" OnItemDataBound="rCampuses_ItemDataBound">
                                     <ItemTemplate>
-                                        <Rock:BootstrapButton ID="lbCampusSelect" runat="server" Text='<%# Eval("CampusName") %>' CommandName='Device' CommandArgument='<%# Eval("DeviceId") %>' CssClass='<%# Container.ItemIndex == 0 ? "btn btn-primary btn-block" : "btn btn-default btn-block" %>' DataLoadingText="Loading..." />
+                                        <Rock:BootstrapButton ID="lbCampusSelect" runat="server" Text='<%# Eval("CampusName") %>' CommandName='Device' CommandArgument='<%# Eval("DeviceId") %>' CssClass='btn btn-block' DataLoadingText="Loading..." />
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </div>
