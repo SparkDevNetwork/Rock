@@ -93,7 +93,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                     case "select":
                         var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), sqlTimeout );
 
-                        context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamicTypeCollection();
+                        context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
                         break;
                     case "command":
                         var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
