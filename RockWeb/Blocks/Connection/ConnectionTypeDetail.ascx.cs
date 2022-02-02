@@ -1594,19 +1594,28 @@ namespace RockWeb.Blocks.Connection
                         }
                 }
 
+                /*
+                    28/01/2022 - KA
+
+                    The connectionWorkflow.QualifierValue value is formatted as |PrimaryQualifier|SecondaryQualifier|, splitDelimitedValues()
+                    returns an array with 4 values (including empty/whitespace) if the length of the returned array is greater than 1 then
+                    the first value is picked as the PrimaryQualifier since it is on the right of the first |, if the values are greater than 2
+                    then the SecondaryQualifier is the third value since it is on the right side of the second |
+                */
+
                 if ( connectionWorkflow != null )
                 {
                     if ( connectionWorkflow.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
                     {
-                        qualifierValues = connectionWorkflow.QualifierValue.SplitDelimitedValues();
-                        if ( ddlPrimaryQualifier.Visible && qualifierValues.Length > 0 )
+                        qualifierValues = connectionWorkflow.QualifierValue.SplitDelimitedValues( "|" );
+                        if ( ddlPrimaryQualifier.Visible && qualifierValues.Length > 1 )
                         {
-                            ddlPrimaryQualifier.SelectedValue = qualifierValues[0];
+                            ddlPrimaryQualifier.SelectedValue = qualifierValues[1];
                         }
 
-                        if ( ddlSecondaryQualifier.Visible && qualifierValues.Length > 1 )
+                        if ( ddlSecondaryQualifier.Visible && qualifierValues.Length > 2 )
                         {
-                            ddlSecondaryQualifier.SelectedValue = qualifierValues[1];
+                            ddlSecondaryQualifier.SelectedValue = qualifierValues[2];
                         }
                     }
                 }
