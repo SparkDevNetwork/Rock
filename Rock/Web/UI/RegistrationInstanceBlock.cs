@@ -579,7 +579,7 @@ namespace Rock.Web.UI
                                 {
                                     var tbMiddleNameFilter = new RockTextBox();
                                     tbMiddleNameFilter.ID = FILTER_MIDDLE_NAME_ID;
-                                    tbMiddleNameFilter.Label = "MiddleName";
+                                    tbMiddleNameFilter.Label = "Middle Name";
 
                                     if ( setValues )
                                     {
@@ -592,7 +592,7 @@ namespace Rock.Web.UI
 
                                     var middleNameField = new RockBoundField();
                                     middleNameField.DataField = dataFieldExpression;
-                                    middleNameField.HeaderText = "MiddleName";
+                                    middleNameField.HeaderText = "Middle Name";
                                     middleNameField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( middleNameField );
                                 }
@@ -603,7 +603,7 @@ namespace Rock.Web.UI
                                 {
                                     var drpAnniversaryDateFilter = new DateRangePicker();
                                     drpAnniversaryDateFilter.ID = FILTER_ANNIVERSARY_DATE_ID;
-                                    drpAnniversaryDateFilter.Label = "AnniversaryDate Range";
+                                    drpAnniversaryDateFilter.Label = "Anniversary Date Range";
 
                                     if ( setValues )
                                     {
@@ -699,7 +699,7 @@ namespace Rock.Web.UI
 
                                     var maritalStatusField = new RockBoundField();
                                     maritalStatusField.DataField = dataFieldExpression;
-                                    maritalStatusField.HeaderText = "MaritalStatus";
+                                    maritalStatusField.HeaderText = "Marital Status";
                                     maritalStatusField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( maritalStatusField );
                                 }
@@ -724,7 +724,7 @@ namespace Rock.Web.UI
 
                                     var connectionStatusField = new RockBoundField();
                                     connectionStatusField.DataField = dataFieldExpression;
-                                    connectionStatusField.HeaderText = "ConnectionStatus";
+                                    connectionStatusField.HeaderText = "Connection Status";
                                     connectionStatusField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( connectionStatusField );
                                 }
