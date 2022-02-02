@@ -121,8 +121,21 @@ namespace Rock.Lava.Fluid
             {
                 if ( value is DateTime dt )
                 {
-                    // Assume that the DateTime is expressed in Rock time.
-                    return new LavaDateTimeValue( LavaDateTime.NewDateTimeOffset( dt.Ticks ) );
+                    // Convert the DateTime to a DateTimeOffset value.
+                    // MinValue/MaxValue are substituted directly because they are not timezone dependent.
+                    if ( dt == DateTime.MinValue )
+                    {
+                        return new LavaDateTimeValue( DateTimeOffset.MinValue );
+                    }
+                    else if ( dt == DateTime.MaxValue )
+                    {
+                        return new LavaDateTimeValue( DateTimeOffset.MaxValue );
+                    }
+                    else
+                    {
+                        // Assume that the DateTime is expressed in Rock time.
+                        return new LavaDateTimeValue( LavaDateTime.NewDateTimeOffset( dt.Ticks ) );
+                    }
                 }
                 else if ( value is DateTimeOffset dto )
                 {
