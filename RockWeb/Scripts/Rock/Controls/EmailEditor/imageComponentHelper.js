@@ -76,6 +76,9 @@
         else {
           $imageLinkInput.val('');
         }
+
+        // Return this to the previous function caller
+        return Rock.controls.emailEditor.$currentImageComponent;
       },
       handleImageUpdate: function (e, data)
       {

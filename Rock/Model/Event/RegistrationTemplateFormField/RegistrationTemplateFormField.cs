@@ -192,15 +192,6 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// Gets or sets the field visibility rules.
-        /// </summary>
-        /// <value>
-        /// The field visibility rules.
-        /// </value>
-        [NotMapped]
-        public virtual Rock.Field.FieldVisibilityRules FieldVisibilityRules { get; set; } = new Rock.Field.FieldVisibilityRules();
-
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateForm"/>.
         /// </summary>
         /// <value>

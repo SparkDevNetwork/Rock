@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
@@ -52,5 +53,62 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        /// <summary>
+        /// Gets or sets the configuration mobile file path.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationMobilePhoneFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ConfigurationMobilePhoneBinaryFileId );
+            }
+
+            private set
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationTabletFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ConfigurationMobileTabletBinaryFileId );
+            }
+
+            private set
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gets the thumbnail file URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file URL.
+        /// </value>
+        [NotMapped]
+        public string ThumbnailFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ThumbnailBinaryFileId );
+            }
+
+            private set
+            {
+            }
+        }
     }
 }

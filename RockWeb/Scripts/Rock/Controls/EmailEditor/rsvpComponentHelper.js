@@ -122,6 +122,9 @@
                 $('#component-rsvp-buttonfontweight').val(buttonFontWeight);
                 $('#component-rsvp-buttonfontsize').val(buttonFontSize);
                 $('#component-rsvp-buttonpadding').val(buttonPadding);
+
+                // Return this to the previous function caller
+                return Rock.controls.emailEditor.$currentRsvpComponent;
             },
 
             setGroup: function () {

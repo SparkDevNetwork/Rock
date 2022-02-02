@@ -20,7 +20,7 @@ import { toNumberOrNull } from "../Services/number";
 import NumberRangeBox, { NumberRangeModelValue } from "../Elements/numberRangeBox";
 
 export const EditComponent = defineComponent({
-    name: "IntegerRangeField.Edit",
+    name: "DecimalRangeField.Edit",
 
     components: {
         NumberRangeBox
@@ -69,4 +69,10 @@ export const EditComponent = defineComponent({
     template: `
 <NumberRangeBox v-model="internalValue" />
 `
+});
+
+export const ConfigurationComponent = defineComponent({
+    name: "DecimalRangeField.Configuration",
+
+    template: ``
 });

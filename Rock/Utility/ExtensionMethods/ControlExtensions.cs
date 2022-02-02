@@ -183,6 +183,40 @@ namespace Rock
             return null;
         }
 
+        /// <summary>
+        /// Finds the first control in a parent container matching the specified condition.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="condition">The condition.</param>
+        /// <returns></returns>
+        public static System.Web.UI.Control FindFirstInParentContainerWhere( this System.Web.UI.Control control, Func<System.Web.UI.Control, bool> condition )
+        {
+            if ( control == null )
+            {
+                return null;
+            }
+            var parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                foreach ( var child in parentControl.Controls )
+                {
+                    if ( child is System.Web.UI.Control c )
+                    {
+                        if ( c == control )
+                        {
+                            continue;
+                        }
+                        if ( condition( c ) )
+                        {
+                            return c;
+                        }
+                    }
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
         #endregion Control Extensions
 
         #region WebControl Extensions

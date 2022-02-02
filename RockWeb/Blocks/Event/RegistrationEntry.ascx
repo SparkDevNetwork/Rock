@@ -55,10 +55,10 @@
     <%-- Prompt for information on each Registration --%>
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false" CssClass="registrationentry-registrant">
 
-        
+
         <h1>
             <asp:Literal ID="lRegistrantTitle" runat="server" />
-        </h1>        
+        </h1>
 
         <Rock:NotificationBox ID="nbType" runat="server" NotificationBoxType="Warning"  />
 
@@ -75,7 +75,7 @@
             <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well js-registration-same-family">
                 <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same immediate family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
             </asp:Panel>
-        
+
             <asp:Panel ID="pnlFamilyMembers" runat="server" CssClass="row" >
                 <div class="col-md-6">
                     <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member to Register" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
@@ -83,7 +83,7 @@
             </asp:Panel>
 
             <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
-        
+
             <div id="divFees" runat="server" class="well registration-additional-options">
                 <h4><asp:Literal ID="lRegistrantFeeCaption" runat="server" /></h4>
                 <asp:PlaceHolder ID="phFees" runat="server" />
@@ -132,7 +132,7 @@
 
     <%-- Summary and Payment --%>
     <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" CssClass="registrationentry-summary">
-        
+
         <h1><asp:Literal ID="lSummaryAndPaymentTitle" runat="server" /></h1>
 
         <asp:Panel ID="pnlSummaryAndPaymentProgressBar" runat="server">
@@ -142,9 +142,9 @@
                 </div>
             </div>
         </asp:Panel>
-        
+
         <asp:Panel ID="pnlRegistrarInfoPrompt" runat="server" CssClass="well">
-            
+
             <h4>This <asp:Literal id="lRegistrationTermPrompt" runat="server" /> Was Completed By</h4>
             <div class="row">
                 <div class="col-md-6">
@@ -188,7 +188,7 @@
                 </div>
             </div>
         </asp:Panel>
-        
+
         <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
             <asp:Literal ID="lRegistrantsReview" runat="server" />
             <ul>
@@ -208,14 +208,14 @@
                     </ItemTemplate>
                 </asp:Repeater>
             </ul>
-        </asp:Panel>     
-        
+        </asp:Panel>
+
         <asp:Panel ID="pnlCostAndFees" runat="server">
 
             <h4>Payment Summary</h4>
-                
+
             <Rock:NotificationBox ID="nbDiscountCode" runat="server" Visible="false" NotificationBoxType="Warning"></Rock:NotificationBox>
-                
+
             <div class="clearfix">
                 <div id="divDiscountCode" runat="server" class="form-group pull-right">
                     <label class="control-label"><asp:Literal ID="lDiscountCodeLabel" runat="server" /></label>
@@ -233,7 +233,7 @@
                             <div class="col-sm-6">
                                 <strong>Description</strong>
                             </div>
-                                
+
                             <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
                                 <strong>Discounted Amount</strong>
                             </div>
@@ -241,7 +241,7 @@
                             <div class="col-sm-3 fee-value">
                                 <strong>Amount</strong>
                             </div>
-                                
+
                         </div>
                     </HeaderTemplate>
                     <ItemTemplate>
@@ -249,16 +249,16 @@
                             <div class="col-sm-6 fee-caption">
                                 <%# Eval("Description") %>
                             </div>
-                                
+
                             <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
                                 <Rock:HelpBlock runat="server" Text='This item is not eligible for the discount.' Visible='<%# ((RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) && ((decimal)Eval("Cost") == (decimal)Eval("DiscountedCost")) && ((decimal)Eval("Cost") > 0.0m)) %>'></Rock:HelpBlock>
-                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("DiscountedCost")) %> 
+                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("DiscountedCost")) %>
                             </div>
 
                             <div class="col-sm-3 fee-value">
                                 <span class="visible-xs-inline">Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("Cost")) %>
                             </div>
-                                    
+
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
@@ -271,25 +271,25 @@
 
                     <asp:HiddenField ID="hfPreviouslyPaid" runat="server" />
                     <Rock:RockLiteral ID="lPreviouslyPaid" runat="server" Label="Previously Paid" />
-                    
+
                     <%-- For Partial Payments... --%>
 
                     <asp:HiddenField ID="hfMinimumDue" runat="server" />
                     <Rock:RockLiteral ID="lMinimumDue" runat="server" Label="Minimum Due Today" />
-                    
+
                     <div class="form-right">
                         <Rock:CurrencyBox ID="nbAmountPaid" runat="server" CssClass="input-width-md amount-to-pay" Label="Amount To Pay Today" Required="true" />
                     </div>
-                                 
+
                     <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining After Payment" />
 
 
                     <%-- For Payoff --%>
-                    
+
                     <Rock:RockLiteral ID="lAmountDue" runat="server" Label="Amount Due" />
                 </div>
             </div>
-                
+
         </asp:Panel>
 
         <asp:Panel ID="pnlPaymentInfo" runat="server" CssClass="well">
@@ -297,7 +297,7 @@
             <asp:Literal ID="lPaymentInfoTitle" runat="server" />
 
             <Rock:RockRadioButtonList ID="rblSavedCC" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
-            
+
             <div id="divNewCard" runat="server" class="radio-content">
                 <div class="js-creditcard-validation-notification alert alert-validation" style="display:none;">
                     <span class="js-notification-text"></span>
@@ -345,7 +345,7 @@
     </asp:Panel>
 
     <asp:Panel ID="pnlSuccess" runat="server" Visible="false" >
-        
+
         <h1><asp:Literal ID="lSuccessTitle" runat="server" /></h1>
 
         <asp:Panel ID="pnlSuccessProgressBar" runat="server">
@@ -372,8 +372,8 @@
                             <div class="control-group">
                                 <div class="controls">
                                     <div class="alert alert-info">
-                                        <b>Note:</b> For security purposes you will need to login to use your saved account information.  To create
-	    			                a login account please provide a user name and password below. You will be sent an email with the account 
+                                        <b>Note:</b> For security purposes, you will need to log in to use your saved account information. To create
+	    			                a login account please provide a user name and password below. You will be sent an email with the account
 	    			                information above as a reminder.
                                     </div>
                                 </div>
@@ -391,7 +391,7 @@
                             <asp:LinkButton ID="lbSaveAccount" runat="server" Text="Save Account" CssClass="btn btn-primary" OnClick="lbSaveAccount_Click" />
                         </div>
                     </div>
-                </fieldset>                    
+                </fieldset>
             </div>
         </asp:Panel>
 

@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// A logical representation of a physical HTML layout (page).  The physical layout controls the zones that 
+    /// A logical representation of a physical HTML layout (page).  The physical layout controls the zones that
     /// are available for one or more <see cref="Page">Pages</see> to use.  The logical layout is used to configure
     /// which blocks are present in each zone
     /// </summary>
@@ -53,7 +53,7 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this layout is associated with. 
+        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this layout is associated with.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this layout is associated with.
@@ -62,7 +62,7 @@ namespace Rock.Model
         public int SiteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the file name portion of the associated .Net ASCX UserControl that provides the HTML Markup and code for this Layout. 
+        /// Gets or sets the file name portion of the associated .Net ASCX UserControl that provides the HTML Markup and code for this Layout.
         /// Value should not include the extension.  And the path is relative to the theme folder.
         /// </summary>
         /// <value>
@@ -109,13 +109,13 @@ namespace Rock.Model
         public string LayoutMobileTablet { get; set; }
 
         /// <summary>
-        /// Gets or sets the user defined description of the Layout. 
+        /// Gets or sets the user defined description of the Layout.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the Description of the Layout
         /// </value>
         /// <example>
-        /// Provides ability to login to site.
+        /// Provides ability to log into the site.
         /// </example>
         [DataMember]
         public string Description { get; set; }

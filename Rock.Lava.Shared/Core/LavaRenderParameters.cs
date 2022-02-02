@@ -58,7 +58,7 @@ namespace Rock.Lava
         public ILavaRenderContext Context { get; set; }
 
         /// <summary>
-        /// Should string values be XML encoded?
+        /// Should string values be XML/HTML encoded during the rendering process?
         /// </summary>
         public bool ShouldEncodeStringsAsXml { get; set; }
 

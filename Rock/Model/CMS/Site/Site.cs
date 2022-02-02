@@ -33,7 +33,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually 
+    /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually
     /// associated with one or more <see cref="SiteDomain">SiteDomains </see>.
     /// </summary>
     [RockDomain( "CMS" )]
@@ -139,11 +139,11 @@ namespace Rock.Model
         public string Theme { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Site's default <see cref="Rock.Model.Page"/>. 
+        /// Gets or sets the Id of the Site's default <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <remarks>
         /// This is the <see cref="Rock.Model.Page"/> that is loaded when the user browses to the root of one of the Site's <see cref="Rock.Model.SiteDomain"/>
-        /// (i.e. http://www.mychurchdomain.org/) without providing a page or route. 
+        /// (i.e. http://www.mychurchdomain.org/) without providing a page or route.
         /// </remarks>
         /// <value>
         /// An <see cref="System.Int32"/> containing the Id of the Site's default <see cref="Rock.Model.Page"/>. If the site doesn't have a default <see cref="Rock.Model.Page"/>
@@ -163,13 +163,13 @@ namespace Rock.Model
         public int? DefaultPageRouteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Site's login <see cref="Rock.Model.Page"/>
+        /// Gets or sets the Id of the Site's log in <see cref="Rock.Model.Page"/>
         /// </summary>
         /// <remarks>
         /// This is the <see cref="Rock.Model.Page"/> that is loaded when the user is not logged in and they browse to a page or block that requires authentication.
         /// </remarks>
         /// <value>
-        /// An <see cref="System.Int32"/> containing the Id of the Site's login <see cref="Rock.Model.Page"/>. If the site doesn't have a login <see cref="Rock.Model.Page"/>
+        /// An <see cref="System.Int32"/> containing the Id of the Site's log in <see cref="Rock.Model.Page"/>. If the site doesn't have a log in <see cref="Rock.Model.Page"/>
         /// this value will be null.
         /// </value>
         [DataMember]
@@ -233,7 +233,7 @@ namespace Rock.Model
         /// This is the <see cref="Rock.Model.Page"/> that is loaded when a page is not found.
         /// </remarks>
         /// <value>
-        /// An <see cref="System.Int32"/> containing the Id of the Site's 404 <see cref="Rock.Model.Page"/>. 
+        /// An <see cref="System.Int32"/> containing the Id of the Site's 404 <see cref="Rock.Model.Page"/>.
         /// </value>
         [DataMember]
         public int? PageNotFoundPageId { get; set; }
@@ -446,63 +446,6 @@ namespace Rock.Model
         [DataMember]
         public bool EnableExclusiveRoutes { get; set; }
 
-        /// <summary>
-        /// Gets or sets the configuration mobile file path.
-        /// </summary>
-        /// <value>
-        /// The configuration mobile file path.
-        /// </value>
-        [NotMapped]
-        public string ConfigurationMobilePhoneFileUrl
-        {
-            get
-            {
-                return Site.GetFileUrl( this.ConfigurationMobilePhoneBinaryFileId );
-            }
-
-            private set
-            {
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the configuration tablet file path.
-        /// </summary>
-        /// <value>
-        /// The configuration tablet file path.
-        /// </value>
-        [NotMapped]
-        public string ConfigurationTabletFileUrl
-        {
-            get
-            {
-                return Site.GetFileUrl( this.ConfigurationMobileTabletBinaryFileId );
-            }
-
-            private set
-            {
-            }
-        }
-
-        /// <summary>
-        /// Gets the thumbnail file URL.
-        /// </summary>
-        /// <value>
-        /// The thumbnail file URL.
-        /// </value>
-        [NotMapped]
-        public string ThumbnailFileUrl
-        {
-            get
-            {
-                return Site.GetFileUrl( this.ThumbnailBinaryFileId );
-            }
-
-            private set
-            {
-            }
-        }
-
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -538,7 +481,7 @@ namespace Rock.Model
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The default <see cref="Rock.Model.Page"/> for the site. 
+        /// The default <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page DefaultPage { get; set; }
@@ -556,7 +499,7 @@ namespace Rock.Model
         /// Gets or sets the login <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The login <see cref="Rock.Model.Page"/> for the site. 
+        /// The login <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page LoginPage { get; set; }
@@ -592,7 +535,7 @@ namespace Rock.Model
         /// Gets or sets the registration <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The registration <see cref="Rock.Model.Page"/> for the site. 
+        /// The registration <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page RegistrationPage { get; set; }
@@ -610,13 +553,13 @@ namespace Rock.Model
         /// Gets or sets the 404 <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The 404 <see cref="Rock.Model.Page"/> for the site. 
+        /// The 404 <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page PageNotFoundPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the 404 <see cref="Rock.Model.PageRoute"/> page route for this site. 
+        /// Gets or sets the 404 <see cref="Rock.Model.PageRoute"/> page route for this site.
         /// </summary>
         /// <value>
         /// The registration page route.

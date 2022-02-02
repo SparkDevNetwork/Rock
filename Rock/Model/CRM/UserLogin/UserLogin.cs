@@ -191,15 +191,6 @@ namespace Rock.Model
         [DataMember]
         public int? PersonId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        private History.HistoryChangeList HistoryChanges { get; set; }
-
         #endregion
 
         #region Navigation Properties

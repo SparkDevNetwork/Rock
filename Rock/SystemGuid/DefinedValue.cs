@@ -749,6 +749,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSONAL_DEVICE_TYPE_COMPUTER = "828ADECE-EFE7-49DF-BA8C-B3F132509A95";
 
+        /// <summary>
+        /// Personal Device Type - TV
+        /// </summary>
+        public const string PERSONAL_DEVICE_TYPE_TV = "CA45FC83-2B1C-51AC-4B46-F3427F57116B";
         #endregion
 
         #region Personal Device Platform

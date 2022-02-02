@@ -424,26 +424,6 @@ namespace Rock.Model
 
         private RockCacheability _cacheControlHeader;
 
-        /// <summary>
-        /// Gets the cache control header. This shouldn't be used to set the properties directly but the json version should be used to set the CacheControlHeaderSettings property.
-        /// </summary>
-        /// <value>
-        /// The cache control header.
-        /// </value>
-        [NotMapped]
-        public RockCacheability CacheControlHeader
-        {
-            get
-            {
-                if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
-                {
-                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
-                }
-
-                return _cacheControlHeader;
-            }
-        }
-
         private int? _originalParentPageId = null;
 
         #endregion Entity Properties

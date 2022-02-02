@@ -52,7 +52,7 @@
                         <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" Help="The theme that should be used for the site.  Themes contain specific layouts and css styling that controls how a site and its pages will look" />
                             <Rock:PagePicker ID="ppDefaultPage" runat="server" Label="Default Page" PromptForPageRoute="true" Help="The page and route that will be used whenever a specific page or page route is not provided." />
-                            <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Login Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request a page that requires them to login." />
+                            <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Login Page" Required="false" PromptForPageRoute="true" Help="The page users will be redirected to when they request a page that requires login." />
                             <Rock:PagePicker ID="ppChangePasswordPage" runat="server" Label="Change Password Page" Required="false" PromptForPageRoute="true" Help="The page for changing a password for the site." />
                             <Rock:PagePicker ID="ppCommunicationPage" runat="server" Label="Communication Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when creating a new communication." />
                             <Rock:PagePicker ID="ppRegistrationPage" runat="server" Label="Group Registration Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request to register for a group." />

@@ -32,6 +32,12 @@
                         You will need to upgrade your database in order to proceed with that update.
                     </p>
                 </Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbCompileThreadsIssue" runat="server" NotificationBoxType="Warning" Visible="false">
+                    <h2><i class="fa fa-exclamation-triangle"></i> Background Process Running</h2>
+                    <p>
+                        Rock is running one or more processes that may lock files that will be updated. These will be checked again after clicking the update button. If this message appears again wait a minute and try again.
+                    </p>
+                </Rock:NotificationBox>
                 <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>

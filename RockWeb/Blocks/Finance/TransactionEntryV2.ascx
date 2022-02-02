@@ -214,7 +214,7 @@
                                         <div class="control-group">
                                             <div class="controls">
                                                 <div class="alert alert-info">
-                                                    <b>Note:</b> For security purposes you will need to login to use your saved account information. To create
+                                                    <b>Note:</b> For security purposes you will need to log in to use your saved account information. To create
 	    			                    a login account please provide a user name and password below. You will be sent an email with the account
 	    			                    information above as a reminder.
                                                 </div>

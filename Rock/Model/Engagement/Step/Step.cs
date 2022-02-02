@@ -103,15 +103,6 @@ namespace Rock.Model
         public int? StepProgramCompletionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the caption.
-        /// </summary>
-        /// <value>
-        /// The caption.
-        /// </value>
-        [NotMapped]
-        public virtual string Caption { get; set; }
-
-        /// <summary>
         /// Gets the start date key.
         /// </summary>
         /// <value>

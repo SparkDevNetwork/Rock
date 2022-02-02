@@ -104,6 +104,8 @@ export const ConfigurationComponent = defineComponent({
 
     props: getFieldConfigurationProps(),
 
+    emits: ["update:modelValue", "updateConfiguration", "updateConfigurationValue" ],
+
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
         const passwordField = ref(false);
@@ -166,6 +168,8 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
+        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
+        // THIS TEXT FIELD DOES NOT NEED THIS
         watch([], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");

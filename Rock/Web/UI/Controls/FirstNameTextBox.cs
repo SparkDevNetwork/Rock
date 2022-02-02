@@ -94,7 +94,7 @@ namespace Rock.Web.UI.Controls
             var invalidStrings = _notAllowedStrings.FindAll( notAllowedString => value.IndexOf( notAllowedString, StringComparison.InvariantCultureIgnoreCase ) >= 0 );
             if ( invalidStrings.Count > 0 )
             {
-                _customValidator.ErrorMessage = string.Format("FirstName cannot contain {0}", Humanizer.CollectionHumanizeExtensions.Humanize( invalidStrings ) );
+                _customValidator.ErrorMessage = string.Format("FirstName cannot contain {0}", Humanizer.CollectionHumanizeExtensions.Humanize( invalidStrings.Select(m => m.Trim()).Distinct() ) );
             }
             args.IsValid = invalidStrings.Count == 0;
         }

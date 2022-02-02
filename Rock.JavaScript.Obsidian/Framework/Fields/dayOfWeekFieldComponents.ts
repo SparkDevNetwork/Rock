@@ -76,3 +76,10 @@ export const EditComponent = defineComponent({
 <DropDownList v-model="internalValue" :options="options()" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "DayOfWeekField.Configuration",
+
+    template: ``
+});
+

@@ -48,3 +48,9 @@ export const EditComponent = defineComponent({
 <EmailBox v-model="internalValue" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "EmailField.Configuration",
+
+    template: ``
+});

@@ -23,6 +23,7 @@ using System.Web.Http;
 using Rock.Rest.Filters;
 using Rock.ViewModel.Controls;
 using Rock.ViewModel.NonEntities;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.v2.Controls
 {
@@ -42,24 +43,19 @@ namespace Rock.Rest.v2.Controls
         [Authenticate]
         public IHttpActionResult GetAvailableFieldTypes()
         {
-            return Ok( new List<ListItemViewModel>
-            {
-                new ListItemViewModel
+            var fieldTypes = FieldTypeCache.All()
+                .Where( f => f.Platform.HasFlag( Rock.Utility.RockPlatform.Obsidian ) )
+                .ToList();
+
+            var fieldTypeItems = fieldTypes
+                .Select( f => new ListItemViewModel
                 {
-                    Text = "Defined Value",
-                    Value = Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid().ToString()
-                },
-                new ListItemViewModel
-                {
-                    Text = "Text",
-                    Value = Rock.SystemGuid.FieldType.TEXT.AsGuid().ToString()
-                },
-                new ListItemViewModel
-                {
-                    Text = "URL Link",
-                    Value = Rock.SystemGuid.FieldType.URL_LINK.AsGuid().ToString()
-                }
-            } );
+                    Text = f.Name,
+                    Value = f.Guid.ToString()
+                } )
+                .ToList();
+
+            return Ok( fieldTypeItems );
         }
 
         /// <summary>

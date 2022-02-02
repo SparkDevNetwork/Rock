@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Security
 
             if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
             {
-                DisplayMessage( "You must login before changing your password", NotificationBoxType.Warning );
+                DisplayMessage( "You must log in before changing your password", NotificationBoxType.Warning );
                 pnlChangePassword.Visible = false;
             }
             else

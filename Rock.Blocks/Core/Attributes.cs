@@ -335,51 +335,6 @@ namespace Rock.Blocks.Core
             }
         }
 
-        /// <summary>
-        /// Gets the publically editable attribute model. This contains all the
-        /// information required for the individual to make changes to the attribute.
-        /// </summary>
-        /// <param name="attribute">The attribute that will be represented.</param>
-        /// <returns>A <see cref="PublicEditableAttributeViewModel"/> that represents the attribute.</returns>
-        private PublicEditableAttributeViewModel GetEditableAttributeViewModel( Rock.Model.Attribute attribute )
-        {
-            var entityTypeCache = attribute.EntityTypeId.HasValue ? EntityTypeCache.Get( attribute.EntityTypeId.Value ) : null;
-            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeId );
-            var configurationValues = attribute.AttributeQualifiers.ToDictionary( q => q.Key, q => q.Value );
-
-            return new PublicEditableAttributeViewModel
-            {
-                Guid = attribute.Guid,
-                Name = attribute.Name,
-                Key = attribute.Key,
-                AbbreviatedName = attribute.AbbreviatedName,
-                Description = attribute.Description,
-                IsActive = attribute.IsActive,
-                IsAnalytic = attribute.IsAnalytic,
-                IsAnalyticHistory = attribute.IsAnalyticHistory,
-                PreHtml = attribute.PreHtml,
-                PostHtml = attribute.PostHtml,
-                IsAllowSearch = attribute.AllowSearch,
-                IsEnableHistory = attribute.EnableHistory,
-                IsIndexEnabled = attribute.IsIndexEnabled,
-                IsPublic = attribute.IsPublic,
-                IsRequired = attribute.IsRequired,
-                IsSystem = attribute.IsSystem,
-                IsShowInGrid = attribute.IsGridColumn,
-                IsShowOnBulk = attribute.ShowOnBulk,
-                FieldTypeGuid = fieldTypeCache.Guid,
-                Categories = attribute.Categories
-                    .Select( c => new ListItemViewModel
-                    {
-                        Value = c.Guid.ToString(),
-                        Text = c.Name
-                    } )
-                    .ToList(),
-                ConfigurationOptions = fieldTypeCache.Field.GetPublicConfigurationOptions( configurationValues ),
-                DefaultValue = fieldTypeCache.Field.GetClientEditValue( attribute.DefaultValue, configurationValues )
-            };
-        }
-
         #endregion
 
         #region Block Actions
@@ -495,7 +450,7 @@ namespace Rock.Blocks.Core
 
                 return ActionOk( new EditAttributeViewModel
                 {
-                    Attribute = GetEditableAttributeViewModel( attribute ),
+                    Attribute = Helper.GetPublicEditableAttributeViewModel( attribute ),
                     EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = attribute.EntityTypeQualifierValue
                 } );
@@ -516,96 +471,14 @@ namespace Rock.Blocks.Core
             using ( var rockContext = new RockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
-                Rock.Model.Attribute attr = null;
-
-                var newAttribute = new Rock.Model.Attribute();
 
                 if ( attribute.Guid.HasValue )
                 {
-                    attr = attributeService.Get( attribute.Guid ?? Guid.Empty );
+                    var existingAttribute = attributeService.Get( attribute.Guid ?? Guid.Empty );
 
-                    if ( attr == null )
+                    if ( existingAttribute == null )
                     {
                         return ActionBadRequest( "Attribute was not found." );
-                    }
-
-                    newAttribute.CopyPropertiesFrom( attr );
-                }
-                else
-                {
-                    newAttribute.Order = attributeService.Queryable().Max( a => a.Order ) + 1;
-                }
-
-                var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeGuid ?? Guid.Empty );
-
-                var configurationValues = fieldTypeCache.Field.GetPrivateConfigurationOptions( attribute.ConfigurationOptions );
-
-                // Note: We intentionally ignore IsSystem, that cannot be changed by the user.
-                newAttribute.Name = attribute.Name;
-                newAttribute.AbbreviatedName = attribute.AbbreviatedName;
-                newAttribute.Key = attribute.Key;
-                newAttribute.Description = attribute.Description;
-                newAttribute.IsActive = attribute.IsActive;
-                newAttribute.IsPublic = attribute.IsPublic;
-                newAttribute.IsRequired = attribute.IsRequired;
-                newAttribute.ShowOnBulk = attribute.IsShowOnBulk;
-                newAttribute.IsGridColumn = attribute.IsShowInGrid;
-                newAttribute.IsAnalytic = attribute.IsAnalytic;
-                newAttribute.IsAnalyticHistory = attribute.IsAnalyticHistory;
-                newAttribute.AllowSearch = attribute.IsAllowSearch;
-                newAttribute.EnableHistory = attribute.IsEnableHistory;
-                newAttribute.IsIndexEnabled = attribute.IsIndexEnabled;
-                newAttribute.PreHtml = attribute.PreHtml;
-                newAttribute.PostHtml = attribute.PostHtml;
-                newAttribute.FieldTypeId = fieldTypeCache.Id;
-                newAttribute.DefaultValue = fieldTypeCache.Field.GetValueFromClient( attribute.DefaultValue, configurationValues );
-
-                var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
-                newAttribute.Categories.Clear();
-                if ( categoryGuids != null && categoryGuids.Any() )
-                {
-                    new CategoryService( rockContext ).Queryable()
-                        .Where( c => categoryGuids.Contains( c.Guid ) )
-                        .ToList()
-                        .ForEach( c => newAttribute.Categories.Add( c ) );
-                }
-
-                // Since changes to Categories isn't tracked by ChangeTracker,
-                // set the ModifiedDateTime just in case Categories is the only
-                // actual change.
-                newAttribute.ModifiedDateTime = RockDateTime.Now;
-
-                newAttribute.AttributeQualifiers.Clear();
-                foreach ( var qualifier in configurationValues )
-                {
-                    AttributeQualifier attributeQualifier = new AttributeQualifier
-                    {
-                        IsSystem = false,
-                        Key = qualifier.Key,
-                        Value = qualifier.Value ?? string.Empty
-                    };
-
-                    newAttribute.AttributeQualifiers.Add( attributeQualifier );
-                }
-
-                // Merge in any old qualifiers if they were not provided by the client.
-                if ( attr != null )
-                {
-                    foreach ( var qualifier in attr.AttributeQualifiers )
-                    {
-                        var aq = newAttribute.AttributeQualifiers.FirstOrDefault( q => q.Key == qualifier.Key );
-
-                        if ( aq == null )
-                        {
-                            AttributeQualifier attributeQualifier = new AttributeQualifier
-                            {
-                                IsSystem = false,
-                                Key = qualifier.Key,
-                                Value = qualifier.Value ?? string.Empty
-                            };
-
-                            newAttribute.AttributeQualifiers.Add( attributeQualifier );
-                        }
                     }
                 }
 
@@ -618,7 +491,7 @@ namespace Rock.Blocks.Core
                         ? ( int? ) null
                         : EntityTypeCache.Get( blockEntityTypeGuid.Value ).Id;
 
-                    newAttr = Rock.Attribute.Helper.SaveAttributeEdits( newAttribute,
+                    newAttr = Helper.SaveAttributeEdits( attribute,
                         entityTypeId,
                         GetAttributeValue( AttributeKey.EntityQualifierColumn ),
                         GetAttributeValue( AttributeKey.EntityQualifierValue ),
@@ -628,7 +501,7 @@ namespace Rock.Blocks.Core
                 {
                     var entityTypeId = entityTypeGuid.Value != Guid.Empty ? ( int? ) EntityTypeCache.Get( entityTypeGuid.Value ).Id : null;
 
-                    newAttr = Rock.Attribute.Helper.SaveAttributeEdits( newAttribute,
+                    newAttr = Helper.SaveAttributeEdits( attribute,
                         entityTypeId,
                         entityTypeQualifierColumn,
                         entityTypeQualifierValue,

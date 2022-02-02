@@ -325,7 +325,8 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
-        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        // DV See also: Rock.Communication.EmailAddressFieldValidator _emailAddressRegex, make sure the two stay in sync. #4829, #4867
+        [RegularExpression( @"\s*(?:[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[A-Za-z0-9-]*[A-Za-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])\s*", ErrorMessage = "The Email address is invalid" )]
         [Index( "IX_Email" )]
         public string Email { get; set; }
 
@@ -556,22 +557,6 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see>.
-        /// </summary>
-        /// <value>
-        /// The primary alias.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual PersonAlias PrimaryAlias
-        {
-            get
-            {
-                return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a collection containing the Person's <see cref="Rock.Model.UserLogin">UserLogins</see>.
         /// </summary>
         /// <value>
@@ -779,21 +764,6 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public int? DaysUntilBirthday { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether [allows interactive bulk indexing].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
-        /// </value>
-        [NotMapped]
-        public bool AllowsInteractiveBulkIndexing
-        {
-            get
-            {
-                return true;
-            }
-        }
 
         #endregion
 

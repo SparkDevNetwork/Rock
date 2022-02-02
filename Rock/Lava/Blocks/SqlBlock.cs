@@ -85,7 +85,7 @@ namespace Rock.Lava.Blocks
                         var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => (object)i.Value ), sqlTimeout );
                         stopWatch.Stop();
 
-                        context.SetMergeField( parms["return"], results.Tables[0].ToDynamic() );
+                        context.SetMergeField( parms["return"], results.Tables[0].ToDynamicTypeCollection() );
 
                         // Manually add query timings
                         var rockMockContext = LavaHelper.GetRockContextFromLavaContext( context );

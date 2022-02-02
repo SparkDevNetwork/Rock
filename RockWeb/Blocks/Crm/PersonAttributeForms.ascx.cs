@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 nbMain.Title = "Sorry";
-                nbMain.Text = "You need to login before entering information on this page.";
+                nbMain.Text = "You need to log in before entering information on this page.";
                 nbMain.NotificationBoxType = NotificationBoxType.Warning;
                 nbMain.Visible = true;
             }

@@ -31,7 +31,7 @@
       },
       setProperties: function ($dividerComponent)
       {
-        Rock.controls.emailEditor.$currentDividerComponent = $dividerComponent.hasClass('component-divider') ? $currentComponent : $(false);
+        Rock.controls.emailEditor.$currentDividerComponent = $dividerComponent.hasClass('component-divider') ? $dividerComponent : $(false);
         var $div = Rock.controls.emailEditor.$currentDividerComponent.find('hr,div');
         var divEl = $div[0];
 
@@ -51,6 +51,9 @@
         $('#component-divider-margin-top').val(marginTop);
         $('#component-divider-margin-bottom').val(marginBottom);
         $('#component-divider-height').val(height);
+
+        // Return this to the previous function caller
+        return Rock.controls.emailEditor.$currentDividerComponent;
       },
       setDividerColor: function ()
       {
