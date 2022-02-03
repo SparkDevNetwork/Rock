@@ -180,10 +180,6 @@ namespace RockWeb.Blocks.Tv
             additionalSettings.ApplicationStyles = ceApplicationStyles.Text;
             additionalSettings.TvApplicationType = TvApplicationType.AppleTv;
 
-            // Login page
-            site.LoginPageId = ppLoginPage.PageId;
-            site.LoginPageRouteId = ppLoginPage.PageRouteId;
-
             // Create/Modify API Key
             additionalSettings.ApiKeyId =  SaveApiKey( additionalSettings.ApiKeyId, txtApiKey.Text, string.Format( "tv_application_{0}", site.Id ), rockContext );
             site.AdditionalSettings = additionalSettings.ToJson();
@@ -380,16 +376,6 @@ namespace RockWeb.Blocks.Tv
                 ceApplicationStyles.Text = additionalSettings.ApplicationStyles;
 
                 cbEnablePageViews.Checked = site.EnablePageViews;
-
-                // Login Page
-                if ( site.LoginPageRoute != null )
-                {
-                    ppLoginPage.SetValue( site.LoginPageRoute );
-                }
-                else
-                {
-                    ppLoginPage.SetValue( site.LoginPage );
-                }
 
                 // Set the API key
                 var apiKeyLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId ?? 0 );
