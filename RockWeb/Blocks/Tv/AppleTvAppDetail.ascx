@@ -52,17 +52,18 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbEnablePageViews" runat="server" Label="Enable Page Views" Help="Determines if interaction records should be written for page views" AutoPostBack="true" OnCheckedChanged="cbEnablePageViews_CheckedChanged" />
-                            <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                            <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" CssClass="input-width-sm" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="txtApiKey" runat="server" Label="API Key" />
                         </div>
                     </div>
 
-                    <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Login Page" />
-
-                    <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
+                    <div class="actions">
+                        <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
+                    </div>
+                    
                 </asp:Panel>
                 
             </div>
