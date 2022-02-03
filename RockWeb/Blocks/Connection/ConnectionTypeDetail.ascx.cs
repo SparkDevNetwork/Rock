@@ -1120,6 +1120,16 @@ namespace RockWeb.Blocks.Connection
                 isNew = true;
             }
 
+            var isConnectionStatusDuplicate = StatusesState
+                                                .Where( m => m.Name != null && m.Name.Equals( tbConnectionStatusName.Text, StringComparison.OrdinalIgnoreCase ) )
+                                                .Any();
+            if ( isConnectionStatusDuplicate )
+            {
+                nbDuplicateConnectionStatus.Text = $"The connection status already exists with the name '{tbConnectionStatusName.Text}'. Please use a different connection status name.";
+                nbDuplicateConnectionStatus.Visible = true;
+                return;
+            }
+
             connectionStatus.Name = tbConnectionStatusName.Text;
             connectionStatus.Description = tbConnectionStatusDescription.Text;
             if ( cbIsDefault.Checked == true )
@@ -1139,7 +1149,6 @@ namespace RockWeb.Blocks.Connection
             {
                 return;
             }
-
 
             if ( isNew )
             {
@@ -1201,6 +1210,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionStatusGuid">The connection status unique identifier.</param>
         protected void gStatuses_ShowEdit( Guid connectionStatusGuid )
         {
+            nbDuplicateConnectionStatus.Visible = false;
             ConnectionStatus connectionStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( connectionStatusGuid ) );
             SetStatusAutomationEditMode( false );
             if ( connectionStatus != null )
