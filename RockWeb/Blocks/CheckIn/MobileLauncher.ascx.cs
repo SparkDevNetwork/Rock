@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.CheckIn
     #region Block Attributes for Launcher Navigation
 
     [LinkedPage( "Log In Page",
-        Key = AttributeKey.LogInPage,
+        Key = AttributeKey.LoginPage,
         Description = "The page to use for logging in the person. If blank the log in button will not be shown",
         IsRequired = false,
         Category = "Mobile Person",
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.CheckIn
 
             public const string PhoneIdentificationPage = "PhoneIdentificationPage";
 
-            public const string LogInPage = "LogInPage";
+            public const string LoginPage = "LoginPage";
 
             public const string MobileCheckinHeader = "MobileCheckinHeader";
 
@@ -374,41 +374,61 @@ namespace RockWeb.Blocks.CheckIn
 
         #region Events
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rCampuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rCampuses_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var lbCampusSelect = e.Item.FindControl( "lbCampusSelect" ) as LinkButton;
+            if ( e.Item.ItemIndex == 0 )
+            {
+                lbCampusSelect.AddCssClass( "btn-primary" );
+            }
+            else
+            {
+                lbCampusSelect.AddCssClass( "btn-default" );
+            }
+        }
+
         protected void rCampuses_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             var deviceId = e.CommandArgument.ToString().AsIntegerOrNull();
 
-            if ( deviceId.HasValue )
+            if ( !deviceId.HasValue )
             {
-                var rockContext = new RockContext();
-                var device = new DeviceService( rockContext ).Get( deviceId.Value );
-
-                if ( device == null )
-                {
-                    lMessage.Text = GetMessageText( AttributeKey.NoDevicesFoundTemplate );
-                    return;
-                }
-
-                // device found for mobile person's location
-                LocalDeviceConfig.CurrentKioskId = device.Id;
-                LocalDeviceConfig.AllowCheckout = false;
-
-                LocalDeviceConfig.SaveToCookie();
-
-                // create new checkin state since we are starting a new checkin sessions
-                this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
-
-                SaveState();
-
-                CheckinConfigurationHelper.CheckinStatus checkinStatus = CheckinConfigurationHelper.CheckinStatus.Closed;
-                if ( CurrentCheckInState.Kiosk != null )
-                {
-                    checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState );
-                }
-
-                RefreshCheckinStatusInformation( checkinStatus );
-                rCampuses.Visible = false;
+                return;
             }
+
+            var rockContext = new RockContext();
+            var device = new DeviceService( rockContext ).Get( deviceId.Value );
+
+            if ( device == null )
+            {
+                lMessage.Text = GetMessageText( AttributeKey.NoDevicesFoundTemplate );
+                return;
+            }
+
+            // device found for mobile person's location
+            LocalDeviceConfig.CurrentKioskId = device.Id;
+            LocalDeviceConfig.AllowCheckout = false;
+
+            LocalDeviceConfig.SaveToCookie();
+
+            // create new checkin state since we are starting a new checkin sessions
+            this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
+
+            SaveState();
+
+            CheckinConfigurationHelper.CheckinStatus checkinStatus = CheckinConfigurationHelper.CheckinStatus.Closed;
+            if ( CurrentCheckInState.Kiosk != null )
+            {
+                checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( CurrentCheckInState );
+            }
+
+            RefreshCheckinStatusInformation( checkinStatus );
+            rCampuses.Visible = false;
         }
 
         #endregion
@@ -445,7 +465,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var configuredTheme = this.GetAttributeValue( AttributeKey.CheckinTheme );
             var hasPhoneIdentificationPage = GetAttributeValue( AttributeKey.PhoneIdentificationPage ).IsNotNullOrWhiteSpace();
-            var hasLoginPage = GetAttributeValue( AttributeKey.LogInPage ).IsNotNullOrWhiteSpace();
+            var hasLoginPage = GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace();
 
             SetSelectedTheme( configuredTheme );
 
@@ -1148,7 +1168,7 @@ namespace RockWeb.Blocks.CheckIn
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "returnUrl", context.Server.UrlEncode( PersonToken.RemoveRockMagicToken( context.Request.RawUrl ) ) );
 
-            NavigateToLinkedPage( AttributeKey.LogInPage, queryParams );
+            NavigateToLinkedPage( AttributeKey.LoginPage, queryParams );
         }
 
         /// <summary>

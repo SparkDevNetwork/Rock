@@ -87,7 +87,6 @@ namespace Rock.Rest.Controllers
                        communicationToAdd.CreatedDateTime = sentDateTime;
                        communicationToAdd.ModifiedDateTime = sentDateTime;
                        communicationToAdd.SendDateTime = sentDateTime;
-                       communicationToAdd.UrlReferrer = importCommunication.UrlReferred;
                        communicationToAdd.Status = Model.CommunicationStatus.Approved;
 
                        communicationToAdd = rockContext.Communications.Add( communicationToAdd );
@@ -229,10 +228,10 @@ namespace Rock.Rest.Controllers
         /// <value>The BCC emails.</value>
         public string BCCEmails { get; set; }
         /// <summary>
-        /// Gets or sets the URL referred.
+        /// Gets or sets the URL referrer.
         /// </summary>
-        /// <value>The URL referred.</value>
-        public string UrlReferred { get; set; }
+        /// <value>The URL referrer.</value>
+        public string UrlReferrer { get; set; }
         /// <summary>
         /// Gets or sets the foreign identifier.
         /// </summary>
