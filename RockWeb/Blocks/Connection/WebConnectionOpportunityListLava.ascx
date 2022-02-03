@@ -33,7 +33,7 @@
                         <Rock:Switch
                             ID="swOnlyShowOpportunitiesWithRequestsForUser"
                             runat="server"
-                            Checked="false"
+                            Checked="true"
                             FormGroupCssClass="custom-switch-centered hide-label-sm"
                             Text="Only Show Opportunities with Requests Assigned to Me" />
                     </div>
