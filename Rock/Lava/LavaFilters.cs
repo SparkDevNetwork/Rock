@@ -5119,14 +5119,24 @@ namespace Rock.Lava
             if ( input.IsNotNullOrWhiteSpace() )
             {
 
-                /*  08-16-2021 MDP
-                  This is only supported for pages that have the PersonalLinks block on it.
-                */
+                /* 08-16-2021 MDP
+                 * This is only supported for pages that have the PersonalLinks block on it.
+                 * 
+                 * 02-02-2022 SMC
+                 * Added checks to prevent this script from being called if the personalLinks script hasn't been loaded,
+                 * so that if this filter is used on a page without the Personal Links block, it will fail safely
+                 * without doing anything.
+                 */
 
-                RockPage.AddScriptToHead( rockPage, string.Format( @"$( document ).ready(function () {{ Rock.personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
-                typeName,
-                typeOrder,
-                input.ToString().EscapeQuotes() ), true );
+                input = input.EscapeQuotes();
+                var quickReturnScript = "" +
+                    $"$( document ).ready( function () {{" + Environment.NewLine +
+                    $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                    $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
+                    $"  }}" + Environment.NewLine +
+                    $"}});";
+
+                RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
             }
         }
 
