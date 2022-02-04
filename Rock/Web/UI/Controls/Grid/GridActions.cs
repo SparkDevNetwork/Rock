@@ -29,7 +29,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GridActions runat=server></{0}:GridActions>" )]
     public class GridActions : CompositeControl
     {
-
         #region Constructors
 
         /// <summary>
@@ -40,6 +39,7 @@ namespace Rock.Web.UI.Controls
         {
             _parentGrid = parentGrid;
             _customActions = new List<Control>();
+            _customActionConfigEvents = new List<CustomActionConfigEvent>();
         }
 
         #endregion
@@ -53,6 +53,7 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private List<Control> _customActions;
+        private List<CustomActionConfigEvent> _customActionConfigEvents;
         private PlaceHolder _pnlCustomActions;
         private LinkButton _lbPersonMerge;
         private LinkButton _lbBusinessMerge;
@@ -139,7 +140,7 @@ namespace Rock.Web.UI.Controls
             get =>
                 _parentGrid.ShowWorkflowOrCustomActionButtons &&
                 _parentGrid.CustomActionConfigs != null &&
-                _parentGrid.CustomActionConfigs.Any() &&
+                ( _parentGrid.CustomActionConfigs.Any() || _customActionConfigEvents.Any() ) &&
                 _parentGrid.EntityTypeId.HasValue;
         }
 
@@ -191,6 +192,7 @@ namespace Rock.Web.UI.Controls
                 return _lbAdd;
             }
         }
+
         /// <summary>
         /// Gets or sets a value indicating whether [show excel export].
         /// </summary>
@@ -308,6 +310,49 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            // Combine the Custom Action Config lists into one.
+            List<CustomActionConfig> configList = new List<CustomActionConfig>();
+            configList.AddRange( _parentGrid.CustomActionConfigs );
+            configList.AddRange( _customActionConfigEvents );
+
+            // Build custom action buttons from the block or from the configs.
+            if ( configList?.Any() == true )
+            {
+                var index = 1;
+                _customActionButtons = new List<LinkButton>();
+
+                foreach ( var config in configList )
+                {
+                    var linkButton = new LinkButton();
+                    _customActionButtons.Add( linkButton );
+
+                    linkButton.ID = $"lbCustomAction-{index}";
+                    linkButton.CssClass = "btn-grid-action btn-custom-action btn btn-default btn-sm";
+                    linkButton.ToolTip = config.HelpText.IsNullOrWhiteSpace() ? "Custom Action" : config.HelpText;
+
+                    if ( config is ICustomActionEventHandler configEvent )
+                    {
+                        linkButton.Click += configEvent.EventHandler;
+                    }
+                    else
+                    {
+                        linkButton.CommandArgument = config.Route;
+                        linkButton.CommandName = "Route";
+                        linkButton.Command += lbCustomAction_Click;
+                    }
+
+                    linkButton.CausesValidation = false;
+                    linkButton.PreRender += lb_PreRender;
+                    Controls.Add( linkButton );
+
+                    var icon = new HtmlGenericControl( "i" );
+                    icon.Attributes.Add( "class", config.IconCssClass.IsNullOrWhiteSpace() ? "fa fa-cog fa-fw" : config.IconCssClass );
+
+                    linkButton.Controls.Add( icon );
+                    index++;
+                }
+            }
+
             // control for person merge
             _lbBusinessMerge = new LinkButton();
             Controls.Add( _lbBusinessMerge );
@@ -377,37 +422,6 @@ namespace Rock.Web.UI.Controls
             iLaunchWorkflow.Attributes.Add( "class", "fa fa-cog fa-fw" );
             _lbDefaultLaunchWorkflow.Controls.Add( iLaunchWorkflow );
 
-            // Build custom action buttons
-            if ( _parentGrid.CustomActionConfigs?.Any() == true )
-            {
-                var index = 1;
-                _customActionButtons = new List<LinkButton>();
-
-                foreach ( var config in _parentGrid.CustomActionConfigs )
-                {
-                    var linkButton = new LinkButton();
-                    _customActionButtons.Add( linkButton );
-
-                    linkButton.ID = $"lbCustomAction-{index}";
-                    linkButton.CssClass = "btn-grid-action btn-custom-action btn btn-default btn-sm";
-                    linkButton.ToolTip = config.HelpText.IsNullOrWhiteSpace() ? "Custom Action" : config.HelpText;
-                    linkButton.CommandArgument = config.Route;
-                    linkButton.CommandName = "Route";
-                    linkButton.Command += lbCustomAction_Click;
-                    linkButton.CausesValidation = false;
-                    linkButton.PreRender += lb_PreRender;
-                    Controls.Add( linkButton );
-
-                    var icon = new HtmlGenericControl( "i" );
-                    icon.Attributes.Add( "class", config.IconCssClass.IsNullOrWhiteSpace() ?
-                        "fa fa-cog fa-fw" :
-                        config.IconCssClass );
-
-                    linkButton.Controls.Add( icon );
-                    index++;
-                }
-            }
-
             // controls for excel export
             _aExcelExport = new HtmlGenericControl( "a" );
             Controls.Add( _aExcelExport );
@@ -473,9 +487,9 @@ namespace Rock.Web.UI.Controls
         public override void RenderBeginTag( HtmlTextWriter writer )
         {
             // suppress the writing of a wrapper tag
-            if (this.TagKey != HtmlTextWriterTag.Unknown)
+            if ( this.TagKey != HtmlTextWriterTag.Unknown )
             {
-                base.RenderBeginTag(writer);
+                base.RenderBeginTag( writer );
             }
         }
 
@@ -483,12 +497,12 @@ namespace Rock.Web.UI.Controls
         /// Renders the HTML closing tag of the control to the specified writer. This method is used primarily by control developers.
         /// </summary>
         /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
-        public override void RenderEndTag(HtmlTextWriter writer)
+        public override void RenderEndTag( HtmlTextWriter writer )
         {
             // suppress the writing of a wrapper tag
-            if (this.TagKey != HtmlTextWriterTag.Unknown)
+            if ( this.TagKey != HtmlTextWriterTag.Unknown )
             {
-                base.RenderEndTag(writer);
+                base.RenderEndTag( writer );
             }
         }
 
@@ -553,6 +567,7 @@ namespace Rock.Web.UI.Controls
                         url = "~/Communication/{0}";
                     }
                 }
+
                 _lbCommunicate.Visible = _parentGrid.CanViewTargetPage( url );
             }
             else
@@ -689,7 +704,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _lbMergeTemplate_Click( object sender, EventArgs e )
         {
-            if (MergeTemplateClick != null)
+            if ( MergeTemplateClick != null )
             {
                 MergeTemplateClick( sender, e );
             }
@@ -711,9 +726,19 @@ namespace Rock.Web.UI.Controls
         /// Adds the custom action control.
         /// </summary>
         /// <param name="control">The control.</param>
-        public void AddCustomActionControl( Control control)
+        public void AddCustomActionControl( Control control )
         {
             _customActions.Add( control );
+            RecreateChildControls();
+        }
+
+        /// <summary>
+        /// Adds the custom action Block button.
+        /// </summary>
+        /// <param name="customConfig">The custom button control.</param>
+        public void AddCustomActionBlockButton( CustomActionConfigEvent customConfig )
+        {
+            _customActionConfigEvents.Add( customConfig );
             RecreateChildControls();
         }
 
