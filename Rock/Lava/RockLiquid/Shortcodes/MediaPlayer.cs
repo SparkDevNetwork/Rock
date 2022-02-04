@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
@@ -67,8 +68,19 @@ namespace Rock.Lava.Shortcodes
         {
             var currentPerson = GetCurrentPerson( context );
             var parms = ParseMarkup( Markup, context );
+            Guid? sessionGuid;
 
-            MediaPlayerShortcode.RenderToWriter( parms, currentPerson, result );
+            // Attempt to get the session guid
+            try
+            {
+                sessionGuid = ( HttpContext.Current.Handler as Web.UI.RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+            }
+            catch
+            {
+                sessionGuid = null;
+            }
+
+            MediaPlayerShortcode.RenderToWriter( parms, currentPerson, sessionGuid, result );
         }
 
         /// <summary>
