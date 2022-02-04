@@ -91,7 +91,7 @@ namespace Rock.Data
         /// <param name="guid">The GUID.</param>
         public void UpdateEntityType( string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured, string guid )
         {
-            /* 
+            /*
                02/23/2021 MDP, NA
 
                In this script, we put the AttributeIds into a @attributeIds table variable, then use that for the UPDATE
@@ -99,7 +99,7 @@ namespace Rock.Data
                to use the IX_FieldTypeId Index on Attribute, but doing a Full Table Scan on AttributeValue.
 
                Putting the AttributeIds into the table variable helped the SQL optimizer to use the IX_AttributeId index
-               on AttributeValue instead of doing the Full Table Scan. 
+               on AttributeValue instead of doing the Full Table Scan.
             */
 
 
@@ -584,7 +584,7 @@ namespace Rock.Data
                 BEGIN
                     INSERT INTO [Attribute] (
                         [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],                        
+                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],
                         [Key],[Name],[DefaultValue], [Guid])
                     VALUES(
                         1,@FieldTypeId,NULL,'{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}','',
@@ -626,7 +626,7 @@ namespace Rock.Data
                 BEGIN
                     INSERT INTO [Attribute] (
                         [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],                        
+                        [Order],[IsGridColumn],[IsMultiValue],[IsRequired],
                         [Key],[Name],[DefaultValue], [Guid])
                     VALUES(
                         1,@FieldTypeId,NULL,'{Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER}','',
@@ -836,7 +836,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Deletes the Page 
+        /// Deletes the Page
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
@@ -891,7 +891,7 @@ namespace Rock.Data
                     INSERT INTO [PageRoute] ([IsSystem],[PageId],[Route],[Guid])
                     VALUES(1, @PageId, '{route}', {guid} )
                 END" );
-                
+
         }
 
         /// <summary>
@@ -1529,7 +1529,7 @@ BEGIN
         SET @BinaryFileId = (SELECT SCOPE_IDENTITY());
     END
 
-    
+
     IF (@AddNewBinaryFileData = 1 AND @BinaryFileId IS NOT NULL)
     BEGIN
         -- Add a new BinaryFileData record whose ID matches the BinaryFile record
@@ -4347,29 +4347,34 @@ BEGIN
             char allowChar = allow ? 'A' : 'D';
 
             string sql = $@"
-DECLARE @groupId INT
+DECLARE @groupId INT;
+DECLARE @order INT = {order};
+DECLARE @specialRole INT = {specialRole};
+DECLARE @action NVARCHAR(50) = '{action}';
+DECLARE @allowChar NVARCHAR(1) = '{allowChar}';
+DECLARE @entityTypeName NVARCHAR(100) = '{entityTypeName}';
 
 SET @groupId = (
 		SELECT [Id]
 		FROM [Group]
 		WHERE [Guid] = '{groupGuid}'
-		)
+		);
 
-DECLARE @entityTypeId INT
+DECLARE @entityTypeId INT;
 
 SET @entityTypeId = (
 		SELECT [Id]
 		FROM [EntityType]
-		WHERE [name] = '{entityTypeName}'
-		)
+		WHERE [name] = @entityTypeName
+		);
 
-DECLARE @entityId INT
+DECLARE @entityId INT;
 
 SET @entityId = (
 		SELECT [Id]
 		FROM [{entityTypeTableName}]
 		WHERE [{entityGuidField}] = '{entityGuid}'
-		)
+		);
 
 IF (
 		@entityId IS NOT NULL
@@ -4381,11 +4386,30 @@ BEGIN
 			FROM [Auth]
 			WHERE [EntityTypeId] = @entityTypeId
 				AND [EntityId] = @entityId
-				AND [Action] = '{action}'
-				AND [SpecialRole] = {specialRole}
+				AND [Action] = @action
+				AND [SpecialRole] = @specialRole
 				AND ISNULL([GroupId], 0) = ISNULL(@groupId, 0)
 			)
 	BEGIN
+        IF EXISTS (
+            SELECT [Id]
+            FROM [dbo].[Auth]
+            WHERE [Guid] = '{authGuid}'
+            )
+            BEGIN
+                /*
+                  DV 4-Feb-22
+                  Duplicate Guid Check, all of the other values don't match
+                  we have a rare instance of a duplicate GUID value.
+                  We will just reassign the other one.
+                  It is very likely this record is orphaned but we don't have
+                  enough context here to make that determination.
+                */
+                UPDATE [dbo].[Auth]
+                SET [Guid] = NEWID()
+                WHERE [Guid] = '{authGuid}';
+            END
+
 		INSERT INTO [dbo].[Auth] (
 			[EntityTypeId]
 			,[EntityId]
@@ -4399,13 +4423,13 @@ BEGIN
 		VALUES (
 			@entityTypeId
 			,@entityId
-			,{order}
-			,'{action}'
-			,'{allowChar}'
-			,{specialRole}
+			,@order
+			,@action
+			,@allowChar
+			,@specialRole
 			,@groupId
 			,'{authGuid}'
-			)
+			);
 	END
 END
 ";
@@ -7446,16 +7470,16 @@ END
         /// <summary>
         /// Normalizes line endings of the given column so your WHERE clause
         /// or REPLACE function works as you expect it to.
-        /// 
+        ///
         /// Call this on the search _condition column of your WHERE clause
         /// or on the string_expression in your REPLACE call when you are using
         /// multi line strings!
-        /// 
+        ///
         /// <para>
         /// NOTE: It does this by first changing CRLF (13 10) to GS (29;group separator),
         /// then changing LF to CRLF, then changing GS back to CRLF.
         /// </para>
-        /// 
+        ///
         /// <para>
         /// Example 1:
         ///     "WHERE " + NormalizeColumnCRLF( "GroupViewLavaTemplate" ) + " LIKE '%...%'"
