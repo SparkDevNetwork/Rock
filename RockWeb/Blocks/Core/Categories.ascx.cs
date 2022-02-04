@@ -135,8 +135,6 @@ namespace RockWeb.Blocks.Core
                 gCategories.RowSelected += gCategories_Select;
             }
 
-            valSummaryTop.ValidationGroup = this.BlockValidationGroup;
-
             if ( !Page.IsPostBack )
             {
 
@@ -686,8 +684,6 @@ namespace RockWeb.Blocks.Core
             entityTypePicker.ValidationGroup = BlockValidationGroup;
 
             tbName.Text = category.Name;
-            tbName.RequiredFieldValidator.ErrorMessage = "Name is required.";
-            tbName.ValidationGroup = BlockValidationGroup;
 
             tbDescription.Text = category.Description;
             catpParentCategory.SetValue( category.ParentCategoryId );
