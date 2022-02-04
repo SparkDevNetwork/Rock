@@ -1473,6 +1473,8 @@
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\ICustomActionEventHandler.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfigEvent.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
     <Compile Include="Web\UI\Controls\IHasAttributeId.cs" />
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />

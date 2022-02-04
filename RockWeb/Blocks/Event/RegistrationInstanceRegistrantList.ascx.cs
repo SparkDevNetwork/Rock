@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Event
 
     #endregion
 
-    public partial class RegistrationInstanceRegistrantList : RegistrationInstanceBlock, ISecondaryBlock
+    public partial class RegistrationInstanceRegistrantList : RegistrationInstanceBlock, ISecondaryBlock, ICustomGridOptions
     {
         #region Attribute Keys
 
@@ -201,6 +201,16 @@ namespace RockWeb.Blocks.Event
             gRegistrants.Actions.AddClick += gRegistrants_AddClick;
             gRegistrants.RowDataBound += gRegistrants_RowDataBound;
             gRegistrants.GridRebind += gRegistrants_GridRebind;
+
+            // Add a custom button with an EventHandler that is only in this block.
+            var customActionConfigEventButton = new CustomActionConfigEvent
+            {
+                IconCssClass = "fa fa-user-friends",
+                HelpText = "Communicate to Registrars",
+                EventHandler = LbRegistrarCommunication_Click
+            };
+
+            gRegistrants.Actions.AddCustomActionBlockButton( customActionConfigEventButton );
 
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
@@ -969,6 +979,134 @@ namespace RockWeb.Blocks.Event
             BindRegistrantsGrid();
         }
 
+        /// <summary>
+        /// Handles the Registrar Communication event of the Custom Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void LbRegistrarCommunication_Click( object sender, EventArgs e )
+        {
+            var itemsSelected = new List<int>();
+            gRegistrants.SelectedKeys.ToList().ForEach( f => itemsSelected.Add( f.ToString().AsInteger() ) );
+
+            // Create a dictionary of the additional merge fields that were created for the communication
+            var communicationMergeFields = new Dictionary<string, string>();
+            foreach ( string mergeField in gRegistrants.CommunicateMergeFields )
+            {
+                var parts = mergeField.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                if ( parts.Any() )
+                {
+                    communicationMergeFields.AddOrIgnore( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
+                }
+            }
+
+            if ( itemsSelected.Any() )
+            {
+                var rockContext = new RockContext();
+                var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
+
+                // Get the PersonAliases from the selected registrants.
+                var personAliasIdQuery = registrationRegistrantService.Queryable()
+                    .Where( rr => itemsSelected.Contains( rr.Id ) )
+                    .Select( p => p.PersonAliasId );
+
+                var registrationQuery = registrationRegistrantService.Queryable()
+                    .Where( r =>
+                    personAliasIdQuery.Contains( r.PersonAliasId.Value ) &&
+                    r.Registration.RegistrationInstanceId == this.RegistrationInstanceId )
+                    .Select( r => r.Registration );
+
+                var personIds = registrationQuery.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
+
+                if ( personIds.Any() )
+                {
+                    // Create communication
+                    var communicationRockContext = new RockContext();
+                    var communicationService = new CommunicationService( communicationRockContext );
+                    var communication = new Communication();
+                    communication.IsBulkCommunication = true;
+                    communication.Status = CommunicationStatus.Transient;
+
+                    if ( CurrentPerson != null )
+                    {
+                        communication.SenderPersonAliasId = CurrentPersonAliasId;
+                    }
+
+                    if ( Request != null && Request.UrlProxySafe() != null )
+                    {
+                        communication.UrlReferrer = Request.UrlProxySafe().AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
+                    }
+
+                    communicationService.Add( communication );
+
+                    // save communication to get Id
+                    communicationRockContext.SaveChanges();
+
+                    var personAliasService = new PersonAliasService( new RockContext() );
+
+                    // Get the primary aliases
+                    List<Rock.Model.PersonAlias> primaryAliasList = new List<PersonAlias>( personIds.Count );
+
+                    // get the data in chunks just in case we have a large list of PersonIds (to avoid a SQL Expression limit error)
+                    var chunkedPersonIds = personIds.Take( 1000 );
+                    int skipCount = 0;
+                    while ( chunkedPersonIds.Any() )
+                    {
+                        var chunkedPrimaryAliasList = personAliasService.Queryable()
+                            .Where( p => p.PersonId == p.AliasPersonId && chunkedPersonIds.Contains( p.PersonId ) ).AsNoTracking().ToList();
+                        primaryAliasList.AddRange( chunkedPrimaryAliasList );
+                        skipCount += 1000;
+                        chunkedPersonIds = personIds.Skip( skipCount ).Take( 1000 );
+                    }
+
+                    // NOTE: Set CreatedDateTime, ModifiedDateTime, etc manually set we are using BulkInsert
+                    var currentDateTime = RockDateTime.Now;
+                    var currentPersonAliasId = CurrentPersonAliasId;
+
+                    var communicationRecipientList = primaryAliasList.Select( a => new Rock.Model.CommunicationRecipient
+                    {
+                        CommunicationId = communication.Id,
+                        PersonAliasId = a.Id,
+                        CreatedByPersonAliasId = currentPersonAliasId,
+                        ModifiedByPersonAliasId = currentPersonAliasId,
+                        CreatedDateTime = currentDateTime,
+                        ModifiedDateTime = currentDateTime
+                    } ).ToList();
+
+                    // BulkInsert to quickly insert the CommunicationRecipient records. Note: This is much faster, but will bypass EF and Rock processing.
+                    var communicationRecipientRockContext = new RockContext();
+                    communicationRecipientRockContext.BulkInsert( communicationRecipientList );
+
+                    var pageRef = this.RockPage.Site.CommunicationPageReference;
+                    string communicationUrl;
+                    if ( pageRef.PageId > 0 )
+                    {
+                        pageRef.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
+                        communicationUrl = pageRef.BuildUrl();
+                    }
+                    else
+                    {
+                        communicationUrl = "~/Communication/{0}";
+                    }
+
+                    Page.Response.Redirect( communicationUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    // No people found in the registrations query.
+                    BindRegistrantsGrid();
+                    gRegistrants.ShowModalAlertMessage( "Registrations list has no recipients", ModalAlertType.Warning );
+                }
+            }
+            else
+            {
+                // Nobody is in list or nobody is selected.
+                BindRegistrantsGrid();
+                gRegistrants.ShowModalAlertMessage( "Grid has no recipients", ModalAlertType.Warning );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -1138,6 +1276,8 @@ namespace RockWeb.Blocks.Event
                 var groupMemberAttributesIds = new List<int>();
 
                 var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
+
+                gRegistrants.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
 
                 if ( isExporting || ( RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ) ) )
                 {
