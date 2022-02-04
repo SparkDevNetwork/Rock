@@ -28,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a persisted <see cref="Rock.Model.SignatureDocument"/> execution/instance in Rock.
     /// </summary>
-    [RockDomain( "Communication" )]
+    [RockDomain( "Core" )]
     [Table( "SignatureDocument" )]
     [DataContract]
     public partial class SignatureDocument : Model<SignatureDocument>
@@ -139,6 +139,7 @@ namespace Rock.Model
 
         /// <summary>
         /// The resulting text/document using the Lava template from the <see cref="Rock.Model.SignatureDocumentTemplate"/> at the time the document was signed.
+        /// Does not include the signature data. It would be what they saw just prior to signing.
         /// </summary>
         /// <value>
         /// The signed document text.
@@ -205,12 +206,18 @@ namespace Rock.Model
 
         /// <summary>
         /// The encrypted data that was collected during a drawn signature type.
+        /// Use <see cref="SignatureData"/> to set this from the unencrypted drawn signature.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the signature data.
         /// </value>
         [DataMember]
-        public string SignatureData { get; set; }
+        [HideFromReporting]
+        public string SignatureDataEncrypted { get; set; }
+
+        /* 1/25/2022 MDP
+        See engineering note on SignatureData
+        */
 
         /// <summary>
         /// The computed SHA1 hash for the SignedDocumentText, SignedClientIP address, SignedClientUserAgent, SignedDateTime, SignedByPersonAliasId, SignatureData, and SignedName.
@@ -222,7 +229,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 40 )]
         [DataMember]
-        public string SignatureVerficationHash { get; set; }
+        public string SignatureVerificationHash { get; set; }
 
         /// <summary>
         /// The EntityType that this document is related to (example Rock.Model.Registration)

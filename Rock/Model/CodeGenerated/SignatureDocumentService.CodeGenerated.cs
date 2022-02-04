@@ -93,9 +93,9 @@ namespace Rock.Model
                 LastInviteDate = model.LastInviteDate,
                 LastStatusDate = model.LastStatusDate,
                 Name = model.Name,
-                SignatureData = model.SignatureData,
+                SignatureDataEncrypted = model.SignatureDataEncrypted,
                 SignatureDocumentTemplateId = model.SignatureDocumentTemplateId,
-                SignatureVerficationHash = model.SignatureVerficationHash,
+                SignatureVerificationHash = model.SignatureVerificationHash,
                 SignedByEmail = model.SignedByEmail,
                 SignedByPersonAliasId = model.SignedByPersonAliasId,
                 SignedClientIp = model.SignedClientIp,
@@ -186,9 +186,9 @@ namespace Rock.Model
             target.LastInviteDate = source.LastInviteDate;
             target.LastStatusDate = source.LastStatusDate;
             target.Name = source.Name;
-            target.SignatureData = source.SignatureData;
+            target.SignatureDataEncrypted = source.SignatureDataEncrypted;
             target.SignatureDocumentTemplateId = source.SignatureDocumentTemplateId;
-            target.SignatureVerficationHash = source.SignatureVerficationHash;
+            target.SignatureVerificationHash = source.SignatureVerificationHash;
             target.SignedByEmail = source.SignedByEmail;
             target.SignedByPersonAliasId = source.SignedByPersonAliasId;
             target.SignedClientIp = source.SignedClientIp;

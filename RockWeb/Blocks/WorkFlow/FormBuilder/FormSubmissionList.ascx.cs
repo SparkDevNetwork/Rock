@@ -18,7 +18,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -36,26 +35,35 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
     /// </summary>
     [DisplayName( "Form Submission List" )]
     [Category( "WorkFlow" )]
-    [Description( "Shows a list of Data Views that have persistence enabled." )]
+    [Description( "Shows a list forms submitted for a given FormBuilder form." )]
 
     #region Rock Attributes
 
     [LinkedPage(
-        name: "Detail Page",
-        Description = "Select the page to navigate to when a workflow is selected",
+        "Detail Page",
+        Description = "Page to display details about a workflow.",
         Order = 0,
-        Key = AttributeKeys.DetailPage )]
+        Key = AttributeKeys.DetailPage,
+        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_DETAIL )]
+
     [LinkedPage(
         "Person Profile Page",
-        Description = "Page used to display details about a workflow.",
+        Description = "Page to display person details.",
         Order = 1,
         Key = AttributeKeys.PersonProfilePage,
         DefaultValue = Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES )]
+
     [LinkedPage(
-        name: "FormBuilder Detail Page",
-        Description = "Page used to edit the form builder.",
+        "FormBuilder Detail Page",
+        Description = "Page to edit using the form builder.",
         Order = 2,
         Key = AttributeKeys.FormBuilderDetailPage )]
+
+    [LinkedPage(
+        "Analytics Detail Page",
+        Description = "Page used to view the analytics for this form.",
+        Order = 3,
+        Key = AttributeKeys.AnalyticsDetailPage )]
 
     #endregion Rock Attributes
 
@@ -71,6 +79,9 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             public const string DetailPage = "DetailPage";
             public const string PersonProfilePage = "PersonProfilePage";
             public const string FormBuilderDetailPage = "FormBuilderDetailPage";
+            public const string AnalyticsDetailPage = "AnalyticsDetailPage";
+            public const string CommunicationsDetailPage = "CommunicationsDetailPage";
+            public const string SettingsDetailPage = "SettingsDetailPage";
         }
 
         #endregion Attribute Keys
@@ -134,11 +145,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             gWorkflows.DataKeyNames = new string[] { "Id" };
             gfWorkflows.ApplyFilterClick += gfWorkflows_ApplyFilterClick;
 
-            gWorkflows.Actions.AddClick += gWorkflows_Add;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
             gWorkflows.RowDataBound += gWorkflows_RowDataBound;
-
-            gWorkflows.Actions.ShowAdd = IsUserAuthorized( Authorization.EDIT );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -215,27 +223,16 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var rowViewModel = e.Row.DataItem as FormSubmissionListViewModel;
-                if ( rowViewModel.Person != null )
+                if ( rowViewModel.Person == null )
                 {
-                    /*
-                        2/04/2022 - KA
-
-                        If the person property is null we hide the personProfileLink, normally we would use the FindControl() method on e.Row
-                        but since the personProfileLink control is a HyperLinkField it does not have an ID attribute thus we need to get the
-                        second to last cell and make it invisible since we know it is the second to last column added in AddDynamicControls
-                        line 318.
-                    */
-
-                    int personLinkFieldCellIndex = ( e.Row.Cells.Count - 2 );
-                    var personLinkField = e.Row.Cells[personLinkFieldCellIndex];
-                    personLinkField.Controls[0].Visible = false;
+                    int? personLinkColumnIndex = gWorkflows.GetColumnIndex( gWorkflows.Columns.OfType<PersonProfileLinkField>().First() );
+                    if( personLinkColumnIndex.HasValue && personLinkColumnIndex > -1 )
+                    {
+                        var personLinkButton = e.Row.Cells[personLinkColumnIndex.Value].ControlsOfTypeRecursive<HyperLink>().FirstOrDefault();
+                        personLinkButton.Visible = false;
+                    }
                 }
             }
-        }
-
-        private void gWorkflows_Add( object sender, EventArgs e )
-        {
-            //
         }
 
         protected void lnkSubmissions_Click( object sender, EventArgs e )
@@ -245,22 +242,22 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         protected void lnkFormBuilder_Click( object sender, EventArgs e )
         {
-            NavigateToCurrentPage( GetQueryString( PageParameterKeys.FormBuilderTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, GetQueryString( PageParameterKeys.FormBuilderTab ) );
         }
 
         protected void lnkComminucations_Click( object sender, EventArgs e )
         {
-            NavigateToCurrentPage( GetQueryString( PageParameterKeys.CommunicationsTab ) );
+            NavigateToLinkedPage( AttributeKeys.CommunicationsDetailPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
         }
 
         protected void lnkSettings_Click( object sender, EventArgs e )
         {
-            NavigateToCurrentPage( GetQueryString( PageParameterKeys.SettingsTab ) );
+            NavigateToLinkedPage( AttributeKeys.SettingsDetailPage, GetQueryString( PageParameterKeys.SettingsTab ) );
         }
 
         protected void lnkAnalytics_Click( object sender, EventArgs e )
         {
-            NavigateToCurrentPage( GetQueryString( PageParameterKeys.AnalyticsTab ) );
+            NavigateToLinkedPage( AttributeKeys.AnalyticsDetailPage, GetQueryString( PageParameterKeys.AnalyticsTab ) );
         }
 
         #endregion Events
