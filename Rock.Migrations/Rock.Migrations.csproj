@@ -61,52 +61,52 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202201142130057_GroupType_IsCapacityRequired.cs" />
-    <Compile Include="Migrations\202201142130057_GroupType_IsCapacityRequired.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.Designer.cs">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201181520022_AddCampusIdToWorkflow.cs" />
-    <Compile Include="Migrations\202201181520022_AddCampusIdToWorkflow.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201181520022_AddCampusIdToWorkflow.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201181520022_AddCampusIdToWorkflow.Designer.cs">
       <DependentUpon>202201181520022_AddCampusIdToWorkflow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201182326088_Rollup_20220118.cs" />
-    <Compile Include="Migrations\202201182326088_Rollup_20220118.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201182326088_Rollup_20220118.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201182326088_Rollup_20220118.Designer.cs">
       <DependentUpon>202201182326088_Rollup_20220118.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201190043546_CodeGenerated_20220118.cs" />
-    <Compile Include="Migrations\202201190043546_CodeGenerated_20220118.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201190043546_CodeGenerated_20220118.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201190043546_CodeGenerated_20220118.Designer.cs">
       <DependentUpon>202201190043546_CodeGenerated_20220118.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201202058341_AddAdditionalContentPlatform.cs" />
-    <Compile Include="Migrations\202201202058341_AddAdditionalContentPlatform.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201202058341_AddAdditionalContentPlatform.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201202058341_AddAdditionalContentPlatform.Designer.cs">
       <DependentUpon>202201202058341_AddAdditionalContentPlatform.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202011809532_Rollup_20220201.cs" />
-    <Compile Include="Migrations\202202011809532_Rollup_20220201.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202202011809532_Rollup_20220201.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202202011809532_Rollup_20220201.Designer.cs">
       <DependentUpon>202202011809532_Rollup_20220201.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202011901560_CodeGenerated_20220201.cs" />
-    <Compile Include="Migrations\202202011901560_CodeGenerated_20220201.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202202011901560_CodeGenerated_20220201.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202202011901560_CodeGenerated_20220201.Designer.cs">
       <DependentUpon>202202011901560_CodeGenerated_20220201.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.cs" />
-    <Compile Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201042325477_FinancialTransactionAlertCascadeDelete.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201042325477_FinancialTransactionAlertCascadeDelete.Designer.cs">
       <DependentUpon>202201042325477_FinancialTransactionAlertCascadeDelete.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.cs" />
-    <Compile Include="Migrations\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.Designer.cs">
       <DependentUpon>202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201101908185_RelatedEntity_Note.cs" />
-    <Compile Include="Migrations\202201101908185_RelatedEntity_Note.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201101908185_RelatedEntity_Note.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201101908185_RelatedEntity_Note.Designer.cs">
       <DependentUpon>202201101908185_RelatedEntity_Note.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201101950100_ScheduleTransactionPersonPage.cs" />
-    <Compile Include="Migrations\202201101950100_ScheduleTransactionPersonPage.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201101950100_ScheduleTransactionPersonPage.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201101950100_ScheduleTransactionPersonPage.Designer.cs">
       <DependentUpon>202201101950100_ScheduleTransactionPersonPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202201111342049_AddRemoteAuthenticationSession.cs" />
-    <Compile Include="Migrations\202201111342049_AddRemoteAuthenticationSession.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201111342049_AddRemoteAuthenticationSession.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201111342049_AddRemoteAuthenticationSession.Designer.cs">
       <DependentUpon>202201111342049_AddRemoteAuthenticationSession.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.cs" />
@@ -951,40 +951,40 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202201142130057_GroupType_IsCapacityRequired.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.resx">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201181520022_AddCampusIdToWorkflow.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201181520022_AddCampusIdToWorkflow.resx">
       <DependentUpon>202201181520022_AddCampusIdToWorkflow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201182326088_Rollup_20220118.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201182326088_Rollup_20220118.resx">
       <DependentUpon>202201182326088_Rollup_20220118.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201190043546_CodeGenerated_20220118.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201190043546_CodeGenerated_20220118.resx">
       <DependentUpon>202201190043546_CodeGenerated_20220118.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201202058341_AddAdditionalContentPlatform.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201202058341_AddAdditionalContentPlatform.resx">
       <DependentUpon>202201202058341_AddAdditionalContentPlatform.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202011809532_Rollup_20220201.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202202011809532_Rollup_20220201.resx">
       <DependentUpon>202202011809532_Rollup_20220201.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202011901560_CodeGenerated_20220201.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202202011901560_CodeGenerated_20220201.resx">
       <DependentUpon>202202011901560_CodeGenerated_20220201.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\Version 13.0\202201042325477_FinancialTransactionAlertCascadeDelete.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201042325477_FinancialTransactionAlertCascadeDelete.resx">
       <DependentUpon>202201042325477_FinancialTransactionAlertCascadeDelete.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.resx">
       <DependentUpon>202201081637529_RelatedEntityUpdatesQuantityAdditionSettings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201101908185_RelatedEntity_Note.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201101908185_RelatedEntity_Note.resx">
       <DependentUpon>202201101908185_RelatedEntity_Note.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201101950100_ScheduleTransactionPersonPage.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201101950100_ScheduleTransactionPersonPage.resx">
       <DependentUpon>202201101950100_ScheduleTransactionPersonPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202201111342049_AddRemoteAuthenticationSession.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201111342049_AddRemoteAuthenticationSession.resx">
       <DependentUpon>202201111342049_AddRemoteAuthenticationSession.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.0\202112212311473_AddBenevolnceRequestNoteType.resx">

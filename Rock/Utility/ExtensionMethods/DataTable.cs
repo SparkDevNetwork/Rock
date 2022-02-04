@@ -69,7 +69,6 @@ namespace Rock
 
             var rowType = DynamicClassFactory.CreateType( properties );
             var listType = typeof( List<> ).MakeGenericType( rowType );
-
             var list = ( IList ) Activator.CreateInstance( listType );
 
             // Create a collection of objects representing the rows in the table.
@@ -78,7 +77,13 @@ namespace Rock
                 var listObject = Activator.CreateInstance( rowType ) as DynamicClass;
                 foreach ( var columnName in columnNames )
                 {
-                    listObject.SetDynamicPropertyValue( columnName, row[columnName] );
+                    var value = row[columnName];
+                    // Ensure DBNull value is propagated correctly.
+                    if ( value == DBNull.Value )
+                    {
+                        value = null;
+                    }
+                    listObject.SetDynamicPropertyValue( columnName, value );
                 }
 
                 list.Add( listObject );
