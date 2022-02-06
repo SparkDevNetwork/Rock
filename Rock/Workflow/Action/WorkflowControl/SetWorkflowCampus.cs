@@ -90,12 +90,10 @@ namespace Rock.Workflow.Action.WorkflowControl
                 }
             }
 
+            SetWorkflowAttributeValue( action, AttributeKey.Campus, campus.Id );
+
             action.Activity.Workflow.CampusId = campus.Id;
-            var campusAttribute = SetWorkflowAttributeValue( action, AttributeKey.Campus, campus.Id );
-            if ( campusAttribute != null )
-            {
-                action.AddLogEntry( string.Format( "Set Workflow Campus to '{0}'.", campus.Name ) );
-            }
+            action.AddLogEntry( string.Format( "Set Workflow Campus to '{0}'.", campus.Name ) );
 
             return true;
         }
