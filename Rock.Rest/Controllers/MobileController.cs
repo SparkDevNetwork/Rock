@@ -211,6 +211,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
         /// <param name="registration">The registration token used to send push notifications.</param>
+        /// <param name="notificationsEnabled">Determines if notifications are fully enabled on the device.</param>
         /// <returns>A status code that indicates if the request was successful.</returns>
         [System.Web.Http.Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
         [HttpPut]
