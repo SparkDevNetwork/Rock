@@ -178,7 +178,6 @@
                     </Content>
                 </Rock:ModalDialog>
 
-                <a href="/RockUpdateLegacy" class="pull-right">Legacy Updater</a>
             </div>
 
         </div>
