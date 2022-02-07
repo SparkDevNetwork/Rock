@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -159,6 +160,42 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 50 )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time this device was last seen initiating
+        /// contact to the Rock server.
+        /// </summary>
+        /// <value>
+        /// The date and time this device was last seen initiating contact to the
+        /// Rock server.
+        /// </value>
+        public DateTime? LastSeenDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time this device was last verified as active
+        /// and available for contact.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///     This value serves a different purpose than <see cref="LastSeenDateTime"/>.
+        ///     The <see cref="LastSeenDateTime"/> property tells us when the user last
+        ///     performed some action (like launching the app) that initiated contact with
+        ///     us. In contrast, this property tells us when we last verified that the
+        ///     device is still valid.
+        ///     </para>
+        ///     <para>
+        ///     For example, a mobile application might not have been launched in six
+        ///     months (<see cref="LastSeenDateTime"/> of six months ago) but this
+        ///     value might be only two weeks ago since that was the last time we
+        ///     pinged the device to verify it is still installed.
+        ///     </para>
+        /// </remarks>
+        /// <value>
+        /// The date and time this device was last verified as active and available
+        /// for contact.
+        /// </value>
+        public DateTime? LastVerifiedDateTime { get; set; }
+
         #endregion
 
         #region Navigation Properties

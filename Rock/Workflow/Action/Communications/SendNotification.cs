@@ -79,7 +79,7 @@ namespace Rock.Workflow.Action
                                     {
                                         var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid );
                                         List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
-                                            .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.NotificationsEnabled )
+                                            .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.IsActive && a.NotificationsEnabled )
                                             .Select( a => a.DeviceRegistrationId )
                                             .ToList();
 
@@ -134,7 +134,7 @@ namespace Rock.Workflow.Action
                                             .Select( m => m.Person ) )
                                         {
                                             List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
-                                                .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId == person.PrimaryAliasId && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
+                                                .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId == person.PrimaryAliasId && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                                 .Select( p => p.DeviceRegistrationId )
                                                 .ToList();
 
