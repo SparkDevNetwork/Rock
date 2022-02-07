@@ -38,5 +38,41 @@ namespace Rock.Tests.UnitTests.Lava
 
             TestHelper.AssertTemplateOutput( "Approved", "{{ EnumValue }}", mergeValues );
         }
+
+        /// <summary>
+        /// Rendering a template with the EncodeStringsAsXml option enabled should produce encoded output.
+        /// </summary>
+        [TestMethod]
+        public void Render_StringVariableWithXmlEncodingOption_RendersEncodedString()
+        {
+            var mergeValues = new LavaDataDictionary { { "StringToEncode", "Ted & Cindy" } };
+            var template = @"Xml Encoded String: {{ StringToEncode }}";
+            var expectedOutput = @"Xml Encoded String: Ted &amp; Cindy";
+
+            var parameters = new LavaRenderParameters
+            {
+                ShouldEncodeStringsAsXml = true,
+                Context = LavaRenderContext.FromMergeValues( mergeValues )
+            };
+            TestHelper.AssertTemplateOutput( expectedOutput, template, parameters );
+        }
+
+        /// <summary>
+        /// Rendering a template with the EncodeStringsAsXml option disabled should produce unencoded output.
+        /// </summary>
+        [TestMethod]
+        public void Render_StringVariableWithXmlEncodingOption_RendersUnencodedString()
+        {
+            var mergeValues = new LavaDataDictionary { { "UnencodedString", "Ted & Cindy" } };
+            var template = @"Unencoded String: {{ UnencodedString }}";
+            var expectedOutput = @"Unencoded String: Ted & Cindy";
+
+            var parameters = new LavaRenderParameters
+            {
+                ShouldEncodeStringsAsXml = false,
+                Context = LavaRenderContext.FromMergeValues( mergeValues )
+            };
+            TestHelper.AssertTemplateOutput( expectedOutput, template, parameters );
+        }
     }
 }

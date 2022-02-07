@@ -1,3 +1,27 @@
+/*!
+ * 
+ * Super simple WYSIWYG editor v0.8.20
+ * https://summernote.org
+ *
+ *
+ * Copyright 2013- Alan Hong and contributors
+ * Summernote may be freely distributed under the MIT license.
+ *
+ * Date: 2021-10-14T21:15Z
+ *
+ */
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
 (function ($) {
   $.extend($.summernote.lang, {
     'uk-UA': {
@@ -29,8 +53,11 @@
         dragImageHere: 'Перетягніть сюди картинку',
         dropImage: 'Перетягніть картинку',
         selectFromFiles: 'Вибрати з файлів',
+        maximumFileSize: 'Maximum file size',
+        maximumFileSizeError: 'Maximum file size exceeded.',
         url: 'URL картинки',
-        remove: 'Видалити картинку'
+        remove: 'Видалити картинку',
+        original: 'Original'
       },
       video: {
         video: 'Відео',
@@ -46,17 +73,25 @@
         edit: 'Редагувати',
         textToDisplay: 'Текст, що відображається',
         url: 'URL для переходу',
-        openInNewWindow: 'Відкривати у новому вікні'
+        openInNewWindow: 'Відкривати у новому вікні',
+        useProtocol: 'Використовувати протокол за замовчуванням'
       },
       table: {
-        table: 'Таблиця'
+        table: 'Таблиця',
+        addRowAbove: 'Add row above',
+        addRowBelow: 'Add row below',
+        addColLeft: 'Add column left',
+        addColRight: 'Add column right',
+        delRow: 'Delete row',
+        delCol: 'Delete column',
+        delTable: 'Delete table'
       },
       hr: {
         insert: 'Вставити горизонтальну лінію'
       },
       style: {
         style: 'Стиль',
-        normal: 'Нормальний',
+        p: 'Нормальний',
         blockquote: 'Цитата',
         pre: 'Код',
         h1: 'Заголовок 1',
@@ -100,12 +135,51 @@
         textFormatting: 'Форматування тексту',
         action: 'Дія',
         paragraphFormatting: 'Форматування параграфу',
-        documentStyle: 'Стиль документу'
+        documentStyle: 'Стиль документу',
+        extraKeys: 'Extra keys'
+      },
+      help: {
+        'insertParagraph': 'Insert Paragraph',
+        'undo': 'Undoes the last command',
+        'redo': 'Redoes the last command',
+        'tab': 'Tab',
+        'untab': 'Untab',
+        'bold': 'Set a bold style',
+        'italic': 'Set a italic style',
+        'underline': 'Set a underline style',
+        'strikethrough': 'Set a strikethrough style',
+        'removeFormat': 'Clean a style',
+        'justifyLeft': 'Set left align',
+        'justifyCenter': 'Set center align',
+        'justifyRight': 'Set right align',
+        'justifyFull': 'Set full align',
+        'insertUnorderedList': 'Toggle unordered list',
+        'insertOrderedList': 'Toggle ordered list',
+        'outdent': 'Outdent on current paragraph',
+        'indent': 'Indent on current paragraph',
+        'formatPara': 'Change current block\'s format as a paragraph(P tag)',
+        'formatH1': 'Change current block\'s format as H1',
+        'formatH2': 'Change current block\'s format as H2',
+        'formatH3': 'Change current block\'s format as H3',
+        'formatH4': 'Change current block\'s format as H4',
+        'formatH5': 'Change current block\'s format as H5',
+        'formatH6': 'Change current block\'s format as H6',
+        'insertHorizontalRule': 'Insert horizontal rule',
+        'linkDialog.show': 'Show Link Dialog'
       },
       history: {
         undo: 'Відмінити',
         redo: 'Повторити'
+      },
+      specialChar: {
+        specialChar: 'SPECIAL CHARACTERS',
+        select: 'Select Special characters'
       }
     }
   });
 })(jQuery);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});
+//# sourceMappingURL=summernote-uk-UA.js.map

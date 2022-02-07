@@ -14,53 +14,97 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, provide } from "vue";
-import { Form, SubmissionHandler } from "vee-validate";
+import { computed, defineComponent, PropType, reactive, ref, watch } from "vue";
+import { FormState, provideFormState } from "../Util/form";
 import RockValidation from "./rockValidation";
-
-export type FormState = {
-    submitCount: number;
-};
-
-type HandleSubmitFn = (evt: Event | SubmissionHandler, onSubmit?: SubmissionHandler) => unknown;
 
 export default defineComponent({
     name: "RockForm",
+    inheritAttrs: false,
+
     components: {
-        Form,
         RockValidation
     },
-    setup() {
-        const formState = {
-            submitCount: 0
-        } as FormState;
 
-        provide("formState", formState);
-
-        return {
-            formState
-        };
-    },
-    data() {
-        return {
-            errorsToDisplay: []
-        };
-    },
-    methods: {
-        onInternalSubmit(handleSubmit: HandleSubmitFn, evt: Event) {
-            this.formState.submitCount++;
-            return handleSubmit(evt, this.emitSubmit);
+    props: {
+        modelValue: {
+            type: Object as PropType<Record<string, string>>,
+            default: {}
         },
 
-        emitSubmit(payload: Record<string, unknown>) {
-            this.$emit("submit", payload);
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
+
+    emits: [
+        "submit",
+        "update:modelValue",
+        "update:submit"
+    ],
+
+    setup(props, { emit }) {
+        const errors = ref(props.modelValue);
+        const submit = ref(props.submit);
+
+        const onInternalSubmit = (): void => {
+            submit.value = true;
+        };
+
+        const formState = reactive<FormState>({
+            submitCount: 0,
+            setError: (name: string, error: string): void => {
+                const newErrors = {
+                    ...errors.value
+                };
+
+                if (error) {
+                    newErrors[name] = error;
+                }
+                else {
+                    delete newErrors[name];
+                }
+
+                errors.value = newErrors;
+            }
+        });
+
+        const submitCount = computed((): number => formState.submitCount);
+
+        provideFormState(formState);
+
+        watch(() => props.submit, () => {
+            if (submit.value !== props.submit) {
+                submit.value = props.submit;
+            }
+        });
+
+        watch(submit, () => {
+            if (submit.value) {
+                formState.submitCount++;
+
+                if (Object.keys(errors.value).length === 0) {
+                    emit("submit");
+                }
+
+                submit.value = false;
+            }
+
+            emit("update:submit", submit.value);
+        });
+
+        return {
+            onInternalSubmit,
+            submitCount,
+            errors
+        };
+    },
+
     template: `
-<Form as="" #default="{errors, handleSubmit}">
-    <RockValidation :submitCount="formState.submitCount" :errors="errors" />
-    <form @submit="onInternalSubmit(handleSubmit, $event)">
-        <slot />
-    </form>
-</Form>`
+<form @submit.prevent.stop="onInternalSubmit()">
+    <RockValidation :submitCount="submitCount" :errors="errors" />
+    <slot />
+</form>
+`
 });

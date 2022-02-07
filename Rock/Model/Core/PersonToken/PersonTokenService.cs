@@ -51,7 +51,7 @@ namespace Rock.Model
                 {
                     var legacyPerson = new PersonService( this.Context as Data.RockContext ).GetByLegacyEncryptedKey( impersonationToken, true );
 
-                    if ( !legacyPerson.IsPersonTokenUsageAllowed() )
+                    if ( legacyPerson == null || !legacyPerson.IsPersonTokenUsageAllowed() )
                     {
                         return null;
                     }

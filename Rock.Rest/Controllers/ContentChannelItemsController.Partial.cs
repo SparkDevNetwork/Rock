@@ -34,8 +34,9 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "d50bdcc2-6913-4ce7-aa82-eb249b0b173c" )]
     public partial class ContentChannelItemsController
     {
         /// <summary>
@@ -45,6 +46,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ContentChannelItems/GetChildren/{id}" )]
+        [RockGuid( "5d0a02f4-940b-435b-9474-5af06c90a408" )]
         public IQueryable<ContentChannelItem> GetChildren( int id )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -79,6 +81,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ContentChannelItems/GetParents/{id}" )]
+        [RockGuid( "af21954e-ddf3-4c35-a923-92ef3786ba8f" )]
         public IQueryable<ContentChannelItem> GetParents( int id )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities

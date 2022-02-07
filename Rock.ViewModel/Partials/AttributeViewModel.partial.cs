@@ -43,6 +43,12 @@ namespace Rock.ViewModel
         public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
+        /// Gets the configuration values that define the behavior of the attribute.
+        /// </summary>
+        /// <value>The configuration values.</value>
+        public Dictionary<string, string> ConfigurationValues { get; set; }
+
+        /// <summary>
         /// Gets the qualifier values.
         /// </summary>
         /// <value>

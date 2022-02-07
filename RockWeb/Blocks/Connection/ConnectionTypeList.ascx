@@ -22,7 +22,7 @@
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <Rock:RockBoundField DataField="OpportunityCount" HeaderText="Opportunity Count" SortExpression="OpportunityCount" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
-                            <Rock:SecurityField />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gConnectionType_Delete" />
                         </Columns>
                     </Rock:Grid>

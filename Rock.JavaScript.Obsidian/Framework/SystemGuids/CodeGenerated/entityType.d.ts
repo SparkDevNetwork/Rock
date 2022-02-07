@@ -40,6 +40,8 @@ export const enum EntityType {
     Badge = "99300129-6F4C-45B2-B486-71123F046289",
     /** The benevolence request */
     BenevolenceRequest = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2",
+    /** The benevolence type */
+    BenevolenceType = "A612BF6F-EF9C-4625-AF68-3C6BC4AE7C46",
     /** The Block entity type */
     Block = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65",
     /** The campus */
@@ -86,6 +88,8 @@ export const enum EntityType {
     DefinedType = "6028D502-79F4-4A74-9323-525E90F900C7",
     /** The guid for Rock.Model.DefinedValue entity */
     DefinedValue = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E",
+    /** The guid for Rock.Model.EntityType entity. */
+    EntityType = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7",
     /** The guid for the Rock.Model.FinancialAccount entity. */
     FinancialAccount = "798BCE48-6AA7-4983-9214-F9BCEFB4521D",
     /** The guid for the Rock.Model.FinancialBatch entity. */
@@ -100,6 +104,8 @@ export const enum EntityType {
     Group = "9BBFDA11-0D22-40D5-902F-60ADFBC88987",
     /** The guid for the Rock.Model.GroupMember entity. */
     GroupMember = "49668B95-FEDC-43DD-8085-D2B0D6343C48",
+    /** The guid for the Rock.Model.History entity. */
+    History = "546D5F43-1184-47C9-8265-2D7BF4E1BCA5",
     /** The HTTP module component */
     HttpModuleComponent = "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
     /** The guid for  */

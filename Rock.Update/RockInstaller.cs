@@ -288,10 +288,9 @@ namespace Rock.Update
             foreach ( ZipArchiveEntry entry in contentFilesToProcess )
             {
                 // process all content files
-                string fullpath = Path.Combine( FileManagementHelper.ROOT_PATH, entry.FullName.Replace( CONTENT_PATH, string.Empty ).Replace( CONTENT_PATH_ALT, string.Empty ) );
-                fullpath = Path.Combine( FileManagementHelper.ROOT_PATH, entry.FullName.Replace( CONTENT_PATH, string.Empty ).Replace( CONTENT_PATH_ALT, string.Empty ) );
+                string fullpath = Path.Combine( FileManagementHelper.ROOT_PATH, entry.FullName.ReplaceFirstOccurrence( CONTENT_PATH, string.Empty ).ReplaceFirstOccurrence( CONTENT_PATH_ALT, string.Empty ) );
 
-                string directory = Path.GetDirectoryName( fullpath ).Replace( CONTENT_PATH, string.Empty ).Replace( CONTENT_PATH_ALT, string.Empty );
+                string directory = Path.GetDirectoryName( fullpath ).ReplaceFirstOccurrence( CONTENT_PATH, string.Empty ).ReplaceFirstOccurrence( CONTENT_PATH_ALT, string.Empty );
 
                 ThrowTestExceptions( Path.GetFileNameWithoutExtension( entry.FullName ) );
 
@@ -385,7 +384,7 @@ namespace Rock.Update
             foreach ( ZipArchiveEntry entry in transformFilesToProcess )
             {
                 // process xdt
-                string filename = entry.FullName.Replace( CONTENT_PATH, string.Empty ).Replace( CONTENT_PATH_ALT, string.Empty );
+                string filename = entry.FullName.ReplaceFirstOccurrence( CONTENT_PATH, string.Empty ).ReplaceFirstOccurrence( CONTENT_PATH_ALT, string.Empty );
                 string transformTargetFile = Path.Combine( FileManagementHelper.ROOT_PATH, filename.Substring( 0, filename.LastIndexOf( TRANSFORM_FILE_SUFFIX ) ) );
 
                 // process transform

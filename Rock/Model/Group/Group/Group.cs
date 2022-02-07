@@ -508,25 +508,6 @@ namespace Rock.Model
         public virtual ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; } = new Collection<EventItemOccurrenceGroupMap>();
 
         /// <summary>
-        /// Gets a value indicating whether [allows interactive bulk indexing].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
-        /// </value>
-        /// <exception cref="System.NotImplementedException"></exception>
-        [NotMapped]
-        public bool AllowsInteractiveBulkIndexing => true;
-
-        /// <summary>
-        /// Gets or sets the history change list.
-        /// </summary>
-        /// <value>
-        /// The history change list.
-        /// </value>
-        [NotMapped]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Group's status. DefinedType depends on this group's <see cref="Rock.Model.GroupType.GroupTypePurposeValue"/>
         /// </summary>
         /// <value>

@@ -230,7 +230,7 @@ namespace Rock.Reporting
 
                     if ( entityField == null )
                     {
-                        // if the reportField selection refers to a non-existant entityField, ignore this field
+                        // If the reportField selection refers to a non-existent entityField, ignore this field.
                         continue;
                     }
 

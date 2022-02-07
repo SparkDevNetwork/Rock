@@ -28,13 +28,14 @@ namespace Rock.Field.Types
     /// <summary>
     /// stored as comma delimited list of int value that can each be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class DaysOfWeekFieldType : FieldType
     {
 
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             if ( string.IsNullOrWhiteSpace( value ) )
             {
@@ -58,8 +59,8 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues )
-                : GetCondensedTextValue( value, configurationValues );
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

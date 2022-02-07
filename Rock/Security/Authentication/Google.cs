@@ -81,7 +81,7 @@ namespace Rock.Security.ExternalAuthentication
         }
 
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">Forming the URL to obtain user consent</param>
         /// <returns></returns>
@@ -377,7 +377,7 @@ namespace Rock.Security.ExternalAuthentication
             using ( var rockContext = new RockContext() )
             {
 
-                // Query for an existing user 
+                // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
 

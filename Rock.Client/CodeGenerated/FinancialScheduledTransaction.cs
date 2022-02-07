@@ -85,7 +85,7 @@ namespace Rock.Client
         public int? NumberOfPayments { get; set; }
 
         /// <summary />
-        public string PreviousGatewayScheduleIdsJson { get; set; } = @"[]";
+        public string PreviousGatewayScheduleIdsJson { get; set; }
 
         /// <summary />
         public int? SourceTypeValueId { get; set; }

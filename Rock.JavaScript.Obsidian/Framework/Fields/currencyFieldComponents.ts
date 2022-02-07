@@ -55,3 +55,9 @@ export const EditComponent = defineComponent({
 <CurrencyBox v-model="internalValue" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "CurrencyField.Configuration",
+
+    template: ``
+});

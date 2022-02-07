@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionOpportunity.Options;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -163,10 +164,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // until we have a way to mark external types as lava safe.
                 var opportunityIds = opportunities.Select( o => o.Id ).ToList();
                 var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds )
-                    .ToDictionary( k => k.Key, k => k.Value
-                        .GetType()
-                        .GetProperties( BindingFlags.Instance | BindingFlags.Public )
-                        .ToDictionary( prop => prop.Name, prop => prop.GetValue( k.Value, null ) ) );
+                    .ToDictionary( k => k.Key, k => new RockDynamic( k.Value ) );
 
                 // Process the connection opportunities with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();

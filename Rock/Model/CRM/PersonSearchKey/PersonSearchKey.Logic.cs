@@ -98,9 +98,9 @@ namespace Rock.Model
             }
             else
             {
-                History.EvaluateChange( historyChangeList, $"SearchValue", entry.OriginalValues["SearchValue"].ToStringSafe(), SearchValue, false );
+                History.EvaluateChange( historyChangeList, $"SearchValue", entry.OriginalValues[nameof( this.SearchValue )].ToStringSafe(), SearchValue, false );
 
-                var originalSearchType = DefinedValueCache.Get( entry.OriginalValues["SearchTypeValueId"].ToStringSafe().AsInteger() );
+                var originalSearchType = DefinedValueCache.Get( entry.OriginalValues[nameof( this.SearchTypeValueId )].ToStringSafe().AsInteger() );
                 var currentSearchType = DefinedValueCache.Get( SearchTypeValueId );
                 History.EvaluateChange( historyChangeList, $"SearchType", originalSearchType?.Value, currentSearchType?.Value, false );
             }

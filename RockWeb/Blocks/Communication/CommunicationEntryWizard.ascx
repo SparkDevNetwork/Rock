@@ -52,12 +52,11 @@
                                         </div>
                                         <div class="col-sm-4">
                                             <asp:LinkButton
-                                                ID="btnManualList"
+                                                ID="btnRecipientList"
                                                 CausesValidation="false"
                                                 runat="server"
                                                 CssClass="btn btn-link btn-xs text-primary pull-right"
-                                                Text="Manual List"
-                                                OnClick="btnManualList_Click" />
+                                                OnClick="btnRecipientList_Click" />
                                         </div>
                                     </div>
 
@@ -134,6 +133,22 @@
                             CausesValidation="true"
                             OnClick="btnRecipientSelectionNext_Click" />
                     </div>
+
+                     <%-- Recipient Selection: Communication List Recipients Modal --%>
+                    <Rock:ModalDialog Id="mdCommunicationListRecipients" runat="server" Title="Communication List Recipients">
+                        <Content>
+                            <Rock:NotificationBox ID="nbListWarning" runat="server" NotificationBoxType="Info" />
+                            <Rock:Grid ID="gRecipientList" runat="server" OnRowDataBound="gRecipientList_RowDataBound">
+                                <Columns>
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName"  />
+                                    <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlert" HeaderText="Notes" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlertEmail" HeaderText="Email" />
+                                    <Rock:RockLiteralField ID="lRecipientListAlertSMS" HeaderText="SMS" />
+                                </Columns>
+                            </Rock:Grid>
+                        </Content>
+                    </Rock:ModalDialog>
 
                 </asp:Panel>
 
@@ -1796,6 +1811,8 @@
                 }
             }
 
+            var $currentComponent;
+
             function loadPropertiesPage(componentType, $component) {
                 $currentComponent = $component;
                 var $currentPropertiesPanel = $('.js-propertypanels').find("[data-component='" + componentType + "']");
@@ -1809,31 +1826,32 @@
                 // temp - set text of summernote
                 switch (componentType) {
                     case 'text':
-                        Rock.controls.emailEditor.textComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.textComponentHelper.setProperties($currentComponent);
                         break;
                     case 'rsvp':
-                        Rock.controls.emailEditor.rsvpComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.rsvpComponentHelper.setProperties($currentComponent);
                         break;
                     case 'button':
-                        Rock.controls.emailEditor.buttonComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.buttonComponentHelper.setProperties($currentComponent);
                         break;
                     case 'image':
-                        Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
                         break;
                     case 'video':
-				        Rock.controls.emailEditor.videoComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.videoComponentHelper.setProperties($currentComponent);
 				        break;
                     case 'section':
-                        Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
                         break;
                     case 'divider':
-                        Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
                         break;
                     case 'code':
-                        Rock.controls.emailEditor.codeComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.codeComponentHelper.setProperties($currentComponent);
                         break;
                     default:
                         clearPropertyPane(null);
+                        $currentComponent = null;
                 }
 
                 // show proper panel

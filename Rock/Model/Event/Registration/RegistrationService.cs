@@ -643,10 +643,10 @@ namespace Rock.Model
         public int? FinancialGatewayId { get; private set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is login required.
+        /// Gets or sets a value indicating whether this instance is log in required.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is login required; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is log in required; otherwise, <c>false</c>.
         /// </value>
         public bool IsLoginRequired { get; private set; }
 
@@ -703,7 +703,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>        
+        /// </value>
         public int? RegistrantWorkflowTypeId { get; private set; }
 
         /// <summary>

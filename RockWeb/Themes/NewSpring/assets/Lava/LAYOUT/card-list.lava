@@ -99,7 +99,7 @@
 					</p>
 				{%- endcapture %}
 
-				{% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
+				{% capture linkurl %}{% if item.LinkUrl and item.LinkUrl != empty %}{{ item.LinkUrl }}{% else %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endif %}{% endcapture %}
 				{% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{{ type | Prepend:' ' | Prepend:item.ChannelVerb }}{% endif %}{% endcapture %}
 
 				{% assign parentChannelId = item.ParentChannelId | AsInteger %}

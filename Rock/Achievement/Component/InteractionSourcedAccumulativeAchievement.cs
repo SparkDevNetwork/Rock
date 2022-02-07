@@ -270,14 +270,14 @@ namespace Rock.Achievement.Component
             // the most recent attempts can be found with FirstOrDefault
             var achievementAttemptService = new AchievementAttemptService( rockContext );
             var attempts = achievementAttemptService.GetOrderedAchieverAttempts( achievementAttemptService.Queryable(), achievementTypeCache, interaction.PersonAliasId.Value );
-            
+
             var mostRecentSuccess = attempts.FirstOrDefault( saa => saa.AchievementAttemptEndDateTime.HasValue && saa.IsSuccessful );
-            var overachievementPossible = achievementTypeCache.AllowOverAchievement && mostRecentSuccess != null && !mostRecentSuccess.IsClosed;
+            var overachievementPossible = achievementTypeCache.AllowOverAchievement;
             var successfulAttemptCount = attempts.Count( saa => saa.IsSuccessful );
             var maxSuccessesAllowed = achievementTypeCache.MaxAccomplishmentsAllowed ?? int.MaxValue;
 
             // If the most recent success is still open and overachievement is allowed, then update it
-            if ( overachievementPossible )
+            if ( overachievementPossible && mostRecentSuccess != null && !mostRecentSuccess.IsClosed )
             {
                 UpdateOpenAttempt( mostRecentSuccess, achievementTypeCache, interaction );
                 updatedAttempts.Add( mostRecentSuccess );
@@ -338,7 +338,8 @@ namespace Rock.Achievement.Component
                     {
                         successfulAttemptCount++;
 
-                        if ( successfulAttemptCount >= maxSuccessesAllowed )
+                        if ( successfulAttemptCount >= maxSuccessesAllowed &&
+                            !overachievementPossible )
                         {
                             break;
                         }
@@ -475,7 +476,16 @@ namespace Rock.Achievement.Component
             // The leftover accumulation is an open attempt
             if ( accumulation != null )
             {
-                attempts.Add( GetAttempt( accumulation, numberToAccumulate, false ) );
+                var openAttempt = GetAttempt( accumulation, numberToAccumulate, false );
+                var lastAttempt = attempts.LastOrDefault();
+
+                if ( null == lastAttempt ||
+                     openAttempt.Progress != lastAttempt.Progress ||
+                     openAttempt.AchievementAttemptStartDateTime != lastAttempt.AchievementAttemptStartDateTime ||
+                     openAttempt.AchievementAttemptEndDateTime != lastAttempt.AchievementAttemptEndDateTime )
+                {
+                    attempts.Add( openAttempt );
+                }
             }
 
             return attempts;

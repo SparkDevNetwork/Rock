@@ -17,7 +17,7 @@
 using System;
 using System.Linq;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -26,6 +26,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Controller of misc utility functions that are used by Rock controls
     /// </summary>
+    [RockGuid( "846640a1-874b-4c12-af0f-d50d562ff0cc" )]
     public class UtilityController : ApiController
     {
         /// <summary>
@@ -37,6 +38,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Utility/CalculateSlidingDateRange" )]
         [HttpGet]
+        [RockGuid( "68045ef4-5898-495e-9638-63f33ed2cf23" )]
         public string CalculateSlidingDateRange( SlidingDateRangePicker.SlidingDateRangeType slidingDateRangeType, SlidingDateRangePicker.TimeUnitType timeUnitType, int number = 1 )
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( string.Format( "{0}|{1}|{2}|{3}|{4}", slidingDateRangeType, number, timeUnitType, string.Empty, string.Empty ) );
@@ -54,6 +56,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Utility/CalculateSlidingDateRange" )]
         [HttpGet]
+        [RockGuid( "7f2584b2-3182-4ac5-87b1-e9fec45aaa75" )]
         public string CalculateSlidingDateRange( SlidingDateRangePicker.SlidingDateRangeType slidingDateRangeType, SlidingDateRangePicker.TimeUnitType timeUnitType, string startDate, string endDate, int number = 1 )
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( string.Format( "{0}|{1}|{2}|{3}|{4}", slidingDateRangeType, number, timeUnitType, startDate, endDate ) );
@@ -69,6 +72,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Utility/GetSlidingDateRangeTextValue" )]
         [HttpGet]
+        [RockGuid( "2513f4c9-2578-4a4a-9f4d-b059ae825a77" )]
         public string GetSlidingDateRangeTextValue( SlidingDateRangePicker.SlidingDateRangeType slidingDateRangeType, SlidingDateRangePicker.TimeUnitType timeUnitType, int number = 1 )
         {
             string textValue = SlidingDateRangePicker.FormatDelimitedValues( string.Format( "{0}|{1}|{2}|{3}|{4}", slidingDateRangeType, number, timeUnitType, string.Empty, string.Empty ) );
@@ -86,6 +90,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Utility/GetSlidingDateRangeTextValue" )]
         [HttpGet]
+        [RockGuid( "ac5f9a4c-18ad-4108-99cb-48546c3f1cab" )]
         public string GetSlidingDateRangeTextValue( SlidingDateRangePicker.SlidingDateRangeType slidingDateRangeType, SlidingDateRangePicker.TimeUnitType timeUnitType, string startDate, string endDate, int number = 1 )
         {
             string textValue = SlidingDateRangePicker.FormatDelimitedValues( string.Format( "{0}|{1}|{2}|{3}|{4}", slidingDateRangeType, number, timeUnitType, startDate, endDate ) );
@@ -98,6 +103,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Utility/GetCampusContext" )]
         [HttpGet]
+        [RockGuid( "771a4b90-302e-4daf-bc11-fb7c47615c9f" )]
         public int GetCampusContext()
         {
             string campusCookieCypher = null;
@@ -145,6 +151,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Utility/GetRockSemanticVersionNumber" )]
         [HttpGet]
+        [RockGuid( "e44cc71f-2952-4400-a04d-f3c242c8664e" )]
         public string GetRockSemanticVersionNumber()
         {
             return VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
@@ -160,6 +167,7 @@ namespace Rock.Rest.Controllers
         //[Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Utility/TextToWorkflow/{fromNumber}/{toNumber}/{message}" )]
+        [RockGuid( "a42c1f49-d3e2-4411-abef-f6b2b1d18480" )]
         public string TextToWorkflow( string fromNumber, string toNumber, string message )
         {
             var processResponse = string.Empty;

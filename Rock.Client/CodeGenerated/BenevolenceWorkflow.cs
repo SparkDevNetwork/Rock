@@ -52,7 +52,7 @@ namespace Rock.Client
         public string QualifierValue { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.ConnectionWorkflowTriggerType TriggerType { get; set; }
+        public Rock.Client.Enums.BenevolenceWorkflowTriggerType TriggerType { get; set; }
 
         /// <summary />
         public int WorkflowTypeId { get; set; }

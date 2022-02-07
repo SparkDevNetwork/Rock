@@ -623,7 +623,7 @@ namespace Rock
                             // Although it would improve performance, we can't execute this task on a background thread because some Lava filters require access to the current HttpRequest.
                             try
                             {
-                                var result = ResolveMergeFieldsWithCurrentLavaEngine( content, mergeObjects, currentPersonOverride, enabledLavaCommands );
+                                var result = ResolveMergeFieldsWithCurrentLavaEngine( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings );
 
                                 // If an exception occurred during the render process, make sure it will be caught and logged.
                                 if ( result.HasErrors
@@ -676,7 +676,7 @@ namespace Rock
                 }
                 else
                 {
-                    var result = ResolveMergeFieldsWithCurrentLavaEngine( content, mergeObjects, currentPersonOverride, enabledLavaCommands );
+                    var result = ResolveMergeFieldsWithCurrentLavaEngine( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings );
 
                     return result.Text;
                 }
@@ -747,8 +747,9 @@ namespace Rock
         /// <param name="mergeObjects">The merge objects.</param>
         /// <param name="currentPersonOverride">The current person override.</param>
         /// <param name="enabledLavaCommands">A comma-delimited list of the lava commands that are enabled for this template.</param>
+        /// <param name="encodeStringOutput">if set to <c>true</c> [encode string output].</param>
         /// <returns>If lava present returns merged string, if no lava returns original string, if null returns empty string</returns>
-        private static LavaRenderResult ResolveMergeFieldsWithCurrentLavaEngine( string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands )
+        private static LavaRenderResult ResolveMergeFieldsWithCurrentLavaEngine( string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStringOutput )
         {
             // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
             if ( enabledLavaCommands == null )
@@ -767,7 +768,10 @@ namespace Rock
 
             context.SetMergeFields( mergeObjects );
 
-            var result = LavaService.RenderTemplate( content, LavaRenderParameters.WithContext( context ) );
+            var parameters = LavaRenderParameters.WithContext( context );
+            parameters.ShouldEncodeStringsAsXml = encodeStringOutput;
+
+            var result = LavaService.RenderTemplate( content, parameters );
 
             if ( result.HasErrors
                  && LavaService.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )

@@ -803,7 +803,7 @@ namespace RockWeb.Blocks.Communication
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonAliasId = CurrentPersonAliasId;
-                            
+
                             if ( communication.FutureSendDateTime.HasValue &&
                                 communication.FutureSendDateTime > RockDateTime.Now )
                             {
@@ -1076,10 +1076,20 @@ namespace RockWeb.Blocks.Communication
                 {
                     foreach ( var template in new CommunicationTemplateService( new RockContext() )
                         .Queryable().AsNoTracking()
-                        .Where(a => a.IsActive )
+                        .Where( a => a.IsActive )
                         .OrderBy( t => t.Name ) )
                     {
-                        if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        /*
+                         * DV 26-JAN-2022
+                         *
+                         * If this is a Simple Email communication then filter out the Communication Wizard Templates.
+                         * If this is an SMS then only include templates that have SMS templates. #4888
+                         *
+                         */
+                        if ( null != template &&
+                             ( ( medium.CommunicationType == CommunicationType.Email && !template.SupportsEmailWizard() && template.HasEmailTemplate() ) ||
+                               ( medium.CommunicationType == CommunicationType.SMS && template.HasSMSTemplate() ) ) &&
+                             template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
                             visible = true;
                             var li = new ListItem( template.Name, template.Id.ToString() );

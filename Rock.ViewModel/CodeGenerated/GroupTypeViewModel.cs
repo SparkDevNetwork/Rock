@@ -280,6 +280,14 @@ namespace Rock.ViewModel
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the IsCapacityRequired.
+        /// </summary>
+        /// <value>
+        /// The IsCapacityRequired.
+        /// </value>
+        public bool IsCapacityRequired { get; set; }
+
+        /// <summary>
         /// Gets or sets the IsIndexEnabled.
         /// </summary>
         /// <value>

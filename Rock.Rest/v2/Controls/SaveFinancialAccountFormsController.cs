@@ -29,6 +29,7 @@ namespace Rock.Rest.v2.Controls
     /// <summary>
     /// Save Financial Account Form
     /// </summary>
+    [RockGuid( "0ed481ea-7b83-4549-ac79-a650c9b34a41" )]
     public class SaveFinancialAccountFormsController : ControlsControllerBase
     {
         /// <summary>
@@ -40,6 +41,7 @@ namespace Rock.Rest.v2.Controls
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/v2/Controls/SaveFinancialAccountForms/{gatewayGuid}" )]
+        [RockGuid( "e5eef0f5-5968-4426-8d13-ede3e96f78df" )]
         public SaveFinancialAccountFormResult SaveFinancialAccount( Guid gatewayGuid, [FromBody] SaveFinancialAccountFormArgs args )
         {
             // Validate the args

@@ -22,6 +22,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
@@ -30,6 +31,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Additional methods on the Interactions REST API
     /// </summary>
+    [RockGuid( "46ea333c-4263-487a-89bc-062c7e0d173a" )]
     public partial class InteractionsController
     {
         #region Import related
@@ -46,6 +48,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Interactions/Import" )]
+        [RockGuid( "c686f292-f77d-441e-83f4-de5d1de8ccd6" )]
         public void InteractionImport( Rock.BulkImport.InteractionsImport interactionsImport )
         {
             if ( interactionsImport == null )

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using Rock.Web.Cache;
 
@@ -21,6 +22,13 @@ namespace Rock.Model
 {
     public partial class StreakType
     {
+        /// <summary>
+        /// Gets or sets the structure settings.
+        /// </summary>
+        /// <value>The structure settings.</value>
+        [NotMapped]
+        public virtual Rock.Model.Engagement.StreakType.StreakTypeSettings StructureSettings { get; set; } = new Rock.Model.Engagement.StreakType.StreakTypeSettings();
+
         #region ICacheable
 
         /// <summary>

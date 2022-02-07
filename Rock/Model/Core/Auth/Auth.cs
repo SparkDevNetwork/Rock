@@ -151,15 +151,6 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Model.EntityType EntityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Audit Log.
-        /// </summary>
-        /// <value>
-        /// The Audit Log.
-        /// </value>
-        [NotMapped]
-        private AuthAuditLog AuthAuditLog { get; set; }
-
         #endregion
     }
 

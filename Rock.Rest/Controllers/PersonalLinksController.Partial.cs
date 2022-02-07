@@ -20,7 +20,7 @@
 // limitations under the License.
 // </copyright>
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
@@ -29,6 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PersonalLinks REST API
     /// </summary>
+    [RockGuid( "17f73c83-0af4-4d29-9f26-5b2fdb232439" )]
     public partial class PersonalLinksController : Rock.Rest.ApiController<Rock.Model.PersonalLink>
     {
         /// <summary>
@@ -39,6 +40,8 @@ namespace Rock.Rest.Controllers
         // NOTE: Intentionally don't use the [Secured] attribute on this Controller method. Security will be checked using entity security.
         [HttpGet]
         [System.Web.Http.Route( "api/PersonalLinksController/GetPersonalLinksData" )]
+        [System.Web.Http.Route( "api/PersonalLinks/GetPersonalLinksData" )]
+        [RockGuid( "ff35e8f1-3066-40c9-bb95-57590d851b8f" )]
         public PersonalLinkService.PersonalLinksData GetPersonalLinksData()
         {
             var currentPerson = this.GetPerson();

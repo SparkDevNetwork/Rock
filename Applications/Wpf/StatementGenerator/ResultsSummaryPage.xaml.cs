@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,7 +30,12 @@ namespace Rock.Apps.StatementGenerator
         {
             InitializeComponent();
 
-            resultsSummary = resultsSummary ?? new ResultsSummary(new System.Collections.Generic.List<Client.FinancialStatementGeneratorRecipient>());
+            resultsSummary = resultsSummary ?? new ResultsSummary( new System.Collections.Generic.List<Client.FinancialStatementGeneratorRecipient>(),
+                DateTime.Now,
+                DateTime.Now,
+                DateTime.Now );
+
+            lblReportDates.Content = $"{resultsSummary.ReportStartDate:d} to {resultsSummary.ReportEndDate:d}";
 
             lblNumberOfGivingUnits.Content = resultsSummary.NumberOfGivingUnits;
             lblTotalGivingAmount.Content = resultsSummary.TotalAmount.ToString("C");
@@ -49,6 +55,14 @@ namespace Rock.Apps.StatementGenerator
             }
 
             rptReportStatistics.ItemsSource = resultsSummary.PaperStatementsSummaryList;
+
+            // Run Metrics
+            lblStartDateTime.Content = resultsSummary.StartDateTime.ToString( "g" );
+            lblEndDateTime.Content = resultsSummary.EndDateTime.ToString( "g" );
+            lblDuration.Content = string.Format( "{0:%h}h {0:%m}m {0:%s}s", resultsSummary.Duration );
+
+            // Output the Results
+            resultsSummary.SaveResultsToFile();
         }
     }
 }

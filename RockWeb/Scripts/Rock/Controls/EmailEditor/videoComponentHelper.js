@@ -111,7 +111,7 @@
             },
 
             setProperties: function ($videoComponent) {
-                Rock.controls.emailEditor.$currentVideoComponent = $videoComponent.hasClass('component-video') ? $currentComponent : $(false);
+                Rock.controls.emailEditor.$currentVideoComponent = $videoComponent.hasClass('component-video') ? $videoComponent : $(false);
 
                 // Set the value of the url
                 var $link = Rock.controls.emailEditor.$currentVideoComponent.find('a');
@@ -123,6 +123,9 @@
 
                 // Hide the error message
                 $('#component-video-error').hide();
+
+                // Return this to the previous function caller
+                return Rock.controls.emailEditor.$currentVideoComponent;
             },
 
             updateVideoComponent: function (el, contents) {

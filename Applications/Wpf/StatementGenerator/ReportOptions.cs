@@ -22,7 +22,7 @@ using Rock.Client;
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// 
+    /// Class ReportOptions.
     /// </summary>
     internal class ReportOptions
     {
@@ -41,12 +41,21 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// Loads from configuration.
+        /// Loads from generator configuration.
         /// </summary>
         /// <param name="generatorConfig">The generator configuration.</param>
         public static void LoadFromConfig( GeneratorConfig generatorConfig )
         {
             _current = generatorConfig.ConfiguredOptions;
+        }
+
+        /// <summary>
+        /// Loads from the rock configuration.
+        /// </summary>
+        /// <param name="rockConfig">The rock configuration.</param>
+        public static void LoadFromConfig( RockConfig rockConfig )
+        {
+            _current = rockConfig.LastReportOptions;
         }
 
         /// <summary>

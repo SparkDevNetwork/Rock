@@ -30,8 +30,9 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "85d083e0-5511-427c-9cd2-b5a516efdeb3" )]
     public partial class MetricValuesController
     {
         /// <summary>
@@ -44,6 +45,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [EnableQuery]
         [System.Web.Http.Route( "api/MetricValues/GetByMetricId/{metricId}" )]
+        [RockGuid( "a92e98c4-b44b-4119-a2c5-b4ad3451959a" )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
             // include MetricValuePartitions and each MetricValuePartition's MetricPartition so that MetricValuePartitionEntityIds doesn't have to lazy load
@@ -68,6 +70,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/MetricValues/GetSummary" )]
+        [RockGuid( "e178df6a-a2a1-440b-bcd8-91331e7fcad5" )]
         public IEnumerable<MetricSummary> GetSummary( string metricIdList, DateTime? startDate = null, DateTime? endDate = null, MetricValueType? metricValueType = null, int? entityTypeId = null, int? entityId = null )
         {
             List<int> metricIds = metricIdList.SplitDelimitedValues().AsIntegerList();
@@ -114,7 +117,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class MetricSummary
         {
@@ -167,6 +170,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}" )]
         [HttpPost]
+        [RockGuid( "00bafaf2-d393-4423-a8e0-38f1edc179d7" )]
         public string GetSeriesPartitionName( int metricId, [FromBody] List<string> metricValuePartitionEntityIdList )
         {
             var entityTypeEntityIdList = metricValuePartitionEntityIdList.Select( a => a.Split( '|' ) ).Select( a =>

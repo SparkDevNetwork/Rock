@@ -943,29 +943,6 @@ namespace Rock.Lava
         #endregion
 
         /// <summary>
-        /// The slice filter returns a substring, starting at the specified index.
-        /// </summary>
-        /// <param name="input">The input string.</param>
-        /// <param name="start">If the passed index is negative, it is counted from the end of the string.</param>
-        /// <param name="length">An optional second parameter can be passed to specify the length of the substring.  If no second parameter is given, a substring of one character will be returned.</param>
-        /// <returns></returns>
-        public static String Slice( string input, int start, int length = 1 )
-        {
-            // If a negative start, subtract if from the length
-            if ( start < 0 )
-            {
-                start = input.Length + start;
-            }
-            // Make sure start is never < 0
-            start = start >= 0 ? start : 0;
-
-            // If length takes us off the end, fix it
-            length = length > ( input.Length - start ) ? ( input.Length - start ) : length;
-
-            return input.Substring( start, length );
-        }
-
-        /// <summary>
         /// Decrypts an encrypted string
         /// </summary>
         /// <param name="input">The input.</param>
@@ -1176,35 +1153,35 @@ namespace Rock.Lava
             var endDate = startDateTime.Value.AddYears( 1 );
 
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
-
-            var tzName = RockDateTime.OrgTimeZoneInfo.Id;
-
             var calendarEvent = calendar.Events[0] as Event;
 
             List<DateTimeOffset> dates;
 
+            // Get the UTC offset of the start date, and apply that offset to all of the dates in the sequence.
+            // This ensures that the scheduled event time remains the same if the sequence of dates crosses
+            // a Daylight Saving Time (DST) boundary.
             // To avoid any confusion where the local timezone, Rock timezone and calendar timezone are not the same,
             // express the start and end dates for the occurrence period in UTC.
+            var tsOffset = startDateTime.Value.Offset;
+
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
-                    .Select( d => new DateTimeOffset( d.Period.StartTime.ToTimeZone( tzName ).Value ) )
+                    .Select( d => new DateTimeOffset( d.Period.StartTime.Ticks, tsOffset ) )
                     .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
                 dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
-                    .Select( d => new DateTimeOffset( d.Period.EndTime.ToTimeZone( tzName ).Value ) )
+                    .Select( d => new DateTimeOffset( d.Period.EndTime.Ticks, tsOffset ) )
                     .ToList();
             }
             else
             {
                 dates = new List<DateTimeOffset>();
             }
-
-            dates = dates.Select( x => x.ToOffset( RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ) ).ToList();
 
             return dates;
         }

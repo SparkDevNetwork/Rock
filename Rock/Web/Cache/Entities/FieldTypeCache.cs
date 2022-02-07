@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Data;
-using Rock.Model;
 using Rock.Lava;
+using Rock.Model;
 
 namespace Rock.Web.Cache
 {
@@ -81,6 +83,37 @@ namespace Rock.Web.Cache
         public string Class { get; private set; }
 
         /// <summary>
+        /// Gets the CSS class to use when displaying an icon that represents
+        /// this field type.
+        /// </summary>
+        /// <value>
+        /// The CSS class to use when displaying an icon that represents this
+        /// field type.
+        /// </value>
+        public string IconCssClass { get; private set; }
+
+        /// <summary>
+        /// Gets the ways this field type can be used and presented in the system.
+        /// If the field is not available then it will be assumed to be Advanced.
+        /// </summary>
+        /// <value>
+        /// The ways this field type can be used and presented in the system.
+        /// </value>
+        public Rock.Field.FieldTypeUsage Usage { get; private set; }
+
+        /// <summary>
+        /// Gets the front-end platform(s) that this field type supports. All
+        /// field types should fallback to a "Text" field type for view and edit
+        /// mode if they are not supported. This property in particular
+        /// specifies which platforms support creating/configurating this field
+        /// type.
+        /// </summary>
+        /// <value>
+        /// The front-end platform(s) that this field type supports.
+        /// </value>
+        public Utility.RockPlatform Platform { get; private set; }
+
+        /// <summary>
         /// Gets the field.
         /// </summary>
         /// <value>
@@ -113,13 +146,32 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var fieldType = entity as FieldType;
-            if ( fieldType == null ) return;
+            if ( fieldType == null )
+            {
+                return;
+            }
 
             IsSystem = fieldType.IsSystem;
             Name = fieldType.Name;
             Description = fieldType.Description;
             Assembly = fieldType.Assembly;
             Class = fieldType.Class;
+
+            // Can't use the "Field" property because it will return a TextFieldType
+            // if the real field type implementation cannot be found.
+            var fieldTypeImplementationType = Type.GetType( $"{fieldType.Class}, {fieldType.Assembly}" );
+
+            // If we found the field C# type check for the custom attributes. Do not
+            // use inherited attributes since that could have unintended consequences.
+            if ( fieldTypeImplementationType != null )
+            {
+                IconCssClass = fieldTypeImplementationType.GetCustomAttribute<IconCssClassAttribute>( false )?.IconCssClass ?? string.Empty;
+
+                // Default to Advanced if the field type does not specify its usage.
+                Usage = fieldTypeImplementationType.GetCustomAttribute<FieldTypeUsageAttribute>( false )?.Usage ?? Rock.Field.FieldTypeUsage.Advanced;
+
+                Platform = fieldTypeImplementationType.GetCustomAttribute<RockPlatformSupportAttribute>( false )?.Platform ?? 0;
+            }
         }
 
         /// <summary>

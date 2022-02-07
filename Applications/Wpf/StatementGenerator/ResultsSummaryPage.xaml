@@ -28,13 +28,19 @@
                 VerticalAlignment="Top"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,0,1">
-                <StackPanel HorizontalAlignment="Stretch" Background="{StaticResource PanelHeaderBrush}">
+                <DockPanel HorizontalAlignment="Stretch" Background="{StaticResource PanelHeaderBrush}">
                     <Label
                         Margin="10"
                         HorizontalAlignment="Left"
                         Content="Results Summary"
                         Style="{StaticResource labelStyleStepCaption}" />
-                </StackPanel>
+                    <Label
+                        Name="lblReportDates"
+                        Margin="10"
+                        HorizontalAlignment="Right"
+                        Content="1/1/2021 to 12/31/2021"
+                        Style="{StaticResource labelStyle}" />
+                </DockPanel>
             </Border>
 
             <DockPanel
@@ -245,6 +251,67 @@
                             </ItemsControl>
 
                         </DockPanel>
+
+
+                        <Label
+                            Content="Run Metrics"
+                            DockPanel.Dock="Top"
+                            Margin="0,20,0,0"
+                            Style="{StaticResource labelStyleBold}" />
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="20" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="10" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal"
+                                Grid.Row="0" Grid.Column="0">
+                                <Label Width="160" Style="{StaticResource labelStyle}">
+                                    Start Date/Time:
+                                </Label>
+                                <Label
+                                Name="lblStartDateTime"
+                                Width="150"
+                                HorizontalContentAlignment="Right"
+                                Style="{StaticResource labelStyle}">
+                                    12/6/2021 7:45 AM
+                                </Label>
+                            </StackPanel>
+
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal"
+                                Grid.Row="0" Grid.Column="1">
+                                <Label Width="160" Style="{StaticResource labelStyle}">
+                                    End Date/Time:
+                                </Label>
+                                <Label
+                                Name="lblEndDateTime"
+                                Width="150"
+                                HorizontalContentAlignment="Right"
+                                Style="{StaticResource labelStyle}">
+                                    12/6/2021 8:24 AM
+                                </Label>
+                            </StackPanel>
+
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal"
+                                Grid.Row="1" Grid.Column="0">
+                                <Label Width="160" Style="{StaticResource labelStyle}">
+                                    Duration:
+                                </Label>
+                                <Label
+                                Name="lblDuration"
+                                Width="150"
+                                HorizontalContentAlignment="Right"
+                                Style="{StaticResource labelStyle}">
+                                    0h 39m 24s
+                                </Label>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </DockPanel>

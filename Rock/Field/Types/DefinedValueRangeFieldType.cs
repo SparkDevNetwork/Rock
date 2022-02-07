@@ -53,7 +53,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
         {
             var clientConfiguration = base.GetClientConfigurationValues( configurationValues );
             var definedTypeGuid = clientConfiguration.ContainsKey( DEFINED_TYPE_KEY ) ? clientConfiguration[DEFINED_TYPE_KEY].AsGuidOrNull() : null;
@@ -174,13 +174,13 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             return GetTextValue( value, configurationValues, false );
         }
 
         /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
         {
             return GetTextValue( value, configurationValues, true );
         }
@@ -192,7 +192,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">if set to <c>true</c> the value will be displayed in a condensed space.</param>
         /// <returns></returns>
-        private string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        private string GetTextValue( string value, Dictionary<string, string> configurationValues, bool condensed )
         {
             if ( value != null )
             {
@@ -245,7 +245,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return GetTextValue( value, configurationValues, condensed );
+            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ), condensed );
         }
 
         #endregion
@@ -253,11 +253,11 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
         {
             var guids = value.SplitDelimitedValues().AsGuidOrNullList();
             bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                ? configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean()
+                ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
                 : false;
 
             if ( guids.Count == 2 && guids[0].HasValue && guids[1].HasValue )
@@ -277,7 +277,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
         {
             var value = clientValue.FromJsonOrNull<ClientValue>();
 

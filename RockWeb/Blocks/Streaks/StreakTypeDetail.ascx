@@ -70,12 +70,20 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlStructureType" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Linked Activity" PropertyName="StructureType" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlStructureType_SelectedIndexChanged" AutoPostBack="true"
-                                Help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Any Attendance” could help measure general engagement with the church.  Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
+                                Help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Attendance: Any” could help measure general engagement with the church.  Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
                             <Rock:GroupPicker ID="gpStructureGroupPicker" runat="server" Visible="false" />
                             <Rock:GroupTypePicker ID="gtpStructureGroupTypePicker" runat="server" Visible="false" />
                             <Rock:DefinedValuePicker ID="dvpStructureDefinedValuePicker" runat="server" Visible="false" />
                             <Rock:InteractionChannelInteractionComponentPicker ID="icicComponentPicker" runat="server" Visible="false" />
                             <Rock:InteractionChannelPicker ID="icChannelPicker" runat="server" Visible="false" />
+                            <div class="row">
+                                <div class="col-sm-6 col-xs-12">
+                                    <Rock:AccountPicker ID="apStructureAccountPicker" runat="server" Visible="false" />
+                                </div>
+                                <div class="col-sm-6 col-xs-12">
+                                    <Rock:RockCheckBox ID="cbIncludeChildAccounts" runat="server" Visible="false" />
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlFrequencyOccurrence" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Frequency" PropertyName="OccurrenceFrequency" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlFrequencyOccurrence_SelectedIndexChanged" AutoPostBack="true"

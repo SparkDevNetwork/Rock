@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Security
     /// </summary>
     [DisplayName( "Phone Number Lookup" )]
     [Category( "Security" )]
-    [Description( "Login via phone number" )]
+    [Description( "Log in via phone number" )]
 
     [CustomDropdownListField( "Authentication Level",
         Description = "This determines what level of authentication that the lookup would do.",

@@ -806,6 +806,19 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces the first occurrence of a given string with a new value
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="find">The find.</param>
+        /// <param name="replace">The replace.</param>
+        /// <returns>System.String.</returns>
+        public static string ReplaceFirstOccurrence( this string source, string find, string replace )
+        {
+            var regex = new Regex( Regex.Escape( find ) );
+            return regex.Replace( source, replace, 1);
+        }
+
+        /// <summary>
         /// Replaces string found at the very end of the content.
         /// </summary>
         /// <param name="content">The content.</param>

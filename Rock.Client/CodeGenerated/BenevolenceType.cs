@@ -57,6 +57,9 @@ namespace Rock.Client
         /// <summary />
         public string RequestLavaTemplate { get; set; }
 
+        /// <summary />
+        public bool ShowFinancialResults { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -97,6 +100,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.RequestLavaTemplate = source.RequestLavaTemplate;
+            this.ShowFinancialResults = source.ShowFinancialResults;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

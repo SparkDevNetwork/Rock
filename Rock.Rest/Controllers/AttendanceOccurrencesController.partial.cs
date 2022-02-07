@@ -27,8 +27,9 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "62e6fe0f-de9a-4b3f-9647-e8f18088373d" )]
     public partial class AttendanceOccurrencesController
     {
         /// <summary>
@@ -37,6 +38,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/AttendanceOccurrences/GetFutureGroupOccurrences" )]
+        [RockGuid( "d5b342d0-cdff-4895-9716-b1eeef19c38c" )]
         public List<GroupOccurrenceResponse> GetFutureGroupOccurrences( int groupId, DateTime? toDateTime = null, string locationIds = null, string scheduleIds = null )
         {
             using ( var rockContext = new RockContext() )
@@ -45,9 +47,9 @@ namespace Rock.Rest.Controllers
                 var group = new GroupService( rockContext ).Get( groupId );
 
                 var occurrences = new AttendanceOccurrenceService( rockContext )
-                    .GetFutureGroupOccurrences( group, toDateTime, locationIds, scheduleIds);
+                    .GetFutureGroupOccurrences( group, toDateTime, locationIds, scheduleIds );
 
-                var response = new List<GroupOccurrenceResponse>(); 
+                var response = new List<GroupOccurrenceResponse>();
                 foreach ( var occurrence in occurrences )
                 {
                     response.Add( new GroupOccurrenceResponse( occurrence ) );
@@ -61,10 +63,11 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <returns></returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route("api/AttendanceOccurrences/CreateGroupOccurrence")]
+        [System.Web.Http.Route( "api/AttendanceOccurrences/CreateGroupOccurrence" )]
+        [RockGuid( "07ae6b44-790d-42c5-aa02-bbefa63e97ed" )]
         public AttendanceOccurrence CreateGroupOccurrence( int groupId, DateTime occurrenceDate, int? scheduleId = null, int? locationId = null )
         {
-            return new AttendanceOccurrenceService( new RockContext () ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
+            return new AttendanceOccurrenceService( new RockContext() ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
         }
 
         /// <summary>
@@ -88,7 +91,7 @@ namespace Rock.Rest.Controllers
             private void GetOccurrenceTitle()
             {
                 bool hasSchedule = ( Occurrence.Schedule != null );
-                
+
                 if ( hasSchedule )
                 {
                     var calendarEvent = Occurrence.Schedule.GetICalEvent();

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -28,13 +29,14 @@ namespace Rock.Field.Types
     /// Field Type to select a Day of the Week
     /// stored as int value that can be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class DayOfWeekFieldType : FieldType
     {
 
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             var intValue = value.AsIntegerOrNull();
 
@@ -58,8 +60,8 @@ namespace Rock.Field.Types
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues )
-                : GetCondensedTextValue( value, configurationValues );
+                ? GetTextValue( value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary(k => k.Key, k => k.Value.Value ) );
         }
 
         /// <summary>

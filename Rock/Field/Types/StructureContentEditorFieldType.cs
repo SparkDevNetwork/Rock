@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Cms.StructuredContent;
@@ -83,7 +84,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
         {
             var helper = new StructuredContentHelper( value );
 
@@ -100,7 +101,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            return GetHtmlValue( value, configurationValues );
+            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            return GetHtmlValue( value, configurationValues );
+            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

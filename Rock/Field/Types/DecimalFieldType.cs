@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a decimal numeric value
     /// </summary>
     [Serializable]
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class DecimalFieldType : FieldType
     {
 

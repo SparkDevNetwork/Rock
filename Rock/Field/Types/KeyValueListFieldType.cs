@@ -48,7 +48,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
         {
             var clientValues = base.GetClientConfigurationValues( configurationValues );
 
@@ -66,7 +66,7 @@ namespace Rock.Field.Types
             }
 
             // Generate the custom values that the clients expect to see.
-            clientValues[VALUES_KEY] = GetCustomValues( configurationValues )
+            clientValues[VALUES_KEY] = GetCustomValues( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                 .Select( kvp => new
                 {
                     value = kvp.Key,
@@ -213,9 +213,9 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].AsIntegerOrNull().HasValue;
 
             var values = new List<string>();
             string[] nameValues = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
@@ -258,7 +258,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return GetTextValue( value, configurationValues );
+            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion
@@ -266,7 +266,7 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
         {
             var nameValues = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
 
@@ -282,7 +282,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
         {
             var values = clientValue.FromJsonOrNull<List<ClientValue>>();
 
@@ -291,7 +291,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            var customValues = GetCustomValues( configurationValues );
+            var customValues = GetCustomValues( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
 
             // If there are any custom values, then ensure that all values we
             // got from the client are valid. If not, ignore them.

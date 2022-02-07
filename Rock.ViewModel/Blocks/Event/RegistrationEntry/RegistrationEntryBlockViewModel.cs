@@ -318,6 +318,30 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         public List<ListItemViewModel> Campuses { get; set; }
 
         /// <summary>
+        /// Gets or sets the marital statuses available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The marital statuses available for the user to select.
+        /// </value>
+        public List<ListItemViewModel> MaritalStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection statuses available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The connection statuses available for the user to select.
+        /// </value>
+        public List<ListItemViewModel> ConnectionStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the grades available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The grades available for the user to select.
+        /// </value>
+        public List<ListItemViewModel> Grades { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the save account option should be available.
         /// </summary>
         /// <value>

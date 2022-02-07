@@ -48,6 +48,15 @@ namespace Rock.Web.UI.Controls
         public bool UseGuidAsValue { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether listitem to sorted by name Or by Order then by name (default false)
+        /// NOTE: Make sure you set this before setting .GroupTypes
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [use unique identifier as value]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSortedByName { get; set; }
+
+        /// <summary>
         /// Sets the group types. Note: Use SetGroupTypes instead to set this using List&lt;GroupTypeCache&gt;
         /// </summary>
         /// <value>
@@ -69,7 +78,8 @@ namespace Rock.Web.UI.Controls
         {
             this.Items.Clear();
             this.Items.Add( new ListItem() );
-            foreach ( GroupTypeCache groupType in groupTypes )
+            var orderedGroupTypes = IsSortedByName ? groupTypes.OrderBy( a => a.Name ) : groupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name );
+            foreach ( GroupTypeCache groupType in orderedGroupTypes )
             {
                 this.Items.Add( new ListItem( groupType.Name, UseGuidAsValue ? groupType.Guid.ToString() : groupType.Id.ToString() ) );
             }

@@ -21,6 +21,7 @@ namespace Rock.Data
     /// <para>Example:</para>
     /// <para>    var rockContext = new RockContext();</para>
     /// <para>    var potlockQry = new Service&lt;Potlock&gt;( rockContext ).Queryable();</para>
+    /// <para> NOTE: This should <b>not</b> be used in Rock core, only plugins.</para>
     /// </summary>
     public interface IRockEntity : IEntity
     {

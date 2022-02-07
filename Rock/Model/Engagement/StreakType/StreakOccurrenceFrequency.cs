@@ -29,6 +29,16 @@ namespace Rock.Model
         /// <summary>
         /// The <see cref="StreakType"/> has bits that represent a week.
         /// </summary>
-        Weekly = 1
+        Weekly = 1,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> has bits that represent a month.
+        /// </summary>
+        Monthly = 2,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> has bits that represent a year.
+        /// </summary>
+        Yearly = 3
     }
 }

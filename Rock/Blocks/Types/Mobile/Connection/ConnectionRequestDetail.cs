@@ -695,52 +695,33 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 };
             }
 
-            // Workflow processed, see if it is persisted. If not then it was a
-            // one-off and we just need to return a status that it processed.
-            if ( workflow.Id == 0 )
-            {
-                return new ConnectionWorkflowLaunchedViewModel
-                {
-                    WorkflowTypeGuid = workflowType.Guid,
-                    WorkflowGuid = workflow.Guid,
-                    Message = $"A '{workflowType.Name}' workflow was processed."
-                };
-            }
-
             // The workflow is persisted, so we need to create the link between
             // the workflow and this connection request.
-            new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
+            if ( workflow.Id != 0 )
             {
-                ConnectionRequestId = connectionRequest.Id,
-                WorkflowId = workflow.Id,
-                ConnectionWorkflowId = connectionWorkflow.Id,
-                TriggerType = connectionWorkflow.TriggerType,
-                TriggerQualifier = connectionWorkflow.QualifierValue
-            } );
+                new ConnectionRequestWorkflowService( rockContext ).Add( new ConnectionRequestWorkflow
+                {
+                    ConnectionRequestId = connectionRequest.Id,
+                    WorkflowId = workflow.Id,
+                    ConnectionWorkflowId = connectionWorkflow.Id,
+                    TriggerType = connectionWorkflow.TriggerType,
+                    TriggerQualifier = connectionWorkflow.QualifierValue
+                } );
 
-            rockContext.SaveChanges();
+                rockContext.SaveChanges();
+            }
 
             // Check if there is an entry form waiting for this person to enter
             // data into.
-            if ( workflow.HasActiveEntryForm( currentPerson ) )
+            var hasEntryForm = workflow.HasActiveEntryForm( currentPerson );
+
+            return new ConnectionWorkflowLaunchedViewModel
             {
-                return new ConnectionWorkflowLaunchedViewModel
-                {
-                    WorkflowTypeGuid = workflowType.Guid,
-                    WorkflowGuid = workflow.Guid,
-                    HasActiveEntryForm = true,
-                    Message = $"A '{workflowType.Name}' workflow was processed."
-                };
-            }
-            else
-            {
-                return new ConnectionWorkflowLaunchedViewModel
-                {
-                    WorkflowTypeGuid = workflowType.Guid,
-                    WorkflowGuid = workflow.Guid,
-                    Message = $"A '{workflowType.Name}' workflow was processed."
-                };
-            }
+                WorkflowTypeGuid = workflowType.Guid,
+                WorkflowGuid = workflow.Guid,
+                HasActiveEntryForm = hasEntryForm,
+                Message = $"A '{workflowType.Name}' workflow was processed."
+            };
         }
 
         /// <summary>

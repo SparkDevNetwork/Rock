@@ -24,14 +24,13 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Web.Cache;
-using Rock.Constants;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
+using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Field.Types;
-using Rock.Reporting;
 
 namespace RockWeb.Blocks.Core
 {
@@ -51,13 +50,21 @@ namespace RockWeb.Blocks.Core
         Order = 0,
         Key = AttributeKey.Heading )]
 
+    [CategoryField( "Category",
+        Description = "When selected, only history for this category will be shown and the Category column will be hidden.",
+        IsRequired = false,
+        AllowMultiple = false,
+        Order = 1,
+        Key = AttributeKey.Category,
+        EntityType = typeof( Rock.Model.History ) )]
+
     public partial class HistoryLog : RockBlock, ISecondaryBlock
     {
         public static class AttributeKey
         {
             public const string Heading = "Heading";
+            public const string Category = "Category";
         }
-
 
         #region Fields
 
@@ -66,7 +73,6 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Base Control Methods
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -101,8 +107,6 @@ namespace RockWeb.Blocks.Core
                 _entity = this.ContextEntity();
                 if ( _entity != null )
                 {
-
-
                     if ( !Page.IsPostBack )
                     {
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -147,11 +151,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "Entity", _entity );
-            lHeading.Text = GetAttributeValue( AttributeKey.Heading ).ResolveMergeFields( mergeFields );
-
-            BindGrid();
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Core
                 case "Category":
                     {
                         int? categoryId = e.Value.AsIntegerOrNull();
-                        if ( categoryId.HasValue )
+                        if ( cpCategory.Visible && categoryId.HasValue )
                         {
                             var category = CategoryCache.Get( categoryId.Value );
                             if ( category != null )
@@ -246,11 +246,43 @@ namespace RockWeb.Blocks.Core
         #region Methods
 
         /// <summary>
+        /// Gets the category identifier.
+        /// </summary>
+        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
+        private int? GetCategoryId()
+        {
+            var categoryGuidBlockAttribute = this.GetAttributeValue( AttributeKey.Category ).AsGuidOrNull();
+            if ( categoryGuidBlockAttribute.HasValue )
+            {
+                return CategoryCache.GetId( categoryGuidBlockAttribute.Value );
+            }
+            else
+            {
+                return gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
+            }
+        }
+
+        /// <summary>
         /// Binds the filter.
         /// </summary>
         private void BindFilter()
         {
-            int? categoryId = gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
+            var categoryGuidBlockAttribute = this.GetAttributeValue( AttributeKey.Category ).AsGuidOrNull();
+            int? categoryId = GetCategoryId();
+            if ( categoryGuidBlockAttribute.HasValue )
+            {
+                cpCategory.Visible = false;
+                var categoryGridField = gHistory.ColumnsOfType<BoundField>().Where( a => a.DataField == "Category.Name" ).FirstOrDefault();
+                if ( categoryGridField != null )
+                {
+                    categoryGridField.Visible = false;
+                }
+            }
+            else
+            {
+                cpCategory.Visible = true;
+            }
+
             cpCategory.SetValue( categoryId );
 
             tbSummary.Text = gfSettings.GetUserPreference( "Summary Contains" );
@@ -276,92 +308,97 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            if ( _entity != null )
+            if ( _entity == null )
             {
-                var entityTypeCache = EntityTypeCache.Get( _entity.GetType(), false );
-                if ( entityTypeCache != null )
-                {
-                    var rockContext = new RockContext();
-                    var historyService = new HistoryService( rockContext );
-                    IQueryable<History> qry;
-
-                    if ( entityTypeCache.Id == EntityTypeCache.GetId<Rock.Model.Person>() )
-                    {
-                        // If this is History for a Person, also include any History for any of their Families
-                        int? groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>();
-                        List<int> familyIds = ( _entity as Person ).GetFamilies().Select( a => a.Id ).ToList();
-
-                        qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
-                        .Where( h =>
-                            ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id )
-                            || ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );
-
-                        // as per issue #1594, if relatedEntityType is an Attribute then check View Authorization
-                        var attributeEntity = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE.AsGuid() );
-                        var personAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeCache.Id ).ToList().Select( a => AttributeCache.Get( a ) );
-                        var allowedAttributeIds = GetAuthorizedPersonAttributes( rockContext ).Select( a => a.Id ).ToList();
-                        qry = qry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );
-                    }
-                    else
-                    {
-                        qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
-                        .Where( h =>
-                            ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id ) );
-                    }
-
-                    var historyCategories = new CategoryService( rockContext ).GetByEntityTypeId( EntityTypeCache.GetId<Rock.Model.History>() ).ToList().Select( a => CategoryCache.Get( a ) );
-                    var allowedCategoryIds = historyCategories.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).Select( a => a.Id ).ToList();
-
-                    qry = qry.Where( a => allowedCategoryIds.Contains( a.CategoryId ) );
-
-                    int? categoryId = gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
-                    if ( categoryId.HasValue )
-                    {
-                        qry = qry.Where( a => a.CategoryId == categoryId.Value );
-                    }
-
-                    int? personId = gfSettings.GetUserPreference( "Who" ).AsIntegerOrNull();
-                    if ( personId.HasValue )
-                    {
-                        qry = qry.Where( h => h.CreatedByPersonAlias.PersonId == personId.Value );
-                    }
-
-                    var drp = new DateRangePicker();
-                    drp.DelimitedValues = gfSettings.GetUserPreference( "Date Range" );
-                    if ( drp.LowerValue.HasValue )
-                    {
-                        qry = qry.Where( h => h.CreatedDateTime >= drp.LowerValue.Value );
-                    }
-                    if ( drp.UpperValue.HasValue )
-                    {
-                        DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                        qry = qry.Where( h => h.CreatedDateTime < upperDate );
-                    }
-
-                    // Combine history records that were saved at the same time
-                    var historySummaryList = historyService.GetHistorySummary( qry );
-
-                    string summary = gfSettings.GetUserPreference( "Summary Contains" );
-                    if ( !string.IsNullOrWhiteSpace( summary ) )
-                    {
-                        historySummaryList = historySummaryList.Where( h => h.HistoryList.Any( x => x.SummaryHtml.IndexOf( summary, StringComparison.OrdinalIgnoreCase ) >= 0 ) ).ToList();
-                    }
-
-                    SortProperty sortProperty = gHistory.SortProperty;
-                    if ( sortProperty != null )
-                    {
-                        historySummaryList = historySummaryList.AsQueryable().Sort( sortProperty ).ToList();
-                    }
-                    else
-                    {
-                        historySummaryList = historySummaryList.OrderByDescending( t => t.CreatedDateTime ).ToList();
-                    }
-
-                    gHistory.DataSource = historySummaryList;
-                    gHistory.EntityTypeId = EntityTypeCache.Get<History>().Id;
-                    gHistory.DataBind();
-                }
+                return;
             }
+
+            var entityTypeCache = EntityTypeCache.Get( _entity.GetType(), false );
+            if ( entityTypeCache == null )
+            {
+                return;
+            }
+
+
+            var rockContext = new RockContext();
+            var historyService = new HistoryService( rockContext );
+            IQueryable<History> qry;
+
+            if ( entityTypeCache.Id == EntityTypeCache.GetId<Rock.Model.Person>() )
+            {
+                // If this is History for a Person, also include any History for any of their Families
+                int? groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>();
+                List<int> familyIds = ( _entity as Person ).GetFamilies().Select( a => a.Id ).ToList();
+
+                qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
+                .Where( h =>
+                    ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id )
+                    || ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );
+
+                // as per issue #1594, if relatedEntityType is an Attribute then check View Authorization
+                var attributeEntity = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE.AsGuid() );
+                var personAttributes = new AttributeService( rockContext ).GetByEntityTypeId( entityTypeCache.Id ).ToList().Select( a => AttributeCache.Get( a ) );
+                var allowedAttributeIds = GetAuthorizedPersonAttributes( rockContext ).Select( a => a.Id ).ToList();
+                qry = qry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );
+            }
+            else
+            {
+                qry = historyService.Queryable().Include( a => a.CreatedByPersonAlias.Person )
+                .Where( h =>
+                    ( h.EntityTypeId == entityTypeCache.Id && h.EntityId == _entity.Id ) );
+            }
+
+            var historyCategories = new CategoryService( rockContext ).GetByEntityTypeId( EntityTypeCache.GetId<Rock.Model.History>() ).ToList().Select( a => CategoryCache.Get( a ) );
+            var allowedCategoryIds = historyCategories.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).Select( a => a.Id ).ToList();
+
+            qry = qry.Where( a => allowedCategoryIds.Contains( a.CategoryId ) );
+
+            int? categoryId = GetCategoryId();
+            if ( categoryId.HasValue )
+            {
+                qry = qry.Where( a => a.CategoryId == categoryId.Value );
+            }
+
+            int? personId = gfSettings.GetUserPreference( "Who" ).AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                qry = qry.Where( h => h.CreatedByPersonAlias.PersonId == personId.Value );
+            }
+
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = gfSettings.GetUserPreference( "Date Range" );
+            if ( drp.LowerValue.HasValue )
+            {
+                qry = qry.Where( h => h.CreatedDateTime >= drp.LowerValue.Value );
+            }
+            if ( drp.UpperValue.HasValue )
+            {
+                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                qry = qry.Where( h => h.CreatedDateTime < upperDate );
+            }
+
+            // Combine history records that were saved at the same time
+            var historySummaryList = historyService.GetHistorySummary( qry );
+
+            string summary = gfSettings.GetUserPreference( "Summary Contains" );
+            if ( !string.IsNullOrWhiteSpace( summary ) )
+            {
+                historySummaryList = historySummaryList.Where( h => h.HistoryList.Any( x => x.SummaryHtml.IndexOf( summary, StringComparison.OrdinalIgnoreCase ) >= 0 ) ).ToList();
+            }
+
+            SortProperty sortProperty = gHistory.SortProperty;
+            if ( sortProperty != null )
+            {
+                historySummaryList = historySummaryList.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                historySummaryList = historySummaryList.OrderByDescending( t => t.CreatedDateTime ).ToList();
+            }
+
+            gHistory.DataSource = historySummaryList;
+            gHistory.EntityTypeId = EntityTypeCache.Get<History>().Id;
+            gHistory.DataBind();
         }
 
         /// <summary>

@@ -214,6 +214,7 @@
         <Rock:ModalDialog ID="dlgConnectionStatuses" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddConnectionStatus_Click" Title="Create Status" ValidationGroup="ConnectionStatus">
             <Content>
                 <asp:HiddenField ID="hfConnectionTypeAddConnectionStatusGuid" runat="server" />
+                <Rock:NotificationBox ID="nbDuplicateConnectionStatus" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbConnectionStatusName" SourceTypeName="Rock.Model.ConnectionStatus, Rock" PropertyName="Name" Label="Name" runat="server" ValidationGroup="ConnectionStatus" />

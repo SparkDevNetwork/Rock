@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -150,18 +151,45 @@ namespace Rock.Model
         [DataMember]
         public bool ShowOnWaitlist { get; set; }
 
+        /// <summary>
+        /// JSON Serialized <see cref="FieldVisibilityRules"/>
+        /// </summary>
+        /// <value>
+        /// The field visibility rules json.
+        /// </value>
+        [DataMember]
+        public string FieldVisibilityRulesJSON
+        {
+            get
+            {
+                return FieldVisibilityRules?.ToJson();
+            }
+
+            set
+            {
+                Field.FieldVisibilityRules rules = null;
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    rules = value.FromJsonOrNull<Rock.Field.FieldVisibilityRules>();
+                    if ( rules == null )
+                    {
+                        // if can't be deserialized as FieldVisibilityRules, it might have been serialized as an array from an earlier version
+                        var rulesList = value.FromJsonOrNull<List<Field.FieldVisibilityRule>>();
+                        if ( rulesList != null )
+                        {
+                            rules = new Field.FieldVisibilityRules();
+                            rules.RuleList.AddRange( rulesList );
+                        }
+                    }
+                }
+
+                this.FieldVisibilityRules = rules ?? new Field.FieldVisibilityRules();
+            }
+        }
+
         #endregion Entity Properties
 
         #region Navigation Properties
-
-        /// <summary>
-        /// Gets or sets the field visibility rules.
-        /// </summary>
-        /// <value>
-        /// The field visibility rules.
-        /// </value>
-        [NotMapped]
-        public virtual Rock.Field.FieldVisibilityRules FieldVisibilityRules { get; set; } = new Rock.Field.FieldVisibilityRules();
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateForm"/>.

@@ -272,6 +272,8 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     PersonalDeviceTypeMobile = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6",
     /** Personal Device Type - Computer */
     PersonalDeviceTypeComputer = "828ADECE-EFE7-49DF-BA8C-B3F132509A95",
+    /** Personal Device Type - TV */
+    PersonalDeviceTypeTv = "CA45FC83-2B1C-51AC-4B46-F3427F57116B",
     /** Other platform */
     PersonalDevicePlatformOther = "13091A2D-C483-46FA-B489-E5D230B353C8",
     /** IOS platform */
