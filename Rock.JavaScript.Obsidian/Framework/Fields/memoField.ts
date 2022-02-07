@@ -25,10 +25,14 @@ export const enum ConfigurationValueKey {
     ShowCountDown = "showcountdown"
 }
 
-
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./memoFieldComponents")).EditComponent;
+});
+
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./memoFieldComponents")).ConfigurationComponent;
 });
 
 /**
@@ -37,5 +41,9 @@ const editComponent = defineAsyncComponent(async () => {
 export class MemoFieldType extends FieldTypeBase {
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }
