@@ -68,11 +68,12 @@ namespace Rock.Rest.Controllers
         /// Gets the launch packet.
         /// </summary>
         /// <param name="deviceIdentifier">The unique device identifier for this device.</param>
+        /// <param name="notificationsEnabled">Determines if notifications are fully enabled on the device.</param>
         /// <returns>An action result.</returns>
         [Route( "api/mobile/GetLaunchPacket" )]
         [HttpGet]
         [Authenticate]
-        public IHttpActionResult GetLaunchPacket( string deviceIdentifier = null )
+        public IHttpActionResult GetLaunchPacket( string deviceIdentifier = null, bool? notificationsEnabled = null )
         {
             var site = MobileHelper.GetCurrentApplicationSite();
             var additionalSettings = site?.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
@@ -156,14 +157,28 @@ namespace Rock.Rest.Controllers
                     personalDeviceService.Add( personalDevice );
                     rockContext.SaveChanges();
                 }
-                else if ( !personalDevice.IsActive || personalDevice.Name != deviceData.Name )
+                else
                 {
-                    personalDevice.IsActive = true;
-                    personalDevice.Manufacturer = deviceData.Manufacturer;
-                    personalDevice.Model = deviceData.Model;
-                    personalDevice.Name = deviceData.Name;
+                    var hasDeviceChanged = !personalDevice.IsActive
+                        || personalDevice.Name != deviceData.Name
+                        || personalDevice.Manufacturer != deviceData.Manufacturer
+                        || personalDevice.Model != deviceData.Model
+                        || personalDevice.NotificationsEnabled != ( notificationsEnabled ?? true );
 
-                    rockContext.SaveChanges();
+                    if ( hasDeviceChanged )
+                    {
+                        personalDevice.IsActive = true;
+                        personalDevice.Manufacturer = deviceData.Manufacturer;
+                        personalDevice.Model = deviceData.Model;
+                        personalDevice.Name = deviceData.Name;
+
+                        if ( notificationsEnabled.HasValue )
+                        {
+                            personalDevice.NotificationsEnabled = notificationsEnabled.Value;
+                        }
+
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 launchPacket.PersonalDeviceGuid = personalDevice.Guid;
@@ -177,10 +192,11 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
         /// <param name="registration">The registration token used to send push notifications.</param>
-        /// <returns></returns>
+        /// <param name="notificationsEnabled">Determines if notifications are fully enabled on the device.</param>
+        /// <returns>A status code that indicates if the request was successful.</returns>
         [Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
         [HttpPut]
-        public IHttpActionResult UpdateDeviceRegistrationByGuid( Guid personalDeviceGuid, string registration )
+        public IHttpActionResult UpdateDeviceRegistrationByGuid( Guid personalDeviceGuid, string registration, bool? notificationsEnabled = null )
         {
             using ( var rockContext = new Rock.Data.RockContext() )
             {
@@ -194,6 +210,12 @@ namespace Rock.Rest.Controllers
                 }
 
                 personalDevice.DeviceRegistrationId = registration;
+
+                if ( notificationsEnabled.HasValue )
+                {
+                    personalDevice.NotificationsEnabled = notificationsEnabled.Value;
+                }
+
                 rockContext.SaveChanges();
 
                 return Ok();
