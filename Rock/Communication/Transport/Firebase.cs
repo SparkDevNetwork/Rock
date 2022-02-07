@@ -174,7 +174,7 @@ namespace Rock.Communication.Transport
                                         var service = new PersonalDeviceService( recipientRockContext );
 
                                         devices = service.Queryable()
-                                            .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
+                                            .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                             .Select( p => p.DeviceRegistrationId )
                                             .ToList();
                                     }

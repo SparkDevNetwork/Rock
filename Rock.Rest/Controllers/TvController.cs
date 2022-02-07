@@ -107,26 +107,44 @@ namespace Rock.Rest.Controllers
                         Manufacturer = deviceData.Manufacturer,
                         Model = deviceData.Model,
                         Name = deviceData.Name,
-                        IsActive = true
+                        IsActive = true,
+                        LastSeenDateTime = RockDateTime.Now
                     };
 
                     personalDeviceService.Add( personalDevice );
                     rockContext.SaveChanges();
                 }
-                else if ( !personalDevice.IsActive || personalDevice.Name != deviceData.Name )
+                else
                 {
-                    personalDevice.IsActive = true;
-                    personalDevice.Manufacturer = deviceData.Manufacturer;
-                    personalDevice.Model = deviceData.Model;
-                    personalDevice.Name = deviceData.Name;
+                    // A change is determined as one of the following:
+                    // 1) A change in Name, Manufacturer, Model, or NotificationsEnabled.
+                    // 2) Device not being active.
+                    // 3) Not seen in 24 hours.
+                    // 4) Signed in with a different person.
+                    var hasDeviceChanged = !personalDevice.IsActive
+                        || personalDevice.Name != deviceData.Name
+                        || personalDevice.Manufacturer != deviceData.Manufacturer
+                        || personalDevice.Model != deviceData.Model
+                        || !personalDevice.LastSeenDateTime.HasValue
+                        || personalDevice.LastSeenDateTime.Value.AddDays( 1 ) < RockDateTime.Now
+                        || ( person.IsNotNull() && personalDevice.PersonAliasId != person.PrimaryAliasId );
 
-                    // Update the person tied to the device, but never blank it out. 
-                    if ( person.IsNotNull() && personalDevice.PersonAliasId != person.PrimaryAliasId )
+                    if ( hasDeviceChanged )
                     {
-                        personalDevice.PersonAliasId = person.PrimaryAliasId;
-                    }
+                        personalDevice.IsActive = true;
+                        personalDevice.Manufacturer = deviceData.Manufacturer;
+                        personalDevice.Model = deviceData.Model;
+                        personalDevice.Name = deviceData.Name;
+                        personalDevice.LastSeenDateTime = RockDateTime.Now;
 
-                    rockContext.SaveChanges();
+                        // Update the person tied to the device, but never blank it out. 
+                        if ( person.IsNotNull() && personalDevice.PersonAliasId != person.PrimaryAliasId )
+                        {
+                            personalDevice.PersonAliasId = person.PrimaryAliasId;
+                        }
+
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 launchPacket.PersonalDeviceGuid = personalDevice.Guid;
