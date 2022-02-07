@@ -1,0 +1,142 @@
+{% comment %}
+    Write content channel item interaction
+{% endcomment %}
+{% assign currentUrl = 'Global'| Page:'Url' %}
+{% assign siteId = 'Global' | Page:'SiteId' %}
+{% assign source = 'Global'| PageParameter:'utm_source' %}
+{% assign medium = 'Global'| PageParameter:'utm_medium' %}
+{% assign campaign = 'Global'| PageParameter:'utm_campaign' %}
+{% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ Item.ChannelId }}' channelname:'{{ Item.ChannelName }}' componententitytypeid:'209' componententityid:'{{ Item.Id }}' componentname:'{{ Item.Title }}' operation:'View' summary:'Viewed "{{ Item.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
+
+{% assign category = Item.Category %}
+{% assign currentUrl = 'Global' | Page:'Url' | Url:'pathandquery' %}
+
+{% capture pageTitle %}{% if category != empty %}{{ category }} {% endif %}{{ Item.ChannelName | Replace:' - ',' ' | Singularize }}{% endcapture %}
+{% capture browserTitle %}{{ Item.Title | Replace:"'","’" }} | {% if category and category != empty %}{{ category }} {% endif %}{{ Item.ChannelName | Replace:' - ',' ' | Singularize }} | Resources | NewSpring Network{% endcapture %}
+{{ pageTitle | SetPageTitle:'PageTitle' }}
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+
+{% assign id = Item.Id %}
+{% assign cciid = Item.Id %}
+{% assign title = Item.Title | Replace:"'","’" %}
+{% assign content = Item.Summary | HtmlDecode | Replace:"'","’" %}
+{% assign textalignment = '' %}
+{%- capture label -%}
+	{% if Item.ChannelId == '25' or Item.ChannelId == '26' %}{{ Item.Category }}{% endif %} {{ Item.ChannelName | Split:' - ' | Index:1 | Singularize }}
+{%- endcapture -%}
+{% assign subtitle = '' %}
+{% assign imageurl = Item.ImageSquare | WithFallback:'', Item.ImageLandscape %}
+{% assign imageoverlayurl = '' %}
+{% assign imagealignment = '' %}
+{% assign imageopacity = '' %}
+{% assign imageflip = '' %}
+{% assign imageblur = '' %}
+{% assign grayscale = '' %}
+{% assign backgroundvideourl = '' %}
+{% assign lava = '' %}
+{% assign video = '' %}
+{% assign trimcopy = '' %}
+{% assign linkcolor = '' %}
+{% assign backgroundcolor = '#000' %}
+{% assign linkurl = '#resources' %}
+{% assign linktext = 'View Resources' %}
+{% assign hideforegroundelements = '' %}
+
+{[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+<div id="resources">
+{% assign downloadCount = Item.Downloads | Size %}
+{% if downloadCount > 0 %}
+<section class="bg-white soft-double xs-soft rounded shadowed push-bottom xs-push-half-bottom">
+
+    <h2 class="text-center push-top push-double-bottom">Series Resources</h2>
+
+    <div class="row">
+        {% for download in Item.Downloads %}<div class="col-md-6 col-xs-12">
+
+                <h3 class="h4 push-half-bottom">{{ download.Title }}</h3>
+                <p class="push-half-bottom">{{ download.Summary }}</p>
+                <p>
+                {% if CurrentPerson and CurrentPerson != empty %}
+                    <a href="/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ Item.Id }}&ResourceImage={{ Item.ImageLandscape }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }}&ResourceSummary={{ download.Title | Replace:"'","’" | EscapeDataString }}&ResourceUrl={% if download.Link != empty %}{{ download.Link }}{% else %}{{ download.File }}{% endif %}" class="btn btn-primary" target="_blank">Download Now</a>
+                {% else %}
+                    <a href="/sign-in?returnurl={{ currentUrl }}" class="btn btn-primary">Sign In to Download</a>
+                {% endif %}
+                </p>
+
+        </div>{% endfor %}
+    </div>
+</section>
+{% endif %}
+
+
+{% if showchildren == 'true' and Item.Children != empty %}
+
+    {% assign parentType = Item.ChannelName | Split:' - ' | Last | Singularize %}
+    {% assign childChannelId = Item.ChildChannelId | AsInteger %}
+    {% assign childType = Item.Children | Where:'ChannelId', childChannelId | First | Property:'Dataset' | PersistedDataset | First | Property:'ChannelName' | Split:' - ' | Last | Singularize %}
+
+    <section class="shell bg-gray-lighter hard-sides rounded-lg">
+
+        {[ swiper title:'{{ childType | Pluralize }} From This {{ parentType | Singularize }}' ]}
+            {% for child in Item.Children %}[[ item ]]
+                {% assign childId = child.Id | AsInteger %}
+                {% assign childItem = child.Dataset | PersistedDataset | Where:'Id', childId | First %}
+
+                {% assign id = childItem.Id %}
+                {% assign cciid = childItem.Id %}
+                {% assign imageurl = childItem.ImageLandscape %}
+
+                {% if childItem.ChannelName contains 'Sermon' or childItem.ChannelName contains 'Lesson' %}
+                    {% assign type = child.Index | Plus:1 | Prepend:'Week '  %}
+                {% else %}
+                    {% assign type = childItem.ChannelName | Split:' - ' | Index:1 | Singularize %}
+                {% endif %}
+
+                {% capture content %}
+                    {% for video in childItem.Videos %}
+                        {% assign videoId = video.Video %}
+                        <span class="display-inline-block width-full push-half-bottom">{{ video.Title }}
+
+                            {% if CurrentPerson and CurrentPerson != empty %}
+                                <div class="pull-right">
+                                    {[ wistiaButton id:'{{ videoId }}' buttontext:'' buttonclasses:'btn-xs' contentchannelitemid:'{{ cciid }}' entitytypeid:'' entityid:'' ]}
+                                </div>
+                            {% else %}
+                                <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
+                            {% endif %}
+
+                        </span>
+                    {% endfor %}
+                    {% for download in childItem.Downloads %}
+
+                        {%- capture downloadlink -%}
+                            {%- if download.Link and download.Link != empty -%}
+                                {{ download.Link }}
+                            {%- else -%}
+                                /workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ childItem.Id }}&ResourceImage={{ Item.ImageSquare | WithFallback:'', Item.ImageLandscape }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }} - {{ childItem.Title | EscapeDataString }}&ResourceSummary={{ download.Title | EscapeDataString }}&ResourceUrl={{ download.File }}
+                            {%- endif -%}
+                        {%- endcapture -%}
+
+                        <span class="display-inline-block width-full {% if forloop.last != true %}push-half-bottom{% endif %}">{{ download.Title }}
+
+                            {% if CurrentPerson and CurrentPerson != empty %}
+                                <a href="{{ downloadlink }}" class="pull-right btn btn-xs btn-primary" target="_blank">Download</a>
+                            {% else %}
+                                <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
+                            {% endif %}
+
+                        </span>
+                    {% endfor %}
+                    <br><br>
+                {% endcapture %}
+
+                {[ card cciid:'{{ cciid }}' title:'{{ childItem.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content | Escape }}' imageurl:'{{ imageurl }}' ]}
+
+            [[ enditem ]]{% endfor %}
+
+        {[ endswiper ]}
+
+    </section>
+{% endif %}
+</div>

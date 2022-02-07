@@ -440,10 +440,10 @@ namespace RockWeb.Blocks.Finance
             this.HideSecondaryBlocks( editable );
         }
 
-        
+
 
         #endregion Internal Methods
 
-        
+
     }
 }

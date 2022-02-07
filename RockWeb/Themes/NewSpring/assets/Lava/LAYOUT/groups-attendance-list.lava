@@ -1,0 +1,139 @@
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign groupId = 'Global' | PageParameter:'GroupId' %}
+{% assign groupAttendanceSuccessThreshold = 'Global' | Attribute:'GroupAttendanceSuccessThreshold' %}
+{% assign groupAttendanceWarningThreshold = 'Global' | Attribute:'GroupAttendanceWarningThreshold' %}
+
+{% if groupId == empty %}
+  {% if CurrentPersonCanEdit %}
+    <p class="alert alert-danger">No GroupId was defined. If you could not edit you would be redirected to: <a href="/page-not-found">/page-not-found</a>.</p>
+  {% else %}
+      {{ '/page-not-found' | PageRedirect }}
+  {% endif %}
+{% endif %}
+
+{% if groupId and groupId != empty %}
+
+  {% sql return:'occurrences' %}
+    SELECT TOP 12
+        ao.Id,
+        ao.OccurrenceDate,
+        CASE
+          WHEN ao.DidNotOccur = 1 THEN 'true'
+          ELSE 'false'
+        END 'DidNotOccur',
+        (
+          SELECT COUNT(*)
+          FROM Attendance a
+          WHERE a.OccurrenceId = ao.Id
+          AND a.DidAttend = 1
+        ) 'Attended',
+        (
+            SELECT COUNT(*)
+            FROM Attendance a
+            WHERE a.OccurrenceId = ao.Id
+        ) 'Total',
+        ao.Notes
+    FROM AttendanceOccurrence ao
+    WHERE ao.GroupId = {{ groupId }}
+    ORDER BY ao.OccurrenceDateKey DESC
+  {% endsql %}
+
+  {% assign occurrencesCount = occurrences | Size %}
+
+
+  {% capture actionButtons %}
+    <p class="sm-push-half-bottom xs-push-half-bottom">
+    {% if occurrencesCount and occurrencesCount >= 1 %}
+      <a href="{{ currentUrl }}/detail" class="btn btn-primary sm-btn-block xs-btn-block sm-push-half-bottom xs-push-half-bottom shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add Attendance</a>
+    {% endif %}
+      <a href="/groups/{{ groupId }}/toolbox" class="btn btn-primary sm-btn-block xs-btn-block shadowed"><i class="fal fa-chevron-left push-quarter-right"></i> Back to Group</a>
+    </p>
+  {% endcapture %}
+
+  {{ actionButtons }}
+
+  {% if occurrencesCount and occurrencesCount >= 1 %}
+
+    {% for occurrence in occurrences %}
+
+        {% assign occurrenceDateFormatted = occurrence.OccurrenceDate | Date:'yyyy-MM-ddTHH:mm:ss' | EscapeDataString %}
+        {% assign attendancePercentage = occurrence.Attended | DividedBy:occurrence.Total,2 | Times:100 %}
+        {% assign attendancePercentageFormatted = attendancePercentage | Format:'###.##' | Append:'%' %}
+
+        {%- capture attendancePercentageStatus -%}
+          {%- if attendancePercentage >= groupAttendanceSuccessThreshold -%}
+            success
+          {%- elseif attendancePercentage > groupAttendanceWarningThreshold -%}
+            warning
+          {%- else -%}
+            danger
+          {%- endif -%}
+        {%- endcapture -%}
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ occurrence.OccurrenceDate | Date:'MMMM d, yyyy' }}</h3>
+          </div>
+          <div class="panel-body xs-soft-half">
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+                {% if occurrence and occurrence != empty %}
+                  {% if occurrence.DidNotOccur == 'true' %}
+
+                    <p><i class="fas fa-info-square text-info push-quarter-right" style="position:relative; top:1px;"></i> Group did not meet on this date.</p>
+
+                  {% else %}
+
+                    <div class="progress">
+                      <div class="progress-bar progress-bar-{{ attendancePercentageStatus | Trim }} progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{ attendancePercentageFormatted }}; min-width: 3em;">
+                        <b>{{ occurrence.Attended }}/{{ occurrence.Total }}</b> ({{ attendancePercentageFormatted }})
+                      </div>
+                    </div>
+
+                  {% endif %}
+                {% else %}
+
+                  <p><i class="fas fa-exclamation-triangle text-danger push-quarter-right" style="position:relative; top:1px;"></i> Attendance is missing for this date.</p>
+
+                {% endif %}
+
+                </div>{% if occurrence.Notes and occurrence.Notes != empty %}<div class="col-md-12 col-sm-12 col-xs-12">
+                  <p class="sans-serif stronger letter-spacing-condensed flush">Notes</p>
+                  <p>{{ occurrence.Notes }}</p>
+              </div>{% endif %}
+            </div>
+
+
+            {% if occurrence and occurrence != empty %}
+              {% assign linkUrl = currentUrl | Append:'/detail?OccurrenceId=' | Append:occurrence.Id %}
+            {% else %}
+              {% assign linkUrl = currentUrl | Append:'/detail?OccurrenceId=0&Date=' | Append:occurrenceDateFormatted | Append:'&ScheduleId=' | Append:group.ScheduleId %}
+            {% endif %}
+
+            <p class="flush">
+              <a href="{{ linkUrl }}" class="btn btn-default btn btn-sm shadowed">{% if occurrence != null %}<i class="fas fa-pencil push-quarter-right"></i> {% endif %}{% if occurrence == null %}Take{% else %}Edit{% endif %} Attendance</a>
+
+              {%- comment -%}Remove Attendance Occurrence{%- endcomment -%}
+              {% if occurrence and occurrence != empty %}
+                <a href="{{ currentUrl | Append:'/' | Append:'remove?OccurrenceId=' | Append:occurrence.Id }}" class="btn btn-danger btn-sm pull-right hidden"><i class="fas fa-fw fa-times"></i></a>
+              {% endif %}
+
+            </p>
+          </div>
+        </div>
+
+    {% endfor %}
+
+    {{ actionButtons }}
+
+  {% else %}
+
+    {[ cardBlock ]}
+      <p>There are no attendance occurrances yet for this group.</p>
+      <p class="flush"><a href="{{ currentUrl }}/detail" class="btn btn-primary sm-btn-block xs-btn-block shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Take Attendance</a></p>
+    {[ endcardBlock ]}
+
+    {% endif %}
+
+{% endif %}

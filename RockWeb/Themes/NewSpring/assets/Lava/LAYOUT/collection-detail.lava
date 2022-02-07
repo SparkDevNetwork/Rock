@@ -1,0 +1,100 @@
+{% comment %}
+    Redirect if item is expired
+{% endcomment %}
+{% assign itemId = Item.Id | AsInteger %}
+{% assign CurrentPersonCanEdit = itemId | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+{% assign now = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign publishDateTime = Item.PublishDateTime | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+
+{% if Item == null or Item == empty or publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
+{% if Item and Item != empty %}
+
+    {% comment %}
+        Write content channel item interaction
+    {% endcomment %}
+    {% assign currentUrl = 'Global'| Page:'Url' %}
+    {% assign siteId = 'Global' | Page:'SiteId' %}
+    {% assign source = 'Global'| PageParameter:'utm_source' %}
+    {% assign medium = 'Global'| PageParameter:'utm_medium' %}
+    {% assign campaign = 'Global'| PageParameter:'utm_campaign' %}
+    {% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ Item.ChannelId }}' channelname:'{{ Item.ChannelName }}' componententitytypeid:'209' componententityid:'{{ Item.Id }}' componentname:'{{ Item.Title }}' operation:'View' summary:'Viewed "{{ Item.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
+
+
+    {% assign pagePath = 'Global' | Page:'Path' %}
+    {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+    {% assign channelName = Item.ContentType | Pluralize %}
+    {% assign pageTitle = Item.ContentType %}
+    {% capture browserTitle %}{{ Item.Title }} | {{ channelName }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
+
+    {{ browserTitle | SetPageTitle:'BrowserTitle' }}
+    {{ pageTitle | SetPageTitle:'PageTitle' }}
+
+    {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+    {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
+
+        {% if Item.BackgroundColor != empty %}
+            <style>
+                .brand-bg {
+                    background-color: {{ Item.BackgroundColor | Prepend:'#' }};
+                }
+            </style>
+        {% endif %}
+
+
+        <!-- SIDE BY SIDE -->
+        {% assign id = Item.Id %}
+        {% assign cciid = Item.Id %}
+        {% assign dataset = Item.Dataset %}
+        {% assign guid = Item.Guid %}
+        {% assign title = Item.Title | Replace:"'","’" %}
+        {% assign content = Item.Summary | HtmlDecode | Replace:"'","’" %}
+
+        {% assign isDateVisible = Item.IsDateVisible %}
+        {% if isDateVisible == 'Yes' %}
+            {% if Item.StartDateTime != empty %}
+                {% capture subtitle %}{[ formatDate date:'{{ Item.StartDateTime }}' ]}{% if Item.EndDateTime != empty and Item.StartDateTime != Item.EndDateTime %} - {[ formatDate date:'{{ Item.EndDateTime }}' ]}{% endif %}{% endcapture %}
+            {% endif %}
+        {% endif %}
+
+        {% capture imageurl %}{{ Item.ImageSquare }}{% endcapture %}
+        {% capture imagealignment %}Left{% endcapture %}
+        {% capture video %}{{ Item.Video }}{% endcapture %}
+        {% capture ratio %}square{% endcapture %}
+        {% capture trimcopy %}Yes{% endcapture %}
+
+        {% assign childType = Item.Children | First | Property:'Dataset' | PersistedDataset | First | Property:'ChannelName' | Split:' - ' | Index:1 %}
+        {% if childType and childType != empty %}
+            {% capture linkurl %}#entries{% endcapture %}
+            {% capture linktext %}{{ childType | Prepend:' ' | Prepend:Item.ChannelVerb }}{% endcapture %}
+        {% endif %}
+        <section class="shell hard push-top xs-push-half-top">
+
+            {[ sideBySide id:'{{ id }}' dataset:'{{ dataset }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava | Escape }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+        </section>
+
+    {[ endscripturize ]}
+
+    {% assign metaTitle = Item.MetaTitle %}
+    {% assign metaDescription = Item.MetaDescription %}
+    {% assign summary = Item.Summary | HtmlDecode | StripHtml | StripNewlines %}
+    {% assign content = Item.Content | HtmlDecode | StripHtml | StripNewlines | Truncate:240,'...' %}
+    {% capture article_author %}{[ communicators dataset:'{{ Item.Dataset }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
+
+    {%- comment -%}If meta title is present, use it, otherwise use this item's title{%- endcomment -%}
+    {% capture title %}{% if metaTitle and metaTitle != empty %}{{ metaTitle }}{% else %}{{ Item.Title }}{% endif %}{% endcapture %}
+
+    {%- comment -%}If meta description is present, use it, otherwise if this item has a summary, use it, otherwise, use this item's content{%- endcomment -%}
+    {% capture description %}{% if metaDescription and metaDescription != empty %}{{ metaDescription }}{% elseif summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}{% endcapture %}
+
+    {[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ title | Replace:"'","’" | Replace:"New Spring","NewSpring" }}' description:'{{ description | Replace:"'","’" }}' image:'{{ Item.ImageLandscape }}' article_published_time:'{{ Item.PublishDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
+
+{% endif %}
