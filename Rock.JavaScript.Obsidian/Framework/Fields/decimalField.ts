@@ -25,6 +25,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./decimalFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./decimalFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Decimal field.
  */
@@ -35,5 +40,9 @@ export class DecimalFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

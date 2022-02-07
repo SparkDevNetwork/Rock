@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, computed } from "vue";
 
 /** The type of the alert box to display. Ex: 'success' will appear green and as if something good happened. */
 export enum AlertType {
@@ -44,15 +44,14 @@ const Alert = defineComponent({
     emits: [
         "dismiss"
     ],
-    methods: {
-        onDismiss: function () {
-            this.$emit("dismiss");
+    setup(props, { emit }) {
+        function onDismiss (): void {
+            emit("dismiss");
         }
-    },
-    computed: {
-        typeClass(): string {
-            return `alert-${this.alertType}`;
-        },
+
+        const typeClass = computed(() => `alert-${props.alertType}`);
+
+        return { onDismiss, typeClass };
     },
     template: `
 <div class="alert" :class="typeClass">

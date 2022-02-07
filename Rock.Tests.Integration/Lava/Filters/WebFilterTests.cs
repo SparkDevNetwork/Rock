@@ -20,6 +20,9 @@ using System.Linq;
 using System.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
+using Rock.Lava.DotLiquid;
+using Rock.Lava.Fluid;
+using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Utility;
@@ -329,6 +332,29 @@ Cindy Decker<br>Alex Decker<br>Alisha Marble<br>
             var expectedOutput = @"";
 
             TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+        }
+
+        [TestMethod]
+        public void Where_FilterStringAppliedToSqlBlockResults_ReturnsFilteredRecords()
+        {
+            var templateInput = @"
+{% sql %}
+    SELECT [NickName], [LastName] FROM [Person] 
+{% endsql %}
+{% assign deckers = results | Where:'LastName == ""Decker""' %}
+{% for person in deckers %}
+            {{ person.NickName }}
+            {{ person.LastName }} <br/>
+{% endfor %}
+            ";
+
+            var expectedOutput = @"
+Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
+";
+
+            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields, EnabledCommands = "sql" } );
         }
 
         private string GetWhereFilterTestTemplatePersonAttributes( string whereParameters )

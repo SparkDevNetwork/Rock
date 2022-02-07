@@ -340,6 +340,15 @@ namespace Rock.SystemGuid
 
         #endregion Obsidian Block Types
 
+        #region Reporting Block Types
+
+        /// <summary>
+        /// Data Views with persistence enabled block Guid
+        /// </summary>
+        public const string PERSISTED_DATA_VIEW_LIST = "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE";
+
+        #endregion Reporting Block Types
+
         /// <summary>
         /// The contribution statement lava (Legacy)
         /// </summary>

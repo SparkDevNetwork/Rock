@@ -268,7 +268,7 @@ namespace Rock.Model
                         {
                             message.PreviousConnectionOpportunityId = entry.OriginalValues[nameof( ConnectionRequest.ConnectionOpportunityId )].ToStringSafe().AsIntegerOrNull();
                             message.PreviousConnectorPersonAliasId = entry.OriginalValues[nameof( ConnectionRequest.ConnectorPersonAliasId )].ToStringSafe().AsIntegerOrNull();
-                            message.ConnectionState = entry.OriginalValues[nameof( ConnectionRequest.ConnectionState )].ToStringSafe().ConvertToEnum<ConnectionState>();
+                            message.PreviousConnectionState = entry.OriginalValues[nameof( ConnectionRequest.ConnectionState )].ToStringSafe().ConvertToEnum<ConnectionState>();
                             message.PreviousConnectionStatusId = entry.OriginalValues[nameof( ConnectionRequest.ConnectionStatusId )].ToStringSafe().AsInteger();
                             message.PreviousAssignedGroupId = entry.OriginalValues[nameof( ConnectionRequest.AssignedGroupId )].ToStringSafe().AsIntegerOrNull();
                         }

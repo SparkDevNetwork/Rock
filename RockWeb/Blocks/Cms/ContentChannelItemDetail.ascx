@@ -120,7 +120,7 @@
                             <Rock:RockControlWrapper ID="rcwItemGlobalKey" runat="server" Label="Item Global Key" Help="The item identifier is a system unique key to the content channel item">
                                 <div class="form-group rollover-container">
                                     <asp:Label ID="lblItemGlobalKey" runat="server"></asp:Label>
-                                    <div class="rollover-item actions pull-right">
+                                    <div class="rollover-item control-actions pull-right">
                                         <asp:LinkButton ID="lbRefreshItemGlobalKey" runat="server" CssClass="btn btn-default btn-sm" OnClick="lbRefreshItemGlobalKey_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to update the item identifier? If the current value is being used elsewhere it will break the link.');"><i class="fa fa-redo"></i></asp:LinkButton>
                                     </div>
                                 </div>

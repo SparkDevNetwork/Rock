@@ -647,11 +647,24 @@ Update Family Status: {updateFamilyStatus}
                                 a.CampusId.HasValue &&
                                 a.PersonAlias != null )
                             .Select( a => new PersonCampus
-                            {
-                                PersonId = a.PersonAlias.PersonId,
-                                CampusId = a.CampusId.Value
-                            } )
+                               {
+                                   PersonId = a.PersonAlias.PersonId,
+                                   CampusId = a.CampusId.Value,
+                                   ScheduleId = a.Occurrence.ScheduleId
+                               } )
                             .ToList();
+
+                        // Exclude attendances which coincide with the occurence of any schedule from the list of excluded schedules
+                        if ( settings.ExcludeSchedules.Count > 0 )
+                        {
+                            var excludeSchedules = new ScheduleService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( a => settings.ExcludeSchedules.Any( id => a.Id == id ) )
+                                .Select( a => a.Id )
+                                .ToList();
+
+                            personCampusAttendance = personCampusAttendance.Where( a => !excludeSchedules.Contains( a.ScheduleId.Value ) ).ToList();
+                        }
                     }
 
                     // Query all of the transactions that are considered as "giving activity" and are associated with a campus.
@@ -1755,6 +1768,14 @@ Update Family Status: {updateFamilyStatus}
             /// The campus identifier.
             /// </value>
             public int CampusId { get; set; }
+
+            /// <summary>
+            /// Get or sets the schedule identifier of an attendance
+            /// </summary>
+            /// <value>
+            /// The schedule identifier
+            /// </value>
+            public int? ScheduleId { get; set; }
         }
 
         #endregion

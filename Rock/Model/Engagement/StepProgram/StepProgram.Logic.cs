@@ -25,21 +25,6 @@ namespace Rock.Model
 {
     public partial class StepProgram
     {
-        #region Entity Properties
-
-        /// <summary>
-        /// Gets or sets the term used for steps within this program. This property is required.
-        /// </summary>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string StepTerm
-        {
-            get => _stepTerm.IsNullOrWhiteSpace() ? DefaultStepTerm : _stepTerm;
-            set => _stepTerm = value;
-        }
-
-        #endregion Entity Properties
-
         #region Methods
 
         /// <summary>

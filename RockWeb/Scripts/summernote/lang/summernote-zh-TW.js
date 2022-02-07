@@ -1,3 +1,27 @@
+/*!
+ * 
+ * Super simple WYSIWYG editor v0.8.20
+ * https://summernote.org
+ *
+ *
+ * Copyright 2013- Alan Hong and contributors
+ * Summernote may be freely distributed under the MIT license.
+ *
+ * Date: 2021-10-14T21:15Z
+ *
+ */
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
 (function ($) {
   $.extend($.summernote.lang, {
     'zh-TW': {
@@ -27,11 +51,13 @@
         shapeThumbnail: '形狀: 縮略圖',
         shapeNone: '形狀: 無',
         dragImageHere: '將圖片拖曳至此處',
+        dropImage: 'Drop image or Text',
         selectFromFiles: '從本機上傳',
         maximumFileSize: '文件大小最大值',
         maximumFileSizeError: '文件大小超出最大值。',
         url: '圖片網址',
-        remove: '移除圖片'
+        remove: '移除圖片',
+        original: 'Original'
       },
       video: {
         video: '影片',
@@ -50,14 +76,21 @@
         openInNewWindow: '在新視窗開啟'
       },
       table: {
-        table: '表格'
+        table: '表格',
+        addRowAbove: '上方插入列',
+        addRowBelow: '下方插入列',
+        addColLeft: '左方插入欄',
+        addColRight: '右方插入欄',
+        delRow: '刪除列',
+        delCol: '刪除欄',
+        delTable: '刪除表格'
       },
       hr: {
         insert: '水平線'
       },
       style: {
         style: '樣式',
-        normal: '一般',
+        p: '一般',
         blockquote: '引用區塊',
         pre: '程式碼區塊',
         h1: '標題 1',
@@ -89,11 +122,11 @@
         recent: '字型顏色',
         more: '更多',
         background: '背景',
-        foreground: '前景',
+        foreground: '字體',
         transparent: '透明',
         setTransparent: '透明',
         reset: '重設',
-        resetToDefault: '默認'
+        resetToDefault: '預設'
       },
       shortcut: {
         shortcuts: '快捷鍵',
@@ -104,10 +137,48 @@
         documentStyle: '文件格式',
         extraKeys: '額外按鍵'
       },
+      help: {
+        'insertParagraph': 'Insert Paragraph',
+        'undo': 'Undoes the last command',
+        'redo': 'Redoes the last command',
+        'tab': 'Tab',
+        'untab': 'Untab',
+        'bold': 'Set a bold style',
+        'italic': 'Set a italic style',
+        'underline': 'Set a underline style',
+        'strikethrough': 'Set a strikethrough style',
+        'removeFormat': 'Clean a style',
+        'justifyLeft': 'Set left align',
+        'justifyCenter': 'Set center align',
+        'justifyRight': 'Set right align',
+        'justifyFull': 'Set full align',
+        'insertUnorderedList': 'Toggle unordered list',
+        'insertOrderedList': 'Toggle ordered list',
+        'outdent': 'Outdent on current paragraph',
+        'indent': 'Indent on current paragraph',
+        'formatPara': 'Change current block\'s format as a paragraph(P tag)',
+        'formatH1': 'Change current block\'s format as H1',
+        'formatH2': 'Change current block\'s format as H2',
+        'formatH3': 'Change current block\'s format as H3',
+        'formatH4': 'Change current block\'s format as H4',
+        'formatH5': 'Change current block\'s format as H5',
+        'formatH6': 'Change current block\'s format as H6',
+        'insertHorizontalRule': 'Insert horizontal rule',
+        'linkDialog.show': 'Show Link Dialog'
+      },
       history: {
         undo: '復原',
         redo: '取消復原'
+      },
+      specialChar: {
+        specialChar: 'SPECIAL CHARACTERS',
+        select: 'Select Special characters'
       }
     }
   });
 })(jQuery);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});
+//# sourceMappingURL=summernote-zh-TW.js.map

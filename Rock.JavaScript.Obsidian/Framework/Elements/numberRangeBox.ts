@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import { ruleArrayToString, ruleStringToArray } from "../Rules/index";
+import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
 import { asFormattedString, toNumberOrNull } from "../Services/number";
 import RockFormField from "./rockFormField";
 
@@ -54,10 +54,7 @@ export default defineComponent({
             default: ""
         },
 
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        }
+        rules: rulesPropType
     },
 
     emits: [
@@ -99,10 +96,10 @@ export default defineComponent({
             return this.internalDecimalCount === null ? "any" : (1 / Math.pow(10, this.internalDecimalCount)).toString();
         },
 
-        computedRules(): string {
-            const rules = ruleStringToArray(this.rules);
+        computedRules(): ValidationRule[] {
+            const rules = normalizeRules(this.rules);
 
-            return ruleArrayToString(rules);
+            return rules;
         },
     },
 
@@ -148,7 +145,7 @@ export default defineComponent({
     formGroupClasses="number-range-editor"
     name="number-range-box"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, disabled, tabIndex}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="form-control-group">
                 <input
@@ -158,8 +155,6 @@ export default defineComponent({
                     class="input-width-md form-control"
                     :class="inputClasses"
                     v-model="internalValue.lower"
-                    :disabled="disabled"
-                    :tabindex="tabIndex"
                     :step="internalStep" />
                 <span class="to">to</span>
                 <input
@@ -169,8 +164,6 @@ export default defineComponent({
                     class="input-width-md form-control"
                     :class="inputClasses"
                     v-model="internalValue.upper"
-                    :disabled="disabled"
-                    :tabindex="tabIndex"
                     :step="internalStep" />
             </div>
         </div>

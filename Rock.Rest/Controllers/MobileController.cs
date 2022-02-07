@@ -23,6 +23,7 @@ using System.Web.Http;
 
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -35,6 +36,7 @@ namespace Rock.Rest.Controllers
     /// Provides API interfaces for mobile applications to use when communicating with Rock.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [RockGuid( "ee29c4ba-5b17-48bb-8309-29bbb29464d0" )]
     public class MobileController : ApiControllerBase
     {
         /// <summary>
@@ -69,9 +71,10 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="deviceIdentifier">The unique device identifier for this device.</param>
         /// <returns>An action result.</returns>
-        [Route( "api/mobile/GetLaunchPacket" )]
+        [System.Web.Http.Route( "api/mobile/GetLaunchPacket" )]
         [HttpGet]
         [Authenticate]
+        [RockGuid( "ba9e7ba3-fcc1-4b1d-9fa1-a9946076b361" )]
         public IHttpActionResult GetLaunchPacket( string deviceIdentifier = null )
         {
             var site = MobileHelper.GetCurrentApplicationSite();
@@ -178,8 +181,9 @@ namespace Rock.Rest.Controllers
         /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
         /// <param name="registration">The registration token used to send push notifications.</param>
         /// <returns></returns>
-        [Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
+        [System.Web.Http.Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
         [HttpPut]
+        [RockGuid( "b35111eb-9ebf-45cc-8bc1-54c01a271841" )]
         public IHttpActionResult UpdateDeviceRegistrationByGuid( Guid personalDeviceGuid, string registration )
         {
             using ( var rockContext = new Rock.Data.RockContext() )
@@ -206,9 +210,10 @@ namespace Rock.Rest.Controllers
         /// <param name="sessions">The sessions.</param>
         /// <param name="personalDeviceGuid">The unique identifier of the device sending the interaction data.</param>
         /// <returns>An HTTP status code indicating the result.</returns>
-        [Route( "api/mobile/Interactions" )]
+        [System.Web.Http.Route( "api/mobile/Interactions" )]
         [HttpPost]
         [Authenticate]
+        [RockGuid( "2ab24df6-7181-41dc-8968-8192d816ae1c" )]
         public IHttpActionResult PostInteractions( [FromBody] List<MobileInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
             var person = GetPerson();
@@ -414,8 +419,9 @@ namespace Rock.Rest.Controllers
         /// <param name="loginParameters">The login parameters to use during authentication.</param>
         /// <param name="personalDeviceGuid">The personal device unique identifier being used to log the person in.</param>
         /// <returns>A MobilePerson object if the login was successful.</returns>
-        [Route( "api/mobile/Login" )]
+        [System.Web.Http.Route( "api/mobile/Login" )]
         [HttpPost]
+        [RockGuid( "d21cdf04-9190-4d86-b2f9-0c17edc52fcc" )]
         public IHttpActionResult Login( [FromBody] LoginParameters loginParameters, Guid? personalDeviceGuid = null )
         {
             var authController = new AuthController();

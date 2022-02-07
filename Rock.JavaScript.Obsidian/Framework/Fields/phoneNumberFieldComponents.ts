@@ -19,7 +19,7 @@ import { getFieldEditorProps } from "./utils";
 import PhoneNumberBox from "../Elements/phoneNumberBox";
 
 export const EditComponent = defineComponent({
-    name: "PhoneNumber.Edit",
+    name: "PhoneNumberField.Edit",
 
     components: {
         PhoneNumberBox
@@ -55,4 +55,10 @@ export const EditComponent = defineComponent({
     template: `
 <PhoneNumberBox v-model="internalValue" v-bind="configAttributes" />
 `
+});
+
+export const ConfigurationComponent = defineComponent({
+    name: "PhoneNumberField.Configuration",
+
+    template: ``
 });

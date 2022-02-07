@@ -234,7 +234,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                btnScheduledTransactionEdit.Visible = false;
                 btnScheduledTransactionInactivate.Visible = false;
             }
 
@@ -709,7 +708,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == Person.Id );
             }
 
-            // only show the button if there some in active scheduled transactions
+            // only show the button if there some inactive scheduled transactions
+            // 12-JAN-22 DMV: This adds a small performance hit here as this hydrates the query.
             btnShowInactiveScheduledTransactions.Visible = qry.Any( a => !a.IsActive );
 
             var includeInactive = hfShowInactiveScheduledTransactions.Value.AsBoolean();
@@ -732,20 +732,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var scheduledTransactionList = qry.ToList();
 
-            foreach ( var schedule in scheduledTransactionList )
-            {
-                try
-                {
-                    // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
-                    string errorMessage;
-                    financialScheduledTransactionService.GetStatus( schedule, out errorMessage );
-                }
-                catch ( Exception ex )
-                {
-                    // log and ignore
-                    LogException( ex );
-                }
-            }
+            // Refresh the active transactions
+            financialScheduledTransactionService.GetStatus( scheduledTransactionList, true );
 
             rptScheduledTransaction.DataSource = scheduledTransactionList;
             rptScheduledTransaction.DataBind();

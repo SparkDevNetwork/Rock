@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Blocks;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -40,6 +41,7 @@ namespace Rock.Rest.v2
     /// API controller for the /api/v2/BlockActions endpoints.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [RockGuid( "31d6b6fc-7740-483a-81d2-d62283f67c0a" )]
     public class BlockActionsController : ApiControllerBase
     {
         #region API Methods
@@ -53,7 +55,8 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
-        [Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [RockGuid( "cc3de0c2-8703-4925-a16c-f47a31fe9c69" )]
         public IHttpActionResult BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
         {
             return ProcessAction( this, pageGuid, blockGuid, actionName, null );
@@ -69,7 +72,8 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpPost]
-        [Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [RockGuid( "05eaf919-0d36-496e-8924-88dc50a9cd8e" )]
         public IHttpActionResult BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )

@@ -86,6 +86,37 @@ namespace Rock.Model
         [DataMember]
         public DateTime? EndDateTime { get; set; }
 
+        /// <summary>
+        /// Gets the start date key.
+        /// </summary>
+        /// <value>
+        /// The start date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int StartDateKey
+        {
+            get => StartDateTime.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the end date key.
+        /// </summary>
+        /// <value>
+        /// The end date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? EndDateKey
+        {
+            get => ( EndDateTime == null || EndDateTime.Value == default ) ?
+                        ( int? ) null :
+                        EndDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+
+            private set { }
+        }
+
         #endregion Entity Properties
 
         #region Navigation Properties

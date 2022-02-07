@@ -1809,6 +1809,14 @@ namespace Rock.Data
         public DbSet<RelatedEntity> RelatedEntities { get; set; }
 
         /// <summary>
+        /// Gets or sets the remote authentication sessions.
+        /// </summary>
+        /// <value>
+        /// The remote authentication sessions.
+        /// </value>
+        public DbSet<RemoteAuthenticationSession> RemoteAuthenticationSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the reports.
         /// </summary>
         /// <value>

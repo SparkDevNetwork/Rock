@@ -32,7 +32,7 @@
                             <Rock:RockBoundField DataField="Category" HeaderText="Category"/>
                             <Rock:RockBoundField DataField="StepTypeCount" HeaderText="Step Types" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                             <Rock:RockBoundField DataField="StepCompletedCount" HeaderText="Steps Taken" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                            <Rock:SecurityField />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gStepProgram_Delete" />
                         </Columns>
                     </Rock:Grid>

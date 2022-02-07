@@ -28,6 +28,7 @@ using System.Web.Http.Controllers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Rock.Blocks;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -37,6 +38,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Blocks REST API
     /// </summary>
+    [RockGuid( "60138ac3-59ee-405a-ae0b-a785695dd417" )]
     public partial class BlocksController
     {
         /// <summary>
@@ -44,6 +46,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The identifier.</param>
         [Authenticate, Secured]
+        [RockGuid( "7a67a9b4-aabd-4fd6-99e0-de04f994c7c3" )]
         public override void Delete( int id )
         {
             SetProxyCreation( true );
@@ -74,6 +77,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/blocks/move/{id}" )]
+        [RockGuid( "74a94f70-73f0-41fd-ab4a-6104c971cec2" )]
         public void Move( int id, Block block )
         {
             var person = GetPerson();
@@ -114,9 +118,10 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
-        [Route( "api/blocks/action/{blockGuid}/{actionName}" )]
+        [System.Web.Http.Route( "api/blocks/action/{blockGuid}/{actionName}" )]
         [RockObsolete( "1.13" )]
         [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead.")]
+        [RockGuid( "e025b9b5-060a-4853-ac78-0d5b850771f8" )]
         public IHttpActionResult BlockAction( Guid blockGuid, string actionName )
         {
             return v2.BlockActionsController.ProcessAction( this, null, blockGuid, actionName, null );
@@ -131,9 +136,10 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate]
         [HttpPost]
-        [Route( "api/blocks/action/{blockGuid}/{actionName}" )]
+        [System.Web.Http.Route( "api/blocks/action/{blockGuid}/{actionName}" )]
         [RockObsolete( "1.13" )]
         [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead." )]
+        [RockGuid( "227011dc-2242-4dba-a931-526dc52951ea" )]
         public IHttpActionResult BlockActionAsPost( string blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )
@@ -168,7 +174,8 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
-        [Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [System.Web.Http.Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [RockGuid( "31ea4036-31e1-4a0b-9354-44bec3c228eb" )]
         public IHttpActionResult BlockAction( string pageGuid, string blockGuid, string actionName )
         {
             return v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null );
@@ -183,7 +190,8 @@ namespace Rock.Rest.Controllers
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         [Authenticate]
-        [Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [System.Web.Http.Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [RockGuid( "dcd0bb91-f857-4627-a420-8caa1acf99d3" )]
         public IHttpActionResult BlockAction( string pageGuid, string blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )
@@ -218,6 +226,7 @@ namespace Rock.Rest.Controllers
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         [RockObsolete( "1.11" )]
+        [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead." )]
         [Authenticate]
         public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
         {

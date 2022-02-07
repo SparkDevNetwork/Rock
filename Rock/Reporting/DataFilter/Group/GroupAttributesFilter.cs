@@ -163,7 +163,7 @@ namespace Rock.Reporting.DataFilter.Group
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.AddCssClass( "js-group-type-picker" );
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             if ( filterMode == FilterMode.SimpleFilter )

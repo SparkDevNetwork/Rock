@@ -152,9 +152,9 @@ export default defineComponent({
     :modelValue="internalValue"
     formGroupClasses="rock-drop-down-list"
     name="dropdownlist">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" :disabled="disabled" v-bind="field" v-model="internalValue" ref="theSelect" multiple>
+            <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" v-bind="field" v-model="internalValue" ref="theSelect" multiple>
                 <option v-if="showBlankItem" :value="blankValue"></option>
                 <option v-for="o in options" :key="o.value" :value="o.value">{{o.text}}</option>
             </select>

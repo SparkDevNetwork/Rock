@@ -1469,11 +1469,8 @@ mission. We are so grateful for your commitment.</p>
                 .Where( a => givingIdList.Contains( a.AuthorizedPersonAlias.Person.GivingId ) && a.FinancialGatewayId.HasValue && a.IsActive == true && hostedGatewayIdList.Contains( a.FinancialGatewayId.Value ) )
                 .ToList();
 
-            foreach ( var scheduledTransaction in scheduledTransactionList )
-            {
-                string errorMessage;
-                financialScheduledTransactionService.GetStatus( scheduledTransaction, out errorMessage );
-            }
+            // Refresh the active transactions
+            financialScheduledTransactionService.GetStatus( scheduledTransactionList, true );
 
             // in case .GetStatus set an schedule to IsActive=False, filter the scheduledTransactionList by IsActive=True again
             scheduledTransactionList = scheduledTransactionList.Where( a => a.IsActive ).ToList();

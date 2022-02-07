@@ -92,6 +92,7 @@ namespace Rock.Model
                 IsActive = model.IsActive,
                 Name = model.Name,
                 RequestLavaTemplate = model.RequestLavaTemplate,
+                ShowFinancialResults = model.ShowFinancialResults,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -167,6 +168,7 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.RequestLavaTemplate = source.RequestLavaTemplate;
+            target.ShowFinancialResults = source.ShowFinancialResults;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

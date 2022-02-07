@@ -16,9 +16,9 @@
 //
 
 import { defineComponent, inject, PropType } from "vue";
-import DropDownList, { DropDownListOption } from "../../../Elements/dropDownList";
+import DropDownList from "../../../Elements/dropDownList";
 import RadioButtonList from "../../../Elements/radioButtonList";
-import { Person } from "../../../ViewModels";
+import { ListItem, Person } from "../../../ViewModels";
 import { getRegistrantBasicInfo, RegistrationEntryState } from "../registrationEntry";
 import StringFilter from "../../../Services/string";
 import RockButton from "../../../Elements/rockButton";
@@ -124,8 +124,8 @@ export default defineComponent({
 
         /** The radio options that are displayed to allow the user to pick another person that this
          *  registrant is part of a family. */
-        familyOptions(): DropDownListOption[] {
-            const options: DropDownListOption[] = [];
+        familyOptions(): ListItem[] {
+            const options: ListItem[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
             if (this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask) {
@@ -169,7 +169,7 @@ export default defineComponent({
         },
 
         /** The people that can be picked from because they are members of the same family. */
-        familyMemberOptions (): DropDownListOption[] {
+        familyMemberOptions (): ListItem[] {
             const selectedFamily = this.currentRegistrant.familyGuid;
 
             if (!selectedFamily) {

@@ -42,3 +42,9 @@ export const EditComponent = defineComponent({
 <SocialSecurityNumberBox v-model="internalValue" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "SSNField.Configuration",
+
+    template: ``
+});

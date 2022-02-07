@@ -48,12 +48,20 @@ export default defineComponent({
             return this.attributeValues;
         }
     },
+
+    methods: {
+        onUpdateValue() {
+            this.$emit("update:attributeValues", this.attributeValues);
+        }
+    },
+
     template: `
 <suspense>
     <template v-for="a in validAttributeValues">
         <RockField
             :isEditMode="isEditMode"
             :attributeValue="a"
+            @update:attributeValue="onUpdateValue"
             :showEmptyValue="showEmptyValues"
             :showAbbreviatedName="showAbbreviatedName" />
     </template>

@@ -159,7 +159,7 @@ namespace Rock.Reporting.DataSelect.Person
             var groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = parentControl.ID + "_0";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
             groupTypePicker.AutoPostBack = true;
             parentControl.Controls.Add( groupTypePicker );
 

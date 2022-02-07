@@ -93,6 +93,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rock\Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
     <Compile Include="Rock\Lava\LavaTestHelper.cs" />
+    <Compile Include="Rock\Lava\LiquidFilterTests.cs" />
     <Compile Include="Rock\Lava\LiquidOperatorTests.cs" />
     <Compile Include="Rock\Lava\LiquidKeywordTests.cs" />
     <Compile Include="Rock\Lava\LavaHelperTests.cs" />

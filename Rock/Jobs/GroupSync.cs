@@ -37,11 +37,11 @@ namespace Rock.Jobs
     /// <summary>
     /// This job synchronizes the members of a group with the people in a Rock data view based on
     /// the configuration of data view and role found in the group. It is also responsible for
-    /// sending any ExitSystemEmail or WelcomeSystemEmail as well as possibly creating any 
+    /// sending any ExitSystemEmail or WelcomeSystemEmail as well as possibly creating any
     /// user login for the person.
-    /// 
+    ///
     /// It should adhere to the following truth table:
-    /// 
+    ///
     ///     In         In Group   In Group
     ///     DataView   Archived   !Archived   Result
     ///     --------   --------   ---------   ----------------------------
@@ -59,11 +59,11 @@ namespace Rock.Jobs
     [Description( "Processes groups that are marked to be synced with a data view." )]
 
     [DisallowConcurrentExecution]
-    [BooleanField( "Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset" )]
+    [BooleanField( "Require Password Reset On New Logins", "Determines if new logins will require the individual to reset their password on the first log in.", Key = "RequirePasswordReset" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).", false, 3 * 60, "General", 1, "CommandTimeout" )]
     public class GroupSync : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -76,7 +76,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will sync groups.
-        /// 
+        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
@@ -99,10 +99,10 @@ namespace Rock.Jobs
             {
                 // get groups set to sync
                 var activeSyncList = new List<GroupSyncInfo>();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContextReadOnly = new RockContextReadOnly() )
                 {
                     // Get groups that are not archived and are still active.
-                    activeSyncList = new GroupSyncService( rockContext )
+                    activeSyncList = new GroupSyncService( rockContextReadOnly )
                         .Queryable()
                         .AsNoTracking()
                         .AreNotArchived()
@@ -119,14 +119,14 @@ namespace Rock.Jobs
                     context.UpdateLastStatusMessage( $"Syncing group {syncInfo.GroupName}" );
 
                     // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContextReadOnly = new RockContextReadOnly() )
                     {
                         // increase the timeout just in case the data view source is slow
-                        rockContext.Database.CommandTimeout = commandTimeout;
-                        rockContext.SourceOfChange = "Group Sync";
+                        rockContextReadOnly.Database.CommandTimeout = commandTimeout;
+                        rockContextReadOnly.SourceOfChange = "Group Sync";
 
                         // Get the Sync
-                        var sync = new GroupSyncService( rockContext )
+                        var sync = new GroupSyncService( rockContextReadOnly )
                             .Queryable()
                             .Include( a => a.Group )
                             .Include( a => a.SyncDataView )
@@ -147,7 +147,7 @@ namespace Rock.Jobs
                         // Get the person id's from the data view (source)
                         var dataViewGetQueryArgs = new DataViewGetQueryArgs
                         {
-                            DbContext = rockContext,
+                            DbContext = rockContextReadOnly,
                             DatabaseTimeoutSeconds = commandTimeout
                         };
 
@@ -164,20 +164,19 @@ namespace Rock.Jobs
                             // just skip trying to sync that particular group's Sync Data View for now.
                             var errorMessage = $"An error occurred while trying to GroupSync group '{groupName}' and data view '{dataViewName}' so the sync was skipped. Error: {ex.Message}";
                             errors.Add( errorMessage );
-                            ExceptionLogService.LogException( new Exception( errorMessage , ex ) );
+                            ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
                             continue;
                         }
 
                         stopwatch.Stop();
-                        DataViewService.AddRunDataViewTransaction( sync.SyncDataView.Id,
-                                                        Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+                        DataViewService.AddRunDataViewTransaction( sync.SyncDataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
 
                         // Get the person id's in the group (target) for the role being synced.
                         // Note: targetPersonIds must include archived group members
                         // so we don't try to delete anyone who's already archived, and
                         // it must include deceased members so we can remove them if they
                         // are no longer in the data view.
-                        var existingGroupMemberPersonList = new GroupMemberService( rockContext )
+                        var existingGroupMemberPersonList = new GroupMemberService( rockContextReadOnly )
                             .Queryable( true, true ).AsNoTracking()
                             .Where( gm => gm.GroupId == sync.GroupId )
                             .Where( gm => gm.GroupRoleId == sync.GroupTypeRoleId )
@@ -255,7 +254,6 @@ namespace Rock.Jobs
                             hasSyncChanged = true;
                         }
 
-
                         // Now find all the people in the source list who are NOT already in the target list (as Unarchived)
                         var targetPersonIdsToAdd = sourcePersonIds.Where( s => !existingGroupMemberPersonList.Any( t => t.PersonId == s && t.IsArchived == false ) ).ToList();
 
@@ -268,7 +266,6 @@ namespace Rock.Jobs
                         int notAddedCount = 0;
                         foreach ( var personId in targetPersonIdsToAdd )
                         {
-
                             if ( ( addedCount + notAddedCount ) % 100 == 0 )
                             {
                                 string notAddedMessage = string.Empty;
@@ -276,8 +273,10 @@ namespace Rock.Jobs
                                 {
                                     notAddedMessage = $"{Environment.NewLine} There are {notAddedCount} members that could not be added due to group requirements.";
                                 }
+
                                 context.UpdateLastStatusMessage( $"Added {addedCount} of {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}. {notAddedMessage}" );
                             }
+
                             try
                             {
                                 // Use a new context to limit the amount of change-tracking required
@@ -308,6 +307,7 @@ namespace Rock.Jobs
                                         else
                                         {
                                             notAddedCount++;
+
                                             // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
                                             var ex = new GroupMemberValidationException( string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
                                             ExceptionLogService.LogException( ex );
@@ -332,6 +332,7 @@ namespace Rock.Jobs
                                         else
                                         {
                                             notAddedCount++;
+
                                             // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
                                             var ex = new GroupMemberValidationException( string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
                                             ExceptionLogService.LogException( ex );
@@ -455,6 +456,7 @@ namespace Rock.Jobs
         private class GroupSyncInfo
         {
             public int SyncId { get; set; }
+
             public string GroupName { get; set; }
         }
     }

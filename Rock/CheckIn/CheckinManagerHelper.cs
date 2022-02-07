@@ -200,7 +200,7 @@ namespace Rock.CheckIn
                 if ( locationId > 0 )
                 {
                     // double check the locationId in the cookie is valid for the Campus (just in case it was altered or is no longer valid for the campus)
-                    var locationCampusId = NamedLocationCache.Get( locationId ).CampusId;
+                    var locationCampusId = NamedLocationCache.Get( locationId )?.CampusId;
                     if ( locationCampusId != campus.Id )
                     {
                         locationId = 0;

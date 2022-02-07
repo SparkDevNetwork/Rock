@@ -17,7 +17,7 @@
 
 import { defineComponent, PropType } from "vue";
 import { Guid } from "../Util/guid";
-import { DropDownListOption } from "./dropDownList";
+import { ListItem } from "../ViewModels";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
@@ -27,7 +27,7 @@ export default defineComponent({
     },
     props: {
         options: {
-            type: Array as PropType<DropDownListOption[]>,
+            type: Array as PropType<ListItem[]>,
             default: []
         },
         modelValue: {
@@ -70,7 +70,7 @@ export default defineComponent({
         }
     },
     methods: {
-        getOptionUniqueId(uniqueId: Guid, option: DropDownListOption): string {
+        getOptionUniqueId(uniqueId: Guid, option: ListItem): string {
             const key = option.value.replace(" ", "-");
 
             return `${uniqueId}-${key}`;

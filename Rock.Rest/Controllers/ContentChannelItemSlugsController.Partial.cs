@@ -23,8 +23,9 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "2c6ed05f-dc12-40ce-baa9-96c127964c2c" )]
     public partial class ContentChannelItemSlugsController
     {
         /// <summary>
@@ -36,6 +37,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/SaveContentSlug/{contentChannelItemId}/{slug}/{contentChannelItemSlugId?}" )]
+        [RockGuid( "378cb619-2bf6-41cb-8951-fb75e756246f" )]
         public SaveSlugResponse SaveContentSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId = null )
         {
             SaveSlugResponse response = new SaveSlugResponse();
@@ -58,11 +60,12 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="slug">The slug.</param>
         /// <param name="contentChannelItemSlugId">The content channel item slug identifier.</param>
-        [RockObsolete("1.9")]
+        [RockObsolete( "1.9" )]
         [System.Obsolete( "Uniqueness is now based on the content channel. Use the override GetUniqueContentSlug( contentChannelItemId, slug, contentChannelItemSlugId ) instead.", true )]
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentSlug/{slug}/{contentChannelItemSlugId?}" )]
+        [RockGuid( "059f1f4b-65c6-488f-b208-3ec4238f29aa" )]
         public string GetUniqueContentSlug( string slug, int? contentChannelItemSlugId = null )
         {
             string uniquieSlug = string.Empty;
@@ -86,6 +89,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/ContentChannelItemSlugs/GetUniqueContentSlug/{contentChannelItemId}/{slug}/{contentChannelItemSlugId?}" )]
+        [RockGuid( "98c1db14-6693-4ae5-91bf-e2580ba44451" )]
         public string GetUniqueContentSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId = null )
         {
             string uniqueSlug = string.Empty;

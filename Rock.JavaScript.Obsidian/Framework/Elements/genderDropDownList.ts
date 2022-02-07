@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
-import { ruleArrayToString, ruleStringToArray } from "../Rules/index";
-import DropDownList, { DropDownListOption } from "./dropDownList";
+import { computed, defineComponent } from "vue";
+import { normalizeRules, rulesPropType } from "../Rules/index";
+import { ListItem } from "../ViewModels";
+import DropDownList from "./dropDownList";
 
 export const enum Gender {
     Unknown = 0,
@@ -26,38 +27,40 @@ export const enum Gender {
 
 export default defineComponent({
     name: "GenderDropDownList",
+
     components: {
         DropDownList
     },
+
     props: {
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        }
+        rules: rulesPropType
     },
-    data() {
-        return {
-            blankValue: `${Gender.Unknown}`
-        };
-    },
-    computed: {
-        options(): DropDownListOption[] {
-            return [
-                { text: "Male", value: Gender.Male.toString() },
-                { text: "Female", value: Gender.Female.toString() }
-            ];
-        },
-        computedRules(): string {
-            const rules = ruleStringToArray(this.rules);
+
+    setup(props) {
+        const options: ListItem[] = [
+            { text: "Male", value: Gender.Male.toString() },
+            { text: "Female", value: Gender.Female.toString() }
+        ];
+
+        const computedRules = computed(() => {
+            const rules = normalizeRules(props.rules);
             const notEqualRule = `notequal:${Gender.Unknown}`;
 
-            if (rules.indexOf("required") !== -1 && rules.indexOf(notEqualRule) === -1) {
+            if (rules.includes("required") && !rules.includes(notEqualRule)) {
                 rules.push(notEqualRule);
             }
 
-            return ruleArrayToString(rules);
-        }
+            return rules;
+        });
+
+        return {
+            blankValue: `${Gender.Unknown}`,
+            computedRules,
+            options
+        };
     },
+
     template: `
-<DropDownList label="Gender" :options="options" :showBlankItem="true" :blankValue="blankValue" :rules="computedRules" />`
+<DropDownList label="Gender" :options="options" :showBlankItem="true" :blankValue="blankValue" :rules="computedRules" />
+`
 });

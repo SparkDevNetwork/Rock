@@ -31,9 +31,10 @@ using Rock.Utility;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [RockGuid( "921331a3-879c-46bb-b37b-a274cf00378e" )]
     public class CheckinController : ApiControllerBase
     {
         /// <summary>
@@ -44,6 +45,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/checkin/configuration/status" )]
+        [RockGuid( "bc3aa76c-e391-481a-aa4e-35d322d55df7" )]
         public LocalDeviceConfigurationStatus GetConfigurationStatus( LocalDeviceConfiguration localDeviceConfiguration )
         {
             if ( localDeviceConfiguration?.CurrentKioskId == null || localDeviceConfiguration?.CurrentCheckinTypeId == null )
@@ -79,7 +81,8 @@ namespace Rock.Rest.Controllers
         /// </remarks>
         [HttpGet]
         [System.Web.Http.Route( "api/checkin/printsessionlabels" )]
-        public PrintSessionLabelsResponse PrintSessionLabels([FromUri] string session, [FromUri] int? kioskId = null, [FromUri] int? printerId = null, [FromUri] PrintSessionLabelsPrinterOverride printerOverride = PrintSessionLabelsPrinterOverride.Client )
+        [RockGuid( "804f10b4-0201-43e3-bf9f-16e72c897809" )]
+        public PrintSessionLabelsResponse PrintSessionLabels( [FromUri] string session, [FromUri] int? kioskId = null, [FromUri] int? printerId = null, [FromUri] PrintSessionLabelsPrinterOverride printerOverride = PrintSessionLabelsPrinterOverride.Client )
         {
             List<Guid?> sessionGuids;
             bool overrideClientPrinter = printerOverride == PrintSessionLabelsPrinterOverride.Client || printerOverride == PrintSessionLabelsPrinterOverride.Both;
@@ -102,7 +105,7 @@ namespace Rock.Rest.Controllers
                         {
                             return guid.Value;
                         }
-                        
+
                         return GuidHelper.FromShortStringOrNull( a );
 
                     } )

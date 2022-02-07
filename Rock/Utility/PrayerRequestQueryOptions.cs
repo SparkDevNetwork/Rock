@@ -84,5 +84,25 @@ namespace Rock.Utility
         ///   <c>true</c> if prayer requests with an empty campus value should be included regardless of the contents of the <see cref="Campuses"/> values; otherwise, <c>false</c>.
         /// </value>
         public bool IncludeEmptyCampus { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include requests that are
+        /// attached to a group or not. This setting will only take affect if
+        /// <see cref="GroupGuids"/> is null or empty.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if prayer requests attached to a group should be included.
+        /// </value>
+        public bool IncludeGroupRequests { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the list of group unique identifiers to limit results to.
+        /// If not null and not empty then only requests that are attached to one
+        /// of these group values will be included.
+        /// </summary>
+        /// <value>
+        /// The list of group unique identifiers to limit results to.
+        /// </value>
+        public List<Guid> GroupGuids { get; set; }
     }
 }

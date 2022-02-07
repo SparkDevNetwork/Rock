@@ -41,6 +41,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Additional methods for the FinancialPaymentDetails REST API
     /// </summary>
+    [RockGuid( "bba45c1d-dff1-4356-b6a0-53fc22f56d9f" )]
     public partial class FinancialScheduledTransactionsController
     {
         /// <summary>
@@ -51,6 +52,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/GetExpiring" )]
+        [RockGuid( "72421e32-3d69-4e1d-be07-9c2321832b9b" )]
         public List<FinancialScheduledTransaction> GetExpiring( int numberOfDays, int? daysBack = null )
         {
             // qry all ScheduledTransactions that have a FinancialPaymentDetail with an ExpirationMonth and Year
@@ -94,6 +96,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/Process/{scheduledTransactionId}" )]
+        [RockGuid( "d64dddcc-8fbd-433e-a032-94d1c9f44286" )]
         public virtual System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri] bool enableDuplicateChecking = true, [FromUri] bool enableScheduleAdherenceProtection = true, [FromUri] string idempotencyKey = null )
         {
             var financialScheduledTransactionService = Service as FinancialScheduledTransactionService;
@@ -199,6 +202,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialScheduledTransactions/WithPreviousTransaction" )]
+        [RockGuid( "d01a8d42-561e-45b9-a9d3-330202c4b3ba" )]
         public virtual System.Net.Http.HttpResponseMessage GetWithPreviousTransaction( [FromUri] int skip, [FromUri] int top )
         {
             var now = RockDateTime.Now;

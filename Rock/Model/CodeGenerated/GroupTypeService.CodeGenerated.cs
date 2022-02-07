@@ -157,6 +157,7 @@ namespace Rock.Model
                 IconCssClass = model.IconCssClass,
                 IgnorePersonInactivated = model.IgnorePersonInactivated,
                 InheritedGroupTypeId = model.InheritedGroupTypeId,
+                IsCapacityRequired = model.IsCapacityRequired,
                 IsIndexEnabled = model.IsIndexEnabled,
                 IsSchedulingEnabled = model.IsSchedulingEnabled,
                 IsSystem = model.IsSystem,
@@ -281,6 +282,7 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.IgnorePersonInactivated = source.IgnorePersonInactivated;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
+            target.IsCapacityRequired = source.IsCapacityRequired;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsSchedulingEnabled = source.IsSchedulingEnabled;
             target.IsSystem = source.IsSystem;

@@ -127,6 +127,11 @@ namespace RockWeb.Blocks.Prayer
             public const string WelcomeIntroductionText = "WelcomeIntroductionText";
         }
 
+        private static class PageParameterKey
+        {
+            public const string GroupGuid = "GroupGuid";
+        }
+
         #endregion
 
         #region AttributeDefaultValues
@@ -592,6 +597,16 @@ namespace RockWeb.Blocks.Prayer
             if ( limitToPublic )
             {
                 prayerRequestQuery = prayerRequestQuery.Where( a => a.IsPublic.HasValue && a.IsPublic.Value );
+            }
+
+            var groupGuidQryString = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+            if ( groupGuidQryString.HasValue )
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.Group.Guid == groupGuidQryString.Value );
+            }
+            else
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.GroupId == null );
             }
 
             var prayerRequests = prayerRequestQuery.OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();

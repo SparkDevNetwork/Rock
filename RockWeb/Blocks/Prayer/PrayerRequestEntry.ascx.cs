@@ -40,12 +40,12 @@ namespace RockWeb.Blocks.Prayer
     [Description( "Allows prayer requests to be added via visitors on the website." )]
 
     // Category Selection
-    [CategoryField( "Category Selection", "A top level category. This controls which categories the person can choose from when entering their prayer request.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "GroupCategoryId" )]
-    [CategoryField( "Default Category", "If categories are not being shown, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, "DefaultCategory" )]
+    [CategoryField( "Category Selection", "A top level category. This controls which categories the person can choose from when entering their prayer request.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, AttributeKey.GroupCategoryId )]
+    [CategoryField( "Default Category", "If categories are not being shown, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, AttributeKey.DefaultCategory )]
 
     // Features
     [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Features", 3 )]
-    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, "ExpireDays" )]
+    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, AttributeKey.ExpireDays )]
     [BooleanField( "Default Allow Comments Setting", "This is the default setting for the 'Allow Comments' on prayer requests. If you enable the 'Comments Flag' below, the requestor can override this default setting.", true, "Features", 5 )]
     [BooleanField( "Enable Urgent Flag", "If enabled, requestors will be able to flag prayer requests as urgent.", false, "Features", 6 )]
     [BooleanField( "Enable Comments Flag", "If enabled, requestors will be able set whether or not they want to allow comments on their requests.", false, "Features", 7 )]
@@ -78,6 +78,38 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
+        #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string GroupGuid = "GroupGuid";
+            public const string Request = "Request";
+        }
+
+        private static class AttributeKey
+        {
+            public const string EnableUrgentFlag = "EnableUrgentFlag";
+            public const string EnableCommentsFlag = "EnableCommentsFlag";
+            public const string EnablePublicDisplayFlag = "EnablePublicDisplayFlag";
+            public const string DefaultToPublic = "DefaultToPublic";
+            public const string RequireLastName = "RequireLastName";
+            public const string RequireCampus = "RequireCampus";
+            public const string ShowCampus = "ShowCampus";
+            public const string DefaultAllowCommentsSetting = "DefaultAllowCommentsSetting";
+            public const string EnablePersonMatching = "EnablePersonMatching";
+            public const string GroupCategoryId = "GroupCategoryId";
+            public const string DefaultCategory = "DefaultCategory";
+            public const string EnableAutoApprove = "EnableAutoApprove";
+            public const string CharacterLimit = "CharacterLimit";
+            public const string ExpireDays = "ExpireDays";
+            public const string Workflow = "Workflow";
+            public const string NavigateToParentOnSave = "NavigateToParentOnSave";
+            public const string RefreshPageOnSave = "RefreshPageOnSave";
+            public const string SaveSuccessText = "SaveSuccessText";
+        }
+
+        #endregion
+
         #region Base Control Methods
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -95,37 +127,37 @@ namespace RockWeb.Blocks.Prayer
 
             RockContext rockContext = new RockContext();
 
-            this.EnableUrgentFlag = GetAttributeValue( "EnableUrgentFlag" ).AsBoolean();
-            this.EnableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
-            this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
-            this.DefaultToPublic = GetAttributeValue( "DefaultToPublic" ).AsBoolean();
-            tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
+            this.EnableUrgentFlag = GetAttributeValue( AttributeKey.EnableUrgentFlag ).AsBoolean();
+            this.EnableCommentsFlag = GetAttributeValue( AttributeKey.EnableCommentsFlag ).AsBoolean();
+            this.EnablePublicDisplayFlag = GetAttributeValue( AttributeKey.EnablePublicDisplayFlag ).AsBoolean();
+            this.DefaultToPublic = GetAttributeValue( AttributeKey.DefaultToPublic ).AsBoolean();
+            tbLastName.Required = GetAttributeValue( AttributeKey.RequireLastName ).AsBooleanOrNull() ?? true;
 
             cpCampus.Campuses = CampusCache.All( false );
-            cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+            cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
             
             if ( cpCampus.Visible )
             {
-                cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
+                cpCampus.Visible = GetAttributeValue( AttributeKey.ShowCampus ).AsBoolean();
             }
 
             if ( EnableCommentsFlag )
             {
-                cbAllowComments.Checked = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
+                cbAllowComments.Checked = GetAttributeValue( AttributeKey.DefaultAllowCommentsSetting ).AsBoolean();
             }
 
-            pnbPhone.Visible = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
+            pnbPhone.Visible = GetAttributeValue( AttributeKey.EnablePersonMatching ).AsBoolean();
 
-            var categoryGuid = GetAttributeValue( "GroupCategoryId" );
+            var categoryGuid = GetAttributeValue( AttributeKey.GroupCategoryId );
             if ( ! string.IsNullOrEmpty( categoryGuid ) )
             {
                 BindCategories( categoryGuid );
 
                 // set the default category
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultCategory" ) ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DefaultCategory ) ) )
                 {
 
-                    Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
+                    Guid defaultCategoryGuid = GetAttributeValue( AttributeKey.DefaultCategory ).AsGuid();
                     var defaultCategoryId = CategoryCache.Get( defaultCategoryGuid, rockContext ).Id;
 
                     bddlCategory.SetValue( defaultCategoryId );
@@ -139,7 +171,7 @@ namespace RockWeb.Blocks.Prayer
             Type type = new PrayerRequest().GetType();
             this.PrayerRequestEntityTypeId = EntityTypeCache.GetId( type.FullName );
 
-            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
+            int charLimit = GetAttributeValue( AttributeKey.CharacterLimit ).AsInteger();
             if ( charLimit > 0 )
             {
                 dtbRequest.Placeholder = string.Format( "Please pray that... (up to {0} characters)", charLimit );
@@ -192,7 +224,7 @@ namespace RockWeb.Blocks.Prayer
                     cpCampus.SetValue( CurrentPerson.GetCampus() );
                 }
 
-                dtbRequest.Text = PageParameter( "Request" );
+                dtbRequest.Text = PageParameter( PageParameterKey.Request );
                 cbAllowPublicDisplay.Checked = this.DefaultToPublic;
 
 
@@ -224,20 +256,32 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            bool isAutoApproved = GetAttributeValue( "EnableAutoApprove" ).AsBoolean();
-            bool defaultAllowComments = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
-            bool isPersonMatchingEnabled = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
+            bool isAutoApproved = GetAttributeValue( AttributeKey.EnableAutoApprove ).AsBoolean();
+            bool defaultAllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsSetting ).AsBoolean();
+            bool isPersonMatchingEnabled = GetAttributeValue( AttributeKey.EnablePersonMatching ).AsBoolean();
+            Guid? groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
 
             PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = isAutoApproved, AllowComments = defaultAllowComments };
 
             var rockContext = new RockContext();
             prayerRequest.EnteredDateTime = RockDateTime.Now;
 
+            if ( groupGuid != null )
+            {
+                Group group = new GroupService( rockContext ).Get( groupGuid.Value );
+
+                if ( group != null )
+                {
+                    prayerRequest.GroupId = group.Id;
+                    prayerRequest.Group = group;
+                }
+            }
+
             if ( isAutoApproved )
             {
                 prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
                 prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
-                var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
+                var expireDays = Convert.ToDouble( GetAttributeValue( AttributeKey.ExpireDays ) );
                 prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
             }
 
@@ -245,7 +289,7 @@ namespace RockWeb.Blocks.Prayer
             // Make sure the Category is hydrated so it's included for any Lava processing
             Category category;
             int? categoryId = bddlCategory.SelectedValueAsInt();
-            Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
+            Guid defaultCategoryGuid = GetAttributeValue( AttributeKey.DefaultCategory ).AsGuid();
             if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
             {
                 category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
@@ -381,13 +425,13 @@ namespace RockWeb.Blocks.Prayer
 
             StartWorkflow( prayerRequest, rockContext );
 
-            bool isNavigateToParent = GetAttributeValue( "NavigateToParentOnSave" ).AsBoolean();
+            bool isNavigateToParent = GetAttributeValue( AttributeKey.NavigateToParentOnSave ).AsBoolean();
 
             if ( isNavigateToParent )
             {
                 NavigateToParentPage();
             }
-            else if (GetAttributeValue( "RefreshPageOnSave" ).AsBoolean() )
+            else if (GetAttributeValue( AttributeKey.RefreshPageOnSave ).AsBoolean() )
             {
                 NavigateToCurrentPage( this.PageParameters().Where(a => a.Value is string).ToDictionary( k => k.Key, v => v.Value.ToString()) );
             }
@@ -399,7 +443,7 @@ namespace RockWeb.Blocks.Prayer
                 // Build success text that is Lava capable
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "PrayerRequest", prayerRequest );
-                nbMessage.Text = GetAttributeValue( "SaveSuccessText" ).ResolveMergeFields( mergeFields );
+                nbMessage.Text = GetAttributeValue( AttributeKey.SaveSuccessText ).ResolveMergeFields( mergeFields );
 
                 // Resolve any dynamic url references
                 string appRoot = ResolveRockUrl( "~/" );
@@ -484,7 +528,7 @@ namespace RockWeb.Blocks.Prayer
             IEnumerable<string> errors = Enumerable.Empty<string>();
 
             // Check length in case the client side js didn't
-            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
+            int charLimit = GetAttributeValue( AttributeKey.CharacterLimit ).AsInteger();
             if ( charLimit > 0  && dtbRequest.Text.Length > charLimit )
             {
                 errors = errors.Concat( new[] { string.Format( "Whoops. Would you mind reducing the length of your prayer request to {0} characters?", charLimit ) } );
@@ -510,7 +554,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="rockContext">The rock context.</param>
         private void StartWorkflow( PrayerRequest prayerRequest, RockContext rockContext )
         {
-            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+            Guid? workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
                 var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
