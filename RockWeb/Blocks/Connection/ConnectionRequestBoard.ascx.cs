@@ -23,7 +23,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-using NuGet;
+//using NuGet;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
