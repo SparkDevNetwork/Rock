@@ -1,17 +1,25 @@
 $(document).ready(function(){
 
-    // Dynamic Block Columns based on data-column attribute
-	let columns = $('[data-column]:not([data-column=""');
-
-	for (let i = 0; i < columns.length; i++) {
-		let elem = columns[i],
-            blockWrapper = elem.closest("[id^=bid_]"),
-		    columnClasses = elem.dataset.column.split(" ");
-
-        // If there are classes from the data-column attribute, add a js-col class
-        if(columnClasses.length>0){
-		    columnClasses.push('js-col');
+    let columnsNew = $('.js-dynamic-columns [id^=bid_]');
+    for (let i = 0; i < columnsNew.length; i++) {
+        let elem = columnsNew[i],
+            colElem = $(elem).find('[data-column]:not([data-column=""])');
+            
+        if (colElem.length >= 1) {
+            // Get column classes from data attribute
+            columnClasses = colElem[0].dataset.column.split(" ");
+        } else {
+            // Set default column classes if none are present
+            columnClasses = [];
+            columnClasses.push('col-xs-12');
         }
+
+        if (columnClasses.includes('none')) { 
+            // If 'none' is specified for columnClasses, do not wrap and move onto the next block
+            continue;
+        }
+
+        columnClasses.push('js-col');
 
         // Create new js column element
 		let column = document.createElement('div');
@@ -23,12 +31,11 @@ $(document).ready(function(){
             }
         }
         // Insert new js column element into dom before block wrapper
-		blockWrapper.parentNode.insertBefore(column, blockWrapper);
+		elem.parentNode.insertBefore(column, elem);
         // Move block wrapper element inside of new js column element
-		column.appendChild(blockWrapper);
-	}
+		column.appendChild(elem);
 
-
+    }
 
 
     // Dynamic Rows & Containers
