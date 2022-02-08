@@ -15,91 +15,83 @@
 
 {% assign linkurl = linkurl | Trim %}
 
-{% comment %} {% if blockwidth and blockwidth != empty %}
-    <div class="{{ blockwidth }} hard flush">
-{% endif %} {% endcomment %}
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} {% if blockwidth and blockwidth != empty %}data-column="{{ blockwidth }}"{% endif %} class="
+{% if fullheight == 'Yes' %}vh-100{% endif %}
+shell
+soft-double-ends
+hero
+bg-gray-dark
+position-relative
+text-white
+bring-forward
+overflow-hidden
 
-    <section {% if id and id != empty %}id="{{ id }}"{% endif %} class="
-    {% if fullheight == 'Yes' %}vh-100{% endif %}
-    shell
-    soft-double-ends
-    hero
-    bg-gray-dark
-    position-relative
-    text-white
-    bring-forward
-    overflow-hidden
+d-flex
+justify-content-center
+align-items-{{ contentalignment }}
 
-    d-flex
-    justify-content-center
-    align-items-{{ contentalignment }}
+{% if ratio != null and ratio != '' %}
+    ratio-{{ ratio }} hard xs-soft
+{% endif %} flush-sides" style="{% if backgroundcolor != null and backgroundcolor != '' %}background-color: {{ backgroundcolor }};{% endif %}">
 
-    {% if ratio != null and ratio != '' %}
-        ratio-{{ ratio }} hard xs-soft
-    {% endif %} flush-sides" style="{% if backgroundcolor != null and backgroundcolor != '' %}background-color: {{ backgroundcolor }};{% endif %}">
+    {% if backgroundvideourl != null and backgroundvideourl != '' %}
 
-        {% if backgroundvideourl != null and backgroundvideourl != '' %}
+        <!-- Background Video -->
+        <video class="video display-block full-screen width-full {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; {% if imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}" width="1280" height="720" playsinline loop autoplay muted>
+            <source src="{{ backgroundvideourl }}" type="video/mp4">
+        </video>
 
-            <!-- Background Video -->
-            <video class="video display-block full-screen width-full {% if grayscale == 'Yes' %}grayscale{% endif %}" style="object-fit: cover; min-width: 100%; min-height: 100%; height: 100%; {% if imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}" width="1280" height="720" playsinline loop autoplay muted>
-                <source src="{{ backgroundvideourl }}" type="video/mp4">
-            </video>
+    {% endif %}
 
-        {% endif %}
+    <!-- Background Image -->
+    {% if imageurl != null and imageurl != '' and backgroundvideourl == '' %}
+        <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+    {% endif %}
 
-        <!-- Background Image -->
-        {% if imageurl != null and imageurl != '' and backgroundvideourl == '' %}
-            <span class="{% if mobileimageurl != null and mobileimageurl != '' %}hidden-sm hidden-xs{% endif %} full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
-        {% endif %}
+    {% if mobileimageurl != null and mobileimageurl != '' and backgroundvideourl == '' %}
+        <span class="hidden-md hidden-lg full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
+    {% endif %}
 
-        {% if mobileimageurl != null and mobileimageurl != '' and backgroundvideourl == '' %}
-            <span class="hidden-md hidden-lg full-screen background-cover background-center {% if backgroundvideourl != null and backgroundvideourl != '' %}hidden-md hidden-lg{% endif %} {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ mobileimageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %}"></span>
-        {% endif %}
+    {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
 
-        {% if ratio != null and ratio != '' %}<div class="floating-item">{% endif %}
+        <div class="bring-forward center-block text-constrained text-center soft-double-top push-half-top sm-push-double-bottom sm-soft-sides xs-push-bottom xs-flush-top xs-soft-top" {% if ratio and ratio != empty %}style="margin-bottom: 90px;"{% endif %}>
 
-            <div class="bring-forward center-block text-constrained text-center soft-double-top push-half-top sm-push-double-bottom sm-soft-sides xs-push-bottom xs-flush-top xs-soft-top" {% if ratio and ratio != empty %}style="margin-bottom: 90px;"{% endif %}>
+            {% if imageoverlayurl != null and imageoverlayurl != '' %}
+                <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 750px;">
+                <br>
+            {% endif %}
 
-                {% if imageoverlayurl != null and imageoverlayurl != '' %}
-                    <img src="{{ imageoverlayurl }}" alt="" class="position-relative push-bottom" style="width: 70%; max-width: 750px;">
-                    <br>
+            {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
+
+                {% if title != null and title != '' %}
+                    <h1 class="{% if imageoverlayurl and imageoverlayurl != empty %}hidden{% endif %} strongest">{{ title }}</h1>
                 {% endif %}
 
-                {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
+                {{ content }}
 
-                    {% if title != null and title != '' %}
-                        <h1 class="{% if imageoverlayurl and imageoverlayurl != empty %}hidden{% endif %} strongest">{{ title }}</h1>
-                    {% endif %}
-
-                    {{ content }}
-
-                    {% if linkurl and linkurl != empty %}
-                        <p class="flush xs-push-double-bottom">
-                            {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
-                        </p>
-                    {% endif %}
-
-                {% if hideforegroundelements == 'Yes' %}</div>{% endif %}
-
-                {% if video != null and video != '' %}
-                    {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'' entitytypeid:'' entityid:'' ]}
+                {% if linkurl and linkurl != empty %}
+                    <p class="flush xs-push-double-bottom">
+                        {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' linktarget:'{{ linktarget }}' buttontype:'' buttonsize:'' ]}
+                    </p>
                 {% endif %}
 
-                {% if lava and lava != empty %}
-                    {{ lava | HtmlDecode }}
-                {% endif %}
+            {% if hideforegroundelements == 'Yes' %}</div>{% endif %}
 
-            </div>
+            {% if video != null and video != '' %}
+                {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'' entitytypeid:'' entityid:'' ]}
+            {% endif %}
 
-        {% if ratio != null and ratio != '' %}</div>{% endif %}
+            {% if lava and lava != empty %}
+                {{ lava | HtmlDecode }}
+            {% endif %}
 
-        <div class="hero-shim {% if hideforegroundelements == 'Yes' %}hidden{% endif %}"></div>
+        </div>
 
-    </section>
+    {% if ratio != null and ratio != '' %}</div>{% endif %}
 
-{% comment %} {% if blockwidth and blockwidth != empty %}
-    </div>
-{% endif %} {% endcomment %}
+    <div class="hero-shim {% if hideforegroundelements == 'Yes' %}hidden{% endif %}"></div>
+
+</section>
 
 <!--
 
