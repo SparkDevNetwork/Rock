@@ -849,6 +849,7 @@
     <Compile Include="Model\Core\BinaryFile\BinaryFile.Logic.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFile.SaveHook.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFileService.WebService.cs" />
+    <Compile Include="Model\Core\CampusTopic\CampusTopic.cs" />
     <Compile Include="Model\Core\Category\Category.Logic.cs" />
     <Compile Include="Model\Core\Category\Options\CategorizedItemQueryOptions.cs" />
     <Compile Include="Model\Core\Category\Options\ChildCategoryQueryOptions.cs" />

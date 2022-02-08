@@ -73,6 +73,10 @@
     <Compile Include="Migrations\202202072150397_AddLastSeenDateTimeToPersonalDevice.Designer.cs">
       <DependentUpon>202202072150397_AddLastSeenDateTimeToPersonalDevice.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202202080813593_AddCampusTopic.cs" />
+    <Compile Include="Migrations\202202080813593_AddCampusTopic.Designer.cs">
+      <DependentUpon>202202080813593_AddCampusTopic.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.Designer.cs">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
@@ -971,6 +975,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202202072150397_AddLastSeenDateTimeToPersonalDevice.resx">
       <DependentUpon>202202072150397_AddLastSeenDateTimeToPersonalDevice.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202080813593_AddCampusTopic.resx">
+      <DependentUpon>202202080813593_AddCampusTopic.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.resx">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>

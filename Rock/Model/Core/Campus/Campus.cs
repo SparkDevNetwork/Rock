@@ -266,6 +266,15 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<CampusSchedule> CampusSchedules { get; set; } = new Collection<CampusSchedule>();
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.CampusTopic">Topics</see> that are associated with this Campus.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.CampusTopic"/>s that are associated with this Campus.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CampusTopic> CampusTopics { get; set; } = new Collection<CampusTopic>();
+
         #endregion Navigation Properties
 
         #region Public Methods
