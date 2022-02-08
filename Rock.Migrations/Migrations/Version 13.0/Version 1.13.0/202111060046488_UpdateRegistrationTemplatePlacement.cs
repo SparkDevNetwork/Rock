@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,9 +16,6 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
     ///
     /// </summary>
@@ -29,17 +26,29 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            DropForeignKey("dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate");
-            AddForeignKey("dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate", "Id", cascadeDelete: true);
+            // Delete any orphaned records prior to trying to remove FK constraints
+            /* Removes records that have a RegistratioTemplatePlacement RegistrationTemplateId but the RegistrationTemplateId
+             * doesn't exist in RegistrationTemplate.
+             */
+            Sql( @"DELETE FROM RegistrationTemplatePlacement 
+                          WHERE RegistrationTemplateId IN (
+                              SELECT DISTINCT p.RegistrationTemplateId
+                              FROM RegistrationTemplatePlacement p
+                              LEFT JOIN RegistrationTemplate t ON t.Id = p.RegistrationTemplateId
+                              WHERE t.Id IS NULL
+                          )" );
+
+            DropForeignKey( "dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate" );
+            AddForeignKey( "dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate", "Id", cascadeDelete: true );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropForeignKey("dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate");
-            AddForeignKey("dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate", "Id");
+            DropForeignKey( "dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate" );
+            AddForeignKey( "dbo.RegistrationTemplatePlacement", "RegistrationTemplateId", "dbo.RegistrationTemplate", "Id" );
         }
     }
 }
