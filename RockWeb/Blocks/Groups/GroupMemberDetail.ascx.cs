@@ -1374,7 +1374,7 @@ namespace RockWeb.Blocks.Groups
                         var sendErrorMessages = new List<string>();
 
                         string documentName = string.Format( "{0}_{1}", groupMember.Group.Name.RemoveSpecialCharacters(), groupMember.Person.FullName.RemoveSpecialCharacters() );
-                        if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                        if ( new SignatureDocumentTemplateService( rockContext ).SendLegacyProviderDocument(
                             groupMember.Group.RequiredSignatureDocumentTemplate, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
                         {
                             rockContext.SaveChanges();

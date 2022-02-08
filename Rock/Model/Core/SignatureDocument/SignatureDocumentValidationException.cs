@@ -13,22 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the type of signature. Either <see cref="Drawn"/> or <see cref="Typed"/>
-    /// </summary>
-    public enum SignatureType
+    internal class SignatureDocumentValidationException : ValidationException
     {
-        /// <summary>
-        /// Typed
-        /// </summary>
-        Typed = 0,
-
-        /// <summary>
-        /// Drawn
-        /// </summary>
-        Drawn = 1,
+        public SignatureDocumentValidationException( string errorMessage ) : base( errorMessage )
+        {
+        }
     }
 }

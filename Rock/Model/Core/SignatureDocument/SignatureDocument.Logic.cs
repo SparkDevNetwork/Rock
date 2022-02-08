@@ -24,6 +24,58 @@ namespace Rock.Model
     public partial class SignatureDocument
     {
         /// <summary>
+        /// Calculates the signature verification hash.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string CalculateSignatureVerificationHash()
+        {
+            var hashObject = new
+            {
+                SignedDocumentText = this.SignedDocumentText,
+                SignedClientIp = this.SignedClientIp,
+                SignedClientUserAgent = this.SignedClientUserAgent,
+                SignedDateTime = this.SignedDateTime,
+                SignedByPersonAliasId = this.SignedByPersonAliasId,
+                SignatureData = this.SignatureData,
+                SignedName = this.SignedName
+            };
+
+            var hashObjectJson = hashObject.ToJson();
+
+            var hashResult = Rock.Security.Encryption.GetSHA1Hash( hashObjectJson );
+
+            return hashResult;
+        }
+
+        private static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
+
+        /// <summary>
+        /// Gets the formatted user agent.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string GetFormattedUserAgent()
+        {
+            var userAgent = this.SignedClientUserAgent ?? string.Empty;
+            var deviceOs = uaParser.ParseOS( userAgent ).ToString();
+            var deviceApplication = uaParser.ParseUserAgent( userAgent ).ToString();
+            var deviceClientType = InteractionDeviceType.GetClientType( userAgent );
+
+            return $@"{deviceApplication}
+{deviceOs}
+{deviceClientType}";
+        }
+
+        /// <summary>
+        /// Returns true of this document was generated using a legacy document provider.
+        /// </summary>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public bool UsesLegacyDocumentProvider()
+        {
+            bool isLegacyProvider = this.SignatureDocumentTemplate?.ProviderEntityTypeId != null;
+            return isLegacyProvider;
+        }
+
+        /// <summary>
         /// The data that was collected during a drawn signature type.
         /// This is an img data url. Example:
         /// <code>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAngAAABkCAYAAAAVH...</code>

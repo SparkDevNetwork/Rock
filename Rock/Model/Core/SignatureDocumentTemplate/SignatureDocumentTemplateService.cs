@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Rock.Communication;
+
 using Rock.Data;
 using Rock.Security;
 
@@ -30,6 +30,8 @@ namespace Rock.Model
     /// </summary>
     public partial class SignatureDocumentTemplateService
     {
+        #region Obsolete Legacy Provider methods
+
         /// <summary>
         /// Sends the document.
         /// </summary>
@@ -37,9 +39,23 @@ namespace Rock.Model
         /// <param name="alternateEmail">The alternate email.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        [Obsolete( "Use SendLegacyProviderDocument instead." )]
+        [RockObsolete( "1.14" )]
         public bool SendDocument( SignatureDocument document, string alternateEmail, out List<string> errorMessages )
         {
-            return SendDocument( document, null, null, null, string.Empty, alternateEmail, out errorMessages );
+            return SendLegacyProviderDocument( document, null, null, null, string.Empty, alternateEmail, out errorMessages );
+        }
+
+        /// <summary>
+        /// Sends the legacy provider document.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="alternateEmail">The alternate email.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public bool SendLegacyProviderDocument( SignatureDocument document, string alternateEmail, out List<string> errorMessages )
+        {
+            return SendLegacyProviderDocument( document, null, null, null, string.Empty, alternateEmail, out errorMessages );
         }
 
         /// <summary>
@@ -52,9 +68,26 @@ namespace Rock.Model
         /// <param name="alternateEmail">The alternate email.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        [Obsolete( "Use SendLegacyProviderDocument instead." )]
+        [RockObsolete( "1.14" )]
         public bool SendDocument( SignatureDocumentTemplate signatureDocumentTemplate, Person appliesToPerson, Person assignedToPerson, string documentName, string alternateEmail, out List<string> errorMessages )
         {
-            return SendDocument( null, signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, alternateEmail, out errorMessages );
+            return SendLegacyProviderDocument( null, signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, alternateEmail, out errorMessages );
+        }
+
+        /// <summary>
+        /// Sends the legacy provider document.
+        /// </summary>
+        /// <param name="signatureDocumentTemplate">The signature document template.</param>
+        /// <param name="appliesToPerson">The applies to person.</param>
+        /// <param name="assignedToPerson">The assigned to person.</param>
+        /// <param name="documentName">Name of the document.</param>
+        /// <param name="alternateEmail">The alternate email.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public bool SendLegacyProviderDocument( SignatureDocumentTemplate signatureDocumentTemplate, Person appliesToPerson, Person assignedToPerson, string documentName, string alternateEmail, out List<string> errorMessages )
+        {
+            return SendLegacyProviderDocument( null, signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, alternateEmail, out errorMessages );
         }
 
         /// <summary>
@@ -68,7 +101,7 @@ namespace Rock.Model
         /// <param name="alternateEmail">The alternate email.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        private bool SendDocument( SignatureDocument document, SignatureDocumentTemplate signatureDocumentTemplate, Person appliesToPerson, Person assignedToPerson, string documentName, string alternateEmail, out List<string> errorMessages )
+        private bool SendLegacyProviderDocument( SignatureDocument document, SignatureDocumentTemplate signatureDocumentTemplate, Person appliesToPerson, Person assignedToPerson, string documentName, string alternateEmail, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -80,6 +113,7 @@ namespace Rock.Model
                 {
                     appliesToPerson = appliesToPerson ?? document.AppliesToPersonAlias.Person;
                 }
+
                 if ( document.AssignedToPersonAlias != null && document.AssignedToPersonAlias.Person != null )
                 {
                     assignedToPerson = assignedToPerson ?? document.AssignedToPersonAlias.Person;
@@ -112,7 +146,7 @@ namespace Rock.Model
                     errorMessages.Add( "Digital Signature provider was not found or is not active." );
                 }
                 else
-                { 
+                {
                     string email = string.IsNullOrWhiteSpace( alternateEmail ) ? assignedToPerson.Email : alternateEmail;
                     if ( string.IsNullOrWhiteSpace( email ) )
                     {
@@ -167,6 +201,7 @@ namespace Rock.Model
                             {
                                 document.LastStatusDate = document.LastInviteDate;
                             }
+
                             document.Status = SignatureDocumentStatus.Sent;
 
                             return true;
@@ -187,8 +222,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="document">The document.</param>
         /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        [Obsolete( "Use CancelLegacyProviderDocument instead." )]
+        [RockObsolete( "1.14" )]
         public bool CancelDocument( SignatureDocument document, out List<string> errorMessages )
+        {
+            return CancelLegacyProviderDocument( document, out errorMessages );
+        }
+
+        /// <summary>
+        /// Cancels the document.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public bool CancelLegacyProviderDocument( SignatureDocument document, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
             if ( document == null || document.SignatureDocumentTemplate == null )
@@ -211,6 +259,7 @@ namespace Rock.Model
                         {
                             document.LastStatusDate = RockDateTime.Now;
                         }
+
                         document.Status = SignatureDocumentStatus.Cancelled;
 
                         return true;
@@ -222,45 +271,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sends the invite.
+        /// Updates the document status (Obsolete)
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="component">The component.</param>
-        /// <param name="document">The document.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="errors">The errors.</param>
-        /// <returns></returns>
-        private bool SendInvite( RockContext rockContext, DigitalSignatureComponent component, SignatureDocument document, Person person, out List<string> errors )
+        /// <param name="signatureDocument">The signature document.</param>
+        /// <param name="tempFolderPath">The temporary folder path.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        [Obsolete( "Use UpdateLegacyProviderDocumentStatus instead" )]
+        [RockObsolete( "1.14" )]
+        public bool UpdateDocumentStatus( SignatureDocument signatureDocument, string tempFolderPath, out List<string> errorMessages )
         {
-            errors = new List<string>();
-            if ( document != null &&
-                document.SignatureDocumentTemplate != null && 
-                document.SignatureDocumentTemplate.InviteSystemCommunicationId.HasValue &&
-                person != null &&
-                !string.IsNullOrWhiteSpace( person.Email ) )
-            {
-                string inviteLink = component.GetInviteLink( document, person, out errors );
-                if ( !errors.Any() )
-                {
-                    var systemEmail = new SystemCommunicationService( rockContext ).Get( document.SignatureDocumentTemplate.InviteSystemCommunicationId.Value );
-                    if ( systemEmail != null )
-                    {
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
-                        mergeFields.Add( "SignatureDocument", document );
-                        mergeFields.Add( "InviteLink", inviteLink );
-
-                        var emailMessage = new RockEmailMessage( systemEmail );
-                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                        emailMessage.Send();
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return UpdateLegacyProviderDocumentStatus( signatureDocument, tempFolderPath, out errorMessages );
         }
 
         /// <summary>
@@ -270,7 +291,7 @@ namespace Rock.Model
         /// <param name="tempFolderPath">The temporary folder path.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool UpdateDocumentStatus( SignatureDocument signatureDocument, string tempFolderPath, out List<string> errorMessages )
+        public bool UpdateLegacyProviderDocumentStatus( SignatureDocument signatureDocument, string tempFolderPath, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
             if ( signatureDocument == null )
@@ -326,14 +347,13 @@ namespace Rock.Model
                         {
                             signatureDocument.LastStatusDate = RockDateTime.Now;
                         }
-
                     }
-
                 }
             }
 
             return !errorMessages.Any();
         }
 
+        #endregion Obsolete Legacy Provider methods
     }
 }

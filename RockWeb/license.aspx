@@ -30,7 +30,7 @@
                         <h1>Rock Relationship Management System License</h1>
 
                         <h3>Rock Community License</h3>
-                        <p>Copyright 2020 Spark Development Network</p>
+                        <p>Copyright 2022 Spark Development Network</p>
 
                         <p>
                             Licensed under the Rock Community License (the "License");
@@ -49,7 +49,7 @@
                         </p>
 
                         <h1>Component Licenses</h1>
-                        Rock was written using several other open-source projects and packages.  Each
+                        Rock was written using several other open-source projects and packages. Each
                         of these is attributed below with their respective licenses.
 
                         <ul>
@@ -145,6 +145,9 @@
                             <li><a href="https://github.com/bevacqua/dragula">Dragula</a> (MIT)</li>
                             <li><a href="https://github.com/Modernizr/Modernizr">Modernizr</a> (MIT)</li>
                             <li><a href="https://github.com/codex-team/editor.js">Editor.JS</a> (Apache 2)</li>
+                            <li><a href="https://github.com/hardkoded/puppeteer-sharp">Puppeteer Sharp</a> (MIT)</li>
+                            <li><a href="https://github.com/pipwerks/PDFObject/">PDF Object</a> (MIT) </li>
+                            <li><a href="https://github.com/szimek/signature_pad">Signature Pad</a> (MIT)</li>
                         </ul>
                     </div>
                 </div>

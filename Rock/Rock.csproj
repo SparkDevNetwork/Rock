@@ -159,6 +159,9 @@
     <Reference Include="Ical.Net.Collections, Version=2.1.0.20780, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Ical.Net.2.3.5\lib\net46\Ical.Net.Collections.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.1.9, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.3.1\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="IdentityModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.0.0\lib\net461\IdentityModel.dll</HintPath>
     </Reference>
@@ -198,6 +201,9 @@
     <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.2.0\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
     </Reference>
@@ -212,6 +218,21 @@
     </Reference>
     <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net46\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.2.0.2\lib\netstandard2.0\Microsoft.Extensions.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.2.0.2\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.2.0.2\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
@@ -230,6 +251,9 @@
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.2.1\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Net.Http.Headers, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.Headers.2.0.2\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.4.0.0\lib\net451\Microsoft.Owin.dll</HintPath>
@@ -288,6 +312,9 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="PuppeteerSharp, Version=6.1.0.0, Culture=neutral, PublicKeyToken=db12f80f85d8ba23, processorArchitecture=MSIL">
+      <HintPath>..\packages\PuppeteerSharp.6.1.0\lib\netstandard2.0\PuppeteerSharp.dll</HintPath>
+    </Reference>
     <Reference Include="QRCoder, Version=1.3.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\QRCoder.1.3.9\lib\net40\QRCoder.dll</HintPath>
     </Reference>
@@ -471,6 +498,7 @@
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
+    <Compile Include="Attribute\SignatureDocumentTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
@@ -755,8 +783,11 @@
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Data\RockGuidAttribute.cs" />
+    <Compile Include="ElectronicSignature\ElectronicSignatureHelper.cs" />
+    <Compile Include="ElectronicSignature\GetSignatureInformationHtmlArgs.cs" />
     <Compile Include="Field\FieldTypeUsage.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
+    <Compile Include="Field\Types\SignatureDocumentTemplateFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianHostedGatewayComponent.cs" />
     <Compile Include="Financial\IPaymentTokenGateway.cs" />
@@ -829,8 +860,10 @@
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
     <Compile Include="Model\Communication\Communication\SegmentCriteria.cs" />
     <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
+    <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureType.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.Logic.cs" />
+    <Compile Include="Model\Core\SignatureDocument\SignatureDocument.SaveHook.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocumentStatus.cs" />
     <Compile Include="Model\Communication\SmsAction\SmsAction.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
@@ -907,6 +940,7 @@
     <Compile Include="Model\Core\Schedule\ScheduleType.cs" />
     <Compile Include="Model\Core\RemoteAuthenticationSession\RemoteAuthenticationSession.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.Logic.cs" />
+    <Compile Include="Model\Core\SignatureDocument\SignatureDocumentValidationException.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
@@ -1228,6 +1262,8 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.WebForms.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
+    <Compile Include="Pdf\PdfGenerator.cs" />
+    <Compile Include="Pdf\PdfGeneratorException.cs" />
     <Compile Include="Plugin\HotFixes\146_UpdateStatementGeneratorDownloadLink.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
@@ -1569,6 +1605,7 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
+    <Compile Include="Web\UI\Controls\ElectronicSignatureControl.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\FirstNameTextBox.cs" />
     <Compile Include="Web\UI\Controls\Grid\ICustomActionEventHandler.cs" />
@@ -1580,6 +1617,7 @@
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
+    <Compile Include="Web\UI\Controls\PDFViewer.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialStatementTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
@@ -2845,14 +2883,14 @@
     <Compile Include="Model\Core\ServiceJob\ServiceJob.cs" />
     <Compile Include="Model\Core\ServiceJob\ServiceJobService.cs" />
     <Compile Include="Model\Core\ServiceLog\ServiceLog.cs" />
-    <Compile Include="Model\CMS\Site\Site.cs" />
-    <Compile Include="Model\CMS\PageShortLink\PageShortLink.cs" />
-    <Compile Include="Model\CMS\SiteDomain\SiteDomainService.cs" />
-    <Compile Include="Model\CMS\Site\SiteService.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocumentService.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplateService.cs" />
+    <Compile Include="Model\CMS\Site\Site.cs" />
+    <Compile Include="Model\CMS\PageShortLink\PageShortLink.cs" />
+    <Compile Include="Model\CMS\SiteDomain\SiteDomainService.cs" />
+    <Compile Include="Model\CMS\Site\SiteService.cs" />
     <Compile Include="Model\Communication\SystemEmail\SystemEmail.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItemService.cs" />
@@ -3690,6 +3728,7 @@
     <Compile Include="Workflow\Action\WorkflowControl\SetInitiatorFromAttribute.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\SetStatus.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\SetWorkflowName.cs" />
+    <Compile Include="Workflow\Action\Utility\ElectronicSignature.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\UserForm.cs" />
     <Compile Include="Workflow\Action\Utility\WebRequest.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\WriteToLog.cs" />

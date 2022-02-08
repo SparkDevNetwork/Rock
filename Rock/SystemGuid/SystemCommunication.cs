@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -105,6 +107,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the template guid for digital signature invite
         /// </summary>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "No longer used" )]
         public const string DIGITAL_SIGNATURE_INVITE = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
 
         /// <summary>
@@ -215,4 +219,3 @@ namespace Rock.SystemGuid
 
     }
 }
- 

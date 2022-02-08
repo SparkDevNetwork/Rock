@@ -13,11 +13,12 @@
                     <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
 
                     <div class="grid grid-panel">
-                        <Rock:Grid ID="gSignatureDocuments" runat="server" AllowPaging="true" OnRowSelected="gSignatureDocuments_Edit"  RowItemText="Document">
+                        <Rock:Grid ID="gSignatureDocuments" runat="server" AllowPaging="true" OnRowSelected="gSignatureDocuments_Edit"  RowItemText="Document" AllowSorting="true">
                             <Columns>
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                 <Rock:RockBoundField DataField="SignatureDocumentTemplate.Name" HeaderText="Document Type" SortExpression="SignatureDocumentTemplate.Name" />
                                 <Rock:DateTimeField DataField="LastInviteDate" HeaderText="Last Invite Date" SortExpression="LastInviteDate" />
+                                <Rock:DateTimeField DataField="SignedDateTime" HeaderText="Signed Date" SortExpression="SignedDateTime" />
                                 <Rock:PersonField DataField="AppliesToPersonAlias.Person" HeaderText="Applies To" />
                                 <Rock:PersonField DataField="AssignedToPersonAlias.Person" HeaderText="Assigned To" />
                                 <Rock:PersonField DataField="SignedByPersonAlias.Person" HeaderText="Signed By" />

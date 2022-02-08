@@ -25,14 +25,12 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
-
     /// <summary>
-    /// Field Type to select a <see cref="CommunicationTemplate" />. Stored as the CommunicationTemplate's Guid.
+    /// Field Type to select a <see cref="SignatureDocumentTemplate" />. Stored as the SignatureDocumentTemplate's Guid.
     /// </summary>
-    public class CommunicationTemplateFieldType : FieldType, IEntityFieldType
+    public class SignatureDocumentTemplateFieldType : FieldType, IEntityFieldType
     {
-
-        #region Edit Control
+        private const string SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS = "SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS";
 
         #region Formatting
 
@@ -43,7 +41,7 @@ namespace Rock.Field.Types
         /// <param name="value">Information about the value</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
+        /// <returns>System.String.</returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             string formattedValue = value;
@@ -53,10 +51,10 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var communicationTemplateName = new CommunicationTemplateService( rockContext ).GetSelect( guid.Value, a => a.Name );
-                    if ( communicationTemplateName != null )
+                    var name = new SignatureDocumentTemplateService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                    if ( name != null )
                     {
-                        formattedValue = communicationTemplateName;
+                        formattedValue = name;
                     }
                 }
             }
@@ -64,7 +62,9 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
 
-        #endregion
+        #endregion Formatting
+
+        #region EditControl
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -79,23 +79,30 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name ).Select( a => new
+            bool showExternalProviders = configurationValues.GetValueOrNull( SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS )?.AsBoolean() ?? false;
+
+            var templatesQuery = new SignatureDocumentTemplateService( new RockContext() ).Queryable();
+            if ( showExternalProviders )
+            {
+                templatesQuery = templatesQuery.Where( a => a.ProviderEntityTypeId.HasValue );
+            }
+            else
+            {
+                templatesQuery = templatesQuery.Where( a => !a.ProviderEntityTypeId.HasValue );
+            };
+
+            var templates = templatesQuery.OrderBy( t => t.Name ).Select( a => new
             {
                 a.Guid,
                 a.Name
             } );
 
-            if ( templates.Any() )
+            foreach ( var template in templates )
             {
-                foreach ( var template in templates )
-                {
-                    editControl.Items.Add( new ListItem( template.Name, template.Guid.ToString() ) );
-                }
-
-                return editControl;
+                editControl.Items.Add( new ListItem( template.Name, template.Guid.ToString() ) );
             }
 
-            return null;
+            return editControl;
         }
 
         /// <summary>
@@ -130,9 +137,10 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
+        #endregion EditControl
 
         #region IEntityFieldType
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -142,7 +150,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new CommunicationTemplateService( new RockContext() ).Get( guid );
+            var item = new SignatureDocumentTemplateService( new RockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -154,7 +162,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new CommunicationTemplateService( new RockContext() ).Get( id ?? 0 );
+            var item = new SignatureDocumentTemplateService( new RockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
@@ -181,11 +189,12 @@ namespace Rock.Field.Types
             if ( guid.HasValue )
             {
                 rockContext = rockContext ?? new RockContext();
-                return new CommunicationTemplateService( rockContext ).Get( guid.Value );
+                return new SignatureDocumentTemplateService( rockContext ).Get( guid.Value );
             }
 
             return null;
         }
+
         #endregion
     }
 }

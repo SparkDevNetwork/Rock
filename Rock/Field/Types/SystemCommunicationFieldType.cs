@@ -77,16 +77,16 @@ namespace Rock.Field.Types
         {
             var editControl = new RockDropDownList { ID = id };
 
-            var SystemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( e => e.Title );
 
             // add a blank for the first option
             editControl.Items.Add( new ListItem() );
 
-            if ( SystemCommunications.Any() )
+            if ( systemCommunications.Any() )
             {
-                foreach ( var SystemCommunication in SystemCommunications )
+                foreach ( var systemCommunication in systemCommunications )
                 {
-                    editControl.Items.Add( new ListItem( SystemCommunication.Title, SystemCommunication.Guid.ToString() ) );
+                    editControl.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Guid.ToString() ) );
                 }
 
                 return editControl;

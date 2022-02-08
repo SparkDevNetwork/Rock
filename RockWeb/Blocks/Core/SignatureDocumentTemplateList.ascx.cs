@@ -32,7 +32,6 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// User controls for managing signature document templates and their values
     /// </summary>
     [DisplayName( "Signature Document Template List" )]
     [Category( "Core" )]
@@ -99,11 +98,15 @@ namespace RockWeb.Blocks.Core
             NavigateToLinkedPage( AttributeKey.DetailPage, "SignatureDocumentTemplateId", 0 );
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gSignatureDocumentTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gSignatureDocumentTemplate_Edit( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( AttributeKey.DetailPage, "SignatureDocumentTemplateId", e.RowKeyId );
         }
-
 
         /// <summary>
         /// Handles the Delete event of the gSignatureDocumentTemplate control.
@@ -176,6 +179,7 @@ namespace RockWeb.Blocks.Core
                         queryable = queryable.OrderByDescending( a => a.Documents.Count() );
                     }
                 }
+
                 queryable = queryable.Sort( sortProperty );
             }
             else

@@ -13,22 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the type of signature. Either <see cref="Drawn"/> or <see cref="Typed"/>
-    /// </summary>
-    public enum SignatureType
+    public partial class SignatureDocumentTemplate
     {
         /// <summary>
-        /// Typed
+        /// The default <see cref="LavaTemplate"/>
         /// </summary>
-        Typed = 0,
-
-        /// <summary>
-        /// Drawn
-        /// </summary>
-        Drawn = 1,
+        public const string DefaultLavaTemplate = @"
+<p>## Insert your legal disclaimer here ##</p>
+<br>
+";
     }
 }
