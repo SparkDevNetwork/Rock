@@ -63,7 +63,7 @@ namespace Rock.ElectronicSignature
         /// </summary>
         /// <param name="signatureInformationHtmlArgs">The signature information HTML arguments.</param>
         /// <returns>System.String.</returns>
-        public static string GetSignatureInformationHtml( GetSignatureInformationHtmlArgs signatureInformationHtmlArgs )
+        public static string GetSignatureInformationHtml( GetSignatureInformationHtmlOptions signatureInformationHtmlArgs )
         {
             string signatureHtml;
 
@@ -145,7 +145,9 @@ namespace Rock.ElectronicSignature
         }
 
         /// <summary>
-        /// Sends the signature completion communication.
+        /// Sends the signature completion communication if the SignatureDocument's <see cref="SignatureDocumentTemplate.CompletionSystemCommunication"/> is assigned.
+        /// Note that if this is called and the there is no <see cref="SignatureDocumentTemplate.CompletionSystemCommunication"/>, this method will return true, even though
+        /// there was no email sent.
         /// </summary>
         /// <param name="signatureDocumentId">The signature document identifier.</param>
         /// <param name="errorMessages">The error messages.</param>
@@ -154,13 +156,7 @@ namespace Rock.ElectronicSignature
             return SendSignatureCompletionCommunication( signatureDocumentId, ( Dictionary<string, object> ) null, out errorMessages );
         }
 
-        /// <summary>
-        /// Sends the signature completion document communication.
-        /// </summary>
-        /// <param name="signatureDocumentId">The signature document identifier.</param>
-        /// <param name="mergeFields">The merge fields.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <inheritdoc cref="SendSignatureCompletionCommunication(int, out List{string})" />
         public static bool SendSignatureCompletionCommunication( int signatureDocumentId, Dictionary<string, object> mergeFields, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
@@ -176,8 +172,14 @@ namespace Rock.ElectronicSignature
 
             if ( completionSystemCommunication == null )
             {
-                errorMessages.Add( "Signature Document doesn't have a CompletionSystemCommunication." );
-                return false;
+                /* MP 02/08/2022
+
+                If no completionSystemCommunication is configured, and this method is called,
+                return true even though an email doesn't end up getting sent.
+                We'll only return false if there are errors sending the email.
+
+                */
+                return true;
             }
 
             if ( mergeFields == null )

@@ -187,7 +187,7 @@ namespace Rock.Workflow.Action
         }
 
         /// <summary>
-        /// Saves the signature signature document values to the workflow attribute.
+        /// Saves the signature signature document values to the workflow attributes.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="workflowAction">The workflow action.</param>
@@ -240,8 +240,6 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-
-            var actionType = action.ActionTypeCache;
 
             // Always return false. Special logic for e-Signature will be handled in the WorkflowEntry block
             return false;

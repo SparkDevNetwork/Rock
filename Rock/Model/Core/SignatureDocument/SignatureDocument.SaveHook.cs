@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.ElectronicSignature;
 
 namespace Rock.Model
 {

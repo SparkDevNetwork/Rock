@@ -14,14 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rock.Model
+namespace Rock.ElectronicSignature
 {
     internal class SignatureDocumentValidationException : ValidationException
     {

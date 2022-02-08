@@ -508,7 +508,7 @@ namespace RockWeb.Blocks.Core
             var signatureDocumentHtml = ElectronicSignatureHelper.GetSignatureDocumentHtml( ceESignatureLavaTemplate.Text, mergeFields );
             var fakeRandomHash = Rock.Security.Encryption.GetSHA1Hash( Guid.NewGuid().ToString() );
 
-            var signatureInformationHtml = ElectronicSignatureHelper.GetSignatureInformationHtml( new GetSignatureInformationHtmlArgs
+            var signatureInformationHtml = ElectronicSignatureHelper.GetSignatureInformationHtml( new GetSignatureInformationHtmlOptions
             {
                 SignatureType = rblSignatureType.SelectedValueAsEnumOrNull<SignatureType>() ?? SignatureType.Typed,
                 DrawnSignatureDataUrl = ElectronicSignatureHelper.SampleSignatureDataURL,

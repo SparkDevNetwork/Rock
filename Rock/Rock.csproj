@@ -784,7 +784,7 @@
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Data\RockGuidAttribute.cs" />
     <Compile Include="ElectronicSignature\ElectronicSignatureHelper.cs" />
-    <Compile Include="ElectronicSignature\GetSignatureInformationHtmlArgs.cs" />
+    <Compile Include="ElectronicSignature\GetSignatureInformationHtmlOptions.cs" />
     <Compile Include="Field\FieldTypeUsage.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Field\Types\SignatureDocumentTemplateFieldType.cs" />
@@ -941,7 +941,7 @@
     <Compile Include="Model\Core\Schedule\ScheduleType.cs" />
     <Compile Include="Model\Core\RemoteAuthenticationSession\RemoteAuthenticationSession.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.Logic.cs" />
-    <Compile Include="Model\Core\SignatureDocument\SignatureDocumentValidationException.cs" />
+    <Compile Include="ElectronicSignature\SignatureDocumentValidationException.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />

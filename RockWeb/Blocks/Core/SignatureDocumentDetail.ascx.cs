@@ -156,6 +156,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            // Only show the Resend if there is a CompletionSystemCommunication defined for this document's template
             btnResendCompletionEmail.Visible = signatureDocument?.SignatureDocumentTemplate?.CompletionSystemCommunicationId != null;
 
             if ( signatureDocument.BinaryFile != null )

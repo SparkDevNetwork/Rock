@@ -21,9 +21,9 @@ using Rock.Model;
 namespace Rock.ElectronicSignature
 {
     /// <summary>
-    /// Class GetSignatureInformationHtmlArgs. This class cannot be inherited.
+    /// Class GetSignatureInformationHtmlOptions. This class cannot be inherited.
     /// </summary>
-    public sealed class GetSignatureInformationHtmlArgs
+    public sealed class GetSignatureInformationHtmlOptions
     {
         /// <summary>
         /// Gets or sets the type of the signature.

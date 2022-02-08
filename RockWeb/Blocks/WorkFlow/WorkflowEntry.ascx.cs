@@ -2009,7 +2009,7 @@ namespace RockWeb.Blocks.WorkFlow
             // Needed before determing SignatureInformation (Signed Name, metadata)
             signatureDocument.SignatureVerificationHash = signatureDocument.CalculateSignatureVerificationHash();
 
-            var signatureInformationHtmlArgs = new GetSignatureInformationHtmlArgs
+            var signatureInformationHtmlArgs = new GetSignatureInformationHtmlOptions
             {
                 SignatureType = signatureDocumentTemplate.SignatureType,
                 SignedName = escElectronicSignatureControl.SignedName,
