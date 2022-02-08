@@ -349,12 +349,14 @@ namespace Rock.Web.UI.Controls
             _tbLegalName.Label = "Please enter your legal name";
             _tbLegalName.Required = true;
             _tbLegalName.ValidationGroup = validationGroup;
+            _tbLegalName.RequiredErrorMessage = "Legal Name is required.";
             _pnlSignatureComplete.Controls.Add( _tbLegalName );
 
             _ebEmailAddress = new EmailBox();
             _ebEmailAddress.ID = "_ebEmailAddress";
 
             _ebEmailAddress.Required = true;
+            _ebEmailAddress.RequiredErrorMessage = "Email Address is required.";
             _ebEmailAddress.ValidationGroup = validationGroup;
             _pnlSignatureComplete.Controls.Add( _ebEmailAddress );
 

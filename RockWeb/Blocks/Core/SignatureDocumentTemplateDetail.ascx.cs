@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Core
                 var signedDocumentHtml = ElectronicSignatureHelper.GetSignedDocumentHtml( signatureDocumentHtml, signatureInformationHtml );
 
                 // put the pdf into a BinaryFile. We'll mark it IsTemporary so it'll eventually get cleaned up by RockCleanup
-                BinaryFile binaryFile = pdfGenerator.GetAsBinaryFileFromHtml( bftpFileType.SelectedValueAsInt() ?? 0, "preview.pdf", signatureDocumentHtml );
+                BinaryFile binaryFile = pdfGenerator.GetAsBinaryFileFromHtml( bftpFileType.SelectedValueAsInt() ?? 0, "preview.pdf", signedDocumentHtml );
                 binaryFile.IsTemporary = true;
 
                 using ( var rockContext = new RockContext() )

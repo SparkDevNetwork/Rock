@@ -75,7 +75,11 @@ namespace Rock.Pdf
             try
             {
                 AsyncHelper.RunSync( () => browserFetcher.DownloadAsync() );
-                System.Diagnostics.Debug.WriteLine( $"PdfGenerator ChromeEngine downloaded successfully." );
+                if ( _lastProgressPercentage > 99 )
+                {
+                    // if wasn't already downloaded, show a message that it downloaded successfully
+                    System.Diagnostics.Debug.WriteLine( $"PdfGenerator ChromeEngine downloaded successfully." );
+                }
             }
             catch ( IOException ioException )
             {

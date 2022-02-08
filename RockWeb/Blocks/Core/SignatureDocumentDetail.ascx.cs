@@ -156,6 +156,8 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            btnResendCompletionEmail.Visible = signatureDocument?.SignatureDocumentTemplate?.CompletionSystemCommunicationId != null;
+
             if ( signatureDocument.BinaryFile != null )
             {
                 var getFileUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), signatureDocument.BinaryFile.Guid );
@@ -281,7 +283,7 @@ namespace RockWeb.Blocks.Core
             {
                 nbCompletionEmailResult.Title = "Error sending signature completion email";
                 nbCompletionEmailResult.Text = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
-                nbCompletionEmailResult.NotificationBoxType = NotificationBoxType.Danger;
+                nbCompletionEmailResult.NotificationBoxType = NotificationBoxType.Warning;
                 nbCompletionEmailResult.Visible = true;
             }
 
