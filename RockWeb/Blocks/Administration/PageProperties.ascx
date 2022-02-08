@@ -1,10 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PageProperties.ascx.cs" Inherits="RockWeb.Blocks.Administration.PageProperties" %>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
-    <Triggers>
-        <asp:PostBackTrigger ControlID="lbExport" />
-        <asp:PostBackTrigger ControlID="lbImport" />
-    </Triggers>
+
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div id="pnlHeading" runat="server" class="panel-heading">
@@ -132,70 +129,6 @@
                                     </div>
                                 </div>
 
-                            </asp:Panel>
-
-                            <asp:Panel ID="pnlImportExport" runat="server" Visible="False">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <fieldset>
-                                            <h4>Import Pages</h4>
-                                            <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row" Visible="False">
-                                                <div class="col-md-12 alert alert-success">
-                                                    <p><i class="fa fa-bolt"></i><strong>Sweet!</strong> Your package was imported successfully.</p>
-                                                    <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
-                                                        <HeaderTemplate>
-                                                            <p><i class="fa fa-exclamation-triangle"></i>Just a quick heads up...</p>
-                                                            <ul>
-                                                        </HeaderTemplate>
-                                                        <ItemTemplate>
-                                                            <li><%# Container.DataItem %></li>
-                                                        </ItemTemplate>
-                                                        <FooterTemplate>
-                                                            </ul>
-                                                        </FooterTemplate>
-                                                    </asp:Repeater>
-                                                </div>
-                                            </asp:Panel>
-                                            <asp:Repeater runat="server" ID="rptImportErrors" Visible="False">
-                                                <HeaderTemplate>
-                                                    <div class="row">
-                                                        <div class="col-md-12 alert alert-danger">
-                                                            <p><strong>Uh oh!</strong> Looks like we ran into some trouble importing the package.</p>
-                                                            <ul>
-                                                </HeaderTemplate>
-                                                <ItemTemplate>
-                                                    <li><%# Container.DataItem %></li>
-                                                </ItemTemplate>
-                                                <FooterTemplate>
-                                                    </ul>
-                                        </div>
-                                    </div>
-                                                </FooterTemplate>
-                                            </asp:Repeater>
-
-                                            <p>
-                                                <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
-                                            </p>
-
-                                            <p>
-                                                <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-default btn-sm" OnClick="lbImport_Click">
-                                    <i class="fa fa-arrow-up"></i> Import
-                                                </asp:LinkButton>
-                                            </p>
-                                        </fieldset>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <fieldset>
-                                            <h4>Export Pages</h4>
-                                            <label class="checkbox">
-                                                <Rock:RockCheckBox runat="server" ID="cbExportChildren" Text="Export child pages?" />
-                                            </label>
-                                            <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-default btn-sm">
-                                <i class="fa fa-download"></i> Export
-                                            </asp:LinkButton>
-                                        </fieldset>
-                                    </div>
-                                </div>
                             </asp:Panel>
 
                         </div>
