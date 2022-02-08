@@ -94,8 +94,10 @@
                     </div>
                 </div>
 
-                <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
-                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                <div class="js-dynamic-columns">
+                    <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                </div>
 
                 <Rock:Zone Name="Footer" runat="server" />
 
