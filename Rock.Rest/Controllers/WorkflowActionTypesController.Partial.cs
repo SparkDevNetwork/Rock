@@ -107,9 +107,13 @@ namespace Rock.Rest.Controllers
                     }
                 }
 
-                categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
-                categorizedActions[categoryName].Add( action.EntityType );
-
+                // "HideFromUser" is a special category name that is used to hide
+                // workflow actions from showing up to the user. System user only.
+                if ( !categoryName.Equals( "HideFromUser", System.StringComparison.OrdinalIgnoreCase ) )
+                {
+                    categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                    categorizedActions[categoryName].Add( action.EntityType );
+                }
             }
 
             return categorizedActions;

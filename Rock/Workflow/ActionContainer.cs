@@ -76,7 +76,13 @@ namespace Rock.Workflow
                             }
                         }
 
-                        categories.Add( categoryName );
+                        // "HideFromUser" is a special category name that is used to hide
+                        // workflow actions from showing up to the user. System user only.
+                        // Therefore, don't create a category for that name.
+                        if ( !categoryName.Equals( "HideFromUser", StringComparison.OrdinalIgnoreCase ) )
+                        {
+                            categories.Add( categoryName );
+                        }
                     }
 
                     // Get unique and in order
