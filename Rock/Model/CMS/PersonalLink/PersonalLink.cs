@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 using Rock.Security;
@@ -88,7 +88,7 @@ namespace Rock.Model
 
         #endregion IOrdered
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the person alias.
@@ -119,24 +119,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return $"{this.Name} ({this.Url})";
-        }
-
-        /// <summary>
-        /// Return <c>true</c> if the user is authorized for <paramref name="action"/>.
-        /// In the case of non-shared link, security it limited to the person who owns that section.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns><c>true</c> if the specified action is authorized; otherwise, <c>false</c>.</returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            // if it is non-shared personal link, than only the person that owns the link is authorized for that link. Everybody else has NO access (including admins).
-            if ( this.PersonAlias != null )
-            {
-                return this.PersonAlias.PersonId == person.Id;
-            }
-
-            return base.IsAuthorized( action, person );
         }
 
         /// <summary>

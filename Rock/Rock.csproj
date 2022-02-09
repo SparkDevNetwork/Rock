@@ -805,7 +805,7 @@
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Mobile\MobileNavigationAction.cs" />
     <Compile Include="Mobile\MobileNavigationActionType.cs" />
-    <Compile Include="Model\AuthAuditLog.cs" />
+    <Compile Include="Model\Core\AuthAuditLog\AuthAuditLog.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.Logic.cs" />
     <Compile Include="Model\CMS\Block\Block.Logic.cs" />
     <Compile Include="Model\CMS\Block\Block.SaveHook.cs" />
@@ -835,6 +835,8 @@
     <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.Logic.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetDataFormat.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetScriptType.cs" />
+    <Compile Include="Model\CMS\PersonalLink\PersonalLink.Logic.cs" />
+    <Compile Include="Model\CMS\PersonalLink\PersonalLinkService.WebForms.cs" />
     <Compile Include="Model\CMS\SiteDomain\SiteDomain.Logic.cs" />
     <Compile Include="Model\CMS\Site\Site.Logic.cs" />
     <Compile Include="Model\CMS\Site\Site.WebForms.cs" />
@@ -1430,7 +1432,7 @@
     <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttemptService.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceGivingUnit\AnalyticsSourceGivingUnit.cs" />
-    <Compile Include="Model\CampusSchedule.cs" />
+    <Compile Include="Model\Core\CampusSchedule\CampusSchedule.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceGivingUnitService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CampusScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.CodeGenerated.cs" />
@@ -1457,11 +1459,11 @@
     <Compile Include="Model\CMS\MediaElement\MediaElementService.cs" />
     <Compile Include="Model\CMS\MediaFolder\MediaFolder.cs" />
     <Compile Include="Model\CMS\MediaFolder\MediaFolderService.cs" />
-    <Compile Include="Model\PersonalLink.cs" />
-    <Compile Include="Model\PersonalLinkSection.cs" />
-    <Compile Include="Model\PersonalLinkSectionOrder.cs" />
-    <Compile Include="Model\PersonalLinkSectionOrderService.Partial.cs" />
-    <Compile Include="Model\PersonalLinkService.partial.cs" />
+    <Compile Include="Model\CMS\PersonalLink\PersonalLink.cs" />
+    <Compile Include="Model\CMS\PersonalLinkSection\PersonalLinkSection.cs" />
+    <Compile Include="Model\CMS\PersonalLinkSectionOrder\PersonalLinkSectionOrder.cs" />
+    <Compile Include="Model\CMS\PersonalLinkSectionOrder\PersonalLinkSectionOrderService.Partial.cs" />
+    <Compile Include="Model\CMS\PersonalLink\PersonalLinkService.Partial.cs" />
     <Compile Include="Model\Event\RegistrationSession\RegistrationSession.cs" />
     <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.cs" />
     <Compile Include="Model\Engagement\StepProgram\StepProgramService.cs" />
@@ -2686,7 +2688,7 @@
     <Compile Include="Model\Group\GroupScheduleExclusion\GroupScheduleExclusion.cs" />
     <Compile Include="Model\Group\Group\GroupService.cs" />
     <Compile Include="Model\Group\GroupType\GroupType.cs" />
-    <Compile Include="Model\GroupTypeLocationType.cs" />
+    <Compile Include="Model\Group\GroupTypeLocationType\GroupTypeLocationType.cs" />
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRole.cs" />
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRoleService.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannelService.cs" />
