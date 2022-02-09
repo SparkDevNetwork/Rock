@@ -27,73 +27,17 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// WorkflowActionFormAttribute View Model
+    /// WorkflowActionFormSection View Model
     /// </summary>
-    public partial class WorkflowActionFormAttributeViewModel : ViewModelBase
+    public partial class WorkflowActionFormSectionViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the ActionFormSectionId.
+        /// Gets or sets the Description.
         /// </summary>
         /// <value>
-        /// The ActionFormSectionId.
+        /// The Description.
         /// </value>
-        public int? ActionFormSectionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the AttributeId.
-        /// </summary>
-        /// <value>
-        /// The AttributeId.
-        /// </value>
-        public int AttributeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ColumnSize.
-        /// </summary>
-        /// <value>
-        /// The ColumnSize.
-        /// </value>
-        public int? ColumnSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets the FieldVisibilityRulesJSON.
-        /// </summary>
-        /// <value>
-        /// The FieldVisibilityRulesJSON.
-        /// </value>
-        public string FieldVisibilityRulesJSON { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HideLabel.
-        /// </summary>
-        /// <value>
-        /// The HideLabel.
-        /// </value>
-        public bool HideLabel { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsReadOnly.
-        /// </summary>
-        /// <value>
-        /// The IsReadOnly.
-        /// </value>
-        public bool IsReadOnly { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsRequired.
-        /// </summary>
-        /// <value>
-        /// The IsRequired.
-        /// </value>
-        public bool IsRequired { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsVisible.
-        /// </summary>
-        /// <value>
-        /// The IsVisible.
-        /// </value>
-        public bool IsVisible { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the Order.
@@ -104,20 +48,36 @@ namespace Rock.ViewModel
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostHtml.
+        /// Gets or sets the SectionTypeValueId.
         /// </summary>
         /// <value>
-        /// The PostHtml.
+        /// The SectionTypeValueId.
         /// </value>
-        public string PostHtml { get; set; }
+        public int? SectionTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreHtml.
+        /// Gets or sets the SectionVisibilityRulesJSON.
         /// </summary>
         /// <value>
-        /// The PreHtml.
+        /// The SectionVisibilityRulesJSON.
         /// </value>
-        public string PreHtml { get; set; }
+        public string SectionVisibilityRulesJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ShowHeadingSeparator.
+        /// </summary>
+        /// <value>
+        /// The ShowHeadingSeparator.
+        /// </value>
+        public bool ShowHeadingSeparator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// The Title.
+        /// </value>
+        public string Title { get; set; }
 
         /// <summary>
         /// Gets or sets the WorkflowActionFormId.

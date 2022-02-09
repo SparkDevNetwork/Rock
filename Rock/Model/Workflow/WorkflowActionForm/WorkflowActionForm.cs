@@ -333,6 +333,21 @@ namespace Rock.Model
         /// The form attributes.
         /// </value>
         [DataMember]
+        public virtual ICollection<WorkflowActionFormSection> FormSections
+        {
+            get { return _formSections ?? ( _formSections = new Collection<WorkflowActionFormSection>() ); }
+            set { _formSections = value; }
+        }
+
+        private ICollection<WorkflowActionFormSection> _formSections;
+
+        /// <summary>
+        /// Gets or sets the form attributes.
+        /// </summary>
+        /// <value>
+        /// The form attributes.
+        /// </value>
+        [DataMember]
         public virtual ICollection<WorkflowActionFormAttribute> FormAttributes
         {
             get { return _formAttributes ?? ( _formAttributes = new Collection<WorkflowActionFormAttribute>() ); }

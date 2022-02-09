@@ -56,6 +56,38 @@ namespace Rock.ViewModel
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the FormBuilderSettingsJson.
+        /// </summary>
+        /// <value>
+        /// The FormBuilderSettingsJson.
+        /// </value>
+        public string FormBuilderSettingsJson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FormBuilderTemplateId.
+        /// </summary>
+        /// <value>
+        /// The FormBuilderTemplateId.
+        /// </value>
+        public int? FormBuilderTemplateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FormEndDateTime.
+        /// </summary>
+        /// <value>
+        /// The FormEndDateTime.
+        /// </value>
+        public DateTime? FormEndDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FormStartDateTime.
+        /// </summary>
+        /// <value>
+        /// The FormStartDateTime.
+        /// </value>
+        public DateTime? FormStartDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the IconCssClass.
         /// </summary>
         /// <value>
@@ -70,6 +102,22 @@ namespace Rock.ViewModel
         /// The IsActive.
         /// </value>
         public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IsFormBuilder.
+        /// </summary>
+        /// <value>
+        /// The IsFormBuilder.
+        /// </value>
+        public bool IsFormBuilder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IsLoginRequired.
+        /// </summary>
+        /// <value>
+        /// The IsLoginRequired.
+        /// </value>
+        public bool IsLoginRequired { get; set; }
 
         /// <summary>
         /// Gets or sets the IsPersisted.
@@ -150,6 +198,14 @@ namespace Rock.ViewModel
         /// The SummaryViewText.
         /// </value>
         public string SummaryViewText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowExpireDateTime.
+        /// </summary>
+        /// <value>
+        /// The WorkflowExpireDateTime.
+        /// </value>
+        public DateTime? WorkflowExpireDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the WorkflowIdPrefix.

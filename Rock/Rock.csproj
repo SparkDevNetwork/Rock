@@ -797,6 +797,8 @@
     <Compile Include="Model\CodeGenerated\BenevolenceWorkflowService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\RemoteAuthenticationSessionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionFormSectionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowFormBuilderTemplateService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientServiceExtensions.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientStatus.cs" />
@@ -1114,6 +1116,7 @@
     <Compile Include="Model\WebFarm\WebFarmNodeMetric\WebFarmNodeMetric.Logic.cs" />
     <Compile Include="Model\WebFarm\WebFarmNode\WebFarmNode.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowActionFormSection\WorkflowActionFormSection.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.LiquidButton.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionFormPersonEntryOption.cs" />
@@ -1122,6 +1125,7 @@
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowAction.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivityType\WorkflowActivityType.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivity\WorkflowActivity.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowFormBuilderTemplate\WorkflowFormBuilderTemplate.cs" />
     <Compile Include="Model\Workflow\WorkflowLog\WorkflowLog.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTrigger.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTriggerType.cs" />

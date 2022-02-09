@@ -50,6 +50,8 @@
     <Compile Include="CodeGenerated\BenevolenceWorkflowViewModel.cs" />
     <Compile Include="CodeGenerated\ConnectionStatusAutomationViewModel.cs" />
     <Compile Include="CodeGenerated\RemoteAuthenticationSessionViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionFormSectionViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowFormBuilderTemplateViewModel.cs" />
     <Compile Include="Connection\ConnectionRequest\ConnectionRequestCountsViewModel.cs" />
     <Compile Include="Controls\FieldTypeConfigurationViewModel.cs" />
     <Compile Include="Controls\FieldTypeConfigurationPropertiesViewModel.cs" />

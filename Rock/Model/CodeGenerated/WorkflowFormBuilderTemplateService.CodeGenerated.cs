@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// WorkflowActionFormAttribute Service class
+    /// WorkflowFormBuilderTemplate Service class
     /// </summary>
-    public partial class WorkflowActionFormAttributeService : Service<WorkflowActionFormAttribute>
+    public partial class WorkflowFormBuilderTemplateService : Service<WorkflowFormBuilderTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowActionFormAttributeService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowFormBuilderTemplateService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public WorkflowActionFormAttributeService(RockContext context) : base(context)
+        public WorkflowFormBuilderTemplateService(RockContext context) : base(context)
         {
         }
 
@@ -51,18 +51,24 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( WorkflowActionFormAttribute item, out string errorMessage )
+        public bool CanDelete( WorkflowFormBuilderTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<WorkflowType>( Context ).Queryable().Any( a => a.FormBuilderTemplateId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowFormBuilderTemplate.FriendlyTypeName, WorkflowType.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
     /// <summary>
-    /// WorkflowActionFormAttribute View Model Helper
+    /// WorkflowFormBuilderTemplate View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( WorkflowActionFormAttribute ) )]
-    public partial class WorkflowActionFormAttributeViewModelHelper : ViewModelHelper<WorkflowActionFormAttribute, Rock.ViewModel.WorkflowActionFormAttributeViewModel>
+    [DefaultViewModelHelper( typeof( WorkflowFormBuilderTemplate ) )]
+    public partial class WorkflowFormBuilderTemplateViewModelHelper : ViewModelHelper<WorkflowFormBuilderTemplate, Rock.ViewModel.WorkflowFormBuilderTemplateViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,29 +77,27 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.WorkflowActionFormAttributeViewModel CreateViewModel( WorkflowActionFormAttribute model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.WorkflowFormBuilderTemplateViewModel CreateViewModel( WorkflowFormBuilderTemplate model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.WorkflowActionFormAttributeViewModel
+            var viewModel = new Rock.ViewModel.WorkflowFormBuilderTemplateViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
-                ActionFormSectionId = model.ActionFormSectionId,
-                AttributeId = model.AttributeId,
-                ColumnSize = model.ColumnSize,
-                FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON,
-                HideLabel = model.HideLabel,
-                IsReadOnly = model.IsReadOnly,
-                IsRequired = model.IsRequired,
-                IsVisible = model.IsVisible,
-                Order = model.Order,
-                PostHtml = model.PostHtml,
-                PreHtml = model.PreHtml,
-                WorkflowActionFormId = model.WorkflowActionFormId,
+                AllowPersonEntry = model.AllowPersonEntry,
+                CompletionSettingsJson = model.CompletionSettingsJson,
+                ConfirmationEmailSettingsJson = model.ConfirmationEmailSettingsJson,
+                Description = model.Description,
+                FormFooter = model.FormFooter,
+                FormHeader = model.FormHeader,
+                IsActive = model.IsActive,
+                IsLoginRequired = model.IsLoginRequired,
+                Name = model.Name,
+                PersonEntrySettingsJson = model.PersonEntrySettingsJson,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -110,36 +114,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class WorkflowActionFormAttributeExtensionMethods
+    public static partial class WorkflowFormBuilderTemplateExtensionMethods
     {
         /// <summary>
-        /// Clones this WorkflowActionFormAttribute object to a new WorkflowActionFormAttribute object
+        /// Clones this WorkflowFormBuilderTemplate object to a new WorkflowFormBuilderTemplate object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static WorkflowActionFormAttribute Clone( this WorkflowActionFormAttribute source, bool deepCopy )
+        public static WorkflowFormBuilderTemplate Clone( this WorkflowFormBuilderTemplate source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as WorkflowActionFormAttribute;
+                return source.Clone() as WorkflowFormBuilderTemplate;
             }
             else
             {
-                var target = new WorkflowActionFormAttribute();
+                var target = new WorkflowFormBuilderTemplate();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this WorkflowActionFormAttribute object to a new WorkflowActionFormAttribute object with default values for the properties in the Entity and Model base classes.
+        /// Clones this WorkflowFormBuilderTemplate object to a new WorkflowFormBuilderTemplate object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static WorkflowActionFormAttribute CloneWithoutIdentity( this WorkflowActionFormAttribute source )
+        public static WorkflowFormBuilderTemplate CloneWithoutIdentity( this WorkflowFormBuilderTemplate source )
         {
-            var target = new WorkflowActionFormAttribute();
+            var target = new WorkflowFormBuilderTemplate();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -156,27 +160,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another WorkflowActionFormAttribute object to this WorkflowActionFormAttribute object
+        /// Copies the properties from another WorkflowFormBuilderTemplate object to this WorkflowFormBuilderTemplate object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this WorkflowActionFormAttribute target, WorkflowActionFormAttribute source )
+        public static void CopyPropertiesFrom( this WorkflowFormBuilderTemplate target, WorkflowFormBuilderTemplate source )
         {
             target.Id = source.Id;
-            target.ActionFormSectionId = source.ActionFormSectionId;
-            target.AttributeId = source.AttributeId;
-            target.ColumnSize = source.ColumnSize;
-            target.FieldVisibilityRulesJSON = source.FieldVisibilityRulesJSON;
+            target.AllowPersonEntry = source.AllowPersonEntry;
+            target.CompletionSettingsJson = source.CompletionSettingsJson;
+            target.ConfirmationEmailSettingsJson = source.ConfirmationEmailSettingsJson;
+            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HideLabel = source.HideLabel;
-            target.IsReadOnly = source.IsReadOnly;
-            target.IsRequired = source.IsRequired;
-            target.IsVisible = source.IsVisible;
-            target.Order = source.Order;
-            target.PostHtml = source.PostHtml;
-            target.PreHtml = source.PreHtml;
-            target.WorkflowActionFormId = source.WorkflowActionFormId;
+            target.FormFooter = source.FormFooter;
+            target.FormHeader = source.FormHeader;
+            target.IsActive = source.IsActive;
+            target.IsLoginRequired = source.IsLoginRequired;
+            target.Name = source.Name;
+            target.PersonEntrySettingsJson = source.PersonEntrySettingsJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -192,9 +194,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.WorkflowActionFormAttributeViewModel ToViewModel( this WorkflowActionFormAttribute model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.WorkflowFormBuilderTemplateViewModel ToViewModel( this WorkflowFormBuilderTemplate model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new WorkflowActionFormAttributeViewModelHelper();
+            var helper = new WorkflowFormBuilderTemplateViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }

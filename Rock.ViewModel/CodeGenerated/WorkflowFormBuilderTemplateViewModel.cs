@@ -27,105 +27,89 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// WorkflowActionFormAttribute View Model
+    /// WorkflowFormBuilderTemplate View Model
     /// </summary>
-    public partial class WorkflowActionFormAttributeViewModel : ViewModelBase
+    public partial class WorkflowFormBuilderTemplateViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the ActionFormSectionId.
+        /// Gets or sets the AllowPersonEntry.
         /// </summary>
         /// <value>
-        /// The ActionFormSectionId.
+        /// The AllowPersonEntry.
         /// </value>
-        public int? ActionFormSectionId { get; set; }
+        public bool AllowPersonEntry { get; set; }
 
         /// <summary>
-        /// Gets or sets the AttributeId.
+        /// Gets or sets the CompletionSettingsJson.
         /// </summary>
         /// <value>
-        /// The AttributeId.
+        /// The CompletionSettingsJson.
         /// </value>
-        public int AttributeId { get; set; }
+        public string CompletionSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the ColumnSize.
+        /// Gets or sets the ConfirmationEmailSettingsJson.
         /// </summary>
         /// <value>
-        /// The ColumnSize.
+        /// The ConfirmationEmailSettingsJson.
         /// </value>
-        public int? ColumnSize { get; set; }
+        public string ConfirmationEmailSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the FieldVisibilityRulesJSON.
+        /// Gets or sets the Description.
         /// </summary>
         /// <value>
-        /// The FieldVisibilityRulesJSON.
+        /// The Description.
         /// </value>
-        public string FieldVisibilityRulesJSON { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the HideLabel.
+        /// Gets or sets the FormFooter.
         /// </summary>
         /// <value>
-        /// The HideLabel.
+        /// The FormFooter.
         /// </value>
-        public bool HideLabel { get; set; }
+        public string FormFooter { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsReadOnly.
+        /// Gets or sets the FormHeader.
         /// </summary>
         /// <value>
-        /// The IsReadOnly.
+        /// The FormHeader.
         /// </value>
-        public bool IsReadOnly { get; set; }
+        public string FormHeader { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRequired.
+        /// Gets or sets the IsActive.
         /// </summary>
         /// <value>
-        /// The IsRequired.
+        /// The IsActive.
         /// </value>
-        public bool IsRequired { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsVisible.
+        /// Gets or sets the IsLoginRequired.
         /// </summary>
         /// <value>
-        /// The IsVisible.
+        /// The IsLoginRequired.
         /// </value>
-        public bool IsVisible { get; set; }
+        public bool IsLoginRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the Name.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The Name.
         /// </value>
-        public int Order { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostHtml.
+        /// Gets or sets the PersonEntrySettingsJson.
         /// </summary>
         /// <value>
-        /// The PostHtml.
+        /// The PersonEntrySettingsJson.
         /// </value>
-        public string PostHtml { get; set; }
-
-        /// <summary>
-        /// Gets or sets the PreHtml.
-        /// </summary>
-        /// <value>
-        /// The PreHtml.
-        /// </value>
-        public string PreHtml { get; set; }
-
-        /// <summary>
-        /// Gets or sets the WorkflowActionFormId.
-        /// </summary>
-        /// <value>
-        /// The WorkflowActionFormId.
-        /// </value>
-        public int WorkflowActionFormId { get; set; }
+        public string PersonEntrySettingsJson { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.
