@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// WorkflowActionFormAttribute Service class
+    /// WorkflowActionFormSection Service class
     /// </summary>
-    public partial class WorkflowActionFormAttributeService : Service<WorkflowActionFormAttribute>
+    public partial class WorkflowActionFormSectionService : Service<WorkflowActionFormSection>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowActionFormAttributeService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActionFormSectionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public WorkflowActionFormAttributeService(RockContext context) : base(context)
+        public WorkflowActionFormSectionService(RockContext context) : base(context)
         {
         }
 
@@ -51,18 +51,24 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( WorkflowActionFormAttribute item, out string errorMessage )
+        public bool CanDelete( WorkflowActionFormSection item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<WorkflowActionFormAttribute>( Context ).Queryable().Any( a => a.ActionFormSectionId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowActionFormSection.FriendlyTypeName, WorkflowActionFormAttribute.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
 
     /// <summary>
-    /// WorkflowActionFormAttribute View Model Helper
+    /// WorkflowActionFormSection View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( WorkflowActionFormAttribute ) )]
-    public partial class WorkflowActionFormAttributeViewModelHelper : ViewModelHelper<WorkflowActionFormAttribute, Rock.ViewModel.WorkflowActionFormAttributeViewModel>
+    [DefaultViewModelHelper( typeof( WorkflowActionFormSection ) )]
+    public partial class WorkflowActionFormSectionViewModelHelper : ViewModelHelper<WorkflowActionFormSection, Rock.ViewModel.WorkflowActionFormSectionViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,28 +77,23 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.WorkflowActionFormAttributeViewModel CreateViewModel( WorkflowActionFormAttribute model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.WorkflowActionFormSectionViewModel CreateViewModel( WorkflowActionFormSection model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.WorkflowActionFormAttributeViewModel
+            var viewModel = new Rock.ViewModel.WorkflowActionFormSectionViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
-                ActionFormSectionId = model.ActionFormSectionId,
-                AttributeId = model.AttributeId,
-                ColumnSize = model.ColumnSize,
-                FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON,
-                HideLabel = model.HideLabel,
-                IsReadOnly = model.IsReadOnly,
-                IsRequired = model.IsRequired,
-                IsVisible = model.IsVisible,
+                Description = model.Description,
                 Order = model.Order,
-                PostHtml = model.PostHtml,
-                PreHtml = model.PreHtml,
+                SectionTypeValueId = model.SectionTypeValueId,
+                SectionVisibilityRulesJSON = model.SectionVisibilityRulesJSON,
+                ShowHeadingSeparator = model.ShowHeadingSeparator,
+                Title = model.Title,
                 WorkflowActionFormId = model.WorkflowActionFormId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -110,36 +111,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class WorkflowActionFormAttributeExtensionMethods
+    public static partial class WorkflowActionFormSectionExtensionMethods
     {
         /// <summary>
-        /// Clones this WorkflowActionFormAttribute object to a new WorkflowActionFormAttribute object
+        /// Clones this WorkflowActionFormSection object to a new WorkflowActionFormSection object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static WorkflowActionFormAttribute Clone( this WorkflowActionFormAttribute source, bool deepCopy )
+        public static WorkflowActionFormSection Clone( this WorkflowActionFormSection source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as WorkflowActionFormAttribute;
+                return source.Clone() as WorkflowActionFormSection;
             }
             else
             {
-                var target = new WorkflowActionFormAttribute();
+                var target = new WorkflowActionFormSection();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this WorkflowActionFormAttribute object to a new WorkflowActionFormAttribute object with default values for the properties in the Entity and Model base classes.
+        /// Clones this WorkflowActionFormSection object to a new WorkflowActionFormSection object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static WorkflowActionFormAttribute CloneWithoutIdentity( this WorkflowActionFormAttribute source )
+        public static WorkflowActionFormSection CloneWithoutIdentity( this WorkflowActionFormSection source )
         {
-            var target = new WorkflowActionFormAttribute();
+            var target = new WorkflowActionFormSection();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -156,26 +157,21 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another WorkflowActionFormAttribute object to this WorkflowActionFormAttribute object
+        /// Copies the properties from another WorkflowActionFormSection object to this WorkflowActionFormSection object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this WorkflowActionFormAttribute target, WorkflowActionFormAttribute source )
+        public static void CopyPropertiesFrom( this WorkflowActionFormSection target, WorkflowActionFormSection source )
         {
             target.Id = source.Id;
-            target.ActionFormSectionId = source.ActionFormSectionId;
-            target.AttributeId = source.AttributeId;
-            target.ColumnSize = source.ColumnSize;
-            target.FieldVisibilityRulesJSON = source.FieldVisibilityRulesJSON;
+            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HideLabel = source.HideLabel;
-            target.IsReadOnly = source.IsReadOnly;
-            target.IsRequired = source.IsRequired;
-            target.IsVisible = source.IsVisible;
             target.Order = source.Order;
-            target.PostHtml = source.PostHtml;
-            target.PreHtml = source.PreHtml;
+            target.SectionTypeValueId = source.SectionTypeValueId;
+            target.SectionVisibilityRulesJSON = source.SectionVisibilityRulesJSON;
+            target.ShowHeadingSeparator = source.ShowHeadingSeparator;
+            target.Title = source.Title;
             target.WorkflowActionFormId = source.WorkflowActionFormId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
@@ -192,9 +188,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.WorkflowActionFormAttributeViewModel ToViewModel( this WorkflowActionFormAttribute model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.WorkflowActionFormSectionViewModel ToViewModel( this WorkflowActionFormSection model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new WorkflowActionFormAttributeViewModelHelper();
+            var helper = new WorkflowActionFormSectionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }

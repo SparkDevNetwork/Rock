@@ -2139,6 +2139,22 @@ namespace Rock.Data
         public DbSet<WorkflowActivity> WorkflowActivities { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow form builder templates.
+        /// </summary>
+        /// <value>
+        /// The workflow form builder templates.
+        /// </value>
+        public DbSet<WorkflowFormBuilderTemplate> WorkflowFormBuilderTemplates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow action form sections.
+        /// </summary>
+        /// <value>
+        /// The workflow action form sections.
+        /// </value>
+        public DbSet<WorkflowActionFormSection> WorkflowActionFormSections { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflow activity types.
         /// </summary>
         /// <value>
