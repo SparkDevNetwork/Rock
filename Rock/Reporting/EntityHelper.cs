@@ -314,12 +314,13 @@ namespace Rock.Reporting
                 }
                 else if ( entityType == typeof( ConnectionRequest ) )
                 {
-                    // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
+                    // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId or ConnectionTypeId
                     cacheAttributeList = cacheAttributeList
                             .Where( a =>
                                 a.EntityTypeQualifierColumn == null ||
                                 a.EntityTypeQualifierColumn == string.Empty ||
-                                a.EntityTypeQualifierColumn == "ConnectionOpportunityId"
+                                a.EntityTypeQualifierColumn == "ConnectionOpportunityId" ||
+                                a.EntityTypeQualifierColumn == "ConnectionTypeId"
                                 );
                 }
                 else if ( entityType == typeof( Registration ) )
