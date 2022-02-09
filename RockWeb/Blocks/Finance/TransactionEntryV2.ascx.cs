@@ -779,7 +779,7 @@ mission. We are so grateful for your commitment.</p>
 
         private static class PageParameterKey
         {
-            public const string Person = "Person";
+            public const string Person = "rckid";
 
             public const string AttributeKeyPrefix = "Attribute_";
 
@@ -1853,7 +1853,10 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            SetInitialTargetPersonControls();
+            if ( !SetInitialTargetPersonControls() )
+            {
+                return;
+            }
 
             string introMessageTemplate = this.GetAttributeValue( AttributeKey.IntroMessageTemplate );
 
@@ -2000,33 +2003,48 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Initializes the UI based on the initial target person.
         /// </summary>
-        private void SetInitialTargetPersonControls()
+        private bool SetInitialTargetPersonControls()
         {
             // If impersonation is allowed, and a valid person key was used, set the target to that person
             Person targetPerson = null;
+            var allowImpersonation = GetAttributeValue( AttributeKey.AllowImpersonation ).AsBoolean();
+            string personActionId = PageParameter( PageParameterKey.Person );
+            pnlTransactionEntry.Visible = true;
 
-            if ( GetAttributeValue( AttributeKey.AllowImpersonation ).AsBoolean() )
+            if ( personActionId.IsNotNullOrWhiteSpace() )
             {
-                string personKey = PageParameter( PageParameterKey.Person );
+                // If a person key was supplied then try to get that person
+                var rockContext = new RockContext();
+                targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "transaction");
 
-                if ( personKey.IsNotNullOrWhiteSpace() )
+                if ( allowImpersonation )
                 {
-                    var incrementKeyUsage = !this.IsPostBack;
-                    var rockContext = new RockContext();
-                    targetPerson = new PersonService( rockContext ).GetByImpersonationToken( personKey, incrementKeyUsage, this.PageCache.Id );
-
+                    // If impersonation is allowed then ensure the supplied person key was valid
                     if ( targetPerson == null )
                     {
                         nbInvalidPersonWarning.Text = "Invalid or Expired Person Token specified";
                         nbInvalidPersonWarning.NotificationBoxType = NotificationBoxType.Danger;
                         nbInvalidPersonWarning.Visible = true;
-                        return;
+                        pnlTransactionEntry.Visible = false;
+                        return false;
+                    }
+                }
+                else
+                {
+                    // If impersonation is not allowed show an error if the target and current user are not the same
+                    if ( targetPerson?.Id != CurrentPerson?.Id )
+                    {
+                        nbInvalidPersonWarning.Text = $"Impersonation is not allowed on this block.";
+                        nbInvalidPersonWarning.NotificationBoxType = NotificationBoxType.Danger;
+                        nbInvalidPersonWarning.Visible = true;
+                        pnlTransactionEntry.Visible = false;
+                        return false;
                     }
                 }
             }
-
-            if ( targetPerson == null )
+            else
             {
+                // If a person key was not provided then use the Current Person, which may be null
                 targetPerson = CurrentPerson;
             }
 
@@ -2111,6 +2129,8 @@ mission. We are so grateful for your commitment.</p>
 
             // show a prompt for Business Contact on the pnlPersonInformationAsBusiness panel if we don't have a target person so that we can create a person to be associated with the new business
             pnlBusinessContactAnonymous.Visible = targetPerson == null;
+
+            return true;
         }
 
         /// <summary>
