@@ -15,16 +15,17 @@
 // </copyright>
 
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class PersonalLink
+    public partial class PersonalLinkSection
     {
         /// <summary>
         /// Return <c>true</c> if the user is authorized for <paramref name="action"/>.
-        /// In the case of non-shared link, security it limited to the person who owns that section.
+        /// In the case of non-shared link section, security it limited to the person who owns that section.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
@@ -32,7 +33,7 @@ namespace Rock.Model
         public override bool IsAuthorized( string action, Person person )
         {
             // if it is non-shared personal link, than only the person that owns the link is authorized for that link. Everybody else has NO access (including admins).
-            if ( this.PersonAlias != null )
+            if ( !this.IsShared && this.PersonAlias != null )
             {
                 return this.PersonAlias.PersonId == person.Id;
             }
@@ -51,21 +52,19 @@ namespace Rock.Model
         {
             if ( entityState == EntityState.Deleted )
             {
-                // If the link was deleted, the "ModifiedDateTime" of link orders need to be updated.
+                // If the link section was deleted, the "ModifiedDateTime" of link orders need to be updated.
                 // Otherwise, we won't be able to detect that the links have changed due to deleting a record.
                 new PersonalLinkSectionOrderService( dbContext as RockContext ).UpdateLinkOrdersModifiedDateTime( PreSaveChangesPersonAliasId );
             }
 
-            var section = SharedPersonalLinkSectionCache.Get( this.SectionId );
-
-            if ( PreSaveChangesIsShared || ( section?.IsShared == true ) )
+            if ( PreSaveChangesIsShared || this.IsShared )
             {
-                // If this is a shared link, update the SharedPersonalLinkSectionCache
+                // If this is a shared section, update the SharedPersonalLinkSectionCache
                 SharedPersonalLinkSectionCache.UpdateCachedEntity( this.Id, entityState );
                 SharedPersonalLinkSectionCache.FlushLastModifiedDateTime();
             }
 
-            // Since this change probably impacts the current person's links, update the current person's link's ModifiedDateTime. 
+            // Since this change probably impacts the current person's links, flush the current person's link's ModifiedDateTime 
             PersonalLinkService.PersonalLinksHelper.FlushPersonalLinksSessionDataLastModifiedDateTime();
         }
 
@@ -75,7 +74,7 @@ namespace Rock.Model
         /// <returns>IEntityCache.</returns>
         public IEntityCache GetCacheObject()
         {
-            return null;
+            return SharedPersonalLinkSectionCache.Get( this.Id );
         }
 
         #endregion ICacheable

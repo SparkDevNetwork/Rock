@@ -16,8 +16,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -75,6 +73,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int SectionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Pre Save Changes Person Alias Identifier.
+        /// </summary>
+        /// <value>
+        /// The Pre Save Changes Person Alias Identifier.
+        /// </value>
+        [NotMapped]
+        protected int? PreSaveChangesPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets if presave changes person is shared.
+        /// </summary>
+        [NotMapped]
+        protected bool PreSaveChangesIsShared { get; set; }
 
         #endregion
 
@@ -136,71 +149,6 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( entry.State == EntityState.Deleted || entry.State == EntityState.Modified )
-            {
-                _preSaveChangesPersonAliasId = ( int? ) ( entry.OriginalValues?["PersonAliasId"] );
-            }
-            else
-            {
-                _preSaveChangesPersonAliasId = this.PersonAliasId;
-            }
-
-            var section = SharedPersonalLinkSectionCache.Get( this.SectionId );
-            _preSaveChangesIsShared = section?.IsShared ?? false;
-            base.PreSaveChanges( dbContext, entry, state );
-        }
-
-        private int? _preSaveChangesPersonAliasId = null;
-        private bool _preSaveChangesIsShared = false;
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            if ( entityState == EntityState.Deleted )
-            {
-                // If the link was deleted, the "ModifiedDateTime" of link orders need to be updated.
-                // Otherwise, we won't be able to detect that the links have changed due to deleting a record.
-                new PersonalLinkSectionOrderService( dbContext as RockContext ).UpdateLinkOrdersModifiedDateTime( _preSaveChangesPersonAliasId );
-            }
-
-            var section = SharedPersonalLinkSectionCache.Get( this.SectionId );
-
-            if ( _preSaveChangesIsShared || ( section?.IsShared == true ) )
-            {
-                // If this is a shared link, update the SharedPersonalLinkSectionCache
-                SharedPersonalLinkSectionCache.UpdateCachedEntity( this.Id, entityState );
-                SharedPersonalLinkSectionCache.FlushLastModifiedDateTime();
-            }
-
-            // Since this change probably impacts the current person's links, update the current person's link's ModifiedDateTime. 
-            PersonalLinkService.PersonalLinksHelper.FlushPersonalLinksSessionDataLastModifiedDateTime();
-        }
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns>IEntityCache.</returns>
-        public IEntityCache GetCacheObject()
-        {
-            return null;
-        }
-
-        #endregion ICacheable
     }
 
     #region Entity Configuration

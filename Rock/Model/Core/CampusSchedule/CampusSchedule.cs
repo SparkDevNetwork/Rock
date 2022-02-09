@@ -14,16 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -83,7 +78,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Campus"/> that is associated with this CampusSchedule.
@@ -128,32 +123,6 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            // CampusCache may get stale a if CampusSchedule is modified
-            CampusCache.UpdateCachedEntity( this.CampusId, EntityState.Modified );
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -175,5 +144,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

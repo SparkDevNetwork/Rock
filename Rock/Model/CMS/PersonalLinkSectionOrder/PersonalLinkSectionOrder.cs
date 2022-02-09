@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -65,7 +65,7 @@ namespace Rock.Model
 
         #endregion IOrdered
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the person alias.
@@ -86,37 +86,6 @@ namespace Rock.Model
         public virtual PersonalLinkSection Section { get; set; }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            var currentPersonAliasId = dbContext.GetCurrentPersonAlias()?.Id;
-            if ( this.PersonAliasId == currentPersonAliasId )
-            {
-                // If the current person is the one modifying this (it probably is), update the Session
-                // Data so that the PersonalLinks block knows to update the localStorage of PersonalLinks.
-                // Note the PersonalLinkSectionOrder is not shared, so we don't need to update SharedPersonalLinkSectionCache.
-                PersonalLinkService.PersonalLinksHelper.FlushPersonalLinksSessionDataLastModifiedDateTime();
-            }
-        }
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns>IEntityCache.</returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
-
-        #endregion ICacheable
 
         #region overrides
 

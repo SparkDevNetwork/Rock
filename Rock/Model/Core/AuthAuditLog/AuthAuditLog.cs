@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -162,7 +163,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the the <see cref="Rock.Model.EntityType"/> of the entity that is being secured.
@@ -220,31 +221,6 @@ namespace Rock.Model
             this.HasOptional( p => p.ChangeByPersonAlias ).WithMany().HasForeignKey( p => p.ChangeByPersonAliasId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum ChangeType
-    {
-        /// <summary>
-        /// Add
-        /// </summary>
-        Add = 0,
-
-        /// <summary>
-        /// Modify
-        /// </summary>
-        Modify = 1,
-
-        /// <summary>
-        /// Delete
-        /// </summary>
-        Delete = 2,
     }
 
     #endregion
