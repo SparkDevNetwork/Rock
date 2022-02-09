@@ -707,7 +707,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the expiration mmyy.
+        /// Gets the expiration mmyy from the textbox. Returns null if the textbox is null or empty.
         /// </summary>
         /// <value>The expiration mmyy.</value>
         public string ExpirationMMYY
@@ -715,7 +715,8 @@ namespace Rock.Financial
             get
             {
                 EnsureChildControls();
-                return _mypExpDate.Text.AsNumeric().PadLeft( 4, '0' );
+
+                return _mypExpDate.Text.IsNotNullOrWhiteSpace() ? _mypExpDate.Text.AsNumeric().PadLeft( 4, '0' ) : null;
             }
         }
 
@@ -827,8 +828,8 @@ namespace Rock.Financial
             {
                 EnsureChildControls();
 
-                var expirationMonth = ExpirationMMYY.Substring( 0, 2 ).AsIntegerOrNull() ?? 12;
-                var expirationYear = 2000 + ( ExpirationMMYY.Substring( 2, 2 ).AsIntegerOrNull() ) ?? RockDateTime.Today.AddYears( 1 ).Year;
+                var expirationMonth = ExpirationMMYY?.Substring( 0, 2 ).AsIntegerOrNull() ?? 12;
+                var expirationYear = 2000 + ( ExpirationMMYY?.Substring( 2, 2 ).AsIntegerOrNull() ) ?? RockDateTime.Today.AddYears( 1 ).Year;
 
                 return new DateTime( expirationYear, expirationMonth, 1 );
             }
