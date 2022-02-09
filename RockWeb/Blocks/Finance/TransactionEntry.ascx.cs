@@ -541,8 +541,8 @@ namespace RockWeb.Blocks.Finance
             public const string AmountLimit = "AmountLimit";
             public const string AttributePrefix = "Attribute_";
             public const string Frequency = "Frequency";
-            public const string Person = "Person";
-            public const string ScheduledTransactionId = "ScheduledTransactionId";
+            public const string PersonActionIdentifier = "rckid";
+            public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
             public const string StartDate = "StartDate";
             public const string Transfer = "Transfer";
         }
@@ -899,9 +899,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Check if this is a transfer and that the person is the authorized person on the transaction
-            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Transfer ) ) && !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.ScheduledTransactionId ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Transfer ) ) && !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.ScheduledTransactionGuid ) ) )
             {
-                InitializeTransfer( PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull() );
+                InitializeTransfer( PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull() );
             }
 
             if ( !Page.IsPostBack )
@@ -1487,15 +1487,17 @@ namespace RockWeb.Blocks.Finance
 
         private void SetTargetPerson( RockContext rockContext )
         {
-            // If impersonation is allowed, and a valid person key was used, set the target to that person
-            if ( GetAttributeValue( AttributeKey.Impersonation ).AsBooleanOrNull() ?? false )
-            {
-                string personKey = PageParameter( PageParameterKey.Person );
-                if ( !string.IsNullOrWhiteSpace( personKey ) )
-                {
-                    var incrementKeyUsage = !this.IsPostBack;
-                    _targetPerson = new PersonService( rockContext ).GetByImpersonationToken( personKey, incrementKeyUsage, this.PageCache.Id );
+            var allowImpersonation = GetAttributeValue( AttributeKey.Impersonation ).AsBooleanOrNull() ?? false;
+            string personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
 
+            if ( personActionId.IsNotNullOrWhiteSpace() )
+            {
+                // If a person key was supplied then try to get that person
+                _targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "transaction");
+
+                if ( allowImpersonation )
+                {
+                    // If impersonation is allowed then ensure the supplied person key was valid
                     if ( _targetPerson == null )
                     {
                         nbInvalidPersonWarning.Text = "Invalid or Expired Person Token specified";
@@ -1504,10 +1506,21 @@ namespace RockWeb.Blocks.Finance
                         return;
                     }
                 }
+                else
+                {
+                    // If impersonation is not allowed show an error if the target and current user are not the same
+                    if ( _targetPerson?.Id != CurrentPerson?.Id )
+                    {
+                        nbInvalidPersonWarning.Text = $"Impersonation is not allowed on this block.";
+                        nbInvalidPersonWarning.NotificationBoxType = NotificationBoxType.Danger;
+                        nbInvalidPersonWarning.Visible = true;
+                        return;
+                    }
+                }
             }
-
-            if ( _targetPerson == null )
+            else
             {
+                // If a person key was not provided then use the Current Person, which may be null
                 _targetPerson = CurrentPerson;
             }
         }
@@ -2478,15 +2491,15 @@ namespace RockWeb.Blocks.Finance
         /// the form for the new transaction.
         /// </summary>
         /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
-        private void InitializeTransfer( int? scheduledTransactionId )
+        private void InitializeTransfer( Guid? scheduledTransactionGuid )
         {
-            if ( scheduledTransactionId == null )
+            if ( scheduledTransactionGuid == null )
             {
                 return;
             }
 
             RockContext rockContext = new RockContext();
-            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionId.Value );
+            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionGuid.Value );
             var personService = new PersonService( rockContext );
 
             // get business giving id
