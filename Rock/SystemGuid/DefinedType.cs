@@ -374,6 +374,11 @@ namespace Rock.SystemGuid
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
 
         /// <summary>
+        /// The section types defined type, which has values that determine which section type the workflow action form section is based.
+        /// </summary>
+        public const string SECTION_TYPE = "A72D940B-2A69-44B8-931C-7FE99824D84C";
+
+        /// <summary>
         /// Used to manage the topic options for small groups.
         /// </summary>
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
