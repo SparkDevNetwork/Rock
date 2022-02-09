@@ -28,6 +28,8 @@ namespace Rock.Pdf
 {
     /// <summary>
     /// Class PDFGenerator.
+    /// Note that if using <see cref="SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT"/>, the usage time is based
+    /// on how long this PdfGenerator object is used. So create/dispose quickly.
     /// Implements the <see cref="System.IDisposable" />
     /// </summary>
     /// <seealso cref="System.IDisposable" />

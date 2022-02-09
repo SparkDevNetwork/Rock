@@ -2048,7 +2048,6 @@ namespace RockWeb.Blocks.WorkFlow
             rockContext.SaveChanges();
 
             // reload with new context to get navigation properties to load. This wil be needed to save values back to Workflow Attributes
-            // and also to send the Communication
             signatureDocument = new SignatureDocumentService( new RockContext() ).Get( signatureDocument.Id );
 
             // Save to Workflow Attributes
@@ -2057,7 +2056,7 @@ namespace RockWeb.Blocks.WorkFlow
             // Send Communication
             if ( signatureDocumentTemplate.CompletionSystemCommunication != null )
             {
-                ElectronicSignatureHelper.SendSignatureCompletionCommunication( signatureDocument.Id, mergeFields, out _ );
+                ElectronicSignatureHelper.SendSignatureCompletionCommunication( signatureDocument.Id, out _ );
             }
 
             // Workflow

@@ -153,12 +153,6 @@ namespace Rock.ElectronicSignature
         /// <param name="errorMessages">The error messages.</param>
         public static bool SendSignatureCompletionCommunication( int signatureDocumentId, out List<string> errorMessages )
         {
-            return SendSignatureCompletionCommunication( signatureDocumentId, ( Dictionary<string, object> ) null, out errorMessages );
-        }
-
-        /// <inheritdoc cref="SendSignatureCompletionCommunication(int, out List{string})" />
-        public static bool SendSignatureCompletionCommunication( int signatureDocumentId, Dictionary<string, object> mergeFields, out List<string> errorMessages )
-        {
             errorMessages = new List<string>();
             var rockContext = new RockContext();
             var signatureDocument = new SignatureDocumentService( rockContext ).Queryable()
@@ -182,18 +176,14 @@ namespace Rock.ElectronicSignature
                 return true;
             }
 
-            if ( mergeFields == null )
-            {
-                mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            }
-
-            mergeFields.AddOrIgnore( "SignatureDocument", signatureDocument );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "SignatureDocument", signatureDocument );
 
             if ( signatureDocument.EntityTypeId.HasValue && signatureDocument.EntityId.HasValue )
             {
                 var entityTypeType = EntityTypeCache.Get( signatureDocument.EntityTypeId.Value )?.GetEntityType();
                 var entity = Reflection.GetIEntityForEntityType( entityTypeType, signatureDocument.EntityId.Value );
-                mergeFields.AddOrIgnore( "Entity", entity );
+                mergeFields.Add( "Entity", entity );
             }
 
             var signedByPerson = signatureDocument.SignedByPersonAlias?.Person;
