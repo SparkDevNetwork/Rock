@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field used to display or upload a new binary file of a specific type
     /// Stored as BinaryFile.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class FileFieldType : BinaryFileFieldType
     {
 

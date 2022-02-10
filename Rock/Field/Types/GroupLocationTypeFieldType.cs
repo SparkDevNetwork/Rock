@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -32,6 +33,7 @@ namespace Rock.Field.Types
     /// Stored as GroupLocationTypeValue.Guid.
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class GroupLocationTypeFieldType : FieldType
     {
 

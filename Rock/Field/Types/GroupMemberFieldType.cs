@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -34,6 +35,7 @@ namespace Rock.Field.Types
     /// Stored as either a single GroupMember.Guid or a comma-delimited list of GroupMember.Guids (if AllowMultiple)
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType
     {
         #region Configuration

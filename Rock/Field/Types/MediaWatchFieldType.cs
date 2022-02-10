@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field Type to allow the user to watch a video and have the amount they
     /// watched recorded.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class MediaWatchFieldType : FieldType
     {
         #region Configuration
