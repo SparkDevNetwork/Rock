@@ -74,12 +74,22 @@ namespace RockWeb.Blocks.Core
             public const string EnableHierarchy = "EnableHierarchy";
         }
 
+        /// <summary>
+        /// The page parameter keys for the block.
+        /// </summary>
+        public static class PageParameterKeys
+        {
+            public const string CategoryId = "CategoryId";
+            public const string EntityTypeId = "EntityTypeId";
+            public const string EntityQualifierColumn = "EntityQualifierColumn";
+            public const string EntityQualifierValue = "EntityQualifierValue";
+        }
+
         #region Fields
 
         int _entityTypeId = 0;
         string _entityCol = string.Empty;
         string _entityVal = string.Empty;
-        bool _hasEntityTypeBlockSetting = false;
 
         int? _parentCategoryId = null;
         bool _canConfigure = false;
@@ -101,7 +111,7 @@ namespace RockWeb.Blocks.Core
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             int parentCategoryId = int.MinValue;
-            if ( int.TryParse( PageParameter( "CategoryId" ), out parentCategoryId ) )
+            if ( int.TryParse( PageParameter( PageParameterKeys.CategoryId ), out parentCategoryId ) )
             {
                 _parentCategoryId = parentCategoryId;
             }
@@ -118,8 +128,6 @@ namespace RockWeb.Blocks.Core
             mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-
-            _hasEntityTypeBlockSetting = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.EntityType ) );
 
             SetDisplay();
         }
@@ -183,7 +191,7 @@ namespace RockWeb.Blocks.Core
 
             int parentCategoryId = int.MinValue;
             CategoryCache category = null;
-            if ( int.TryParse( PageParameter( "CategoryId" ), out parentCategoryId ) )
+            if ( int.TryParse( PageParameter( PageParameterKeys.CategoryId ), out parentCategoryId ) )
             {
                 category = CategoryCache.Get( parentCategoryId );
 
@@ -209,7 +217,7 @@ namespace RockWeb.Blocks.Core
             while ( category != null )
             {
                 var parms = new Dictionary<string, string>();
-                parms.Add( "CategoryId", category.Id.ToString() );
+                parms.Add( PageParameterKeys.CategoryId, category.Id.ToString() );
                 breadCrumbs.Add( new BreadCrumb( category.Name, new PageReference( pageReference.PageId, 0, parms ) ) );
 
                 category = category.ParentCategory;
@@ -284,7 +292,7 @@ namespace RockWeb.Blocks.Core
         protected void gCategories_Select( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "CategoryId", e.RowKeyId.ToString() );
+            parms.Add( PageParameterKeys.CategoryId, e.RowKeyId.ToString() );
             Response.Redirect( new PageReference( CurrentPageReference.PageId, 0, parms ).BuildUrl(), false );
         }
 
@@ -420,28 +428,40 @@ namespace RockWeb.Blocks.Core
                 category = service.Get( categoryId );
             }
 
+            // Add a new category.
             if ( category == null )
             {
                 category = new Category();
-
-                if ( _hasEntityTypeBlockSetting )
-                {
-                    category.EntityTypeId = _entityTypeId;
-                    category.EntityTypeQualifierColumn = _entityCol;
-                    category.EntityTypeQualifierValue = _entityVal;
-                }
-                else
-                {
-                    category.EntityTypeId = entityTypePicker.SelectedEntityTypeId ?? 0;
-                    category.EntityTypeQualifierColumn = tbEntityQualifierField.Text;
-                    category.EntityTypeQualifierValue = tbEntityQualifierValue.Text;
-                }
 
                 var lastCategory = GetUnorderedCategories()
                     .OrderByDescending( c => c.Order ).FirstOrDefault();
                 category.Order = lastCategory != null ? lastCategory.Order + 1 : 0;
 
                 service.Add( category );
+            }
+
+            // Set the Entity qualifiers for the new category.
+            if ( _parentCategoryId.HasValue )
+            {
+               // If there is a parent category, the child category must have the same qualifier settings.
+               var parentCategory = CategoryCache.Get( _parentCategoryId.Value );
+                category.EntityTypeId = parentCategory.EntityTypeId ?? 0;
+                category.EntityTypeQualifierColumn = parentCategory.EntityTypeQualifierColumn;
+                category.EntityTypeQualifierValue = parentCategory.EntityTypeQualifierValue;
+            }
+            else if ( _entityTypeId > 0 )
+            {
+                // If the entity type is specified by block configuration or query parameter settings, apply those settings to the category.
+                category.EntityTypeId = _entityTypeId;
+                category.EntityTypeQualifierColumn = _entityCol;
+                category.EntityTypeQualifierValue = _entityVal;
+            }
+            else
+            {
+                // If the entity type is not otherwise configured, apply the user-specified settings.
+                category.EntityTypeId = entityTypePicker.SelectedEntityTypeId ?? 0;
+                category.EntityTypeQualifierColumn = tbEntityQualifierField.Text;
+                category.EntityTypeQualifierValue = tbEntityQualifierValue.Text;
             }
 
             category.Name = tbName.Text;
@@ -496,27 +516,40 @@ namespace RockWeb.Blocks.Core
                 securityField.EntityTypeId = EntityTypeCache.Get( typeof( Category ) ).Id;
             }
 
+            bool showEntityInfo = false;
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
             if ( _canConfigure )
             {
-                Guid entityTypeGuid = Guid.Empty;
-                if ( Guid.TryParse( GetAttributeValue( AttributeKey.EntityType ), out entityTypeGuid ) )
+                // Determine the appropriate Entity Type filter for the block.
+                int entityTypeId;
+                Guid entityTypeGuid;
+
+                if ( _parentCategoryId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Get( entityTypeGuid );
-                    if ( entityType != null )
-                    {
-                        securityField.Visible = entityType.IsSecured;
-
-                        _entityTypeId = entityType.Id;
-                        _entityCol = GetAttributeValue( AttributeKey.EntityQualifierColumn );
-                        _entityVal = GetAttributeValue( AttributeKey.EntityQualifierValue );
-
-                        catpParentCategory.EntityTypeId = _entityTypeId;
-
-                        pnlList.Visible = true;
-                        nbMessage.Visible = false;
-                    }
+                    // If there is a parent category, show all child categories.
+                    var parentCategory = CategoryCache.Get( _parentCategoryId.Value );
+                    SetEntityConfiguration( parentCategory.EntityTypeId );
                 }
+                else if ( int.TryParse( PageParameter( PageParameterKeys.EntityTypeId ), out entityTypeId ) )
+                {
+                    // Set the Entity Type specified in the page query parameters.
+                    SetEntityConfiguration( entityTypeId,
+                        PageParameter( PageParameterKeys.EntityQualifierColumn ),
+                        PageParameter( PageParameterKeys.EntityQualifierValue ) );
+                }
+                else if ( Guid.TryParse( GetAttributeValue( AttributeKey.EntityType ), out entityTypeGuid ) )
+                {
+                    // Set the Entity Type specified in the block configuration settings.
+                    SetEntityConfiguration( EntityTypeCache.GetId( entityTypeGuid ),
+                        GetAttributeValue( AttributeKey.EntityQualifierColumn ),
+                        GetAttributeValue( AttributeKey.EntityQualifierValue ) );
+                }
+                else
+                {
+                    SetEntityConfiguration( null );
+                    showEntityInfo = true;
+                }
+                pnlEntityInfo.Visible = showEntityInfo;
             }
             else
             {
@@ -524,6 +557,35 @@ namespace RockWeb.Blocks.Core
                 nbMessage.Text = "You are not authorized to configure this page.";
                 nbMessage.Visible = true;
             }
+        }
+
+        private void SetEntityConfiguration( int? entityTypeId, string entityQualifierColumn = null, string entityQualifierValue = null )
+        {
+            var entityType = EntityTypeCache.Get( entityTypeId.GetValueOrDefault() );
+            var isSecured = false;
+
+            if ( entityType == null )
+            {
+                _entityTypeId = 0;
+                _entityCol = string.Empty;
+                _entityVal = string.Empty;
+            }
+            else
+            {
+                _entityTypeId = entityType.Id;
+                _entityCol = entityQualifierColumn;
+                _entityVal = entityQualifierValue;
+
+                isSecured = entityType.IsSecured;
+            }
+
+            var securityField = gCategories.ColumnsOfType<SecurityField>().FirstOrDefault();
+            securityField.Visible = isSecured;
+
+            catpParentCategory.EntityTypeId = _entityTypeId;
+
+            pnlList.Visible = true;
+            nbMessage.Visible = false;
         }
 
         /// <summary>
@@ -550,7 +612,7 @@ namespace RockWeb.Blocks.Core
 
             entityTypeFilter.SetValue( rFilter.GetUserPreference( AttributeKey.EntityType ) );
 
-            if ( _hasEntityTypeBlockSetting )
+            if ( _entityTypeId != 0 )
             {
                 pnlEntityInfo.Visible = false;
 
@@ -609,34 +671,34 @@ namespace RockWeb.Blocks.Core
             var queryable = new CategoryService( rockContext )
                 .Queryable();
 
-            if ( _hasEntityTypeBlockSetting )
-            {
-                queryable = queryable.Where( c => c.EntityTypeId == _entityTypeId );
-            }
-            else
-            {
-                int? filterEntityTypeId = entityTypeFilter.SelectedValueAsInt();
-                if ( filterEntityTypeId.HasValue )
-                {
-                    queryable = queryable.Where( c => c.EntityTypeId == filterEntityTypeId.Value );
-                }
-            }
-
-            var queryableFiltered = queryable.ToList()
-                .Where( c =>
-                    ( c.EntityTypeQualifierColumn ?? "" ) == ( _entityCol ?? "" ) &&
-                    ( c.EntityTypeQualifierValue ?? "" ) == ( _entityVal ?? "" ) );
-
             if ( _parentCategoryId.HasValue )
             {
-                queryableFiltered = queryableFiltered.Where( c => c.ParentCategoryId == _parentCategoryId );
+                queryable = queryable.Where( c => c.ParentCategoryId == _parentCategoryId );
             }
             else
             {
-                queryableFiltered = queryableFiltered.Where( c => c.ParentCategoryId == null );
+                queryable = queryable.Where( c => c.ParentCategoryId == null );
+
+                if ( _entityTypeId != 0 )
+                {
+                    queryable = queryable.Where( c => c.EntityTypeId == _entityTypeId );
+                }
+                else
+                {
+                    int? filterEntityTypeId = entityTypeFilter.SelectedValueAsInt();
+                    if ( filterEntityTypeId.HasValue )
+                    {
+                        queryable = queryable.Where( c => c.EntityTypeId == filterEntityTypeId.Value );
+                    }
+                }
+
+                queryable = queryable
+                    .Where( c =>
+                        ( c.EntityTypeQualifierColumn ?? "" ) == ( _entityCol ?? "" ) &&
+                        ( c.EntityTypeQualifierValue ?? "" ) == ( _entityVal ?? "" ) );
             }
 
-            return queryableFiltered;
+            return queryable;
         }
 
 
@@ -673,7 +735,8 @@ namespace RockWeb.Blocks.Core
                     ParentCategoryId = _parentCategoryId,
                 };
             }
-            else
+
+            if ( category != null )
             {
                 entityTypePicker.SelectedEntityTypeId = category.EntityTypeId;
                 tbEntityQualifierField.Text = category.EntityTypeQualifierColumn;

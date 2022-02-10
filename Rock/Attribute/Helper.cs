@@ -959,6 +959,8 @@ This can be due to multiple threads updating the same attribute at the same time
             }
 
             // Delete any deleted qualifiers
+            attributeQualifierService.DeleteRange( deletedQualifiers );
+
             foreach ( var deletedQualifier in deletedQualifiers )
             {
                 attribute.AttributeQualifiers.Remove( deletedQualifier );
