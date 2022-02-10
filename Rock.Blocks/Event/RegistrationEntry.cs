@@ -914,7 +914,7 @@ namespace Rock.Blocks.Event
             {
                 var fields = form.Fields.Where( f =>
                 {
-                    if ( f.ShowCurrentValue && !f.IsInternal )
+                    if ( f.ShowCurrentValue && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
                     {
                         return true;
                     }
@@ -1935,7 +1935,7 @@ namespace Rock.Blocks.Event
             foreach ( var formModel in formModels )
             {
                 var form = new RegistrationEntryBlockFormViewModel();
-                var fieldModels = formModel.Fields.Where( f => !f.IsInternal ).OrderBy( f => f.Order );
+                var fieldModels = formModel.Fields.Where( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) ).OrderBy( f => f.Order );
                 var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
 
                 foreach ( var fieldModel in fieldModels )
@@ -2858,6 +2858,7 @@ namespace Rock.Blocks.Event
                         .Where( f =>
                             !f.IsInternal &&
                             f.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
+                            ( f.Attribute == null || f.Attribute.IsActive ) &&
                             f.AttributeId.HasValue )
                         .ToList();
 
