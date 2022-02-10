@@ -4081,7 +4081,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
-                    return form.Fields.Any( f => !f.IsInternal && f.ShowOnWaitlist );
+                    return form.Fields.Any( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) && f.ShowOnWaitlist );
                 }
             }
 
@@ -4823,6 +4823,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var field in form.Fields
                     .Where( f =>
                         !f.IsInternal &&
+                        ( f.Attribute == null || f.Attribute.IsActive ) &&
                         ( !registrant.OnWaitList || f.ShowOnWaitlist ) )
                     .OrderBy( f => f.Order ) )
                 {
@@ -5024,7 +5025,7 @@ namespace RockWeb.Blocks.Event
 
                 var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
                 var formFields = form.Fields
-                    .Where( f => !f.IsInternal && ( !registrant.OnWaitList || f.ShowOnWaitlist ) )
+                    .Where( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) && ( !registrant.OnWaitList || f.ShowOnWaitlist ) )
                     .OrderBy( f => f.Order );
 
                 foreach ( var formField in formFields )
