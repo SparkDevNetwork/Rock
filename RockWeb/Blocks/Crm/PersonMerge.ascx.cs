@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Crm
         private const string FAMILY_NAME = "FamilyName";
         private const string BUSINESS_ATTRIBUTES = "BusinessAttributes";
         private const string CAMPUS = "Campus";
-        private const string RESET_LOGIN_CONFIRMATION_DESCRIPTION = "When merging people with different emails, should their logins be updated to require reconfirmation of their email before allowing login? This is typically enabled to prevent someone from maliciously obtaining login credentials by creating an account with same name but different login.";
+        private const string RESET_LOGIN_CONFIRMATION_DESCRIPTION = "When merging people with different emails, should their logins be updated to require reconfirmation of their email before allowing log in? This is typically enabled to prevent someone from maliciously obtaining login credentials by creating an account with same name but different login.";
         private const string BUSINESS_INFORMATION = "BusinessInformation";
 
         #endregion Constants
@@ -147,11 +147,11 @@ namespace RockWeb.Blocks.Crm
             var resetConfirmation = string.Empty;
             if ( GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() )
             {
-                resetConfirmation = @"<br>Additionally, this person will be prompted to reconfirm before they can login using the email address you select.";
+                resetConfirmation = @"<br>Additionally, this person will be prompted to reconfirm before they can log in using the email address you select.";
             }
 
             nbSecurityNotice.Text = string.Format(
-                @"There are two different emails associated with this merge, and at least one of the records has a login.  It is possible that the new record was created in an attempt to gain access to the account through the merge process. Because all email addresses are saved and used when searching for this person,<b> remove any invalid email address before you perform this merge </b>. {0}",
+                @"There are two different emails associated with this merge, and at least one of the records has a login.  It is possible that the new record was created in an attempt to gain access to the account through the merge process. Since all email addresses are saved and used when searching for this person,<b> remove any invalid email address before you perform this merge </b>. {0}",
                 resetConfirmation );
         }
 
@@ -1407,7 +1407,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( hasLogins )
             {
-                warningMessage += " Additionally, this person will be prompted to reconfirm before they can login.";
+                warningMessage += " Additionally, this person will be prompted to reconfirm before they can log in.";
             }
 
             nbSecurityNotice.Heading = null;

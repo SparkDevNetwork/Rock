@@ -100,7 +100,7 @@ namespace Rock.Security.ExternalAuthentication
         }
 
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">Forming the URL to obtain user consent</param>
         /// <returns></returns>

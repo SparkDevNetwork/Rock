@@ -51,8 +51,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String" /> containing the <see cref="Description"/>.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         [Previewable]
         public string Description { get; set; }
 
@@ -75,6 +74,13 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string RequestLavaTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show financial results].
+        /// </summary>
+        /// <value><c>true</c> if [show financial results]; otherwise, <c>false</c>.</value>
+        [DataMember]
+        public bool ShowFinancialResults { get; set; }
         #endregion Entity Properties
 
         #region Navigation Properties

@@ -36,7 +36,7 @@
                     <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
                     <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
 
-                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
+                    <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
                     <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender">
@@ -145,7 +145,7 @@
         <div class="actions">
             <asp:Button ID="btnSendPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnSendPrev_Click" />
             <asp:Button ID="btnSendYes" runat="server" Text="Yes, send it" CssClass="btn btn-primary" OnClick="btnSendYes_Click" />
-            <asp:Button ID="btnSendLogin" runat="server" Text="No, just let me login" CssClass="btn btn-primary" OnClick="btnSendLogin_Click" />
+            <asp:Button ID="btnSendLogin" runat="server" Text="No, just let me log in" CssClass="btn btn-primary" OnClick="btnSendLogin_Click" />
         </div>
 
     </asp:PlaceHolder>

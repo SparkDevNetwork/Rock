@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -171,7 +171,6 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-
         private void Block_BlockUpdated( object sender, EventArgs e )
         {
             ConfigureBlock();
@@ -267,7 +266,7 @@ namespace RockWeb.Blocks.Core
                     aSecure.Visible = true;
 
                     var entityType = EntityTypeCache.Get( componentDescription.Type );
-                    string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityType.Id, 0, componentDescription.Name + " Security" ) );
+                    string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityType.Id, 0, componentDescription.Name.EscapeQuotes() + " Security" ) );
                     aSecure.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
                 }
             }
@@ -322,7 +321,6 @@ namespace RockWeb.Blocks.Core
             if ( securityColumn != null )
             {
                 securityColumn.Visible = _supportSecurity && _isAuthorizedToConfigure;
-                ;
             }
         }
 

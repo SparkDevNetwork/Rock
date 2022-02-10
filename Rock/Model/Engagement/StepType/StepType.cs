@@ -166,6 +166,25 @@ namespace Rock.Model
         [DataMember]
         public bool IsDateRequired { get; set; }
 
+        private string _cardLavaTemplate;
+
+        /// <summary>
+        /// Gets or sets the lava template used to render custom card details.
+        /// </summary>
+        [DataMember]
+        public string CardLavaTemplate
+        {
+            get
+            {
+                return _cardLavaTemplate.IsNullOrWhiteSpace() ? DefaultCardLavaTemplate : _cardLavaTemplate;
+            }
+
+            set
+            {
+                _cardLavaTemplate = value;
+            }
+        }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag

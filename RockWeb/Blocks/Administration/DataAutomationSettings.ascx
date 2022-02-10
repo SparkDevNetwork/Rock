@@ -314,6 +314,9 @@
                                 <div class="pull-left">
                                     <Rock:NumberBox ID="nbMostFamilyAttendance" runat="server" Label="Calculate campus based on the most family attendance to a campus-specific location in the last" AppendText="days" CssClass="input-width-md" Text="90" />
                                 </div>
+                                <div class="pull-right">
+                                    <Rock:SchedulePicker ID="spExcludeSchedules" runat="server" AllowMultiSelect="true" Label="Exclude Schedules" />
+                                </div>
                             </div>
 
                             <div class="clearfix margin-b-lg">

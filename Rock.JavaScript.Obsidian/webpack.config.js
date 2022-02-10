@@ -1,6 +1,6 @@
 const path = require("path");
+const webpack = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
-const EolPlugin = require("./webpack-eol-plugin");
 
 module.exports = {
     mode: "production",
@@ -56,7 +56,10 @@ module.exports = {
         ],
     },
     plugins: [
-        new EolPlugin(),
+        new webpack.DefinePlugin({
+            __VUE_OPTIONS_API__: true,
+            __VUE_PROD_DEVTOOLS__: true
+        })
     ],
     /* Warn if any file goes over 250KB. */
     performance: {

@@ -24,6 +24,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./ssnFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./ssnFieldComponents")).ConfigurationComponent;
+});
+
 export class SSNFieldType extends FieldTypeBase {
     public override updateTextValue(value: ClientEditableAttributeValue): void {
         if (value.value === null || value.value === undefined) {
@@ -43,5 +48,9 @@ export class SSNFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

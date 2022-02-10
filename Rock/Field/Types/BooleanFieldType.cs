@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to save a boolean value. Stored as "True" or "False"
     /// </summary>
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class BooleanFieldType : FieldType
     {
         /// <summary>
@@ -163,7 +165,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             bool? boolValue = value.AsBooleanOrNull();
 
@@ -176,7 +178,7 @@ namespace Rock.Field.Types
             {
                 if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
                 {
-                    return configurationValues[ConfigurationKey.TrueText].Value;
+                    return configurationValues[ConfigurationKey.TrueText];
                 }
                 else
                 {
@@ -187,7 +189,7 @@ namespace Rock.Field.Types
             {
                 if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
                 {
-                    return configurationValues[ConfigurationKey.FalseText].Value;
+                    return configurationValues[ConfigurationKey.FalseText];
                 }
                 else
                 {
@@ -197,7 +199,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
         {
             bool? boolValue = value.AsBooleanOrNull();
 
@@ -223,11 +225,11 @@ namespace Rock.Field.Types
         {
             if ( !condensed )
             {
-                return GetTextValue( value, configurationValues );
+                return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
             }
             else
             {
-                return GetCondensedTextValue( value, configurationValues );
+                return GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
             }
         }
 

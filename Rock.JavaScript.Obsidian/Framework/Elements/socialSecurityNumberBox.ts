@@ -15,7 +15,7 @@
 // </copyright>
 
 import { defineComponent, PropType } from "vue";
-import { ruleArrayToString, ruleStringToArray } from "../Rules/index";
+import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
@@ -24,10 +24,7 @@ export default defineComponent({
         RockFormField
     },
     props: {
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        },
+        rules: rulesPropType,
         modelValue: {
             type: String as PropType<string>,
             default: ""
@@ -87,12 +84,12 @@ export default defineComponent({
     },
 
     computed: {
-        computedRules(): string {
-            const rules = ruleStringToArray(this.rules);
+        computedRules(): ValidationRule[] {
+            const rules = normalizeRules(this.rules);
 
             rules.push("ssn");
 
-            return ruleArrayToString(rules);
+            return rules;
         }
     },
 
@@ -148,7 +145,7 @@ export default defineComponent({
     formGroupClasses="social-security-number-box"
     name="social-security-number-box"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="form-control-group">
                 <input ref="area" class="form-control ssn-part ssn-area" type="password" pattern="[0-9]*" maxlength="3" v-model="internalArea" v-on:keypress="keyPress" v-on:keyup="keyUp" />

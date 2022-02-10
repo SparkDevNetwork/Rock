@@ -60,6 +60,12 @@ BEGIN
     SET @FirstDayOfWeek = 1;
 END
 
+-- Rock stores Sunday as 0, DATEFIRST expects Sunday as 7
+IF @FirstDayOfWeek = 0
+BEGIN
+    SET @FirstDayOfWeek = 7;
+END
+
 -- IMPORTANT: This value should come from the Starting Day of Week setting here: https://prealpha.rocksolidchurchdemo.com/admin/system/configuration
 SET DATEFIRST @FirstDayOfWeek;
 

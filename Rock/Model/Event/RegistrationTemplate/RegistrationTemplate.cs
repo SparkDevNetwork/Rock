@@ -30,7 +30,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplate" )]
@@ -321,10 +321,10 @@ namespace Rock.Model
         public decimal? DefaultPayment { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [login required].
+        /// Gets or sets a value indicating whether [log in required].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [login required]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [log in required]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool LoginRequired { get; set; }
@@ -522,7 +522,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>        
+        /// </value>
         [DataMember]
         public int? RegistrationWorkflowTypeId { get; set; }
 
@@ -531,7 +531,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>        
+        /// </value>
         [DataMember]
         public int? RegistrantWorkflowTypeId { get; set; }
 

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -29,7 +29,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
-    public partial class TagsController 
+    [RockGuid( "e6b8f324-857c-4624-a3d6-ce4a6672070d" )]
+    public partial class TagsController
     {
         /// <summary>
         /// GET a specific Tag
@@ -45,6 +46,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
+        [RockGuid( "7e796516-837c-4cdd-8c76-7bdf297a764a" )]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier = null, string entityQualifierValue = null, string categoryGuid = null, bool? includeInactive = false )
         {
             string tagName = WebUtility.UrlDecode( name );
@@ -79,13 +81,14 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Tags/AvailableNames" )]
+        [RockGuid( "0611e622-841b-4150-a76c-fafa5109ccd1" )]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name = null, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             var tags = ( ( TagService ) Service )
                 .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, categoryGuid, includeInactive )
                 .Where( t =>
                     t.Name.StartsWith( name ) &&
-                    !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) && 
+                    !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) &&
                     t.IsActive );
 
             if ( categoryGuid.HasValue )
@@ -94,8 +97,8 @@ namespace Rock.Rest.Controllers
                 if ( category != null )
                 {
                     tags = tags
-                        .Where( a => 
-                            a.CategoryId.HasValue && 
+                        .Where( a =>
+                            a.CategoryId.HasValue &&
                             a.CategoryId.Value == category.Id );
                 }
             }

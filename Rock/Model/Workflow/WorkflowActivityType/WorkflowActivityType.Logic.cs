@@ -15,10 +15,7 @@
 // </copyright>
 //
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data.Entity;
-using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -28,21 +25,6 @@ namespace Rock.Model
     public partial class WorkflowActivityType
     {
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowActionType">WorkflowActionTypes</see> that are 
-        /// performed by this WorkflowActivityType.
-        /// </summary>
-        /// <value>
-        /// The action types.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<WorkflowActionType> ActionTypes
-        {
-            get { return _actionTypes ?? ( _actionTypes = new Collection<WorkflowActionType>() ); }
-            set { _actionTypes = value; }
-        }
-        private ICollection<WorkflowActionType> _actionTypes;
 
         /// <summary>
         /// Gets the parent security authority for this WorkflowActivityType. 

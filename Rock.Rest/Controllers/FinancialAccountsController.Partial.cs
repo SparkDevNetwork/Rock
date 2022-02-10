@@ -16,7 +16,7 @@
 //
 using System.Linq;
 using System.Web;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
@@ -24,8 +24,9 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "8a8ff948-147e-4783-8c08-202f6e402caa" )]
     public partial class FinancialAccountsController
     {
         /// <summary>
@@ -36,6 +37,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
+        [RockGuid( "5c21d8b8-5c68-42ca-bf19-80050c8ff2a4" )]
         public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly )
         {
             return GetChildren( id, activeOnly, true );
@@ -50,6 +52,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
+        [RockGuid( "976bdf2a-92e6-4902-a84d-be7cb25a3824" )]
         public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName )
         {
             IQueryable<FinancialAccount> qry;

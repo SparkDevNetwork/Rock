@@ -27,13 +27,13 @@ using Rock.Web.Cache;
 namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
-    /// Allows the user to login on a mobile application.
+    /// Allows the user to log in on a mobile application.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
-    [DisplayName( "Login" )]
+    [DisplayName( "Log In" )]
     [Category( "Mobile > Cms" )]
-    [Description( "Allows the user to login on a mobile application." )]
+    [Description( "Allows the user to log in on a mobile application." )]
     [IconCssClass( "fa fa-user-lock" )]
 
     #region Block Attributes
@@ -180,7 +180,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         }
 
         /// <summary>
-        /// Gets the response to send for a valid login on mobile.
+        /// Gets the response to send for a valid log in on mobile.
         /// </summary>
         /// <param name="userLogin">The user login.</param>
         /// <param name="rememberMe">if set to <c>true</c> then the login should persist beyond this session.</param>

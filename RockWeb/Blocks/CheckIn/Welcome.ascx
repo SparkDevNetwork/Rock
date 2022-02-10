@@ -12,7 +12,7 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 
     <Triggers>
-        <%-- make sure lbLogin and lbCancel causes a full postback due to an issue with buttons not firing in IE after clicking the login button --%>
+        <%-- make sure lbLogin and lbCancel causes a full postback due to an issue with buttons not firing in IE after clicking the log in button --%>
         <asp:PostBackTrigger ControlID="lbLogin" />
         <asp:PostBackTrigger ControlID="lbCancel" />
     </Triggers>
@@ -288,7 +288,7 @@
                                     submitScannedCodeSearch(decodedText);
                                 }
                                 else {
-                                    // already scanned this 
+                                    // already scanned this
                                 }
                             },
                             errorMessage => {
@@ -653,7 +653,7 @@
         <asp:Panel ID="pnlManagerLogin" CssClass="js-manager-login" runat="server" Visible="false" DefaultButton="lbLogin">
 
             <div class="checkin-header">
-                <h1>Manager Login</h1>
+                <h1>Manager Log In</h1>
             </div>
 
             <div class="checkin-body">
@@ -706,7 +706,7 @@
             <div class="checkin-footer">
 
                 <div class="checkin-actions">
-                    <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Login</asp:LinkButton>
+                    <asp:LinkButton ID="lbLogin" runat="server" OnClick="lbLogin_Click" CssClass="btn btn-primary">Log In</asp:LinkButton>
                     <asp:LinkButton ID="lbCancel" runat="server" CausesValidation="false" OnClick="lbCancel_Click" CssClass="btn btn-default btn-cancel">Cancel</asp:LinkButton>
                 </div>
             </div>

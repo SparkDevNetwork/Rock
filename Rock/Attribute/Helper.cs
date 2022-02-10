@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -685,6 +686,173 @@ This can be due to multiple threads updating the same attribute at the same time
             }
 
             edtAttribute.GetAttributeProperties( newAttribute );
+
+            return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
+        }
+
+        /// <summary>
+        /// Gets the publically editable attribute model. This contains all the
+        /// information required for the individual to make changes to the attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute that will be represented.</param>
+        /// <returns>A <see cref="PublicEditableAttributeViewModel"/> that represents the attribute.</returns>
+        internal static PublicEditableAttributeViewModel GetPublicEditableAttributeViewModel( Rock.Model.Attribute attribute )
+        {
+            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeId );
+            var configurationValues = attribute.AttributeQualifiers.ToDictionary( q => q.Key, q => q.Value );
+
+            return new PublicEditableAttributeViewModel
+            {
+                Guid = attribute.Guid,
+                Name = attribute.Name,
+                Key = attribute.Key,
+                AbbreviatedName = attribute.AbbreviatedName,
+                Description = attribute.Description,
+                IsActive = attribute.IsActive,
+                IsAnalytic = attribute.IsAnalytic,
+                IsAnalyticHistory = attribute.IsAnalyticHistory,
+                PreHtml = attribute.PreHtml,
+                PostHtml = attribute.PostHtml,
+                IsAllowSearch = attribute.AllowSearch,
+                IsEnableHistory = attribute.EnableHistory,
+                IsIndexEnabled = attribute.IsIndexEnabled,
+                IsPublic = attribute.IsPublic,
+                IsRequired = attribute.IsRequired,
+                IsSystem = attribute.IsSystem,
+                IsShowInGrid = attribute.IsGridColumn,
+                IsShowOnBulk = attribute.ShowOnBulk,
+                FieldTypeGuid = fieldTypeCache.Guid,
+                Categories = attribute.Categories
+                    .Select( c => new ListItemViewModel
+                    {
+                        Value = c.Guid.ToString(),
+                        Text = c.Name
+                    } )
+                    .ToList(),
+                ConfigurationOptions = fieldTypeCache.Field?.GetPublicConfigurationOptions( configurationValues ) ?? new Dictionary<string, string>(),
+                DefaultValue = fieldTypeCache.Field?.GetClientEditValue( attribute.DefaultValue, configurationValues ) ?? string.Empty
+            };
+        }
+
+        /// <summary>
+        /// Saves any attribute edits made using a view model.
+        /// </summary>
+        /// <param name="attribute">The attribute values that were edited.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="Rock.Model.Attribute"/> that was saved to the database.</returns>
+        /// <remarks>
+        /// If a <paramref name="rockContext"/> is included, this method will save any previous changes made to the context.
+        /// </remarks>
+        internal static Rock.Model.Attribute SaveAttributeEdits( PublicEditableAttributeViewModel attribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var attributeService = new AttributeService( rockContext );
+            Rock.Model.Attribute existingAttribute = null;
+
+            var newAttribute = new Rock.Model.Attribute();
+
+            // Try to load the existing attribute if we have one.
+            if ( attribute.Guid.HasValue )
+            {
+                existingAttribute = attributeService.Get( attribute.Guid ?? Guid.Empty );
+            }
+
+            // If we found an existing attribute, copy its values over to our new
+            // attribute. Otherwise set the initial Order value on the new attribute.
+            if ( existingAttribute != null )
+            {
+                newAttribute.CopyPropertiesFrom( existingAttribute );
+            }
+            else
+            {
+                newAttribute.Order = attributeService.Queryable().Max( a => a.Order ) + 1;
+            }
+
+            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeGuid ?? Guid.Empty );
+
+            // For now, if they try to make changes to an attribute that is using
+            // an unknown field type we just can't do it. Even if they only change
+            // the name, just don't allow it.
+            if ( fieldTypeCache?.Field == null )
+            {
+                throw new Exception( "Unable to save attribute referencing unknown field type." );
+            }
+
+            var configurationValues = fieldTypeCache.Field.GetPrivateConfigurationOptions( attribute.ConfigurationOptions );
+
+            // Note: We intentionally ignore IsSystem, that cannot be changed by the user.
+            newAttribute.Name = attribute.Name;
+            newAttribute.AbbreviatedName = attribute.AbbreviatedName;
+            newAttribute.Key = attribute.Key;
+            newAttribute.Description = attribute.Description;
+            newAttribute.IsActive = attribute.IsActive;
+            newAttribute.IsPublic = attribute.IsPublic;
+            newAttribute.IsRequired = attribute.IsRequired;
+            newAttribute.ShowOnBulk = attribute.IsShowOnBulk;
+            newAttribute.IsGridColumn = attribute.IsShowInGrid;
+            newAttribute.IsAnalytic = attribute.IsAnalytic;
+            newAttribute.IsAnalyticHistory = attribute.IsAnalyticHistory;
+            newAttribute.AllowSearch = attribute.IsAllowSearch;
+            newAttribute.EnableHistory = attribute.IsEnableHistory;
+            newAttribute.IsIndexEnabled = attribute.IsIndexEnabled;
+            newAttribute.PreHtml = attribute.PreHtml;
+            newAttribute.PostHtml = attribute.PostHtml;
+            newAttribute.FieldTypeId = fieldTypeCache.Id;
+            newAttribute.DefaultValue = fieldTypeCache.Field.GetValueFromClient( attribute.DefaultValue, configurationValues );
+
+            var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
+            newAttribute.Categories.Clear();
+            if ( categoryGuids != null && categoryGuids.Any() )
+            {
+                new CategoryService( rockContext ).Queryable()
+                    .Where( c => categoryGuids.Contains( c.Guid ) )
+                    .ToList()
+                    .ForEach( c => newAttribute.Categories.Add( c ) );
+            }
+
+            // Since changes to Categories isn't tracked by ChangeTracker,
+            // set the ModifiedDateTime just in case Categories is the only
+            // actual change.
+            newAttribute.ModifiedDateTime = RockDateTime.Now;
+
+            // Clear out any old qualifier values and then set
+            newAttribute.AttributeQualifiers.Clear();
+            foreach ( var qualifier in configurationValues )
+            {
+                AttributeQualifier attributeQualifier = new AttributeQualifier
+                {
+                    IsSystem = false,
+                    Key = qualifier.Key,
+                    Value = qualifier.Value ?? string.Empty
+                };
+
+                newAttribute.AttributeQualifiers.Add( attributeQualifier );
+            }
+
+            // Merge in any old qualifiers if they were not provided by the client.
+            if ( existingAttribute != null )
+            {
+                foreach ( var qualifier in existingAttribute.AttributeQualifiers )
+                {
+                    var aq = newAttribute.AttributeQualifiers.FirstOrDefault( q => q.Key == qualifier.Key );
+
+                    if ( aq == null )
+                    {
+                        AttributeQualifier attributeQualifier = new AttributeQualifier
+                        {
+                            IsSystem = false,
+                            Key = qualifier.Key,
+                            Value = qualifier.Value ?? string.Empty
+                        };
+
+                        newAttribute.AttributeQualifiers.Add( attributeQualifier );
+                    }
+                }
+            }
 
             return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
         }

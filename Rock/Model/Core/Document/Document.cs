@@ -147,16 +147,6 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile BinaryFile { get; set; }
 
-        /// <summary>
-        /// Gets a value indicating whether [allows interactive bulk indexing].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
-        /// </value>
-        /// <exception cref="System.NotImplementedException"></exception>
-        [NotMapped]
-        public bool AllowsInteractiveBulkIndexing => true;
-
         #endregion Navigation Properties
 
         #region Public Methods

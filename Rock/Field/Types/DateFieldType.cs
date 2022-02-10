@@ -217,13 +217,13 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             return FormatValue( value, configurationValues, false );
         }
 
         /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
         {
             return FormatValue( value, configurationValues, true );
         }
@@ -235,7 +235,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        private string FormatValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        private string FormatValue( string value, Dictionary<string, string> configurationValues, bool condensed )
         {
             if ( string.IsNullOrWhiteSpace( value ) )
             {
@@ -274,11 +274,11 @@ namespace Rock.Field.Types
 
                     if ( configurationValues != null &&
                         configurationValues.ContainsKey( "format" ) &&
-                        !String.IsNullOrWhiteSpace( configurationValues["format"].Value ) )
+                        !String.IsNullOrWhiteSpace( configurationValues["format"] ) )
                     {
                         try
                         {
-                            formattedValue = dateValue.Value.ToString( configurationValues["format"].Value );
+                            formattedValue = dateValue.Value.ToString( configurationValues["format"] );
                         }
                         catch
                         {
@@ -291,7 +291,7 @@ namespace Rock.Field.Types
                         if ( configurationValues != null &&
                             configurationValues.ContainsKey( "displayDiff" ) )
                         {
-                            if ( bool.TryParse( configurationValues["displayDiff"].Value, out var displayDiff ) && displayDiff )
+                            if ( bool.TryParse( configurationValues["displayDiff"], out var displayDiff ) && displayDiff )
                             {
                                 formattedValue += " (" + dateValue.ToElapsedString( true, false ) + ")";
                             }
@@ -314,7 +314,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return FormatValue( value, configurationValues, condensed );
+            return FormatValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ), condensed );
         }
 
         /// <summary>

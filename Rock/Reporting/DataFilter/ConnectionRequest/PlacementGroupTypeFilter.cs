@@ -132,7 +132,7 @@ function() {
             GroupTypePicker groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Placement Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
             filterControl.Controls.Add( groupTypePicker );
 
             return new Control[] { groupTypePicker };

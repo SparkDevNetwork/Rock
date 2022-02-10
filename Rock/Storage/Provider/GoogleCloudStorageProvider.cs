@@ -98,6 +98,11 @@ namespace Rock.Storage.Provider
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
         public override void SaveContent( BinaryFile binaryFile, out long? fileSize )
         {
+            /*
+               SK - 12/11/2021
+               Path should always be reset while saving content otherwise new storage provider may still be refering the older path.
+           */
+            binaryFile.Path = null;
             var googleObject = TranslateBinaryFileToGoogleObject( binaryFile );
 
             using ( var client = GetStorageClient() )

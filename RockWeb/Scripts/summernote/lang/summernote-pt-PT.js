@@ -1,3 +1,27 @@
+/*!
+ * 
+ * Super simple WYSIWYG editor v0.8.20
+ * https://summernote.org
+ *
+ *
+ * Copyright 2013- Alan Hong and contributors
+ * Summernote may be freely distributed under the MIT license.
+ *
+ * Date: 2021-10-14T21:15Z
+ *
+ */
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
 (function ($) {
   $.extend($.summernote.lang, {
     'pt-PT': {
@@ -9,6 +33,8 @@
         height: 'Altura da linha',
         name: 'Fonte',
         strikethrough: 'Riscado',
+        subscript: 'Subscript',
+        superscript: 'Superscript',
         size: 'Tamanho da fonte'
       },
       image: {
@@ -20,9 +46,25 @@
         floatLeft: 'Float Esquerda',
         floatRight: 'Float Direita',
         floatNone: 'Sem Float',
+        shapeRounded: 'Forma: Arredondado',
+        shapeCircle: 'Forma: Círculo',
+        shapeThumbnail: 'Forma: Minhatura',
+        shapeNone: 'Forma: Nenhum',
         dragImageHere: 'Arraste uma imagem para aqui',
+        dropImage: 'Arraste uma imagem ou texto',
         selectFromFiles: 'Selecione a partir dos arquivos',
-        url: 'Endereço da imagem'
+        maximumFileSize: 'Tamanho máximo do fixeiro',
+        maximumFileSizeError: 'Tamanho máximo do fixeiro é maior que o permitido.',
+        url: 'Endereço da imagem',
+        remove: 'Remover Imagem',
+        original: 'Original'
+      },
+      video: {
+        video: 'Vídeo',
+        videoLink: 'Link para vídeo',
+        insert: 'Inserir vídeo',
+        url: 'URL do vídeo?',
+        providers: '(YouTube, Google Drive, Vimeo, Vine, Instagram, DailyMotion or Youku)'
       },
       link: {
         link: 'Link',
@@ -34,14 +76,21 @@
         openInNewWindow: 'Abrir numa nova janela'
       },
       table: {
-        table: 'Tabela'
+        table: 'Tabela',
+        addRowAbove: 'Adicionar linha acima',
+        addRowBelow: 'Adicionar linha abaixo',
+        addColLeft: 'Adicionar coluna à Esquerda',
+        addColRight: 'Adicionar coluna à Esquerda',
+        delRow: 'Excluir linha',
+        delCol: 'Excluir coluna',
+        delTable: 'Excluir tabela'
       },
       hr: {
         insert: 'Inserir linha horizontal'
       },
       style: {
         style: 'Estilo',
-        normal: 'Normal',
+        p: 'Parágrafo',
         blockquote: 'Citação',
         pre: 'Código',
         h1: 'Título 1',
@@ -77,7 +126,8 @@
         transparent: 'Transparente',
         setTransparent: 'Fundo transparente',
         reset: 'Restaurar',
-        resetToDefault: 'Restaurar padrão'
+        resetToDefault: 'Restaurar padrão',
+        cpSelect: 'Selecionar'
       },
       shortcut: {
         shortcuts: 'Atalhos do teclado',
@@ -87,10 +137,48 @@
         paragraphFormatting: 'Formatação de parágrafo',
         documentStyle: 'Estilo de documento'
       },
+      help: {
+        'insertParagraph': 'Inserir Parágrafo',
+        'undo': 'Desfazer o último comando',
+        'redo': 'Refazer o último comando',
+        'tab': 'Maior tabulação',
+        'untab': 'Menor tabulação',
+        'bold': 'Colocar em negrito',
+        'italic': 'Colocar em itálico',
+        'underline': 'Colocar em sublinhado',
+        'strikethrough': 'Colocar em riscado',
+        'removeFormat': 'Limpar o estilo',
+        'justifyLeft': 'Definir alinhado à esquerda',
+        'justifyCenter': 'Definir alinhado ao centro',
+        'justifyRight': 'Definir alinhado à direita',
+        'justifyFull': 'Definir justificado',
+        'insertUnorderedList': 'Alternar lista não ordenada',
+        'insertOrderedList': 'Alternar lista ordenada',
+        'outdent': 'Recuar parágrafo atual',
+        'indent': 'Avançar parágrafo atual',
+        'formatPara': 'Alterar formato do bloco para parágrafo',
+        'formatH1': 'Alterar formato do bloco para Título 1',
+        'formatH2': 'Alterar formato do bloco para Título 2',
+        'formatH3': 'Alterar formato do bloco para Título 3',
+        'formatH4': 'Alterar formato do bloco para Título 4',
+        'formatH5': 'Alterar formato do bloco para Título 5',
+        'formatH6': 'Alterar formato do bloco para Título 6',
+        'insertHorizontalRule': 'Inserir linha horizontal',
+        'linkDialog.show': 'Inserir uma ligração'
+      },
       history: {
         undo: 'Desfazer',
         redo: 'Refazer'
+      },
+      specialChar: {
+        specialChar: 'SPECIAL CHARACTERS',
+        select: 'Select Special characters'
       }
     }
   });
 })(jQuery);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});
+//# sourceMappingURL=summernote-pt-PT.js.map

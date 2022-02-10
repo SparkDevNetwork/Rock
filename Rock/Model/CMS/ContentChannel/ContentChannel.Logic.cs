@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using Rock.Web.Cache;
@@ -44,6 +45,7 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
@@ -56,6 +58,24 @@ namespace Rock.Model
             get
             {
                 return this.ContentChannelType != null ? this.ContentChannelType : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        [NotMapped]
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
+                return supportedActions;
             }
         }
     }

@@ -19,13 +19,55 @@ import { FieldTypeBase } from "./fieldType";
 import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { asBoolean } from "../Services/boolean";
 
+/**
+ * The key names for the configuration properties available when editing the
+ * configuration of a DefinedValue field type.
+ */
+export const enum ConfigurationPropertyKey {
+    /** The defined types available to be picked. */
+    DefinedTypes = "definedTypes",
+
+    /** The defined values available to be picked. */
+    DefinedValues = "definedValues"
+}
+
+/**
+ * The configuration value keys used by the configuraiton and edit controls.
+ */
 export const enum ConfigurationValueKey {
-    Values = "values",
+    /** The unique identifier of the defined type currently selected. */
+    DefinedType = "definedtype",
+
+    /**
+     * The unique identifiers of the defined values that can be selected
+     * during editing.
+     */
+    SelectableValues = "selectableValues",
+
+    /**
+     * Contains "True" if the edit control should be rendered to allow
+     * selecting multiple values.
+     */
     AllowMultiple = "allowmultiple",
+
+    /**
+     * Contains "True" if the edit control should display descriptions instead
+     * of values.
+     */
     DisplayDescription = "displaydescription",
+
+    /**
+     * Contains "True" if the edit control should use enhanced selection.
+     */
     EnhancedSelection = "enhancedselection",
+
+    /** Contains "True" if in-active values should be included. */
     IncludeInactive = "includeInactive",
+
+    /** Contains "True" if adding new values is permitted. */
     AllowAddingNewValues = "AllowAddingNewValues",
+
+    /** The number of columns to use when multiple selection is allowed. */
     RepeatColumns = "RepeatColumns"
 }
 
@@ -47,6 +89,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./definedValueFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./definedValueFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Defined Value field.
  */
@@ -56,7 +103,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
             const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
             try {
-                const values = JSON.parse(value.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+                const values = JSON.parse(value.configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
                 const displayDescription = asBoolean(value.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
                 const rawValues = clientValue.value.split(",");
 
@@ -75,5 +122,9 @@ export class DefinedValueFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

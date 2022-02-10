@@ -32,7 +32,7 @@ export default defineComponent({
     :modelValue="modelValue"
     formGroupClasses="static-control"
     name="static-form-control">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="form-control-static">
                 {{ modelValue }}

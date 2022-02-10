@@ -70,3 +70,9 @@ export const EditComponent = defineComponent({
 <DateRangePicker v-model="internalValue" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "DateRangeField.Configuration",
+
+    template: ``
+});

@@ -60,7 +60,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
         {
             var clientValues = GetListSource( configurationValues )
                     .Select( kvp => new ListItemViewModel
@@ -268,6 +268,17 @@ namespace Rock.Field.Types
         /// </value>
         private Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
+            return GetListSource( configurationValues.ToDictionary( k => k.Key, k => k.Value ) );
+        }
+
+        /// <summary>
+        /// Gets the list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        private Dictionary<string, string> GetListSource( Dictionary<string, string> configurationValues )
+        {
             var allCampuses = CampusCache.All();
 
             if ( configurationValues == null )
@@ -275,11 +286,11 @@ namespace Rock.Field.Types
                 return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
             }
 
-            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
-            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
-            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
-            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].Value.IsNotNullOrWhiteSpace()
-                ? configurationValues[SELECTABLE_CAMPUSES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList()
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
+            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_CAMPUSES_KEY].SplitDelimitedValues( false ).AsIntegerList()
                 : null;
 
             var campusList = allCampuses
@@ -297,7 +308,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
             if ( value == null )
             {
@@ -319,7 +330,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return GetTextValue( value, configurationValues );
+            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

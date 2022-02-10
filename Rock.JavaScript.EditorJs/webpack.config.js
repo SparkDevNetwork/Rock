@@ -10,12 +10,12 @@ module.exports = {
         "editor-tools": "./src/editor-tools.ts"
     },
     output: {
-        path: path.resolve(__dirname, "../RockWeb/Scripts/Rock/UI/structuredcontent"),
+        path: path.resolve(__dirname, "../RockWeb/Scripts/Rock/UI/structuredcontenteditor"),
         filename: "[name].js",
 
         /* The library will export into the global namespace prefixed with Rock.UI.StructuredContent. */
         libraryTarget: "assign-properties",
-        library: ["Rock", "UI", "StructuredContent"]
+        library: ["Rock", "UI", "StructuredContentEditor"]
     },
     /* Enable caching so rebuilds are faster. */
     cache: {

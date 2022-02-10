@@ -7,7 +7,7 @@
 
 
                 <fieldset>
-                    <Rock:RockTextBox ID="txtFirstName" runat="server" Placeholder="First Name" />
+                    <Rock:FirstNameTextBox ID="txtFirstName" runat="server" Placeholder="First Name" />
                     <Rock:RockTextBox ID="txtLastName" runat="server" Placeholder="Last Name" />
                     <div class="form-group">
                         <Rock:EmailBox ID="txtEmail" runat="server" Placeholder="Email" />

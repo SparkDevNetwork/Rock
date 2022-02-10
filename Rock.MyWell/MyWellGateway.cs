@@ -1570,6 +1570,14 @@ namespace Rock.MyWell
 
                 if ( subscriptionId != scheduledTransaction.GatewayScheduleId )
                 {
+                    // Shouldn't happen, but just in case...
+                    if ( scheduledTransaction.PreviousGatewayScheduleIds == null )
+                    {
+                        scheduledTransaction.PreviousGatewayScheduleIds = new List<string>();
+                    }
+
+                    scheduledTransaction.PreviousGatewayScheduleIds.Add( scheduledTransaction.GatewayScheduleId );
+
                     referencedPaymentInfo.TransactionCode = subscriptionId;
                     scheduledTransaction.GatewayScheduleId = subscriptionId;
                 }

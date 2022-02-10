@@ -30,8 +30,9 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "717fb517-c412-4654-962f-e67e6b4b613b" )]
     public partial class PrayerRequestsController
     {
         /// <summary>
@@ -42,6 +43,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [EnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/Public" )]
+        [RockGuid( "2fdaa0cf-37f4-4b1f-9847-8e028759871d" )]
         public IQueryable<PrayerRequest> Public()
         {
             var now = RockDateTime.Now;
@@ -64,6 +66,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [EnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/GetByCategory/{categoryId}" )]
+        [RockGuid( "1ea8efaa-1481-4fc0-9681-ca940ab25309" )]
         public IQueryable<PrayerRequest> GetByCategory( int categoryId )
         {
             var rockContext = ( this.Service.Context as RockContext ) ?? new RockContext();
@@ -80,6 +83,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{prayerId}/{personAliasId}" )]
+        [RockGuid( "b5a3a2c4-a841-4309-8952-34a86b872478" )]
         public virtual void Prayed( int prayerId, int personAliasId )
         {
             SetProxyCreation( true );
@@ -105,6 +109,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Flag/{id}" )]
+        [RockGuid( "170fbfd5-cb6a-4a4c-88f0-e730e8af7321" )]
         public virtual void Flag( int id )
         {
             SetProxyCreation( true );
@@ -123,7 +128,7 @@ namespace Rock.Rest.Controllers
 
             Service.Context.SaveChanges();
         }
-        
+
         /// <summary>
         /// Increment the prayer count for a prayer request
         /// </summary>
@@ -132,6 +137,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{id:int}" )]
+        [RockGuid( "86675411-d420-4d8b-a421-2bd8c92f4069" )]
         public virtual void Prayed( int id )
         {
             SetProxyCreation( true );
@@ -157,6 +163,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{guid:guid}" )]
+        [RockGuid( "9696db0a-4ccc-4530-bc8d-e4e54a438bfa" )]
         public IHttpActionResult Prayed( Guid guid, Guid? workflowTypeGuid = null, bool recordInteraction = true )
         {
             System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
@@ -176,7 +183,7 @@ namespace Rock.Rest.Controllers
         /*
          * These methods should be moved to the PrayerRequestsController after
          * they have been tweaked to be a bit more general use approved.
-         * 
+         *
          * Daniel Hazelbaker 9/29/2021
          */
 

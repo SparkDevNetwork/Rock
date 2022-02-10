@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
@@ -27,6 +27,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Controller of misc utility functions that are used by Rock controls
     /// </summary>
+    [RockGuid( "71b490b4-7230-49b7-a25d-42a38a5a9f56" )]
     public class LavaController : ApiControllerBase
     {
 
@@ -39,6 +40,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Lava/RenderTemplate" )]
         [HttpPost]
         [Authenticate, Secured]
+        [RockGuid( "8e85bc7a-fecc-4b58-ac90-69264d671930" )]
         public string RenderTemplate( [NakedBody] string template, [FromUri] string additionalMergeObjects = null )
         {
             Rock.Lava.CommonMergeFieldsOptions lavaOptions = new Lava.CommonMergeFieldsOptions();

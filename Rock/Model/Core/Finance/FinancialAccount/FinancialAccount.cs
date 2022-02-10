@@ -14,9 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Data;
 using Rock.Lava;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -257,6 +260,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile ImageBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the FinancialAccounts that are sub accounts/child accounts of this account.  This is not a recursive search.
+        /// </summary>
+        /// <value>
+        /// A collection containing all FinancialAccounts that are sub accounts/child accounts of this account.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<FinancialAccount> ChildAccounts
+        {
+            get { return _childAccounts ?? ( _childAccounts = new Collection<FinancialAccount>() ); }
+            set { _childAccounts = value; }
+        }
+        private ICollection<FinancialAccount> _childAccounts;
 
         #endregion Navigation Properties
     }

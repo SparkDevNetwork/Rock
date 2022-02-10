@@ -331,8 +331,8 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontent/editor.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontent/editor-tools.js" );
+                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontenteditor/editor.js" );
+                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js" );
             }
 
             EnsureChildControls();
@@ -383,8 +383,8 @@ namespace Rock.Web.UI.Controls
             // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                var editorUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontent/editor.js" );
-                var toolsUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontent/editor-tools.js" );
+                var editorUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor.js" );
+                var toolsUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js" );
 
                 ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs", editorUrl );
                 ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs-tools", toolsUrl );
@@ -420,13 +420,13 @@ namespace Rock.Web.UI.Controls
             var script = string.Format( @"
 ;(function() {{
 var fieldContent = $('#{1}').val();
-var editor = new Rock.UI.StructuredContent.EditorJS({{
+var editor = new Rock.UI.StructuredContentEditor.EditorJS({{
     holder: '{0}',
     tools: {2},
     defaultBlock: 'paragraph',
     data: JSON.parse(decodeURIComponent(fieldContent)),
     onReady: function() {{
-        new Rock.UI.StructuredContent.EditorDragDrop(editor);
+        new Rock.UI.StructuredContentEditor.EditorDragDrop(editor);
     }},
     onChange: function() {{
         editor.save().then( function(savedData) {{

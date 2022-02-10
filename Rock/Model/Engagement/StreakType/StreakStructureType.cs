@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -24,41 +26,55 @@ namespace Rock.Model
         /// <summary>
         /// The <see cref="StreakType"/> is associated with any attendance record.
         /// </summary>
+        [Description( "Attendance: Any" )]
         AnyAttendance = 0,
 
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance to a single group.
         /// </summary>
+        [Description( "Attendance: Group" )]
         Group = 1,
 
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance to groups of a given type.
         /// </summary>
+        [Description( "Attendance: Group Type" )]
         GroupType = 2,
 
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance to groups within group types of a common purpose (defined type).
         /// </summary>
+        [Description( "Attendance: Group Type Purpose" )]
         GroupTypePurpose = 3,
 
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance specified by a check-in configuration.
         /// </summary>
+        [Description( "Attendance: Check-In Configuration" )]
         CheckInConfig = 4,
 
         /// <summary>
         /// The <see cref="StreakType"/> is associated with interactions in a certain channel.
         /// </summary>
+        [Description( "Interaction: Channel" )]
         InteractionChannel = 5,
 
         /// <summary>
         /// The <see cref="StreakType"/> is associated with interactions in a certain component.
         /// </summary>
+        [Description( "Interaction: Component" )]
         InteractionComponent = 6,
 
         /// <summary>
         /// The <see cref="StreakType"/> is associated with interactions over a certain.
         /// </summary>
-        InteractionMedium = 7
+        [Description( "Interaction: Medium" )]
+        InteractionMedium = 7,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with financial transactions.
+        /// </summary>
+        [Description( "Financial Transaction" )]
+        FinancialTransaction = 8
     }
 }

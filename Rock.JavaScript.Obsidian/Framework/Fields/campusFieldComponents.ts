@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, ref, SetupContext, watch, watchEffect } from "vue";
 import { getFieldEditorProps } from "./utils";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
 import { ConfigurationValueKey } from "./campusField";
 import { ListItem } from "../ViewModels";
 
@@ -33,16 +33,9 @@ export const EditComponent = defineComponent({
         const internalValue = ref(props.modelValue ?? "");
 
         /** The options to choose from in the drop down list */
-        const options = computed((): DropDownListOption[] => {
+        const options = computed((): ListItem[] => {
             try {
-                const valueOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
-
-                return valueOptions.map(o => {
-                    return {
-                        value: o.value,
-                        text: o.text
-                    } as DropDownListOption;
-                });
+                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
             }
             catch {
                 return [];

@@ -71,3 +71,9 @@ export const EditComponent = defineComponent({
 <NumberRangeBox v-model="internalValue" :decimal-count="0" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "IntegerRangeField.Configuration",
+
+    template: ``
+});

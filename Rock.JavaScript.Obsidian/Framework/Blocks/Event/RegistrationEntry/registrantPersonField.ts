@@ -22,6 +22,7 @@ import EmailBox from "../../../Elements/emailBox";
 import DropDownList from "../../../Elements/dropDownList";
 import GenderDropDownList from "../../../Elements/genderDropDownList";
 import BirthdayPicker from "../../../Elements/birthdayPicker";
+import PhoneNumberBox from "../../../Elements/phoneNumberBox";
 import ComponentFromUrl from "../../../Controls/componentFromUrl";
 import Alert from "../../../Elements/alert";
 import { getDefaultDatePartsPickerModel } from "../../../Elements/datePartsPicker";
@@ -76,11 +77,30 @@ export default defineComponent({
                 case RegistrationPersonFieldType.Birthdate:
                     return BirthdayPicker;
 
+                case RegistrationPersonFieldType.AnniversaryDate:
+                    return BirthdayPicker;
+
                 case RegistrationPersonFieldType.Address:
                     return AddressControl;
-            }
 
-            return null;
+                case RegistrationPersonFieldType.MaritalStatus:
+                    return DropDownList;
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    return DropDownList;
+
+                case RegistrationPersonFieldType.Grade:
+                    return DropDownList;
+
+                case RegistrationPersonFieldType.HomePhone:
+                    return PhoneNumberBox;
+
+                case RegistrationPersonFieldType.WorkPhone:
+                    return PhoneNumberBox;
+
+                case RegistrationPersonFieldType.MobilePhone:
+                    return PhoneNumberBox;
+            }
         });
 
         const fieldControlComponentProps = computed(() => {
@@ -120,7 +140,38 @@ export default defineComponent({
                     componentProps.label = "Birthday";
                     break;
 
+                case RegistrationPersonFieldType.AnniversaryDate:
+                    componentProps.label = "Anniversary Date";
+                    break;
+
                 case RegistrationPersonFieldType.Address:
+                    break;
+
+                case RegistrationPersonFieldType.MaritalStatus:
+                    componentProps.label = "Marital Status";
+                    componentProps.options = [...registrationEntryState.viewModel.maritalStatuses];
+                    break;
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    componentProps.label = "Connection Status";
+                    componentProps.options = [...registrationEntryState.viewModel.connectionStatuses];
+                    break;
+
+                case RegistrationPersonFieldType.Grade:
+                    componentProps.label = "Grade";
+                    componentProps.options = [...registrationEntryState.viewModel.grades];
+                    break;
+
+                case RegistrationPersonFieldType.HomePhone:
+                    componentProps.label = "Home Phone";
+                    break;
+
+                case RegistrationPersonFieldType.WorkPhone:
+                    componentProps.label = "Work Phone";
+                    break;
+
+                case RegistrationPersonFieldType.MobilePhone:
+                    componentProps.label = "Mobile Phone";
                     break;
             }
 
@@ -133,6 +184,10 @@ export default defineComponent({
 
             switch (props.field.personFieldType) {
                 case RegistrationPersonFieldType.Birthdate:
+                    defaultValue = getDefaultDatePartsPickerModel();
+                    break;
+
+                case RegistrationPersonFieldType.AnniversaryDate:
                     defaultValue = getDefaultDatePartsPickerModel();
                     break;
 

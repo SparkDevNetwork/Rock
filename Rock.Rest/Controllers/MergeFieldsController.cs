@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -27,8 +27,9 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "d2f7eda7-cca3-4f69-b8c5-eb2702ebc317" )]
     public partial class MergeFieldsController : ApiControllerBase
     {
         /// <summary>
@@ -38,6 +39,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/MergeFields/{id}" )]
+        [RockGuid( "5827b6fd-4f4d-4642-8d04-7f7a65470888" )]
         public virtual string Get( string id )
         {
             return Rock.Web.UI.Controls.MergeFieldPicker.FormatSelectedValue( id );
@@ -51,6 +53,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/MergeFields/GetChildren/{id}" )]
+        [RockGuid( "40a9ff74-3e5e-4c4a-8f11-2bbf8acb1e51" )]
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
         {
             var person = GetPerson();

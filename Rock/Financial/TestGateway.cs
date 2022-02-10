@@ -69,6 +69,14 @@ namespace Rock.Financial
         Key = AttributeKey.PromptForNameOnCard,
         DefaultBooleanValue = false,
         Order = 4 )]
+
+    [EnumsField(
+        "Gateway Mode",
+        Description = "Selected the gateway mode",
+        Key = AttributeKey.GatewayMode,
+        EnumSourceType = typeof( HostedGatewayMode ),
+        DefaultValue = "Unhosted",
+        Order = 5 )]
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent
     {
         #region Attribute Keys
@@ -83,6 +91,7 @@ namespace Rock.Financial
             public const string MaxExpirationYears = "MaxExpirationYears";
             public const string DeclinedCVV = "DeclinedCVV";
             public const string PromptForNameOnCard = "PromptForNameOnCard";
+            public const string GatewayMode = "GatewayMode";
         }
 
         #endregion
@@ -269,7 +278,7 @@ namespace Rock.Financial
                     ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
                     CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
                     AccountNumberMasked = paymentInfo.MaskedNumber,
-                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( paymentInfo.MaskedNumber )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( paymentInfo.MaskedNumber ?? string.Empty )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
                 };
 
                 return transaction;
@@ -447,7 +456,7 @@ namespace Rock.Financial
             for ( int paymentNumber = 0; paymentNumber < randomNumberOfPayments; paymentNumber++ )
             {
                 // get a random scheduled Transaction (if any)
-                var scheduledTransaction = scheduledTransactionList.OrderBy( a => a.Guid ).FirstOrDefault();
+                var scheduledTransaction = scheduledTransactionList.OrderBy( a => Guid.NewGuid() ).FirstOrDefault();
                 if ( scheduledTransaction == null )
                 {
                     return new List<Payment>();
@@ -652,11 +661,14 @@ namespace Rock.Financial
         /// </value>
         public HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway )
         {
-            return new HostedGatewayMode[2] { HostedGatewayMode.Hosted, HostedGatewayMode.Unhosted };
+            return  this.GetAttributeValue( financialGateway, AttributeKey.GatewayMode )
+                .SplitDelimitedValues()
+                .Select( a => a.ConvertToEnum<HostedGatewayMode>() )?
+                .ToArray()
+                ?? new HostedGatewayMode[1] { HostedGatewayMode.Unhosted };
         }
 
         #endregion IHostedGatewayComponent
-
     }
 
     /// <summary>

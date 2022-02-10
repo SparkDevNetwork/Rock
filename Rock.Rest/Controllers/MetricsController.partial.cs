@@ -28,8 +28,9 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "0e1fcfe1-8a82-48ca-a548-3940ce650d83" )]
     public partial class MetricsController
     {
         /// <summary>
@@ -40,6 +41,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/Metrics/GetHtmlForBlock/{blockId}" )]
+        [RockGuid( "b67ed75b-94ab-49b7-9e36-84b845fb20d3" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
             RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
@@ -99,22 +101,22 @@ namespace Rock.Rest.Controllers
                         // get a sum of the values that for whole 24 hour day of the last Date
                         DateTime lastValueDateEnd = metricYTDData.LastValueDate.AddDays( 1 );
                         var lastMetricCumulativeValues = qryMeasureValues.Where( a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.LastValueDate && a.MetricValueDateTime.Value < lastValueDateEnd );
-                        metricYTDData.LastValue = lastMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( lastMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : (decimal?)null;
+                        metricYTDData.LastValue = lastMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( lastMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : ( decimal? ) null;
                     }
 
-                    var previousMetricValue = qryMeasureValues.OrderByDescending(a => a.MetricValueDateTime).Skip(1).FirstOrDefault();
+                    var previousMetricValue = qryMeasureValues.OrderByDescending( a => a.MetricValueDateTime ).Skip( 1 ).FirstOrDefault();
                     if ( previousMetricValue != null )
                     {
                         metricYTDData.PreviousValueDate = previousMetricValue.MetricValueDateTime.HasValue ? previousMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
 
                         // get a sum of the values that for whole 24 hour day of the previous Date
-                        DateTime previousValueDateEnd = metricYTDData.PreviousValueDate.AddDays(1);
-                        var previousMetricCumulativeValues = qryMeasureValues.Where(a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.PreviousValueDate && a.MetricValueDateTime.Value < previousValueDateEnd);
-                        metricYTDData.PreviousValue = previousMetricCumulativeValues.Sum(a => a.YValue).HasValue ? Math.Round(previousMetricCumulativeValues.Sum(a => a.YValue).Value, roundYValues ? 0 : 2) : (decimal?)null;
+                        DateTime previousValueDateEnd = metricYTDData.PreviousValueDate.AddDays( 1 );
+                        var previousMetricCumulativeValues = qryMeasureValues.Where( a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.PreviousValueDate && a.MetricValueDateTime.Value < previousValueDateEnd );
+                        metricYTDData.PreviousValue = previousMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( previousMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : ( decimal? ) null;
                     }
 
                     decimal? sum = qryMeasureValues.Sum( a => a.YValue );
-                    metricYTDData.CumulativeValue = sum.HasValue ? Math.Round( sum.Value, roundYValues ? 0 : 2 ) : (decimal?)null;
+                    metricYTDData.CumulativeValue = sum.HasValue ? Math.Round( sum.Value, roundYValues ? 0 : 2 ) : ( decimal? ) null;
 
                     // figure out goal as of current date time by figuring out the slope of the goal
                     var qryGoalValuesCurrentYear = metricValueService.Queryable()
@@ -176,7 +178,7 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Reporting" )]
     public class MetricYTDData : Metric

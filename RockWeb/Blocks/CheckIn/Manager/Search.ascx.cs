@@ -50,7 +50,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Order = 1,
         Key = AttributeKey.SearchByCode )]
 
+    [AttributeCategoryField(
+        "Check-in Roster Alert Icon Category",
+        Description = "The Person Attribute category to get the Alert Icon attributes from",
+        Key = AttributeKey.CheckInRosterAlertIconCategory,
+        DefaultValue = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_CHECK_IN_ROSTER_ALERT_ICON,
+        EntityType = typeof( Rock.Model.Person ),
+        AllowMultiple = false,
+        Order = 2
+        )]
+
     #endregion Block Attributes
+
     public partial class Search : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -59,6 +70,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             public const string PersonPage = "PersonPage";
             public const string SearchByCode = "SearchByCode";
+            public const string CheckInRosterAlertIconCategory = "CheckInRosterAlertIconCategory";
         }
 
         #endregion Attribute Keys
@@ -195,7 +207,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             // Desktop only.
             var lBadges = e.Row.FindControl( "lBadges" ) as Literal;
-            lBadges.Text = string.Format( "<div>{0}</div>", attendee.GetBadgesHtml( false ) );
+            lBadges.Text = string.Format( "<div>{0}</div>", attendee.GetBadgesHtml( _attributesForAlertIcons ) );
 
             // Mobile only.
             var lMobileTagAndSchedules = e.Row.FindControl( "lMobileTagAndSchedules" ) as Literal;
@@ -244,6 +256,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
         }
 
+        private List<AttributeCache> _attributesForAlertIcons = new List<AttributeCache>();
+
         /// <summary>
         /// Shows the attendees.
         /// </summary>
@@ -255,6 +269,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var attendees = GetAttendees( rockContext );
 
                 var attendeesSorted = attendees.OrderByDescending( a => a.MeetsRosterStatusFilter( RosterStatusFilter.Present ) ).ThenByDescending( a => a.CheckInTime ).ThenBy( a => a.PersonGuid ).ToList();
+
+                var checkInRosterAlertIconCategoryGuid = this.GetAttributeValue( AttributeKey.CheckInRosterAlertIconCategory )?.AsGuid();
+                if ( checkInRosterAlertIconCategoryGuid.HasValue )
+                {
+                    var categoryId = CategoryCache.GetId( checkInRosterAlertIconCategoryGuid.Value ) ?? 0;
+                    _attributesForAlertIcons = new AttributeService( rockContext ).GetByCategoryId( categoryId ).ToAttributeCacheList();
+                }
+                else
+                {
+                    _attributesForAlertIcons = new List<AttributeCache>();
+                }
 
                 gAttendees.DataSource = attendeesSorted;
                 gAttendees.DataBind();

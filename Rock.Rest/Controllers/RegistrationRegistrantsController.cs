@@ -24,8 +24,9 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "e9e16c98-d740-4dab-b244-42e666f708df" )]
     public partial class RegistrationRegistrantsController
     {
         #region Group Placement Related
@@ -38,7 +39,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/RegistrationRegistrants/GetGroupPlacementRegistrants" )]
         [HttpPost]
-        public IEnumerable<GroupPlacementRegistrant> GetGroupPlacementRegistrants( [FromBody]GetGroupPlacementRegistrantsParameters options )
+        [RockGuid( "bb15362d-ff32-448f-804c-7b39543dd934" )]
+        public IEnumerable<GroupPlacementRegistrant> GetGroupPlacementRegistrants( [FromBody] GetGroupPlacementRegistrantsParameters options )
         {
             var rockContext = new RockContext();
             var registrantService = new RegistrationRegistrantService( rockContext );

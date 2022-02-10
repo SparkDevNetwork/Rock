@@ -21,6 +21,13 @@ using System.Threading.Tasks;
 
 namespace Rock.Utility
 {
+    /* MB 12/11/2020
+
+    // This is sourced from Microsoft here:
+    // https://github.com/aspnet/AspNetIdentity/blob/a24b776676f12cf7f0e13944783cf8e379b3ef70/src/Microsoft.AspNet.Identity.Core/AsyncHelper.cs
+
+    */
+
     /// <summary>
     /// This has helper methods that allow you to call an asynchronous method synchronously.
     /// </summary>

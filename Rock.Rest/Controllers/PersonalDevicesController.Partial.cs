@@ -16,7 +16,7 @@
 //
 using System.Linq;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -26,6 +26,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Personal Devices REST API
     /// </summary>
+    [RockGuid( "d75bbdda-3ccd-4c0f-8771-8a5af84a41ee" )]
     public partial class PersonalDevicesController
     {
         /// <summary>
@@ -39,6 +40,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PersonalDevices/UpdateByMACAddress/{macAddress}" )]
+        [RockGuid( "ddd28018-059b-42d1-8e7d-3e94a957ab44" )]
         public PersonalDevice UpdateByMACAddress( string macAddress, string deviceIdentifier = "", string devicePlatform = "", string deviceVersion = "", int? personAliasId = null )
         {
             var rockContext = new Data.RockContext();
@@ -72,7 +74,7 @@ namespace Rock.Rest.Controllers
                 {
                     dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
                 }
-                personalDevice.PlatformValueId = dv != null ? dv.Id : (int?)null;
+                personalDevice.PlatformValueId = dv != null ? dv.Id : ( int? ) null;
             }
 
             // Version

@@ -22,7 +22,7 @@
     var button = ui.button({
         contents: '<i class="fa fa-code"/>',
         tooltip: 'Code Editor',
-        className: 'btn-codeview', // swap out the default btn-codeview with the RockCodeEditor
+        className: 'btn-codeview note-codeview-keep', // swap out the default btn-codeview with the RockCodeEditor
         click: function () {
 
             var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);

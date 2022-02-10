@@ -55,6 +55,7 @@ export type GroupType = IEntity & {
     iconCssClass?: string | null;
     ignorePersonInactivated?: boolean;
     inheritedGroupTypeId?: number | null;
+    isCapacityRequired?: boolean;
     isIndexEnabled?: boolean;
     isSchedulingEnabled?: boolean;
     isSystem?: boolean;

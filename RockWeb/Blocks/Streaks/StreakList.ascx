@@ -45,7 +45,7 @@
                             <Rock:Grid ID="gEnrollments" runat="server" AllowSorting="true" OnRowSelected="gEnrollments_Edit" OnRowDataBound="gEnrollments_RowDataBound" ExportSource="ColumnOutput" >
                                 <Columns>
                                     <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                    <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="LastName,NickName" ExcelExportBehavior="NeverInclude" />
+                                    <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude" />
                                     <Rock:RockLiteralField ID="lBiStateGraph" HeaderText="Recent Engagement" ExcelExportBehavior="NeverInclude" />
                                     <Rock:RockBoundField DataField="CurrentStreakCount" HeaderText="Current Streak" SortExpression="CurrentStreakCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="LongestStreakCount" HeaderText="Longest Streak" SortExpression="LongestStreakCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />

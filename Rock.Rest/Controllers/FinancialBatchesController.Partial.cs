@@ -17,14 +17,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "7a278b6f-ad6f-4e00-94f0-ce6d0d3ce769" )]
     public partial class FinancialBatchesController
     {
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialBatches/GetControlTotals" )]
+        [RockGuid( "76da430f-1470-4bdc-8466-28bdd47894be" )]
         public IEnumerable<ControlTotalResult> GetControlTotals( System.Web.Http.OData.Query.ODataQueryOptions<FinancialBatch> queryOptions = null )
         {
             var financialBatchQuery = new FinancialBatchService( this.Service.Context as Rock.Data.RockContext ).Queryable();

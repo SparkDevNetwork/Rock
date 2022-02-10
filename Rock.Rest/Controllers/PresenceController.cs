@@ -31,6 +31,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Personal Devices REST API
     /// </summary>
+    [RockGuid( "0a6d9892-6a51-42c8-b3fc-1db3d6b18354" )]
     public partial class PresenceController : ApiControllerBase
     {
         /// <summary>
@@ -40,6 +41,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Presence" )]
+        [RockGuid( "f354a723-6ef0-4710-a415-e6ff8118b96f" )]
         public HttpResponseMessage Post( List<MACPresence> presenceList )
         {
             using ( var rockContext = new RockContext() )

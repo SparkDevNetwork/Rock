@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import { ruleArrayToString, ruleStringToArray } from "../Rules/index";
+import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
 import { asFormattedString, toNumberOrNull } from "../Services/number";
 import RockFormField from "./rockFormField";
 
@@ -49,10 +49,11 @@ export default defineComponent({
             type: String as PropType<string>,
             default: ""
         },
-        rules: {
+        inputGroupClasses: {
             type: String as PropType<string>,
             default: ""
-        }
+        },
+        rules: rulesPropType
     },
     emits: [
         "update:modelValue"
@@ -77,8 +78,8 @@ export default defineComponent({
         internalStep(): string {
             return this.internalDecimalCount === null ? "any" : (1 / Math.pow(10, this.internalDecimalCount)).toString();
         },
-        computedRules(): string {
-            const rules = ruleStringToArray(this.rules);
+        computedRules(): ValidationRule[] {
+            const rules = normalizeRules(this.rules);
 
             if (this.maximumValue !== null && this.maximumValue !== undefined) {
                 rules.push(`lte:${this.maximumValue}`);
@@ -88,7 +89,7 @@ export default defineComponent({
                 rules.push(`gte:${this.minimumValue}`);
             }
 
-            return ruleArrayToString(rules);
+            return rules;
         },
 
         isGrouped(): boolean {
@@ -115,19 +116,18 @@ export default defineComponent({
     formGroupClasses="rock-number-box"
     name="numberbox"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, disabled, tabIndex, inputGroupClasses}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="input-group" :class="inputGroupClasses" v-if="isGrouped">
                 <slot name="prepend"></slot>
                 <input
+                    v-model="internalValue"
                     :id="uniqueId"
                     type="number"
                     class="form-control"
                     :class="inputClasses"
                     v-bind="field"
-                    :disabled="disabled"
                     :placeholder="placeholder"
-                    :tabindex="tabIndex"
                     :step="internalStep"
                     :min="minimumValue"
                     :max="maximumValue" />
@@ -135,14 +135,13 @@ export default defineComponent({
             </div>
 
             <input v-else
+                v-model="internalValue"
                 :id="uniqueId"
                 type="number"
                 class="form-control"
                 :class="inputClasses"
                 v-bind="field"
-                :disabled="disabled"
                 :placeholder="placeholder"
-                :tabindex="tabIndex"
                 :step="internalStep"
                 :min="minimumValue"
                 :max="maximumValue" />

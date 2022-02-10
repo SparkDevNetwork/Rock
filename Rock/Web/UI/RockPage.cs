@@ -1448,7 +1448,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         lbCacheControl.Text = "<i class='fa fa-running'></i>";
                         adminFooter.Controls.Add( lbCacheControl );
 
-                        // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
+                        // If the current user is Impersonated by another user, show a link on the admin bar to log back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null )
@@ -1684,7 +1684,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
 
                 if ( _pageNeedsObsidian )
-                { 
+                {
                     Page.Trace.Warn( "Finalizing Obsidian Page Timings" );
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
                     {
@@ -2108,25 +2108,39 @@ Sys.Application.add_load(function () {
         {
             try
             {
-                string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
-                if ( scriptTemplate == null )
+                // If the script has already been loaded then don't do it again
+                if ( Application["GoogleAnalyticsScript"] is string scriptTemplate )
                 {
-                    string scriptFile = MapPath( "~/Assets/Misc/GoogleAnalytics.txt" );
-                    if ( File.Exists( scriptFile ) )
-                    {
-                        scriptTemplate = File.ReadAllText( scriptFile );
-                        Application["GoogleAnalyticsScript"] = scriptTemplate;
-                    }
+                    return;
                 }
 
-                if ( scriptTemplate != null )
+                // Parse the list of codes, we want the "G-" codes to be first because the first code is used as the default in the <script> src property.
+                var gtagCodes = code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "G-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>();
+
+                // Add the measurement codes that start with 'UA' to the gtag script. If there are multiple measurement IDs the first one is used as the default.
+                gtagCodes.AddRange( code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "UA-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>() );
+
+                if( gtagCodes.Any() )
                 {
-                    string script = scriptTemplate.Contains( "{0}" ) ? string.Format( scriptTemplate, code ) : scriptTemplate;
-                    AddScriptToHead( this.Page, script, true );
+                    var sb = new StringBuilder();
+                    sb.Append( $@"
+    <!-- BEGIN Global site tag (gtag.js) - Google Analytics -->
+    <script async src=""https://www.googletagmanager.com/gtag/js?id={gtagCodes.First()}""></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{window.dataLayer.push(arguments);}}
+      gtag('js', new Date());");
+                    sb.AppendLine( "" );
+                    gtagCodes.ForEach( a => sb.AppendLine( $"      gtag('config', '{a}');" ) );
+                    sb.AppendLine( "    </script>" );
+                    sb.AppendLine( "    <!-- END Global site tag (gtag.js) - Google Analytics -->" );
+
+                    AddScriptToHead( this.Page, sb.ToString(), false );
                 }
             }
             catch ( Exception ex )
             {
+                // Log any error but still let the page load.
                 LogException( ex );
             }
         }
@@ -3088,14 +3102,14 @@ Sys.Application.add_load(function () {
 
                      The AddMetaTagToHead in the lava filter removes some of the existing Meta tag
                      from the Head section at the later stage in page cycle. So at the time of
-                     postback The control tree into which viewstate is being loaded doesn't match 
-                     the control tree that was used to save viewstate during the previous request. 
+                     postback The control tree into which viewstate is being loaded doesn't match
+                     the control tree that was used to save viewstate during the previous request.
 
                      So instead of removing it and adding some of the existing meta tag again at the
                      end, if we replace it with the new value at the same position, it will help
                      maintain the viewstate.
-    
-                     Reason: To fix issue #4560 (a viewstate error on any postback) 
+
+                     Reason: To fix issue #4560 (a viewstate error on any postback)
                 */
                 var isExisting = ReplaceHtmlMetaIfExists( page, htmlMeta );
 
@@ -3543,9 +3557,11 @@ Sys.Application.add_load(function () {
             try
             {
                 var obsidianPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Obsidian" );
+                var pluginsPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Plugins" );
 
                 // Find the last date any obsidian file was modified.
                 var lastWriteTime = Directory.EnumerateFiles( obsidianPath, "*.js", SearchOption.AllDirectories )
+                    .Union( Directory.EnumerateFiles( pluginsPath, "*.js", SearchOption.AllDirectories ) )
                     .Select( f =>
                     {
                         try
@@ -3568,24 +3584,8 @@ Sys.Application.add_load(function () {
                 var cfg = ( CompilationSection ) ConfigurationManager.GetSection( "system.web/compilation" );
                 if ( cfg != null && cfg.Debug )
                 {
-                    // Setup a watcher to notify us of any changes to the directory.
-                    var watcher = new FileSystemWatcher
-                    {
-                        Path = obsidianPath,
-                        IncludeSubdirectories = true,
-                        NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
-                        Filter = "*.js"
-                    };
-
-                    // Add event handlers.
-                    watcher.Changed += ObsidianFileSystemWatcher_OnChanged;
-                    watcher.Created += ObsidianFileSystemWatcher_OnChanged;
-                    watcher.Renamed += ObsidianFileSystemWatcher_OnRenamed;
-
-                    _obsidianFileWatchers.Add( watcher );
-
-                    // Begin watching.
-                    watcher.EnableRaisingEvents = true;
+                    AddObsidianFileSystemWatcher( obsidianPath, "*.js" );
+                    AddObsidianFileSystemWatcher( pluginsPath, "*.js" );
                 }
             }
             catch ( Exception ex )
@@ -3593,6 +3593,35 @@ Sys.Application.add_load(function () {
                 _obsidianFingerprint = RockDateTime.Now.Ticks;
                 Debug.WriteLine( ex.Message );
             }
+        }
+
+        /// <summary>
+        /// Add a new file system watcher for the specified <paramref name="directory"/>.
+        /// It will update the fingerprint whenever a file matching the
+        /// <paramref name="filter"/> changes.
+        /// </summary>
+        /// <param name="directory">The directory, and any sub-directories, to watch.</param>
+        /// <param name="filter">The filename filter to use when watching for changes.</param>
+        private static void AddObsidianFileSystemWatcher( string directory, string filter )
+        {
+            // Setup a watcher to notify us of any changes to the directory.
+            var watcher = new FileSystemWatcher
+            {
+                Path = directory,
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
+                Filter = filter
+            };
+
+            // Add event handlers.
+            watcher.Changed += ObsidianFileSystemWatcher_OnChanged;
+            watcher.Created += ObsidianFileSystemWatcher_OnChanged;
+            watcher.Renamed += ObsidianFileSystemWatcher_OnRenamed;
+
+            _obsidianFileWatchers.Add( watcher );
+
+            // Begin watching.
+            watcher.EnableRaisingEvents = true;
         }
 
         /// <summary>
@@ -3625,7 +3654,6 @@ Sys.Application.add_load(function () {
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine( $"OnChanged: {fileSystemEventArgs.FullPath}" );
                 var dateTime = new FileInfo( fileSystemEventArgs.FullPath ).LastWriteTime;
 
                 dateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( dateTime );

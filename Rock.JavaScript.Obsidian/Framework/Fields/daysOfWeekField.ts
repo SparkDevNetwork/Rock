@@ -26,6 +26,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./daysOfWeekFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./daysOfWeekFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the DaysOfWeek field.
  */
@@ -77,5 +82,9 @@ export class DaysOfWeekFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

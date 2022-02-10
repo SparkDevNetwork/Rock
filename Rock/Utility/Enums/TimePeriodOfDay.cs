@@ -45,5 +45,4 @@ namespace Rock.Utility
         /// </remarks>
         Evening = 2
     }
-
 }

@@ -505,7 +505,7 @@ namespace RockWeb.Blocks.Crm
             byte[] bytes = document.BinaryFile.ContentStream.ReadBytesToEnd();
 
             Response.ContentType = "application/octet-stream";
-            Response.AddHeader( "content-disposition", "attachment; filename=" + document.BinaryFile.FileName );
+            Response.AddHeader( "content-disposition", "attachment; filename=" + document.BinaryFile.FileName.ReplaceSpecialCharacters( "_" ) );
             Response.BufferOutput = true;
             Response.BinaryWrite( bytes );
             Response.Flush();

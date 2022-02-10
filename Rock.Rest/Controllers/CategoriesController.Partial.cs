@@ -29,8 +29,9 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "14863e90-9ba6-4769-9c91-b7b42c9296fb" )]
     public partial class CategoriesController
     {
         /// <summary>
@@ -41,6 +42,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetMetricChildren/{id}" )]
+        [RockGuid( "14701e8c-673c-433c-9a68-7cab1ded9c6b" )]
         public IQueryable<CategoryItem> GetMetricChildren( int id, string includedCategoryIds = "" )
         {
             // Get list of categorized MetricCategory objects from GetChildren().
@@ -136,6 +138,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetChildren/{id}" )]
+        [RockGuid( "8a69ce30-f46e-4737-884b-07cff829c93f" )]
         public IQueryable<CategoryItem> GetChildren(
             int id,
             int rootCategoryId = 0,
@@ -151,7 +154,7 @@ namespace Rock.Rest.Controllers
             bool includeInactiveItems = true,
             string itemFilterPropertyName = null,
             string itemFilterPropertyValue = null,
-            bool lazyLoad = true)
+            bool lazyLoad = true )
         {
             Person currentPerson = GetPerson();
 
@@ -259,7 +262,7 @@ namespace Rock.Rest.Controllers
 
                     bool isSchedule = cachedEntityType.Id == EntityTypeCache.GetId<Rock.Model.Schedule>();
 
-                    if ( isSchedule && itemsList.OfType<Rock.Model.Schedule>() != null)
+                    if ( isSchedule && itemsList.OfType<Rock.Model.Schedule>() != null )
                     {
                         sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByOrderAndNextScheduledDateTime().OfType<ICategorized>().ToList();
                     }
@@ -389,7 +392,7 @@ namespace Rock.Rest.Controllers
             if ( categoryItem.IsCategory )
             {
                 int parentId = int.Parse( categoryItem.Id );
-                var childCategories = Get().Where( c => c.ParentCategoryId == parentId ).OrderBy( c => c.Order).ThenBy( c => c.Name );
+                var childCategories = Get().Where( c => c.ParentCategoryId == parentId ).OrderBy( c => c.Order ).ThenBy( c => c.Name );
 
                 foreach ( var childCategory in childCategories )
                 {
@@ -405,7 +408,7 @@ namespace Rock.Rest.Controllers
                             IconCssClass = childCategory.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass,
                             IconSmallUrl = string.Empty
                         };
-                        
+
                         if ( hasActiveFlag )
                         {
                             IHasActiveFlag activatedItem = childCategory as IHasActiveFlag;
@@ -513,13 +516,13 @@ namespace Rock.Rest.Controllers
                         whereExpression = Expression.And( whereExpression, isActiveExpression );
                     }
 
-                    if ( !string.IsNullOrEmpty(itemFilterPropertyName) )
+                    if ( !string.IsNullOrEmpty( itemFilterPropertyName ) )
                     {
                         MemberExpression itemFilterPropertyNameExpression = Expression.Property( paramExpression, itemFilterPropertyName );
                         ConstantExpression itemFilterPropertyValueExpression;
                         if ( itemFilterPropertyNameExpression.Type == typeof( int? ) || itemFilterPropertyNameExpression.Type == typeof( int ) )
                         {
-                            itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue.AsIntegerOrNull(), typeof(int?) );
+                            itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue.AsIntegerOrNull(), typeof( int? ) );
                         }
                         else if ( itemFilterPropertyNameExpression.Type == typeof( Guid? ) || itemFilterPropertyNameExpression.Type == typeof( Guid ) )
                         {
@@ -529,7 +532,7 @@ namespace Rock.Rest.Controllers
                         {
                             itemFilterPropertyValueExpression = Expression.Constant( itemFilterPropertyValue );
                         }
-                        
+
                         BinaryExpression binaryExpression = Expression.Equal( itemFilterPropertyNameExpression, itemFilterPropertyValueExpression );
                         whereExpression = Expression.And( whereExpression, binaryExpression );
                     }
@@ -550,7 +553,7 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class CategoryItem : Rock.Web.UI.Controls.TreeViewItem
     {
@@ -570,7 +573,7 @@ namespace Rock.Rest.Controllers
         /// </returns>
         public override string ToString()
         {
-            if (IsCategory)
+            if ( IsCategory )
             {
                 return "Category:" + this.Name;
             }

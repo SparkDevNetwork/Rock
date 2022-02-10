@@ -68,7 +68,7 @@ namespace Rock.Data
         internal protected RockContextReadOnly( RockContext rockContext )
             : base( ( rockContext as IObjectContextAdapter ).ObjectContext, true )
         {
-            // The ObjectContext contructor needs to know whether we own the ObjectContext
+            // The ObjectContext constructor needs to know whether we own the ObjectContext
             // or if it should take care of disposing itself.
             // In this case, we want to use the instance of the ObjectContext
             // that a normal RockContext would use.
