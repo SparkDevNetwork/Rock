@@ -60,9 +60,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
         {
-            var clientValues = GetListSource( configurationValues )
+            var clientValues = GetListSource( privateConfigurationValues )
                     .Select( kvp => new ListItemViewModel
                     {
                         Value = kvp.Key,

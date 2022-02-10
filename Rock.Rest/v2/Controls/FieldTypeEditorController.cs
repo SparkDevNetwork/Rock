@@ -84,11 +84,11 @@ namespace Rock.Rest.v2.Controls
 
             // Convert the default value from the public value into our
             // private internal value.
-            var privateDefaultValue = fieldType.GetValueFromClient( updateViewModel.DefaultValue, configurationValues );
+            var privateDefaultValue = fieldType.GetPrivateEditValue( updateViewModel.DefaultValue, configurationValues );
 
             // Get the new configuration properties from the currently selected
             // options.
-            var configurationProperties = fieldType.GetClientEditConfigurationProperties( configurationValues );
+            var configurationProperties = fieldType.GetPublicEditConfigurationProperties( configurationValues );
 
             // Get the public configuration options from the internal options (values).
             var publicConfigurationOptions = fieldType.GetPublicConfigurationOptions( configurationValues );
@@ -103,11 +103,11 @@ namespace Rock.Rest.v2.Controls
                 Categories = new List<ClientAttributeValueCategoryViewModel>(),
                 Order = 0,
                 TextValue = fieldType.GetTextValue( privateDefaultValue, configurationValues ),
-                Value = fieldType.GetClientEditValue( privateDefaultValue, configurationValues ),
+                Value = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues ),
                 Key = "DefaultValue",
                 IsRequired = false,
                 Description = string.Empty,
-                ConfigurationValues = fieldType.GetClientConfigurationValues( configurationValues )
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues )
             };
 
             return Ok( new FieldTypeConfigurationPropertiesViewModel

@@ -57,15 +57,15 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
         {
-            var clientValues = base.GetClientConfigurationValues( configurationValues );
+            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues );
 
             if ( clientValues.ContainsKey( VALUES_KEY ) )
             {
-                var configuredValues = Helper.GetConfiguredValues( configurationValues );
+                var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
 
-                var options = Helper.GetConfiguredValues( configurationValues )
+                var options = Helper.GetConfiguredValues( privateConfigurationValues )
                     .Select( kvp => new
                     {
                         value = kvp.Key,
@@ -197,12 +197,12 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
+            if ( !string.IsNullOrWhiteSpace( privateValue ) && privateConfigurationValues.ContainsKey( VALUES_KEY ) )
             {
-                var configuredValues = Helper.GetConfiguredValues( configurationValues );
-                var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+                var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 return configuredValues
                     .Where( v => selectedValues.Contains( v.Key ) )
                     .Select( v => v.Value )
@@ -210,7 +210,7 @@ namespace Rock.Field.Types
                     .AsDelimited( ", " );
             }
 
-            return base.GetTextValue( value, configurationValues );
+            return base.GetTextValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
