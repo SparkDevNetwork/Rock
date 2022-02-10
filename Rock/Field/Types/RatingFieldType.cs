@@ -22,6 +22,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -32,6 +33,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a rating
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
     public class RatingFieldType : FieldType
     {
         #region Formatting
@@ -57,21 +59,21 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var ratingValue = new RatingClientValue
+            var ratingValue = new RatingPublicValue
             {
-                Value = value.AsInteger(),
-                MaxValue = GetMaxRating( configurationValues )
+                Value = privateValue.AsInteger(),
+                MaxValue = GetMaxRating( privateConfigurationValues )
             };
 
             return ratingValue.ToCamelCaseJson( false, true );
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var ratingValue = clientValue.FromJsonOrNull<RatingClientValue>();
+            var ratingValue = publicValue.FromJsonOrNull<RatingPublicValue>();
 
             return ratingValue?.Value.ToString() ?? string.Empty;
         }
@@ -408,7 +410,7 @@ namespace Rock.Field.Types
 
         #endregion
 
-        private class RatingClientValue
+        private class RatingPublicValue
         {
             public int Value { get; set; }
 

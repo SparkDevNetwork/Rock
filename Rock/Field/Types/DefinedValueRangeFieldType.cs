@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -32,13 +33,14 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited pair of DefinedValue.Guids: lowerGuid,upperGuid
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class DefinedValueRangeFieldType : FieldType
     {
         #region Configuration
 
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string DISPLAY_DESCRIPTION = "displaydescription";
-        private const string CLIENT_VALUES = "values";
+        private const string PUBLIC_VALUES = "values";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -53,16 +55,16 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
         {
-            var clientConfiguration = base.GetClientConfigurationValues( configurationValues );
-            var definedTypeGuid = clientConfiguration.ContainsKey( DEFINED_TYPE_KEY ) ? clientConfiguration[DEFINED_TYPE_KEY].AsGuidOrNull() : null;
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            var definedTypeGuid = publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? publicConfigurationValues[DEFINED_TYPE_KEY].AsGuidOrNull() : null;
 
             if ( definedTypeGuid.HasValue )
             {
                 var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
 
-                clientConfiguration[CLIENT_VALUES] = definedType.DefinedValues
+                publicConfigurationValues[PUBLIC_VALUES] = definedType.DefinedValues
                     .OrderBy( v => v.Order )
                     .Select( v => new
                     {
@@ -72,14 +74,14 @@ namespace Rock.Field.Types
                     } )
                     .ToCamelCaseJson( false, true );
 
-                clientConfiguration.Remove( DEFINED_TYPE_KEY );
+                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
             }
             else
             {
-                clientConfiguration[CLIENT_VALUES] = "[]";
+                publicConfigurationValues[PUBLIC_VALUES] = "[]";
             }
 
-            return clientConfiguration;
+            return publicConfigurationValues;
         }
 
         /// <summary>
@@ -253,11 +255,11 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var guids = value.SplitDelimitedValues().AsGuidOrNullList();
-            bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+            var guids = privateValue.SplitDelimitedValues().AsGuidOrNullList();
+            bool useDescription = privateConfigurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                ? privateConfigurationValues[DISPLAY_DESCRIPTION].AsBoolean()
                 : false;
 
             if ( guids.Count == 2 && guids[0].HasValue && guids[1].HasValue )
@@ -265,21 +267,21 @@ namespace Rock.Field.Types
                 var lowerValue = DefinedValueCache.Get( guids[0].Value );
                 var upperValue = DefinedValueCache.Get( guids[1].Value );
 
-                return new ClientValue
+                return new PublicValue
                 {
-                    Value = value,
+                    Value = privateValue,
                     Text = $"{lowerValue.Value} to {upperValue.Value}",
                     Description = useDescription ? $"{lowerValue.Description} to {upperValue.Description}" : string.Empty
                 }.ToCamelCaseJson( false, true );
             }
 
-            return new ClientValue().ToCamelCaseJson( false, true );
+            return new PublicValue().ToCamelCaseJson( false, true );
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var value = clientValue.FromJsonOrNull<ClientValue>();
+            var value = publicValue.FromJsonOrNull<PublicValue>();
 
             return value?.Value ?? string.Empty;
         }
@@ -427,7 +429,7 @@ namespace Rock.Field.Types
 
         #endregion
 
-        private class ClientValue
+        private class PublicValue
         {
             public string Value { get; set; }
 

@@ -22,12 +22,14 @@ using Rock.Data;
 using Rock.Model;
 using System;
 using System.Web.UI.WebControls;
+using Rock.Attribute;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of step programs and allow a single selection.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class StepProgramFieldType : EntitySingleSelectionListFieldTypeBase<Rock.Model.StepProgram>
     {
         /// <summary>

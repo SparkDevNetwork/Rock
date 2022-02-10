@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of binary file types
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class BinaryFileTypeFieldType : FieldType, IEntityFieldType
     {
 

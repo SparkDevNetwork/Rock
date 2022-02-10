@@ -24,6 +24,7 @@ using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using Rock.Attribute;
 
 namespace Rock.Field.Types
 {
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// Field used to display or upload a new binary file of a specific type.
     /// Stored as BinaryFile.Guid.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class BackgroundCheckFieldType : BinaryFileFieldType
     {
         /// <summary>

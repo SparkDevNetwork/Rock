@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ConnectionTypesFieldType : SelectFromListFieldType
     {
         /// <summary>

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a delimited list of FinancialAccount Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class AccountsFieldType : FieldType
     {
         #region Configuration

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Account Field Type.  Stored as FinancialAccount's Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class AccountFieldType : FieldType, IEntityFieldType
     {
 

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save and display an image value
     /// Stored as BinaryFile.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ImageFieldType : BinaryFileFieldType
     {
         #region Configuration

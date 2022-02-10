@@ -82,7 +82,7 @@ namespace Rock.Attribute
                 } ).ToList(),
                 Order = attribute.Order,
                 TextValue = fieldType.GetTextValue( value, attribute.ConfigurationValues ),
-                Value = fieldType.GetClientValue( value, attribute.ConfigurationValues )
+                Value = fieldType.GetPublicValue( value, attribute.ConfigurationValues )
             };
         }
 
@@ -124,11 +124,11 @@ namespace Rock.Attribute
                 } ).ToList(),
                 Order = attribute.Order,
                 TextValue = fieldType.GetTextValue( value, attribute.ConfigurationValues ),
-                Value = fieldType.GetClientEditValue( value, attribute.ConfigurationValues ),
+                Value = fieldType.GetPublicEditValue( value, attribute.ConfigurationValues ),
                 Key = attribute.Key,
                 IsRequired = attribute.IsRequired,
                 Description = attribute.Description,
-                ConfigurationValues = fieldType.GetClientConfigurationValues( attribute.ConfigurationValues )
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues )
             };
         }
 
@@ -144,7 +144,7 @@ namespace Rock.Attribute
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return fieldType.GetValueFromClient( clientValue, attribute.ConfigurationValues );
+            return fieldType.GetPrivateEditValue( clientValue, attribute.ConfigurationValues );
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Rock.Attribute
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return fieldType.GetClientValue( databaseValue, attribute.ConfigurationValues );
+            return fieldType.GetPublicValue( databaseValue, attribute.ConfigurationValues );
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace Rock.Attribute
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return fieldType.GetClientEditValue( databaseValue, attribute.ConfigurationValues );
+            return fieldType.GetPublicEditValue( databaseValue, attribute.ConfigurationValues );
         }
 
         /// <summary>

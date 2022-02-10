@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a template to use in a block
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class BlockTemplateFieldType : FieldType
     {
 
