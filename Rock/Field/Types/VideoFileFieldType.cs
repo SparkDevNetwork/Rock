@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Video file field type
     /// Stored as BinaryFile.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class VideoFileFieldType : FileFieldType
     {
 

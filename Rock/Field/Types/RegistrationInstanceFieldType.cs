@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) registration instance filtered by a selected registration template
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class RegistrationInstanceFieldType : FieldType, IEntityFieldType
     {
 

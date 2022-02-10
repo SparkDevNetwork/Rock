@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.Web.UI;
 
 using Newtonsoft.Json;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -28,6 +30,7 @@ namespace Rock.Field.Types
     ///
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class AssetFieldType : FieldType
     {
         /// <summary>

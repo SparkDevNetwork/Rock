@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -34,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Campus
     /// Stored as Campus's Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class CampusFieldType : FieldType, IEntityFieldType, ICachedEntitiesFieldType
     {
         #region Configuration

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a key/value list
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class KeyValueListFieldType : ValueListFieldType
     {
         private const string VALUES_KEY = "values";

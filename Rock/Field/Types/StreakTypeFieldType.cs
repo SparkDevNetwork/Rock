@@ -20,12 +20,14 @@ using Rock.Model;
 using System;
 using System.Web.UI.WebControls;
 using Rock.Web.Cache;
+using Rock.Attribute;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of streak types and allow a single selection.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class StreakTypeFieldType : EntitySingleSelectionListFieldTypeBase<StreakType>
     {
         /// <summary>

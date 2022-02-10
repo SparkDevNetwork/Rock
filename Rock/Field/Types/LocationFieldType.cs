@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,6 +31,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a location value
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class LocationFieldType : FieldType, IEntityFieldType
     {
         #region Configuration

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of attributes
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class AttributeFieldType : FieldType, ICachedEntitiesFieldType, IEntityFieldType
     {
 

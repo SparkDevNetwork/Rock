@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Interaction Channels
     /// Stored as InteractionChannel.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class InteractionChannelFieldType : FieldType, IEntityFieldType
     {
 

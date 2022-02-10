@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Model;
-using System;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Field.Types
@@ -26,6 +28,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of achievement types and allow a single selection.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class AchievementTypeFieldType : EntitySingleSelectionListFieldTypeBase<AchievementType>
     {
         /// <summary>

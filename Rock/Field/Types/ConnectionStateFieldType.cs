@@ -16,12 +16,15 @@
 //
 using System;
 
+using Rock.Attribute;
+
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a list of connection states
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ConnectionStateFieldType : EnumFieldType<ConnectionState>
     {
     }
