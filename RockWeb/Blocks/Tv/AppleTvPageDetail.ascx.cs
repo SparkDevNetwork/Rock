@@ -145,11 +145,55 @@ namespace RockWeb.Blocks.Tv
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSaveAndEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveAndEdit_Click( object sender, EventArgs e )
+        {
+            SavePage();
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
+        {
+
+            SavePage();
+
+            // If the save was successful, reload the page using the new record Id.
+            var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
+
+            var qryParams = new Dictionary<string, string>();
+            qryParams[PageParameterKey.SiteId] = applicationId.ToString();
+            NavigateToParentPage( qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            // If the save was successful, reload the page using the new record Id.
+            var qryParams = new Dictionary<string, string>();
+            qryParams[PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId );
+
+            NavigateToParentPage( qryParams );
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Saves the page.
+        /// </summary>
+        private void SavePage()
         {
             var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
             var pageId = PageParameter( PageParameterKey.SitePageId ).AsInteger();
@@ -194,31 +238,7 @@ namespace RockWeb.Blocks.Tv
             page.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
 
             rockContext.SaveChanges();
-
-            // If the save was successful, reload the page using the new record Id.
-            var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.SiteId] = applicationId.ToString();
-
-            NavigateToParentPage( qryParams );
         }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            // If the save was successful, reload the page using the new record Id.
-            var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId );
-
-            NavigateToParentPage( qryParams );
-        }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Edit the site.
@@ -260,7 +280,5 @@ namespace RockWeb.Blocks.Tv
         }
 
         #endregion
-
-        
     }
 }
