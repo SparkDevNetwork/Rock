@@ -1068,7 +1068,6 @@
     <Compile Include="Model\Event\RegistrationTemplate\RegistrantsSameFamily.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrarOption.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrationNotify.cs" />
-    <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.Logic.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.SaveHook.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\SignatureDocumentAction.cs" />
     <Compile Include="Model\Event\Registration\FeeInfo.cs" />

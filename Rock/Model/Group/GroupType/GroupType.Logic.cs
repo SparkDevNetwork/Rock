@@ -21,7 +21,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
-using Rock.Security;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
@@ -172,8 +171,8 @@ namespace Rock.Model
                                     .Where( t => t.InheritedGroupTypeId != null && childGroupTypeIds.Contains( t.InheritedGroupTypeId.Value ) )
                                     .Select( t => t.Id ).ToList();
                 }
-                groupTypeIds.AddRange( childGroupTypeIds );
 
+                groupTypeIds.AddRange( childGroupTypeIds );
             } while ( childGroupTypeIds.Count > 0 );
 
             return groupTypeIds;
@@ -234,28 +233,6 @@ namespace Rock.Model
         {
             return GetInheritedAttributesForQualifier( rockContext, TypeId, "Id" );
         }
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
-                    _supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
-                }
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
 
         #endregion
 

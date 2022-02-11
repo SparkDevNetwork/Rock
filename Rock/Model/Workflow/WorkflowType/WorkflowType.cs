@@ -63,6 +63,7 @@ namespace Rock.Model
             get { return _isActive; }
             set { _isActive = value ?? false; }
         }
+
         private bool _isActive = true;
 
         /// <summary>
@@ -301,7 +302,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
         /// </summary>
         /// <value>
-        /// Teh <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
+        /// The <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
@@ -327,7 +328,21 @@ namespace Rock.Model
             get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
             set { _activityTypes = value; }
         }
+
         private ICollection<WorkflowActivityType> _activityTypes;
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
+                return supportedActions;
+            }
+        }
 
         #endregion Navigation Properties
     }
@@ -351,4 +366,3 @@ namespace Rock.Model
 
     #endregion Entity Configuration
 }
-
