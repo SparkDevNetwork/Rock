@@ -2026,15 +2026,24 @@ namespace RockWeb.Blocks.WorkFlow
 
             // PDF Generator to BinaryFile
             BinaryFile pdfFile;
-            using ( var pdfGenerator = new PdfGenerator() )
+            try
             {
-                var binaryFileTypeId = signatureDocumentTemplate.BinaryFileTypeId;
-                if ( !binaryFileTypeId.HasValue )
+                using ( var pdfGenerator = new PdfGenerator() )
                 {
-                    binaryFileTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.DIGITALLY_SIGNED_DOCUMENTS.AsGuid() );
-                }
+                    var binaryFileTypeId = signatureDocumentTemplate.BinaryFileTypeId;
+                    if ( !binaryFileTypeId.HasValue )
+                    {
+                        binaryFileTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.DIGITALLY_SIGNED_DOCUMENTS.AsGuid() );
+                    }
 
-                pdfFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId ?? 0, signatureDocumentName, signedSignatureDocumentHtml );
+                    pdfFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId ?? 0, signatureDocumentName, signedSignatureDocumentHtml );
+                }
+            }
+            catch ( PdfGeneratorException pdfGeneratorException )
+            {
+                LogException( pdfGeneratorException );
+                ShowMessage( NotificationBoxType.Danger, "Document Error", pdfGeneratorException.Message );
+                return;
             }
 
             pdfFile.IsTemporary = false;
@@ -2049,6 +2058,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             // reload with new context to get navigation properties to load. This wil be needed to save values back to Workflow Attributes
             signatureDocument = new SignatureDocumentService( new RockContext() ).Get( signatureDocument.Id );
+            var recalcuatedHash = signatureDocument.CalculateSignatureVerificationHash();
 
             // Save to Workflow Attributes
             electronicSignatureWorkflowAction.SaveSignatureDocumentValuesToAttributes( _workflowRockContext, workflowAction, signatureDocument );

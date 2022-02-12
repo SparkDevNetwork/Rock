@@ -40,13 +40,14 @@ namespace Rock.Pdf
         /// </summary>
         public PdfGenerator()
         {
-            InitializeChromeEngine( false );
+            InitializeChromeEngine();
         }
 
         private Browser _puppeteerBrowser = null;
         private Page _puppeteerPage;
 
         private static int _lastProgressPercentage = 0;
+        private static bool alreadyTriedReDownloading = false;
 
         /// <summary>
         /// Ensures the chrome engine is downloaded and installed.
@@ -56,16 +57,16 @@ namespace Rock.Pdf
         {
             using ( var browserFetcher = GetBrowserFetcher() )
             {
-                EnsureChromeEngineInstalled( browserFetcher, false );
+                EnsureChromeEngineInstalled( browserFetcher );
             }
         }
 
         /// <inheritdoc cref="PdfGenerator.EnsureChromeEngineInstalled()"/>
-        private static void EnsureChromeEngineInstalled( BrowserFetcher browserFetcher, bool forceUseLocal )
+        private static void EnsureChromeEngineInstalled( BrowserFetcher browserFetcher )
         {
             var pdfExternalRenderEndpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
 
-            if ( pdfExternalRenderEndpoint.IsNotNullOrWhiteSpace() && !forceUseLocal )
+            if ( pdfExternalRenderEndpoint.IsNotNullOrWhiteSpace() )
             {
                 // using a External Render Endpoint, so we don't need to install a chrome engine on this server.
                 return;
@@ -77,6 +78,16 @@ namespace Rock.Pdf
             try
             {
                 AsyncHelper.RunSync( () => browserFetcher.DownloadAsync() );
+
+                // double check it is actually downloaded (just in case files were deleted, but folders were not)
+                var executablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
+                if ( !File.Exists( executablePath ) && !alreadyTriedReDownloading )
+                {
+                    browserFetcher.Remove( BrowserFetcher.DefaultChromiumRevision );
+                    alreadyTriedReDownloading = true;
+                    AsyncHelper.RunSync( () => browserFetcher.DownloadAsync() );
+                }
+
                 if ( _lastProgressPercentage > 99 )
                 {
                     // if wasn't already downloaded, show a message that it downloaded successfully
@@ -90,7 +101,17 @@ namespace Rock.Pdf
             }
             catch ( Exception ex )
             {
-                throw new PdfGeneratorException( "Error downloading PDF Chrome Engine.", ex );
+                // The IO Exception be the inner exception, so check that too
+                if ( ex.InnerException is IOException ioException )
+                {
+                    // could still be downloading and eventually work, so make exception a little friendlier
+                    throw new PdfGeneratorException( "PDF Engine is not available. Please try again later.", ioException );
+                }
+                else
+                {
+                    throw new PdfGeneratorException( "Error downloading PDF Chrome Engine.", ex );
+                }
+
             }
         }
 
@@ -139,11 +160,11 @@ namespace Rock.Pdf
         /// <summary>
         /// Initializes the chrome engine.
         /// </summary>
-        private void InitializeChromeEngine( bool forceUseLocal )
+        private void InitializeChromeEngine()
         {
             var pdfExternalRenderEndpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
 
-            if ( !forceUseLocal && pdfExternalRenderEndpoint.IsNotNullOrWhiteSpace() )
+            if ( pdfExternalRenderEndpoint.IsNotNullOrWhiteSpace() )
             {
                 var connectOptions = new ConnectOptions
                 {
@@ -170,7 +191,7 @@ namespace Rock.Pdf
                 using ( var browserFetcher = GetBrowserFetcher() )
                 {
                     // should have already been installed, but just in case it hasn't, download it now.
-                    EnsureChromeEngineInstalled( browserFetcher, forceUseLocal );
+                    EnsureChromeEngineInstalled( browserFetcher );
                     launchOptions.ExecutablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
                 }
 

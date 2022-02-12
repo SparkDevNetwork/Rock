@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography;
+using System.Text;
 
 using Rock.Data;
 using Rock.Lava;
@@ -29,22 +32,58 @@ namespace Rock.Model
         /// <returns>System.String.</returns>
         public string CalculateSignatureVerificationHash()
         {
-            var hashObject = new
+            /* 02/11/2022 MDP
+
+            The SignatureVerificationHash can be used to verify that nothing about the signed document or signature has
+            changed since it was originally signed.
+
+            To do that we'll have use xxHash on the signature related data that we store in SignatureDocument (see fields that we use below).
+            This hash will be stored in the SignedDocument record and also in the Signed Document PDF.
+
+            NOTE: CalculateSignatureVerificationHash must be deterministic. So don't change the implementation without approval.
+
+            */
+
+            string signedDateTimeData;
+            if ( SignedDateTime.HasValue )
             {
-                SignedDocumentText = this.SignedDocumentText,
-                SignedClientIp = this.SignedClientIp,
-                SignedClientUserAgent = this.SignedClientUserAgent,
-                SignedDateTime = this.SignedDateTime,
-                SignedByPersonAliasId = this.SignedByPersonAliasId,
-                SignatureData = this.SignatureData,
-                SignedName = this.SignedName
-            };
+                // to make sure DateTime has same precision when coming back out of the database, make it DateTimeKind.Unspecified and rounded to closest millisecond.
+                var signedDateTime = this.SignedDateTime.Value;
+                var consistentDateTime = new DateTime( signedDateTime.Year, signedDateTime.Month, signedDateTime.Day, signedDateTime.Hour, signedDateTime.Minute, signedDateTime.Second, signedDateTime.Millisecond, DateTimeKind.Unspecified );
 
-            var hashObjectJson = hashObject.ToJson();
+                signedDateTimeData = consistentDateTime.ToISO8601DateString();
+            }
+            else
+            {
+                signedDateTimeData = string.Empty;
+            }
 
-            var hashResult = Rock.Security.Encryption.GetSHA1Hash( hashObjectJson );
+            // to make to we get a deterministic hash, concat the data (vs using JSON, etc)
+            var concatString = $@"{this.SignedDocumentText}|
+{this.SignedClientIp}|
+{this.SignedClientUserAgent}|
+{signedDateTimeData}|
+{this.SignedByPersonAliasId}|
+{this.SignatureData}|
+{this.SignedName}";
 
-            return hashResult;
+            // do a Sha1 hash as a Base64 so it'll fit in less 40 chars
+            string hashed;
+            using ( var crypt = new SHA1Managed() )
+            {
+                var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( concatString ) );
+                var hashBase64 = Convert.ToBase64String( hash );
+
+                // trim base64 padding
+                hashed = hashBase64.TrimEnd( '=' );
+            }
+            
+            const string revisionPrefix = "A";
+
+            // prepend with a revision just in case we have a future change to the implementation
+            var verificationHash = $"{revisionPrefix}{hashed}";
+
+            return verificationHash;
         }
 
         private static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
@@ -107,7 +146,7 @@ namespace Rock.Model
 
             set
             {
-                this.SignatureDataEncrypted = Rock.Security.Encryption.EncryptString( this.SignatureData );
+                this.SignatureDataEncrypted = Rock.Security.Encryption.EncryptString( value );
             }
         }
     }
