@@ -24,6 +24,6 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the template guid for the example "Photo Release" Signature Document Template
         /// </summary>
-        public const string PHOTO_RELEASE_SIGNATURE_DOCUMENT_TEMPLATE = "40871411-4E2D-45C2-9E21-D9FCBA5FC340";
+        public const string PHOTO_RELEASE_SIGNATURE_DOCUMENT_TEMPLATE = "E982C45E-CDD3-481E-8664-85AD36500F1B";
     }
 }
