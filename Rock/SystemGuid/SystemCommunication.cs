@@ -108,6 +108,11 @@ namespace Rock.SystemGuid
         public const string DIGITAL_SIGNATURE_INVITE = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
 
         /// <summary>
+        /// Gets the template guid for the system Electronic Signature Receipt
+        /// </summary>
+        public const string SYSTEM_ELECTRONIC_SIGNATURE_RECEIPT = "224A0E80-069B-463C-8187-E13682F8A550";
+
+        /// <summary>
         /// Gets the template guid for a notewatch notification
         /// </summary>
         public const string NOTE_WATCH_NOTIFICATION = "21B92DE2-6825-45F3-BD27-43B47FE490D8";
