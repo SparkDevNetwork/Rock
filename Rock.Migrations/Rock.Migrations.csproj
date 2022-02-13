@@ -85,6 +85,10 @@
     <Compile Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.Designer.cs">
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202202130202284_AddCategorizedDefinedValueFieldType.cs" />
+    <Compile Include="Migrations\202202130202284_AddCategorizedDefinedValueFieldType.Designer.cs">
+      <DependentUpon>202202130202284_AddCategorizedDefinedValueFieldType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.Designer.cs">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
@@ -993,6 +997,9 @@
     <EmbeddedResource Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.resx">
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202130202284_AddCategorizedDefinedValueFieldType.resx">
+      <DependentUpon>202202130202284_AddCategorizedDefinedValueFieldType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.resx">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
