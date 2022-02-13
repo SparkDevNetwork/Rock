@@ -81,6 +81,14 @@
     <Compile Include="Migrations\202202090430115_AddWorkflowRelatedModel.Designer.cs">
       <DependentUpon>202202090430115_AddWorkflowRelatedModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.cs" />
+    <Compile Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.Designer.cs">
+      <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202202130202284_AddCategorizedDefinedValueFieldType.cs" />
+    <Compile Include="Migrations\202202130202284_AddCategorizedDefinedValueFieldType.Designer.cs">
+      <DependentUpon>202202130202284_AddCategorizedDefinedValueFieldType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.Designer.cs">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
@@ -986,6 +994,13 @@
     <EmbeddedResource Include="Migrations\202202090430115_AddWorkflowRelatedModel.resx">
       <DependentUpon>202202090430115_AddWorkflowRelatedModel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.resx">
+      <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202130202284_AddCategorizedDefinedValueFieldType.resx">
+      <DependentUpon>202202130202284_AddCategorizedDefinedValueFieldType.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.resx">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
     </EmbeddedResource>
@@ -1776,6 +1791,9 @@
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202105251443228_SparklineChart_SparklineUpdate.sql">
       <DependentUpon>202105251443228_SparklineChart.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge.sql">
+      <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava">
