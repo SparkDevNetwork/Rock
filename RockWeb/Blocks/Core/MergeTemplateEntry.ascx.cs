@@ -363,7 +363,7 @@ namespace RockWeb.Blocks.Core
                         {
                             var combinedPerson = primaryGroupPerson.ToJson().FromJsonOrNull<MergeTemplateCombinedPerson>();
 
-                            var familyTitle = Person.CalculateFamilySalutation( primaryGroupPerson, new Person.CalculateFamilySalutationArgs( true ) { LimitToPersonIds = personIds } );
+                            var familyTitle = Person.CalculateFamilySalutation( primaryGroupPerson, new Person.CalculateFamilySalutationArgs( true ) { LimitToPersonIds = personIds, RockContext = rockContext } );
                             combinedPerson.FullName = familyTitle;
 
                             var firstNameList = combinedFamilyItem.Persons.Select( a => ( a as Person ).FirstName ).ToList();

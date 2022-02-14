@@ -1402,7 +1402,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             person.Email = details.Email;
 
             var familyGroup = person.GetFamily( rockContext );
-            if ( familyGroup != null )
+            if ( familyGroup != null && details.CampusGuid.HasValue )
             {
                 familyGroup.CampusId = CampusCache.Get( details.CampusGuid.Value ).Id;
             }
@@ -1820,8 +1820,10 @@ namespace Rock.Blocks.Types.Mobile.Security
                         Person = mobilePerson
                     } );
                 }
-                catch
+                catch ( Exception ex )
                 {
+                    ExceptionLogService.LogException( ex );
+
                     return ActionOk( new CreatePersonResponse
                     {
                         IsSuccess = false,

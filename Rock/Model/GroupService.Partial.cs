@@ -901,7 +901,7 @@ namespace Rock.Model
             List<string> familyMemberNames = new List<string>();
             string primaryLastName = string.Empty;
 
-            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext );
+            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext ?? new RockContext() );
             var groupId = group.Id;
 
             var familyMembersQry = groupMemberService.Queryable( false ).Where( a => a.GroupId == groupId );
