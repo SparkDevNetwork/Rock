@@ -18,7 +18,9 @@ import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { DayOfWeek } from "./dayOfWeekField";
 import DropDownList from "../Elements/dropDownList";
+import TextBox from "../Elements/textBox";
 import { ListItem } from "../ViewModels";
+import { useVModelPassthrough } from "../Util/component";
 
 export const EditComponent = defineComponent({
     name: "DayOfWeekField.Edit",
@@ -74,6 +76,32 @@ export const EditComponent = defineComponent({
     },
     template: `
 <DropDownList v-model="internalValue" :options="options()" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "DayOfWeekField.Filter",
+
+    components: {
+        TextBox
+    },
+
+    props: getFieldEditorProps(),
+
+    emits: [
+        "update:modelValue"
+    ],
+
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        return {
+            internalValue
+        };
+    },
+
+    template: `
+<TextBox v-model="internalValue" />
 `
 });
 

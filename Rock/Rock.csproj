@@ -458,7 +458,7 @@
     <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
-    <Compile Include="Attribute\ClientAttributeHelper.cs" />
+    <Compile Include="Attribute\PublicAttributeHelper.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
@@ -1139,6 +1139,7 @@
     <Compile Include="Plugin\HotFixes\146_UpdateStatementGeneratorDownloadLink.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
+    <Compile Include="Reporting\ComparisonValue.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\AttendanceInPlacementGroup.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ConnectionOpportunityFilter.cs" />

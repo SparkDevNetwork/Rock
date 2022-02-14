@@ -15,9 +15,10 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { defineComponent, PropType, ref, watch } from "vue";
 import { Guid } from "../Util/guid";
 import { CategoryTreeItemProvider } from "../Util/treeItemProviders";
+import { updateRefValue } from "../Util/util";
 import { ListItem } from "../ViewModels";
 import TreeItemPicker from "./treeItemPicker";
 
@@ -30,8 +31,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Array as PropType<ListItem[]>,
-            default: [],
+            type: Object as PropType<ListItem | null>
         },
 
         rootCategoryGuid: {
@@ -52,7 +52,7 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
-        const internalValue = ref(props.modelValue);
+        const internalValue = ref(props.modelValue ? [props.modelValue] : []);
 
         // Configure the item provider with our settings. These are not reactive
         // since we don't do lazy loading so there is no point.
@@ -63,10 +63,12 @@ export default defineComponent({
         itemProvider.entityTypeQualifierValue = props.entityTypeQualifierValue;
 
         watch(internalValue, () => {
-            emit("update:modelValue", internalValue.value);
+            emit("update:modelValue", internalValue.value.length > 0 ? internalValue.value[0] : undefined);
         });
 
-        watch(() => props.modelValue, () => internalValue.value = props.modelValue);
+        watch(() => props.modelValue, () => {
+            updateRefValue(internalValue, props.modelValue ? [props.modelValue] : []);
+        });
 
         return {
             internalValue,

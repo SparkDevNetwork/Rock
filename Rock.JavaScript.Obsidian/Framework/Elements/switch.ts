@@ -20,7 +20,7 @@ import InlineSwitch from "./inlineSwitch";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
-    name: "CheckBox",
+    name: "Switch",
 
     components: {
         InlineSwitch,

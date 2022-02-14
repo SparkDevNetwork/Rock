@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { ClientAttributeValue } from "./clientAttributeValue";
+import { PublicAttributeValue } from "./publicAttributeValue";
 
-export type ClientEditableAttributeValue = ClientAttributeValue & {
+export type PublicEditableAttributeValue = PublicAttributeValue & {
     /** The key that identifies this attribute on the entity. */
     key: string;
 

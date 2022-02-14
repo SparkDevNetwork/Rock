@@ -55,9 +55,10 @@
     <Compile Include="Connection\ConnectionRequest\ConnectionRequestCountsViewModel.cs" />
     <Compile Include="Controls\FieldTypeConfigurationViewModel.cs" />
     <Compile Include="Controls\FieldTypeConfigurationPropertiesViewModel.cs" />
-    <Compile Include="NonEntities\ClientAttributeValueCategoryViewModel.cs" />
-    <Compile Include="NonEntities\ClientEditableAttributeValueViewModel.cs" />
-    <Compile Include="NonEntities\ClientAttributeValueViewModel.cs" />
+    <Compile Include="NonEntities\PublicComparisonValueViewModel.cs" />
+    <Compile Include="NonEntities\PublicAttributeValueCategoryViewModel.cs" />
+    <Compile Include="NonEntities\PublicEditableAttributeValueViewModel.cs" />
+    <Compile Include="NonEntities\PublicAttributeValueViewModel.cs" />
     <Compile Include="CodeGenerated\AchievementAttemptViewModel.cs" />
     <Compile Include="CodeGenerated\AchievementTypePrerequisiteViewModel.cs" />
     <Compile Include="CodeGenerated\AchievementTypeViewModel.cs" />
@@ -280,6 +281,8 @@
     <Compile Include="NonEntities\AttributeConfigurationValue.cs" />
     <Compile Include="NonEntities\PublicEditableAttributeViewModel.cs" />
     <Compile Include="NonEntities\ListItemViewModel.cs" />
+    <Compile Include="NonEntities\PublicFilterableAttributeViewModel.cs" />
+    <Compile Include="NonEntities\PublicFilterableAttributeValueViewModel.cs" />
     <Compile Include="NonEntities\SavedFinancialAccountListItemViewModel.cs" />
     <Compile Include="NonEntities\TreeItemViewModel.cs" />
     <Compile Include="Partials\AttributeValueViewModel.partial.cs" />

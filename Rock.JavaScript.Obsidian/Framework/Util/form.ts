@@ -29,7 +29,20 @@ export type FormState = {
     submitCount: number;
 
     /** Sets the current error for the given field name. A blank error means no error. */
-    setError: (name: string, error: string) => void;
+    setError: (id: string, name: string, error: string) => void;
+};
+
+/**
+ * Contains the internal form error passed between RockForm and RockValidation.
+ *
+ * This is an internal type and subject to change at any time.
+ */
+export type FormError = {
+    /** The name of the field. */
+    name: string;
+
+    /** The current error text. */
+    text: string;
 };
 
 /**

@@ -15,10 +15,10 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
+import { ComparisonType, dateComparisonTypes } from "../Reporting/comparisonType";
 import { toNumber } from "../Services/number";
 import { padLeft } from "../Services/string";
+import { FieldTypeBase } from "./fieldType";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -34,12 +34,11 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Time field.
  */
 export class TimeFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        const values = /^(\d+):(\d+)/.exec(value.value ?? "");
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        const values = /^(\d+):(\d+)/.exec(value ?? "");
 
         if (values === null || values.length < 3) {
-            value.textValue = "";
-            return;
+            return "";
         }
 
         let hour = toNumber(values[1]);
@@ -50,14 +49,18 @@ export class TimeFieldType extends FieldTypeBase {
             hour -= 12;
         }
 
-        value.textValue = `${hour}:${padLeft(minute.toString(), 2, "0")} ${meridiem}`;
+        return `${hour}:${padLeft(minute.toString(), 2, "0")} ${meridiem}`;
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return dateComparisonTypes;
     }
 }

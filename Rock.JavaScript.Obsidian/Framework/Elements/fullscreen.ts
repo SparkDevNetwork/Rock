@@ -131,15 +131,16 @@ export default defineComponent({
          * settings.
          */
         const enterFullscreen = async (): Promise<void> => {
+            const body = document.getElementsByTagName("body")[0];
+
+            body.classList.add("is-fullscreen");
+
+            // TODO: This can be removed once the "is-fullscreen" class is implemented.
+            if (body.style.overflowY === "") {
+                body.style.overflowY = "hidden";
+            }
+
             if (props.isPageOnly) {
-                const body = document.getElementsByTagName("body")[0];
-
-                // TODO: This can be removed once the "fullscreen" class is implemented.
-                if (body.style.overflowY === "") {
-                    body.style.overflowY = "hidden";
-                }
-
-                body.classList.add("fullscreen");
 
                 // Set the styles so our container floats above all other content
                 // and handles its own scrolling.
@@ -179,15 +180,16 @@ export default defineComponent({
          * Attempts to exit from the current fullscreen mode.
          */
         const exitFullscreen = async (): Promise<void> => {
+            const body = document.getElementsByTagName("body")[0];
+
+            // TODO: This can be removed once the "is-fullscreen" class is implemented.
+            if (body.style.overflowY === "hidden") {
+                body.style.overflowY = "";
+            }
+
+            body.classList.remove("is-fullscreen");
+
             if (fullscreenMode.value === FullscreenMode.Page) {
-                const body = document.getElementsByTagName("body")[0];
-
-                // TODO: This can be removed once the "fullscreen" class is implemented.
-                if (body.style.overflowY === "hidden") {
-                    body.style.overflowY = "";
-                }
-
-                body.classList.remove("fullscreen");
                 containerStyle.value = {};
 
                 teleportDisabled.value = true;
