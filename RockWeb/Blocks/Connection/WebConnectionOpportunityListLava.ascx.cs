@@ -90,6 +90,9 @@ namespace RockWeb.Blocks.Connection
     }
 </style>
 {% for connectionOpportunity in ConnectionOpportunities %}
+    {% assign opportunityId = connectionOpportunity.Id | ToString %}
+    {% assign count = ConnectionRequestCounts[opportunityId] | AsInteger %}
+
     <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionOpportunityGuid={{ connectionOpportunity.Guid }}' stretched-link>
         <div class='card mb-2'>
             <div class='card-body'>
@@ -103,7 +106,7 @@ namespace RockWeb.Blocks.Connection
                         <span class='text-gray-600'><small>{{ connectionOpportunity.Description | Truncate:100,'...' }}</small></span>
                     </div>
                     <div class='col-xs-1 col-md-1 text-right mx-auto'>
-                        <span class='badge badge-pill badge-primary bg-blue-500'><small>{{ ConnectionRequestCounts[connectionOpportunity.Id] | Map: 'Value' }}</small></span>
+                        <span class='badge badge-pill badge-primary bg-blue-500'><small>{{ count }}</small></span>
                     </div>
                 </div>
             </div>
@@ -237,21 +240,22 @@ namespace RockWeb.Blocks.Connection
                 var opportunities = connectionOpportunityQuery.ToList()
                     .Where( o => o.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
 
-                // Get the various counts to make available to the Lava template.
+                    // Get the various counts to make available to the Lava template.
                 // The conversion of the value to a dictionary is a temporary work-around
                 // until we have a way to mark external types as lava safe.
                 var opportunityIds = opportunities.Select( o => o.Id ).ToList();
-                var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds )
-                    .ToDictionary( k => k.Key, k => k.Value
-                        .GetType()
-                        .GetProperties( BindingFlags.Instance | BindingFlags.Public )
-                        .ToDictionary( prop => prop.Name, prop => prop.GetValue( k.Value, null ) ) );
+                var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds );
+                var connectionRequestCounts = new Dictionary<string, string>();
+                foreach ( var opportunityId in opportunityIds )
+                {
+                    connectionRequestCounts.Add( opportunityId.ToString(), requestCounts[opportunityId].AssignedToYouCount.ToString() );
+                }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                 mergeFields.AddOrReplace( "ConnectionOpportunities", opportunities );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid );
-                mergeFields.AddOrReplace( "ConnectionRequestCounts", requestCounts );
+                mergeFields.AddOrReplace( "ConnectionRequestCounts", connectionRequestCounts );
 
                 var content = OpportunityTemplate
                     .ResolveMergeFields( mergeFields )
