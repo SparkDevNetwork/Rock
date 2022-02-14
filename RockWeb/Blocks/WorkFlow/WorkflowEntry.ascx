@@ -87,7 +87,7 @@
 
                             <%-- Put the signature document html in an Iframe so it doesn't inherit styling from the page --%>
                             <asp:Panel ID="pnlIframeSignatureDocumentHTML" runat="server">
-                                <iframe id="iframeSignatureDocumentHTML" name="signature-document-html-iframe" class="signaturedocument-iframe js-signaturedocument-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="width: 100%; height: 100%"></iframe>
+                                <iframe id="iframeSignatureDocumentHTML" name="signature-document-html-iframe" class="signaturedocument-iframe js-signaturedocument-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="width: 100%; height: 450px"></iframe>
                             </asp:Panel>
                             <Rock:ElectronicSignatureControl ID="escElectronicSignatureControl" runat="server" OnCompleteSignatureClicked="btnSignSignature_Click" CssClass="well" />
                         </asp:Panel>
@@ -120,30 +120,8 @@
                     }
                 }
 
-                //$(this).button('loading');
                 return true;
             }
-
-            Sys.Application.add_load(function () {
-                if ($('#<%=pnlIframeSignatureDocumentHTML.ClientID%>').length) {
-                    var $signatureDocumentIframe = $('.js-signaturedocument-iframe');
-
-                    $signatureDocumentIframe.height('auto');
-
-                    $signatureDocumentIframe.load(function () {
-                        new ResizeSensor($('#<%=pnlIframeSignatureDocumentHTML.ClientID%>'), function () {
-                            $('#<%=iframeSignatureDocumentHTML.ClientID%>', window.parent.document).height($('#<%=pnlIframeSignatureDocumentHTML.ClientID%>').height());
-                        });
-
-                        var newHeight = $(this.contentWindow.document).height();
-                        if ($(this).height() != newHeight) {
-                            $(this).height(newHeight);
-                        }
-
-                        $('#<%=pnlIframeSignatureDocumentHTML.ClientID%>').height(newHeight);
-                    });
-                }
-            });
 
         </script>
 

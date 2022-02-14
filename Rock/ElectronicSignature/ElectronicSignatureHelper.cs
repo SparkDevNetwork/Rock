@@ -82,14 +82,13 @@ namespace Rock.ElectronicSignature
                 signatureInfoName = signatureInformationHtmlArgs.SignedByPerson?.FullName;
             }
 
-
+            // NOTE that the Signature Document will be rendered as a PDF without any external styles, so we'll but the styles here.
             var signatureCss = @"
 <style>
     .signature-container {
         background-color: #f5f5f5;
         border: #000000 solid 1px;
         padding: 10px;
-        width: 600px;
         page-break-inside: avoid;
     }
 

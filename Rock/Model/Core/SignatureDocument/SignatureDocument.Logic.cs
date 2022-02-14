@@ -67,17 +67,17 @@ namespace Rock.Model
 {this.SignatureData}|
 {this.SignedName}";
 
-            // do a Sha1 hash as a Base64 so it'll fit in less 40 chars
+            // Hash in a way that'll will
             string hashed;
             using ( var crypt = new SHA1Managed() )
             {
                 var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( concatString ) );
                 var hashBase64 = Convert.ToBase64String( hash );
 
-                // trim base64 padding
-                hashed = hashBase64.TrimEnd( '=' );
+                // replace base64's special chars /+= https://en.wikipedia.org/wiki/Base64 with x
+                hashed = hashBase64.Replace( '/', 'x' ).Replace( '+', 'x' ).Replace( '=', 'x' );
             }
-            
+
             const string revisionPrefix = "A";
 
             // prepend with a revision just in case we have a future change to the implementation
