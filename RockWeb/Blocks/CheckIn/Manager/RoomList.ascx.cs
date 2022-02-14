@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
             else
             {
-                // https://app.asana.com/0/0/1199637795718017/f 
+                // https://app.asana.com/0/0/1199637795718017/f
                 // 'Enable Presence' is disabled, so a person automatically gets marked present.
                 // So, no records will be in the 'Checked-In (but no present)' state.
                 // Also, a user thinks of 'Present' as 'Checked-In' if they don't use the 'Enable Presence' feature
@@ -539,7 +539,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 CheckedInList = rosterAttendeesForLocationAndGroup.Where( a => a.Status == RosterAttendeeStatus.CheckedIn ).ToList(),
                 PresentList = rosterAttendeesForLocationAndGroup.Where( a => a.Status == RosterAttendeeStatus.Present ).ToList(),
-                CheckedOutList = rosterAttendeesForLocationAndGroup.Where( a => a.Status == RosterAttendeeStatus.Present ).ToList(),
+                CheckedOutList = rosterAttendeesForLocationAndGroup.Where( a => a.Status == RosterAttendeeStatus.CheckedOut ).ToList(),
             };
 
             if ( _showOnlyParentGroup )
