@@ -99,7 +99,7 @@
                 <Content>
                     <asp:HiddenField ID="hfConfirmStayingAttendanceId" runat="server" />
                     <Rock:NotificationBox ID="nbConfirmStayingWarning" runat="server" NotificationBoxType="Warning" />
-                    <asp:Literal ID="lConfirmStayingPromptText" runat="server" Text="Which schedule would you like to this person to stay for:" />
+                    <asp:Literal ID="lConfirmStayingPromptText" runat="server" Text="Which schedule would you like this person to stay for:" />
                     <Rock:RockRadioButtonList ID="rblScheduleStayingFor" runat="server" Label="Schedule" RepeatDirection="Horizontal" />
                 </Content>
             </Rock:ModalDialog>

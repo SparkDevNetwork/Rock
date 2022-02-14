@@ -1271,7 +1271,9 @@ namespace RockWeb.Blocks.Finance
                     editAllowed = txn.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
 
-                refundAllowed = txn != null && txn.IsAuthorized( "Refund", CurrentPerson );
+                refundAllowed = txn != null
+                    && IsOrganizationCurrency( txn.ForeignCurrencyCodeValueId ) // Rock does not support refunds for transactions in foreign currencies.
+                    && txn.IsAuthorized( Authorization.REFUND, CurrentPerson );
             }
 
             bool batchEditAllowed = true;
@@ -1368,6 +1370,28 @@ namespace RockWeb.Blocks.Finance
             }
 
             lbSave.Visible = !readOnly;
+        }
+
+        private bool IsOrganizationCurrency( int? foreignCurrencyValueId )
+        {
+            if ( !foreignCurrencyValueId.HasValue )
+            {
+                return true;
+            }
+
+            var organizationCurrencyCodeGuid = GlobalAttributesCache.Get().GetValue( Rock.SystemKey.SystemSetting.ORGANIZATION_CURRENCY_CODE ).AsGuidOrNull();
+            if ( !organizationCurrencyCodeGuid.HasValue )
+            {
+                return true;
+            }
+
+            var organizationCurrencyValue = DefinedValueCache.Get( organizationCurrencyCodeGuid.Value );
+            if ( organizationCurrencyValue == null )
+            {
+                return true;
+            }
+
+            return organizationCurrencyValue.Id == foreignCurrencyValueId;
         }
 
         private bool IsNonCashTransaction( int? currencyTypeId )
@@ -2096,7 +2120,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     var txnService = new FinancialTransactionService( rockContext );
                     var txn = txnService.Get( txnId.Value );
-                    if ( txn != null && txn.IsAuthorized( "Refund", CurrentPerson ) )
+                    if ( txn != null && txn.IsAuthorized( Authorization.REFUND, CurrentPerson ) )
                     {
                         var totalAmount = txn.TotalAmount;
 

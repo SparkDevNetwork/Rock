@@ -218,6 +218,11 @@ namespace Rock.Model
         {
             int totalPayments = 0;
             int totalAlreadyDownloaded = 0;
+
+            // If there is a payment without a transaction, but has one of the following status, don't report it as a 'unmatched' transaction.
+            // If they have one of these statuses, and can't be matched, the user probably closed the browser or walked away before completing the transaction.
+            string[] ignorableUnMatchedStatuses = new string[2] { "in_progress", "abandoned" };
+
             List<Payment> paymentsWithoutTransaction = new List<Payment>();
             int totalAdded = 0;
             int totalReversals = 0;
@@ -516,7 +521,11 @@ namespace Rock.Model
                         }
                         else
                         {
-                            paymentsWithoutTransaction.Add( payment );
+                            // If the payment can't be matched (and we aren't ignoring it due to its status), add it to the payment without a transactions that we'll report.
+                            if ( !ignorableUnMatchedStatuses.Contains( payment.Status, System.StringComparer.OrdinalIgnoreCase ) )
+                            {
+                                paymentsWithoutTransaction.Add( payment );
+                            }
                         }
                     }
                     else
