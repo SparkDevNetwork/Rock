@@ -15,10 +15,10 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { asBoolean } from "../Services/boolean";
 import { List } from "../Util/linq";
+import { PublicAttributeValue } from "../ViewModels";
+import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
     Values = "values",
@@ -47,7 +47,7 @@ const editComponent = defineAsyncComponent(async () => {
  * The field type handler for the Defined Value Range field.
  */
 export class DefinedValueRangeFieldType extends FieldTypeBase {
-    public override getTextValue(value: ClientAttributeValue): string {
+    public override getTextValue(value: PublicAttributeValue): string {
         try {
             const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
@@ -60,7 +60,7 @@ export class DefinedValueRangeFieldType extends FieldTypeBase {
         }
     }
 
-    public override getCondensedTextValue(value: ClientAttributeValue): string {
+    public override getCondensedTextValue(value: PublicAttributeValue): string {
         try {
             const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
@@ -71,45 +71,47 @@ export class DefinedValueRangeFieldType extends FieldTypeBase {
         }
     }
 
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
+    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
         try {
-            const clientValue = JSON.parse(value.value ?? "") as ClientValue;
+            const clientValue = JSON.parse(value) as ClientValue;
 
             try {
-                const values = new List(JSON.parse(value.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);
-                const displayDescription = asBoolean(value.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
+                const values = new List(JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);
+                const displayDescription = asBoolean(configurationValues[ConfigurationValueKey.DisplayDescription]);
                 const rawValues = (clientValue.value ?? "").split(",");
 
                 if (rawValues.length !== 2) {
-                    value.textValue = value.value;
-                    return;
+                    return value;
                 }
 
                 const lowerValue = values.firstOrUndefined(v => v?.value === rawValues[0]);
                 const upperValue = values.firstOrUndefined(v => v?.value === rawValues[1]);
 
                 if (lowerValue === undefined && upperValue === undefined) {
-                    value.textValue = "";
-                    return;
+                    return "";
                 }
 
                 if (displayDescription) {
-                    value.textValue = `${lowerValue?.description ?? ""} to ${upperValue?.description ?? ""}`;
+                    return `${lowerValue?.description ?? ""} to ${upperValue?.description ?? ""}`;
                 }
                 else {
-                    value.textValue = `${lowerValue?.text ?? ""} to ${upperValue?.text ?? ""}`;
+                    return `${lowerValue?.text ?? ""} to ${upperValue?.text ?? ""}`;
                 }
             }
             catch {
-                value.textValue = clientValue.value ?? "";
+                return clientValue.value ?? "";
             }
         }
         catch {
-            value.textValue = value.value;
+            return value;
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override isFilterable(): boolean {
+        return false;
     }
 }

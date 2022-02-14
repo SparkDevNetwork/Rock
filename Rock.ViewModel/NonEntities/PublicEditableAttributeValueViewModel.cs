@@ -20,11 +20,11 @@ using System.Collections.Generic;
 namespace Rock.ViewModel.NonEntities
 {
     /// <summary>
-    /// Extends <see cref="ClientAttributeValueViewModel"/> to include additional
+    /// Extends <see cref="PublicAttributeValueViewModel"/> to include additional
     /// properties required to make edits to the value.
     /// </summary>
-    /// <seealso cref="Rock.ViewModel.ClientAttributeValueViewModel" />
-    public class ClientEditableAttributeValueViewModel : ClientAttributeValueViewModel
+    /// <seealso cref="PublicAttributeValueViewModel" />
+    public class PublicEditableAttributeValueViewModel : PublicAttributeValueViewModel
     {
         /// <summary>
         /// Gets or sets the key that identifies the attribute on the entity.

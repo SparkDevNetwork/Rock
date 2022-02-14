@@ -34,7 +34,9 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
-    emits: ["update:modelValue"],
+    emits: [
+        "update:modelValue"
+    ],
 
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
@@ -66,11 +68,40 @@ export const EditComponent = defineComponent({
             return attributes;
         });
 
-        return { internalValue, configAttributes };
+        return {
+            internalValue,
+            configAttributes
+        };
     },
 
     template: `
 <TextBox v-model="internalValue" v-bind="configAttributes" textMode="MultiLine" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "MemoField.Filter",
+
+    components: {
+        TextBox
+    },
+
+    props: getFieldEditorProps(),
+
+    emits: [
+        "update:modelValue"
+    ],
+
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        return {
+            internalValue
+        };
+    },
+
+    template: `
+<TextBox v-model="internalValue" />
 `
 });
 

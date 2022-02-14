@@ -15,11 +15,10 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { asBoolean } from "../Services/boolean";
 import { toNumber } from "../Services/number";
 import { RockDateTime } from "../Util/rockDateTime";
+import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
     Format = "format",
@@ -44,52 +43,52 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Date field.
  */
 export class DateFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
+    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
         if (this.isCurrentDateValue(value)) {
-            const parts = (value.value ?? "").split(":");
+            const parts = (value ?? "").split(":");
             const diff = parts.length === 2 ? toNumber(parts[1]) : 0;
 
             if (diff === 1) {
-                value.textValue = "Current Date plus 1 day";
+                return "Current Date plus 1 day";
             }
             else if (diff > 0) {
-                value.textValue = `Current Date plus ${diff} days`;
+                return `Current Date plus ${diff} days`;
             }
             else if (diff === -1) {
-                value.textValue = "Current Date minus 1 day";
+                return "Current Date minus 1 day";
             }
             else if (diff < 0) {
-                value.textValue = `Current Date minus ${Math.abs(diff)} days`;
+                return `Current Date minus ${Math.abs(diff)} days`;
             }
             else {
-                value.textValue = "Current Date";
+                return "Current Date";
             }
         }
-        else if (value.value) {
-            const dateValue = RockDateTime.parseISO(value.value);
-            const dateFormatTemplate = value.configurationValues?.[ConfigurationValueKey.Format] || "MM/dd/yyy";
+        else if (value) {
+            const dateValue = RockDateTime.parseISO(value);
+            const dateFormatTemplate = configurationValues[ConfigurationValueKey.Format] || "MM/dd/yyy";
 
             if (dateValue !== null) {
                 let textValue = dateValue.toASPString(dateFormatTemplate);
 
-                const displayDiff = asBoolean(value.configurationValues?.[ConfigurationValueKey.DisplayDiff]);
+                const displayDiff = asBoolean(configurationValues[ConfigurationValueKey.DisplayDiff]);
 
                 if (displayDiff === true) {
                     textValue = `${textValue} ${dateValue.toElapsedString()}`;
                 }
 
-                value.textValue = textValue;
+                return textValue;
             }
             else {
-                value.textValue = "";
+                return "";
             }
         }
         else {
-            value.textValue = "";
+            return "";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
@@ -97,7 +96,7 @@ export class DateFieldType extends FieldTypeBase {
         return configurationComponent;
     }
 
-    private isCurrentDateValue(value: ClientAttributeValue): boolean {
-        return value.value?.indexOf("CURRENT") === 0;
+    private isCurrentDateValue(value: string): boolean {
+        return value.indexOf("CURRENT") === 0;
     }
 }

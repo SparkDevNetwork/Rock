@@ -15,9 +15,9 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { toNumberOrNull } from "../Services/number";
+import { FieldTypeBase } from "./fieldType";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum DayOfWeek {
     Sunday = 0,
@@ -35,6 +35,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./dayOfWeekFieldComponents")).EditComponent;
 });
 
+// The filter component can be quite large, so load it only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./dayOfWeekFieldComponents")).FilterComponent;
+});
+
 // The configuration component can be quite large, so load it only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
     return (await import("./dayOfWeekFieldComponents")).ConfigurationComponent;
@@ -44,54 +49,50 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the DayOfWeek field.
  */
 export class DayOfWeekFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        const dayValue = toNumberOrNull(value.value);
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        const dayValue = toNumberOrNull(value);
 
         if (dayValue === null) {
-            value.textValue = "";
+            return "";
         }
         else {
             switch (dayValue) {
                 case DayOfWeek.Sunday:
-                    value.textValue = "Sunday";
-                    break;
+                    return "Sunday";
 
                 case DayOfWeek.Monday:
-                    value.textValue = "Monday";
-                    break;
+                    return "Monday";
 
                 case DayOfWeek.Tuesday:
-                    value.textValue = "Tuesday";
-                    break;
+                    return "Tuesday";
 
                 case DayOfWeek.Wednesday:
-                    value.textValue = "Wednesday";
-                    break;
+                    return "Wednesday";
 
                 case DayOfWeek.Thursday:
-                    value.textValue = "Thursday";
-                    break;
+                    return "Thursday";
 
                 case DayOfWeek.Friday:
-                    value.textValue = "Friday";
-                    break;
+                    return "Friday";
 
                 case DayOfWeek.Saturday:
-                    value.textValue = "Saturday";
-                    break;
+                    return "Saturday";
 
                 default:
-                    value.textValue = "";
-                    break;
+                    return "";
             }
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent("Is", filterComponent);
     }
 }

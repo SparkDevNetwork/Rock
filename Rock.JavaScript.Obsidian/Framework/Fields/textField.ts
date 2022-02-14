@@ -16,6 +16,7 @@
 //
 
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
@@ -37,5 +38,9 @@ const configurationComponent = defineAsyncComponent(async () => {
 export class TextFieldType extends FieldTypeBase {
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return stringComparisonTypes;
     }
 }

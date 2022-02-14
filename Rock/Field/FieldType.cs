@@ -65,6 +65,12 @@ namespace Rock.Field
             return privateConfigurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
         }
 
+        /// <inheritdoc/>
+        public virtual Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetPublicConfigurationValues( privateConfigurationValues );
+        }
+
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -437,6 +443,51 @@ namespace Rock.Field
         #endregion
 
         #region Filter Control
+
+        /// <inheritdoc/>
+        public virtual ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values == null || values.Count == 0 )
+            {
+                return new ComparisonValue
+                {
+                    Value = string.Empty
+                };
+            }
+            else if ( values.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    Value = GetPublicEditValue( values[0], privateConfigurationValues )
+                };
+            }
+            else
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = values[0].ConvertToEnumOrNull<ComparisonType>(),
+                    Value = GetPublicEditValue( values[1], privateConfigurationValues )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = new List<string>();
+
+            if ( publicValue.ComparisonType.HasValue )
+            {
+                values.Add( publicValue.ComparisonType.ConvertToInt().ToString() );
+            }
+
+            values.Add( publicValue.Value != null ? GetPrivateEditValue( publicValue.Value, privateConfigurationValues ) : string.Empty );
+
+            return values.ToJson();
+        }
+
 
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.

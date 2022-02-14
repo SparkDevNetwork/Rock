@@ -27,7 +27,7 @@ import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import TextBox from "../../Elements/textBox";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import { Guid, normalize as normalizeGuid } from "../../Util/guid";
-import { ClientAttributeValue, ClientEditableAttributeValue, ListItem } from "../../ViewModels";
+import { PublicAttributeValue, PublicEditableAttributeValue, ListItem } from "../../ViewModels";
 import { getFieldType } from "../../Fields/index";
 import { truncate } from "../../Services/string";
 import { computed } from "vue";
@@ -72,7 +72,7 @@ type GridRow = {
 
     isActive: boolean;
 
-    value: ClientAttributeValue;
+    value: PublicAttributeValue;
 
     isDeleteEnabled: boolean;
 
@@ -243,7 +243,7 @@ export default defineComponent({
         // #region Attribute Value Editing
 
         /** The current attribute value in an editable format. */
-        const editableAttributeValue = ref<ClientEditableAttributeValue | null>(null);
+        const editableAttributeValue = ref<PublicEditableAttributeValue | null>(null);
 
         /** True if the edit attribute value modal should be visible. */
         const showEditAttributeValueModal = ref<boolean>(false);
@@ -270,7 +270,7 @@ export default defineComponent({
                 return;
             }
 
-            const result = await invokeBlockAction<ClientEditableAttributeValue>("GetEditAttributeValue", {
+            const result = await invokeBlockAction<PublicEditableAttributeValue>("GetEditAttributeValue", {
                 attributeGuid: row.guid
             });
 
@@ -321,7 +321,7 @@ export default defineComponent({
          *
          * @returns A string to display in the grid row for the value.
          */
-        const getCondensedValue = (value: ClientAttributeValue): string => {
+        const getCondensedValue = (value: PublicAttributeValue): string => {
             // TODO: This should probably be updated to have a new method called
             // getFieldTypeOrDefault() that will return the Text field type.
             const fieldType = getFieldType(value.fieldTypeGuid);

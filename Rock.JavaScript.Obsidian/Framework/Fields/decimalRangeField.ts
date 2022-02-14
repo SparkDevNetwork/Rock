@@ -15,9 +15,8 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { toNumberOrNull } from "../Services/number";
+import { FieldTypeBase } from "./fieldType";
 
 
 // The edit component can be quite large, so load it only as needed.
@@ -34,37 +33,39 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Decimal Range field.
  */
 export class DecimalRangeFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        if (value.value === null || value.value === undefined || value.value === "" || value.value === ",") {
-            value.textValue = "";
-            return;
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        if (value === null || value === undefined || value === "" || value === ",") {
+            return "";
         }
 
-        const numbers = value.value.split(",").map(v => toNumberOrNull(v));
+        const numbers = value.split(",").map(v => toNumberOrNull(v));
 
         // If there are not two components then it's not valid, or if both
         // components are not numbers then it's not valid.
         if (numbers.length !== 2 || (numbers[0] === null && numbers[1] === null)) {
-            value.textValue = "";
-            return;
+            return "";
         }
 
         if (numbers[0] === null) {
-            value.textValue = `through ${numbers[1]}`;
+            return `through ${numbers[1]}`;
         }
         else if (numbers[1] === null) {
-            value.textValue = `from ${numbers[0]}`;
+            return `from ${numbers[0]}`;
         }
         else {
-            value.textValue = `${numbers[0]} to ${numbers[1]}`;
+            return `${numbers[0]} to ${numbers[1]}`;
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override isFilterable(): boolean {
+        return false;
     }
 }
