@@ -41,6 +41,7 @@
                                 ID="tbClientId"
                                 Label="Client Id"
                                 runat="server"
+                                Help="The OIDC ClientId. This the public identifier that the client apps will need to use."
                                 CssClass="form-group"
                                 SourceTypeName="Rock.Model.AuthClient, Rock"
                                 PropertyName="ClientId" />
@@ -59,7 +60,7 @@
                             <Rock:RockTextBox
                                 ID="tbClientSecret"
                                 Required="true"
-                                Help="For security purposes, we don't allow the secret to be displayed once created."
+                                Help="For security purposes, we don't allow the secret to be displayed once created. Note that you only get one chance to see the Client Secret when you first generate it, so if you lose track of it you’ll need to generate a new one."
                                 Label="Client Secret"
                                 runat="server"
                                 CssClass="form-group" />
@@ -79,6 +80,7 @@
                             <Rock:DataTextBox
                                 ID="tbRedirectUri"
                                 Label="Redirect Uri"
+                                Help="After the person has provided their credentials, they will be redirected back to the client via the path indicated here. This URI is provided by the client system."
                                 runat="server"
                                 CssClass="form-group"
                                 SourceTypeName="Rock.Model.AuthClient, Rock"
@@ -88,6 +90,7 @@
                             <Rock:DataTextBox
                                 ID="tbPostLogoutRedirectUri"
                                 Label="Logout Redirect Uri"
+                                Help="When the person logs out of the client system, they will be redirected to this URI. This is usually a URI on the client system."
                                 runat="server"
                                 CssClass="form-group"
                                 SourceTypeName="Rock.Model.AuthClient, Rock"
