@@ -44,7 +44,7 @@ namespace Rock.Workflow.Action
         "Applies to Person",
         Description = "The attribute that represents the person that the document applies to.",
         Key = AttributeKey.AppliesToPersonAlias,
-        IsRequired = true,
+        IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.TextFieldType" },
         Order = 2 )]
 

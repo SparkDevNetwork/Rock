@@ -76,7 +76,9 @@
                     signaturePad.clear();
                 })
 
-                window.addEventListener("resize", self.resizeSignatureCanvas(self));
+                window.addEventListener("resize", function () {
+                    self.resizeSignatureCanvas(self)
+                });
 
                 self.resizeSignatureCanvas(self);
             },

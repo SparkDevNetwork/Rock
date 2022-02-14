@@ -783,6 +783,7 @@
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Data\RockGuidAttribute.cs" />
+    <Compile Include="ElectronicSignature\SampleDrawnSignatures.cs" />
     <Compile Include="ElectronicSignature\ElectronicSignatureHelper.cs" />
     <Compile Include="ElectronicSignature\GetSignatureInformationHtmlOptions.cs" />
     <Compile Include="Field\FieldTypeUsage.cs" />

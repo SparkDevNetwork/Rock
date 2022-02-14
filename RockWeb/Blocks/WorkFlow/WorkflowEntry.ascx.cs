@@ -1902,10 +1902,16 @@ namespace RockWeb.Blocks.WorkFlow
             var signedByPersonAliasId = electronicSignatureWorkflowAction.GetSignedByPersonAliasId( rockContext, workflowAction, this.CurrentPersonAliasId );
             if ( signedByPersonAliasId.HasValue )
             {
-                // default email to the SignedByPerson's email
-                var signedByPersonEmail = new PersonAliasService( rockContext ).GetPerson( signedByPersonAliasId.Value )?.Email;
-                escElectronicSignatureControl.SignedByEmail = signedByPersonEmail;
+                // Default email to the SignedByPerson's email
+                var signedByPerson = new PersonAliasService( rockContext ).GetPerson( signedByPersonAliasId.Value );
+                escElectronicSignatureControl.SignedByEmail = signedByPerson?.Email;
+
+                // When in Drawn Mode, we want to prefill the 'Confirm' Legal Name. (But not the Signed Name)
+                escElectronicSignatureControl.LegalName = signedByPerson?.FullName;
             }
+
+            // If not logged-in or the Workflow hasn't specified a SignedByPerson, show the name that was typed when on the Completion step
+            escElectronicSignatureControl.ShowNameOnCompletionStepWhenInTypedSignatureMode = ( signedByPersonAliasId == null );
 
             escElectronicSignatureControl.EmailAddressPrompt = signatureDocumentTemplate.CompletionSystemCommunicationId.HasValue
                 ? ElectronicSignatureControl.EmailAddressPromptType.CompletionEmail
@@ -1955,18 +1961,7 @@ namespace RockWeb.Blocks.WorkFlow
                 signedByPerson = null;
             }
 
-            if ( signedByPerson == null )
-            {
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unable to determine person for signature." );
-                return;
-            }
-
             var appliesToPersonAliasId = electronicSignatureWorkflowAction.GetAppliesToPersonAliasId( rockContext, workflowAction );
-            if ( !appliesToPersonAliasId.HasValue )
-            {
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unable to determine which person the signature applies to." );
-                return;
-            }
 
             Dictionary<string, object> mergeFields = GetWorkflowEntryMergeFields();
             mergeFields.Add( "SignatureDocumentTemplate", signatureDocumentTemplate );
