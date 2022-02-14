@@ -15,9 +15,9 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { asBooleanOrNull } from "../Services/boolean";
+import { PublicAttributeValue } from "../ViewModels";
+import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
     BooleanControlType = "BooleanControlType",
@@ -40,7 +40,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Boolean field.
  */
 export class BooleanFieldType extends FieldTypeBase {
-    public override getCondensedTextValue(value: ClientAttributeValue): string {
+    public override getCondensedTextValue(value: PublicAttributeValue): string {
         const boolValue = asBooleanOrNull(value.value);
 
         if (boolValue === null) {
@@ -54,21 +54,21 @@ export class BooleanFieldType extends FieldTypeBase {
         }
     }
 
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        const boolValue = asBooleanOrNull(value.value);
+    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+        const boolValue = asBooleanOrNull(value);
 
         if (boolValue === null) {
-            value.textValue = "";
+            return "";
         }
         else if (boolValue === true) {
-            value.textValue = value.configurationValues?.[ConfigurationValueKey.TrueText] || "Yes";
+            return configurationValues[ConfigurationValueKey.TrueText] || "Yes";
         }
         else {
-            value.textValue = value.configurationValues?.[ConfigurationValueKey.FalseText] || "No";
+            return configurationValues[ConfigurationValueKey.FalseText] || "No";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 

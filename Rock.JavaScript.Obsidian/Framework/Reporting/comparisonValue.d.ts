@@ -1,4 +1,3 @@
-// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,18 +13,16 @@
 // limitations under the License.
 // </copyright>
 //
-import { Guid } from "../Util/guid";
+
+import { ComparisonType } from "./comparisonType";
 
 /**
- * Specifies a single category that a ClientAttributeValue is a member of.
+ * The comparison value for custom filtering.
  */
-export type ClientAttributeValueCategory = {
-    /** Unique identifier of the category. */
-    guid: Guid;
+export type ComparisonValue = {
+    /** The type of comparison to be performed. */
+    comparisonType?: ComparisonType | null;
 
-    /** Display name of the category. */
-    name: string;
-
-    /** Display order of the category. */
-    order: number;
+    /** The right-hand value to be compared to. */
+    value: string;
 };

@@ -28,8 +28,8 @@ using Rock.Security;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
-using ClientAttributeValueViewModel = Rock.ViewModel.NonEntities.ClientAttributeValueViewModel;
-using ClientEditableAttributeValueViewModel = Rock.ViewModel.NonEntities.ClientEditableAttributeValueViewModel;
+using PublicAttributeValueViewModel = Rock.ViewModel.NonEntities.PublicAttributeValueViewModel;
+using PublicEditableAttributeValueViewModel = Rock.ViewModel.NonEntities.PublicEditableAttributeValueViewModel;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -1267,7 +1267,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                                 return ActionBadRequest( "Invalid data." );
                             }
 
-                            var value = ClientAttributeHelper.GetValueFromClient( attribute, memberValue.Value );
+                            var value = PublicAttributeHelper.GetPrivateValue( attribute, memberValue.Value );
 
                             memberAttributeValues.Add( memberValue.Key, value );
                         }
@@ -1867,7 +1867,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The attributes.
             /// </value>
-            public List<ClientAttributeValueViewModel> Attributes { get; set; }
+            public List<PublicAttributeValueViewModel> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the workflow types.
@@ -2024,7 +2024,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The attributes that can be edited.
             /// </value>
-            public List<ClientEditableAttributeValueViewModel> Attributes { get; set; }
+            public List<PublicEditableAttributeValueViewModel> Attributes { get; set; }
         }
 
         /// <summary>

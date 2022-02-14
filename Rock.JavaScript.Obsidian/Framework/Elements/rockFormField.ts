@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
 import { newGuid } from "../Util/guid";
 import RockLabel from "./rockLabel";
 import { useFormState } from "../Util/form";
@@ -71,6 +71,7 @@ export default defineComponent({
         /** The internal value being tracked for the field. */
         const internalValue = ref<unknown>("");
 
+        /** The internal rules we will be used for calculations. */
         const internalRules = computed(() => normalizeRules(props.rules));
 
         /** Determines if this field is marked as required. */
@@ -101,14 +102,20 @@ export default defineComponent({
 
             if (errors.length > 0) {
                 currentError.value = errors[0];
-                formState?.setError(fieldLabel.value, currentError.value);
+                formState?.setError(uniqueId, fieldLabel.value, currentError.value);
             }
             else {
                 currentError.value = "";
-                formState?.setError(fieldLabel.value, "");
+                formState?.setError(uniqueId, fieldLabel.value, "");
             }
         }, {
             immediate: true
+        });
+
+        // If we are removed from the DOM completely, clear the error before we go.
+        onBeforeUnmount(() => {
+            currentError.value = "";
+            formState?.setError(uniqueId, fieldLabel.value, "");
         });
 
         return {

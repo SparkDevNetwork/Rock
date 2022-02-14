@@ -181,12 +181,12 @@ namespace Rock
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
-        /// <returns>A collection of <see cref="ClientAttributeValueViewModel" /> objects.</returns>
-        public static List<ClientAttributeValueViewModel> GetClientAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        /// <returns>A collection of <see cref="PublicAttributeValueViewModel" /> objects.</returns>
+        public static List<PublicAttributeValueViewModel> GetClientAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null )
             {
-                return new List<ClientAttributeValueViewModel>();
+                return new List<PublicAttributeValueViewModel>();
             }
 
             return entity.AttributeValues
@@ -196,7 +196,7 @@ namespace Rock
                     Attribute = AttributeCache.Get( av.Value.AttributeId )
                 } )
                 .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                .Select( kvp => ClientAttributeHelper.ToClientAttributeValue( kvp.Value ) )
+                .Select( kvp => PublicAttributeHelper.ToPublicAttributeValue( kvp.Value ) )
                 .ToList();
         }
 
@@ -208,12 +208,12 @@ namespace Rock
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
-        /// <returns>A collection of <see cref="ClientEditableAttributeValueViewModel" /> objects.</returns>
-        public static List<ClientEditableAttributeValueViewModel> GetClientEditableAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        /// <returns>A collection of <see cref="PublicEditableAttributeValueViewModel" /> objects.</returns>
+        public static List<PublicEditableAttributeValueViewModel> GetClientEditableAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null )
             {
-                return new List<ClientEditableAttributeValueViewModel>();
+                return new List<PublicEditableAttributeValueViewModel>();
             }
 
             return entity.AttributeValues
@@ -223,7 +223,7 @@ namespace Rock
                     Attribute = AttributeCache.Get( av.Value.AttributeId )
                 } )
                 .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                .Select( kvp => ClientAttributeHelper.ToClientEditableAttributeValue( kvp.Value ) )
+                .Select( kvp => PublicAttributeHelper.ToPublicEditableAttributeValue( kvp.Value ) )
                 .ToList();
         }
 
@@ -261,7 +261,7 @@ namespace Rock
                     continue;
                 }
 
-                var value = ClientAttributeHelper.GetValueFromClient( attribute, kvp.Value );
+                var value = PublicAttributeHelper.GetPrivateValue( attribute, kvp.Value );
 
                 entity.SetAttributeValue( kvp.Key, value );
             }
@@ -300,7 +300,7 @@ namespace Rock
                 return;
             }
 
-            var databaseValue = ClientAttributeHelper.GetValueFromClient( attribute, value );
+            var databaseValue = PublicAttributeHelper.GetPrivateValue( attribute, value );
 
             entity.SetAttributeValue( key, databaseValue );
         }

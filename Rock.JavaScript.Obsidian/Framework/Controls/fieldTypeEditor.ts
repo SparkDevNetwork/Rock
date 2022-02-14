@@ -22,7 +22,8 @@ import DropDownList from "../Elements/dropDownList";
 import StaticFormControl from "../Elements/staticFormControl";
 import { getFieldType } from "../Fields/index";
 import { get, post } from "../Util/http";
-import { ClientEditableAttributeValue, ListItem } from "../ViewModels";
+import { areEqual } from "../Util/guid";
+import { PublicEditableAttributeValue, ListItem } from "../ViewModels";
 import { FieldTypeConfigurationPropertiesViewModel, FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
 
 export default defineComponent({
@@ -47,6 +48,10 @@ export default defineComponent({
         }
     },
 
+    emits: [
+        "update:modelValue"
+    ],
+
     setup(props, { emit }) {
         /** The selected field type in the drop down list. */
         const fieldTypeValue = ref(props.modelValue?.fieldTypeGuid ?? "");
@@ -55,7 +60,7 @@ export default defineComponent({
         let resetToDefaultsTimer: number | null = null;
 
         /** The details about the default value used for the field. */
-        const defaultValue = ref<ClientEditableAttributeValue | null>(null);
+        const defaultValue = ref<PublicEditableAttributeValue | null>(null);
 
         /** The current configuration properties that describe the field type options. */
         const configurationProperties = ref<Record<string, string>>({});
@@ -108,7 +113,7 @@ export default defineComponent({
 
         /** The name of the currently selected field type. */
         const fieldTypeName = computed((): string => {
-            const matches = fieldTypeOptions.value.filter(v => v.value === fieldTypeValue.value);
+            const matches = fieldTypeOptions.value.filter(v => areEqual(v.value, fieldTypeValue.value));
 
             return matches.length >= 1 ? matches[0].text : "";
         });

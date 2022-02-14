@@ -15,9 +15,9 @@
 // </copyright>
 //
 import { Guid } from "../Util/guid";
-import { ClientAttributeValueCategory } from "./clientAttributeValueCategory";
+import { PublicAttributeValueCategory } from "./publicAttributeValueCategory";
 
-export type ClientAttributeValue = {
+export type PublicAttributeValue = {
     /** The field type unique identifier. */
     fieldTypeGuid: Guid;
 
@@ -31,7 +31,7 @@ export type ClientAttributeValue = {
     order: number;
 
     /** The categories that this attribute is a member of. */
-    categories: ClientAttributeValueCategory[];
+    categories: PublicAttributeValueCategory[];
 
     /** The user friendly display value. */
     textValue?: string | null;

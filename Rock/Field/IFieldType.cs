@@ -56,6 +56,24 @@ namespace Rock.Field
         Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
+        /// Gets the public filter configuration values. This data will be sent to
+        /// remote systems which have no security protection. Sensitive data should
+        /// not be included or should be encrypted before storing in the dictionary.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>The configuration values that are safe for public use.</returns>
+        [RockInternal]
+        Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues );
+
+        /// <summary>
         /// Get the edit configuration properties that are safe to send to a remote
         /// device when editing a field type. This is custom data your field type
         /// can use to provide, for example, a list of options to pick from. This
@@ -418,6 +436,42 @@ namespace Rock.Field
         #endregion
 
         #region Filter Control
+
+        /// <summary>
+        /// Gets the value that will be sent to remote devices. This value will
+        /// be used when editing the filter value on the device.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="privateValue">The private (database) value.</param>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>A <see cref="ComparisonValue"/> that has been parsed and sanitized.</returns>
+        [RockInternal]
+        ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
+
+        /// <summary>
+        /// Gets the filter value to be stored in the database from the value sent
+        /// by a device at the end of an edit on a filter control.
+        /// </summary>
+        /// <param name="publicValue">The public value received from a remote device.</param>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>A string value to store in the database.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type using the specified FilterMode

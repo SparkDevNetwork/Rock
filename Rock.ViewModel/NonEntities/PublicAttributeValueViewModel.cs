@@ -25,7 +25,7 @@ namespace Rock.ViewModel.NonEntities
     /// for normal transmission of attribute values to the client when needed
     /// for display purposes.
     /// </summary>
-    public class ClientAttributeValueViewModel : IViewModel
+    public class PublicAttributeValueViewModel : IViewModel
     {
         /// <summary>
         /// Gets or sets the field type unique identifier.
@@ -65,7 +65,7 @@ namespace Rock.ViewModel.NonEntities
         /// <value>
         /// The categories.
         /// </value>
-        public List<ClientAttributeValueCategoryViewModel> Categories { get; set; }
+        public List<PublicAttributeValueCategoryViewModel> Categories { get; set; }
 
         /// <summary>
         /// Gets or sets the user-friendly display text value.

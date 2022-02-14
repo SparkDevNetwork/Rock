@@ -15,8 +15,9 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue } from "../ViewModels";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum ConfigurationValueKey {
     NumberOfRows = "numberofrows",
@@ -30,6 +31,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./memoFieldComponents")).EditComponent;
 });
 
+// The filter component can be quite large, so load it only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./memoFieldComponents")).FilterComponent;
+});
+
 // The configuration component can be quite large, so load it only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
     return (await import("./memoFieldComponents")).ConfigurationComponent;
@@ -39,11 +45,19 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Memo field.
  */
 export class MemoFieldType extends FieldTypeBase {
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return stringComparisonTypes;
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
     }
 }

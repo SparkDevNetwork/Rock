@@ -16,7 +16,6 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue } from "../ViewModels";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -32,7 +31,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Color field.
  */
 export class ColorFieldType extends FieldTypeBase {
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 

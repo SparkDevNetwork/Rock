@@ -15,37 +15,23 @@
 // </copyright>
 //
 
-using System;
-
 namespace Rock.ViewModel.NonEntities
 {
     /// <summary>
-    /// The category that an attribute is associated with.
+    /// Describes a field type comparison value send to and from remote systems.
     /// </summary>
-    public class ClientAttributeValueCategoryViewModel : IViewModel
+    public class PublicComparisonValueViewModel
     {
         /// <summary>
-        /// Gets or sets the category unique identifier.
+        /// Gets or sets the comparison type that will be performed with the value.
         /// </summary>
-        /// <value>
-        /// The category unique identifier.
-        /// </value>
-        public Guid Guid { get; set; }
+        /// <value>The comparison type that will be performed with the value.</value>
+        public int? ComparisonType { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the current raw filter value.
         /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the order.
-        /// </summary>
-        /// <value>
-        /// The order.
-        /// </value>
-        public int Order { get; set; }
+        /// <value>The current raw filter value.</value>
+        public string Value { get; set; }
     }
 }

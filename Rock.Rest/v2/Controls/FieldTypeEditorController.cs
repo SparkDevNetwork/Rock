@@ -95,12 +95,12 @@ namespace Rock.Rest.v2.Controls
 
             // Get the editable attribute value so they can render a default value
             // control.
-            var clientEditableValue = new ClientEditableAttributeValueViewModel
+            var clientEditableValue = new PublicEditableAttributeValueViewModel
             {
                 FieldTypeGuid = updateViewModel.FieldTypeGuid,
                 AttributeGuid = Guid.Empty,
                 Name = "Default Value",
-                Categories = new List<ClientAttributeValueCategoryViewModel>(),
+                Categories = new List<PublicAttributeValueCategoryViewModel>(),
                 Order = 0,
                 TextValue = fieldType.GetTextValue( privateDefaultValue, configurationValues ),
                 Value = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues ),
