@@ -82,7 +82,7 @@
 
                     <Rock:NotificationBox ID="nbSignatureLavaTemplateWarning" runat="server" NotificationBoxType="Validation" Text="Lava Template is required." Visible="false" />
                     <Rock:Toggle ID="tglTemplatePreview" runat="server" CssClass="pull-right" OnText="Preview" OffText="Edit" Checked="false" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglTemplatePreview_CheckedChanged" />
-                    <Rock:HtmlEditor ID="ceESignatureLavaTemplate" runat="server" Label="Lava Template" Help="The Lava template that makes up the body of the document." Height="300"/>
+                    <Rock:CodeEditor ID="ceESignatureLavaTemplate" runat="server" EditorMode="Lava"  Label="Lava Template" Help="The Lava template that makes up the body of the document." EditorHeight="500" />
                     <Rock:RockControlWrapper ID="rcwSignatureDocumentPreview" runat="server" Visible="false" Label="Lava Template Preview" Help="Preview of Signature Template as a PDF">
                         <Rock:PDFViewer ID="pdfSignatureDocumentPreview" runat="server" />
                     </Rock:RockControlWrapper>
