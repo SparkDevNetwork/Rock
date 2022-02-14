@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Fluid.Parser;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -31,10 +32,10 @@ using System.Web.UI.WebControls;
 namespace RockWeb.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// List block the shows a list of Data Views that have persistence enabled
+    /// List block that shows a list of Data Views that have persistence enabled
     /// </summary>
     [DisplayName( "Form Submission List" )]
-    [Category( "WorkFlow" )]
+    [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows a list forms submitted for a given FormBuilder form." )]
 
     #region Rock Attributes
@@ -132,6 +133,15 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the ModalAlert control that shows page-level notifications to the user.
+        /// </summary>
+        public ModalAlert ModalAlertControl { get; set; }
+
+        #endregion Properties
+
         #region Base Control Methods
 
         /// <summary>
@@ -151,6 +161,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            ModalAlertControl = mdAlert;
 
             BindAttributes();
             AddDynamicControls();
@@ -232,6 +244,22 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                         personLinkButton.Visible = false;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void gWorkflows_Delete( object sender, RowEventArgs e )
+        {
+            var id = ( int ) e.RowKeyValue;
+
+            if ( CanDelete( id ) )
+            {
+                BindGrid();
             }
         }
 
@@ -324,6 +352,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
             // Add delete column
             var deleteField = new DeleteField();
+            deleteField.Click += gWorkflows_Delete;
             gWorkflows.Columns.Add( deleteField );
         }
 
@@ -408,6 +437,40 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 { PageParameterKeys.Tab, tab  },
                 { PageParameterKeys.WorkflowTypeId, PageParameter( PageParameterKeys.WorkflowTypeId ) }
             };
+        }
+
+        /// <summary>
+        /// Show an alert message that requires user acknowledgement to continue.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="alertType"></param>
+        private void ShowAlert( string message, ModalAlertType alertType )
+        {
+            ModalAlertControl.Show( message, alertType );
+        }
+
+        private bool CanDelete( int id )
+        {
+            RockContext rockContext = new RockContext();
+            var workflowService = new WorkflowService( rockContext );
+            var workflow = workflowService.Get( id );
+            string errorMessage;
+
+            if ( workflow == null )
+            {
+                ShowAlert( "This item could not be found", ModalAlertType.Information );
+                return false;
+            }
+
+            if ( !workflowService.CanDelete( workflow, out errorMessage ) )
+            {
+                ShowAlert( errorMessage, ModalAlertType.Warning );
+                return false;
+            }
+
+            workflowService.Delete( workflow );
+            rockContext.SaveChanges();
+            return true;
         }
 
         #endregion Methods

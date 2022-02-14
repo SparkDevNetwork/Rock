@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <Rock:ModalAlert ID="mdAlert" runat="server" />
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
