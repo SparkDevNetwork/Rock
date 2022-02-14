@@ -52,7 +52,11 @@ namespace RockWeb.Blocks.Tv
         300,
         false,
         "default",
-        "",
+        @"<div class=""mb-4"">
+    <h1>Hello
+    {{ CurrentPerson.NickName }}</h1>
+    <span>Enter your security code below to authenicate to your application.</span>
+</div>",
         1,
         AttributeKey.HeaderContent)]
 
@@ -62,8 +66,10 @@ namespace RockWeb.Blocks.Tv
         CodeEditorTheme.Rock,
         300,
         false,
-        "",
-        "",
+        "",@"<div>
+    <h1>Success!</h1>
+    <span>{{ CurrentPerson.NickName }}, you have successfully authenicated to your application.</span>
+</div>",
         2,
         AttributeKey.FooterContent )]
 
