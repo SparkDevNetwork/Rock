@@ -78,7 +78,7 @@
                         </div>
                     </div>
 
-                    <Rock:PDFViewer ID="pdfSignatureDocument" runat="server" />
+                    <Rock:PDFViewer ID="pdfSignatureDocument" runat="server" ViewerHeight="900px" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEditLegacyProviderDocument" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEditLegacyProviderDocument_Click" />
