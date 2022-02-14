@@ -511,6 +511,31 @@ namespace Rock.Data
         /// <summary>
         /// Creates a transaction to launch a workflow for this entity.
         /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
+        /// <param name="initiatorPersonAliasId">The Initiator Person Alias Identifier.</param>
+        internal void LaunchWorkflow( Guid? workflowTypeGuid, string workflowName, Dictionary<string, string> workflowAttributeValues, int? initiatorPersonAliasId )
+        {
+            if ( workflowTypeGuid.HasValue )
+            {
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeGuid.Value, workflowName, Id )
+                {
+                    InitiatorPersonAliasId = initiatorPersonAliasId
+                };
+
+                if ( workflowAttributeValues != null )
+                {
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+        }
+
+        /// <summary>
+        /// Creates a transaction to launch a workflow for this entity.
+        /// </summary>
         /// <param name="workflowTypeId">The workflow type identifier.</param>
         /// <param name="workflowName">Name of the workflow.</param>
         /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>

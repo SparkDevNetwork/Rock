@@ -61,6 +61,14 @@ namespace Rock.Net
         /// </value>
         public ClientInfo Browser => _browser.Value;
 
+        /// <summary>
+        /// Gets the user agent identifier string.
+        /// </summary>
+        /// <value>
+        /// The user agent identifier string.
+        /// </value>
+        public string UserAgent { get; }
+
         #endregion
 
         #region Constructors
@@ -98,6 +106,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
+            UserAgent = request.UserAgent;
             _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.UserAgent ) );
         }
 
@@ -128,6 +137,7 @@ namespace Rock.Net
                 IpAddress = "localhost";
             }
 
+            UserAgent = request.Headers.UserAgent.ToString();
             _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.Headers.UserAgent.ToString() ) );
         }
 

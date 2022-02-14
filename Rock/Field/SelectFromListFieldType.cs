@@ -34,6 +34,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string REPEAT_COLUMNS = "repeatColumns";
+        private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -43,6 +44,7 @@ namespace Rock.Field.Types
         {
             List<string> configKeys = base.ConfigurationKeys();
             configKeys.Add( REPEAT_COLUMNS );
+            configKeys.Add( ENHANCED_SELECTION_KEY );
             return configKeys;
         }
 
@@ -53,6 +55,15 @@ namespace Rock.Field.Types
         public override List<Control> ConfigurationControls()
         {
             List<Control> controls = base.ConfigurationControls();
+
+            // option for Displaying an enhanced 'chosen' value picker
+            var cbEnhanced = new RockCheckBox();
+            cbEnhanced.AutoPostBack = true;
+            cbEnhanced.CheckedChanged += OnQualifierUpdated;
+            cbEnhanced.Label = "Enhance For Long Lists";
+            cbEnhanced.Text = "Yes";
+            cbEnhanced.Help = "When set, will render a searchable selection of options.";
+            controls.Add( cbEnhanced );
 
             var tbRepeatColumns = new NumberBox();
             tbRepeatColumns.Label = "Number of Columns";
@@ -77,9 +88,17 @@ namespace Rock.Field.Types
             string description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
             configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
-            if ( controls != null && controls.Count > 0 )
+            description = "When set, will render a searchable selection of options.";
+            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", description, string.Empty ) );
+
+            if ( controls != null && controls.Count >= 2 )
             {
-                var tbRepeatColumns = controls[0] as NumberBox;
+                var cbEnhanced = controls[0] as RockCheckBox;
+                var tbRepeatColumns = controls[1] as NumberBox;
+
+                tbRepeatColumns.Visible = !cbEnhanced.Checked;
+
+                configurationValues[ENHANCED_SELECTION_KEY].Value = cbEnhanced.Checked.ToString();
                 configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
             }
 
@@ -95,10 +114,14 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 0 && configurationValues != null )
+            if ( controls != null && controls.Count >= 2 && configurationValues != null )
             {
-                var tbRepeatColumns = controls[0] as NumberBox;
+                var cbEnhanced = controls[1] as RockCheckBox;
+                var tbRepeatColumns = controls[1] as NumberBox;
+
+                cbEnhanced.Checked = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) ? configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() : cbEnhanced.Checked;
                 tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
+                tbRepeatColumns.Visible = !cbEnhanced.Checked;
             }
         }
 
@@ -146,13 +169,30 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
-            editControl.RepeatDirection = RepeatDirection.Horizontal;
-
-            // Fixed bug preventing what was is stated in the 'Columns' help text: "If blank or 0 then 4 columns..."
-            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) && configurationValues[REPEAT_COLUMNS].Value.AsInteger() != 0 )
+            if ( configurationValues == null )
             {
-                editControl.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                return null;
+            }
+
+            ListControl editControl = null;
+
+            if ( configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
+            {
+                editControl = new RockListBox { ID = id };
+                ( ( RockListBox ) editControl ).DisplayDropAsAbsolute = true;
+            }
+            else
+            {
+                editControl = new RockCheckBoxList { ID = id };
+
+                var rockCheckBoxList = ( RockCheckBoxList ) editControl;
+                rockCheckBoxList.RepeatDirection = RepeatDirection.Horizontal;
+
+                // Fixed bug preventing what was is stated in the 'Columns' help text: "If blank or 0 then 4 columns..."
+                if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) && configurationValues[REPEAT_COLUMNS].Value.AsInteger() != 0 )
+                {
+                    rockCheckBoxList.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                }
             }
 
             var listSource = GetListSource( configurationValues );
@@ -183,12 +223,16 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            if ( control != null && control is RockCheckBoxList )
+            if ( control != null && control is ListControl editControl )
             {
-                RockCheckBoxList cbl = ( RockCheckBoxList ) control;
-                foreach ( ListItem li in cbl.Items )
+                foreach ( ListItem li in editControl.Items )
+                {
                     if ( li.Selected )
+                    {
                         values.Add( li.Value );
+                    }
+                }
+
                 return values.AsDelimited<string>( "," );
             }
 
@@ -208,11 +252,12 @@ namespace Rock.Field.Types
                 List<string> values = new List<string>();
                 values.AddRange( value.SplitDelimitedValues() );
 
-                if ( control != null && control is RockCheckBoxList )
+                if ( control != null && control is ListControl editControl )
                 {
-                    RockCheckBoxList cbl = ( RockCheckBoxList ) control;
-                    foreach ( ListItem li in cbl.Items )
+                    foreach ( ListItem li in editControl.Items )
+                    {
                         li.Selected = values.Contains( li.Value, StringComparer.OrdinalIgnoreCase );
+                    }
                 }
             }
         }

@@ -631,8 +631,12 @@ namespace Rock.Model
                 }
             }
 
+            _preSaveChangesOldGroupId = oldGroupId;
+
             base.PreSaveChanges( dbContext, entry );
         }
+
+        private int? _preSaveChangesOldGroupId = null;
 
         /// <summary>
         /// Posts the save changes.
@@ -684,7 +688,7 @@ namespace Rock.Model
             base.PostSaveChanges( dbContext );
 
             // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily,
-            // GivingLeadId, and GroupSalution is updated
+            // GivingLeaderId, and GroupSalution is updated
             // NOTE: This is also done on Person.PostSaveChanges in case Birthdate changes
             var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
             if ( groupTypeFamilyRoleIds?.Any() == true )
@@ -695,8 +699,13 @@ namespace Rock.Model
                     PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
                     PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
 
-                    // NOTE, make sure to do this after UpdatePrimaryFamily
-                    PersonService.UpdateGroupSalutations( this.PersonId, dbContext as RockContext );
+                    GroupService.UpdateGroupSalutations( this.GroupId, dbContext as RockContext );
+
+                    if ( _preSaveChangesOldGroupId.HasValue && _preSaveChangesOldGroupId.Value != this.GroupId )
+                    {
+                        // if person was moved to a different family, the old family will need its GroupSalutations updated
+                        GroupService.UpdateGroupSalutations( _preSaveChangesOldGroupId.Value, dbContext as RockContext );
+                    }
                 }
             }
         }
@@ -1137,10 +1146,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
+            var rockContext = ( RockContext ) dbContext;
+
+            var group = this.Group ?? new GroupService( rockContext ).GetNoTracking( this.GroupId );
             if ( group != null )
             {
-                var groupType = GroupTypeCache.Get( group.GroupTypeId, ( RockContext ) dbContext );
+                var groupType = GroupTypeCache.Get( group.GroupTypeId, rockContext );
                 if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
                 {
                     RoleCache.FlushItem( group.Id );

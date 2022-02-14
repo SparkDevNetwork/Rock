@@ -110,6 +110,12 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbAutoRefresh" runat="server" Label="Auto Refresh" Help="When enabled the page will automatically reload whenever it becomes visible." />
+                        </div>
+                    </div>
+
                     <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
                     <Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Page Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements on this page." />

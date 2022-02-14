@@ -401,24 +401,40 @@ namespace Rock.Jobs
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            // get list of Families that don't have a GroupSalutation populated yet. Include deceased and businesses.
-            var personIdListWithFamilyId = new PersonService( new RockContext() )
-                .Queryable( true, true )
-                .Where( a =>
-                    a.PrimaryFamilyId.HasValue
-                    && ( a.PrimaryFamily.GroupSalutation == null || a.PrimaryFamily.GroupSalutationFull == null || a.PrimaryFamily.GroupSalutation == "" || a.PrimaryFamily.GroupSalutationFull == "" ) )
-                .Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+            var rockContext = new RockContext();
+
+            // just in case there are Groups that have a null or empty Name, update them.
+            var familiesWithoutNames = new GroupService( rockContext )
+                .Queryable().Where( a => a.GroupTypeId == familyGroupTypeId )
+                .Where( a => string.IsNullOrEmpty( a.Name ) );
+
+            if ( familiesWithoutNames.Any() )
+            {
+                rockContext.BulkUpdate( familiesWithoutNames, g => new Group { Name = "Family" } );
+            }
+
+            // Calculate any missing GroupSalutation values on Family Groups.
+
+            /* 11-01-2021  MDP
+              GroupSalutationCleanup only fills in any missing GroupSalutions. Families added by Rock will get the GroupSalutations calculated
+              on Save, but Families (Groups) that might have been added thru a plugin or direct SQL might have missing GroupSalutations.
+              Not that cleanup job doesn't attempt to fix any salutations that might be incorrect.
+              This is mostly because it can take a long time (300,000 families would take around 30 minutes every time that RockCleanup is done).
+            */
+            var familyIdList = new GroupService( rockContext )
+                .Queryable().Where( a => a.GroupTypeId == familyGroupTypeId && ( string.IsNullOrEmpty( a.GroupSalutation ) || string.IsNullOrEmpty( a.GroupSalutationFull ) ) )
+                .Select( a => a.Id ).ToList();
 
             var recordsUpdated = 0;
 
-            // we only need one person from each family (and it doesn't matter who)
-            var personIdList = personIdListWithFamilyId.GroupBy( a => a.PrimaryFamilyId.Value ).Select( s => s.FirstOrDefault()?.Id ).Where( a => a.HasValue ).Select( s => s.Value ).ToList();
-
-            foreach ( var personId in personIdList )
+            foreach ( var familyId in familyIdList )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContextUpdate = new RockContext() )
                 {
-                    recordsUpdated += PersonService.UpdateGroupSalutations( personId, rockContext );
+                    if ( GroupService.UpdateGroupSalutations( familyId, rockContextUpdate ) )
+                    {
+                        recordsUpdated++;
+                    }
                 }
             }
 
@@ -1852,7 +1868,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                             {
                                 hasDifferentValues = namelessPersonEditedAttributeValues
                                     .Any( av => !existingPersonEditedAttributeValues
-                                        .Any( eav => eav.Key == av.Key && eav.Value.Value.Equals( av.Value.Value, StringComparison.OrdinalIgnoreCase ) ) );
+                                        .Any( eav => eav.Key == av.Key && ( eav.Value?.Value ?? "" ).Equals( ( av.Value?.Value ?? "" ), StringComparison.OrdinalIgnoreCase ) ) );
                             }
 
                             if ( !hasMissingAttributes && !hasDifferentValues )

@@ -703,6 +703,7 @@ namespace RockWeb.Blocks.Mobile
             tbCssClass.Text = page.BodyCssClass;
             cbHideNavigationBar.Checked = additionalSettings.HideNavigationBar;
             cbShowFullScreen.Checked = additionalSettings.ShowFullScreen;
+            cbAutoRefresh.Checked = additionalSettings.AutoRefresh;
             ceEventHandler.Text = additionalSettings.LavaEventHandler;
             ceCssStyles.Text = additionalSettings.CssStyles;
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
@@ -853,6 +854,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.CssStyles = ceCssStyles.Text;
             additionalSettings.HideNavigationBar = cbHideNavigationBar.Checked;
             additionalSettings.ShowFullScreen = cbShowFullScreen.Checked;
+            additionalSettings.AutoRefresh = cbAutoRefresh.Checked;
 
             page.InternalName = tbInternalName.Text;
             page.BrowserTitle = tbName.Text;
