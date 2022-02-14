@@ -87,7 +87,7 @@
 
                             <%-- Put the signature document html in an Iframe so it doesn't inherit styling from the page --%>
                             <asp:Panel ID="pnlIframeSignatureDocumentHTML" runat="server">
-                                <iframe id="iframeSignatureDocumentHTML" name="signature-document-html-iframe" class="signaturedocument-iframe js-signaturedocument-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="width: 100%; height: 450px"></iframe>
+                                <iframe id="iframeSignatureDocumentHTML" name="signature-document-html-iframe" class="signaturedocument-container js-signaturedocument-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="width: 100%; height: 450px"></iframe>
                             </asp:Panel>
                             <Rock:ElectronicSignatureControl ID="escElectronicSignatureControl" runat="server" OnCompleteSignatureClicked="btnSignSignature_Click" CssClass="well" />
                         </asp:Panel>
