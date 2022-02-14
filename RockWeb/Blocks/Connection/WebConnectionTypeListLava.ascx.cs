@@ -33,6 +33,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionType.Options;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -92,7 +93,9 @@ namespace RockWeb.Blocks.Connection
     }
 </style>
 {% for connectionType in ConnectionTypes %}
-{% assign count = ConnectionRequestCounts[connectionType.Id] | Map:'Value' | First | AsInteger %}
+{% assign typeId = connectionType.Id | ToString %}
+{% assign count = ConnectionRequestCounts[typeId] | AsInteger %}
+
 {% if count >0 %}
     <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionTypeGuid={{ connectionType.Guid }}' stretched-link>
         <div class='card mb-2'>
@@ -114,7 +117,9 @@ namespace RockWeb.Blocks.Connection
         </div>
        </a>
 {%endif %}
-{% endfor %}";
+{% endfor %}
+"
+;
 
         }
         #endregion Lava
@@ -182,11 +187,12 @@ namespace RockWeb.Blocks.Connection
                 // The conversion of the value to a dictionary is a temporary work-around
                 // until we have a way to mark external types as lava safe.
                 var connectionTypeIds = types.Select( t => t.Id ).ToList();
-                var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds )
-                    .ToDictionary( k => k.Key, k => k.Value
-                        .GetType()
-                        .GetProperties( BindingFlags.Instance | BindingFlags.Public )
-                        .ToDictionary( prop => prop.Name, prop => prop.GetValue( k.Value, null ) ) );
+                var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds );
+                var connectionRequestCounts = new Dictionary<string, string>();
+                foreach ( var typeId in connectionTypeIds )
+                {
+                    connectionRequestCounts.Add( typeId.ToString(), requestCounts[typeId].AssignedToYouCount.ToString() );
+                }
 
                 var connectionTypes = connectionTypeService.GetConnectionTypesQuery()?.ToList();
 
@@ -194,7 +200,7 @@ namespace RockWeb.Blocks.Connection
 
                 mergeFields.AddOrReplace( "ConnectionTypes", connectionTypes );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid.ToString() );
-                mergeFields.AddOrReplace( "ConnectionRequestCounts", requestCounts );
+                mergeFields.AddOrReplace( "ConnectionRequestCounts", connectionRequestCounts );
 
                 var content = TypeTemplate
                     .ResolveMergeFields( mergeFields )
