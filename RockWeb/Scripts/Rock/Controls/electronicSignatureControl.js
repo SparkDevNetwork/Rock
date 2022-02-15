@@ -99,7 +99,10 @@
                     containerWidth = 400;
                 }
 
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                // Note the suggestion  https://github.com/szimek/signature_pad#handling-high-dpi-screens
+                // to re-calculate the ratio based on window.devicePixelRatio isn't needed. 
+                // We can just use the width() of the container and use fixed height of 100.
+                const ratio = 1;
                 signaturePadCanvas.width = containerWidth * ratio;
                 signaturePadCanvas.height = 100 * ratio;
                 signaturePadCanvas.getContext("2d").scale(ratio, ratio);
