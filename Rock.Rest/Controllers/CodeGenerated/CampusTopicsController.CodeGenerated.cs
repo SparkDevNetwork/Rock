@@ -21,23 +21,18 @@
 // </copyright>
 //
 
-import { IEntity } from "../entity";
+using Rock.Model;
 
-export type WorkflowActionFormAttribute = IEntity & {
-    actionFormSectionId?: number | null;
-    attributeId?: number;
-    columnSize?: number | null;
-    fieldVisibilityRulesJSON?: string | null;
-    hideLabel?: boolean;
-    isReadOnly?: boolean;
-    isRequired?: boolean;
-    isVisible?: boolean;
-    order?: number;
-    postHtml?: string | null;
-    preHtml?: string | null;
-    workflowActionFormId?: number;
-    createdDateTime?: string | null;
-    modifiedDateTime?: string | null;
-    createdByPersonAliasId?: number | null;
-    modifiedByPersonAliasId?: number | null;
-};
+namespace Rock.Rest.Controllers
+{
+    /// <summary>
+    /// CampusTopics REST API
+    /// </summary>
+    public partial class CampusTopicsController : Rock.Rest.ApiController<Rock.Model.CampusTopic>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CampusTopicsController"/> class.
+        /// </summary>
+        public CampusTopicsController() : base( new Rock.Model.CampusTopicService( new Rock.Data.RockContext() ) ) { } 
+    }
+}

@@ -27,21 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PersonalDevice that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for CampusTopic that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonalDeviceEntity
+    public partial class CampusTopicEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string DeviceRegistrationId { get; set; }
+        public int CampusId { get; set; }
 
         /// <summary />
-        public string DeviceUniqueIdentifier { get; set; }
-
-        /// <summary />
-        public string DeviceVersion { get; set; }
+        public string Email { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,22 +47,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; } = true;
-
-        /// <summary />
-        public DateTime? LastSeenDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? LastVerifiedDateTime { get; set; }
-
-        /// <summary />
-        public string MACAddress { get; set; }
-
-        /// <summary />
-        public string Manufacturer { get; set; }
-
-        /// <summary />
-        public string Model { get; set; }
+        public bool IsPublic { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -73,22 +55,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public bool NotificationsEnabled { get; set; }
-
-        /// <summary />
-        public int? PersonalDeviceTypeValueId { get; set; }
-
-        /// <summary />
-        public int? PersonAliasId { get; set; }
-
-        /// <summary />
-        public int? PlatformValueId { get; set; }
-
-        /// <summary />
-        public int? SiteId { get; set; }
+        public int TopicTypeValueId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -117,30 +84,19 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PersonalDevice object
+        /// Copies the base properties from a source CampusTopic object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PersonalDevice source )
+        public void CopyPropertiesFrom( CampusTopic source )
         {
             this.Id = source.Id;
-            this.DeviceRegistrationId = source.DeviceRegistrationId;
-            this.DeviceUniqueIdentifier = source.DeviceUniqueIdentifier;
-            this.DeviceVersion = source.DeviceVersion;
+            this.CampusId = source.CampusId;
+            this.Email = source.Email;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsActive = source.IsActive;
-            this.LastSeenDateTime = source.LastSeenDateTime;
-            this.LastVerifiedDateTime = source.LastVerifiedDateTime;
-            this.MACAddress = source.MACAddress;
-            this.Manufacturer = source.Manufacturer;
-            this.Model = source.Model;
+            this.IsPublic = source.IsPublic;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.NotificationsEnabled = source.NotificationsEnabled;
-            this.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
-            this.PersonAliasId = source.PersonAliasId;
-            this.PlatformValueId = source.PlatformValueId;
-            this.SiteId = source.SiteId;
+            this.TopicTypeValueId = source.TopicTypeValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -152,18 +108,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PersonalDevice that includes all the fields that are available for GETs. Use this for GETs (use PersonalDeviceEntity for POST/PUTs)
+    /// Client model for CampusTopic that includes all the fields that are available for GETs. Use this for GETs (use CampusTopicEntity for POST/PUTs)
     /// </summary>
-    public partial class PersonalDevice : PersonalDeviceEntity
+    public partial class CampusTopic : CampusTopicEntity
     {
         /// <summary />
-        public DefinedValue PersonalDeviceType { get; set; }
+        public Campus Campus { get; set; }
 
         /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
-        /// <summary />
-        public Site Site { get; set; }
+        public DefinedValue TopicTypeValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

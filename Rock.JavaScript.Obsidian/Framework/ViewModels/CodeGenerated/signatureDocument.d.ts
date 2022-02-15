@@ -35,9 +35,9 @@ export type SignatureDocument = IEntity & {
     lastInviteDate?: string | null;
     lastStatusDate?: string | null;
     name?: string | null;
-    signatureData?: string | null;
+    signatureDataEncrypted?: string | null;
     signatureDocumentTemplateId?: number;
-    signatureVerficationHash?: string | null;
+    signatureVerificationHash?: string | null;
     signedByEmail?: string | null;
     signedByPersonAliasId?: number | null;
     signedClientIp?: string | null;

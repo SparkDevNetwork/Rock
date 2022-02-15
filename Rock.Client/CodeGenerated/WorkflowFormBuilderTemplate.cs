@@ -27,21 +27,24 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PersonalDevice that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for WorkflowFormBuilderTemplate that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonalDeviceEntity
+    public partial class WorkflowFormBuilderTemplateEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string DeviceRegistrationId { get; set; }
+        public bool AllowPersonEntry { get; set; }
 
         /// <summary />
-        public string DeviceUniqueIdentifier { get; set; }
+        public string CompletionSettingsJson { get; set; }
 
         /// <summary />
-        public string DeviceVersion { get; set; }
+        public string ConfirmationEmailSettingsJson { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,22 +53,16 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string FormFooter { get; set; }
+
+        /// <summary />
+        public string FormHeader { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public DateTime? LastSeenDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? LastVerifiedDateTime { get; set; }
-
-        /// <summary />
-        public string MACAddress { get; set; }
-
-        /// <summary />
-        public string Manufacturer { get; set; }
-
-        /// <summary />
-        public string Model { get; set; }
+        public bool IsLoginRequired { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -76,19 +73,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public bool NotificationsEnabled { get; set; }
-
-        /// <summary />
-        public int? PersonalDeviceTypeValueId { get; set; }
-
-        /// <summary />
-        public int? PersonAliasId { get; set; }
-
-        /// <summary />
-        public int? PlatformValueId { get; set; }
-
-        /// <summary />
-        public int? SiteId { get; set; }
+        public string PersonEntrySettingsJson { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -117,30 +102,25 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PersonalDevice object
+        /// Copies the base properties from a source WorkflowFormBuilderTemplate object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PersonalDevice source )
+        public void CopyPropertiesFrom( WorkflowFormBuilderTemplate source )
         {
             this.Id = source.Id;
-            this.DeviceRegistrationId = source.DeviceRegistrationId;
-            this.DeviceUniqueIdentifier = source.DeviceUniqueIdentifier;
-            this.DeviceVersion = source.DeviceVersion;
+            this.AllowPersonEntry = source.AllowPersonEntry;
+            this.CompletionSettingsJson = source.CompletionSettingsJson;
+            this.ConfirmationEmailSettingsJson = source.ConfirmationEmailSettingsJson;
+            this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.FormFooter = source.FormFooter;
+            this.FormHeader = source.FormHeader;
             this.IsActive = source.IsActive;
-            this.LastSeenDateTime = source.LastSeenDateTime;
-            this.LastVerifiedDateTime = source.LastVerifiedDateTime;
-            this.MACAddress = source.MACAddress;
-            this.Manufacturer = source.Manufacturer;
-            this.Model = source.Model;
+            this.IsLoginRequired = source.IsLoginRequired;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.NotificationsEnabled = source.NotificationsEnabled;
-            this.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
-            this.PersonAliasId = source.PersonAliasId;
-            this.PlatformValueId = source.PlatformValueId;
-            this.SiteId = source.SiteId;
+            this.PersonEntrySettingsJson = source.PersonEntrySettingsJson;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -152,19 +132,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PersonalDevice that includes all the fields that are available for GETs. Use this for GETs (use PersonalDeviceEntity for POST/PUTs)
+    /// Client model for WorkflowFormBuilderTemplate that includes all the fields that are available for GETs. Use this for GETs (use WorkflowFormBuilderTemplateEntity for POST/PUTs)
     /// </summary>
-    public partial class PersonalDevice : PersonalDeviceEntity
+    public partial class WorkflowFormBuilderTemplate : WorkflowFormBuilderTemplateEntity
     {
-        /// <summary />
-        public DefinedValue PersonalDeviceType { get; set; }
-
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
-        /// <summary />
-        public Site Site { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
