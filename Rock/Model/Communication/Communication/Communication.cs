@@ -400,6 +400,25 @@ namespace Rock.Model
         [IgnoreCanDelete]
         public int? SystemCommunicationId { get; set; }
 
+        /// <summary>
+        /// Gets the send date key.
+        /// </summary>
+        /// <value>
+        /// The send date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? SendDateKey
+        {
+            get => ( SendDateTime == null || SendDateTime.Value == default ) ?
+                        ( int? ) null :
+                        SendDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+
+            private set
+            {
+            }
+        }
+
         #endregion
 
         #region Navigation Properties

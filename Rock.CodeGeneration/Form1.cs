@@ -21,6 +21,7 @@ using LoxSmoke.DocXml;
 using Rock;
 using Rock.ViewModel;
 using Rock.Utility;
+using Rock.Data;
 
 namespace Rock.CodeGeneration
 {
@@ -273,6 +274,8 @@ namespace Rock.CodeGeneration
             bool hasWarnings = false;
             StringBuilder missingDbSetWarnings = new StringBuilder();
             StringBuilder rockObsoleteWarnings = new StringBuilder();
+            StringBuilder rockGuidWarnings = new StringBuilder();
+            Dictionary<string, string> rockGuids = new Dictionary<string, string>(); // GUID, Class/Method
             List<string> singletonClassVariablesWarnings = new List<string>();
             List<string> obsoleteReportList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
@@ -301,17 +304,39 @@ namespace Rock.CodeGeneration
                 foreach ( var type in allTypes.OrderBy( a => a.FullName ) )
                 {
                     /* See if the class is Obsolete/RockObsolete */
-                    ObsoleteAttribute typeObsoleteAttribute = type.GetCustomAttribute<ObsoleteAttribute>();
+                    var typeObsoleteAttribute = type.GetCustomAttribute<ObsoleteAttribute>();
+                    var typeRockObsolete = type.GetCustomAttribute<RockObsolete>();
                     if ( typeObsoleteAttribute != null )
                     {
-                        var rockObsolete = type.GetCustomAttribute<RockObsolete>();
-                        if ( rockObsolete == null )
+                        if ( typeRockObsolete == null )
                         {
                             rockObsoleteWarnings.AppendLine( $" - {type}" );
                         }
                         else
                         {
-                            obsoleteReportList.Add( $"{rockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
+                            obsoleteReportList.Add( $"{typeRockObsolete.Version},{type.Name},class,{typeObsoleteAttribute.IsError}" );
+                        }
+                    }
+
+                    /* See if class has RockGuid */
+                    var typeRockGuidAttribute = type.GetCustomAttribute<RockGuidAttribute>();
+                    if ( null != typeRockGuidAttribute )
+                    {
+                        if ( typeRockGuidAttribute.Guid.IsEmpty() )
+                        {
+                            rockGuidWarnings.AppendLine( $" - EMPTY,{type}" );
+                        }
+                        else
+                        {
+                            var rockGuid = typeRockGuidAttribute.Guid.ToString();
+                            if ( !rockGuids.ContainsKey( rockGuid ) )
+                            {
+                                rockGuids.Add( rockGuid, $"{type}" );
+                            }
+                            else
+                            {
+                                rockGuidWarnings.AppendLine( $" - DUPLICATE,{type},{rockGuid},{rockGuids[rockGuid]}" );
+                            }
                         }
                     }
 
@@ -321,29 +346,85 @@ namespace Rock.CodeGeneration
                         .OrderBy( a => a.Name )
                         .ToList();
 
+                    if ( null == typeRockGuidAttribute )
+                    {
+                        /* API Controllers should have assigned RockGuidAttribute */
+                        if ( typeof( Rock.Rest.ApiControllerBase ).IsAssignableFrom( type ) &&
+                             // Ignore the generic definition class(es)
+                             !type.IsGenericTypeDefinition &&
+                             // Ignore the base class
+                             !type.Equals( typeof( Rock.Rest.ApiControllerBase ) ) &&
+                             // Does the class have methods, otherwise it is likely just a code-gen file?
+                             memberList.Count( m => m.MemberType == MemberTypes.Method && m.DeclaringType == type ) > 0 )
+                        {
+                            rockGuidWarnings.AppendLine( $" - MISSING CLASS,{type}" );
+                        }
+                    }
+
                     foreach ( MemberInfo member in memberList )
                     {
-                        /* See if member is Obsolete/RockObsolete */
-                        ObsoleteAttribute memberObsoleteAttribute = member.GetCustomAttribute<ObsoleteAttribute>();
-                        if ( memberObsoleteAttribute != null && rockAssembly == member.Module.Assembly && member.DeclaringType == type )
+                        if ( rockAssembly == member.Module.Assembly && member.DeclaringType == type )
                         {
-                            var rockObsolete = member.GetCustomAttribute<RockObsolete>();
-                            if ( rockObsolete == null )
+                            /* See if member is Obsolete/RockObsolete */
+                            var memberObsoleteAttribute = member.GetCustomAttribute<ObsoleteAttribute>();
+                            var memberRockObsolete = member.GetCustomAttribute<RockObsolete>();
+                            if ( memberObsoleteAttribute != null )
                             {
-                                rockObsoleteWarnings.AppendLine( $" - {member.DeclaringType}.{member.Name}" );
-                            }
-                            else
-                            {
-                                string messagePrefix = null;
-                                if ( rockObsolete.Version == "1.8" || rockObsolete.Version.StartsWith( "1.8." ) || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                if ( memberRockObsolete == null )
                                 {
-                                    if ( !memberObsoleteAttribute.IsError || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                    rockObsoleteWarnings.AppendLine( $" - {member.DeclaringType}.{member.Name}" );
+                                }
+                                else
+                                {
+                                    string messagePrefix = null;
+                                    if ( memberRockObsolete.Version == "1.8" || memberRockObsolete.Version.StartsWith( "1.8." ) || memberRockObsolete.Version == "1.7" || memberRockObsolete.Version.StartsWith( "1.7." ) )
                                     {
-                                        messagePrefix = "###WARNING###:";
+                                        if ( !memberObsoleteAttribute.IsError || memberRockObsolete.Version == "1.7" || memberRockObsolete.Version.StartsWith( "1.7." ) )
+                                        {
+                                            messagePrefix = "###WARNING###:";
+                                        }
+                                    }
+
+                                    obsoleteReportList.Add( $"{messagePrefix}{memberRockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                                }
+                            }
+
+                            /* See if member has RockGuidAttribute */
+                            var memberRockGuidAttribute = member.GetCustomAttribute<RockGuidAttribute>();
+                            if ( null != memberRockGuidAttribute )
+                            {
+                                if ( memberRockGuidAttribute.Guid.IsEmpty())
+                                {
+                                    rockGuidWarnings.AppendLine( $" - EMPTY,{member.DeclaringType}.{member}" );
+                                }
+                                else
+                                {
+                                    var rockGuid = memberRockGuidAttribute.Guid.ToString();
+                                    if ( !rockGuids.ContainsKey( rockGuid ) )
+                                    {
+                                        rockGuids.Add( rockGuid, $"{member.DeclaringType}.{member}" );
+                                    }
+                                    else
+                                    {
+                                        rockGuidWarnings.AppendLine( $" - DUPLICATE,{type.Name} {member},{rockGuid},{rockGuids[rockGuid]}" );
                                     }
                                 }
+                            }
 
-                                obsoleteReportList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                            /* Active public API methods should have assigned RockGuidAttribute */
+                            if ( null == memberObsoleteAttribute && null == memberRockObsolete && null == memberRockGuidAttribute &&
+                                 typeof( Rock.Rest.ApiControllerBase ).IsAssignableFrom( type ) &&
+                                 // Ignore the generic definition class(es)
+                                 !type.IsGenericTypeDefinition &&
+                                 // Ignore the base class
+                                 !type.Equals( typeof( Rock.Rest.ApiControllerBase ) ) )
+                            {
+                                if ( member.MemberType == MemberTypes.Method &&
+                                     ( ( MethodInfo ) member ).IsPublic &&
+                                     !( ( MethodInfo ) member ).IsSpecialName )
+                                {
+                                    rockGuidWarnings.AppendLine( $" - MISSING METHOD,{type.Name} {member}" );
+                                }
                             }
                         }
 
@@ -355,7 +436,7 @@ namespace Rock.CodeGeneration
                         var ignoredThreadSafeTypeWarning = new Type[] {
                             typeof(Rock.UniversalSearch.IndexComponents.Lucene),
                         };
-                        
+
                         var ignoredThreadSafeFieldWarning = new string[]
                         {
                             // fields that OK based on how we use them
@@ -473,6 +554,14 @@ namespace Rock.CodeGeneration
                 {
                     warnings.AppendLine( warning );
                 }
+            }
+
+            if ( rockGuidWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine();
+                warnings.AppendLine( "[RockGuid] issues found." );
+                warnings.Append( rockGuidWarnings );
             }
 
             if ( cbGenerateObsoleteExport.Checked )

@@ -87,9 +87,10 @@
 
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockDropDownList ID="ddlGroupCapacityRule" runat="server" Label="Group Capacity Rule" Help="Does this group type support group capacity and if so how is it enforced." />
+                                        <Rock:RockDropDownList ID="ddlGroupCapacityRule" runat="server" Label="Group Capacity Rule" Help="Does this group type support group capacity and if so how is it enforced." OnSelectedIndexChanged="ddlGroupCapacityRule_SelectedIndexChanged" AutoPostBack="true"/>
                                     </div>
                                     <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbRequireCapacityRule" runat="server" Label="Required" Help="When checked a value for Group Capacity will be required on all groups of this type." Visible="false" />
                                     </div>
                                 </div>
 

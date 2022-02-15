@@ -15,24 +15,32 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { formatPhoneNumber } from "../Services/string";
+import { FieldTypeBase } from "./fieldType";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./phoneNumberFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./phoneNumberFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Phone Number field.
  */
 export class PhoneNumberFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        value.textValue = formatPhoneNumber(value.value || "");
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        return formatPhoneNumber(value || "");
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

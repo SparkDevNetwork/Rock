@@ -106,6 +106,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string ScheduledTransactionDetailPage = "ScheduledTransactionDetailPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
+            public const string PersonActionIdentifier = "rckid";
+            public const string PledgeId = "PledgeId";
+            public const string StatementYear = "StatementYear";
+        }
+
         #endregion Attribute Keys
 
         #region Base Control Methods
@@ -133,27 +141,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddTransaction_Click( object sender, EventArgs e )
         {
-            var addTransactionPage = new Rock.Web.PageReference( this.GetAttributeValue( AttributeKey.AddTransactionPage ) );
-            if ( addTransactionPage != null )
+            var addTransactionPage = this.GetAttributeValue( AttributeKey.AddTransactionPage );
+            if ( addTransactionPage == null )
             {
-                if ( !this.Person.IsPersonTokenUsageAllowed() )
-                {
-                    mdWarningAlert.Show( $"Due to their protection profile level you cannot add a transaction on behalf of this person.", ModalAlertType.Warning );
-                    return;
-                }
-
-                // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                var personKey = this.Person.GetImpersonationToken(
-                        RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ),
-                        this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(),
-                        addTransactionPage.PageId );
-
-                if ( personKey.IsNotNullOrWhiteSpace() )
-                {
-                    addTransactionPage.QueryString["Person"] = personKey;
-                    Response.Redirect( addTransactionPage.BuildUrl() );
-                }
+                return;
             }
+
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "transaction" ) );
+            NavigateToLinkedPage( AttributeKey.AddTransactionPage, queryParams );
         }
 
         /// <summary>
@@ -234,7 +230,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                btnScheduledTransactionEdit.Visible = false;
                 btnScheduledTransactionInactivate.Visible = false;
             }
 
@@ -372,8 +367,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 var statementYear = e.CommandArgument.ToString();
                 Dictionary<string, string> queryParams = new Dictionary<string, string>();
-                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
-                queryParams.AddOrReplace( "StatementYear", statementYear );
+                queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "contribution-statement" ) );
+                queryParams.AddOrReplace( PageParameterKey.StatementYear, statementYear );
                 NavigateToLinkedPage( AttributeKey.ContributionStatementDetailPage, queryParams );
             }
         }
@@ -511,8 +506,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected void lbAddPledge_Click( object sender, EventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
-            queryParams.AddOrReplace( "PledgeId", "0" );
-            queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+            queryParams.AddOrReplace( PageParameterKey.PledgeId, "0" );
+            queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "pledge" ) );
             NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
         }
 
@@ -601,8 +596,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( financialScheduledTransaction != null )
             {
                 var queryParams = new Dictionary<string, string>();
-                queryParams.AddOrReplace( "ScheduledTransactionId", financialScheduledTransaction.Id.ToString() );
-                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+                queryParams.AddOrReplace( PageParameterKey.ScheduledTransactionGuid, financialScheduledTransaction.Guid.ToString() );
                 NavigateToLinkedPage( AttributeKey.ScheduledTransactionDetailPage, queryParams );
             }
         }
@@ -621,8 +615,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( pledge != null )
             {
                 var queryParams = new Dictionary<string, string>();
-                queryParams.AddOrReplace( "PledgeId", pledge.Id.ToString() );
-                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+                queryParams.AddOrReplace( PageParameterKey.PledgeId, pledge.Id.ToString() );
+                queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "pledge" ) );
                 NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
             }
         }
@@ -709,7 +703,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == Person.Id );
             }
 
-            // only show the button if there some in active scheduled transactions
+            // only show the button if there some inactive scheduled transactions
+            // 12-JAN-22 DMV: This adds a small performance hit here as this hydrates the query.
             btnShowInactiveScheduledTransactions.Visible = qry.Any( a => !a.IsActive );
 
             var includeInactive = hfShowInactiveScheduledTransactions.Value.AsBoolean();
@@ -732,20 +727,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var scheduledTransactionList = qry.ToList();
 
-            foreach ( var schedule in scheduledTransactionList )
-            {
-                try
-                {
-                    // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
-                    string errorMessage;
-                    financialScheduledTransactionService.GetStatus( schedule, out errorMessage );
-                }
-                catch ( Exception ex )
-                {
-                    // log and ignore
-                    LogException( ex );
-                }
-            }
+            // Refresh the active transactions
+            financialScheduledTransactionService.GetStatus( scheduledTransactionList, true );
 
             rptScheduledTransaction.DataSource = scheduledTransactionList;
             rptScheduledTransaction.DataBind();

@@ -21,9 +21,11 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,6 +36,7 @@ namespace Rock.Field.Types
     /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType
     {
         #region Configuration
@@ -46,7 +49,10 @@ namespace Rock.Field.Types
         private const string ALLOW_ADDING_NEW_VALUES_KEY = "AllowAddingNewValues";
         private const string REPEAT_COLUMNS_KEY = "RepeatColumns";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValuesId";
-        private const string CLIENT_VALUES = "values";
+        private const string SELECTABLE_VALUES_PUBLIC_KEY = "selectableValues";
+
+        private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
+        private const string DEFINED_VALUES_PROPERTY_KEY = "definedValues";
 
         /// <summary>
         /// Returns a list of the configuration keys.
@@ -67,22 +73,152 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            var clientConfiguration = base.GetClientConfigurationValues( configurationValues );
-            int? definedTypeId = clientConfiguration.ContainsKey( DEFINED_TYPE_KEY ) ? clientConfiguration[DEFINED_TYPE_KEY].AsIntegerOrNull() : null;
+            var configurationProperties = new Dictionary<string, string>();
+
+            // Determine if we need to display the description instead of the
+            // value name.
+            var displayDescription = privateConfigurationValues.GetValueOrDefault( DISPLAY_DESCRIPTION, "False" ).AsBoolean();
+
+            // Determine if we need to include inactive defined values.
+            var includeInactive = privateConfigurationValues.GetValueOrDefault( INCLUDE_INACTIVE_KEY, "False" ).AsBoolean();
+
+            // Get the defined types that are available to be selected.
+            var definedTypes = DefinedTypeCache.All()
+                .OrderBy( t => t.Name )
+                .Select( t => new ListItemViewModel
+                {
+                    Value = t.Guid.ToString(),
+                    Text = t.Name
+                } )
+                .ToList();
+
+            configurationProperties[DEFINED_TYPES_PROPERTY_KEY] = definedTypes.ToCamelCaseJson( false, true );
+
+            // Get the currently selected defined type identifier.
+            var definedTypeId = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, "" ).AsIntegerOrNull();
+            var definedTypeCache = definedTypeId.HasValue ? DefinedTypeCache.Get( definedTypeId.Value ) : null;
+
+            if ( !definedTypeId.HasValue )
+            {
+                definedTypeCache = DefinedTypeCache.All().OrderBy( t => t.Name ).FirstOrDefault();
+            }
+
+            if ( definedTypeCache != null && definedTypes.Any( t => t.Value == definedTypeCache.Guid.ToString() ) )
+            {
+                // Get the defined values that are available to be selected.
+                var definedValues = definedTypeCache
+                    .DefinedValues
+                    .Where( v => v.IsActive || includeInactive )
+                    .OrderBy( v => v.Order )
+                    .Select( v => new ListItemViewModel
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = displayDescription ? v.Description : v.Value
+                    } )
+                    .ToList();
+
+                configurationProperties[DEFINED_VALUES_PROPERTY_KEY] = definedValues.ToCamelCaseJson( false, true );
+            }
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationOptions = privateConfigurationValues.ToDictionary( i => i.Key, i => i.Value );
+
+            // Convert the selectable values from integer identifiers to unique
+            // identifiers that are safe for public use.
+            var selectableValues = configurationOptions.GetValueOrDefault( SELECTABLE_VALUES_KEY, string.Empty )
+                .SplitDelimitedValues()
+                .AsIntegerList()
+                .Select( v => DefinedValueCache.Get( v ) )
+                .Where( v => v != null )
+                .Select( v => v.Guid.ToString() )
+                .ToList();
+
+            configurationOptions[SELECTABLE_VALUES_PUBLIC_KEY] = selectableValues.JoinStrings( "," );
+            configurationOptions.Remove( SELECTABLE_VALUES_KEY );
+
+            // Convert the defined type from an integer value to a guid.
+            var definedTypeId = configurationOptions.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsIntegerOrNull();
+            configurationOptions.Remove( DEFINED_TYPE_KEY );
+
+            if ( definedTypeId.HasValue )
+            {
+                var definedTypeCache = DefinedTypeCache.Get( definedTypeId.Value );
+
+                if ( definedTypeCache != null )
+                {
+                    configurationOptions[DEFINED_TYPE_KEY] = definedTypeCache.Guid.ToString();
+                }
+            }
+            else
+            {
+                configurationOptions[DEFINED_TYPE_KEY] = DefinedTypeCache.All()
+                    .OrderBy( t => t.Name )
+                    .Select( t => t.Guid.ToString() )
+                    .FirstOrDefault() ?? string.Empty;
+            }
+
+            return configurationOptions;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationOptions = publicConfigurationValues.ToDictionary( i => i.Key, i => i.Value );
+
+            // Convert the selectable values from unique identifiers into
+            // integer identifiers that can be stored in the database.
+            var selectableValues = publicConfigurationValues.GetValueOrDefault( SELECTABLE_VALUES_PUBLIC_KEY, string.Empty )
+                .SplitDelimitedValues()
+                .AsGuidList()
+                .Select( v => DefinedValueCache.Get( v ) )
+                .Where( v => v != null )
+                .Select( v => v.Id.ToString() )
+                .ToList();
+
+            configurationOptions[SELECTABLE_VALUES_KEY] = selectableValues.JoinStrings( "," );
+            configurationOptions.Remove( SELECTABLE_VALUES_PUBLIC_KEY );
+
+            // Convert the defined type value from a guid to an integer.
+            var definedTypeGuid = configurationOptions.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();
+            configurationOptions.Remove( DEFINED_TYPE_KEY );
+
+            if ( definedTypeGuid.HasValue )
+            {
+                var definedTypeCache = DefinedTypeCache.Get( definedTypeGuid.Value );
+
+                if ( definedTypeCache != null )
+                {
+                    configurationOptions[DEFINED_TYPE_KEY] = definedTypeCache.Id.ToString();
+                }
+            }
+
+            return configurationOptions;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            int? definedTypeId = publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? publicConfigurationValues[DEFINED_TYPE_KEY].AsIntegerOrNull() : null;
 
             if ( definedTypeId.HasValue )
             {
                 var definedType = DefinedTypeCache.Get( definedTypeId.Value );
 
-                int[] selectableValues = configurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && configurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
-                    ? configurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
+                int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
+                    ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
                     : null;
 
-                var includeInactive = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+                var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
 
-                clientConfiguration[CLIENT_VALUES] = definedType.DefinedValues
+                publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = definedType.DefinedValues
                     .Where( v => ( includeInactive || v.IsActive )
                         && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
                     .OrderBy( v => v.Order )
@@ -94,14 +230,16 @@ namespace Rock.Field.Types
                     } )
                     .ToCamelCaseJson( false, true );
 
-                clientConfiguration.Remove( DEFINED_TYPE_KEY );
+                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
             }
             else
             {
-                clientConfiguration[CLIENT_VALUES] = "[]";
+                publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = "[]";
             }
 
-            return clientConfiguration;
+            publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
+
+            return publicConfigurationValues;
         }
 
         /// <summary>
@@ -113,7 +251,7 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             // build a drop down list of defined types (the one that gets selected is
-            // used to build a list of defined values) 
+            // used to build a list of defined values)
             var ddlDefinedType = new RockDropDownList
             {
                 AutoPostBack = true,
@@ -512,11 +650,11 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var guids = value.SplitDelimitedValues().AsGuidList();
-            bool useDescription = configurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
-                ? configurationValues[DISPLAY_DESCRIPTION].AsBoolean()
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
+            bool useDescription = privateConfigurationValues?.ContainsKey( DISPLAY_DESCRIPTION ) ?? false
+                ? privateConfigurationValues[DISPLAY_DESCRIPTION].AsBoolean()
                 : false;
 
             var definedValues = new List<DefinedValueCache>();
@@ -529,18 +667,18 @@ namespace Rock.Field.Types
                 }
             }
 
-            return new ClientValue
+            return new PublicValue
             {
-                Value = value,
+                Value = privateValue,
                 Text = definedValues.Select( v => v.Value ).JoinStrings( ", " ),
                 Description = useDescription ? definedValues.Select( v => v.Description ).JoinStrings( ", " ) : string.Empty
             }.ToCamelCaseJson( false, true );
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var value = clientValue.FromJsonOrNull<ClientValue>();
+            var value = publicValue.FromJsonOrNull<PublicValue>();
 
             return value?.Value ?? string.Empty;
         }
@@ -568,6 +706,7 @@ namespace Rock.Field.Types
             bool allowAdd = configurationValues.ContainsKey( ALLOW_ADDING_NEW_VALUES_KEY ) && configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value.AsBoolean();
             bool enhanceForLongLists = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
             bool allowMultiple = configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
 
             int[] selectableValues = configurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && configurationValues[SELECTABLE_VALUES_KEY].Value.IsNotNullOrWhiteSpace()
                 ? configurationValues[SELECTABLE_VALUES_KEY].Value.Split( ',' ).Select( int.Parse ).ToArray()
@@ -585,7 +724,8 @@ namespace Rock.Field.Types
                         RepeatColumns = repeatColumns,
                         IsAllowAddDefinedValue = allowAdd,
                         EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
                     };
                 }
                 else
@@ -597,7 +737,8 @@ namespace Rock.Field.Types
                             ID = id,
                             DisplayDescriptions = useDescription,
                             DefinedTypeId = definedTypeId,
-                            SelectableDefinedValuesId = selectableValues
+                            SelectableDefinedValuesId = selectableValues,
+                            IncludeInactive = includeInactive
                         };
                     }
                     else
@@ -608,7 +749,8 @@ namespace Rock.Field.Types
                             DisplayDescriptions = useDescription,
                             DefinedTypeId = definedTypeId,
                             RepeatColumns = repeatColumns,
-                            SelectableDefinedValuesId = selectableValues
+                            SelectableDefinedValuesId = selectableValues,
+                            IncludeInactive = includeInactive
                         };
                     }
                 }
@@ -625,7 +767,8 @@ namespace Rock.Field.Types
                         DefinedTypeId = definedTypeId,
                         IsAllowAddDefinedValue = allowAdd,
                         EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
                     };
                 }
                 else
@@ -636,14 +779,10 @@ namespace Rock.Field.Types
                         DisplayDescriptions = useDescription,
                         DefinedTypeId = definedTypeId,
                         EnhanceForLongLists = enhanceForLongLists,
-                        SelectableDefinedValuesId = selectableValues
+                        SelectableDefinedValuesId = selectableValues,
+                        IncludeInactive = includeInactive
                     };
                 }
-            }
-
-            if ( editControl is IDefinedValuePicker )
-            {
-                ( editControl as IDefinedValuePicker ).IncludeInactive = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
             }
 
             if ( definedTypeId.HasValue )
@@ -990,7 +1129,7 @@ namespace Rock.Field.Types
                     return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
                 }
 
-                //// OR up the where clauses for each of the selected values 
+                //// OR up the where clauses for each of the selected values
                 //// and make sure to wrap commas around things so we don't collide with partial matches
                 //// so it'll do something like this:
                 ////
@@ -1153,7 +1292,7 @@ namespace Rock.Field.Types
         }
         #endregion
 
-        private class ClientValue
+        private class PublicValue
         {
             public string Value { get; set; }
 

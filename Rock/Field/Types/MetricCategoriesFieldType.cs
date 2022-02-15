@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of Metric.Guid|MetricCategory.Guid (MetricCategory.Guid included so we can preserve which category the metric was selected from)
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class MetricCategoriesFieldType : FieldType
     {
 

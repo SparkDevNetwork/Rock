@@ -33,6 +33,9 @@ namespace Rock.Model
     public partial class InteractionComponent
     {
 
+        [NotMapped]
+        private EntityState SaveState { get; set; }
+
         #region ICacheable
 
         /// <summary>

@@ -88,7 +88,7 @@ namespace Rock.Web.Cache
         /// A <see cref="System.String"/> that represents the Description of the BlockType
         /// </value>
         /// <example>
-        /// Provides ability to login to site.
+        /// Provides ability to log into the site.
         /// </example>
         [DataMember]
         public string Description { get; private set; }
@@ -260,7 +260,7 @@ namespace Rock.Web.Cache
 #if !NET5_0_OR_GREATER
             string physicalPath;
 
-            // This will add a file system watcher so that when the block on the file system changes, this 
+            // This will add a file system watcher so that when the block on the file system changes, this
             // object will be removed from cache. This is to force the cmsPage object to revalidate any
             // BlockPropery attributes that may have been added or modified.
             if ( System.Web.HttpContext.Current != null )
@@ -325,7 +325,7 @@ namespace Rock.Web.Cache
                     return null;
                 }
 #endif
-                
+
             }
             else if ( EntityTypeId.HasValue )
             {
@@ -338,7 +338,7 @@ namespace Rock.Web.Cache
                     ExceptionLogService.LogException( ex );
                     return null;;
                 }
-                
+
             }
 
             return null;

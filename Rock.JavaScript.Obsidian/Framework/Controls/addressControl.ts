@@ -16,10 +16,11 @@
 //
 import { defineComponent, PropType } from "vue";
 import RockFormField from "../Elements/rockFormField";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
 import RockLabel from "../Elements/rockLabel";
 import TextBox from "../Elements/textBox";
 import { newGuid } from "../Util/guid";
+import { ListItem } from "../ViewModels";
 
 export type AddressControlValue = {
     street1?: string;
@@ -37,7 +38,7 @@ export function getDefaultAddressControlModel(): AddressControlValue {
     };
 }
 
-const stateOptions: DropDownListOption[] = [
+const stateOptions: ListItem[] = [
     "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM",
     "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
     "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV",
@@ -81,9 +82,9 @@ export const AddressControlBase = defineComponent({
     <TextBox placeholder="Address Line 1" :rules="rules" v-model="modelValue.street1" validationTitle="Address Line 1" />
     <TextBox placeholder="Address Line 2" v-model="modelValue.street2" validationTitle="Address Line 2" />
     <div class="form-row">
-        <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" class="col-sm-6" validationTitle="City" />
-        <DropDownList :showBlankItem="false" v-model="modelValue.state" class="col-sm-3" :options="stateOptions" />
-        <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" class="col-sm-3" validationTitle="Zip" />
+        <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" form-group-classes="col-sm-6" validationTitle="City" />
+        <DropDownList :showBlankItem="false" v-model="modelValue.state" form-group-classes="col-sm-3" :options="stateOptions" />
+        <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" form-group-classes="col-sm-3" validationTitle="Zip" />
     </div>
 </div>
 `
@@ -105,7 +106,7 @@ export default defineComponent({
     },
 
     template: `
-<RockFormField formGroupClasses="address-control" #default="{uniqueId, field, disabled}" name="addresscontrol" v-model.lazy="modelValue">
+<RockFormField formGroupClasses="address-control" #default="{uniqueId, field}" name="addresscontrol" v-model.lazy="modelValue">
     <div class="control-wrapper">
         <AddressControlBase v-model.lazy="modelValue" v-bind="field" :disabled="disabled" />
     </div>

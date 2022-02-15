@@ -15,24 +15,37 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
+import { ComparisonType, numericComparisonTypes } from "../Reporting/comparisonType";
 import { toCurrencyOrNull } from "../Services/number";
+import { FieldTypeBase } from "./fieldType";
 
 // The components can be quite large, so load only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./currencyFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./currencyFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Currency field.
  */
 export class CurrencyFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        value.textValue = toCurrencyOrNull(value.value) ?? "";
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        return toCurrencyOrNull(value) ?? "";
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
+    }
+
+    override getSupportedComparisonTypes(): ComparisonType {
+        return numericComparisonTypes;
     }
 }

@@ -188,6 +188,15 @@ export default defineComponent({
                 }
                 this.skipEmit = false;
             }
+        },
+
+        displayCurrentOption() {
+            if (!this.displayCurrentOption && this.isCurrent) {
+                this.internalDateValue = null;
+                this.internalTimeValue = {};
+                this.isCurrent = false;
+                this.currentDiff = "0";
+            }
         }
     },
 
@@ -222,7 +231,7 @@ export default defineComponent({
                     </span>
                 </div>
                 <BasicTimePicker v-model="internalTimeValue" :disabled="isCurrent" />
-                <div v-if="displayCurrentOption || isCurrent" class="input-group">
+                <div v-if="displayCurrentOption" class="input-group">
                     <div class="checkbox">
                         <label title="">
                         <input type="checkbox" v-model="isCurrent" />

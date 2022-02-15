@@ -16,7 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -25,11 +25,11 @@ using Rock.Workflow;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "e8c004e7-86f1-4ac0-9b43-c7f381ecd4ba" )]
     public partial class WorkflowActionTypesController
     {
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -37,6 +37,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/WorkflowActionTypes/GetChildren/{id}" )]
+        [RockGuid( "a1994526-1bc0-4cc6-a895-8c043d0fcd7c" )]
         public IQueryable<TreeViewItem> GetChildren( string id )
         {
             var list = new List<TreeViewItem>();
@@ -46,7 +47,7 @@ namespace Rock.Rest.Controllers
             if ( string.IsNullOrWhiteSpace( id ) || ( idAsInt.HasValue && idAsInt.Value == 0 ) )
             {
                 // Root
-                foreach( var category in ActionContainer.Instance.Categories )
+                foreach ( var category in ActionContainer.Instance.Categories )
                 {
                     var item = new TreeViewItem();
                     item.Id = category.Key.ToString();
@@ -71,7 +72,7 @@ namespace Rock.Rest.Controllers
                             {
                                 var item = new TreeViewItem();
                                 item.Id = entityType.Id.ToString();
-                                item.Name = ActionContainer.GetComponentName(entityType.Name);
+                                item.Name = ActionContainer.GetComponentName( entityType.Name );
                                 item.HasChildren = false;
                                 item.IconCssClass = "fa fa-cube";
                                 list.Add( item );
@@ -107,9 +108,13 @@ namespace Rock.Rest.Controllers
                     }
                 }
 
-                categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
-                categorizedActions[categoryName].Add( action.EntityType );
-
+                // "HideFromUser" is a special category name that is used to hide
+                // workflow actions from showing up to the user. System user only.
+                if ( !categoryName.Equals( "HideFromUser", System.StringComparison.OrdinalIgnoreCase ) )
+                {
+                    categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                    categorizedActions[categoryName].Add( action.EntityType );
+                }
             }
 
             return categorizedActions;

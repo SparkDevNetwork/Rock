@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -33,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a delimited list of DataView's Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class DataViewsFieldType : FieldType
     {
         #region Configuration

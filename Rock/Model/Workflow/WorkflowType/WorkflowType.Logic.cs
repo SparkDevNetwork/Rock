@@ -14,16 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Web.Cache;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-#if NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
 #endif
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -32,21 +28,7 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowType
     {
-        #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets a collection containing  the <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that will be executed/performed as part of this WorkflowType.
-        /// </summary>
-        /// <value>
-        /// A collection of <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that are executed/performed as part of this WorkflowType.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<WorkflowActivityType> ActivityTypes
-        {
-            get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
-            set { _activityTypes = value; }
-        }
-        private ICollection<WorkflowActivityType> _activityTypes;
+        #region Properties
 
         /// <summary>
         /// Gets a value indicating whether this instance has active forms.
@@ -66,23 +48,7 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
-                return supportedActions;
-            }
-        }
-
-#endregion Virtual Properties
+        #endregion Properties
 
         #region Public Methods
 
@@ -123,4 +89,3 @@ namespace Rock.Model
         #endregion ICacheable
     }
 }
-

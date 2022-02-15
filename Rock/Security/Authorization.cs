@@ -158,6 +158,11 @@ namespace Rock.Security
         /// </summary>
         public const string MANAGE_STEPS = "ManageSteps";
 
+        /// <summary>
+        /// Authorization to delete check-in attendance
+        /// </summary>
+        public const string DELETE_ATTENDANCE = "DeleteAttendance";
+
         #endregion
 
         #region Public Methods
@@ -428,8 +433,8 @@ namespace Rock.Security
 
             var authorizations = Get();
 
-            // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
-            // one to find the first one specific to the selected user or a role that the selected user belongs 
+            // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each
+            // one to find the first one specific to the selected user or a role that the selected user belongs
             // to.  If a match is found return whether the user is allowed (true) or denied (false) access
             if ( authorizations == null || !authorizations.Keys.Contains( entity.TypeId ) ||
                 !authorizations[entity.TypeId].Keys.Contains( entity.Id ) ||
@@ -787,7 +792,7 @@ namespace Rock.Security
             var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated );
             RockPage.AddOrUpdateCookie( authCookie );
 
-            // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
+            // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly
             // when the user signs out.
             if ( !authCookie.Domain.IsNotNullOrWhiteSpace() )
             {
@@ -974,8 +979,8 @@ namespace Rock.Security
 
             var authorizations = Get();
 
-            // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
-            // one to find the first one specific to the selected user or a role that the selected user belongs 
+            // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each
+            // one to find the first one specific to the selected user or a role that the selected user belongs
             // to.  If a match is found return whether the user is allowed (true) or denied (false) access
             if ( authorizations != null &&
                 authorizations.Keys.Contains( entityTypeId ) &&
@@ -1061,8 +1066,8 @@ namespace Rock.Security
 
             var authorizations = Get();
 
-            // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
-            // one to find the first one specific to the selected user or a role that the selected user belongs 
+            // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each
+            // one to find the first one specific to the selected user or a role that the selected user belongs
             // to.  If a match is found return whether the user is allowed (true) or denied (false) access
             if ( authorizations != null &&
                 authorizations.Keys.Contains( entityTypeId ) &&
@@ -1265,7 +1270,7 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// If the entity is currently private for selected person, removes all the rules 
+        /// If the entity is currently private for selected person, removes all the rules
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
@@ -1391,7 +1396,7 @@ namespace Rock.Security
     #region Helper Class/Struct
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class AuthEntityRule
     {

@@ -14,58 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-#if NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
-using System.Runtime.Serialization;
-using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class StepProgram
     {
-        #region Entity Properties
-
-        /// <summary>
-        /// Gets or sets the term used for steps within this program. This property is required.
-        /// </summary>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string StepTerm
-        {
-            get => _stepTerm.IsNullOrWhiteSpace() ? DefaultStepTerm : _stepTerm;
-            set => _stepTerm = value;
-        }
-
-        #endregion Entity Properties
-
-        #region Methods
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = base.SupportedActions;
-                    _supportedActions.Add( Authorization.MANAGE_STEPS, "The roles and/or users that have access to manage the steps." );
-                }
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
-
-        #endregion Entity Properties
-
         #region ICacheable
 
         /// <summary>

@@ -15,11 +15,11 @@
 // </copyright>
 
 import { defineComponent, PropType } from "vue";
-import { ruleArrayToString, ruleStringToArray } from "../Rules/index";
+import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
 import DateKey from "../Services/dateKey";
 import { toNumber, toNumberOrNull } from "../Services/number";
-import RockFormField from "./rockFormField";
 import { RockDateTime } from "../Util/rockDateTime";
+import RockFormField from "./rockFormField";
 
 export type DatePartsPickerValue = {
     year: number;
@@ -41,10 +41,7 @@ export default defineComponent({
         RockFormField
     },
     props: {
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        },
+        rules: rulesPropType,
         modelValue: {
             type: Object as PropType<DatePartsPickerValue>,
             required: true
@@ -68,6 +65,9 @@ export default defineComponent({
         startYear: {
             type: Number as PropType<number>,
             default: 1900
+        },
+        disabled: {
+            type: String as PropType<string>
         }
     },
 
@@ -129,14 +129,14 @@ export default defineComponent({
             const dateKey = DateKey.toDateKey(this.modelValue.year, this.modelValue.month, this.modelValue.day);
             return dateKey;
         },
-        computedRules (): string {
-            const rules = ruleStringToArray(this.rules);
+        computedRules (): ValidationRule[] {
+            const rules = normalizeRules(this.rules);
 
             if (rules.indexOf("required") !== -1 && rules.indexOf("datekey") === -1) {
                 rules.push("datekey");
             }
 
-            return ruleArrayToString(rules);
+            return rules;
         },
         years (): string[] {
             const years: string[] = [];
@@ -210,7 +210,7 @@ export default defineComponent({
     formGroupClasses="birthday-picker"
     name="birthday"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="form-control-group">
                 <select :id="uniqueId + '-month'" class="form-control input-width-sm" :disabled="disabled" v-model="internalMonth">

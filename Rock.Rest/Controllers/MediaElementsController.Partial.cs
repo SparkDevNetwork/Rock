@@ -33,6 +33,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// <see cref="MediaElement"/> REST API
     /// </summary>
+    [RockGuid( "c77504af-fbed-4009-b2d4-019911413693" )]
     public partial class MediaElementsController
     {
         /// <summary>
@@ -46,6 +47,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpGet]
         [System.Web.Http.Route( "api/MediaElements/WatchInteraction" )]
+        [RockGuid( "a73244a1-c0db-4efc-a895-1612cdaaf5c2" )]
         public MediaElementInteraction GetWatchInteraction( [FromUri] Guid? mediaElementGuid = null, [FromUri] Guid? personGuid = null, Guid? personAliasGuid = null )
         {
             var rockContext = Service.Context as RockContext;
@@ -137,6 +139,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/MediaElements/WatchInteraction" )]
+        [RockGuid( "2368c700-b501-457c-b52b-9786e038d47d" )]
         public MediaElementInteraction PostWatchInteraction( MediaElementInteraction mediaInteraction )
         {
             var rockContext = Service.Context as RockContext;
@@ -233,9 +236,39 @@ namespace Rock.Rest.Controllers
                     WatchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap )
                 };
 
-                interaction = interactionService.CreateInteraction( interactionComponentId,
-                    null, "Watch", string.Empty, data.ToJson(), personAliasId, RockDateTime.Now,
-                    null, null, null, null, null, null );
+                // If the data includes all of the device information then use it.
+                if ( mediaInteraction.Application.IsNotNullOrWhiteSpace() && mediaInteraction.OperatingSystem.IsNotNullOrWhiteSpace() && mediaInteraction.ClientType.IsNotNullOrWhiteSpace() )
+                {
+                    interaction = interactionService.CreateInteraction( interactionComponentId,
+                        null,
+                        "Watch",
+                        mediaInteraction.OriginalUrl?.Truncate( 500, false ),
+                        data.ToJson(),
+                        personAliasId,
+                        RockDateTime.Now,
+                        mediaInteraction.Application,
+                        mediaInteraction.OperatingSystem,
+                        mediaInteraction.ClientType,
+                        null,
+                        RockRequestContext.ClientInformation.IpAddress,
+                        mediaInteraction.SessionGuid );
+
+                    interaction.SetUTMFieldsFromURL( mediaInteraction.OriginalUrl );
+                }
+                else
+                {
+                    // Otherwise fallback to UserAgent header parsing.
+                    interaction = interactionService.CreateInteraction( interactionComponentId,
+                        RockRequestContext.ClientInformation.UserAgent,
+                        mediaInteraction.OriginalUrl,
+                        RockRequestContext.ClientInformation.IpAddress,
+                        mediaInteraction.SessionGuid );
+
+                    interaction.InteractionSummary = mediaInteraction.OriginalUrl?.Truncate( 500, false );
+                    interaction.Operation = "Watch";
+                    interaction.InteractionData = data.ToJson();
+                    interaction.PersonAliasId = personAliasId;
+                }
 
                 interaction.InteractionEndDateTime = RockDateTime.Now;
                 interaction.RelatedEntityTypeId = mediaInteraction.RelatedEntityTypeId;
@@ -362,6 +395,64 @@ namespace Rock.Rest.Controllers
             /// The related entity identifier.
             /// </value>
             public int? RelatedEntityId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the unique session identifier. This is used to associate
+            /// the interaction with the current user session.
+            /// </summary>
+            /// <remarks>
+            /// This is not filled in when retrieving an existing watch interaction.
+            /// </remarks>
+            /// <value>
+            /// The unique session identifier.
+            /// </value>
+            public Guid? SessionGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the original page URL (or equivalent for non-web interactions)
+            /// used to view this media. This is used to track UTM as well as
+            /// which page the individual was on when viewing the media.
+            /// </summary>
+            /// <remarks>
+            /// This is not filled in when retrieving an existing watch interaction.
+            /// </remarks>
+            /// <value>The original page URL.</value>
+            public string OriginalUrl { get; set; }
+
+            /// <summary>
+            /// Gets or sets the application name that is submitting this watch
+            /// interaction.
+            /// </summary>
+            /// <remarks>
+            /// This is not filled in when retrieving an existing watch interaction.
+            /// </remarks>
+            /// <value>
+            /// The application name that is submitting this watch interaction.
+            /// </value>
+            public string Application { get; set; }
+
+            /// <summary>
+            /// Gets or sets the operating system name and version of the device
+            /// submitting the interaction.
+            /// </summary>
+            /// <remarks>
+            /// This is not filled in when retrieving an existing watch interaction.
+            /// </remarks>
+            /// <value>
+            /// The operation system name and version of the device.
+            /// </value>
+            public string OperatingSystem { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of client submitting this interaction.
+            /// </summary>
+            /// <remarks>
+            /// This is not filled in when retrieving an existing watch interaction.
+            /// </remarks>
+            /// <value>
+            /// The type of client.
+            /// </value>
+            public string ClientType { get; set; }
         }
     }
 }

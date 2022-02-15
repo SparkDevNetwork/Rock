@@ -52,7 +52,7 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfPersonId;
         private DefinedValuePicker _dvpPersonTitle;
-        private RockTextBox _tbPersonFirstName;
+        private FirstNameTextBox _tbPersonFirstName;
         private RockTextBox _tbPersonLastName;
         private DefinedValuePicker _dvpPersonSuffix;
         private DefinedValuePicker _dvpPersonConnectionStatus;
@@ -800,7 +800,7 @@ namespace Rock.Web.UI.Controls
                 ValidationGroup = ValidationGroup
             };
 
-            _tbPersonFirstName = new RockTextBox
+            _tbPersonFirstName = new FirstNameTextBox
             {
                 ID = "tbPersonFirstName",
                 Label = "First Name",

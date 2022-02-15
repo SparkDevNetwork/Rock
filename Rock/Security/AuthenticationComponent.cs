@@ -113,14 +113,14 @@ namespace Rock.Security
 
 #if !NET5_0_OR_GREATER
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
         public abstract Uri GenerateLoginUrl( HttpRequest request );
 
         /// <summary>
-        /// Tests the Http Request to determine if authentication should be tested by this 
+        /// Tests the Http Request to determine if authentication should be tested by this
         /// authentication provider.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -160,10 +160,10 @@ namespace Rock.Security
         public abstract void SetPassword( UserLogin user, string password );
 
         /// <summary>
-        /// Gets the login button text.
+        /// Gets the log in button text.
         /// </summary>
         /// <value>
-        /// The login button text.
+        /// The log in button text.
         /// </value>
         public virtual string LoginButtonText
         {
@@ -174,10 +174,10 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Gets the login button CSS class.
+        /// Gets the log in button CSS class.
         /// </summary>
         /// <value>
-        /// The login button CSS class.
+        /// The log in button CSS class.
         /// </value>
         public virtual string LoginButtonCssClass
         {

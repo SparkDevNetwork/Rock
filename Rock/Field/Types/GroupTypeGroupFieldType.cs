@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) group filtered by a selected group type
     /// Stored as "GroupType.Guid|Group.Guid"
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class GroupTypeGroupFieldType : FieldType
     {
 

@@ -310,11 +310,8 @@ namespace Rock.Model
         private ICollection<Category> _categories;
 
         /// <summary>
-        /// Gets the supported actions.
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
         /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
         [NotMapped]
         public override Dictionary<string, string> SupportedActions
         {

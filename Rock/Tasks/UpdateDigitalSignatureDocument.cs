@@ -22,7 +22,7 @@ using Rock.Model;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Updates the <see cref="SignatureDocument.Status"/> of a <see cref="SignatureDocument"/>
+    /// Updates the <see cref="SignatureDocument.Status"/> of a <see cref="SignatureDocument"/> for Legacy Document Providers
     /// </summary>
     public sealed class UpdateDigitalSignatureDocument : BusStartedTask<UpdateDigitalSignatureDocument.Message>
     {
@@ -49,7 +49,7 @@ namespace Rock.Tasks
 #endif
                     var updateErrorMessages = new List<string>();
 
-                    if ( docTypeService.UpdateDocumentStatus( document, folderPath, out updateErrorMessages ) )
+                    if ( docTypeService.UpdateLegacyProviderDocumentStatus( document, folderPath, out updateErrorMessages ) )
                     {
                         if ( status != document.Status || !binaryFileId.Equals( document.BinaryFileId ) )
                         {

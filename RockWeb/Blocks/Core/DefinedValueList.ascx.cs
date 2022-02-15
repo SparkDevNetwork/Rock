@@ -258,6 +258,7 @@ namespace RockWeb.Blocks.Core
             definedValue.Value = tbValueName.Text;
             definedValue.Description = tbValueDescription.Text;
             definedValue.IsActive = cbValueActive.Checked;
+            definedValue.CategoryId = cpCategory.SelectedValueAsInt();
             avcDefinedValueAttributes.GetEditValues( definedValue );
 
             if ( !Page.IsValid )
@@ -386,6 +387,13 @@ namespace RockWeb.Blocks.Core
         {
             if ( _definedType != null )
             {
+                var categoryColumn = gDefinedValues.ColumnsOfType<RockBoundField>().FirstOrDefault( x => x.DataField == "Category" );
+
+                if ( categoryColumn != null )
+                {
+                    categoryColumn.Visible = _definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
+                }
+
                 var queryable = new DefinedValueService( new RockContext() ).Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order );
                 var result = queryable.ToList();
 
@@ -433,6 +441,9 @@ namespace RockWeb.Blocks.Core
             tbValueName.Text = definedValue.Value;
             tbValueDescription.Text = definedValue.Description;
             cbValueActive.Checked = definedValue.IsActive;
+            cpCategory.SetValue( definedValue.CategoryId );
+
+            cpCategory.Visible = definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
 
             avcDefinedValueAttributes.ValidationGroup = modalValue.ValidationGroup;
             avcDefinedValueAttributes.AddEditControls( definedValue );

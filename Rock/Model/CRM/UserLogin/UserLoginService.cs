@@ -360,7 +360,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Call this method if the login attempt fails.  Updates the
+        /// Call this method if the log in attempt fails.  Updates the
         /// <see cref="Rock.Model.UserLogin"/> failed password attempt count.
         /// </summary>
         /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to update the failure count on.</param>
@@ -369,8 +369,8 @@ namespace Rock.Model
             var globalAttributes = GlobalAttributesCache.Get();
 
             // Get the global attribute that defines what the window in minutes of time
-            // are between the first unsuccessful login and the point in time where those
-            // failed logins will be forgiven
+            // are between the first unsuccessful log in and the point in time where those
+            // failed log ins will be forgiven
             var passwordAttemptWindow = globalAttributes.GetValue( "PasswordAttemptWindow" ).AsIntegerOrNull() ?? 0;
             var passwordAttemptWindowMinutes = TimeSpan.FromMinutes( passwordAttemptWindow );
 
@@ -378,18 +378,18 @@ namespace Rock.Model
             // permitted within the window before the use is locked out
             var maxInvalidPasswordAttempts = globalAttributes.GetValue( "MaxInvalidPasswordAttempts" ).AsIntegerOrNull() ?? int.MaxValue;
 
-            // Get the current state of this user's failed login attempts
+            // Get the current state of this user's failed log in attempts
             var firstAttempt = user.FailedPasswordAttemptWindowStartDateTime ?? DateTime.MinValue;
             var attempts = user.FailedPasswordAttemptCount ?? 0;
             var endOfWindow = firstAttempt.Add( passwordAttemptWindowMinutes );
 
-            // Determine if the user is still inside the window where failed logins have not
+            // Determine if the user is still inside the window where failed log ins have not
             // yet been forgiven
             var inWindow = RockDateTime.Now < endOfWindow;
 
             if ( inWindow )
             {
-                // The user is within the window meaning the failed logins are accumulating and
+                // The user is within the window meaning the failed log ins are accumulating and
                 // cannot yet be forgiven
                 attempts++;
 
@@ -403,9 +403,9 @@ namespace Rock.Model
             }
             else
             {
-                // The user is outside the window, so failed logins can be forgiven and the
+                // The user is outside the window, so failed log ins can be forgiven and the
                 // database record tracking fields can be reset to only reflect this single
-                // failed login
+                // failed log in attempt
                 user.FailedPasswordAttemptCount = 1;
                 user.FailedPasswordAttemptWindowStartDateTime = RockDateTime.Now;
             }

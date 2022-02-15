@@ -27,6 +27,7 @@ using Rock.CheckIn;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -38,6 +39,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [DisplayName( "Roster" )]
     [Category( "Check-in > Manager" )]
     [Description( "Block used to view people currently checked into a classroom, mark a person as 'present' in the classroom, check them out, Etc." )]
+    [SecurityAction( Authorization.DELETE_ATTENDANCE, "The roles and/or users that have access to delete attendance information." )]
 
     #region Block Attributes
 
@@ -468,10 +470,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var rosterAttendee = e.Row.DataItem as RosterAttendee;
             var btnCancel = sender as LinkButton;
 
-            // Cancel button will be visible in two cases
+            // Cancel button will be visible in two cases (if the permissions allow to begin with)
             // 1) They are on the CheckedIn tab (which would only show attendees that checked-in (but not yet present) in "Enable Presence" rooms
             // 2) They are on the Present Tab in a room that doesn't have Presence Enable
-            btnCancel.Visible = ( _dataBoundRosterStatusFilter == RosterStatusFilter.CheckedIn ) || ( rosterAttendee.RoomHasEnablePresence == false && _dataBoundRosterStatusFilter == RosterStatusFilter.Present );
+            btnCancel.Visible = IsUserAuthorized( Authorization.DELETE_ATTENDANCE ) &&
+                ( ( _dataBoundRosterStatusFilter == RosterStatusFilter.CheckedIn ) ||
+                ( rosterAttendee.RoomHasEnablePresence == false && _dataBoundRosterStatusFilter == RosterStatusFilter.Present ) );
         }
 
         /// <summary>
@@ -1066,7 +1070,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 stayingAttendance.IsFirstTime = false;
             }
 
-            /* 2020-12-18 MDP 
+            /* 2020-12-18 MDP
                 Keep StartDateTime the same as the original StartDateTime, since that is when they checked into the room.
                 see https://app.asana.com/0/0/1199643530714803/f
             */
@@ -1353,7 +1357,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 if ( selectedStatusFilter == RosterStatusFilter.CheckedIn )
                 {
-                    // if Presence is NOT enabled, there isn't a CheckedIn status. 
+                    // if Presence is NOT enabled, there isn't a CheckedIn status.
                     SetStatusFilterControl( RosterStatusFilter.Present );
                 }
             }

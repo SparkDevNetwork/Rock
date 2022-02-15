@@ -891,8 +891,8 @@ namespace Rock.Client.Enums
     /// </summary>
     public enum SignatureType
     {
-        Drawn = 0x0,
-        Typed = 0x1,
+        Typed = 0x0,
+        Drawn = 0x1,
     }
 
     /// <summary>

@@ -58,6 +58,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
+        /// authority, but parent group is an additional parent authority )
+        /// </summary>
+        public override ISecured ParentAuthorityPre
+        {
+            get
+            {
+                if ( this.Group != null && this.Group.GroupTypeId > 0 )
+                {
+                    GroupTypeCache groupType = GroupTypeCache.Get( this.Group.GroupTypeId );
+                    return groupType;
+                }
+                else
+                {
+                    return base.ParentAuthorityPre;
+                }
+            }
+        }
+
+        /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -371,9 +391,9 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        hasChanged = rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true
-                            || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
-                            || rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true;
+                        hasChanged = rockContext.Entry( this ).Property( nameof( this.GroupMemberStatus ) )?.IsModified == true
+                            || rockContext.Entry( this ).Property( nameof( this.GroupRoleId ) )?.IsModified == true
+                            || rockContext.Entry( this ).Property( nameof( this.IsArchived ) )?.IsModified == true;
                     }
                 }
 
@@ -410,12 +430,12 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null && entry.State != EntityState.Detached )
                     {
-                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"];
-                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"];
+                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues[nameof( this.GroupMemberStatus )];
+                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues[nameof (this.GroupMemberStatus )];
 
-                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
-                        || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
-                        || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() )
+                        hasChanged = rockContext.Entry( this ).Property( nameof( this.PersonId ) )?.IsModified == true
+                        || rockContext.Entry( this ).Property( nameof( this.GroupRoleId ) )?.IsModified == true
+                        || ( rockContext.Entry( this ).Property( nameof( this.IsArchived ) )?.IsModified == true && !rockContext.Entry( this ).Property( nameof( this.IsArchived ) ).ToStringSafe().AsBoolean() )
                         || ( originalStatus != GroupMemberStatus.Active && newStatus == GroupMemberStatus.Active );
                     }
                 }
@@ -469,11 +489,24 @@ namespace Rock.Model
             // recalculate and store in the database if the groupmember isn't new or changed
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "GroupRequirements" ).FirstOrDefault( a => a.Id == this.GroupId );
+
             if ( !group.GetGroupRequirements( rockContext ).Any() )
             {
-                // group doesn't have requirements so no need to calculate
+                // group doesn't have requirements, so clear any existing group member requirements and save if necessary.
+                if ( GroupMemberRequirements.Any() )
+                {
+                    GroupMemberRequirements.Clear();
+
+                    if ( saveChanges )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+
                 return;
             }
+
+            ClearInapplicableGroupRequirements( rockContext );
 
             var updatedRequirements = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId );
 
@@ -486,6 +519,21 @@ namespace Rock.Model
             {
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Remoes any group requirements that are not eligible for the group member's role.  This is necessary
+        /// if the group member has changed roles.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        private void ClearInapplicableGroupRequirements( RockContext rockContext )
+        {
+            var inapplicableGroupRequirements = GroupMemberRequirements
+                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId )
+                .ToList();
+
+            var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
+            groupMemberRequirementsService.DeleteRange( inapplicableGroupRequirements );
         }
 
         /// <summary>

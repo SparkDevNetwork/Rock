@@ -357,8 +357,6 @@ namespace RockWeb.Blocks.Groups
 
         #region Events
 
-        #region Action Events
-
         /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
@@ -512,6 +510,7 @@ namespace RockWeb.Blocks.Groups
             groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.GroupCapacityRule = ddlGroupCapacityRule.SelectedValueAsEnum<GroupCapacityRule>();
+            groupType.IsCapacityRequired = cbRequireCapacityRule.Checked;
             groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
             groupType.AllowedScheduleTypes = allowedScheduleTypes;
             groupType.LocationSelectionMode = locationSelectionMode;
@@ -686,9 +685,23 @@ namespace RockWeb.Blocks.Groups
             NavigateToParentPage();
         }
 
-        #endregion
-
-        #region Control Events
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroupCapacityRule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroupCapacityRule_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( ddlGroupCapacityRule.SelectedIndex == 0 )
+            {
+                cbRequireCapacityRule.Visible = false;
+                cbRequireCapacityRule.Checked = false;
+            }
+            else
+            {
+                cbRequireCapacityRule.Visible = true;
+            }
+        }
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the gtpInheritedGroupType control.
@@ -702,8 +715,6 @@ namespace RockWeb.Blocks.Groups
             var attributeService = new AttributeService( rockContext );
             BindInheritedAttributes( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService );
         }
-
-        #endregion
 
         #endregion
 
@@ -838,6 +849,8 @@ namespace RockWeb.Blocks.Groups
             ddlGroupStatusDefinedType.SetValue( groupType.GroupStatusDefinedTypeId );
 
             ddlGroupCapacityRule.SetValue( (int)groupType.GroupCapacityRule );
+            cbRequireCapacityRule.Visible = groupType.GroupCapacityRule != GroupCapacityRule.None;
+            cbRequireCapacityRule.Checked = groupType.IsCapacityRequired;
 
             cbAllowAnyChildGroupType.Checked = groupType.AllowAnyChildGroupType;
             rcwAllowedChildGroupTypes.Visible = !cbAllowAnyChildGroupType.Checked;
@@ -1113,7 +1126,6 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
             }
-
         }
 
         /// <summary>
@@ -1440,8 +1452,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="qualifierValue">The qualifier value.</param>
         /// <param name="viewStateAttributes">The view state attributes.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="AddAuthorizationsFromGroupType">if set to <c>true</c> for new attributes this will copy the explicit permissions for the group type into the attribute.</param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext, GroupType groupType, bool AddAuthorizationsFromGroupType )
+        /// <param name="addAuthorizationsFromGroupType">if set to <c>true</c> for new attributes this will copy the explicit permissions for the group type into the attribute.</param>
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext, GroupType groupType, bool addAuthorizationsFromGroupType )
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
@@ -1468,7 +1480,7 @@ namespace RockWeb.Blocks.Groups
 
                 // If AddAuthorizationsFromGroupType is true and this is a new attribute then set the explicit authorizations to match the explicit authorizations of the GroupType.
                 var groupTypeId = qualifierValue.AsIntegerOrNull();
-                if ( groupTypeId.HasValue && groupTypeId > 0 && attributeState.Id == 0 && AddAuthorizationsFromGroupType )
+                if ( groupTypeId.HasValue && groupTypeId > 0 && attributeState.Id == 0 && addAuthorizationsFromGroupType )
                 {
                     // If this is a new group type then this will be null since it is still in an uncommitted transaction and not in the cache.
                     // Also there are no explicit authorizations to copy.

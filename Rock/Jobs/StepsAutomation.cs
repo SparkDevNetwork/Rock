@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,9 +20,10 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -45,6 +45,15 @@ namespace Rock.Jobs
         order: 1,
         key: AttributeKey.DuplicatePreventionDayRange )]
 
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (180).",
+        IsRequired = false,
+        DefaultIntegerValue = AttributeDefaultValue.CommandTimeout,
+        Category = "General",
+        Order = 7 )]
+
     [DisallowConcurrentExecution]
     public class StepsAutomation : IJob
     {
@@ -59,7 +68,22 @@ namespace Rock.Jobs
             /// The duplicate prevention day range
             /// </summary>
             public const string DuplicatePreventionDayRange = "DuplicatePreventionDayRange";
+
+            /// <summary>
+            /// The SQL Command Timeout
+            /// </summary>
+            public const string CommandTimeout = "CommandTimeout";
         }
+
+        /// <summary>
+        /// Default Values for Attributes
+        /// </summary>
+        private static class AttributeDefaultValue
+        {
+            public const int CommandTimeout = 180;
+        }
+
+        private DateTime _lastProgressUpdate = DateTime.MinValue;
 
         #endregion Keys
 
@@ -84,29 +108,28 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            _sqlCommandTimeoutSeconds = context.JobDetail.JobDataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
             var addedResults = new ConcurrentBag<int>();
             var updatedResults = new ConcurrentBag<int>();
 
             // Get the step type view query
-            var stepTypeViews = GetStepTypeViews();
+            var stepTypeViews = GetStepTypeViews().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
             // Get the day threshold for adding new steps
             var minDaysBetweenSteps = GetDuplicatePreventionDayRange( context );
 
             // Loop through each step type and create steps based on what is in the dataview
-            Parallel.ForEach(
-                stepTypeViews,
-                stepTypeView =>
+            foreach ( var stepTypeView in stepTypeViews )
             {
-                ProcessStepType( stepTypeView, minDaysBetweenSteps, addedResults, updatedResults, out var errorsFromThisStepType );
-
+                ProcessStepType( context, stepTypeView, minDaysBetweenSteps, addedResults, updatedResults, out var errorsFromThisStepType );
                 if ( errorsFromThisStepType != null && errorsFromThisStepType.Any() )
                 {
                     errorsFromThisStepType.ForEach( errors.Add );
                 }
-            } );
+            }
 
             // Set the results for the job log
             var totalAdded = addedResults.Sum();
@@ -119,15 +142,19 @@ namespace Rock.Jobs
             }
         }
 
+        private int _sqlCommandTimeoutSeconds = AttributeDefaultValue.CommandTimeout;
+
         /// <summary>
         /// Processes the step type. Add steps for everyone in the dataview
         /// </summary>
+        /// <param name="jobContext">The job context.</param>
         /// <param name="stepTypeView">The step type view.</param>
         /// <param name="minDaysBetweenSteps">The minimum days between steps.</param>
         /// <param name="addedResults">The added results.</param>
         /// <param name="updatedResults">The updated results.</param>
         /// <param name="errorMessages">The error message.</param>
         private void ProcessStepType(
+            IJobExecutionContext jobContext,
             StepTypeView stepTypeView,
             int minDaysBetweenSteps,
             ConcurrentBag<int> addedResults,
@@ -135,7 +162,8 @@ namespace Rock.Jobs
             out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            var rockContext = new RockContext();
+            var rockContextGetList = new RockContext();
+            rockContextGetList.Database.CommandTimeout = _sqlCommandTimeoutSeconds;
 
             // Steps are created with a status of "complete", so if we need to know the status id
             var stepStatusId = stepTypeView.CompletedStepStatusIds.FirstOrDefault();
@@ -147,7 +175,7 @@ namespace Rock.Jobs
             }
 
             // Get the dataview configured for the step type
-            var dataViewService = new DataViewService( rockContext );
+            var dataViewService = new DataViewService( rockContextGetList );
             var dataview = dataViewService.Get( stepTypeView.AutoCompleteDataViewId );
 
             if ( dataview == null )
@@ -159,7 +187,8 @@ namespace Rock.Jobs
             // We can use the dataview to get the person alias id query
             var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
-                DbContext = rockContext
+                DbContext = rockContextGetList,
+                DatabaseTimeoutSeconds = _sqlCommandTimeoutSeconds
             };
 
             IQueryable<IEntity> dataviewQuery;
@@ -184,70 +213,117 @@ namespace Rock.Jobs
             var personIdQuery = dataviewQuery.AsNoTracking().Select( e => e.Id );
 
             // Get the query for people that cannot get a new step
-            var peopleThatCannotGetStepQuery = GetPeopleThatCannotGetStepQuery( rockContext, stepTypeView, minDaysBetweenSteps );
+            var personIdsThatCannotGetStepQuery = GetPersonIdsThatCannotGetStepQuery( rockContextGetList, stepTypeView, minDaysBetweenSteps );
 
             // Subtract the people that cannot get a new step
-            personIdQuery = personIdQuery.Except( peopleThatCannotGetStepQuery );
+            personIdQuery = personIdQuery.Except( personIdsThatCannotGetStepQuery );
 
             // If there are prerequisites, then subtract the people that cannot get the step because of unmet prerequisites
             if ( stepTypeView.PrerequisiteStepTypeIds.Any() )
             {
-                var peopleThatHaveMetPrerequisitesQuery = GetPeopleThatHaveMetPrerequisitesQuery( rockContext, stepTypeView );
-                personIdQuery = personIdQuery.Intersect( peopleThatHaveMetPrerequisitesQuery );
+                var personIdsThatHaveMetPrerequisitesQuery = GetPersonIdsThatHaveMetPrerequisitesQuery( rockContextGetList, stepTypeView );
+                personIdQuery = personIdQuery.Intersect( personIdsThatHaveMetPrerequisitesQuery );
             }
 
             // Convert to person aliases ids
-            var personAliasService = new PersonAliasService( rockContext );
-            var personAliasIds = personAliasService.GetPrimaryAliasQuery()
-                .AsNoTracking()
-                .Where( pa => personIdQuery.Contains( pa.PersonId ) )
-                .Select( pa => pa.Id )
-                .Distinct()
+            var personAliasService = new PersonAliasService( rockContextGetList );
+            var personInfoList = personAliasService.GetPrimaryAliasQuery()
+                .Where( a => personIdQuery.Contains( a.PersonId ) )
+                .Select( a => new
+                {
+                    PersonId = a.PersonId,
+                    PrimaryAliasId = a.Id
+                } )
                 .ToList();
 
             // Add or update steps for each of the remaining aliases that have met all the conditions
-            var stepService = new StepService( rockContext );
+            var stepServiceGetList = new StepService( rockContextGetList );
             var now = RockDateTime.Now;
             var addedCount = 0;
             var updatedCount = 0;
 
             // Query for existing incomplete steps for the people
-            var existingIncompleteSteps = stepService.Queryable()
+            // Just in case the Person is has more than one incomplete step for this step type, just use the latest one.
+            // It should clean it self up on subsequent runs since the other steps for this person wouldn't have been marked complete yet
+            var existingIncompleteStepIdsByPersonId = stepServiceGetList.Queryable()
                 .Where( s =>
                     s.StepTypeId == stepTypeView.StepTypeId &&
-                    s.PersonAlias.Person.Aliases.Any( pa => personAliasIds.Contains( pa.Id ) ) &&
+                    personIdQuery.Contains( s.PersonAlias.PersonId ) &&
                     !s.CompletedDateTime.HasValue )
-                .ToList();
+                .Select( a => new
+                {
+                    a.PersonAlias.PersonId,
+                    StepId = a.Id
+                } )
+                .ToList()
+                .GroupBy( a => a.PersonId )
+                .ToDictionary( k => k.Key, v => v.Max( s => s.StepId ) );
 
-            foreach ( var personAliasId in personAliasIds )
+            long totalCount = personInfoList.Count;
+            long progressCount = 0;
+            foreach ( var personIdInfo in personInfoList )
             {
-                var exisitingStep = existingIncompleteSteps.FirstOrDefault( s =>
-                    s.PersonAlias.Person.Aliases.Any( pa => pa.Id == personAliasId ) );
+                var personId = personIdInfo.PersonId;
+                var personPrimaryAliasId = personIdInfo.PrimaryAliasId;
 
-                var step = exisitingStep ?? new Step
+                var existingStepId = existingIncompleteStepIdsByPersonId.GetValueOrNull( personId );
+
+                using ( var rockContextLoop = new RockContext() )
                 {
-                    StepTypeId = stepTypeView.StepTypeId,
-                    StartDateTime = now,
-                    PersonAliasId = personAliasId
-                };
+                    var stepServiceLoop = new StepService( rockContextLoop );
+                    Step step;
+                    if ( existingStepId.HasValue )
+                    {
+                        step = stepServiceLoop.Get( existingStepId.Value );
+                    }
+                    else
+                    {
+                        step = new Step
+                        {
+                            StepTypeId = stepTypeView.StepTypeId,
+                            Caption = stepTypeView.Name,
+                            StartDateTime = now,
+                            PersonAliasId = personPrimaryAliasId
+                        };
+                    }
 
-                step.CompletedDateTime = now;
-                step.StepStatusId = stepStatusId;
+                    step.CompletedDateTime = now;
+                    step.StepStatusId = stepStatusId;
 
-                if ( exisitingStep == null )
-                {
-                    stepService.AddWithoutValidation( step );
-                    addedCount++;
+                    if ( !existingStepId.HasValue )
+                    {
+                        stepServiceLoop.AddWithoutValidation( step );
+                        addedCount++;
+                    }
+                    else
+                    {
+                        updatedCount++;
+                    }
+
+                    rockContextLoop.SaveChanges();
                 }
-                else
-                {
-                    updatedCount++;
-                }
 
-                rockContext.SaveChanges();
+                progressCount++;
+
+                // Update the progress every 5 seconds
+                if ( ( RockDateTime.Now - _lastProgressUpdate ).TotalSeconds >= 5 )
+                {
+                    try
+                    {
+                        jobContext.UpdateLastStatusMessage( $"Processing {stepTypeView.Name } steps : {progressCount}/{totalCount}" );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // ignore, but write to debug output
+                        System.Diagnostics.Debug.WriteLine( $"Error updating LastStatusMessage for ProcessStepType loop: {ex}" );
+                    }
+                    finally
+                    {
+                        _lastProgressUpdate = RockDateTime.Now;
+                    }
+                }
             }
 
-            rockContext.SaveChanges();
             addedResults.Add( addedCount );
             updatedResults.Add( updatedCount );
         }
@@ -263,6 +339,7 @@ namespace Rock.Jobs
         {
             var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = _sqlCommandTimeoutSeconds;
             var stepTypeService = new StepTypeService( rockContext );
 
             var views = stepTypeService.Queryable().AsNoTracking()
@@ -274,6 +351,8 @@ namespace Rock.Jobs
                 .Select( st => new StepTypeView
                 {
                     StepTypeId = st.Id,
+                    Name = st.Name,
+                    Order = st.Order,
                     StepProgramId = st.StepProgramId,
                     AllowMultiple = st.AllowMultiple,
                     AutoCompleteDataViewId = st.AutoCompleteDataViewId.Value,
@@ -301,7 +380,7 @@ namespace Rock.Jobs
         /// <param name="rockContext"></param>
         /// <param name="minDaysBetweenSteps"></param>
         /// <returns></returns>
-        private IQueryable<int> GetPeopleThatCannotGetStepQuery( RockContext rockContext, StepTypeView stepTypeView, int minDaysBetweenSteps )
+        private IQueryable<int> GetPersonIdsThatCannotGetStepQuery( RockContext rockContext, StepTypeView stepTypeView, int minDaysBetweenSteps )
         {
             // We are querying for people that will ultimately be excluded from getting a new
             // step created from this job.
@@ -332,7 +411,7 @@ namespace Rock.Jobs
         /// <param name="rockContext"></param>
         /// <param name="stepTypeView"></param>
         /// <returns></returns>
-        private IQueryable<int> GetPeopleThatHaveMetPrerequisitesQuery( RockContext rockContext, StepTypeView stepTypeView )
+        private IQueryable<int> GetPersonIdsThatHaveMetPrerequisitesQuery( RockContext rockContext, StepTypeView stepTypeView )
         {
             var stepService = new StepService( rockContext );
 
@@ -429,6 +508,18 @@ namespace Rock.Jobs
             /// The step type identifier.
             /// </value>
             public int StepTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>The name.</value>
+            public string Name { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the order.
+            /// </summary>
+            /// <value>The order.</value>
+            public int Order { get; internal set; }
 
             /// <summary>
             /// Gets or sets the step program identifier.

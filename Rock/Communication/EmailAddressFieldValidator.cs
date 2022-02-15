@@ -25,7 +25,7 @@ namespace Rock.Communication
     public enum EmailFieldValidationResultSpecifier
     {
         /// <summary>
-        /// The field content is valid. 
+        /// The field content is valid.
         /// </summary>
         Valid = 0,
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock.Communication
         /// </summary>
         InvalidLavaNotAllowed = 2,
         /// <summary>
-        /// Multiple addresses are not allowed, but more than one address has been detected. 
+        /// Multiple addresses are not allowed, but more than one address has been detected.
         /// </summary>
         InvalidMultipleAddressesNotAllowed = 3,
     }
@@ -47,7 +47,18 @@ namespace Rock.Communication
     /// </summary>
     public class EmailAddressFieldValidator
     {
-        private const string _emailAddressRegex = @"\s*(\w+(?:[-+.]*\w+)*@\w+(?:[-.]\w+)*\.\w+(?:[-.]\w+)*)\s*";
+        /*
+         * DV 19-Jan-2022
+         *
+         * When updating this regex make sure to also update the Rock.Model.Person.Email
+         * RegularExpression attribute to the same value. Otherwise, this will pass the
+         * UI check and fail to save to the database. #4829, #4867
+         *
+         * This contains the \s* at the beginning and end because this validator will be used with Lava.
+         * If you copy this somewhere else to test it watch out for the escaped double quotes "".
+         * See: https://stackoverflow.com/a/201378/4929844
+         */
+        private const string _emailAddressRegex = @"\s*(?:[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[A-Za-z0-9-]*[A-Za-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])\s*";
         private const string _lavaVariableRegex = @"({{\s*[^}}]+\s*}})";
         private const string _lavaTagRegex = @"({%\s*[^%}]+\s*%})";
         private const string _lavaBlockRegex = @"(({%\s*(?<tagName>(\w+)\s*).*%})).*({%\s*end\k<tagName>\s*%})";

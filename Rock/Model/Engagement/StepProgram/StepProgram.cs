@@ -18,10 +18,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -76,6 +76,17 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public ViewMode DefaultListView { get; set; } = ViewMode.Cards;
+
+        /// <summary>
+        /// Gets or sets the term used for steps within this program. This property is required.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string StepTerm
+        {
+            get => _stepTerm.IsNullOrWhiteSpace() ? DefaultStepTerm : _stepTerm;
+            set => _stepTerm = value;
+        }
 
         #endregion Entity Properties
 
@@ -142,6 +153,25 @@ namespace Rock.Model
         }
 
         private ICollection<StepWorkflowTrigger> _stepWorkflowTriggers;
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = base.SupportedActions;
+                    _supportedActions.Add( Authorization.MANAGE_STEPS, "The roles and/or users that have access to manage the steps." );
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion Navigation Properties
 

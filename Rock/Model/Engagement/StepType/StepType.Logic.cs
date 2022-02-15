@@ -14,13 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-#if NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
-using System.Runtime.Serialization;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -29,24 +23,6 @@ namespace Rock.Model
     public partial class StepType
     {
         #region Methods
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = base.SupportedActions;
-                    _supportedActions.Add( Authorization.MANAGE_STEPS, "The roles and/or users that have access to manage the steps." );
-                }
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
@@ -85,24 +61,5 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
-
-        private string _cardLavaTemplate;
-
-        /// <summary>
-        /// Gets or sets the lava template used to render custom card details.
-        /// </summary>
-        [DataMember]
-        public string CardLavaTemplate
-        {
-            get
-            {
-                return _cardLavaTemplate.IsNullOrWhiteSpace() ? DefaultCardLavaTemplate : _cardLavaTemplate;
-            }
-
-            set
-            {
-                _cardLavaTemplate = value;
-            }
-        }
     }
 }

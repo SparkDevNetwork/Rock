@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-using Rock.Security;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Drawing;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -49,28 +50,60 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
+        /// Returns a hexadecimal value for the BackgroundColor value.
         /// </summary>
-        public override Dictionary<string, string> SupportedActions
+        /// <returns>System.String.</returns>
+        [NotMapped]
+        [LavaVisible]
+        public string BackgroundColorHex
         {
             get
             {
-                if ( _supportedActions == null )
+                if ( string.IsNullOrEmpty( this.BackgroundColor ) )
                 {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    return null;
                 }
 
-                return _supportedActions;
+                // Already HEX
+                if ( this.BackgroundColor.StartsWith( "#" ) )
+                {
+                    return this.BackgroundColor;
+                }
+
+                // rgb(...) or rgba(...) string
+                if ( this.BackgroundColor.ToLowerInvariant().StartsWith( "rgb" ) )
+                {
+                    var startParen = this.BackgroundColor.IndexOf( "(" ) + 1;
+                    var bgColor = this.BackgroundColor.SubstringSafe(
+                        startParen, this.BackgroundColor.LastIndexOf( ")" ) - startParen );
+                    if ( !string.IsNullOrEmpty( bgColor ) )
+                    {
+                        var colorArray = bgColor.Split( ',' );
+                        switch ( colorArray.Length )
+                        {
+                            case 3:
+                                {
+                                    // R,G,B from our color picker
+                                    var color = Color.FromArgb( colorArray[0].AsInteger(), colorArray[1].AsInteger(), colorArray[2].AsInteger() );
+                                    return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                                }
+                            case 4:
+                                {
+                                    // R,G,B,A from our color picker
+                                    var color = Color.FromArgb( ( int ) ( 255 * colorArray[3].AsDouble() ), colorArray[0].AsInteger(), colorArray[1].AsInteger(), colorArray[2].AsInteger() );
+                                    return $"#{color.R:X2}{color.G:X2}{color.B:X2}{color.A:X2}";
+                                }
+                        }
+                    }
+                }
+
+                // If all else fails just return the original string value.
+                return this.BackgroundColor;
             }
         }
 
-        private Dictionary<string, string> _supportedActions;
-
         #endregion Properties
+
         #region Methods
 
         /// <summary>

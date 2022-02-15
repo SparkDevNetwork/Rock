@@ -1348,7 +1348,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         ///
         /// </summary>
-        private class DataRowDrop : DotLiquid.Drop
+        private class DataRowDrop : DotLiquid.Drop, ILavaDataDictionary
         {
             private readonly DataRow _dataRow;
 
@@ -1366,6 +1366,37 @@ namespace RockWeb.Blocks.Reporting
 
                 return null;
             }
+
+            #region ILavaDataDictionary
+
+            public List<string> AvailableKeys
+            {
+                get
+                {
+                    var keys = new List<string>();
+                    foreach ( DataColumn column in _dataRow.Table.Columns )
+                    {
+                        keys.Add( column.ColumnName );
+                    }
+                    return keys;
+                }
+            }
+
+            public bool ContainsKey( string key )
+            {
+                return _dataRow.Table.Columns.Contains( key );
+            }
+
+            public object GetValue( string key )
+            {
+                if ( _dataRow.Table.Columns.Contains( key ) )
+                {
+                    return _dataRow[key];
+                }
+                return null;
+            }
+
+            #endregion
         }
 
         #endregion

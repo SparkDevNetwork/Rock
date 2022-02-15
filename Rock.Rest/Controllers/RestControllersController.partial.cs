@@ -19,15 +19,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockGuid( "e091bf42-9a06-4c2b-8f0a-59fa9ac37f88" )]
     public partial class RestControllersController
     {
         /// <summary>
@@ -36,6 +37,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/RestControllers/EnsureRestControllers" )]
+        [RockGuid( "4d3bbffd-292c-415a-bed2-2a8f8f9fc469" )]
         public bool EnsureRestControllers()
         {
             RestControllerService.RegisterControllers();
@@ -51,7 +53,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/RestControllers/RestControllerNames" )]
-        public List<string> RestControllerNames( bool includeObsolete  )
+        [RockGuid( "ce1d0d07-cb40-467b-8616-8d070786c175" )]
+        public List<string> RestControllerNames( bool includeObsolete )
         {
             var restControllerClassList = this.Get().OrderBy( a => a.Name ).Select( a => new
             {

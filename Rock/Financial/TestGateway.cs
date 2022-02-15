@@ -69,6 +69,15 @@ namespace Rock.Financial
         Key = AttributeKey.PromptForNameOnCard,
         DefaultBooleanValue = false,
         Order = 4 )]
+
+    [EnumsField(
+        "Gateway Mode",
+        Description = "Selected the gateway mode",
+        Key = AttributeKey.GatewayMode,
+        EnumSourceType = typeof( HostedGatewayMode ),
+        DefaultValue = "Unhosted",
+        Order = 5 )]
+<<<<<<< HEAD
 #if NET5_0_OR_GREATER
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent
 #else
@@ -87,6 +96,7 @@ namespace Rock.Financial
             public const string MaxExpirationYears = "MaxExpirationYears";
             public const string DeclinedCVV = "DeclinedCVV";
             public const string PromptForNameOnCard = "PromptForNameOnCard";
+            public const string GatewayMode = "GatewayMode";
         }
 
         #endregion
@@ -273,7 +283,7 @@ namespace Rock.Financial
                     ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
                     CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
                     AccountNumberMasked = paymentInfo.MaskedNumber,
-                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( paymentInfo.MaskedNumber )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( paymentInfo.MaskedNumber ?? string.Empty )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
                 };
 
                 return transaction;
@@ -657,12 +667,15 @@ namespace Rock.Financial
         /// </value>
         public HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway )
         {
-            return new HostedGatewayMode[2] { HostedGatewayMode.Hosted, HostedGatewayMode.Unhosted };
+            return  this.GetAttributeValue( financialGateway, AttributeKey.GatewayMode )
+                .SplitDelimitedValues()
+                .Select( a => a.ConvertToEnum<HostedGatewayMode>() )?
+                .ToArray()
+                ?? new HostedGatewayMode[1] { HostedGatewayMode.Unhosted };
         }
 
         #endregion IHostedGatewayComponent
 #endif
-
     }
 
 #if !NET5_0_OR_GREATER
@@ -702,7 +715,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the expiration mmyy.
+        /// Gets the expiration mmyy from the textbox. Returns null if the textbox is null or empty.
         /// </summary>
         /// <value>The expiration mmyy.</value>
         public string ExpirationMMYY
@@ -710,7 +723,8 @@ namespace Rock.Financial
             get
             {
                 EnsureChildControls();
-                return _mypExpDate.Text.AsNumeric().PadLeft( 4, '0' );
+
+                return _mypExpDate.Text.IsNotNullOrWhiteSpace() ? _mypExpDate.Text.AsNumeric().PadLeft( 4, '0' ) : null;
             }
         }
 
@@ -822,8 +836,8 @@ namespace Rock.Financial
             {
                 EnsureChildControls();
 
-                var expirationMonth = ExpirationMMYY.Substring( 0, 2 ).AsIntegerOrNull() ?? 12;
-                var expirationYear = 2000 + ( ExpirationMMYY.Substring( 2, 2 ).AsIntegerOrNull() ) ?? RockDateTime.Today.AddYears( 1 ).Year;
+                var expirationMonth = ExpirationMMYY?.Substring( 0, 2 ).AsIntegerOrNull() ?? 12;
+                var expirationYear = 2000 + ( ExpirationMMYY?.Substring( 2, 2 ).AsIntegerOrNull() ) ?? RockDateTime.Today.AddYears( 1 ).Year;
 
                 return new DateTime( expirationYear, expirationMonth, 1 );
             }

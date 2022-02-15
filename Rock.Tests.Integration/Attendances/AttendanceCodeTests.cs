@@ -18,13 +18,9 @@ namespace Rock.Tests.Integration.Attendance
     /// want to break other teams CI environments that are running these tests w/o a db.
     /// </summary>
     /// <seealso cref="System.IDisposable" />
+    [TestClass]
     public class AttendanceCodeTests
     {
-        private static List<string> noGood = new List<string> {
-            "4NL", "4SS", "5CK", "5HT", "5LT", "5NM", "5TD", "5XX", "666", "BCH", "CLT", "CNT", "D4M", "D5H", "DCK", "DMN", "DSH", "F4G", "FCK", "FGT", "G4Y", "GZZ", "H8R",
-            "JNK", "JZZ", "KKK", "KLT", "KNT", "L5D", "LCK", "LSD", "MFF", "MLF", "ND5", "NDS", "NDZ", "NGR", "P55", "PCP", "PHC", "PHK", "PHQ", "PM5", "PMS", "PN5", "PNS",
-            "PRC", "PRK", "PRN", "PRQ", "PSS", "RCK", "SCK", "S3X", "SHT", "SLT", "SNM", "STD", "SXX", "THC", "V4G", "WCK", "XTC", "XXX", "911" };
-
         /// <summary>
         /// Setup test which cleans the AttendanceCode table for these tests.
         /// </summary>
@@ -92,7 +88,7 @@ namespace Rock.Tests.Integration.Attendance
 
         #region Alpha-numeric codes
 
-        [TestMethod] [Ignore( "Requires a db" )]
+        [TestMethod]
         public void AlphaNumericCodesShouldSkipBadCodes()
         {
             Cleanup();
@@ -105,7 +101,7 @@ namespace Rock.Tests.Integration.Attendance
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
+            bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
             Assert.That.False( hasMatchIsBad );
         }
@@ -313,20 +309,27 @@ namespace Rock.Tests.Integration.Attendance
 
         #region Alpha only codes
 
-        [TestMethod] [Ignore( "Requires a db" )]
-        public void AlphaOnlyCodesShouldSkipBadCodes()
+        /// <summary>
+        /// The number of unique three characters strings you can make from the 17 allowed
+        /// characters in the Check-in system's 17 <see cref="AttendanceCodeService._alphaCharacters"/>
+        /// characters is about 4,913.  But there are about 80 in the <see cref="AttendanceCodeService.NoGood"/>
+        /// list so we should be able to run this loop to about 4000-4800 without running out of options.
+        /// WARNING: The closer you get to the using the entire set, the slower this will take to complete.
+        /// </summary>
+        [TestMethod]
+        public void ThreeCharAlphaOnlyCodesShouldSkipBadCodes()
         {
             Cleanup();
 
             var codeList = new List<string>();
             AttendanceCode code = null;
-            for ( int i = 0; i < 1000; i++ )
+            for ( int i = 0; i < 4000; i++ )
             {
                 code = AttendanceCodeService.GetNew( 0, 3, 0, true );
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
+            bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
             Assert.That.False( hasMatchIsBad );
         }
@@ -334,16 +337,16 @@ namespace Rock.Tests.Integration.Attendance
         /// <summary>
         /// Alpha codes should not repeat.
         /// </summary>
-        [TestMethod] [Ignore( "Requires a db" )]
-        public void AlphaOnlyCodesShouldNotRepeat()
+        [TestMethod]
+        public void ThreeCharAlphaOnlyCodesShouldNotRepeat()
         {
             Cleanup();
 
             var codeList = new List<string>();
             AttendanceCode code = null;
 
-            // 4847 (17*17*17 minus ~50 badcodes) possible combinations of 17 letters
-            for ( int i = 0; i < 4860; i++ )
+            // 4800 (17*17*17 minus ~80 badcodes) possible combinations of 17 letters
+            for ( int i = 0; i < 4800; i++ )
             {
                 //System.Diagnostics.Debug.WriteIf( i > 4700, "code number " + i + " took... " );
                 code = AttendanceCodeService.GetNew( 0, 3, 0, false );
@@ -363,7 +366,7 @@ namespace Rock.Tests.Integration.Attendance
         #region Alpha-numeric + numeric only codes
 
         /// <summary>
-        /// NOTE: This appears to be a current bug in v8.0 and earlier.  It cazn only generate 100 codes
+        /// NOTE: This appears to be a current bug in v8.0 and earlier.  It can only generate 100 codes
         /// Two character alpha numeric codes (codeCharacters) has possible 24*24 (576) combinations
         /// plus two character numeric codes has a possible 10*10 (100) for a total set of
         /// 676 combinations.  Removing the noGood (~60) codes leaves us with a valid set of
@@ -388,7 +391,7 @@ namespace Rock.Tests.Integration.Attendance
                     codeList.Add( code.Code );
                 }
 
-                bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
+                bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
                 Assert.That.False( hasMatchIsBad );
 
@@ -405,8 +408,8 @@ namespace Rock.Tests.Integration.Attendance
 
         #region Alpha only + numeric only codes
 
-        [TestMethod] [Ignore( "Requires a db" )]
-        public void AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes()
+        [TestMethod]
+        public void ThreeCharAlphaWithFourCharNumericCodesShouldSkipBadCodes()
         {
             Cleanup();
 
@@ -418,7 +421,7 @@ namespace Rock.Tests.Integration.Attendance
                 codeList.Add( code.Code );
             }
 
-            bool hasMatchIsBad = codeList.Where( c => noGood.Any( ng => c.Contains( ng ) ) ).Any();
+            bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
             Assert.That.False( hasMatchIsBad );
         }

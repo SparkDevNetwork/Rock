@@ -262,11 +262,8 @@ namespace Rock.Model
         private ICollection<EventItemOccurrenceChannelItem> _eventItemOccurrences;
 
         /// <summary>
-        /// Gets the supported actions.
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
         /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
         [NotMapped]
         public override Dictionary<string, string> SupportedActions
         {
@@ -275,22 +272,6 @@ namespace Rock.Model
                 var supportedActions = base.SupportedActions;
                 supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
                 return supportedActions;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [allows interactive bulk indexing].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
-        /// </value>
-        /// <exception cref="System.NotImplementedException"></exception>
-        [NotMapped]
-        public bool AllowsInteractiveBulkIndexing
-        {
-            get
-            {
-                return true;
             }
         }
 

@@ -15,9 +15,8 @@
 // </copyright>
 //
 using Rock.Web.Cache;
-#if NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 #endif
 
@@ -47,5 +46,29 @@ namespace Rock.Model
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the current date time basd on the <see cref="Campus.TimeZoneId" />.
+        /// </summary>
+        /// <value>
+        /// The current date time.
+        /// </value>
+        [NotMapped]
+        public virtual DateTime CurrentDateTime
+        {
+            get
+            {
+                if ( TimeZoneId.IsNotNullOrWhiteSpace() )
+                {
+                    var campusTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById( TimeZoneId );
+                    if ( campusTimeZoneInfo != null )
+                    {
+                        return TimeZoneInfo.ConvertTime( DateTime.UtcNow, campusTimeZoneInfo );
+                    }
+                }
+
+                return RockDateTime.Now;
+            }
+        }
     }
 }

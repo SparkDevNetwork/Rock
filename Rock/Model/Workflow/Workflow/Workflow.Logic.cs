@@ -90,20 +90,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets a collection containing all the <see cref="Rock.Model.WorkflowActivity">WorkflowActivities</see> that are a part of this Workflow instance.
-        /// </summary>
-        /// <value>
-        /// A collection containing the <see cref="Rock.Model.WorkflowActivity">WorkflowActivities</see> that are a part of this Workflow instance.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<WorkflowActivity> Activities
-        {
-            get { return _activities ?? (_activities = new Collection<WorkflowActivity>()); }
-            set { _activities = value; }
-        }
-        private ICollection<WorkflowActivity> _activities;
-
-        /// <summary>
         /// Gets an enumerable collection of the Active <see cref="Rock.Model.WorkflowActivity">WorkflowActivities</see> for this Workflow instance, ordered by their order value.
         /// </summary>
         /// <value>

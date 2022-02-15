@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Store
             if ( canAuthicate )
             {
                 lMessages.Text = @"<div class='alert alert-warning margin-t-md'>It appears that no organizations have been configured for this account. You can 
-                                set up an organization on the Rock RMS website. Simply login and then select 'My Account' from the dropdown in the top right
+                                set up an organization on the Rock RMS website. Simply log in and then select 'My Account' from the dropdown in the top right
                                 corner or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
             }
             else

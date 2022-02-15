@@ -15,14 +15,15 @@
 // </copyright>
 //
 
-import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
-import { Component, defineComponent, PropType, reactive } from "vue";
-import PanelWidget from "../../Elements/panelWidget";
+import { Component, defineComponent, PropType, reactive, ref } from "vue";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
-import { Guid } from "../../Util/guid";
+import PanelWidget from "../../Elements/panelWidget";
 import TextBox from "../../Elements/textBox";
 import { FieldType as FieldTypeGuids } from "../../SystemGuids";
-import { ClientEditableAttributeValue, ListItem } from "../../ViewModels";
+import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
+import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
+import { Guid } from "../../Util/guid";
+import { PublicEditableAttributeValue, ListItem } from "../../ViewModels";
 
 /**
  * Convert a simpler set of parameters into AttributeValueData
@@ -30,7 +31,7 @@ import { ClientEditableAttributeValue, ListItem } from "../../ViewModels";
  * @param fieldTypeGuid
  * @param configValues
  */
-const getAttributeValueData = (name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Array<ClientEditableAttributeValue> => {
+const getAttributeValueData = (name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Array<PublicEditableAttributeValue> => {
     const configurationValues = configValues;
 
     return [reactive({
@@ -76,7 +77,7 @@ const galleryAndResult = defineComponent({
             required: true
         },
         attributeValues: {
-            type: Array as PropType<ClientEditableAttributeValue[]>,
+            type: Array as PropType<PublicEditableAttributeValue[]>,
             required: true
         }
     },
@@ -321,16 +322,28 @@ const galleryComponents: Record<string, Component> = {
 
     TimeGallery: getFieldTypeGalleryComponent("Time", "13:15:00", FieldTypeGuids.Time, {
     }),
+
+    UrlLinkGallery: getFieldTypeGalleryComponent("URL Link", "https://rockrms.com", FieldTypeGuids.UrlLink, {
+        ShouldRequireTrailingForwardSlash: "false",
+        ShouldAlwaysShowCondensed: "false"
+    }),
 };
 
 const galleryTemplate: string = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");
 
 export default defineComponent({
     name: "Example.FieldTypeGallery",
+
     components: {
         PaneledBlockTemplate,
         ...galleryComponents
     },
+
+    setup() {
+        return {
+        };
+    },
+
     template: `
 <PaneledBlockTemplate>
     <template v-slot:title>
@@ -340,5 +353,6 @@ export default defineComponent({
     <template v-slot:default>
         ${galleryTemplate}
     </template>
-</PaneledBlockTemplate>`
+</PaneledBlockTemplate>
+`
 });

@@ -180,6 +180,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
 
         /// <summary>
+        /// The guid for Rock.Model.EntityType entity.
+        /// </summary>
+        public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
+
+        /// <summary>
         /// The guid for the Rock.Model.FinancialAccount entity.
         /// </summary>
         public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";

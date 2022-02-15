@@ -17,12 +17,15 @@
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
+
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Video Url field type
     /// Stored as URL
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class VideoUrlFieldType : FieldType
     {
 

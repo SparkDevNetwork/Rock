@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -21,6 +22,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a phone number
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class PhoneNumberFieldType : FieldType
     {
 

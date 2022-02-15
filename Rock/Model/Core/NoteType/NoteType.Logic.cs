@@ -14,39 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
-
-using Rock.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class NoteType
     {
-        #region Properties
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve notes." );
-                return supportedActions;
-            }
-        }
-
-        #endregion
-
         #region ICacheable
 
         /// <summary>

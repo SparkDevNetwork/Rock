@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Content Channel Types
     /// Stored as ContentChannelType.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ContentChannelTypeFieldType : FieldType, IEntityFieldType
     {
         #region Formatting

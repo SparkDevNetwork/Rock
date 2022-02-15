@@ -16,7 +16,7 @@
 //
 using System;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Pbx;
 using Rock.Rest.Filters;
@@ -27,6 +27,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Controller of misc utility functions that are used by Rock controls
     /// </summary>
+    [RockGuid( "c17adb11-3233-4ce9-b867-8322bd20f41b" )]
     public class PbxController : ApiControllerBase
     {
 
@@ -40,6 +41,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Pbx/Originate" )]
         [HttpGet]
         [Authenticate, Secured]
+        [RockGuid( "179fb0ce-e2b1-41ed-9275-4b31f73460a3" )]
         public OriginateResponse Originate( string sourcePhone, string destinationPhone, string callerId = null )
         {
             var response = new OriginateResponse();
@@ -80,6 +82,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Pbx/Originate" )]
         [HttpGet]
         [Authenticate, Secured]
+        [RockGuid( "266adf21-63d8-411e-9ba4-1cee3b533853" )]
         public OriginateResponse Originate( Guid sourcePersonGuid, string destinationPhone, string callerId = null )
         {
             var response = new OriginateResponse();
@@ -138,7 +141,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        private PbxComponent GetPbxComponent(Person currentPerson )
+        private PbxComponent GetPbxComponent( Person currentPerson )
         {
             // check that a pbx component is active
             var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponent();

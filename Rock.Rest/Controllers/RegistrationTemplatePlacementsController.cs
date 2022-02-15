@@ -34,6 +34,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// RegistrationTemplatePlacements REST API
     /// </summary>
+    [RockGuid( "f1db1c53-4a12-4746-9fee-de04722b59c8" )]
     public partial class RegistrationTemplatePlacementsController
     {
         /// <summary>
@@ -48,6 +49,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/RegistrationTemplatePlacements/CanPlaceRegistrant" )]
+        [RockGuid( "16a3b4ee-d158-402f-96c6-349ee9d2306e" )]
         public virtual HttpResponseMessage CanPlaceRegistrant( int registrantId, int registrationTemplatePlacementId, int groupId )
         {
             var rockContext = this.Service.Context as RockContext;
@@ -137,6 +139,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpDelete]
         [System.Web.Http.Route( "api/RegistrationTemplatePlacements/DetachPlacementGroup" )]
+        [RockGuid( "566d81b3-1b99-4fe4-be3a-307f3135106b" )]
         public virtual HttpResponseMessage DetachPlacementGroup( int groupId, int registrationTemplatePlacementId, int? registrationInstanceId = null )
         {
             // since we are doing a delete, create a new RockContext instead of this.Service.Context so that ProxyCreation, etc works
@@ -147,7 +150,7 @@ namespace Rock.Rest.Controllers
             {
                 return ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "Specified group not found." );
             }
-            
+
             if ( registrationInstanceId.HasValue )
             {
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );

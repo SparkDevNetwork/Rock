@@ -22,7 +22,8 @@
 
     var $imageLinkInput = $dialog.find('.js-image-link');
     var imageLinkUrl = $imageLinkInput.val();
-    var $img = $(context.layoutInfo.editable.data('target'));
+    var $img = $( context.layoutInfo.editable.data( 'target' ) );
+      var $editable = context.layoutInfo.editable;
     if (imageLinkUrl && imageLinkUrl != '') {
       if ($img.parent().is('a')) {
         $img.parent().attr('href', imageLinkUrl);
@@ -36,8 +37,8 @@
       if ($img.parent().is('a')) {
         $img.unwrap();
       }
-    }
-    context.invoke('triggerEvent', 'change');
+      }
+      context.triggerEvent( 'change', $editable.html() );
   });
 
   // create button

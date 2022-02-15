@@ -19,7 +19,6 @@ using Rock.Lava;
 using Rock.Web.Cache;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -129,9 +128,36 @@ namespace Rock.Model
         [DataMember]
         public string FieldVisibilityRulesJSON { get; set; }
 
+        /// <summary>
+        /// Gets or sets the size of the column.
+        /// </summary>
+        /// <value>
+        /// The size of the column.
+        /// </value>
+        [DataMember]
+        public int? ColumnSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the action form section identifier.
+        /// </summary>
+        /// <value>
+        /// The action form section identifier.
+        /// </value>
+        [DataMember]
+        public int? ActionFormSectionId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
+
+        /// <summary>
+        /// Gets or sets the action form section.
+        /// </summary>
+        /// <value>
+        /// The action form section.
+        /// </value>
+        [LavaVisible]
+        public virtual WorkflowActionFormSection ActionFormSection { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow action form.
@@ -166,6 +192,7 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActionFormAttributeConfiguration()
         {
+            this.HasOptional( a => a.ActionFormSection ).WithMany().HasForeignKey( a => a.ActionFormSectionId ).WillCascadeOnDelete( false );
             this.HasRequired( a => a.WorkflowActionForm ).WithMany( f => f.FormAttributes ).HasForeignKey( a => a.WorkflowActionFormId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.Attribute ).WithMany().HasForeignKey( a => a.AttributeId ).WillCascadeOnDelete( true );
         }

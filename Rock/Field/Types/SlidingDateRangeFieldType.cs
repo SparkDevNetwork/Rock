@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -27,6 +28,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save a sliding date range. Last X (Hours, Days, etc)
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class SlidingDateRangeFieldType : FieldType
     {
         #region Configuration

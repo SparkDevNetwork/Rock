@@ -18,10 +18,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -166,6 +166,25 @@ namespace Rock.Model
         [DataMember]
         public bool IsDateRequired { get; set; }
 
+        private string _cardLavaTemplate;
+
+        /// <summary>
+        /// Gets or sets the lava template used to render custom card details.
+        /// </summary>
+        [DataMember]
+        public string CardLavaTemplate
+        {
+            get
+            {
+                return _cardLavaTemplate.IsNullOrWhiteSpace() ? DefaultCardLavaTemplate : _cardLavaTemplate;
+            }
+
+            set
+            {
+                _cardLavaTemplate = value;
+            }
+        }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag
@@ -282,6 +301,25 @@ namespace Rock.Model
         }
 
         private ICollection<AchievementType> _achievementTypes;
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = base.SupportedActions;
+                    _supportedActions.Add( Authorization.MANAGE_STEPS, "The roles and/or users that have access to manage the steps." );
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion Navigation Properties
 

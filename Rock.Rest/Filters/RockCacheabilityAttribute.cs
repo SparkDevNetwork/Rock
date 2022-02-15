@@ -40,7 +40,8 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Filters
 {
     /// <summary>
-    /// 
+    /// Class RockCacheabilityAttribute.
+    /// Implements the <see cref="System.Web.Http.Filters.ActionFilterAttribute" />
     /// </summary>
 #if NET5_0_OR_GREATER
     public class RockCacheabilityAttribute : System.Attribute, IAsyncActionFilter
@@ -76,8 +77,8 @@ namespace Rock.Rest.Filters
             var actionMethod = actionExecutedContext.Request.Method.Method;
             var controller = actionExecutedContext.ActionContext.ActionDescriptor.ControllerDescriptor;
 
-            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
-            var restActionCache = RestActionCache.Get( apiId );
+            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out RockGuidAttribute rockGuid );
+            var restActionCache = RestActionCache.Get( apiId, rockGuid?.Guid ?? Guid.Empty );
             var cacheControl = restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() ? restActionCache.CacheControlHeader : "no-store";
 
             if ( restActionCache != null && restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() )

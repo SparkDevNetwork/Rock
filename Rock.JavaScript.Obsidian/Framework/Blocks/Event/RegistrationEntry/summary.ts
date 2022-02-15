@@ -20,7 +20,6 @@ import GatewayControl from "../../../Controls/gatewayControl";
 import RockForm from "../../../Controls/rockForm";
 import RockValidation from "../../../Controls/rockValidation";
 import Alert from "../../../Elements/alert";
-import CheckBox from "../../../Elements/checkBox";
 import DropDownList from "../../../Elements/dropDownList";
 import EmailBox from "../../../Elements/emailBox";
 import RockButton from "../../../Elements/rockButton";
@@ -36,7 +35,6 @@ export default defineComponent({
     name: "Event.RegistrationEntry.Summary",
     components: {
         RockButton,
-        CheckBox,
         EmailBox,
         RockForm,
         Alert,

@@ -91,7 +91,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates the last login, writes to the person's history log, and saves changes to the database
+        /// Updates the last log in, writes to the person's history log, and saves changes to the database
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         public static void UpdateLastLogin( string userName )

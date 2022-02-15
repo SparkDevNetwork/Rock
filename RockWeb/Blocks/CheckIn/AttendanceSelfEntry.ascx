@@ -17,7 +17,7 @@
                             <p>
                                 Already have an account on our website?
                                 <br />
-                                Login Instead.
+                                Log in instead.
                             </p>
                             <asp:LinkButton ID="btnLogin" CssClass="btn btn-default" runat="server" Text="Login" OnClick="btnLogin_Click" />
                         </asp:Panel>
@@ -72,7 +72,7 @@
                                         <div class="form-inline rollover-container margin-b-sm">
                                             <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Guid") %>' />
                                             <b><%# Eval("FullName") %></b> <span><%#Eval("RelationshipType") %></span>
-                                            <div class="rollover-item actions pull-right">
+                                            <div class="rollover-item control-actions pull-right">
                                                 <asp:LinkButton ID="lbDelete" runat="server" CommandName="delete" CommandArgument='<%# Eval("Guid") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                             </div>
                                         </div>

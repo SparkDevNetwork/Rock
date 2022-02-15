@@ -339,6 +339,11 @@ namespace Rock.SystemGuid
         public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
 
         /// <summary>
+        /// Campus Topic Type
+        /// </summary>
+        public const string TOPIC_TYPE = "41141100-8fc6-44bb-aa36-9778eeda7f62";
+
+        /// <summary>
         /// Guid for the types of map styles
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
@@ -367,6 +372,11 @@ namespace Rock.SystemGuid
         /// The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset.
         /// </summary>
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
+
+        /// <summary>
+        /// The section types defined type, which has values that determine which section type the workflow action form section is based.
+        /// </summary>
+        public const string SECTION_TYPE = "A72D940B-2A69-44B8-931C-7FE99824D84C";
 
         /// <summary>
         /// Used to manage the topic options for small groups.

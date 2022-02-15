@@ -26,11 +26,12 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplate" )]
@@ -321,10 +322,10 @@ namespace Rock.Model
         public decimal? DefaultPayment { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [login required].
+        /// Gets or sets a value indicating whether [log in required].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [login required]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [log in required]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool LoginRequired { get; set; }
@@ -522,7 +523,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>        
+        /// </value>
         [DataMember]
         public int? RegistrationWorkflowTypeId { get; set; }
 
@@ -531,7 +532,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>        
+        /// </value>
         [DataMember]
         public int? RegistrantWorkflowTypeId { get; set; }
 
@@ -728,6 +729,30 @@ namespace Rock.Model
 
         private ICollection<RegistrationTemplateForm> _registrationTemplateForms;
 #endif
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>
+                    {
+                        { Authorization.VIEW, "The roles and/or users that have access to view." },
+                        { "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." },
+                        { Authorization.EDIT, "The roles and/or users that have access to edit." },
+                        { Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." }
+                    };
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion Navigation Properties
 

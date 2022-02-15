@@ -139,7 +139,7 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registration attributes start.
         /// </value>
-        public IEnumerable<ClientEditableAttributeValueViewModel> RegistrationAttributesStart { get; set; }
+        public IEnumerable<PublicEditableAttributeValueViewModel> RegistrationAttributesStart { get; set; }
 
         /// <summary>
         /// Gets or sets the registration attributes end.
@@ -147,7 +147,7 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registration attributes end.
         /// </value>
-        public IEnumerable<ClientEditableAttributeValueViewModel> RegistrationAttributesEnd { get; set; }
+        public IEnumerable<PublicEditableAttributeValueViewModel> RegistrationAttributesEnd { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum registrants.
@@ -316,6 +316,30 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// The campuses available for the user to select.
         /// </value>
         public List<ListItemViewModel> Campuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marital statuses available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The marital statuses available for the user to select.
+        /// </value>
+        public List<ListItemViewModel> MaritalStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection statuses available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The connection statuses available for the user to select.
+        /// </value>
+        public List<ListItemViewModel> ConnectionStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the grades available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The grades available for the user to select.
+        /// </value>
+        public List<ListItemViewModel> Grades { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the save account option should be available.
@@ -521,7 +545,7 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// <value>
         /// The attribute.
         /// </value>
-        public ClientEditableAttributeValueViewModel Attribute { get; set; }
+        public PublicEditableAttributeValueViewModel Attribute { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the visibility rule.

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Entity filtered by a selected Entity Type
     /// Stored as EntityType.Guid|EntityId
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class EntityFieldType : FieldType, IEntityFieldType
     {
 

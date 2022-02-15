@@ -66,6 +66,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<RemoteAuthenticationSession>( Context ).Queryable().Any( a => a.SiteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, RemoteAuthenticationSession.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

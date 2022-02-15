@@ -88,6 +88,16 @@ namespace Rock.Web.Cache
         public bool IsSecured { get; private set; }
 
         /// <summary>
+        /// Gets a flag indicating whether this entity type is a commonly used entity.
+        /// If so, it will grouped at the top by the entity type picker control
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is common; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsCommon { get; private set; }
+
+        /// <summary>
         /// Gets or sets the single value field type identifier.
         /// </summary>
         /// <value>
@@ -420,6 +430,7 @@ namespace Rock.Web.Cache
             FriendlyName = entityType.FriendlyName;
             IsEntity = entityType.IsEntity;
             IsSecured = entityType.IsSecured;
+            IsCommon = entityType.IsCommon;
             SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
             MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
             IsIndexingEnabled = entityType.IsIndexingEnabled;

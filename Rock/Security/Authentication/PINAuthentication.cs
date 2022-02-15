@@ -94,7 +94,7 @@ namespace Rock.Security.Authentication
 
 #if !NET5_0_OR_GREATER
         /// <summary>
-        /// Generates the login URL.
+        /// Generates the log in URL.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>

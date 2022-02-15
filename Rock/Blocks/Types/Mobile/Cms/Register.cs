@@ -368,8 +368,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// Validates the username and password and returns a response that
         /// can by used by the mobile shell.
         /// </summary>
-        /// <param name="username">The username to login with.</param>
-        /// <param name="password">The password to login with.</param>
+        /// <param name="username">The username to log in with.</param>
+        /// <param name="password">The password to log in with.</param>
         /// <param name="rememberMe">If <c>true</c> then the cookie will persist across sessions.</param>
         /// <param name="personalDeviceGuid">The personal device unique identifier making the request.</param>
         /// <returns>The result of the block action.</returns>
@@ -400,7 +400,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         /// <summary>
         /// Finds the best matching person for the given account data. This will
-        /// handle 
+        /// handle
         /// </summary>
         /// <param name="account">The account.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -600,7 +600,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         }
 
         /// <summary>
-        /// Gets the response to send for a valid login on mobile.
+        /// Gets the response to send for a valid log in on mobile.
         /// </summary>
         /// <param name="userLogin">The user login.</param>
         /// <param name="rememberMe">if set to <c>true</c> then the login should persist beyond this session.</param>

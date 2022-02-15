@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) <see cref="MediaElement"/>.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class MediaElementFieldType : FieldType, IEntityFieldType
     {
         #region Configuration

@@ -79,3 +79,9 @@ export const EditComponent = defineComponent({
 <CheckBoxList v-model="internalValue" :options="options()" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "DaysOfWeekField.Configuration",
+
+    template: ``
+});

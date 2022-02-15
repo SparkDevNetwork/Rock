@@ -60,3 +60,10 @@ export const EditComponent = defineComponent({
 <NumberBox v-model="internalValue" rules="integer" :decimal-count="0" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "IntegerField.Configuration",
+
+    template: ``
+});
+

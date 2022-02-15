@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Field.Types
@@ -21,6 +22,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field type to select either Email or SMS as the preferred Rock.Model.CommunicationType
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class CommunicationPreferenceFieldType : EnumFieldType<CommunicationType>
     {
         /// <summary>

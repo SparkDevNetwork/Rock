@@ -126,6 +126,12 @@ namespace Rock.SystemGuid
         public const string BATCHES = "EF65EFF2-99AC-4081-8E09-32A04518683A";
 
         /// <summary>
+        /// Gets the Benevolence Detail page guid
+        /// ParentPage: Benevolence
+        /// </summary>
+        public const string BENEVOLENCE_DETAIL = "6DC7BAED-CA01-4703-B679-EC81143CDEDD";
+
+        /// <summary>
         /// Gets the Benevolence page guid
         /// ParentPage: Functions
         /// </summary>

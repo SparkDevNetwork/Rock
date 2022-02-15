@@ -25,7 +25,12 @@ namespace DotLiquid
 			if (Context != null)
 			{
 				context = Context;
-				registers = null;
+                if ( ValueTypeTransformers != null )
+                {
+                    context.ValueTypeTransformers = ValueTypeTransformers;
+                }
+
+                registers = null;
 				filters = null;
 				return;
 			}

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 

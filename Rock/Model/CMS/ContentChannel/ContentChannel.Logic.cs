@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 #if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,7 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
         /// <summary>
         /// Gets the parent authority.
         /// </summary>

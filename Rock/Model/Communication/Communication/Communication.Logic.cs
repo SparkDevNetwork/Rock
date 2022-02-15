@@ -26,7 +26,6 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Rock.Communication;
 using Rock.Data;
@@ -37,25 +36,6 @@ namespace Rock.Model
     public partial class Communication
     {
         #region Properties
-
-        /// <summary>
-        /// Gets the send date key.
-        /// </summary>
-        /// <value>
-        /// The send date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? SendDateKey
-        {
-            get => ( SendDateTime == null || SendDateTime.Value == default ) ?
-                        ( int? ) null :
-                        SendDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-
-            private set
-            {
-            }
-        }
 
         /// <summary>
         /// Gets or sets a list of email binary file ids
@@ -567,7 +547,7 @@ namespace Rock.Model
         {
             CommunicationRecipient recipient = null;
 
-            var delayTime = RockDateTime.Now.AddMinutes( -10 );
+            var delayTime = RockDateTime.Now.AddMinutes( -240 );
 
             lock ( _obj )
             {
@@ -583,6 +563,7 @@ namespace Rock.Model
 
                 if ( recipient != null )
                 {
+                    recipient.ModifiedDateTime = RockDateTime.Now;
                     recipient.Status = CommunicationRecipientStatus.Sending;
                     rockContext.SaveChanges();
                 }

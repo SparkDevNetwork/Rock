@@ -43,6 +43,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// AchievementTypes REST API
     /// </summary>
+    [RockGuid( "b6cc32b1-f439-4512-ad3f-41def38b08d1" )]
     public partial class AchievementTypesController
     {
         /// <summary>
@@ -56,8 +57,9 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [RockObsolete( "1.12" )]
         [Obsolete( "Use api/AchievementTypes/Progress instead" )]
-        [Route( "api/StreakTypeAchievementTypes/Progress" )]
+        [System.Web.Http.Route( "api/StreakTypeAchievementTypes/Progress" )]
         [ProducesResponseType( 200, Type = typeof( List<ProgressStatement> ) )]
+        [RockGuid( "828fa4ee-74b0-4d7f-ab32-92b48d28741a" )]
         public virtual IActionResult GetProgressForPerson( [FromUri] int personId = default, [FromUri] bool includeOnlyEligible = default )
         {
             var rockContext = Service.Context as RockContext;
@@ -91,8 +93,9 @@ namespace Rock.Rest.Controllers
         /// </exception>
         [Authenticate, Secured]
         [HttpGet]
-        [Route( "api/AchievementTypes/Progress" )]
+        [System.Web.Http.Route( "api/AchievementTypes/Progress" )]
         [ProducesResponseType( 200, Type = typeof( List<ProgressStatement> ) )]
+        [RockGuid( "c2e2eb7b-cfd9-450f-863b-bbbcfec9055d" )]
         public virtual IActionResult GetProgressForAchiever( [FromUri]int achieverEntityTypeId, [FromUri]int achieverEntityId = default, [FromUri]bool includeOnlyEligible = default )
         {
             var rockContext = Service.Context as RockContext;
@@ -146,8 +149,9 @@ namespace Rock.Rest.Controllers
         /// </exception>
         [Authenticate, Secured]
         [HttpGet]
-        [Route( "api/AchievementTypes/{achievementTypeId}/BadgeData" )]
+        [System.Web.Http.Route( "api/AchievementTypes/{achievementTypeId}/BadgeData" )]
         [ProducesResponseType( 200, Type = typeof( BadgeData ) )]
+        [RockGuid( "762278b4-807e-4dac-b4c5-5309fc2c2234" )]
         public virtual IActionResult GetBadgeData( int achievementTypeId, [FromUri] int? achieverEntityId = null )
         {
             var rockContext = Service.Context as RockContext;

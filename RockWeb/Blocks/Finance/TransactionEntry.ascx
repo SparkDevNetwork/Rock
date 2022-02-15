@@ -88,7 +88,7 @@
 
                                         <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                             <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
-                                            <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
+                                            <Rock:FirstNameTextBox ID="txtFirstName" runat="server" Label="First Name" />
                                             <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
                                         </asp:PlaceHolder>
                                         <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
@@ -141,7 +141,7 @@
                                         <asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
                                 </div>
                                 <div class="panel-body">
-                           
+
                             <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" />
 
 
@@ -344,7 +344,7 @@
                                 <div class="control-group">
                                     <div class="controls">
                                         <div class="alert alert-info">
-                                            <b>Note:</b> For security purposes you will need to login to use your saved account information.  To create
+                                            <b>Note:</b> For security purposes you will need to log in to use your saved account information.  To create
 	    			                    a login account please provide a user name and password below. You will be sent an email with the account
 	    			                    information above as a reminder.
                                         </div>

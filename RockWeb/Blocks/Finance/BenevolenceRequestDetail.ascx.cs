@@ -1636,26 +1636,10 @@ namespace RockWeb.Blocks.Finance
 
                         if ( workflowService.Process( workflow, benevolenceRequest, out workflowErrors ) )
                         {
-                            if ( workflow.Id != 0 )
-                            {
-                                if ( workflow.HasActiveEntryForm( CurrentPerson ) )
-                                {
-                                    var message = $"A '{workflowType.Name}' workflow has been started.<br><br>The new workflow has an active form that is ready for input.";
-                                    RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
-                                }
-                                else
-                                {
-                                    mdViewWorkflowLaunched.Show(
-                                        string.Format( "A '{0}' workflow has been started.", workflowType.Name ),
-                                        ModalAlertType.Information );
-                                }
-                            }
-                            else
-                            {
-                                mdViewWorkflowLaunched.Show(
-                                    string.Format( "A '{0}' workflow was processed.", workflowType.Name ),
-                                    ModalAlertType.Information );
-                            }
+
+                            var message = $"A '{workflowType.Name}' workflow has been started.";
+                            RegisterWorkflowDetailPageScript( workflowType.Id, workflow.Guid, message );
+
                         }
                         else
                         {

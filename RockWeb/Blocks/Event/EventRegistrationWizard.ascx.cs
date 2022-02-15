@@ -668,7 +668,7 @@ namespace RockWeb.Blocks.Event
                     eventItem.Summary = tbEventSummary.Text;
                     eventItem.Description = htmlEventDescription.Text;
                     eventItem.IsActive = GetAttributeValue( AttributeKey.SetRegistrationInstanceActive ).AsBoolean();
-                    if ( eventItem.PhotoId != null )
+                    if ( imgupPhoto.BinaryFileId != null )
                     {
                         eventItem.PhotoId = imgupPhoto.BinaryFileId;
                     }

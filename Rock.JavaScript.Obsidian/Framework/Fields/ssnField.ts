@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { Component, defineAsyncComponent } from "vue";
 import { FieldTypeBase } from "./fieldType";
 
@@ -24,24 +23,31 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./ssnFieldComponents")).EditComponent;
 });
 
-export class SSNFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        if (value.value === null || value.value === undefined) {
-            value.textValue = "";
-            return;
-        }
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./ssnFieldComponents")).ConfigurationComponent;
+});
 
-        const strippedValue = value.value.replace(/[^0-9]/g, "");
+export class SSNFieldType extends FieldTypeBase {
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        const strippedValue = value.replace(/[^0-9]/g, "");
 
         if (strippedValue.length !== 9) {
-            value.textValue = "";
-            return;
+            return "";
         }
 
-        value.textValue = `xxx-xx-${value.value.substr(5, 4)}`;
+        return `xxx-xx-${value.substr(5, 4)}`;
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
+    }
+
+    public override isFilterable(): boolean {
+        return false;
     }
 }

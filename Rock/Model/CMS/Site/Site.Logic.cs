@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-#if NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 #endif
 using System.Linq;
@@ -57,36 +55,61 @@ namespace Rock.Model
 
         #endregion ICacheable
 
-#if NET5_0_OR_GREATER
         /// <summary>
-        /// Gets the file URL.
+        /// Gets or sets the configuration mobile file path.
         /// </summary>
-        /// <param name="fileId">The configuration mobile phone file identifier.</param>
-        /// <returns>full path of resource from Binary file path</returns>
-        private static string GetFileUrl( int? fileId )
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationMobilePhoneFileUrl
         {
-            string virtualPath = string.Empty;
-            if ( fileId.HasValue )
+            get
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) fileId );
-                    if ( binaryFile != null )
-                    {
-                        if ( binaryFile.Path.Contains( "~" ) )
-                        {
-                            virtualPath = $"/{binaryFile.Path.Replace( "~", "" )}";
-                        }
-                        else
-                        {
-                            virtualPath = binaryFile.Path;
-                        }
-                    }
-                }
+                return Site.GetFileUrl( this.ConfigurationMobilePhoneBinaryFileId );
             }
 
-            return virtualPath;
+            private set
+            {
+            }
         }
-#endif
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationTabletFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ConfigurationMobileTabletBinaryFileId );
+            }
+
+            private set
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gets the thumbnail file URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file URL.
+        /// </value>
+        [NotMapped]
+        public string ThumbnailFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ThumbnailBinaryFileId );
+            }
+
+            private set
+            {
+            }
+        }
     }
 }
