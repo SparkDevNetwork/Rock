@@ -1234,9 +1234,6 @@ namespace Rock.Model
             var occurrenceFirstDayOfWeek = schedulerResourceParameters.AttendanceOccurrenceSundayDate.StartOfWeek( RockDateTime.FirstDayOfWeek );
             var occurrenceLastDayOfWeek = schedulerResourceParameters.AttendanceOccurrenceSundayDate.EndOfWeek( RockDateTime.FirstDayOfWeek );
 
-            //var occurrenceSundayDate = schedulerResourceParameters.AttendanceOccurrenceSundayDate;
-            //var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
-
             // don't include schedule dates in the past
             if ( occurrenceFirstDayOfWeek <= RockDateTime.Today )
             {
@@ -1337,10 +1334,28 @@ namespace Rock.Model
                         } )
                 } );
 
-                if ( schedulerResourceParameters.GroupMemberFilterType == SchedulerResourceGroupMemberFilterType.ShowMatchingPreference )
+                // if using thes filters, limit to people that have ScheduleTemplates that would include the scheduled date
+                if ( schedulerResourceParameters.GroupMemberFilterType == SchedulerResourceGroupMemberFilterType.ShowMatchingPreference
+                    || schedulerResourceParameters.ResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference
+                    || schedulerResourceParameters.ResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingAssignment )
                 {
-                    // if using the MatchingPreference filter, limit to people that have ScheduleTemplates that would include the scheduled date
                     resourceListQuery = resourceListQuery.Where( a => a.ScheduleTemplateId.HasValue && a.ScheduleStartDate.HasValue );
+                }
+
+                // For the GroupMatchingAssignment option filter by the provided location and schedule criteria.
+                if ( schedulerResourceParameters.ResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingAssignment )
+                {
+                    var locationParam = schedulerResourceParameters.AttendanceOccurrenceLocationIds?.ToList() ?? new List<int>();
+                    if ( locationParam.Any() )
+                    {
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.All( ma => locationParam.Contains( ma.LocationId.Value ) ) || a.MemberAssignments.All( ma => ma.LocationId == null ) );
+                    }
+
+                    var scheduleParam = schedulerResourceParameters.AttendanceOccurrenceScheduleIds?.ToList() ?? new List<int>();
+                    if ( scheduleParam.Any() )
+                    {
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.All( ma => scheduleParam.Contains( ma.Schedule.Id ) ) || a.MemberAssignments.All( ma => ma.Schedule == null ) );
+                    }
                 }
 
                 var resourceList = resourceListQuery.ToList();
@@ -3235,14 +3250,20 @@ namespace Rock.Model
         /// <summary>
         /// Show all members of the selected group
         /// </summary>
-        [Description( "Group Members" )]
+        [Description( "Group Members - All" )]
         GroupMembers,
 
         /// <summary>
-        /// Show all members of the selected group that have a scheduling preference set
+        /// Show all members of the selected group that have a scheduling preference set for the selected week
         /// </summary>
-        [Description( "Group Members (Matching Preference)" )]
+        [Description( "Group Members - Matching Week" )]
         GroupMatchingPreference,
+
+        /// <summary>
+        /// Group members whose week to work is the selected week AND whose assignment (location/schedule) matches the filters OR they have no assignment.
+        /// </summary>
+        [Description( "Group Members - Matching Assignment" )]
+        GroupMatchingAssignment,
 
         /// <summary>
         /// All group members from another group
@@ -3312,6 +3333,12 @@ namespace Rock.Model
         public int[] AttendanceOccurrenceScheduleIds { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance occurrence location ids.
+        /// </summary>
+        /// <value>The attendance occurrence location ids.</value>
+        public int[] AttendanceOccurrenceLocationIds { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance occurrence sunday date.
         /// </summary>
         /// <value>
@@ -3342,6 +3369,12 @@ namespace Rock.Model
         /// The type of the group member filter.
         /// </value>
         public SchedulerResourceGroupMemberFilterType? GroupMemberFilterType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the resource list source.
+        /// </summary>
+        /// <value>The type of the resource list source.</value>
+        public GroupSchedulerResourceListSourceType? ResourceListSourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the resource data view identifier.
