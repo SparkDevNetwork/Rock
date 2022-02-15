@@ -537,6 +537,12 @@ namespace Rock.Data
         public DbSet<CampusSchedule> CampusSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus topics.
+        /// </summary>
+        /// <value>The campus topics.</value>
+        public DbSet<CampusTopic> CampusTopics { get; set; }
+
+        /// <summary>
         /// Gets or sets the categories.
         /// </summary>
         /// <value>
