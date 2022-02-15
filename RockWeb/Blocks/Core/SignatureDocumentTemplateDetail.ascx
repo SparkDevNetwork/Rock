@@ -52,7 +52,7 @@
                         <p>Below are some tips to assist you in your template creation. The merge fields that you use to customize your templates will vary depending on where they are being used.</p>
 
                         <label>Merge Fields for Workflow Electronic Signatures</label>
-                        <p>Below are some common merge fields for templates used for the electronic signature workflow action.</p>
+                        <p>Below are some common merge fields for templates used for the electronic signature workflow action. Note that the attribute keys will need to map to what you have configured in your workflow template.</p>
                         <div class='row'>
                             <div class='col-md-6'>
                                 {{ Workflow | Attribute:'SignedByPerson' }}<br>
@@ -67,7 +67,7 @@
                         <br />
 
                         <label>Merge Fields for Event Registration</label>
-                        <p>Below are some common merge fields for templates used for event registration.</p>
+                        <p>Below are some common merge fields for templates used for event registration. Again, the attribute value keys will be different in your registration.</p>
                         <div class='row'>
                             <div class='col-md-6'>
                                 <p><b>Registrant Fields</b></p>
