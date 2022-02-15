@@ -50,10 +50,28 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string FormBuilderSettingsJson { get; set; }
+
+        /// <summary />
+        public int? FormBuilderTemplateId { get; set; }
+
+        /// <summary />
+        public DateTime? FormEndDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? FormStartDateTime { get; set; }
+
+        /// <summary />
         public string IconCssClass { get; set; }
 
         /// <summary />
         public bool? IsActive { get; set; } = true;
+
+        /// <summary />
+        public bool IsFormBuilder { get; set; }
+
+        /// <summary />
+        public bool IsLoginRequired { get; set; }
 
         /// <summary />
         public bool IsPersisted { get; set; }
@@ -89,6 +107,9 @@ namespace Rock.Client
 
         /// <summary />
         public string SummaryViewText { get; set; }
+
+        /// <summary />
+        public DateTime? WorkflowExpireDateTime { get; set; }
 
         /// <summary />
         public string WorkflowIdPrefix { get; set; }
@@ -134,8 +155,14 @@ namespace Rock.Client
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.FormBuilderSettingsJson = source.FormBuilderSettingsJson;
+            this.FormBuilderTemplateId = source.FormBuilderTemplateId;
+            this.FormEndDateTime = source.FormEndDateTime;
+            this.FormStartDateTime = source.FormStartDateTime;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
+            this.IsFormBuilder = source.IsFormBuilder;
+            this.IsLoginRequired = source.IsLoginRequired;
             this.IsPersisted = source.IsPersisted;
             this.IsSystem = source.IsSystem;
             this.LoggingLevel = source.LoggingLevel;
@@ -147,6 +174,7 @@ namespace Rock.Client
             this.Order = source.Order;
             this.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
             this.SummaryViewText = source.SummaryViewText;
+            this.WorkflowExpireDateTime = source.WorkflowExpireDateTime;
             this.WorkflowIdPrefix = source.WorkflowIdPrefix;
             this.WorkTerm = source.WorkTerm;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -169,6 +197,9 @@ namespace Rock.Client
 
         /// <summary />
         public Category Category { get; set; }
+
+        /// <summary />
+        public WorkflowFormBuilderTemplate FormBuilderTemplate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

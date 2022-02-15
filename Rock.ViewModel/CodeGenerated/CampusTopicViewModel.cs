@@ -27,65 +27,41 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// DefinedValue View Model
+    /// CampusTopic View Model
     /// </summary>
-    public partial class DefinedValueViewModel : ViewModelBase
+    public partial class CampusTopicViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the CampusId.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The CampusId.
         /// </value>
-        public int? CategoryId { get; set; }
+        public int CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedTypeId.
+        /// Gets or sets the Email.
         /// </summary>
         /// <value>
-        /// The DefinedTypeId.
+        /// The Email.
         /// </value>
-        public int DefinedTypeId { get; set; }
+        public string Email { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the IsPublic.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The IsPublic.
         /// </value>
-        public string Description { get; set; }
+        public bool IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets the TopicTypeValueId.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// The TopicTypeValueId.
         /// </value>
-        public bool IsActive { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsSystem.
-        /// </summary>
-        /// <value>
-        /// The IsSystem.
-        /// </value>
-        public bool IsSystem { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Order.
-        /// </summary>
-        /// <value>
-        /// The Order.
-        /// </value>
-        public int Order { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Value.
-        /// </summary>
-        /// <value>
-        /// The Value.
-        /// </value>
-        public string Value { get; set; }
+        public int TopicTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

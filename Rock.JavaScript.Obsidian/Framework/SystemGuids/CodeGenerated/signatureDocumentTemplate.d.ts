@@ -21,23 +21,8 @@
 // </copyright>
 //
 
-import { IEntity } from "../entity";
+export const enum SignatureDocumentTemplate {
+    /** Gets the template guid for the example "Photo Release" Signature Document Template */
+    PhotoReleaseSignatureDocumentTemplate = "E982C45E-CDD3-481E-8664-85AD36500F1B",
+}
 
-export type WorkflowActionFormAttribute = IEntity & {
-    actionFormSectionId?: number | null;
-    attributeId?: number;
-    columnSize?: number | null;
-    fieldVisibilityRulesJSON?: string | null;
-    hideLabel?: boolean;
-    isReadOnly?: boolean;
-    isRequired?: boolean;
-    isVisible?: boolean;
-    order?: number;
-    postHtml?: string | null;
-    preHtml?: string | null;
-    workflowActionFormId?: number;
-    createdDateTime?: string | null;
-    modifiedDateTime?: string | null;
-    createdByPersonAliasId?: number | null;
-    modifiedByPersonAliasId?: number | null;
-};

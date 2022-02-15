@@ -27,21 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PersonalDevice that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for WorkflowActionFormSection that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonalDeviceEntity
+    public partial class WorkflowActionFormSectionEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string DeviceRegistrationId { get; set; }
-
-        /// <summary />
-        public string DeviceUniqueIdentifier { get; set; }
-
-        /// <summary />
-        public string DeviceVersion { get; set; }
+        public string Description { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -49,46 +43,28 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public bool IsActive { get; set; } = true;
-
-        /// <summary />
-        public DateTime? LastSeenDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? LastVerifiedDateTime { get; set; }
-
-        /// <summary />
-        public string MACAddress { get; set; }
-
-        /// <summary />
-        public string Manufacturer { get; set; }
-
-        /// <summary />
-        public string Model { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
-        public bool NotificationsEnabled { get; set; }
+        public int? SectionTypeValueId { get; set; }
 
         /// <summary />
-        public int? PersonalDeviceTypeValueId { get; set; }
+        public string SectionVisibilityRulesJSON { get; set; }
 
         /// <summary />
-        public int? PersonAliasId { get; set; }
+        public bool ShowHeadingSeparator { get; set; }
 
         /// <summary />
-        public int? PlatformValueId { get; set; }
+        public string Title { get; set; }
 
         /// <summary />
-        public int? SiteId { get; set; }
+        public int WorkflowActionFormId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -117,30 +93,22 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PersonalDevice object
+        /// Copies the base properties from a source WorkflowActionFormSection object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PersonalDevice source )
+        public void CopyPropertiesFrom( WorkflowActionFormSection source )
         {
             this.Id = source.Id;
-            this.DeviceRegistrationId = source.DeviceRegistrationId;
-            this.DeviceUniqueIdentifier = source.DeviceUniqueIdentifier;
-            this.DeviceVersion = source.DeviceVersion;
+            this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsActive = source.IsActive;
-            this.LastSeenDateTime = source.LastSeenDateTime;
-            this.LastVerifiedDateTime = source.LastVerifiedDateTime;
-            this.MACAddress = source.MACAddress;
-            this.Manufacturer = source.Manufacturer;
-            this.Model = source.Model;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.NotificationsEnabled = source.NotificationsEnabled;
-            this.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
-            this.PersonAliasId = source.PersonAliasId;
-            this.PlatformValueId = source.PlatformValueId;
-            this.SiteId = source.SiteId;
+            this.Order = source.Order;
+            this.SectionTypeValueId = source.SectionTypeValueId;
+            this.SectionVisibilityRulesJSON = source.SectionVisibilityRulesJSON;
+            this.ShowHeadingSeparator = source.ShowHeadingSeparator;
+            this.Title = source.Title;
+            this.WorkflowActionFormId = source.WorkflowActionFormId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -152,18 +120,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PersonalDevice that includes all the fields that are available for GETs. Use this for GETs (use PersonalDeviceEntity for POST/PUTs)
+    /// Client model for WorkflowActionFormSection that includes all the fields that are available for GETs. Use this for GETs (use WorkflowActionFormSectionEntity for POST/PUTs)
     /// </summary>
-    public partial class PersonalDevice : PersonalDeviceEntity
+    public partial class WorkflowActionFormSection : WorkflowActionFormSectionEntity
     {
         /// <summary />
-        public DefinedValue PersonalDeviceType { get; set; }
-
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
-        /// <summary />
-        public Site Site { get; set; }
+        public DefinedValue SectionType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

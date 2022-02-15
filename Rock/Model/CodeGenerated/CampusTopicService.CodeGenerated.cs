@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// PersonalDevice Service class
+    /// CampusTopic Service class
     /// </summary>
-    public partial class PersonalDeviceService : Service<PersonalDevice>
+    public partial class CampusTopicService : Service<CampusTopic>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonalDeviceService"/> class
+        /// Initializes a new instance of the <see cref="CampusTopicService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public PersonalDeviceService(RockContext context) : base(context)
+        public CampusTopicService(RockContext context) : base(context)
         {
         }
 
@@ -51,30 +51,18 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( PersonalDevice item, out string errorMessage )
+        public bool CanDelete( CampusTopic item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.PersonalDeviceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalDevice.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<Interaction>( Context ).Queryable().Any( a => a.PersonalDeviceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalDevice.FriendlyTypeName, Interaction.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
 
     /// <summary>
-    /// PersonalDevice View Model Helper
+    /// CampusTopic View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( PersonalDevice ) )]
-    public partial class PersonalDeviceViewModelHelper : ViewModelHelper<PersonalDevice, Rock.ViewModel.PersonalDeviceViewModel>
+    [DefaultViewModelHelper( typeof( CampusTopic ) )]
+    public partial class CampusTopicViewModelHelper : ViewModelHelper<CampusTopic, Rock.ViewModel.CampusTopicViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -83,32 +71,21 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.PersonalDeviceViewModel CreateViewModel( PersonalDevice model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.CampusTopicViewModel CreateViewModel( CampusTopic model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.PersonalDeviceViewModel
+            var viewModel = new Rock.ViewModel.CampusTopicViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
-                DeviceRegistrationId = model.DeviceRegistrationId,
-                DeviceUniqueIdentifier = model.DeviceUniqueIdentifier,
-                DeviceVersion = model.DeviceVersion,
-                IsActive = model.IsActive,
-                LastSeenDateTime = model.LastSeenDateTime,
-                LastVerifiedDateTime = model.LastVerifiedDateTime,
-                MACAddress = model.MACAddress,
-                Manufacturer = model.Manufacturer,
-                Model = model.Model,
-                Name = model.Name,
-                NotificationsEnabled = model.NotificationsEnabled,
-                PersonalDeviceTypeValueId = model.PersonalDeviceTypeValueId,
-                PersonAliasId = model.PersonAliasId,
-                PlatformValueId = model.PlatformValueId,
-                SiteId = model.SiteId,
+                CampusId = model.CampusId,
+                Email = model.Email,
+                IsPublic = model.IsPublic,
+                TopicTypeValueId = model.TopicTypeValueId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -125,36 +102,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class PersonalDeviceExtensionMethods
+    public static partial class CampusTopicExtensionMethods
     {
         /// <summary>
-        /// Clones this PersonalDevice object to a new PersonalDevice object
+        /// Clones this CampusTopic object to a new CampusTopic object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static PersonalDevice Clone( this PersonalDevice source, bool deepCopy )
+        public static CampusTopic Clone( this CampusTopic source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as PersonalDevice;
+                return source.Clone() as CampusTopic;
             }
             else
             {
-                var target = new PersonalDevice();
+                var target = new CampusTopic();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this PersonalDevice object to a new PersonalDevice object with default values for the properties in the Entity and Model base classes.
+        /// Clones this CampusTopic object to a new CampusTopic object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static PersonalDevice CloneWithoutIdentity( this PersonalDevice source )
+        public static CampusTopic CloneWithoutIdentity( this CampusTopic source )
         {
-            var target = new PersonalDevice();
+            var target = new CampusTopic();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -171,30 +148,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another PersonalDevice object to this PersonalDevice object
+        /// Copies the properties from another CampusTopic object to this CampusTopic object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this PersonalDevice target, PersonalDevice source )
+        public static void CopyPropertiesFrom( this CampusTopic target, CampusTopic source )
         {
             target.Id = source.Id;
-            target.DeviceRegistrationId = source.DeviceRegistrationId;
-            target.DeviceUniqueIdentifier = source.DeviceUniqueIdentifier;
-            target.DeviceVersion = source.DeviceVersion;
+            target.CampusId = source.CampusId;
+            target.Email = source.Email;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IsActive = source.IsActive;
-            target.LastSeenDateTime = source.LastSeenDateTime;
-            target.LastVerifiedDateTime = source.LastVerifiedDateTime;
-            target.MACAddress = source.MACAddress;
-            target.Manufacturer = source.Manufacturer;
-            target.Model = source.Model;
-            target.Name = source.Name;
-            target.NotificationsEnabled = source.NotificationsEnabled;
-            target.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
-            target.PersonAliasId = source.PersonAliasId;
-            target.PlatformValueId = source.PlatformValueId;
-            target.SiteId = source.SiteId;
+            target.IsPublic = source.IsPublic;
+            target.TopicTypeValueId = source.TopicTypeValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -210,9 +176,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.PersonalDeviceViewModel ToViewModel( this PersonalDevice model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.CampusTopicViewModel ToViewModel( this CampusTopic model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new PersonalDeviceViewModelHelper();
+            var helper = new CampusTopicViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }
