@@ -1884,8 +1884,8 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildWorkflowActionDigitalSignature( Rock.Workflow.Action.ElectronicSignature electronicSignatureWorkflowAction, WorkflowAction workflowAction, bool setValues )
         {
+            ShowNotes( false );
             pnlWorkflowUserForm.Visible = false;
-            divWorkflowActionUserFormNotes.Visible = false;
             pnlWorkflowActionElectronicSignature.Visible = true;
 
             var rockContext = new RockContext();
