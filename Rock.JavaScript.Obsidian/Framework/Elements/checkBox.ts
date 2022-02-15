@@ -78,7 +78,7 @@ export default defineComponent({
         <div class="checkbox">
             <label class="rock-checkbox-icon">
                 <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" />
-                <span v-if="text" class="label-text">&nbsp;{{ text }}</span>
+                <span class="label-text">&nbsp;{{ text }}</span>
             </label>
         </div>
     </div>

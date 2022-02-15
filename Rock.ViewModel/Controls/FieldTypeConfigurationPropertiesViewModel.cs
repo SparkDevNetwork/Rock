@@ -32,7 +32,7 @@ namespace Rock.ViewModel.Controls
         /// describing a field type edit operation.
         /// </summary>
         /// <remarks>
-        /// See: Rock.Field.IFieldType.GetClientEditConfigurationProperties()
+        /// See: Rock.Field.IFieldType.GetPublicEditConfigurationProperties()
         /// </remarks>
         /// <value>The configuration properties for a field edit operation.</value>
         public Dictionary<string, string> ConfigurationProperties { get; set; }

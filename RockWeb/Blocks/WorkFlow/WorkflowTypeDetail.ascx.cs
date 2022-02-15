@@ -738,6 +738,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
             rockContext.SaveChanges();
 
+            var formBuilderEntityTypeId = EntityTypeCache.GetId<Rock.Workflow.Action.FormBuilder>();
+
             // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
             int workflowActivityTypeOrder = 0;
             foreach ( var editorWorkflowActivityType in ActivityTypesState )
@@ -787,14 +789,16 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
                     workflowActionType.Order = workflowActionTypeOrder++;
 
-                    if ( workflowActionType.WorkflowForm != null && editorWorkflowActionType.WorkflowForm == null )
+                    var isFormBuilderAction = workflowActionType.EntityTypeId == formBuilderEntityTypeId;
+
+                    if ( !isFormBuilderAction && workflowActionType.WorkflowForm != null && editorWorkflowActionType.WorkflowForm == null )
                     {
                         // Form removed
                         workflowFormService.Delete( workflowActionType.WorkflowForm );
                         workflowActionType.WorkflowForm = null;
                     }
 
-                    if ( editorWorkflowActionType.WorkflowForm != null )
+                    if ( !isFormBuilderAction && editorWorkflowActionType.WorkflowForm != null )
                     {
                         if ( workflowActionType.WorkflowForm == null )
                         {

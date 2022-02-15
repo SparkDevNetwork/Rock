@@ -51,10 +51,20 @@ namespace Rock.Blocks
             get
             {
                 var type = GetType();
-                var lastNamespace = type.Namespace.Split( '.' ).Last();
+
+                // Get all the namespaces after the first one with the name "Blocks".
+                // Standard namespacing for blocks is to be one of:
+                // Rock.Blocks.x.y.z
+                // com.rocksolidchurchdemo.Blocks.x.y.z
+                var namespaces = type.Namespace.Split( '.' )
+                    .SkipWhile( n => n != "Blocks" )
+                    .Skip( 1 )
+                    .ToList();
+
+                // Filename convention is camelCase.
                 var fileName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
 
-                return $"/Obsidian/Blocks/{lastNamespace}/{fileName}";
+                return $"/Obsidian/Blocks/{namespaces.AsDelimited("/")}/{fileName}";
             }
         }
 

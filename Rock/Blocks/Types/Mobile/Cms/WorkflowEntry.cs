@@ -273,7 +273,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 foreach ( var field in fields )
                 {
-                    workflow.SetClientAttributeValue( field.Key, field.Value, RequestContext.CurrentPerson, false );
+                    workflow.SetPublicAttributeValue( field.Key, field.Value, RequestContext.CurrentPerson, false );
                 }
             }
         }
@@ -360,7 +360,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                         if ( item != null )
                         {
-                            item.SetClientAttributeValue( attribute.Key, formField.Value, RequestContext.CurrentPerson, false );
+                            item.SetPublicAttributeValue( attribute.Key, formField.Value, RequestContext.CurrentPerson, false );
                         }
                     }
                 }

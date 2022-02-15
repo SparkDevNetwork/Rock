@@ -3260,12 +3260,6 @@ namespace Rock.Model
         GroupMatchingPreference,
 
         /// <summary>
-        /// Group members whose week to work is the selected week AND whose assignment (location/schedule) matches the filters OR they have no assignment.
-        /// </summary>
-        [Description( "Group Members - Matching Assignment" )]
-        GroupMatchingAssignment,
-
-        /// <summary>
         /// All group members from another group
         /// </summary>
         [Description( "Alternate Group" )]
@@ -3281,7 +3275,13 @@ namespace Rock.Model
         /// People that exist in a selected dataview
         /// </summary>
         [Description( "Data View" )]
-        DataView
+        DataView,
+    
+        /// <summary>
+        /// Group members whose week to work is the selected week AND whose assignment (location/schedule) matches the filters OR they have no assignment.
+        /// </summary>
+        [Description( "Group Members - Matching Assignment" )]
+        GroupMatchingAssignment,
     }
 
     /// <summary>

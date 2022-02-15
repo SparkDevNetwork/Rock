@@ -320,7 +320,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var viewModel = new RequestViewModel
             {
                 ActivityContent = activityContent,
-                Attributes = request.GetClientAttributeValues( RequestContext.CurrentPerson ),
+                Attributes = request.GetPublicAttributeValues( RequestContext.CurrentPerson ),
                 CampusGuid = request.Campus?.Guid,
                 CampusName = request.Campus?.Name,
                 Comments = request.Comments,
@@ -372,7 +372,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             var viewModel = new RequestEditViewModel
             {
-                Attributes = request.GetClientEditableAttributeValues( RequestContext.CurrentPerson ),
+                Attributes = request.GetPublicEditableAttributeValues( RequestContext.CurrentPerson ),
                 CampusGuid = request.Campus?.Guid,
                 Comments = request.Comments,
                 ConnectorGuid = request.ConnectorPersonAlias?.Person.Guid,
@@ -1309,7 +1309,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Set any custom request attribute values.
                 if ( requestDetails.AttributeValues != null )
                 {
-                    request.SetClientAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson );
+                    request.SetPublicAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson );
                 }
 
                 // Add an activity that the connector was assigned or changed.
@@ -1623,7 +1623,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     }
                 }
 
-                var attributes = groupMember.GetClientEditableAttributeValues( RequestContext.CurrentPerson );
+                var attributes = groupMember.GetPublicEditableAttributeValues( RequestContext.CurrentPerson );
 
                 return ActionOk( attributes );
             }
