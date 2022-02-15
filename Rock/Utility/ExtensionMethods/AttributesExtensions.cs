@@ -178,11 +178,20 @@ namespace Rock
         /// Gets the attribute values in a format that can be sent to remote
         /// clients in a compact and secure manner.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
         /// <returns>A collection of <see cref="PublicAttributeValueViewModel" /> objects.</returns>
-        public static List<PublicAttributeValueViewModel> GetClientAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        [RockInternal]
+        public static List<PublicAttributeValueViewModel> GetPublicAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null )
             {
@@ -205,11 +214,20 @@ namespace Rock
         /// clients in a compact and secure manner. This includes additional
         /// details to allow for editing the value.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
         /// <param name="entity">The entity whose attributes are requested.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
         /// <returns>A collection of <see cref="PublicEditableAttributeValueViewModel" /> objects.</returns>
-        public static List<PublicEditableAttributeValueViewModel> GetClientEditableAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        [RockInternal]
+        public static List<PublicEditableAttributeValueViewModel> GetPublicEditableAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null )
             {
@@ -231,16 +249,25 @@ namespace Rock
         /// Sets attribute values that have been provided by a remote client.
         /// </summary>
         /// <remarks>
-        /// This should be used to handle values the client sent back after
-        /// calling the <see cref="GetClientEditableAttributeValues(IHasAttributes, Person, bool)"/>
-        /// method. It handles conversion from custom data formats into the
-        /// proper values to be stored in the database.
+        ///     <para>
+        ///         This should be used to handle values the client sent back after
+        ///         calling the <see cref="GetPublicEditableAttributeValues(IHasAttributes, Person, bool)"/>
+        ///         method. It handles conversion from custom data formats into the
+        ///         proper values to be stored in the database.
+        ///     </para>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
         /// </remarks>
         /// <param name="entity">The entity.</param>
         /// <param name="attributeValues">The attribute values.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
-        public static void SetClientAttributeValues( this IHasAttributes entity, Dictionary<string, string> attributeValues, Person currentPerson, bool enforceSecurity = true )
+        [RockInternal]
+        public static void SetPublicAttributeValues( this IHasAttributes entity, Dictionary<string, string> attributeValues, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null || entity.Attributes == null || entity.AttributeValues == null )
             {
@@ -271,17 +298,26 @@ namespace Rock
         /// Sets a single attribute values that have been provided by a remote client.
         /// </summary>
         /// <remarks>
-        /// This should be used to handle values the client sent back after
-        /// calling the <see cref="GetClientEditableAttributeValues(IHasAttributes, Person, bool)"/>
-        /// method. It handles conversion from custom data formats into the
-        /// proper values to be stored in the database.
+        ///     <para>
+        ///         This should be used to handle values the client sent back after
+        ///         calling the <see cref="GetPublicEditableAttributeValues(IHasAttributes, Person, bool)"/>
+        ///         method. It handles conversion from custom data formats into the
+        ///         proper values to be stored in the database.
+        ///     </para>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
         /// </remarks>
         /// <param name="entity">The entity.</param>
         /// <param name="key">The attribute key to set.</param>
         /// <param name="value">The value provided by the remote client.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
-        public static void SetClientAttributeValue( this IHasAttributes entity, string key, string value, Person currentPerson, bool enforceSecurity = true )
+        [RockInternal]
+        public static void SetPublicAttributeValue( this IHasAttributes entity, string key, string value, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null || entity.Attributes == null || entity.AttributeValues == null )
             {
