@@ -241,7 +241,7 @@ namespace Rock.Web.UI.Controls
                 documentTermDisplay = "document";
             }
 
-            _lSignatureSignDisclaimer.Text = $"By clicking the sign button below, I agree to the above {documentTermDisplay} and understand this is a legal representation of my signature.";
+            _lSignatureSignDisclaimer.Text = $"<div class='signature-entry-agreement'>By clicking the sign button below, I agree to the above {documentTermDisplay} and understand this is a legal representation of my signature.</div>";
 
             _ebEmailAddress.Label = $"Please enter an email address below where we can send a copy of the {documentTermDisplay} to.";
 
