@@ -338,7 +338,7 @@ namespace Rock.Web.UI.Controls
 
             var lUseMouseOrFinger = new Literal()
             {
-                Text = "<p>Use mouse or finger to sign below.</p>"
+                Text = "<small class='text-muted'>Use mouse or finger to sign below.</small>"
             };
 
             _pnlSignatureEntryDrawn.Controls.Add( lUseMouseOrFinger );
@@ -376,7 +376,7 @@ namespace Rock.Web.UI.Controls
 
             _clearSignatureLink = new Literal();
             _clearSignatureLink.ID = "_clearSignatureLink";
-            _clearSignatureLink.Text = $@"<a class='btn btn-default js-clear-signature pull-right'><i class='fa fa-undo'></i></a>";
+            _clearSignatureLink.Text = $@"<a class='btn btn-default js-clear-signature pull-right'><i class='fa fa-2x fa-undo'></i></a>";
             pnlSignSignatureClearButtonCol.Controls.Add( _clearSignatureLink );
 
             /* Controls for Typed Signature*/

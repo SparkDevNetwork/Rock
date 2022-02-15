@@ -107,8 +107,12 @@ namespace Rock.ElectronicSignature
         flex-grow: 1
     }
 
+    .signature-details {
+        font-size: 14px;
+    }
+
     .signature-image {
-        width: 100%;
+        width: 400px;
     }
 
     .signature-ref {
@@ -134,9 +138,9 @@ namespace Rock.ElectronicSignature
             {signatureHtml}
         </div>
         <div class='col signature-details'>
-            <div class='signature-fullname'>Name: {signatureInfoName}</div>
-            <div class='signature-datetime'>Signed: {signatureInformationHtmlArgs.SignedDateTime.ToShortDateString()}</div>
-            <div class='signature-ip-address'>IP: {signatureInformationHtmlArgs.SignedClientIp}</div>
+            <div class='signature-fullname'><strong>Name:</strong> {signatureInfoName}</div>
+            <div class='signature-datetime'><strong>Signed:</strong> {signatureInformationHtmlArgs.SignedDateTime.ToShortDateString()}</div>
+            <div class='signature-ip-address'><strong>IP:</strong> {signatureInformationHtmlArgs.SignedClientIp}</div>
         </div>
     </header>
     <div>
