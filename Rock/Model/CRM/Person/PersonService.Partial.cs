@@ -22,15 +22,14 @@ using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.BulkExport;
 using Rock.Data;
-using Rock.ViewModel;
 using Rock.Security;
+using Rock.Utility.Enums;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Utility.Enums;
 
 namespace Rock.Model
 {
@@ -2482,7 +2481,16 @@ namespace Rock.Model
 
         #endregion
 
-        #region Get Person
+        #region Get Person        
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <returns>Person.</returns>
+        public Person GetCurrentPerson()
+        {
+                var currentUser = new UserLoginService( (RockContext) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
+                return currentUser != null ? currentUser.Person : null;
+        }
 
         /// <summary>
         /// Returns a <see cref="Rock.Model.Person"/> by their PersonId
