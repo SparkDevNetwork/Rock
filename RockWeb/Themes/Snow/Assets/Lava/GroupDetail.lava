@@ -108,6 +108,11 @@
                     {% endif %}
                 {% endif %}
              {% endif %}
+			 {% if IsLeader == true %}
+                {% if Group.GroupTypeId == 39 or Group.GroupTypeId == 40 %}
+                        <li role="presentation"><a href="https://docs.google.com/spreadsheets/d/1M3h7KwMsB2v_OpLfl6G33Ag4fuPOB9g1hYxe1qNPPlI/edit#gid=0" target='_new'>Waiver Sheet</a></li>
+                {% endif %}
+             {% endif %}
 		</ul>
 	{% endif %}
 
@@ -241,11 +246,11 @@
 
 							{% comment %}
 								2020-10-09 - Gerry Miller Added to display and attendance indicator.
-								2021-10-28 - Gerry Miller Added to display waiver indicator
+								2021-10-28 - Gerry Miller Added to display waiver indicator.
 							{% endcomment %}
 
 							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name }}){{- attendanceCheck -}}{{ WaiverIcon }}</small>
+							<small>({{ member.GroupRole.Name }}){{- attendanceCheck -}}<!-- {{ WaiverIcon }} --></small>
 
 							{% for phone in member.Person.PhoneNumbers %}
 							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
