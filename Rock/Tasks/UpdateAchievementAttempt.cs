@@ -114,7 +114,9 @@ namespace Rock.Tasks
                 return;
             }
 
-            new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
+            var workflowTransaction =new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
+            workflowTransaction.InitiatorPersonAliasId = message.InitiatorPersonAliasId;
+            workflowTransaction.Execute();
         }
 
         /// <summary>
@@ -230,6 +232,12 @@ namespace Rock.Tasks
             /// Gets or sets the end date.
             /// </summary>
             public DateTime? EndDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the workflow initiator person alias identifier.
+            /// </summary>
+            /// <value>The workflow initiator person alias identifier.</value>
+            public int? InitiatorPersonAliasId { get; set; }
         }
     }
 }
