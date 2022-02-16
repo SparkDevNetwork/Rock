@@ -91,6 +91,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<DefinedValue>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, DefinedValue.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<History>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, History.FriendlyTypeName );

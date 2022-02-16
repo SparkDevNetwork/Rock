@@ -89,12 +89,19 @@ BEGIN
 				FROM @LessActiveGroupMembersIdsToDelete
 				)
 
+		-- Delete the GroupMemberAssignment Records for the @LessActiveGroupMembersIdsToDelete
+		DELETE FROM [GroupMemberAssignment]
+		WHERE [GroupMemberId] IN (
+				SELECT [Id]
+				FROM @LessActiveGroupMembersIdsToDelete
+				)
+
 		-- If there is GroupMemberHistory, we can't delete, so create a list of GroupMemberIds that we'll archive instead of delete
 		INSERT INTO @GroupMembersIdsToArchive 
 			SELECT [Id]	FROM @LessActiveGroupMembersIdsToDelete WHERE Id IN (SELECT GroupMemberId FROM GroupMemberHistorical)
 
 		DELETE FROM @LessActiveGroupMembersIdsToDelete 
-			WHERE Id IN (SELECT Id FROM @LessActiveGroupMembersIdsToDelete)
+			WHERE Id IN (SELECT Id FROM @GroupMembersIdsToArchive)
 
 		-- Delete the @LessActiveGroupMembersIdsToDelete for any GroupMember records that don't have GroupMemberHistory
 		DELETE
@@ -127,6 +134,16 @@ BEGIN
 			FROM [GroupMember]
 			WHERE [PersonId] = @OldId
 		)
+
+
+		-- Delete any Group Assignments that point to a group member about to be deleted
+		DELETE FROM [GroupMemberAssignment]
+		WHERE [GroupMemberId] IN (
+			SELECT [Id]
+			FROM [GroupMember]
+			WHERE [PersonId] = @OldId
+		)
+
 
 		-- If there is GroupMemberHistory, we can't delete, so add any other GroupMemberIds for the old PersonId to our @GroupMembersIdsToArchive list
 		INSERT INTO @GroupMembersIdsToArchive 

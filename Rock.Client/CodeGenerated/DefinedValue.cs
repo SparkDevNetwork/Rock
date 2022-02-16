@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
         public int DefinedTypeId { get; set; }
 
         /// <summary />
@@ -96,6 +99,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( DefinedValue source )
         {
             this.Id = source.Id;
+            this.CategoryId = source.CategoryId;
             this.DefinedTypeId = source.DefinedTypeId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
@@ -120,6 +124,9 @@ namespace Rock.Client
     /// </summary>
     public partial class DefinedValue : DefinedValueEntity
     {
+        /// <summary />
+        public Category Category { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
