@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+#if !NET5_0_OR_GREATER
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+#endif
 using Rock.Security;
 
 namespace Rock.Model

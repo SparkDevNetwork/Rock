@@ -22,6 +22,10 @@ using System.Runtime.Caching;
 using Ical.Net;
 using Ical.Net.DataTypes;
 
+#if NET5_0_OR_GREATER
+using Event = Ical.Net.CalendarEvent;
+#endif
+
 namespace Rock.Model
 {
     /// <summary>
@@ -38,6 +42,7 @@ namespace Rock.Model
         // only keep in memory if unused for 10 minutes. This reduces the chances of this getting too big.
         private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the calendar event.
         /// </summary>
@@ -50,6 +55,7 @@ namespace Rock.Model
             // changed to obsolete because this used to return a shared object that could be altered or create thread-safety issues
             return CreateCalendarEvent( iCalendarContent );
         }
+#endif
 
         /// <summary>
         /// Creates the calendar event.
@@ -76,6 +82,7 @@ namespace Rock.Model
             return calendarEvent;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the occurrences.
         /// </summary>
@@ -102,6 +109,7 @@ namespace Rock.Model
         {
             return icalEvent.GetOccurrences( startTime, endTime ).ToList();
         }
+#endif
 
         /// <summary>
         /// Gets the occurrences for the specified iCal

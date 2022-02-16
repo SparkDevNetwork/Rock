@@ -16,7 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+#if !NET5_0_OR_GREATER
 using System.Web.Routing;
+#endif
 
 using Rock.Data;
 
@@ -37,6 +39,7 @@ namespace Rock.Model
             {
                 if ( State == EntityContextState.Deleted )
                 {
+#if !NET5_0_OR_GREATER
                     var routes = RouteTable.Routes;
                     if ( routes != null )
                     {
@@ -55,6 +58,7 @@ namespace Rock.Model
                             }
                         }
                     }
+#endif
                 }
 
                 base.PreSave();

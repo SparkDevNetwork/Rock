@@ -29,8 +29,8 @@ namespace Rock.Field
             => new List<string>();
 
         [RockInternal]
-        public Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
-            => new Dictionary<string, string>();
+        public Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+            => new Dictionary<string, string>( privateConfigurationValues );
 
         public List<object> ConfigurationControls()
             => throw new NotImplementedException();
@@ -63,14 +63,6 @@ namespace Rock.Field
             => originalValue;
 
         public bool HasDefaultControl => false;
-
-        [RockInternal]
-        public string GetClientValue( string value, Dictionary<string, string> configurationValues )
-            => value;
-
-        [RockInternal]
-        public string GetClientEditValue( string value, Dictionary<string, string> configurationValues )
-            => value;
 
         [RockInternal]
         public string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
@@ -204,19 +196,49 @@ namespace Rock.Field
             return GetHtmlValue( value, configurationValues );
         }
 
-        public string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return value;
+            return privateValue;
         }
 
-        public string GetClientEditValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return value;
+            return privateValue;
         }
 
-        public string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        public string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return clientValue;
+            return publicValue;
+        }
+
+        public Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new Dictionary<string, string>( privateConfigurationValues );
+        }
+
+        public Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new Dictionary<string, string>();
+        }
+
+        public Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new Dictionary<string, string>( privateConfigurationValues );
+        }
+
+        public Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        {
+            return new Dictionary<string, string>( publicConfigurationValues );
+        }
+
+        public ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            throw new NotImplementedException();
         }
     }
 }

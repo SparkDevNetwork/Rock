@@ -18,8 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+using DbGeography = NetTopologySuite.Geometries.Geometry;
+#else
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -69,10 +74,17 @@ namespace Rock.Model
                 {
                     case "GeoPoint":
                         {
+#if NET5_0_OR_GREATER
+                            if ( GeoPoint != null && Latitude.HasValue && Longitude.HasValue )
+                            {
+                                return string.Format( "{0},{1}", Latitude.Value, Longitude.Value );
+                            }
+#else
                             if ( GeoPoint != null && GeoPoint.Latitude.HasValue && GeoPoint.Longitude.HasValue )
                             {
                                 return string.Format( "{0},{1}", GeoPoint.Latitude.Value, GeoPoint.Longitude.Value );
                             }
+#endif
 
                             break;
                         }
@@ -81,10 +93,17 @@ namespace Rock.Model
                         {
                             if ( GeoFence != null )
                             {
+#if NET5_0_OR_GREATER
+                                return GeoFenceCoordinates
+                                    .Select( c => c[0].ToString() + "," + c[1].ToString() )
+                                    .ToList()
+                                    .AsDelimited( "|" );
+#else
                                 return GeoFence.Coordinates()
                                     .Select( c => c.Latitude.ToString() + "," + c.Longitude.ToString() )
                                     .ToList()
                                     .AsDelimited( "|" );
+#endif
                             }
 
                             break;
@@ -141,10 +160,17 @@ namespace Rock.Model
             {
                 if ( GeoFence != null )
                 {
+#if NET5_0_OR_GREATER
+                    // NET5: Not sure this is correct, need testing.
+                    return GeoFence.Coordinates
+                        .Select( c => new double[] { c.Y, c.X } )
+                        .ToList();
+#else
                     return GeoFence.Coordinates()
                         .Where( c => c.Latitude.HasValue && c.Longitude.HasValue )
                         .Select( c => new Double[] { c.Latitude.Value, c.Longitude.Value } )
                         .ToList();
+#endif
                 }
 
                 return null;
@@ -162,7 +188,11 @@ namespace Rock.Model
         {
             get
             {
+#if NET5_0_OR_GREATER
+                return GeoPoint?.Coordinate?.Y;
+#else
                 return GeoPoint != null ? GeoPoint.Latitude : null;
+#endif
             }
         }
 
@@ -177,7 +207,11 @@ namespace Rock.Model
         {
             get
             {
+#if NET5_0_OR_GREATER
+                return GeoPoint?.Coordinate?.X;
+#else
                 return GeoPoint != null ? GeoPoint.Longitude : null;
+#endif
             }
         }
 
@@ -233,7 +267,11 @@ namespace Rock.Model
         {
             try
             {
+#if NET5_0_OR_GREATER
+                this.GeoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude );
+#else
                 this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+#endif
                 return true;
             }
             catch
@@ -294,6 +332,18 @@ namespace Rock.Model
                 return this.Name;
             }
 
+#if NET5_0_OR_GREATER
+            if ( Latitude.HasValue && Longitude.HasValue )
+            {
+                return string.Format( "A point at {0}, {1}", Latitude, Longitude );
+            }
+
+            if ( this.GeoFence != null )
+            {
+                int pointCount = this.GeoFence.Coordinates?.Length ?? 0;
+                return string.Format( "An area with {0} points", pointCount > 0 ? pointCount - 1 : 0 );
+            }
+#else
             if ( this.GeoPoint != null )
             {
                 return string.Format( "A point at {0}, {1}", this.GeoPoint.Latitude, this.GeoPoint.Longitude );
@@ -304,6 +354,7 @@ namespace Rock.Model
                 int pointCount = this.GeoFence.PointCount ?? 0;
                 return string.Format( "An area with {0} points", pointCount > 0 ? pointCount - 1 : 0 );
             }
+#endif
 
             // this would only happen if Location didn't have a Name, Address, GeoPoint or GoeFence
             return this.Name;
@@ -335,7 +386,11 @@ namespace Rock.Model
         /// <returns></returns>
         public static DbGeography GetGeoPoint( double latitude, double longitude )
         {
+#if NET5_0_OR_GREATER
+            return new NetTopologySuite.Geometries.Point( longitude, latitude );
+#else
             return DbGeography.FromText( $"POINT({longitude} {latitude})" );
+#endif
         }
 
         /// <summary>
@@ -414,12 +469,21 @@ namespace Rock.Model
                 int lastLat = 0;
                 int lastLng = 0;
 
+#if NET5_0_OR_GREATER
+                // NET5: Not sure this is correct, needs testing.
+                foreach ( var coordinate in this.GeoFence.Coordinates )
+                {
+                    {
+                        int lat = ( int ) Math.Round( coordinate.Y * 1E5 );
+                        int lng = ( int ) Math.Round( coordinate.X * 1E5 );
+#else
                 foreach ( var coordinate in this.GeoFence.Coordinates() )
                 {
                     if ( coordinate.Longitude.HasValue && coordinate.Latitude.HasValue )
                     {
                         int lat = ( int ) Math.Round( coordinate.Latitude.Value * 1E5 );
                         int lng = ( int ) Math.Round( coordinate.Longitude.Value * 1E5 );
+#endif
                         encodeDiff( lat - lastLat );
                         encodeDiff( lng - lastLng );
                         lastLat = lat;

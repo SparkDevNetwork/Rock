@@ -15,8 +15,13 @@
 // </copyright>
 //
 using System;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+#endif
 using System.Linq;
 
 using Rock.Data;

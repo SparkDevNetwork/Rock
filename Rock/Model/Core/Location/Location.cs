@@ -20,7 +20,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+#if NET5_0_OR_GREATER
+using NetTopologySuite.Geometries;
+#else
 using System.Data.Entity.Spatial;
+#endif
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
@@ -87,7 +91,11 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
+#if NET5_0_OR_GREATER
+        public Point GeoPoint { get; set; }
+#else
         public DbGeography GeoPoint { get; set; }
+#endif
 
         /// <summary>
         /// Gets or sets the geographic parameter around the a Location's GeoPoint. This can also be used to define a large area
@@ -102,7 +110,11 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
+#if NET5_0_OR_GREATER
+        public NetTopologySuite.Geometries.Polygon GeoFence { get; set; }
+#else
         public DbGeography GeoFence { get; set; }
+#endif
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -381,6 +393,10 @@ namespace Rock.Model
         }
 
         private ICollection<GroupLocation> _groupLocations;
+
+#if NET5_0_OR_GREATER
+        public virtual ICollection<Device> Devices { get; set; } = new Collection<Device>();
+#endif
 
         /// <summary>
         /// Gets or sets the Attendance Printer <see cref="Rock.Model.Device"/> that is used at this Location.

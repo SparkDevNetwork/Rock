@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Runtime.Serialization;
 using Ical.Net;

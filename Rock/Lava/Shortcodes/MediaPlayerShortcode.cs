@@ -356,7 +356,11 @@ so you can customize this to be exactly what you want.</p>
             // Attempt to get the session guid
             try
             {
+#if NET5_0_OR_GREATER
+                sessionGuid = null;
+#else
                 sessionGuid = ( HttpContext.Current.Handler as RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+#endif
             }
             catch
             {

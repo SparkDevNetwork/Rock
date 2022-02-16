@@ -21,7 +21,11 @@
 // </copyright>
 //
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using Rock.Web.Cache;
 
 namespace Rock.Model

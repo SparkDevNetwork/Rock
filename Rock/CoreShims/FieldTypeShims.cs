@@ -1,4 +1,4 @@
-﻿namespace Rock.Field.Types
+namespace Rock.Field.Types
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public partial class AccountFieldType : Rock.Field.FieldType
@@ -101,6 +101,9 @@
     {
     }
     public partial class CategoriesFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class CategorizedDefinedValueFieldType : Rock.Field.FieldType
     {
     }
     public partial class CategoryFieldType : Rock.Field.FieldType
@@ -262,9 +265,6 @@
     {
     }
     public partial class EntityTypeFieldType : Rock.Field.FieldType
-    {
-    }
-    public partial class EnumFieldType<T> : Rock.Field.FieldType
     {
     }
     public partial class EventCalendarFieldType : Rock.Field.FieldType
@@ -486,6 +486,9 @@
     public partial class SelectSingleFieldType : Rock.Field.FieldType
     {
     }
+    public partial class SignatureDocumentTemplateFieldType : Rock.Field.FieldType
+    {
+    }
     public partial class SiteFieldType : Rock.Field.FieldType
     {
     }
@@ -587,9 +590,6 @@
     {
     }
     public partial class WorkflowTypesFieldType : Rock.Field.FieldType
-    {
-    }
-    public partial class SelectFromListFieldType : Rock.Field.FieldType
     {
     }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

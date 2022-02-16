@@ -19,8 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+#endif
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -43,7 +45,9 @@ namespace Rock.Model
         [Required]
         [MaxLength( 23 )]
         [DataMember( IsRequired = true )]
+#if !NET5_0_OR_GREATER
         [Index( "IX_FullNumber" )]
+#endif
         public string FullNumber
         {
             get

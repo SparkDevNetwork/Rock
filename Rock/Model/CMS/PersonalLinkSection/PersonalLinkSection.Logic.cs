@@ -14,8 +14,12 @@
 // limitations under the License.
 // </copyright>
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+#endif
 using Rock.Data;
 using Rock.Web.Cache;
 

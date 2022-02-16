@@ -15,8 +15,13 @@
 // </copyright>
 //
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+#endif
 using Rock.Data;
 
 namespace Rock.Model

@@ -15,7 +15,11 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Runtime.Serialization;
 using Rock.Web.Cache;
 

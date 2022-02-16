@@ -15,18 +15,17 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Model
 {
-    public partial class UserLogin
+    public partial class RestControllerService
     {
-        public static string GetCurrentUserName()
+        /// <summary>
+        /// Registers the controllers.
+        /// </summary>
+        public static void RegisterControllers()
         {
-            return string.Empty;
+            throw new NotImplementedException();
         }
     }
 }

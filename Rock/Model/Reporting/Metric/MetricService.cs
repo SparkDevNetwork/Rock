@@ -23,6 +23,7 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
+#endif
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
@@ -189,7 +190,11 @@ FROM (
                 catch ( Exception ex )
                 {
                     // silently log the exception
+#if NET5_0_OR_GREATER
+                    ExceptionLogService.LogException( new Exception( "Error creating Analytics view for " + metric.Title, ex ) );
+#else
                     ExceptionLogService.LogException( new Exception( "Error creating Analytics view for " + metric.Title, ex ), System.Web.HttpContext.Current );
+#endif
                 }
             }
         }
@@ -212,7 +217,11 @@ FROM (
             {
                 using ( var rockContextForMetricEntity = new RockContext() )
                 {
+#if NET5_0_OR_GREATER
+                    rockContextForMetricEntity.Database.SetCommandTimeout( commandTimeout );
+#else
                     rockContextForMetricEntity.Database.CommandTimeout = commandTimeout;
+#endif
 
                     var metricService = new MetricService( rockContextForMetricEntity );
                     metric = metricService.Get( metricId );
@@ -241,7 +250,11 @@ FROM (
                     {
                         using ( var rockContextForMetricValues = new RockContext() )
                         {
+#if NET5_0_OR_GREATER
+                            rockContextForMetricValues.Database.SetCommandTimeout( commandTimeout );
+#else
                             rockContextForMetricValues.Database.CommandTimeout = commandTimeout;
+#endif
                             var metricPartitions = new MetricPartitionService( rockContextForMetricValues ).Queryable().Where( a => a.MetricId == metric.Id ).ToList();
                             var metricValueService = new MetricValueService( rockContextForMetricValues );
                             List<ResultValue> resultValues = new List<ResultValue>();
@@ -519,7 +532,11 @@ FROM (
                                         if ( alreadyHasMetricValues )
                                         {
                                             // Use direct SQL to remove any existing metric values.
+#if NET5_0_OR_GREATER
+                                            rockContextForMetricValues.Database.ExecuteSqlRaw(
+#else
                                             rockContextForMetricValues.Database.ExecuteSqlCommand(
+#endif
                                                 @"
                                                     DELETE
                                                     FROM MetricValuePartition
@@ -533,7 +550,11 @@ FROM (
                                                 new SqlParameter( "@metricId", metric.Id ),
                                                 new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
 
+#if NET5_0_OR_GREATER
+                                            rockContextForMetricValues.Database.ExecuteSqlRaw(
+#else
                                             rockContextForMetricValues.Database.ExecuteSqlCommand(
+#endif
                                                 @"
                                                     DELETE
                                                     FROM MetricValue

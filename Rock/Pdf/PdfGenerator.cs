@@ -121,7 +121,11 @@ namespace Rock.Pdf
         /// <returns>BrowserFetcher.</returns>
         private static BrowserFetcher GetBrowserFetcher()
         {
+#if NET5_0_OR_GREATER
+            var browserDownloadPath = "App_Data/ChromeEngine";
+#else
             var browserDownloadPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" );
+#endif
             Directory.CreateDirectory( browserDownloadPath );
 
             var browserFetcherOptions = new BrowserFetcherOptions

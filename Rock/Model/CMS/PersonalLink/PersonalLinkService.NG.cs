@@ -13,20 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Model
 {
-    public partial class UserLogin
+    public partial class PersonalLinkService
     {
-        public static string GetCurrentUserName()
+        internal static class PersonalLinksHelper
         {
-            return string.Empty;
+            public static void FlushPersonalLinksSessionDataLastModifiedDateTime()
+            {
+                // Not implemented.
+            }
+
+            public static DateTime? GetPersonalLinksLastModifiedDateTime( Person currentPerson )
+            {
+                return null; // Not implemented.
+            }
         }
     }
 }

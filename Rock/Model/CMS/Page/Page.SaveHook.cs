@@ -17,7 +17,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+#if !NET5_0_OR_GREATER
 using System.Web.Routing;
+#endif
 using Rock.Data;
 using Rock.Tasks;
 
@@ -46,6 +48,7 @@ namespace Rock.Model
                     Dictionary<string, object> parameters = new Dictionary<string, object>();
                     parameters.Add( "PageId", Entity.Id );
 
+#if !NET5_0_OR_GREATER
                     // since routes have a cascade delete relationship (their presave won't get called), delete routes from route table.
                     var routes = RouteTable.Routes;
                     if ( routes != null )
@@ -71,6 +74,7 @@ namespace Rock.Model
                             RouteTable.Routes.Remove( existingRoute );
                         }
                     }
+#endif
                 }
                 else if ( State == EntityContextState.Modified )
                 {

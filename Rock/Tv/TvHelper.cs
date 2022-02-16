@@ -38,6 +38,9 @@ namespace Rock.Tv
         /// <returns></returns>
         public static SiteCache GetCurrentApplicationSite( bool validateApiKey = true, RockContext rockContext = null )
         {
+#if NET5_0_OR_GREATER
+            throw new System.NotImplementedException();
+#else
             var appId = HttpContext.Current?.Request?.Headers?["X-Rock-App-Id"];
 
             if ( !appId.AsIntegerOrNull().HasValue )
@@ -88,6 +91,7 @@ namespace Rock.Tv
             {
                 return site;
             }
+#endif
         }
 
 
@@ -163,6 +167,9 @@ namespace Rock.Tv
             // in case.
             if ( username.IsNotNullOrWhiteSpace() )
             {
+#if NET5_0_OR_GREATER
+                throw new System.NotImplementedException();
+#else
                 var password = System.Web.Security.Membership.GeneratePassword( 12, 1 );
                 username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
 
@@ -174,6 +181,7 @@ namespace Rock.Tv
                                 username,
                                 password,
                                 true );
+#endif
             }
 
             return GetAuthenticationTokenFromUsername( username );
@@ -186,6 +194,9 @@ namespace Rock.Tv
         /// <returns></returns>
         public static string GetAuthenticationTokenFromUsername( string username )
         {
+#if NET5_0_OR_GREATER
+            throw new System.NotImplementedException();
+#else
             // Get the auth ticket from the username
             var ticket = new System.Web.Security.FormsAuthenticationTicket( 1,
                 username,
@@ -195,6 +206,7 @@ namespace Rock.Tv
                 username.StartsWith( "rckipid=" ).ToString() );
 
             return System.Web.Security.FormsAuthentication.Encrypt( ticket );
+#endif
         }
     }
 }

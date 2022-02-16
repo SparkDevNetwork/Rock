@@ -77,7 +77,6 @@ namespace Rock.Financial
         EnumSourceType = typeof( HostedGatewayMode ),
         DefaultValue = "Unhosted",
         Order = 5 )]
-<<<<<<< HEAD
 #if NET5_0_OR_GREATER
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent
 #else

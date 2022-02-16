@@ -34,9 +34,6 @@ namespace Rock.Model
         /// </summary>
         public static void RegisterControllers()
         {
-#if NET5_0_OR_GREATER
-            throw new NotImplementedException();
-#else
             /*
              * 12/19/2019 BJW
              *
@@ -168,7 +165,6 @@ namespace Rock.Model
             }
 
             rockContext.SaveChanges();
-#endif
         }
     }
 }
