@@ -15,15 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Rock
+namespace Rock.Utility
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CampaignItem"/> class.

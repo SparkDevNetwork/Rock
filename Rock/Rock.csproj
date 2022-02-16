@@ -1550,7 +1550,7 @@
     <Compile Include="Utility\Settings\Giving\GivingAutomationSettings.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
-    <Compile Include="Model\CampaignConnectionItem.cs" />
+    <Compile Include="Utility\CampaignItem.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
