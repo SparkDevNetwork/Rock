@@ -27,10 +27,13 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Use this as the Content of a api/Auth/Login POST
+    /// Use this as the Content of a api/Auth/Login POST. Specify UserName/Password to authenticate by username or specify Authorization to authenticate using JWT.
     /// </summary>
     public partial class LoginParametersEntity
     {
+        /// <summary />
+        public string Authorization { get; set; }
+
         /// <summary />
         public string Password { get; set; }
 
@@ -46,6 +49,7 @@ namespace Rock.Client
         /// <param name="source">The source.</param>
         public void CopyPropertiesFrom( LoginParameters source )
         {
+            this.Authorization = source.Authorization;
             this.Password = source.Password;
             this.Persisted = source.Persisted;
             this.Username = source.Username;
@@ -54,7 +58,7 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Use this as the Content of a api/Auth/Login POST
+    /// Use this as the Content of a api/Auth/Login POST. Specify UserName/Password to authenticate by username or specify Authorization to authenticate using JWT.
     /// </summary>
     public partial class LoginParameters : LoginParametersEntity
     {
