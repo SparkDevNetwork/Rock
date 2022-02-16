@@ -18,9 +18,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
-using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Jwt;
@@ -102,7 +102,7 @@ namespace Rock.Rest.Filters
                 }
             }
 
-            // If not, see if there's a valid token
+            // If not, see if there's a valid Rock APIKey token
             TryRetrieveHeader( actionContext, HeaderTokens.AuthorizationToken, out var authToken );
 
             if ( string.IsNullOrWhiteSpace( authToken ) )
@@ -127,15 +127,18 @@ namespace Rock.Rest.Filters
             // If still not successful, check for a JSON Web Token
             if ( TryRetrieveHeader( actionContext, HeaderTokens.JWT, out var jwtString ) )
             {
-                Person person = null;
-
-                // We need to wait for the JwtHelper.GetPerson method rather than using the await keyword. The await keyword
-                // forces this entire method to be async causing the Secured attribute to process before everything
-                // is finished here
-                Task.Run( async () =>
+                // If the JSON Web Token is in the header, we can determine the User from that
+                var userLogin = JwtHelper.GetUserLoginByJSONWebToken( new RockContext(), jwtString );
+                if ( userLogin != null )
                 {
-                    person = await JwtHelper.GetPerson( jwtString );
-                } ).Wait();
+                    var identity = new GenericIdentity( userLogin.UserName );
+                    principal = new GenericPrincipal( identity, null );
+                    actionContext.Request.SetUserPrincipal( principal );
+                    return;
+                }
+
+                // Just in rare case the GetPersonFromJWTPersonSearchKey feature is being used, see if person can be determined this way 
+                var person = JwtHelper.GetPersonFromJWTPersonSearchKey( jwtString );
 
                 if ( person != null )
                 {

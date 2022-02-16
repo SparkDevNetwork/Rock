@@ -872,6 +872,7 @@
     <Compile Include="Model\Core\AuthAuditLog\ChangeType.cs" />
     <Compile Include="Model\Core\CampusSchedule\CampusSchedule.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.Logic.cs" />
+    <Compile Include="Model\Core\CampusTopic\CampusTopicService.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureType.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.SaveHook.cs" />
