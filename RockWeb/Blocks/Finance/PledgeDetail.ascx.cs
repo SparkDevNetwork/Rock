@@ -47,8 +47,7 @@ namespace RockWeb.Blocks.Finance
         private static class PageParameterKey
         {
             public const string PledgeId = "PledgeId";
-
-            public const string PersonGuid = "PersonGuid";
+            public const string PersonActionIdentifier = "PersonActionIdentifier";
         }
 
         #endregion Keys
@@ -182,21 +181,18 @@ namespace RockWeb.Blocks.Finance
                 var isNewPledge = pledge.Id == 0;
 
                 hfPledgeId.Value = pledge.Id.ToString();
+
                 if ( pledge.PersonAlias != null )
                 {
                     ppPerson.SetValue( pledge.PersonAlias.Person );
                 }
                 else
                 {
-                    Person person = null;
-                    var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
-                    if ( personGuid.HasValue )
-                    {
-                        person = new PersonService( rockContext ).Get( personGuid.Value );
-                    }
-
+                    var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
+                    var person = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "pledge" );
                     ppPerson.SetValue( person );
                 }
+
                 ppPerson.Enabled = !isReadOnly;
 
                 GroupType groupType = null;

@@ -16,7 +16,7 @@
 
                 var $control = $('#' + options.id);
 
-                if ($control.length == 0) {
+                if ($control.length === 0) {
                     return;
                 }
 
@@ -83,7 +83,7 @@
 
                             var blackoutDates = $resourceDiv.data('blackout-dates');
                             var allowedDate = $resourceDiv.data('occurrenceDate');
-                            var singleScheduleMode = $resourceDiv.data('displayed-time-slot-count') == 1;
+                            var singleScheduleMode = $resourceDiv.data('displayed-time-slot-count') === 1;
                             var hasConflict = $resourceDiv.data('has-scheduling-conflict');
 
                             // If SingleSchedule mode, and there is a conflict, prevent dragging
@@ -113,11 +113,11 @@
 
                             // if getting dragged from the 'No Location Specified' div, restrict to occurrences that have the same date as they signed up for
                             var $sourceOccurrence = $resourceDiv.closest('.js-scheduled-occurrence');
-                            var allowedDate = $resourceDiv.data('occurrenceDate');
+                            //var allowedDate = $resourceDiv.data('occurrenceDate');
                             var hasLocation = $resourceDiv.data('hasLocation');
 
-                            if ($sourceOccurrence.length && hasLocation == 0) {
-                                if (allowedDate != targetOccurrenceDate) {
+                            if ($sourceOccurrence.length && hasLocation === 0) {
+                                if (allowedDate !== targetOccurrenceDate) {
                                     $resourceDiv.data('allow-drop', false);
                                     return false;
                                 }
@@ -143,17 +143,17 @@
                         $('body').removeClass('state-drag');
                     })
                     .on('drop', function (el, target, source, sibling) {
-                        if (source == target) {
+                        if (source === target) {
                             // don't do anything if a person is dragged around within the same occurrence
                             return;
                         }
 
-                        if (target == null) {
+                        if (target === null) {
                             // don't do anything if a person is dragged into an invalid container
                             return;
                         }
 
-                        if ($(el).data('allow-drop') == false) {
+                        if ($(el).data('allow-drop') === false) {
                             // move the el back to the source container
                             $(el).detach().appendTo($(source));
                             return;
@@ -206,7 +206,7 @@
 
                                     // if getting dragged from one to another, and they were confirmed already, add them as confirmed to the other occurrence
                                     var sourceConfirmationStatus = $scheduledResource.attr('data-status');
-                                    if (sourceConfirmationStatus == 'confirmed') {
+                                    if (sourceConfirmationStatus === 'confirmed') {
                                         scheduledPersonAddUrl = scheduledPersonAddConfirmedUrl;
                                     }
                                     var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
@@ -262,7 +262,7 @@
             trimSourceContainer: function () {
                 // if js-scheduler-source-container just has whitespace in it, trim it so that the :empty css selector works
                 var $sourceContainer = $('.js-scheduler-source-container');
-                if (($.trim($sourceContainer.html()) == "")) {
+                if (($.trim($sourceContainer.html()) === "")) {
                     $sourceContainer.html("");
                 }
             },
@@ -353,8 +353,8 @@
                     var totalDeclined = 0;
 
                     // hide the scheduled occurrence when it is empty if is the one that doesn't have a Location assigned
-                    if ($occurrence.data('has-location') == 0) {
-                        if (scheduledAttendanceItems.length == 0) {
+                    if ($occurrence.data('has-location') === 0) {
+                        if (scheduledAttendanceItems.length === 0) {
                             $occurrence.hide();
                         } else {
                             $occurrence.show();
@@ -369,9 +369,9 @@
                         var scheduledAttendanceItem = scheduledAttendanceItems[i];
 
                         // add up status numbers
-                        if (scheduledAttendanceItem.ConfirmationStatus == 'confirmed') {
+                        if (scheduledAttendanceItem.ConfirmationStatus === 'confirmed') {
                             totalConfirmed++;
-                        } else if (scheduledAttendanceItem.ConfirmationStatus == 'declined') {
+                        } else if (scheduledAttendanceItem.ConfirmationStatus === 'declined') {
                             totalDeclined++;
                         } else {
                             totalPending++;
@@ -480,13 +480,20 @@
                 }
 
                 var attendanceOccurrenceScheduleIds = [];
-                if ($('.js-occurrence-schedule-ids', $resourceList).val() != '') {
+                if ($('.js-occurrence-schedule-ids', $resourceList).val() !== '') {
                     attendanceOccurrenceScheduleIds = $('.js-occurrence-schedule-ids', $resourceList).val().split(',');
                 }
 
+                var attendanceOccurrenceLocationIds = [];
+                var $attendanceOccurrenceLocationField = $('.js-attendance-occurrence-location-ids', $resourceList);
+                if ($attendanceOccurrenceLocationField.val() !== undefined && $attendanceOccurrenceLocationField.val() !== '' && $attendanceOccurrenceLocationField.val() !== "all") {
+                    attendanceOccurrenceLocationIds = $attendanceOccurrenceLocationField.val().split(',');
+                }
+                
                 var schedulerResourceParameters = {
                     AttendanceOccurrenceGroupId: Number($('.js-occurrence-group-id', $resourceList).val()),
                     AttendanceOccurrenceScheduleIds: attendanceOccurrenceScheduleIds,
+                    AttendanceOccurrenceLocationIds: attendanceOccurrenceLocationIds,
                     AttendanceOccurrenceSundayDate: $('.js-occurrence-sunday-date', $resourceList).val(),
                     ResourceGroupId: $('.js-resource-group-id', $resourceList).val(),
                     GroupMemberFilterType: $('.js-resource-groupmemberfiltertype', $resourceList).val(),
@@ -534,21 +541,29 @@
 
                 // javascript creates a non-empty [''] array on empty string, so only split if there are additionalPersonIds specified
                 var additionalPersonIds = [];
-                if (self.$additionalPersonIds.val() != '') {
+                if (self.$additionalPersonIds.val() !== '') {
                     additionalPersonIds = self.$additionalPersonIds.val().split(',');
                 }
 
                 var attendanceOccurrenceScheduleIds = [];
-                if ($('.js-occurrence-schedule-ids', $resourceList).val() != '') {
+                if ($('.js-occurrence-schedule-ids', $resourceList).val() !== '') {
                     attendanceOccurrenceScheduleIds = $('.js-occurrence-schedule-ids', $resourceList).val().split(',');
                 }
 
+                var attendanceOccurrenceLocationIds = [];
+                var $attendanceOccurrenceLocationField = $('.js-attendance-occurrence-location-ids', $resourceList);
+                if ($attendanceOccurrenceLocationField.val() !== undefined && $attendanceOccurrenceLocationField.val() !== '' && $attendanceOccurrenceLocationField.val() !== "all") {
+                    attendanceOccurrenceLocationIds = $attendanceOccurrenceLocationField.val().split(',');
+                }
+                
                 var schedulerResourceParameters = {
                     AttendanceOccurrenceGroupId: Number($('.js-occurrence-group-id', $resourceList).val()),
                     AttendanceOccurrenceScheduleIds: attendanceOccurrenceScheduleIds,
+                    AttendanceOccurrenceLocationIds: attendanceOccurrenceLocationIds,
                     AttendanceOccurrenceSundayDate: $('.js-occurrence-sunday-date', $resourceList).val(),
                     ResourceGroupId: $('.js-resource-group-id', $resourceList).val(),
                     GroupMemberFilterType: $('.js-resource-groupmemberfiltertype', $resourceList).val(),
+                    ResourceListSourceType: $('.js-resource-scheduler-resource-list-source-type', $resourceList).val(),
                     ResourceDataViewId: $('.js-resource-dataview-id', $resourceList).val(),
                     ResourceAdditionalPersonIds: additionalPersonIds
                 };
@@ -721,7 +736,7 @@
                 var resourceName = $resourceDiv.find('.js-resource-name');
                 resourceName.text(schedulerResource.PersonName);
 
-                if (schedulerResource.ConfirmationStatus == 'declined') {
+                if (schedulerResource.ConfirmationStatus === 'declined') {
                     var resourceNameToolTipHtml = schedulerResource.DeclinedReason || 'No reason given.';
                     resourceName.attr('data-original-title', resourceNameToolTipHtml);
                     resourceName.tooltip({ html: true });
@@ -758,7 +773,7 @@
                 }
 
                 // stuff that only applies to unscheduled resource
-                if (schedulerResource.IsAlreadyScheduledForGroup != null) {
+                if (schedulerResource.IsAlreadyScheduledForGroup !== null) {
                     $resourceDiv.attr('data-is-scheduled', schedulerResource.IsAlreadyScheduledForGroup);
                 }
 
@@ -803,7 +818,7 @@
                         var rebuildResourceList = true;
                         if (personId) {
                             var unscheduledResourceDataSelector = '[data-person-id=' + personId + ']';
-                            rebuildResourceList = $(unscheduledResourceDataSelector, self.$resourceList).length == 0;
+                            rebuildResourceList = $(unscheduledResourceDataSelector, self.$resourceList).length === 0;
                         }
 
                         // remove (unschedule) the resource (which will also refresh/rebuild the resource list)
@@ -843,7 +858,7 @@
                             editorScrollLevel += 20;
                             $editorScrollWindow.scrollTop(editorScrollLevel);
                         }
-                        else if (editorMousePositionProportion < .10 && editorScrollLevel != 0) {
+                        else if (editorMousePositionProportion < .10 && editorScrollLevel !== 0) {
                             editorScrollLevel -= 20;
                             $editorScrollWindow.scrollTop(editorScrollLevel);
                         }

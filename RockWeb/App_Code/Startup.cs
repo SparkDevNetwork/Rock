@@ -23,7 +23,7 @@ using System.Linq;
 using Owin;
 using Microsoft.Owin;
 
-[assembly: OwinStartup(typeof(RockWeb.Startup))]
+[assembly: OwinStartup( typeof( RockWeb.Startup ) )]
 namespace RockWeb
 {
     /// <summary>

@@ -23,6 +23,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
+
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -35,6 +37,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a comma-delimited list
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class CheckListFieldType : FieldType
     {
         #region Configuration

@@ -485,11 +485,24 @@ namespace Rock.Model
             // recalculate and store in the database if the groupmember isn't new or changed
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "GroupRequirements" ).FirstOrDefault( a => a.Id == this.GroupId );
+
             if ( !group.GetGroupRequirements( rockContext ).Any() )
             {
-                // group doesn't have requirements so no need to calculate
+                // group doesn't have requirements, so clear any existing group member requirements and save if necessary.
+                if ( GroupMemberRequirements.Any() )
+                {
+                    GroupMemberRequirements.Clear();
+
+                    if ( saveChanges )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+
                 return;
             }
+
+            ClearInapplicableGroupRequirements( rockContext );
 
             var updatedRequirements = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId );
 
@@ -502,6 +515,21 @@ namespace Rock.Model
             {
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Remoes any group requirements that are not eligible for the group member's role.  This is necessary
+        /// if the group member has changed roles.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        private void ClearInapplicableGroupRequirements( RockContext rockContext )
+        {
+            var inapplicableGroupRequirements = GroupMemberRequirements
+                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId )
+                .ToList();
+
+            var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
+            groupMemberRequirementsService.DeleteRange( inapplicableGroupRequirements );
         }
 
         /// <summary>

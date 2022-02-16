@@ -15,10 +15,10 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
+import { ComparisonType, containsComparisonTypes } from "../Reporting/comparisonType";
 import { toNumberOrNull } from "../Services/number";
 import { DayOfWeek } from "./dayOfWeekField";
+import { FieldTypeBase } from "./fieldType";
 
 
 // The edit component can be quite large, so load it only as needed.
@@ -35,13 +35,12 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the DaysOfWeek field.
  */
 export class DaysOfWeekFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        if (value.value === null || value.value === undefined || value.value === "") {
-            value.textValue = "";
-            return;
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        if (value === null || value === undefined || value === "") {
+            return "";
         }
 
-        value.textValue = value.value.split(",")
+        return value.split(",")
             .map(v => {
                 const dayValue = toNumberOrNull(v);
 
@@ -80,11 +79,15 @@ export class DaysOfWeekFieldType extends FieldTypeBase {
             .join(", ");
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return containsComparisonTypes;
     }
 }

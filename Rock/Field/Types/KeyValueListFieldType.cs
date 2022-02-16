@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a key/value list
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class KeyValueListFieldType : ValueListFieldType
     {
         private const string VALUES_KEY = "values";
@@ -48,25 +50,25 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
         {
-            var clientValues = base.GetClientConfigurationValues( configurationValues );
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
 
-            // Remove the defined type key if it exists, clients don't need to see this.
-            if ( clientValues.ContainsKey( "definedtype" ) )
+            // Remove the defined type key if it exists, public devices don't need to see this.
+            if ( publicConfigurationValues.ContainsKey( "definedtype" ) )
             {
-                clientValues.Remove( "definedtype" );
+                publicConfigurationValues.Remove( "definedtype" );
             }
 
-            // Remove the internal custom values key if it exists, clients don't
+            // Remove the internal custom values key if it exists, public devices don't
             // need to see this.
-            if ( clientValues.ContainsKey( "customvalues" ) )
+            if ( publicConfigurationValues.ContainsKey( "customvalues" ) )
             {
-                clientValues.Remove( "customvalues" );
+                publicConfigurationValues.Remove( "customvalues" );
             }
 
-            // Generate the custom values that the clients expect to see.
-            clientValues[VALUES_KEY] = GetCustomValues( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+            // Generate the custom values that the public devices expects to see.
+            publicConfigurationValues[VALUES_KEY] = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                 .Select( kvp => new
                 {
                     value = kvp.Key,
@@ -74,7 +76,7 @@ namespace Rock.Field.Types
                 } )
                 .ToCamelCaseJson( false, true );
 
-            return clientValues;
+            return publicConfigurationValues;
         }
 
         /// <summary>
@@ -266,14 +268,14 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var nameValues = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+            var nameValues = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
 
             return nameValues
                 .Select( nv => nv.Split( new char[] { '^' } ) )
                 .Where( nv => nv.Length == 2 )
-                .Select( nv => new ClientValue
+                .Select( nv => new PublicValue
                 {
                     Key = HttpUtility.UrlDecode( nv[0] ),
                     Value = HttpUtility.UrlDecode( nv[1] )
@@ -282,19 +284,19 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var values = clientValue.FromJsonOrNull<List<ClientValue>>();
+            var values = publicValue.FromJsonOrNull<List<PublicValue>>();
 
             if ( values == null )
             {
                 return string.Empty;
             }
 
-            var customValues = GetCustomValues( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
+            var customValues = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
 
             // If there are any custom values, then ensure that all values we
-            // got from the client are valid. If not, ignore them.
+            // got from the public device are valid. If not, ignore them.
             if ( customValues.Any() )
             {
                 values = values
@@ -457,9 +459,9 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Represents a single element value (presented as a row when editing)
-        /// formatted in a way the clients will understand.
+        /// formatted in a way the public devices will understand.
         /// </summary>
-        private class ClientValue
+        private class PublicValue
         {
             /// <summary>
             /// Gets or sets the key.

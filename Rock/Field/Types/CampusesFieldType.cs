@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -27,6 +28,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType
     {
         #region Configuration

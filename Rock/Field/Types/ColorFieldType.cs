@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of System.Drawing.Color options
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
     public class ColorFieldType : FieldType
     {
 

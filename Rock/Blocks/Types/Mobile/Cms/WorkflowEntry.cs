@@ -273,7 +273,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 foreach ( var field in fields )
                 {
-                    workflow.SetClientAttributeValue( field.Key, field.Value, RequestContext.CurrentPerson, false );
+                    workflow.SetPublicAttributeValue( field.Key, field.Value, RequestContext.CurrentPerson, false );
                 }
             }
         }
@@ -360,7 +360,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                         if ( item != null )
                         {
-                            item.SetClientAttributeValue( attribute.Key, formField.Value, RequestContext.CurrentPerson, false );
+                            item.SetPublicAttributeValue( attribute.Key, formField.Value, RequestContext.CurrentPerson, false );
                         }
                     }
                 }
@@ -1208,14 +1208,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Title = attribute.Name,
                         IsRequired = formAttribute.IsRequired,
                         ConfigurationValues = useClientValues
-                            ? attribute.FieldType.Field?.GetClientConfigurationValues( attribute.ConfigurationValues )
+                            ? attribute.FieldType.Field?.GetPublicConfigurationValues( attribute.ConfigurationValues )
                             : attribute.QualifierValues.ToDictionary( v => v.Key, v => v.Value.Value ),
                         FieldTypeGuid = attribute.FieldType.Guid,
 #pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         RockFieldType = attribute.FieldType.Class,
 #pragma warning restore CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support
                         Value = useClientValues
-                            ? attribute.FieldType.Field?.GetClientEditValue( value, attribute.ConfigurationValues )
+                            ? attribute.FieldType.Field?.GetPublicEditValue( value, attribute.ConfigurationValues )
                             : value
                     };
 

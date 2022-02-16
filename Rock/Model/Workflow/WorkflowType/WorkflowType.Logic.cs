@@ -47,22 +47,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
-                return supportedActions;
-            }
-        }
-
         #endregion Properties
 
         #region Public Methods
@@ -104,4 +88,3 @@ namespace Rock.Model
         #endregion ICacheable
     }
 }
-

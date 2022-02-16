@@ -1896,6 +1896,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
                                 personalDevice.DeviceRegistrationId = request.Details.PushToken;
+                                personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
 
                                 rockContext.SaveChanges();
                             }
@@ -1979,6 +1980,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
                             personalDevice.DeviceRegistrationId = details.PushToken;
+                            personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
                         }
                     }
 

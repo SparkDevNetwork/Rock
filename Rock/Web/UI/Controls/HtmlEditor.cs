@@ -266,7 +266,7 @@ namespace Rock.Web.UI.Controls
                 object toolbarObj = ViewState["Toolbar"];
                 if ( toolbarObj != null )
                 {
-                    return (ToolbarConfig)toolbarObj;
+                    return ( ToolbarConfig ) toolbarObj;
                 }
                 else
                 {
@@ -488,6 +488,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [currently in code editor mode].
+        /// </summary>
+        /// <value><c>true</c> if [currently in code editor mode]; otherwise, <c>false</c>.</value>
+        private bool CurrentlyInCodeEditorMode
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfInCodeEditorMode.Value.AsBoolean();
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -590,7 +603,7 @@ namespace Rock.Web.UI.Controls
             _ceEditor.CssClass = "html-editor-code-editor";
             _ceEditor.EditorMode = CodeEditorMode.Lava;
             _ceEditor.EditorHeight = this.Height.Value.ToString();
-            if ( !string.IsNullOrEmpty(this.CallbackOnChangeScript) )
+            if ( !string.IsNullOrEmpty( this.CallbackOnChangeScript ) )
             {
                 _ceEditor.OnChangeScript = this.CallbackOnChangeScript;
             }
@@ -604,6 +617,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            _hfInCodeEditorMode.RenderControl( writer );
+
             if ( this.Visible )
             {
                 if ( this.StartInCodeEditorMode )
@@ -620,7 +635,7 @@ namespace Rock.Web.UI.Controls
 
                 RockControlHelper.RenderControl( this, writer );
                 _hfDisableVrm.RenderControl( writer );
-                _hfInCodeEditorMode.RenderControl( writer );
+
                 _ceEditor.RenderControl( writer );
             }
         }
@@ -673,7 +688,7 @@ onChange: function(contents, $editable) {{
     {this.CallbackOnChangeScript}
 }}
 ";
-             }
+            }
 
 
             string summernoteInitScript = $@"
@@ -749,7 +764,7 @@ $(document).ready( function() {{
         disableDragAndDrop: true,
     }});
 
-    if ({StartInCodeEditorMode.ToTrueFalse().ToLower()} && RockCodeEditor) {{
+    if ( ( {StartInCodeEditorMode.ToTrueFalse().ToLower()} || {CurrentlyInCodeEditorMode.ToTrueFalse().ToLower()} ) && RockCodeEditor) {{
         RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).trigger('click');
     }}
 
@@ -760,7 +775,7 @@ $(document).ready( function() {{
             // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( ( RockPage ) this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true ) );
                 var bundleUrl = System.Web.Optimization.BundleResolver.Current.GetBundleUrl( "~/Scripts/Bundles/RockHtmlEditorPlugins" );
                 ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-plugins", bundleUrl );
             }
@@ -769,7 +784,7 @@ $(document).ready( function() {{
             this.Style[HtmlTextWriterStyle.Display] = "none";
 
             writer.AddAttribute( "class", "html-editor-container loading" );
-            writer.AddStyleAttribute("min-height", this.Height.ToString());
+            writer.AddStyleAttribute( "min-height", this.Height.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             base.RenderControl( writer );

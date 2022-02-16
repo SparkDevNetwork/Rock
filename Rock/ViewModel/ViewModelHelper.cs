@@ -175,7 +175,7 @@ namespace Rock.ViewModel
                         var attribute = AttributeCache.Get( av.Value.AttributeId );
                         return attribute?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
                     } )
-                    .ToDictionary( kvp => kvp.Key, kvp => ClientAttributeHelper.ToClientAttributeValue( kvp.Value ) );
+                    .ToDictionary( kvp => kvp.Key, kvp => PublicAttributeHelper.ToPublicAttributeValue( kvp.Value ) );
             }
         }
 

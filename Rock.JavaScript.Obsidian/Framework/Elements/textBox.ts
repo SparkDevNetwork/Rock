@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+import { computed } from "vue";
 import { defineComponent, PropType } from "vue";
+import { useVModelPassthrough } from "../Util/component";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
@@ -47,6 +49,10 @@ export default defineComponent({
             type: String as PropType<string>,
             default: ""
         },
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
         rows: {
             type: Number as PropType<number>,
             default: 3
@@ -59,43 +65,40 @@ export default defineComponent({
     emits: [
         "update:modelValue"
     ],
-    data: function () {
-        return {
-            internalValue: this.modelValue
-        };
-    },
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-    computed: {
-        isTextarea(): boolean {
-            return this.textMode?.toLowerCase() === "multiline";
-        },
-        charsRemaining(): number {
-            return this.maxLength - this.internalValue.length;
-        },
-        countdownClass(): string {
-            if (this.charsRemaining >= 10) {
+        const isTextarea = computed((): boolean => {
+            return props.textMode?.toLowerCase() === "multiline";
+        });
+
+        const charsRemaining = computed((): number => {
+            return props.maxLength - internalValue.value.length;
+        });
+
+        const countdownClass = computed((): string => {
+            if (charsRemaining.value >= 10) {
                 return "badge-default";
             }
 
-            if (this.charsRemaining >= 0) {
+            if (charsRemaining.value >= 0) {
                 return "badge-warning";
             }
 
             return "badge-danger";
-        }
-    },
-    watch: {
-        internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue() {
-            this.internalValue = this.modelValue;
-        }
+        });
+
+        return {
+            internalValue,
+            isTextarea,
+            charsRemaining,
+            countdownClass
+        };
     },
     template: `
 <RockFormField
     v-model="internalValue"
-    formGroupClasses="rock-text-box"
+    :formGroupClasses="'rock-text-box ' + formGroupClasses"
     name="textbox">
     <template #pre>
         <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">

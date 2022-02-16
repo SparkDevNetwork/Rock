@@ -333,11 +333,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .Select( a => new
                 {
                     TransactionDateTime = a.TransactionDateTime,
-                    TotalAmount = a.TransactionDetails.Sum( d => d.Amount )
+                    TotalAmountBeforeRefund = a.TransactionDetails.Sum( d => d.Amount ),
+                    // For each Refund (there could be more than one) get the refund amount for each if the refunds's Detail records for the Account.
+                    // Then sum that up for the total refund amount for the account
+                    TotalRefundAmount = a
+                            .Refunds.Select( r => r.FinancialTransaction.TransactionDetails
+                            .Sum( rrrr => ( decimal? ) rrrr.Amount ) ).Sum() ?? 0.0M
                 } )
                 .ToList();
 
-            var last12MonthTotal = twelveMonthTransactions.Sum( t => t.TotalAmount );
+            var last12MonthTotal = twelveMonthTransactions.Sum( t => t.TotalAmountBeforeRefund + t.TotalRefundAmount );
             var last12MonthCount = twelveMonthTransactions.Count;
 
             // Last 12 Months KPI
@@ -351,10 +356,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             // Last 90 Days KPI
             var oneHundredEightyDaysAgo = RockDateTime.Now.AddDays( -180 );
             var ninetyDaysAgo = RockDateTime.Now.AddDays( -90 );
-            var transactionPriorNinetyDayTotal = twelveMonthTransactions.Where( t => t.TransactionDateTime >= oneHundredEightyDaysAgo && t.TransactionDateTime < ninetyDaysAgo ).Sum( t => t.TotalAmount );
+            var transactionPriorNinetyDayTotal = twelveMonthTransactions.Where( t => t.TransactionDateTime >= oneHundredEightyDaysAgo && t.TransactionDateTime < ninetyDaysAgo ).Sum( t => t.TotalAmountBeforeRefund + t.TotalRefundAmount );
             var baseGrowthContribution = transactionPriorNinetyDayTotal;
 
-            var last90DaysContribution = twelveMonthTransactions.Where( t => t.TransactionDateTime >= ninetyDaysAgo ).Sum( t => t.TotalAmount );
+            var last90DaysContribution = twelveMonthTransactions.Where( t => t.TransactionDateTime >= ninetyDaysAgo ).Sum( t => t.TotalAmountBeforeRefund + t.TotalRefundAmount );
 
             decimal growthPercent = 0;
 

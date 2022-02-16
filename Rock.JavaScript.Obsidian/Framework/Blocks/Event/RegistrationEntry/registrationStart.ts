@@ -19,7 +19,7 @@ import { defineComponent, inject } from "vue";
 import AttributeValuesContainer from "../../../Controls/attributeValuesContainer";
 import RockForm from "../../../Controls/rockForm";
 import RockButton from "../../../Elements/rockButton";
-import { ClientEditableAttributeValue } from "../../../ViewModels";
+import { PublicEditableAttributeValue } from "../../../ViewModels";
 import { RegistrationEntryState } from "../registrationEntry";
 
 export default defineComponent({
@@ -36,7 +36,7 @@ export default defineComponent({
     },
     data() {
         return {
-            attributeValues: [] as ClientEditableAttributeValue[]
+            attributeValues: [] as PublicEditableAttributeValue[]
         };
     },
     computed: {
@@ -62,7 +62,7 @@ export default defineComponent({
                     return {
                         ...a,
                         value: currentValue
-                    } as ClientEditableAttributeValue;
+                    } as PublicEditableAttributeValue;
                 });
             }
         },

@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to edit text in a multi-line text box
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
     public class MemoFieldType : FieldType
     {
 

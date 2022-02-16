@@ -92,7 +92,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
+        /// Provides a <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
         /// </summary>
         public virtual System.Collections.Generic.Dictionary<string, string> SupportedActions
         {

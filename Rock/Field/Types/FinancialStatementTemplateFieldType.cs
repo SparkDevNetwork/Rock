@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// Stored as FinancialStatementTemplate.Guid
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class FinancialStatementTemplateFieldType : FieldType, IEntityFieldType
     {
         #region Formatting

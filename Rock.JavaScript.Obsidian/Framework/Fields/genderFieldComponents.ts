@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
-import { getFieldEditorProps } from "./utils";
+import { defineComponent, ref, watch } from "vue";
+import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import DropDownList from "../Elements/dropDownList";
+import CheckBox from "../Elements/checkBox";
 import { ListItem } from "../ViewModels";
+import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
 
 const enum ConfigurationValueKey {
     HideUnknownGender = "hideUnknownGender"
@@ -43,7 +45,7 @@ export const EditComponent = defineComponent({
     computed: {
         dropDownListOptions(): ListItem[] {
             const hideUnknownGenderConfig = this.configurationValues[ConfigurationValueKey.HideUnknownGender];
-            const hideUnknownGender = hideUnknownGenderConfig.toLowerCase() === "true";
+            const hideUnknownGender = hideUnknownGenderConfig?.toLowerCase() === "true";
 
             if (hideUnknownGender === false) {
                 return [
@@ -75,5 +77,92 @@ export const EditComponent = defineComponent({
 
     template: `
 <DropDownList v-model="internalValue" :options="dropDownListOptions" formControlClasses="input-width-md" />
+`
+});
+
+export const ConfigurationComponent = defineComponent({
+    name: "GenderField.Configuration",
+
+    components: { CheckBox },
+
+    props: getFieldConfigurationProps(),
+
+    emits: [
+        "update:modelValue",
+        "updateConfiguration",
+        "updateConfigurationValue"
+    ],
+
+    setup(props, { emit }) {
+        const hideUnknownGender = ref(false);
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {};
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.HideUnknownGender] = asTrueFalseOrNull(hideUnknownGender.value) ?? "False";
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.HideUnknownGender] !== (props.modelValue[ConfigurationValueKey.HideUnknownGender] ?? "False");
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         * 
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            hideUnknownGender.value = asBoolean(props.modelValue[ConfigurationValueKey.HideUnknownGender]);
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
+        // THIS FIELD DOES NOT NEED THIS
+        watch([], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(hideUnknownGender, () => maybeUpdateConfiguration(ConfigurationValueKey.HideUnknownGender, asTrueFalseOrNull(hideUnknownGender.value) ?? "False"));
+
+        return { hideUnknownGender };
+    },
+
+    template: `
+<div>
+    <CheckBox v-model="hideUnknownGender" label="Hide Unknown Gender" help="When set, the 'Unknown' Option will not appear in the list of genders." text="Yes" />
+</div>
 `
 });

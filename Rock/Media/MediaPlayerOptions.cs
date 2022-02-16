@@ -175,6 +175,14 @@ namespace Rock.Media
         public double SeekTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique identifier for the current interaction session.
+        /// </summary>
+        /// <value>
+        /// The unique identifier for the current interaciton session.
+        /// </value>
+        public Guid? SessionGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the title to display for the video.
         /// </summary>
         /// <value>

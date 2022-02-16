@@ -31,11 +31,15 @@ namespace Rock.Services.NuGet
     /// This class inherits from NuGet.ProjectManager and handles installing new Rock packages (updates)
     /// in very specific way -- such as pre processing web.config XDT transforms.
     /// </summary>
+    [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+    [RockObsolete( "1.13.3" )]
     public class RockProjectManager : ProjectManager
     {
         /// <summary>
         /// The special transform file prefix that Rock recognizes.
         /// </summary>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public static readonly string TRANSFORM_FILE_PREFIX = ".rock.xdt";
 
         /// <summary>
@@ -45,16 +49,22 @@ namespace Rock.Services.NuGet
         /// <param name="pathResolver"></param>
         /// <param name="project"></param>
         /// <param name="localRepository"></param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public RockProjectManager( IPackageRepository sourceRepository, IPackagePathResolver pathResolver, IProjectSystem project, IPackageRepository localRepository )
             : base( sourceRepository, pathResolver, project, localRepository )
         {
         }
+
+        #pragma warning disable CS0809
 
         /// <summary>
         /// This method will be called first when a package is installed.  We're using
         /// this method to perform some pre processing of XDT files in the 
         /// </summary>
         /// <param name="package"></param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         protected override void ExtractPackageFilesToProject( IPackage package )
         {
             List<IPackageFile> contentFiles = package.GetContentFiles().ToList();
@@ -118,6 +128,8 @@ namespace Rock.Services.NuGet
                 ExceptionLogService.LogException( new Exception( string.Format( "Note: Unable to delete the temporary package restore folder ({0}) after a successful update.", packageRestorePath ), ex ), System.Web.HttpContext.Current );
             }
         }
+
+        #pragma warning restore CS0809
 
         /// <summary>
         /// Move the files in the given Dictionary from their full path (key) to 

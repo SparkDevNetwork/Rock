@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using System;
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Step
     /// as Step.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class StepFieldType : FieldType, IEntityFieldType
     {
 

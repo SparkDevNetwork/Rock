@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -27,16 +28,16 @@ namespace Rock.Field.Types
     /// Field used to save and display a social security number
     /// </summary>
     [Serializable]
-    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class SSNFieldType : FieldType
     {
 
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string ssn = UnencryptAndClean( value );
+            string ssn = UnencryptAndClean( privateValue );
 
             if ( ssn.Length == 9 )
             {
@@ -76,22 +77,22 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Return the masked value so we aren't sending the full value.
-            return GetTextValue( value, configurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
-        public override string GetClientEditValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return UnencryptAndClean( value );
+            return UnencryptAndClean( privateValue );
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return Security.Encryption.EncryptString( clientValue );
+            return Security.Encryption.EncryptString( publicValue );
         }
 
         /// <summary>

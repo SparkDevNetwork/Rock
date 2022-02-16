@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -29,7 +30,7 @@ namespace Rock.Field.Types
     /// Field Type to select a Day of the Week
     /// stored as int value that can be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
-    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class DayOfWeekFieldType : FieldType
     {
 

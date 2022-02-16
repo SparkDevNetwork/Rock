@@ -99,6 +99,7 @@ namespace Rock.Model
             get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalenderItems = value; }
         }
+
         private ICollection<EventCalendarItem> _eventCalenderItems;
 
         /// <summary>
@@ -112,7 +113,21 @@ namespace Rock.Model
             get { return _contentChannels ?? ( _contentChannels = new Collection<EventCalendarContentChannel>() ); }
             set { _contentChannels = value; }
         }
+
         private ICollection<EventCalendarContentChannel> _contentChannels;
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve calendar items." );
+                return supportedActions;
+            }
+        }
 
         #endregion
         #region Public Methods

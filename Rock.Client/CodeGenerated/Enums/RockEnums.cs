@@ -464,6 +464,7 @@ namespace Rock.Client.Enums
         AlternateGroup = 0x2,
         ParentGroup = 0x3,
         DataView = 0x4,
+        GroupMatchingAssignment = 0x5,
     }
 
     /// <summary>
@@ -891,8 +892,8 @@ namespace Rock.Client.Enums
     /// </summary>
     public enum SignatureType
     {
-        Drawn = 0x0,
-        Typed = 0x1,
+        Typed = 0x0,
+        Drawn = 0x1,
     }
 
     /// <summary>

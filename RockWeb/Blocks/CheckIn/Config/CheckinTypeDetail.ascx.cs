@@ -739,6 +739,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                             a.Group.GroupType.Id == groupType.Id ||
                             descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) )
                         .SelectMany( a => a.Schedules )
+                        .Where( s => s.IsActive )
                         .Select( s => s.Name )
                         .Distinct()
                         .OrderBy( s => s )

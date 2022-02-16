@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+
+using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -26,7 +28,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a numeric value
     /// </summary>
     [Serializable]
-    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class UrlLinkFieldType : FieldType
     {
         /// <summary>

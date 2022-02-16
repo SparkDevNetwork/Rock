@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -32,6 +33,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class NoteTypesFieldType : CategoryFieldType
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
