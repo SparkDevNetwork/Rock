@@ -181,20 +181,27 @@ namespace RockWeb.Blocks.Connection
                 };
                 var connectionTypesQuery = connectionTypeService.GetConnectionTypesQuery();
 
-                var types = connectionTypeService.GetViewAuthorizedConnectionTypes( connectionTypesQuery, CurrentPerson );
+                var connectionTypes = connectionTypeService.GetViewAuthorizedConnectionTypes( connectionTypesQuery, CurrentPerson );
 
                 // Get the various counts to make available to the Lava template.
                 // The conversion of the value to a dictionary is a temporary work-around
                 // until we have a way to mark external types as lava safe.
-                var connectionTypeIds = types.Select( t => t.Id ).ToList();
+                var connectionTypeIds = connectionTypes.Select( t => t.Id ).ToList();
                 var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds );
                 var connectionRequestCounts = new Dictionary<string, string>();
                 foreach ( var typeId in connectionTypeIds )
                 {
-                    connectionRequestCounts.Add( typeId.ToString(), requestCounts[typeId].AssignedToYouCount.ToString() );
-                }
+                    var connectionTypesRequestCount = connectionTypes
+                        .FirstOrDefault( v => v.Id == typeId && v.ConnectionOpportunities.Count(c=>c.ConnectionRequests?.Count>0)>0)
+                        ?.ConnectionOpportunities
+                        ?.Select(v=>v.ConnectionRequests)
+                        ?.Count();
 
-                var connectionTypes = connectionTypeService.GetConnectionTypesQuery()?.ToList();
+                    if ( connectionTypesRequestCount!=null && connectionTypesRequestCount.HasValue && connectionTypesRequestCount.Value > 0 )
+                    {
+                        connectionRequestCounts.Add( typeId.ToString(), connectionTypesRequestCount.Value.ToString() );
+                    }
+                }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
