@@ -338,6 +338,7 @@
     <TypeScriptCompile Include="Framework\Util\dialogs.ts" />
     <TypeScriptCompile Include="Framework\Util\form.ts" />
     <TypeScriptCompile Include="Framework\Util\util.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\campusTopic.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\publicFilterableAttributeValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSource.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditor.d.ts" />
