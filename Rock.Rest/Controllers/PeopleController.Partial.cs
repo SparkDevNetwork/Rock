@@ -1501,6 +1501,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// A phone number that will be included in the search results.
     /// </summary>
+    [RockClientInclude( "Search result PersonSearchResult.PhoneNumbers from api/People/Search" )]
     public class PersonSearchPhoneNumber
     {
         /// <summary>
