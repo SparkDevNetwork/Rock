@@ -213,7 +213,9 @@ export default defineComponent({
                 :options="connectionStatusOptions"
                 rules="required" />
         </div>
+    </div>
 
+    <div class="row">
         <div :class="columnClass">
             <CheckBox v-model="showCampus"
                 label="Show Campus" />
@@ -260,7 +262,9 @@ export default defineComponent({
                 :showBlankItem="false"
                 :options="formFieldVisibilityOptions" />
         </div>
+    </div>
 
+    <div class="row">
         <div :class="columnClass">
             <DropDownList v-model="address"
                 label="Address"

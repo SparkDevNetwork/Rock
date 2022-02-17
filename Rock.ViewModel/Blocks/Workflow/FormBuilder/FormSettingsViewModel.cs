@@ -68,7 +68,7 @@ namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
         /// Determines how the form's campus context will be set when it first
         /// runs.
         /// </summary>
-        public int? CampusSetFrom { get; set; }
+        public CampusSetFrom? CampusSetFrom { get; set; }
 
         /// <summary>
         /// Determines if the person entry section should be displayed at the

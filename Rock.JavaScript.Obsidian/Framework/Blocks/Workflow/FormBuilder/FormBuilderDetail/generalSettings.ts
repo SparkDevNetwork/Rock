@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-import { defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CategoryPicker from "../../../../Controls/categoryPicker";
+import Alert from "../../../../Elements/alert";
 import CheckBox from "../../../../Elements/checkBox";
 import DateTimePicker from "../../../../Elements/dateTimePicker";
 import DropDownList from "../../../../Elements/dropDownList";
@@ -25,10 +26,11 @@ import TextBox from "../../../../Elements/textBox";
 import TransitionVerticalCollapse from "../../../../Elements/transitionVerticalCollapse";
 import { EntityType } from "../../../../SystemGuids";
 import { updateRefValue } from "../../../../Util/util";
-import { ListItem } from "../../../../ViewModels";
-import EmailSource from "./emailSource";
-import SettingsWell from "./settingsWell";
-import { FormGeneral } from "./types";
+import EmailSource from "../Shared/emailSource";
+import SettingsWell from "../Shared/settingsWell";
+import { FormGeneral } from "../Shared/types";
+import { FormTemplateListItem } from "./types";
+import { useFormSources } from "./utils";
 
 /**
  * Displays the UI for the General Settings section of the Settings screen.
@@ -37,6 +39,7 @@ export default defineComponent({
     name: "Workflow.FormBuilderDetail.GeneralSettings",
 
     components: {
+        Alert,
         CategoryPicker,
         CheckBox,
         DateTimePicker,
@@ -54,9 +57,8 @@ export default defineComponent({
             required: true
         },
 
-        templateOptions: {
-            type: Array as PropType<ListItem[]>,
-            default: []
+        templateOverrides: {
+            type: Object as PropType<FormTemplateListItem>
         }
     },
 
@@ -65,26 +67,17 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
-        /** The name of the form. */
+        const sources = useFormSources();
+
         const name = ref(props.modelValue.name ?? "");
-
-        /** The text that describes the forms purpose. */
         const description = ref(props.modelValue.description ?? "");
-
-        /** The form template to use to provide default values. */
         const template = ref(props.modelValue.template ?? "");
-
-        /** The category this form is attached to. */
         const category = ref(props.modelValue.category ?? null);
-
-        /** The date and time the form beings to allow entries. */
         const entryStarts = ref(props.modelValue.entryStarts ?? "");
-
-        /** The date and time after which the form no longer allows entries. */
         const entryEnds = ref(props.modelValue.entryEnds ?? "");
-
-        /** True if the user is required to login before they can view the form. */
         const isLoginRequired = ref(props.modelValue.isLoginRequired ?? false);
+
+        const isLoginRequiredForced = computed((): boolean => props.templateOverrides?.isLoginRequiredConfigured ?? false);
 
         // Watch for changes in our modelValue and then update all our internal values.
         watch(() => props.modelValue, () => {
@@ -118,8 +111,10 @@ export default defineComponent({
             entryStarts,
             entryEnds,
             isLoginRequired,
+            isLoginRequiredForced,
             name,
             template,
+            templateOptions: sources.formTemplateOptions,
             workflowTypeEntityTypeGuid: EntityType.WorkflowType
         };
     },
@@ -151,9 +146,13 @@ export default defineComponent({
         </div>
     </div>
 
-    <CheckBox v-model="isLoginRequired"
+    <CheckBox v-if="!isLoginRequiredForced" v-model="isLoginRequired"
         label="Is Login Required"
         help="Determines if a person needs to be logged in to complete the form." />
+
+    <Alert v-else alertType="info">
+        The template has enforced the login required setting.
+    </Alert>
 
     <div class="row">
         <div class="col-md-6">

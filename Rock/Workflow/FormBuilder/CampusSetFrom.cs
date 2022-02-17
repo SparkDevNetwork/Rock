@@ -20,9 +20,8 @@ using Rock.Attribute;
 namespace Rock.Workflow.FormBuilder
 {
     /// <summary>
-    /// Provides additional settings used by forms built by the Form Builder that
-    /// do not have database properties. This data is stored in JSON format into
-    /// the <see cref="Rock.Model.WorkflowType.FormBuilderSettingsJson"/> property.
+    /// Defines the way the <see cref="Rock.Model.Workflow.CampusId"/> property
+    /// is set when a form is processed.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -33,29 +32,21 @@ namespace Rock.Workflow.FormBuilder
     ///     </para>
     /// </remarks>
     [RockInternal]
-    public class FormSettings
+    public enum CampusSetFrom
     {
         /// <summary>
-        /// The details about the confirmation e-mail that should be sent once
-        /// the person has completed the form.
+        /// Use the campus of the current person who is logged in while filling out the form.
         /// </summary>
-        public FormConfirmationEmailSettings ConfirmationEmail { get; set; }
+        CurrentPerson = 0,
 
         /// <summary>
-        /// The details about the notification e-mail that should be sent once
-        /// the person has completed the form.
+        /// Use the campus of the person in the Person attribute.
         /// </summary>
-        public FormNotificationEmailSettings NotificationEmail { get; set; }
+        WorkflowPerson = 1,
 
         /// <summary>
-        /// The action to take once the person has completed the form.
+        /// Use the Campus from the "Campus" query string which could be an Id or Guid.
         /// </summary>
-        public FormCompletionActionSettings CompletionAction { get; set; }
-
-        /// <summary>
-        /// Determines how <see cref="Rock.Model.Workflow.CampusId"/> will be
-        /// automatically set when the form executes.
-        /// </summary>
-        public CampusSetFrom? CampusSetFrom { get; set; }
+        QueryString = 2
     }
 }

@@ -24,11 +24,12 @@ import TextBox from "../../../../Elements/textBox";
 import Slider from "../../../../Elements/slider";
 import RockForm from "../../../../Controls/rockForm";
 import { List } from "../../../../Util/linq";
-import { FormField, FormFieldType } from "./types";
+import { FormField, FormFieldType } from "../Shared/types";
 import { FieldTypeConfigurationViewModel } from "../../../../ViewModels/Controls/fieldTypeEditor";
 import { useFormSources } from "./utils";
 import { areEqual } from "../../../../Util/guid";
-import { confirmDelete } from "../../../../Util/dialogs";
+import { ValidationResult, ValidationRule } from "../../../../Rules";
+import { ListItem } from "../../../../ViewModels";
 
 /**
  * Check if the two records are equal. This makes sure all the key names match
@@ -79,6 +80,11 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<FormField>,
             required: true
+        },
+
+        existingKeys: {
+            type: Array as PropType<ListItem[]>,
+            required: true
         }
     },
 
@@ -95,7 +101,18 @@ export default defineComponent({
         isSafeToClose(): boolean {
             this.formSubmit = true;
 
-            return Object.keys(this.validationErrors).length === 0;
+            const result = Object.keys(this.validationErrors).length === 0;
+
+            // If there was an error, perform a smooth scroll to the top so
+            // they can see the validation results.
+            if (!result && this.scrollableElement) {
+                this.scrollableElement.scroll({
+                    behavior: "smooth",
+                    top: 0
+                });
+            }
+
+            return result;
         }
     },
 
@@ -137,6 +154,29 @@ export default defineComponent({
         /** True if the form should start to submit. */
         const formSubmit = ref(false);
 
+        const scrollableElement = ref<HTMLElement | null>(null);
+
+        /**
+         * The validation rules for the attribute key. This uses custom logic
+         * to make sure the key entered doesn't already exist in the form.
+         */
+        const fieldKeyRules = computed((): ValidationRule[] => {
+            const rules: ValidationRule[] = ["required"];
+            const keys: ListItem[] = props.existingKeys.filter(k => !areEqual(k.value, props.modelValue.guid));
+
+            rules.push((value): ValidationResult => {
+                const valueString = value as string;
+
+                if (keys.filter(k => k.text === valueString).length > 0) {
+                    return "must be unique";
+                }
+
+                return "";
+            });
+
+            return rules;
+        });
+
         /**
          * Event handler for when the back button is clicked.
          */
@@ -164,6 +204,16 @@ export default defineComponent({
         const onValidationChanged = (errors: Record<string, string>): void => {
             validationErrors.value = errors;
         };
+
+        // Watch for changes to field name, and if the old value matches the
+        // attribute key then update the key to the new value.
+        watch(fieldName, (newValue, oldValue) => {
+            const oldValueAsKey = oldValue.replace(/[^a-zA-Z0-9_\-.]/g, "");
+
+            if (oldValueAsKey === fieldKey.value) {
+                fieldKey.value = newValue.replace(/[^a-zA-Z0-9_\-.]/g, "");
+            }
+        });
 
         // Watch for any changes in our simple field values and update the
         // modelValue.
@@ -211,6 +261,7 @@ export default defineComponent({
             asideIconClass,
             fieldDescription,
             fieldKey,
+            fieldKeyRules,
             fieldName,
             fieldSize,
             fieldTypeEditorKey,
@@ -222,6 +273,7 @@ export default defineComponent({
             onBackClick,
             onFieldTypeModelValueUpdate,
             onValidationChanged,
+            scrollableElement,
             validationErrors
         };
     },
@@ -239,7 +291,7 @@ export default defineComponent({
         </div>
     </div>
 
-    <div class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
+    <div ref="scrollableElement" class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column" style="flex-grow: 1;">
             <Panel :modelValue="true" title="Field Type" :hasCollapse="true">
                 <TextBox v-model="fieldName"
@@ -263,7 +315,7 @@ export default defineComponent({
 
             <Panel title="Advanced" :hasCollapse="true">
                 <TextBox v-model="fieldKey"
-                    rules="required"
+                    :rules="fieldKeyRules"
                     label="Field Key" />
                 <InlineSwitch v-model="isShowOnGrid" text="Show on Results Grid" />
             </Panel>

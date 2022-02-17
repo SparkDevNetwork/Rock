@@ -39,6 +39,11 @@ export default defineComponent({
         isActive: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        iconCssClass: {
+            type: String as PropType<string>,
+            default: "fa fa-pencil"
         }
     },
 
@@ -78,7 +83,7 @@ export default defineComponent({
     },
 
     template: `
-<ConfigurableZone :modelValue="isActive" iconCssClass="fa fa-pencil" @configure="onConfigure">
+<ConfigurableZone :modelValue="isActive" :iconCssClass="iconCssClass" @configure="onConfigure">
     <div class="zone-body">
         <div v-if="hasContent" style="min-height: 24px;" v-html="safeContent"></div>
         <div v-else class="text-center text-muted">{{ placeholder }}</div>

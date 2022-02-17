@@ -35,10 +35,12 @@ import SectionZone from "./sectionZone";
 import { DragSource, DragTarget, IDragSourceOptions } from "../../../../Directives/dragDrop";
 import { areEqual, Guid, newGuid } from "../../../../Util/guid";
 import { List } from "../../../../Util/linq";
-import { FormBuilderSettings, FormField, FormFieldType, FormPersonEntry, FormSection, GeneralAsideSettings, IAsideProvider, SectionAsideSettings } from "./types";
+import { FormBuilderSettings, FormTemplateListItem, GeneralAsideSettings, IAsideProvider, SectionAsideSettings } from "./types";
+import { FormField, FormFieldType, FormPersonEntry, FormSection } from "../Shared/types";
 import { PropType } from "vue";
 import { useFormSources } from "./utils";
 import { confirmDelete } from "../../../../Util/dialogs";
+import { ListItem } from "../../../../ViewModels";
 
 /**
  * Get the drag source options for the section zones. This allows the user to
@@ -107,6 +109,26 @@ function getFieldDragSourceOptions(sections: FormSection[], availableFieldTypes:
             const fieldType = new List(availableFieldTypes.value).firstOrUndefined(f => areEqual(f.guid, fieldTypeGuid));
 
             if (section && fieldType && operation.targetIndex !== undefined) {
+                const existingKeys: string[] = [];
+
+                // Find all existing attribute keys.
+                for (const sect of sections) {
+                    if (sect.fields) {
+                        for (const field of sect.fields) {
+                            existingKeys.push(field.key);
+                        }
+                    }
+                }
+
+                // Find a key that isn't used.
+                const baseKey = fieldType.text.replace(/[^a-zA-Z0-9_\-.]/g, "");
+                let key = baseKey;
+                let keyCount = 0;
+                while (existingKeys.includes(key)) {
+                    keyCount++;
+                    key = `${baseKey}${keyCount}`;
+                }
+
                 if (!section.fields) {
                     section.fields = [];
                 }
@@ -115,7 +137,7 @@ function getFieldDragSourceOptions(sections: FormSection[], availableFieldTypes:
                     guid: newGuid(),
                     fieldTypeGuid: fieldType.guid,
                     name: fieldType.text,
-                    key: "TODO:GenerateDefaultKeyFromName",
+                    key: key,
                     size: 12,
                     configurationValues: {},
                     defaultValue: ""
@@ -225,6 +247,10 @@ export default defineComponent({
             type: Object as PropType<FormBuilderSettings>,
             required: true
         },
+
+        templateOverrides: {
+            type: Object as PropType<FormTemplateListItem>
+        }
     },
 
     emits: [
@@ -346,7 +372,13 @@ export default defineComponent({
         const showPersonEntryAside = computed((): boolean => activeZone.value === personEntryZoneGuid);
 
         /** True if the form has a person entry section. */
-        const hasPersonEntry = computed((): boolean => generalAsideSettings.value.hasPersonEntry ?? false);
+        const hasPersonEntry = computed((): boolean => {
+            if (props.templateOverrides?.isPersonEntryConfigured ?? false) {
+                return true;
+            }
+
+            return generalAsideSettings.value.hasPersonEntry ?? false;
+        });
 
         /** True if the form header model should be open. */
         const isFormHeaderActive = computed({
@@ -374,6 +406,48 @@ export default defineComponent({
 
         /** True if the person entry zone is currently active. */
         const isPersonEntryActive = computed((): boolean => activeZone.value === personEntryZoneGuid);
+
+        /** True if the person entry setting has been force enabled by the template. */
+        const isPersonEntryForced = computed((): boolean => props.templateOverrides?.isPersonEntryConfigured ?? false);
+
+        /** The configure icon to use for the person entry zone. */
+        const personEntryZoneIconClass = computed((): string => {
+            // If we are forced then don't allow the user to configure the person entry.
+            if (isPersonEntryForced.value) {
+                return "";
+            }
+
+            return "fa fa-gear";
+        });
+
+        /** The form header content specified in the template. */
+        const templateFormHeaderContent = computed((): string => props.templateOverrides?.formHeader ?? "");
+
+        /** The form footer content specified in the template. */
+        const templateFormFooterContent = computed((): string => props.templateOverrides?.formFooter ?? "");
+
+        /**
+         * Contains all the existing attribute keys in an array of ListItems.
+         * Each item has a value that is the attribute guid and text that is
+         * the key string.
+         */
+        const existingKeys = computed((): ListItem[] => {
+            const existingKeys: ListItem[] = [];
+
+            // Find all existing attribute keys.
+            for (const sect of sections) {
+                if (sect.fields) {
+                    for (const field of sect.fields) {
+                        existingKeys.push({
+                            value: field.guid,
+                            text: field.key
+                        });
+                    }
+                }
+            }
+
+            return existingKeys;
+        });
 
         // #endregion
 
@@ -636,8 +710,18 @@ export default defineComponent({
             fieldReorderDragSourceOptions.mirrorContainer = bodyElement.value ?? undefined;
         });
 
+        // Watch for changes in the template override person entry setting. If
+        // it changes then we close the aside if the person entry aside is up.
+        watch(() => props.templateOverrides, (newValue, oldValue) => {
+            if ((newValue?.isPersonEntryConfigured ?? false) !== (oldValue?.isPersonEntryConfigured ?? false)) {
+                if (isPersonEntryActive.value) {
+                    closeAside();
+                }
+            }
+        });
+
+        // Watch for changes to our settings and emite the new modelValue.
         watch([sections, formHeaderContent, formFooterContent, generalAsideSettings, personEntryAsideSettings], () => {
-            console.log("update");
             const newValue: FormBuilderSettings = {
                 allowPersonEntry: generalAsideSettings.value.hasPersonEntry,
                 campusSetFrom: generalAsideSettings.value.campusSetFrom,
@@ -655,6 +739,7 @@ export default defineComponent({
             availableFieldTypes,
             bodyElement,
             editField,
+            existingKeys,
             fieldDragSourceOptions,
             fieldDragTargetId: fieldDragSourceOptions.id,
             fieldEditAsideComponentInstance,
@@ -669,6 +754,7 @@ export default defineComponent({
             isFormFooterActive,
             isFormHeaderActive,
             isPersonEntryActive,
+            isPersonEntryForced,
             onAsideClose,
             onConfigureField,
             onConfigureFormHeader,
@@ -684,6 +770,7 @@ export default defineComponent({
             onSectionDelete,
             personEntryAsideSettings,
             personEntryEditAsideComponentInstance,
+            personEntryZoneIconClass,
             sectionAsideSettings,
             sectionDragSourceOptions,
             sectionDragTargetId: sectionDragSourceOptions.id,
@@ -693,7 +780,9 @@ export default defineComponent({
             showFieldAside,
             showGeneralAside,
             showPersonEntryAside,
-            showSectionAside
+            showSectionAside,
+            templateFormFooterContent,
+            templateFormHeaderContent
         };
     },
 
@@ -703,6 +792,7 @@ export default defineComponent({
         <GeneralAside v-if="showGeneralAside"
             v-model="generalAsideSettings"
             ref="generalAsideComponentInstance"
+            :isPersonEntryForced="isPersonEntryForced"
             :fieldTypes="availableFieldTypes"
             :sectionDragOptions="sectionDragSourceOptions"
             :fieldDragOptions="fieldDragSourceOptions" />
@@ -711,6 +801,7 @@ export default defineComponent({
             :modelValue="editField"
             ref="fieldEditAsideComponentInstance"
             :fieldTypes="availableFieldTypes"
+            :existingKeys="existingKeys"
             @update:modelValue="onEditFieldUpdate"
             @close="onAsideClose" />
 
@@ -728,9 +819,11 @@ export default defineComponent({
     </div>
 
     <div class="p-3 d-flex flex-column" style="flex: 3 1; overflow-y: auto;">
+        <FormContentZone v-if="templateFormHeaderContent" :modelValue="templateFormHeaderContent" placeholder="" iconCssClass="" />
+
         <FormContentZone :modelValue="formHeaderContent" :isActive="isFormHeaderActive" @configure="onConfigureFormHeader" placeholder="Form Header" />
 
-        <ConfigurableZone v-if="hasPersonEntry" :modelValue="isPersonEntryActive" @configure="onConfigurePersonEntry">
+        <ConfigurableZone v-if="hasPersonEntry" :modelValue="isPersonEntryActive" :iconCssClass="personEntryZoneIconClass" @configure="onConfigurePersonEntry">
             <div class="zone-body">
                 <div class="text-center text-muted">Person Entry Form</div>
             </div>
@@ -752,6 +845,8 @@ export default defineComponent({
         </div>
 
         <FormContentZone :modelValue="formFooterContent" :isActive="isFormFooterActive" @configure="onConfigureFormFooter" placeholder="Form Footer" />
+
+        <FormContentZone v-if="templateFormFooterContent" :modelValue="templateFormFooterContent" placeholder="" iconCssClass="" />
     </div>
 </div>
 

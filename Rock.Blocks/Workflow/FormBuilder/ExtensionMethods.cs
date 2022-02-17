@@ -32,6 +32,64 @@ namespace Rock.Blocks.Workflow.FormBuilder
     {
         /// <summary>
         /// Creates a view model representation of a
+        /// <see cref="Rock.Workflow.FormBuilder.FormPersonEntrySettings"/> object.
+        /// </summary>
+        /// <param name="settings">The object to be represented as a view model.</param>
+        /// <returns>The view model representation.</returns>
+        internal static FormPersonEntryViewModel ToViewModel( this Rock.Workflow.FormBuilder.FormPersonEntrySettings settings )
+        {
+            return new FormPersonEntryViewModel
+            {
+                Address = settings.Address.ToFormFieldVisibility(),
+                AddressType = Utility.GetDefinedValueGuid( settings.AddressTypeValueId ),
+                AutofillCurrentPerson = settings.AutofillCurrentPerson,
+                Birthdate = settings.Birthdate.ToFormFieldVisibility(),
+                CampusStatus = Utility.GetDefinedValueGuid( settings.CampusStatusValueId ),
+                CampusType = Utility.GetDefinedValueGuid( settings.CampusTypeValueId ),
+                ConnectionStatus = Utility.GetDefinedValueGuid( settings.ConnectionStatusValueId ),
+                Email = settings.Email.ToFormFieldVisibility(),
+                Gender = settings.Gender.ToFormFieldVisibility(),
+                HideIfCurrentPersonKnown = settings.HideIfCurrentPersonKnown,
+                MaritalStatus = settings.MaritalStatus.ToFormFieldVisibility(),
+                MobilePhone = settings.MobilePhone.ToFormFieldVisibility(),
+                RecordStatus = Utility.GetDefinedValueGuid( settings.RecordStatusValueId ),
+                ShowCampus = settings.ShowCampus,
+                SpouseEntry = settings.SpouseEntry.ToFormFieldVisibility(),
+                SpouseLabel = settings.SpouseLabel
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Rock.Workflow.FormBuilder.FormPersonEntrySettings"/>
+        /// object from its view model representation.
+        /// </summary>
+        /// <param name="viewModel">The view model that represents the object.</param>
+        /// <returns>The object created from the view model.</returns>
+        internal static Rock.Workflow.FormBuilder.FormPersonEntrySettings FromViewModel( this FormPersonEntryViewModel viewModel )
+        {
+            return new Rock.Workflow.FormBuilder.FormPersonEntrySettings
+            {
+                Address = viewModel.Address.ToPersonEntryOption(),
+                AddressTypeValueId = Utility.GetDefinedValueId( viewModel.AddressType ),
+                AutofillCurrentPerson = viewModel.AutofillCurrentPerson,
+                Birthdate = viewModel.Birthdate.ToPersonEntryOption(),
+                CampusStatusValueId = Utility.GetDefinedValueId( viewModel.CampusStatus ),
+                CampusTypeValueId = Utility.GetDefinedValueId( viewModel.CampusType ),
+                ConnectionStatusValueId = Utility.GetDefinedValueId( viewModel.ConnectionStatus ),
+                Email = viewModel.Email.ToPersonEntryOption(),
+                Gender = viewModel.Gender.ToPersonEntryOption(),
+                HideIfCurrentPersonKnown = viewModel.HideIfCurrentPersonKnown,
+                MaritalStatus = viewModel.MaritalStatus.ToPersonEntryOption(),
+                MobilePhone = viewModel.MobilePhone.ToPersonEntryOption(),
+                RecordStatusValueId = Utility.GetDefinedValueId( viewModel.RecordStatus ),
+                ShowCampus = viewModel.ShowCampus,
+                SpouseEntry = viewModel.SpouseEntry.ToPersonEntryOption(),
+                SpouseLabel = viewModel.SpouseLabel
+            };
+        }
+
+        /// <summary>
+        /// Creates a view model representation of a
         /// <see cref="Rock.Workflow.FormBuilder.FormCompletionActionSettings"/> object.
         /// </summary>
         /// <param name="completionAction">The object to be represented as a view model.</param>
@@ -287,6 +345,50 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 case FormNotificationEmailDestination.SpecificIndividual:
                 default:
                     return Rock.Workflow.FormBuilder.FormNotificationEmailDestination.SpecificIndividual;
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Rock.Workflow.FormBuilder.CampusSetFrom"/>
+        /// value from its view model representation.
+        /// </summary>
+        /// <param name="viewModel">The view model that represents the value.</param>
+        /// <returns>The value created from the view model.</returns>
+        internal static Rock.Workflow.FormBuilder.CampusSetFrom FromViewModel( this CampusSetFrom viewModel )
+        {
+            switch ( viewModel )
+            {
+                case CampusSetFrom.WorkflowPerson:
+                    return Rock.Workflow.FormBuilder.CampusSetFrom.WorkflowPerson;
+
+                case CampusSetFrom.QueryString:
+                    return Rock.Workflow.FormBuilder.CampusSetFrom.QueryString;
+
+                case CampusSetFrom.CurrentPerson:
+                default:
+                    return Rock.Workflow.FormBuilder.CampusSetFrom.CurrentPerson;
+            }
+        }
+
+        /// <summary>
+        /// Creates a view model representation of a
+        /// <see cref="Rock.Workflow.FormBuilder.CampusSetFrom"/> value.
+        /// </summary>
+        /// <param name="value">The value to be represented as a view model.</param>
+        /// <returns>The view model representation.</returns>
+        internal static CampusSetFrom ToViewModel( this Rock.Workflow.FormBuilder.CampusSetFrom value )
+        {
+            switch ( value )
+            {
+                case Rock.Workflow.FormBuilder.CampusSetFrom.WorkflowPerson:
+                    return CampusSetFrom.WorkflowPerson;
+
+                case Rock.Workflow.FormBuilder.CampusSetFrom.QueryString:
+                    return CampusSetFrom.QueryString;
+
+                case Rock.Workflow.FormBuilder.CampusSetFrom.CurrentPerson:
+                default:
+                    return CampusSetFrom.CurrentPerson;
             }
         }
 
