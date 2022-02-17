@@ -1372,6 +1372,7 @@
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -3752,6 +3753,7 @@
     <Compile Include="Workflow\Action\Utility\WebRequest.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\WriteToLog.cs" />
     <Compile Include="SystemKey\WorkflowFormBuilderKey.cs" />
+    <Compile Include="Workflow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Workflow\FormBuilder\FormCompletionActionSettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormCompletionActionType.cs" />
     <Compile Include="Workflow\FormBuilder\FormConfirmationEmailSettings.cs" />

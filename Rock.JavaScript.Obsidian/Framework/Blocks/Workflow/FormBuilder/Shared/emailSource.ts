@@ -66,22 +66,11 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
-        /** The source type currently being edited. */
         const type = ref(props.modelValue.type?.toString() ?? FormEmailSourceType.UseTemplate.toString());
-
-        /** The currently selected template from the list of options. */
         const template = ref(props.modelValue.template ?? "");
-
-        /** The subject text for the custom e-mail. */
         const subject = ref(props.modelValue.subject ?? "");
-
-        /** The Reply-To text for the custom e-mail. */
         const replyTo = ref(props.modelValue.replyTo ?? "");
-
-        /** The body content HTML for the custom e-mail. */
         const body = ref(props.modelValue.body ?? "");
-
-        /** True if the standard header and footer should be appended on send. */
         const appendOrgHeaderAndFooter = ref(props.modelValue.appendOrgHeaderAndFooter ?? false);
 
         /** True if the currently selected type is for UseTemplate. */

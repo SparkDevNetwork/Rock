@@ -16,8 +16,13 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Workflow.FormBuilder
@@ -57,6 +62,27 @@ namespace Rock.Blocks.Workflow.FormBuilder
             }
 
             return DefinedValueCache.Get( guid.Value )?.Id;
+        }
+
+        /// <summary>
+        /// Gets the e-mail template option choices available to the individual.
+        /// </summary>
+        /// <param name="rockContext">The database context to use for data lookup.</param>
+        /// <returns>A collection of view models that represent the e-mail templates.</returns>
+        internal static List<ListItemViewModel> GetEmailTemplateOptions( RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new SystemCommunicationService( rockContext )
+                .Queryable()
+                .Where( c => c.IsActive == true )
+                .ToList()
+                .Where( c => c.IsAuthorized( Rock.Security.Authorization.VIEW, requestContext.CurrentPerson ) )
+                .OrderBy( c => c.Title )
+                .Select( c => new ListItemViewModel
+                {
+                    Value = c.Guid.ToString(),
+                    Text = c.Title
+                } )
+                .ToList();
         }
     }
 }

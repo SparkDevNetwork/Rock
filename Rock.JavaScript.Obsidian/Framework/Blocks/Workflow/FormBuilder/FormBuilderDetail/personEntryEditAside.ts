@@ -19,8 +19,8 @@ import { defineComponent, PropType, ref } from "vue";
 import Panel from "../../../../Controls/panel";
 import RockForm from "../../../../Controls/rockForm";
 import { useVModelPassthrough } from "../../../../Util/component";
-import PersonEntrySettings from "./personEntrySettings";
-import { FormPersonEntry } from "./types";
+import PersonEntrySettings from "../Shared/personEntrySettings";
+import { FormPersonEntry } from "../Shared/types";
 import { useFormSources } from "./utils";
 
 export default defineComponent({
@@ -51,15 +51,26 @@ export default defineComponent({
         isSafeToClose(): boolean {
             this.formSubmit = true;
 
-            return Object.keys(this.validationErrors).length === 0;
+            const result = Object.keys(this.validationErrors).length === 0;
+
+            // If there was an error, perform a smooth scroll to the top so
+            // they can see the validation results.
+            if (!result && this.scrollableElement) {
+                this.scrollableElement.scroll({
+                    behavior: "smooth",
+                    top: 0
+                });
+            }
+
+            return result;
         }
     },
 
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-        /** The validation errors for the form. */
         const validationErrors = ref<Record<string, string>>({});
+        const scrollableElement = ref<HTMLElement | null>(null);
 
         /** True if the form should start to submit. */
         const formSubmit = ref(false);
@@ -90,6 +101,7 @@ export default defineComponent({
             internalValue,
             onBackClick,
             onValidationChanged,
+            scrollableElement,
             validationErrors
         };
     },
@@ -107,7 +119,7 @@ export default defineComponent({
         </div>
     </div>
 
-    <div class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
+    <div ref="scrollableElement" class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column" style="flex-grow: 1;">
             <PersonEntrySettings v-model="internalValue"
                 isVertical

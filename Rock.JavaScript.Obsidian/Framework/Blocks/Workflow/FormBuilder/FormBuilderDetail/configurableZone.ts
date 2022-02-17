@@ -70,7 +70,7 @@ export default defineComponent({
 
     <div class="zone-actions">
         <slot name="preActions" />
-        <i :class="iconCssClass + ' fa-fw zone-action'" @click.stop="onActionClick"></i>
+        <i v-if="iconCssClass" :class="iconCssClass + ' fa-fw zone-action'" @click.stop="onActionClick"></i>
         <slot name="postActions" />
     </div>
 </div>

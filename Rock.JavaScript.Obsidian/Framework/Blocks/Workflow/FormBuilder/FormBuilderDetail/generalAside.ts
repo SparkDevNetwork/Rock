@@ -18,16 +18,35 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../../../../Controls/rockField";
 import { DragSource, IDragSourceOptions } from "../../../../Directives/dragDrop";
+import Alert from "../../../../Elements/alert";
 import DropDownList from "../../../../Elements/dropDownList";
 import Switch from "../../../../Elements/switch";
 import { toNumberOrNull } from "../../../../Services/number";
 import ConfigurableZone from "./configurableZone";
-import { FormFieldType, GeneralAsideSettings } from "./types";
+import { GeneralAsideSettings } from "./types";
+import { CampusSetFrom, FormFieldType } from "../Shared/types";
 import { useFormSources } from "./utils";
+import { ListItem } from "../../../../ViewModels";
+
+const campusSetFromOptions: ListItem[] = [
+    {
+        value: CampusSetFrom.CurrentPerson.toString(),
+        text: "Current Person"
+    },
+    {
+        value: CampusSetFrom.WorkflowPerson.toString(),
+        text: "Workflow Person"
+    },
+    {
+        value: CampusSetFrom.QueryString.toString(),
+        text: "Query String"
+    }
+];
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.GeneralAside",
     components: {
+        Alert,
         ConfigurableZone,
         DropDownList,
         RockField,
@@ -52,6 +71,11 @@ export default defineComponent({
         fieldDragOptions: {
             type: Object as PropType<IDragSourceOptions>,
             required: true
+        },
+
+        isPersonEntryForced: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -120,6 +144,7 @@ export default defineComponent({
         return {
             advancedFieldTypes,
             campusSetFrom,
+            campusSetFromOptions,
             commonFieldTypes,
             hasPersonEntry,
         };
@@ -160,8 +185,13 @@ export default defineComponent({
         </div>
 
         <div class="mt-3">
-            <DropDownList v-model="campusSetFrom" label="Campus Set From" />
-            <Switch v-model="hasPersonEntry" text="Enable Person Entry" />
+            <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
+
+            <Alert v-else alertType="info">
+                Person entry is enabled on the template and cannot be changed.
+            </Alert>
+
+            <DropDownList v-model="campusSetFrom" label="Campus Set From" :options="campusSetFromOptions" />
         </div>
     </div>
 </div>

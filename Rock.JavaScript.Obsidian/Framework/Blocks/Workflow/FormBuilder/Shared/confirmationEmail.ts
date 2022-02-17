@@ -61,13 +61,8 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
-        /** True if the confirmation e-mail is enabled and the rest of the UI should be shown. */
         const enabled = ref(props.modelValue.enabled ?? false);
-
-        /** The unique identifier of the attribute used for the reciepient. */
         const recipientAttributeGuid = ref(props.modelValue.recipientAttributeGuid ?? null);
-
-        /** The e-mail source information on how the e-mail is generated. */
         const source = ref<FormEmailSource>(props.modelValue.source ?? {});
 
         // Watch for changes in our modelValue and then update all our internal values.

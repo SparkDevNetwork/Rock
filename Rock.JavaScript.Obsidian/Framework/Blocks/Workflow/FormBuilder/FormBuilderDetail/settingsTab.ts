@@ -15,17 +15,20 @@
 // </copyright>
 //
 
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType } from "vue";
 import RockForm from "../../../../Controls/rockForm";
+import Alert from "../../../../Elements/alert";
 import { useVModelPassthrough } from "../../../../Util/component";
-import CompletionSettings from "./completionSettings";
+import CompletionSettings from "../Shared/completionSettings";
 import GeneralSettings from "./generalSettings";
-import { FormCompletionAction, FormGeneral } from "./types";
+import { FormCompletionAction, FormGeneral } from "../Shared/types";
+import { FormTemplateListItem } from "./types";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.SettingsTab",
 
     components: {
+        Alert,
         GeneralSettings,
         CompletionSettings,
         RockForm
@@ -40,6 +43,10 @@ export default defineComponent({
         completion: {
             type: Object as PropType<FormCompletionAction>,
             required: true
+        },
+
+        templateOverrides: {
+            type: Object as PropType<FormTemplateListItem>
         }
     },
 
@@ -52,9 +59,12 @@ export default defineComponent({
         const generalSettings = useVModelPassthrough(props, "modelValue", emit);
         const completionSettings = useVModelPassthrough(props, "completion", emit);
 
+        const isConfirmationForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
+
         return {
+            completionSettings,
             generalSettings,
-            completionSettings
+            isConfirmationForced
         };
     },
 
@@ -62,9 +72,15 @@ export default defineComponent({
 <div class="d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
     <div class="panel-body">
         <RockForm>
-            <GeneralSettings v-model="generalSettings" />
+            <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />
 
-            <CompletionSettings v-model="completionSettings" />
+            <CompletionSettings v-if="!isConfirmationForced" v-model="completionSettings" />
+            <Alert v-else alertType="info">
+                <h4 class="alert-heading">Confirmation Email</h4>
+                <p>
+                    The completion action is defined on the template and cannot be changed.
+                </p>
+            </Alert>
         </RockForm>
     </div>
 </div>

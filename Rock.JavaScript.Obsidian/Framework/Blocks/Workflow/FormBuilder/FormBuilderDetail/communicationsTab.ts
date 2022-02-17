@@ -15,13 +15,14 @@
 // </copyright>
 //
 
+import { computed } from "vue";
 import { defineComponent, PropType, ref, watch } from "vue";
 import RockForm from "../../../../Controls/rockForm";
 import Alert from "../../../../Elements/alert";
 import { ListItem } from "../../../../ViewModels";
-import ConfirmationEmail from "./confirmationEmail";
+import ConfirmationEmail from "../Shared/confirmationEmail";
 import NotificationEmail from "./notificationEmail";
-import { FormCommunication } from "./types";
+import { FormCommunication, FormTemplateListItem } from "./types";
 import { useFormSources } from "./utils";
 
 export default defineComponent({
@@ -40,19 +41,13 @@ export default defineComponent({
             required: true
         },
 
-        confirmationEmailForced: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        notificationEmailForced: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
         recipientOptions: {
             type: Array as PropType<ListItem[]>,
             default: []
+        },
+
+        templateOverrides: {
+            type: Object as PropType<FormTemplateListItem>
         }
     },
 
@@ -69,6 +64,8 @@ export default defineComponent({
 
         const sourceTemplateOptions = sources.emailTemplateOptions ?? [];
         const campusTopicOptions = sources.campusTopicOptions ?? [];
+
+        const isConfirmationEmailForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
 
         watch(() => props.modelValue, () => {
             confirmationEmail.value = props.modelValue.confirmationEmail ?? {};
@@ -88,6 +85,7 @@ export default defineComponent({
         return {
             campusTopicOptions,
             confirmationEmail,
+            isConfirmationEmailForced,
             notificationEmail,
             sourceTemplateOptions,
         };
@@ -97,7 +95,7 @@ export default defineComponent({
 <div class="d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
     <div class="panel-body">
         <RockForm>
-            <ConfirmationEmail v-if="!confirmationEmailForced" v-model="confirmationEmail" :sourceTemplateOptions="sourceTemplateOptions" :recipientOptions="recipientOptions" />
+            <ConfirmationEmail v-if="!isConfirmationEmailForced" v-model="confirmationEmail" :sourceTemplateOptions="sourceTemplateOptions" :recipientOptions="recipientOptions" />
             <Alert v-else alertType="info">
                 <h4 class="alert-heading">Confirmation Email</h4>
                 <p>
@@ -105,13 +103,7 @@ export default defineComponent({
                 </p>
             </Alert>
 
-            <NotificationEmail v-if="!notificationEmailForced" v-model="notificationEmail" :sourceTemplateOptions="sourceTemplateOptions" :campusTopicOptions="campusTopicOptions" />
-            <Alert v-else alertType="info">
-                <h4 class="alert-heading">Notification Email</h4>
-                <p>
-                    The notification e-mail is defined on the template and cannot be changed.
-                </p>
-            </Alert>
+            <NotificationEmail v-model="notificationEmail" :sourceTemplateOptions="sourceTemplateOptions" :campusTopicOptions="campusTopicOptions" />
         </RockForm>
     </div>
 </div>
