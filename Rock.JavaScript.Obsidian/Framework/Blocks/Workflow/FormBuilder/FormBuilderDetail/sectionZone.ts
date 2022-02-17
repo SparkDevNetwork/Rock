@@ -21,7 +21,7 @@ import { DragSource, DragTarget, IDragSourceOptions } from "../../../../Directiv
 import { areEqual, Guid, newGuid } from "../../../../Util/guid";
 import { PublicEditableAttributeValue, ListItem } from "../../../../ViewModels";
 import ConfigurableZone from "./configurableZone";
-import { FormField, FormSection } from "./types";
+import { FormField, FormSection } from "../Shared/types";
 
 function getAttributeValueFromField(field: FormField): PublicEditableAttributeValue {
     return {

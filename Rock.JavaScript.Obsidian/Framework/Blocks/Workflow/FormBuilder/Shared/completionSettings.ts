@@ -19,6 +19,7 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import DropDownList from "../../../../Elements/dropDownList";
 import TextBox from "../../../../Elements/textBox";
 import { toNumberOrNull } from "../../../../Services/number";
+import { useVModelPassthrough } from "../../../../Util/component";
 import { ListItem } from "../../../../ViewModels";
 import SegmentedPicker from "./segmentedPicker";
 import SettingsWell from "./settingsWell";
@@ -52,21 +53,28 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<FormCompletionAction>,
             required: true
+        },
+
+        enabled: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        hasEnable: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
     emits: [
-        "update:modelValue"
+        "update:modelValue",
+        "update:enabled"
     ],
 
     setup(props, { emit }) {
-        /** The type of completion logic to use when the form has been completed. */
+        const enabled = useVModelPassthrough(props, "enabled", emit);
         const type = ref(props.modelValue.type?.toString() ?? FormCompletionActionType.DisplayMessage.toString());
-
-        /** The message to display to the user. */
         const message = ref(props.modelValue.message ?? "");
-
-        /** The URL to redirect the user to. */
         const redirectUrl = ref(props.modelValue.redirectUrl ?? "");
 
         /** True if the type is DisplayMessage. */
@@ -95,6 +103,7 @@ export default defineComponent({
         });
 
         return {
+            enabled,
             isTypeDisplayMessage,
             isTypeRedirect,
             message,
@@ -105,8 +114,10 @@ export default defineComponent({
     },
 
     template: `
-<SettingsWell title="Completion Settings"
-    description="The settings below determine the actions to take after an individual completes the form.">
+<SettingsWell v-model="enabled"
+    title="Completion Settings"
+    description="The settings below determine the actions to take after an individual completes the form."
+    :hasEnable="hasEnable">
     <SegmentedPicker v-model="type"
         :options="typeOptions" />
 
