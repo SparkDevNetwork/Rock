@@ -89,11 +89,12 @@ namespace RockWeb.Blocks.Connection
       box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
     }
 </style>
+
 {% for connectionOpportunity in ConnectionOpportunities %}
     {% assign opportunityId = connectionOpportunity.Id | ToString %}
     {% assign count = ConnectionRequestCounts[opportunityId] | AsInteger %}
-
-    <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionOpportunityGuid={{ connectionOpportunity.Guid }}' stretched-link>
+    {% if count >0 %}
+      <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionOpportunityGuid={{ connectionOpportunity.Guid }}' stretched-link>
         <div class='card mb-2'>
             <div class='card-body'>
               <div class='row pt-2' style='height:60px;'>
@@ -111,9 +112,9 @@ namespace RockWeb.Blocks.Connection
                 </div>
             </div>
         </div>
-       </a>
-{% endfor %}
-";
+      </a>
+    {% endif %}
+{% endfor %}";
         }
         #endregion Lava
 
@@ -248,7 +249,15 @@ namespace RockWeb.Blocks.Connection
                 var connectionRequestCounts = new Dictionary<string, string>();
                 foreach ( var opportunityId in opportunityIds )
                 {
-                    connectionRequestCounts.Add( opportunityId.ToString(), requestCounts[opportunityId].AssignedToYouCount.ToString() );
+                    if ( _onlyShowOpportunitiesWithRequestsForUser )
+                    {
+                        connectionRequestCounts.Add( opportunityId.ToString(), requestCounts[opportunityId].AssignedToYouCount.ToString() );
+                    }
+                    else
+                    {
+                        var connectionOpportunityRequestCount = opportunities.First( v => v.Id == opportunityId ).ConnectionRequests.Count.ToString();
+                        connectionRequestCounts.Add( opportunityId.ToString(), connectionOpportunityRequestCount );
+                    }
                 }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
