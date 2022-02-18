@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -31,10 +31,10 @@ namespace Rock.Migrations
         {
             UpAddElectronicSignatureReceiptSystemCommunication();
             UpAddPhotoReleaseSignatureDocumentTemplate();
-            UpdateStructuredContentEditorDefinedValuesUp();
             UpdateStructuredContentDefinedValuesUp();
+            UpdateStructuredContentEditorDefinedValuesUp();
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -130,10 +130,10 @@ namespace Rock.Migrations
                                ,
 '<html>
     <head>
-        <link rel=""stylesheet"" href=""https://cdn.simplecss.org/simple.min.css""> 
+        <link rel=""stylesheet"" href=""https://cdn.simplecss.org/simple.min.css"">
     </head>
     <body>
-        <img src=""{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}{{ ''Global'' | Attribute:''EmailHeaderLogo'' }}""> 
+        <img src=""{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}{{ ''Global'' | Attribute:''EmailHeaderLogo'' }}"">
         <p>I, {{ Workflow | Attribute:''SignedByPerson'' }}, hereby grant, voluntarily and with full understanding, to {{ ''Global'' | Attribute: ''OrganizationName'' }} (""Church""), a license to the following:</p>
         <ol>
             <li>Use and storage of ""{{ Workflow | Attribute:''AppliesToPerson'' | Append:''&#39;s'' }}"" name and image, by means of digital or film photography, video photography, audio recording or other documentation, with respect to the activity, namely (""Activity""), of Church.</li>
@@ -191,145 +191,23 @@ namespace Rock.Migrations
                     WHERE dt.[Guid] = '{SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS}')
             " );
         }
-    
+
         /// <summary>
         /// DV: Update the order of the Structured Content items.
         /// </summary>
         private void UpdateStructuredContentDefinedValuesUp()
         {
-            RockMigrationHelper.UpdateDefinedValue( "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA",
-                "Default",
-                @"{
-    header: {
-        class: Rock.UI.StructuredContent.EditorTools.Header,
-        inlineToolbar: ['link'],
-        config: {
-            placeholder: 'Header'
-        },
-        shortcut: 'CMD+SHIFT+H'
-    },
-    image: {
-        class: Rock.UI.StructuredContent.EditorTools.RockImage,
-        inlineToolbar: ['link'],
-    },
-    list: {
-        class: Rock.UI.StructuredContent.EditorTools.NestedList,
-        inlineToolbar: true,
-        shortcut: 'CMD+SHIFT+L'
-    },
-    checklist: {
-        class: Rock.UI.StructuredContent.EditorTools.Checklist,
-        inlineToolbar: true,
-    },
-    quote: {
-        class: Rock.UI.StructuredContent.EditorTools.Quote,
-        inlineToolbar: true,
-        config: {
-            quotePlaceholder: 'Enter a quote',
-            captionPlaceholder: 'Quote\'s author',
-        },
-        shortcut: 'CMD+SHIFT+O'
-    },
-    warning: Rock.UI.StructuredContent.EditorTools.Warning,
-    marker: {
-        class: Rock.UI.StructuredContent.EditorTools.Marker,
-        shortcut: 'CMD+SHIFT+M'
-    },
-    code: {
-        class: Rock.UI.StructuredContent.EditorTools.Code,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    delimiter: Rock.UI.StructuredContent.EditorTools.Delimiter,
-    inlineCode: {
-        class: Rock.UI.StructuredContent.EditorTools.InlineCode,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    embed: Rock.UI.StructuredContent.EditorTools.Embed,
-    table: {
-        class: Rock.UI.StructuredContent.EditorTools.Table,
-        config: {
-            defaultHeadings: true
-        },
-        inlineToolbar: true,
-        shortcut: 'CMD+ALT+T'
-    }
-}",
-                "09B25845-B879-4E69-87E9-003F9380B8DD",
-                false,
-                null,
-                string.Empty,
-                0 );
+            Sql( $@"
+                UPDATE [DefinedValue]
+                SET [Order] = 0
+                WHERE [Guid] = '{SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT}';
+            " );
 
-            RockMigrationHelper.UpdateDefinedValue( "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA",
-                "Message Notes",
-                @"{
-    header: {
-        class: Rock.UI.StructuredContent.EditorTools.Header,
-        inlineToolbar: ['link'],
-        config: {
-            placeholder: 'Header'
-        },
-        shortcut: 'CMD+SHIFT+H'
-    },
-    image: {
-        class: Rock.UI.StructuredContent.EditorTools.RockImage,
-        inlineToolbar: ['link'],
-    },
-    list: {
-        class: Rock.UI.StructuredContent.EditorTools.NestedList,
-        inlineToolbar: true,
-        shortcut: 'CMD+SHIFT+L'
-    },
-    checklist: {
-        class: Rock.UI.StructuredContent.EditorTools.Checklist,
-        inlineToolbar: true,
-    },
-    quote: {
-        class: Rock.UI.StructuredContent.EditorTools.Quote,
-        inlineToolbar: true,
-        config: {
-            quotePlaceholder: 'Enter a quote',
-            captionPlaceholder: 'Quote\'s author',
-        },
-        shortcut: 'CMD+SHIFT+O'
-    },
-    warning: Rock.UI.StructuredContent.EditorTools.Warning,
-    marker: {
-        class: Rock.UI.StructuredContent.EditorTools.Marker,
-        shortcut: 'CMD+SHIFT+M'
-    },
-    fillin: {
-        class: Rock.UI.StructuredContent.EditorTools.Fillin,
-        shortcut: 'CMD+SHIFT+F'
-    },
-    code: {
-        class: Rock.UI.StructuredContent.EditorTools.Code,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    note: {
-        class: Rock.UI.StructuredContent.EditorTools.Note,
-        shortcut: 'CMD+SHIFT+N'
-    },
-    delimiter: Rock.UI.StructuredContent.EditorTools.Delimiter,
-    inlineCode: {
-        class: Rock.UI.StructuredContent.EditorTools.InlineCode,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    embed: Rock.UI.StructuredContent.EditorTools.Embed,
-    table: {
-        class: Rock.UI.StructuredContent.EditorTools.Table,
-        config: {
-            defaultHeadings: true
-        },
-        inlineToolbar: true,
-        shortcut: 'CMD+ALT+T'
-    }
-}",
-                "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
-                false,
-                null,
-                string.Empty,
-                1 );
+            Sql( $@"
+                UPDATE [DefinedValue]
+                SET [Order] = 1
+                WHERE [Guid] = '{SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_MESSAGE_NOTES}';
+            " );
         }
 
         /// <summary>
@@ -337,139 +215,17 @@ namespace Rock.Migrations
         /// </summary>
         private void UpdateStructuredContentDefinedValuesDown()
         {
-            RockMigrationHelper.UpdateDefinedValue( "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA",
-                "Default",
-                @"{
-    header: {
-        class: Rock.UI.StructuredContent.EditorTools.Header,
-        inlineToolbar: ['link'],
-        config: {
-            placeholder: 'Header'
-        },
-        shortcut: 'CMD+SHIFT+H'
-    },
-    image: {
-        class: Rock.UI.StructuredContent.EditorTools.RockImage,
-        inlineToolbar: ['link'],
-    },
-    list: {
-        class: Rock.UI.StructuredContent.EditorTools.NestedList,
-        inlineToolbar: true,
-        shortcut: 'CMD+SHIFT+L'
-    },
-    checklist: {
-        class: Rock.UI.StructuredContent.EditorTools.Checklist,
-        inlineToolbar: true,
-    },
-    quote: {
-        class: Rock.UI.StructuredContent.EditorTools.Quote,
-        inlineToolbar: true,
-        config: {
-            quotePlaceholder: 'Enter a quote',
-            captionPlaceholder: 'Quote\'s author',
-        },
-        shortcut: 'CMD+SHIFT+O'
-    },
-    warning: Rock.UI.StructuredContent.EditorTools.Warning,
-    marker: {
-        class: Rock.UI.StructuredContent.EditorTools.Marker,
-        shortcut: 'CMD+SHIFT+M'
-    },
-    code: {
-        class: Rock.UI.StructuredContent.EditorTools.Code,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    delimiter: Rock.UI.StructuredContent.EditorTools.Delimiter,
-    inlineCode: {
-        class: Rock.UI.StructuredContent.EditorTools.InlineCode,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    embed: Rock.UI.StructuredContent.EditorTools.Embed,
-    table: {
-        class: Rock.UI.StructuredContent.EditorTools.Table,
-        config: {
-            defaultHeadings: true
-        },
-        inlineToolbar: true,
-        shortcut: 'CMD+ALT+T'
-    }
-}",
-                "09B25845-B879-4E69-87E9-003F9380B8DD",
-                false,
-                null,
-                string.Empty,
-                1 );
+            Sql( $@"
+                UPDATE [DefinedValue]
+                SET [Order] = 1
+                WHERE [Guid] = '{SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT}';
+            " );
 
-            RockMigrationHelper.UpdateDefinedValue( "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA",
-                "Message Notes",
-                @"{
-    header: {
-        class: Rock.UI.StructuredContent.EditorTools.Header,
-        inlineToolbar: ['link'],
-        config: {
-            placeholder: 'Header'
-        },
-        shortcut: 'CMD+SHIFT+H'
-    },
-    image: {
-        class: Rock.UI.StructuredContent.EditorTools.RockImage,
-        inlineToolbar: ['link'],
-    },
-    list: {
-        class: Rock.UI.StructuredContent.EditorTools.NestedList,
-        inlineToolbar: true,
-        shortcut: 'CMD+SHIFT+L'
-    },
-    checklist: {
-        class: Rock.UI.StructuredContent.EditorTools.Checklist,
-        inlineToolbar: true,
-    },
-    quote: {
-        class: Rock.UI.StructuredContent.EditorTools.Quote,
-        inlineToolbar: true,
-        config: {
-            quotePlaceholder: 'Enter a quote',
-            captionPlaceholder: 'Quote\'s author',
-        },
-        shortcut: 'CMD+SHIFT+O'
-    },
-    warning: Rock.UI.StructuredContent.EditorTools.Warning,
-    marker: {
-        class: Rock.UI.StructuredContent.EditorTools.Marker,
-        shortcut: 'CMD+SHIFT+M'
-    },
-    fillin: {
-        class: Rock.UI.StructuredContent.EditorTools.Fillin,
-        shortcut: 'CMD+SHIFT+F'
-    },
-    code: {
-        class: Rock.UI.StructuredContent.EditorTools.Code,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    note: {
-        class: Rock.UI.StructuredContent.EditorTools.Note,
-        shortcut: 'CMD+SHIFT+N'
-    },
-    delimiter: Rock.UI.StructuredContent.EditorTools.Delimiter,
-    inlineCode: {
-        class: Rock.UI.StructuredContent.EditorTools.InlineCode,
-        shortcut: 'CMD+SHIFT+C'
-    },
-    embed: Rock.UI.StructuredContent.EditorTools.Embed,
-    table: {
-        class: Rock.UI.StructuredContent.EditorTools.Table,
-        config: {
-            defaultHeadings: true
-        },
-        inlineToolbar: true,
-        shortcut: 'CMD+ALT+T'
-    }
-}",
-                "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
-                false,
-                null,
-                string.Empty,
-                0 );
+            Sql( $@"
+                UPDATE [DefinedValue]
+                SET [Order] = 0
+                WHERE [Guid] = '{SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_MESSAGE_NOTES}';
+            " );
         }
     }
 }
