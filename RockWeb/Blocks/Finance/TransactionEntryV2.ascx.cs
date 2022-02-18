@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The Financial Source Type to use when creating transactions",
         IsRequired = false,
         AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
         DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
         Category = AttributeCategory.None,
         Order = 19 )]
@@ -182,6 +183,14 @@ namespace RockWeb.Blocks.Finance
         Description = "Determines if checkbox for 'Cover the fee' defaults to checked.",
         Key = AttributeKey.FeeCoverageDefaultState,
         DefaultBooleanValue = false,
+        Order = 28 )]
+
+    [CodeEditorField(
+        "Fee Coverage Message",
+        Description = "The Lava template to use to provide the cover the fees prompt to the individual. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        Key = AttributeKey.FeeCoverageMessage,
+        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% (${{ CalculatedAmount }}) to help cover the electronic transaction fees.",
         Order = 28 )]
 
     #region Scheduled Transactions
@@ -755,6 +764,8 @@ mission. We are so grateful for your commitment.</p>
             public const string EnableFeeCoverage = "EnableFeeCoverage";
 
             public const string FeeCoverageDefaultState = "FeeCoverageDefaultState";
+
+            public const string FeeCoverageMessage = "FeeCoverageMessage";
         }
 
         #endregion Attribute Keys
@@ -773,6 +784,22 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #endregion Attribute Categories
+
+        #region MergeFieldKeys
+
+        private static class MergeFieldKey
+        {
+            public const string AmountHTML = "AmountHTML";
+            public const string Percentage = "Percentage";
+            public const string IsPercentage = "IsPercentage";
+            public const string FixedAmount = "FixedAmount";
+            public const string IsFixedAmount = "IsFixedAmount";
+            public const string CalculatedAmountJSHook = "CalculatedAmountJSHook";
+            public const string IsSavedAccount = "IsSavedAccount";
+            public const string CalculatedAmount = "CalculatedAmount";
+        }
+
+        #endregion MergeFieldKeys
 
         #region PageParameterKeys
 
@@ -1201,21 +1228,37 @@ mission. We are so grateful for your commitment.</p>
             cbGetPaymentInfoCoverTheFeeACH.Checked = feeCoverageDefaultState;
             cbGetPaymentInfoCoverTheFeeCreditCard.Checked = feeCoverageDefaultState;
 
+            var feeCoverageMessageTemplate = this.GetAttributeValue( AttributeKey.FeeCoverageMessage );
+            var feeCoverageMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+
             var creditCardFeeCoveragePercentage = feeCoverageGatewayComponent.GetCreditCardFeeCoveragePercentage( FinancialGateway );
+            feeCoverageMergeFields.Add( MergeFieldKey.Percentage, creditCardFeeCoveragePercentage );
+            feeCoverageMergeFields.Add( MergeFieldKey.IsPercentage, creditCardFeeCoveragePercentage.HasValue );
+            var achFeeCoverageAmount = feeCoverageGatewayComponent.GetACHFeeCoverageAmount( FinancialGateway );
+            feeCoverageMergeFields.Add( MergeFieldKey.FixedAmount, achFeeCoverageAmount );
+            feeCoverageMergeFields.Add( MergeFieldKey.IsFixedAmount, achFeeCoverageAmount.HasValue );
+            var calculatedAmountJSHook = "js-coverthefee-checkbox-fee-amount-text";
+            feeCoverageMergeFields.Add( MergeFieldKey.CalculatedAmountJSHook, calculatedAmountJSHook );
+
             if ( creditCardFeeCoveragePercentage > 0 )
             {
                 pnlGetPaymentInfoCoverTheFeeCreditCard.Visible = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
 
                 var creditCardFeeCoverageAmount = decimal.Round( totalAmount * ( creditCardFeeCoveragePercentage.Value / 100.0M ), 2 );
-                cbGetPaymentInfoCoverTheFeeCreditCard.Text = string.Format( "Optionally add {0} to cover processing fee.", creditCardFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, creditCardFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, false );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, creditCardFeeCoverageAmount );
+                cbGetPaymentInfoCoverTheFeeCreditCard.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
                 hfAmountWithCoveredFeeCreditCard.Value = ( totalAmount + creditCardFeeCoverageAmount ).FormatAsCurrency();
             }
 
-            var achFeeCoverageAmount = feeCoverageGatewayComponent.GetACHFeeCoverageAmount( FinancialGateway );
             if ( achFeeCoverageAmount > 0 )
             {
                 pnlGetPaymentInfoCoverTheFeeACH.Visible = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
-                cbGetPaymentInfoCoverTheFeeACH.Text = string.Format( "Optionally add {0} to cover processing fee.", achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, false );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, achFeeCoverageAmount );
+                cbGetPaymentInfoCoverTheFeeACH.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
                 hfAmountWithCoveredFeeACH.Value = ( totalAmount + achFeeCoverageAmount ).FormatAsCurrency();
             }
 
@@ -1247,7 +1290,10 @@ mission. We are so grateful for your commitment.</p>
                     return;
                 }
 
-                cbGiveNowCoverTheFee.Text = string.Format( "Optionally add {0} to cover processing fee.", achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, true );
+                cbGiveNowCoverTheFee.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, achFeeCoverageAmount );
             }
             else
             {
@@ -1257,9 +1303,11 @@ mission. We are so grateful for your commitment.</p>
                     return;
                 }
 
-                cbGiveNowCoverTheFee.Text = string.Format(
-                    "Optionally add {0}<span class='js-coverthefee-checkbox-fee-amount-text' decimal-places='{1}'></span> to cover processing fee.",
-                    RockCurrencyCodeInfo.GetCurrencySymbol(), RockCurrencyCodeInfo.GetDecimalPlaces() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, $"{RockCurrencyCodeInfo.GetCurrencySymbol()}<span class='{calculatedAmountJSHook}' decimal-places='{RockCurrencyCodeInfo.GetDecimalPlaces()}'></span>" );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, true );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, null );
+
+                cbGiveNowCoverTheFee.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
             }
 
             pnlGiveNowCoverTheFee.Visible = true;
@@ -3596,7 +3644,9 @@ mission. We are so grateful for your commitment.</p>
             if ( !IsPostBack )
             {
                 ddlFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
-                dtpStartDate.SelectedDate = ( scheduledTransaction.NextPaymentDate.HasValue ) ? scheduledTransaction.NextPaymentDate : RockDateTime.Today.AddDays( 1 );
+                dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate.HasValue
+                    ? scheduledTransaction.NextPaymentDate
+                    : RockDateTime.Today.AddDays( 1 );
             }
         }
 
@@ -3650,6 +3700,7 @@ mission. We are so grateful for your commitment.</p>
                 {
                     currentTransaction.FinancialGateway.LoadAttributes( rockContext );
                 }
+
                 string errorMessage = string.Empty;
                 if ( fstService.Cancel( currentTransaction, out errorMessage ) )
                 {
@@ -3657,8 +3708,22 @@ mission. We are so grateful for your commitment.</p>
                     {
                         fstService.GetStatus( currentTransaction, out errorMessage );
                     }
-                    catch { }
+                    catch ( Exception ex )
+                    {
+                        // if it was successfully cancelled, but we got an errorMessage or exception getting the status, that is OK.
+                        ExceptionLogService.LogException( ex );
+                    }
+
                     rockContext.SaveChanges();
+                }
+                else
+                {
+                    ExceptionLogService.LogException( new Exception( $"Transaction Entry V2 got an error when cancelling a transferred scheduled transaction: {errorMessage}" ) );
+                    nbConfigurationNotification.Dismissable = true;
+                    nbConfigurationNotification.NotificationBoxType = NotificationBoxType.Danger;
+                    nbConfigurationNotification.Text = string.Format( "An error occurred while remove the tranferred scheduled {0}", GetAttributeValue( AttributeKey.GiftTerm ).ToLower() );
+                    nbConfigurationNotification.Details = errorMessage;
+                    nbConfigurationNotification.Visible = true;
                 }
             }
         }
