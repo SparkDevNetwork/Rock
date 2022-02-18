@@ -22,7 +22,7 @@ namespace DotLiquid
 	/// </summary>
 	public class Variable : IRenderable
 	{
-		public static readonly string FilterParser = string.Format(R.Q(@"(?:{0}|(?:\s*(?!(?:{0}))(?:{1}|\S+)\s*)+)"), Liquid.FilterSeparator, Liquid.QuotedFragment);
+        public static readonly string FilterParser = string.Format( R.Q( @"(?:\s+|{0}|{1})+" ), Liquid.QuotedFragment, Liquid.ArgumentSeparator );
 
 		public List<Filter> Filters { get; set; }
 		public string Name { get; set; }
