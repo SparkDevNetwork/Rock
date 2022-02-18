@@ -3710,10 +3710,20 @@ mission. We are so grateful for your commitment.</p>
                     }
                     catch ( Exception ex )
                     {
+                        // if it was successfully cancelled, but we got an errorMessage or exception getting the status, that is OK.
                         ExceptionLogService.LogException( ex );
                     }
 
                     rockContext.SaveChanges();
+                }
+                else
+                {
+                    ExceptionLogService.LogException( new Exception( $"Transaction Entry V2 got an error when cancelling a transferred scheduled transaction: {errorMessage}" ) );
+                    nbConfigurationNotification.Dismissable = true;
+                    nbConfigurationNotification.NotificationBoxType = NotificationBoxType.Danger;
+                    nbConfigurationNotification.Text = string.Format( "An error occurred while remove the tranferred scheduled {0}", GetAttributeValue( AttributeKey.GiftTerm ).ToLower() );
+                    nbConfigurationNotification.Details = errorMessage;
+                    nbConfigurationNotification.Visible = true;
                 }
             }
         }
