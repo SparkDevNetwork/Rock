@@ -341,16 +341,14 @@
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
                                 <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
-                                <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
-                                <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
-                                <Rock:RockBoundField DataField="GroupNameWithRoleAndStatus" HeaderText="Group" />
-                                <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
-                                <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
+                                <Rock:RockLiteralField id="lFullname" HeaderText="Name" SortExpression="NickName,LastName" />
+                                <Rock:RockBoundField DataField="Campus.Name" HeaderText="Campus" />
+                                <Rock:RockLiteralField id="lGroupName" HeaderText="Group" />
+                                <Rock:RockLiteralField id="lConnectorPersonFullname" HeaderText="Connector" />
+                                <Rock:RockLiteralField id="lLastActivityText" HeaderText="Last Activity" />
                                 <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
                                 <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
                                 <Rock:SecurityField TitleField="PersonFullname" />
-                                <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
-                                <Rock:DeleteField OnClick="gRequests_Delete" />
                             </Columns>
                         </Rock:Grid>
                     </div>

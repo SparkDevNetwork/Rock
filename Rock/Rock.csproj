@@ -890,6 +890,7 @@
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelQueryArgs.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelSecurity.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelSortProperty.cs" />
+    <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelWithModel.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionStatusViewModel.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\Options\ConnectionRequestQueryOptions.cs" />
