@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of genders
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
     public class GenderFieldType : FieldType
     {
         #region Configuration

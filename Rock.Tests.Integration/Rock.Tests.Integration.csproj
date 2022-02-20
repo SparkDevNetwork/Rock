@@ -189,6 +189,7 @@
     <Compile Include="Model\IdentityVerificationTests.cs" />
     <Compile Include="Model\ConnectionRequestServiceTests.cs" />
     <Compile Include="Model\CommunicationServiceTests.cs" />
+    <Compile Include="Model\PersonTokenServiceTests.cs" />
     <Compile Include="Model\PersonServiceTests.cs" />
     <Compile Include="Model\StepProgramServiceTests.cs" />
     <Compile Include="Model\GroupMemberTests.cs" />

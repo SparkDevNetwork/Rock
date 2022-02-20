@@ -16,6 +16,7 @@
 //
 using Rock.Data;
 using Rock.Web.Cache;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -62,6 +63,7 @@ namespace Rock.Model
             get { return _isActive; }
             set { _isActive = value ?? false; }
         }
+
         private bool _isActive = true;
 
         /// <summary>
@@ -229,6 +231,69 @@ namespace Rock.Model
         [DataMember]
         public int? MaxWorkflowAgeDays { get; set; }
 
+        /// <summary>
+        /// Gets or sets the form builder template identifier.
+        /// </summary>
+        /// <value>
+        /// The form builder template identifier.
+        /// </value>
+        [DataMember]
+        public int? FormBuilderTemplateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [is form builder].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [is form builder]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsFormBuilder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the form builder settings json.
+        /// </summary>
+        /// <value>
+        /// The form builder settings json.
+        /// </value>
+        [DataMember]
+        public string FormBuilderSettingsJson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the form start date and time.
+        /// </summary>
+        /// <value>
+        /// The form start date and time.
+        /// </value>
+        [DataMember]
+        public DateTime? FormStartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the form end date and time.
+        /// </summary>
+        /// <value>
+        /// The form end date and time.
+        /// </value>
+        [DataMember]
+        public DateTime? FormEndDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date time when the workflow of this type will no longer be processed.
+        /// </summary>
+        /// <value>
+        /// The workflow expire date time.
+        /// </value>
+        [DataMember]
+        public DateTime? WorkflowExpireDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [is login required].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [is login required]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsLoginRequired { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -237,10 +302,19 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
         /// </summary>
         /// <value>
-        /// Teh <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
+        /// The <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the form builder template.
+        /// </summary>
+        /// <value>
+        /// The form builder template.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowFormBuilderTemplate FormBuilderTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing  the <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that will be executed/performed as part of this WorkflowType.
@@ -254,7 +328,21 @@ namespace Rock.Model
             get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
             set { _activityTypes = value; }
         }
+
         private ICollection<WorkflowActivityType> _activityTypes;
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
+                return supportedActions;
+            }
+        }
 
         #endregion Navigation Properties
     }
@@ -272,9 +360,9 @@ namespace Rock.Model
         public WorkflowTypeConfiguration()
         {
             this.HasOptional( m => m.Category ).WithMany().HasForeignKey( m => m.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( m => m.FormBuilderTemplate ).WithMany().HasForeignKey( m => m.FormBuilderTemplateId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion Entity Configuration
 }
-

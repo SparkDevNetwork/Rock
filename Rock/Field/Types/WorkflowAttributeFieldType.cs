@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of attributes for a specific workflow Type
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class WorkflowAttributeFieldType : FieldType
     {
 

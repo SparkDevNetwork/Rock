@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Defined Types
     /// Stored as DefinedType.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class DefinedTypeFieldType : FieldType, IEntityFieldType
     {
 

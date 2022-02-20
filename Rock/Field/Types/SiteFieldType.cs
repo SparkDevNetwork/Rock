@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) SiteFieldType
     /// Stored as Site.Id
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class SiteFieldType : FieldType, IEntityFieldType
     {
         #region Configuration

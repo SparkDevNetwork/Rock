@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -362,8 +363,25 @@ namespace Rock.Model
             {
                 try
                 {
-                    var uri = new Uri( url );
-                    var urlParams = System.Web.HttpUtility.ParseQueryString( uri.Query );
+                    NameValueCollection urlParams;
+
+                    if ( Uri.TryCreate( url, UriKind.Absolute, out var uri ) )
+                    {
+                        urlParams = System.Web.HttpUtility.ParseQueryString( uri.Query );
+                    }
+                    else if ( url.IndexOf( "?" ) >= 0 )
+                    {
+                        // If it's not a full URI but has a "?" character then
+                        // assume it's a special format from an external application
+                        // and just take everything after the "?".
+                        urlParams = System.Web.HttpUtility.ParseQueryString( url.Substring( url.IndexOf( "?" ) + 1 ) );
+                    }
+                    else
+                    {
+                        // Assume it's just a plain query string already.
+                        urlParams = System.Web.HttpUtility.ParseQueryString( url );
+                    }
+
                     this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
                     this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
                     this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
@@ -372,7 +390,7 @@ namespace Rock.Model
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( new Exception( $"Error parsing '{url}' to the uri.", ex ), null );
+                    ExceptionLogService.LogException( new Exception( $"Error parsing '{url}' to UTM fields.", ex ), null );
                 }
             }
         }

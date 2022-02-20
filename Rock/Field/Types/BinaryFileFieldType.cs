@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -32,6 +33,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of binary files of a specific type
     /// Stored as BinaryFile's Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class BinaryFileFieldType : FieldType, IEntityFieldType
     {
 

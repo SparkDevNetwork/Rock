@@ -15,8 +15,9 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
+import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue } from "../ViewModels";
 
 export const enum ConfigurationValueKey {
     ShouldRequireTrailingForwardSlash = "ShouldRequireTrailingForwardSlash",
@@ -32,13 +33,17 @@ const editComponent = defineAsyncComponent(async () => {
  * The field type handler for the Email field.
  */
 export class UrlLinkFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: ClientAttributeValue): string {
+    public override getHtmlValue(value: PublicAttributeValue): string {
         const textValue = this.getTextValue(value);
 
         return textValue ? `<a href="${textValue}">${textValue}</a>` : "";
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return stringComparisonTypes;
     }
 }

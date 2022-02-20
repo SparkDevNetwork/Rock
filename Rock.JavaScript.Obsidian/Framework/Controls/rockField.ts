@@ -17,19 +17,19 @@
 import { getFieldType } from "../Fields/index";
 import { computed, defineComponent, PropType, provide } from "vue";
 import { TextFieldType } from "../Fields/textField";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
+import { PublicAttributeValue, PublicEditableAttributeValue } from "../ViewModels";
 
 const textField = new TextFieldType();
 
-function instanceOfEditable(value: ClientAttributeValue): value is ClientEditableAttributeValue {
-    return (<ClientEditableAttributeValue>value).key !== undefined;
+function instanceOfEditable(value: PublicAttributeValue): value is PublicEditableAttributeValue {
+    return (<PublicEditableAttributeValue>value).key !== undefined;
 }
 
 export default defineComponent({
     name: "RockField",
     props: {
         attributeValue: {
-            type: Object as PropType<ClientAttributeValue | ClientEditableAttributeValue>,
+            type: Object as PropType<PublicAttributeValue | PublicEditableAttributeValue>,
             required: true
         },
         showEmptyValue: {
@@ -80,7 +80,7 @@ export default defineComponent({
         });
 
         /** The edit component to use to display the value. */
-        const editComponent = computed(() => field.value.getEditComponent(props.attributeValue));
+        const editComponent = computed(() => field.value.getEditComponent());
 
         /** The value to display or edit. */
         const value = computed({
@@ -89,7 +89,7 @@ export default defineComponent({
                 props.attributeValue.value = newValue;
 
                 if (instanceOfEditable(props.attributeValue)) {
-                    field.value.updateTextValue(props.attributeValue);
+                    props.attributeValue.textValue = field.value.getTextValueFromConfiguration(props.attributeValue.value, props.attributeValue.configurationValues ?? {});
                 }
 
                 emit("update:attributeValue", props.attributeValue);

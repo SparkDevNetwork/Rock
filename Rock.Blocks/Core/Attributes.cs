@@ -311,7 +311,7 @@ namespace Rock.Blocks.Core
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="attribute">The attribute whose value will be viewed.</param>
         /// <returns>A <see cref="ClientAttributeValueViewModel"/> that represents the attribute value.</returns>
-        private ClientAttributeValueViewModel GetAttributeValue( RockContext rockContext, AttributeCache attribute )
+        private PublicAttributeValueViewModel GetAttributeValue( RockContext rockContext, AttributeCache attribute )
         {
             var entityId = GetEntityId();
 
@@ -322,16 +322,16 @@ namespace Rock.Blocks.Core
 
                 if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
                 {
-                    return ClientAttributeHelper.ToClientAttributeValue( attribute, attributeValue.Value );
+                    return PublicAttributeHelper.ToPublicAttributeValue( attribute, attributeValue.Value );
                 }
                 else
                 {
-                    return ClientAttributeHelper.ToClientAttributeValue( attribute, attribute.DefaultValue );
+                    return PublicAttributeHelper.ToPublicAttributeValue( attribute, attribute.DefaultValue );
                 }
             }
             else
             {
-                return ClientAttributeHelper.ToClientAttributeValue( attribute, attribute.DefaultValue );
+                return PublicAttributeHelper.ToPublicAttributeValue( attribute, attribute.DefaultValue );
             }
         }
 
@@ -382,7 +382,7 @@ namespace Rock.Blocks.Core
             var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attribute.Id, entityId );
             string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
 
-            return ActionOk( ClientAttributeHelper.ToClientEditableAttributeValue( attribute, value ) );
+            return ActionOk( PublicAttributeHelper.ToPublicEditableAttributeValue( attribute, value ) );
         }
 
         /// <summary>
@@ -422,7 +422,7 @@ namespace Rock.Blocks.Core
                     attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue.Value = ClientAttributeHelper.GetValueFromClient( attribute, value );
+                attributeValue.Value = PublicAttributeHelper.GetPrivateValue( attribute, value );
 
                 rockContext.SaveChanges();
 
@@ -583,7 +583,7 @@ namespace Rock.Blocks.Core
 
         public bool IsActive { get; set; }
 
-        public ClientAttributeValueViewModel Value { get; set; }
+        public PublicAttributeValueViewModel Value { get; set; }
 
         public bool IsDeleteEnabled { get; set; }
 

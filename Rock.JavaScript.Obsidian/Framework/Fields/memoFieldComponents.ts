@@ -14,12 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
-import { getFieldEditorProps } from "./utils";
+import { defineComponent, ref, computed, watch } from "vue";
+import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import TextBox from "../Elements/textBox";
-import { asBooleanOrNull } from "../Services/boolean";
+import NumberBox from "../Elements/numberBox";
+import CheckBox from "../Elements/checkBox";
+import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "../Services/boolean";
+import { toNumberOrNull } from "../Services/number";
 import { toNumber } from "../Services/number";
 import { ConfigurationValueKey } from "./memoField";
+import { useVModelPassthrough } from "../Util/component";
 
 export const EditComponent = defineComponent({
     name: "MemoField.Edit",
@@ -30,31 +34,31 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
-    data() {
-        return {
-            internalValue: ""
-        };
-    },
+    emits: [
+        "update:modelValue"
+    ],
 
-    computed: {
-        configAttributes(): Record<string, number | boolean> {
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        const configAttributes = computed((): Record<string, number | boolean> => {
             const attributes: Record<string, number | boolean> = {};
 
-            const maxCharsConfig = this.configurationValues[ConfigurationValueKey.MaxCharacters];
+            const maxCharsConfig = props.configurationValues[ConfigurationValueKey.MaxCharacters];
             const maxCharsValue = toNumber(maxCharsConfig);
 
             if (maxCharsValue) {
                 attributes.maxLength = maxCharsValue;
             }
 
-            const showCountDownConfig = this.configurationValues[ConfigurationValueKey.ShowCountDown];
+            const showCountDownConfig = props.configurationValues[ConfigurationValueKey.ShowCountDown];
             const showCountDownValue = asBooleanOrNull(showCountDownConfig) || false;
 
             if (showCountDownValue) {
                 attributes.showCountDown = showCountDownValue;
             }
 
-            const rowsConfig = this.configurationValues[ConfigurationValueKey.NumberOfRows];
+            const rowsConfig = props.configurationValues[ConfigurationValueKey.NumberOfRows];
             const rows = toNumber(rowsConfig || null) || 3;
 
             if (rows > 0) {
@@ -62,23 +66,155 @@ export const EditComponent = defineComponent({
             }
 
             return attributes;
-        }
-    },
+        });
 
-    watch: {
-        internalValue(): void {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-
-        modelValue: {
-            immediate: true,
-            handler(): void {
-                this.internalValue = this.modelValue || "";
-            }
-        }
+        return {
+            internalValue,
+            configAttributes
+        };
     },
 
     template: `
 <TextBox v-model="internalValue" v-bind="configAttributes" textMode="MultiLine" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "MemoField.Filter",
+
+    components: {
+        TextBox
+    },
+
+    props: getFieldEditorProps(),
+
+    emits: [
+        "update:modelValue"
+    ],
+
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        return {
+            internalValue
+        };
+    },
+
+    template: `
+<TextBox v-model="internalValue" />
+`
+});
+
+export const ConfigurationComponent = defineComponent({
+    name: "MemoField.Configuration",
+
+    components: {
+        CheckBox,
+        NumberBox
+    },
+
+    props: getFieldConfigurationProps(),
+
+    emits: [
+        "update:modelValue",
+        "updateConfiguration",
+        "updateConfigurationValue"
+    ],
+
+    setup(props, { emit }) {
+        // Define the properties that will hold the current selections.
+        const numberOfRows = ref<number | null>(null);
+        const allowHtml = ref(false);
+        const maxCharacters = ref<number | null>(null);
+        const showCountdown = ref(false);
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {};
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.NumberOfRows] = numberOfRows.value?.toString() ?? "";
+            newValue[ConfigurationValueKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
+            newValue[ConfigurationValueKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
+            newValue[ConfigurationValueKey.ShowCountDown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.NumberOfRows] !== (props.modelValue[ConfigurationValueKey.NumberOfRows] ?? "")
+                || newValue[ConfigurationValueKey.AllowHtml] !== (props.modelValue[ConfigurationValueKey.AllowHtml] ?? "False")
+                || newValue[ConfigurationValueKey.MaxCharacters] !== (props.modelValue[ConfigurationValueKey.MaxCharacters] ?? "")
+                || newValue[ConfigurationValueKey.ShowCountDown] !== (props.modelValue[ConfigurationValueKey.ShowCountDown] ?? "False");
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         * 
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            numberOfRows.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.NumberOfRows]);
+            allowHtml.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowHtml]);
+            maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxCharacters]);
+            showCountdown.value = asBoolean(props.modelValue[ConfigurationValueKey.ShowCountDown]);
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
+        // THIS FIELD DOES NOT NEED THIS
+        watch([], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(numberOfRows, val => maybeUpdateConfiguration(ConfigurationValueKey.NumberOfRows, val?.toString() ?? ""));
+        watch(allowHtml, val => maybeUpdateConfiguration(ConfigurationValueKey.AllowHtml, asTrueFalseOrNull(val) ?? "False"));
+        watch(maxCharacters, val => maybeUpdateConfiguration(ConfigurationValueKey.MaxCharacters, val?.toString() ?? ""));
+        watch(showCountdown, val => maybeUpdateConfiguration(ConfigurationValueKey.ShowCountDown, asTrueFalseOrNull(val) ?? "False"));
+
+        return {
+            numberOfRows,
+            maxCharacters,
+            allowHtml,
+            showCountdown
+        };
+    },
+
+    template: `
+<div>
+    <NumberBox v-model="numberOfRows" label="Rows" help="The number of rows to display (default is 3)" />
+    <CheckBox v-model="allowHtml" label="Allow HTML" text="Yes" help="Controls whether server should prevent HTML from being entered in this field or not" />
+    <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text" />
+    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" text="Yes" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)" />
+</div>
 `
 });

@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) step type filtered by a selected step program
     /// Stored as "StepProgram.Guid|StepType.Guid"
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class StepProgramStepTypeFieldType : FieldType
     {
         #region Keys

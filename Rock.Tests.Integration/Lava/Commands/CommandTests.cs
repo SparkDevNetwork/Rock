@@ -644,6 +644,30 @@ Cache #{{ item.Count }}
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
+        [TestMethod]
+        public void SqlBlock_NullColumnValueInResult_IsRenderedAsEmptyString()
+        {
+            var input = @"
+{% sql %}
+    SELECT   [NickName], [LastName]
+    FROM     [Person] 
+    WHERE    [LastName] = 'Decker'
+    AND      [NickName] IN ('Ted', 'Alex')
+UNION
+    SELECT   null as [NickName], null as [LastName]
+    ORDER BY [NickName]
+{% endsql %}
+
+{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+";
+
+            var expectedOutput = @"_;Alex_Decker;Ted_Decker;";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
         #endregion
 
         #region Stylesheet

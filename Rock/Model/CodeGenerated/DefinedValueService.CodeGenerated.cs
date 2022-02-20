@@ -115,6 +115,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<CampusTopic>( Context ).Queryable().Any( a => a.TopicTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, CampusTopic.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Communication>( Context ).Queryable().Any( a => a.SMSFromDefinedValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Communication.FriendlyTypeName );
@@ -372,6 +378,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<WorkflowActionFormSection>( Context ).Queryable().Any( a => a.SectionTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, WorkflowActionFormSection.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -400,6 +412,7 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                CategoryId = model.CategoryId,
                 DefinedTypeId = model.DefinedTypeId,
                 Description = model.Description,
                 IsActive = model.IsActive,
@@ -475,6 +488,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this DefinedValue target, DefinedValue source )
         {
             target.Id = source.Id;
+            target.CategoryId = source.CategoryId;
             target.DefinedTypeId = source.DefinedTypeId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

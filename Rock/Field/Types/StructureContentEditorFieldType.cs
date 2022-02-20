@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field type to encapsulate a structured content editor which allows
     /// the individual a nice UI interface to editing content.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class StructureContentEditorFieldType : FieldType
     {
         #region Edit Control

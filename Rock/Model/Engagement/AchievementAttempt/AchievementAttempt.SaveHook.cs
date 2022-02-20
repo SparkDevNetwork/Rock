@@ -59,6 +59,8 @@ namespace Rock.Model
                     wasSuccessful = ( bool ) entry.OriginalValues[nameof( AchievementAttempt.IsSuccessful )];
                 }
 
+                var currentPersonAliasId = new PersonService( new RockContext() ).GetCurrentPerson().PrimaryAliasId;
+
                 // Add a transaction to process workflows and add steps
                 updateAchievementAttemptMsg = new UpdateAchievementAttempt.Message
                 {
@@ -68,7 +70,8 @@ namespace Rock.Model
                     IsNowSuccessful = !wasSuccessful && achievementAttempt.IsSuccessful,
                     AchievementTypeId = achievementAttempt.AchievementTypeId,
                     StartDate = achievementAttempt.AchievementAttemptStartDateTime,
-                    EndDate = achievementAttempt.AchievementAttemptEndDateTime
+                    EndDate = achievementAttempt.AchievementAttemptEndDateTime,
+                    InitiatorPersonAliasId = currentPersonAliasId
                 };
 
                 return updateAchievementAttemptMsg;

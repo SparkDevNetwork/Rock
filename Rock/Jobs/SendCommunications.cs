@@ -173,7 +173,7 @@ namespace Rock.Jobs
                 rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
             }
 
-            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Mark failed communications runtime: {1} ms", nameof( SendCommunications ), stopWatch.ElapsedMilliseconds );
+            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Query expired communications runtime: {1} ms", nameof( SendCommunications ), stopWatch.ElapsedMilliseconds );
         }
 
         /// <summary>

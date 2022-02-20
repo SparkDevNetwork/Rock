@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import { ClientAttributeValue } from "../ViewModels";
+import { PublicAttributeValue } from "../ViewModels";
 import RockField from "./rockField";
 import LoadingIndicator from "../Elements/loadingIndicator";
 
@@ -31,7 +31,7 @@ export default defineComponent({
             default: false
         },
         attributeValues: {
-            type: Array as PropType<ClientAttributeValue[]>,
+            type: Array as PropType<PublicAttributeValue[]>,
             required: true
         },
         showEmptyValues: {
@@ -44,7 +44,7 @@ export default defineComponent({
         }
     },
     computed: {
-        validAttributeValues(): ClientAttributeValue[] {
+        validAttributeValues(): PublicAttributeValue[] {
             return this.attributeValues;
         }
     },

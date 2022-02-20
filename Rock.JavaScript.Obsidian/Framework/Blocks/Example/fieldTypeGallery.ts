@@ -23,7 +23,7 @@ import { FieldType as FieldTypeGuids } from "../../SystemGuids";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import { Guid } from "../../Util/guid";
-import { ClientEditableAttributeValue, ListItem } from "../../ViewModels";
+import { PublicEditableAttributeValue, ListItem } from "../../ViewModels";
 
 /**
  * Convert a simpler set of parameters into AttributeValueData
@@ -31,7 +31,7 @@ import { ClientEditableAttributeValue, ListItem } from "../../ViewModels";
  * @param fieldTypeGuid
  * @param configValues
  */
-const getAttributeValueData = (name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Array<ClientEditableAttributeValue> => {
+const getAttributeValueData = (name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Array<PublicEditableAttributeValue> => {
     const configurationValues = configValues;
 
     return [reactive({
@@ -77,7 +77,7 @@ const galleryAndResult = defineComponent({
             required: true
         },
         attributeValues: {
-            type: Array as PropType<ClientEditableAttributeValue[]>,
+            type: Array as PropType<PublicEditableAttributeValue[]>,
             required: true
         }
     },

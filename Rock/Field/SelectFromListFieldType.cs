@@ -51,18 +51,18 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
         {
-            var clientValues = base.GetClientConfigurationValues( configurationValues );
+            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues );
 
-            var repeatColumns = configurationValues.GetValueOrNull( REPEAT_COLUMNS )?.AsIntegerOrNull() ?? 0;
+            var repeatColumns = privateConfigurationValues.GetValueOrNull( REPEAT_COLUMNS )?.AsIntegerOrNull() ?? 0;
 
             if ( repeatColumns == 0 )
             {
                 repeatColumns = 4;
             }
 
-            var values = GetListSource( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+            var values = GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                     .Select( kvp => new ListItemViewModel
                     {
                         Value = kvp.Key,
@@ -158,16 +158,16 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( value == null )
+            if ( privateValue == null )
             {
                 return string.Empty;
             }
 
-            var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
 
-            return GetListSource( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+            return GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                 .Where( a => valueGuidList.Contains( a.Key.AsGuid() ) )
                 .Select( s => s.Value )
                 .ToList()

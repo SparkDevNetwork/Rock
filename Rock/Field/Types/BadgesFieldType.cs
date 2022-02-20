@@ -24,6 +24,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Select multiple Badges from a checkbox list. Stored as a comma-delimited list of Badge Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class BadgesFieldType : SelectFromListFieldType
     {
         /// <summary>

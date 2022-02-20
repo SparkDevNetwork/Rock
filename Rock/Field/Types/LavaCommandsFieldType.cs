@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited list of LavaCommand names
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class LavaCommandsFieldType : FieldType
     {
         #region Configuration

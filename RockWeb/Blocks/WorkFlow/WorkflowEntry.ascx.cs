@@ -23,7 +23,9 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.ElectronicSignature;
 using Rock.Model;
+using Rock.Pdf;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web;
@@ -151,6 +153,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string WorkflowId = "WorkflowId";
             public const string WorkflowTypeDeterminedByBlockAttribute = "WorkflowTypeDeterminedByBlockAttribute";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
+            public const string SignatureDocumentHtml = "SignatureDocumentHtml";
         }
 
         #region Fields
@@ -229,6 +232,16 @@ namespace RockWeb.Blocks.WorkFlow
             set { ViewState[ViewStateKey.InteractionStartDateTime] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the signature document HTML, not including the SignatureData.
+        /// </summary>
+        /// <value>The signature document HTML.</value>
+        public string SignatureDocumentHtml
+        {
+            get { return ViewState[ViewStateKey.SignatureDocumentHtml] as string; }
+            set { ViewState[ViewStateKey.SignatureDocumentHtml] = value; }
+        }
+
         #endregion Properties
 
         #region Base Control Methods
@@ -243,7 +256,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( HydrateObjects() )
             {
-                BuildWorkflowActionForm( false );
+                BuildWorkflowActionUI( false );
             }
         }
 
@@ -278,7 +291,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     InitializeInteractions();
 
-                    BuildWorkflowActionForm( true );
+                    BuildWorkflowActionUI( true );
                     ProcessActionRequest();
                 }
             }
@@ -595,6 +608,17 @@ namespace RockWeb.Blocks.WorkFlow
                                 ActionTypeId = _actionType.Id;
                                 return true;
                             }
+
+                            if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.ElectronicSignature && action.IsCriteriaValid )
+                            {
+                                _activity = activity;
+                                _activity.LoadAttributes();
+
+                                _action = action;
+                                _actionType = _action.ActionTypeCache;
+                                ActionTypeId = _actionType.Id;
+                                return true;
+                            }
                         }
                     }
                 }
@@ -624,10 +648,11 @@ namespace RockWeb.Blocks.WorkFlow
                     ShowMessage( NotificationBoxType.Warning, string.Empty, workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
                 }
             }
-           
+
             // If we are returning False (Workflow is not active), make sure the form and notes are not shown
             ShowNotes( false );
-            pnlForm.Visible = false;
+            pnlWorkflowUserForm.Visible = false;
+            pnlWorkflowActionElectronicSignature.Visible = false;
             return false;
         }
 
@@ -720,14 +745,36 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Builds the WorkflowActionForm.
+        /// Builds the workflow action UI.
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void BuildWorkflowActionForm( bool setValues )
+        private void BuildWorkflowActionUI( bool setValues )
         {
-            Dictionary<string, object> mergeFields = GetWorkflowEntryMergeFields();
-
             var form = _actionType.WorkflowForm;
+
+            if ( form != null )
+            {
+                BuildWorkflowActionForm( form, setValues );
+                return;
+            }
+
+            if ( _actionType.WorkflowAction is Rock.Workflow.Action.ElectronicSignature )
+            {
+                var electronicSignatureWorkflowAction = _actionType.WorkflowAction as Rock.Workflow.Action.ElectronicSignature;
+                BuildWorkflowActionDigitalSignature( electronicSignatureWorkflowAction, _action, setValues );
+            }
+        }
+
+        /// <summary>
+        /// Builds any UI needed by the workflow action.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void BuildWorkflowActionForm( WorkflowActionFormCache form, bool setValues )
+        {
+            divWorkflowActionUserFormNotes.Visible = true;
+            pnlWorkflowActionElectronicSignature.Visible = false;
+
+            Dictionary<string, object> mergeFields = GetWorkflowEntryMergeFields();
 
             if ( setValues )
             {
@@ -750,7 +797,7 @@ namespace RockWeb.Blocks.WorkFlow
                 BuildPersonEntryForm( _action, form, setValues, mergeFields );
             }
 
-            phAttributes.Controls.Clear();
+            phWorkflowFormAttributes.Controls.Clear();
 
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
             {
@@ -786,10 +833,10 @@ namespace RockWeb.Blocks.WorkFlow
 
                 fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
                 {
-                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( phAttributes );
+                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
                 };
 
-                phAttributes.Controls.Add( fieldVisibilityWrapper );
+                phWorkflowFormAttributes.Controls.Add( fieldVisibilityWrapper );
 
                 if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml ) )
                 {
@@ -805,11 +852,11 @@ namespace RockWeb.Blocks.WorkFlow
                     // get formatted value
                     if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                     {
-                        formattedValue = field.FormatValueAsHtml( phAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
+                        formattedValue = field.FormatValueAsHtml( phWorkflowFormAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
                     }
                     else
                     {
-                        formattedValue = field.FormatValueAsHtml( phAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
+                        formattedValue = field.FormatValueAsHtml( phWorkflowFormAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
                     }
 
                     if ( formAttribute.HideLabel )
@@ -869,7 +916,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phAttributes );
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
@@ -1141,7 +1188,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         private void ShowNotes( bool visible )
         {
-            divNotes.Visible = visible;
+            divWorkflowActionUserFormNotes.Visible = visible;
 
             if ( visible )
             {
@@ -1382,23 +1429,6 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Gets the workflow attribute entity attribute value.
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <returns></returns>
-        private string GetWorkflowAttributeEntityAttributeValue( AttributeCache attribute )
-        {
-            var workflowAttributeEntity = GetWorkflowAttributeEntity( attribute );
-            if ( workflowAttributeEntity != null )
-            {
-                return workflowAttributeEntity.GetAttributeValue( attribute.Key );
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Creates or Updates person from person editor.
         /// </summary>
         /// <param name="existingPersonId">The existing person identifier.</param>
@@ -1556,7 +1586,7 @@ namespace RockWeb.Blocks.WorkFlow
             foreach ( WorkflowActionFormAttributeCache formAttribute in editableFormAttributes )
             {
                 var attribute = AttributeCache.Get( formAttribute.AttributeId );
-                var control = phAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
+                var control = phWorkflowFormAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
 
                 if ( attribute != null && control != null )
                 {
@@ -1586,10 +1616,9 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
-            var mergeFields = GetWorkflowEntryMergeFields();
-
-            Guid activityTypeGuid = Guid.Empty;
+            Guid? activityTypeGuid = null;
             string responseText = "Your information has been submitted successfully.";
+            var mergeFields = GetWorkflowEntryMergeFields();
 
             // If the selected action requires valid form data, trigger page validation and discontinue processing if there are any errors.
             var buttons = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
@@ -1608,21 +1637,12 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                 }
 
-                activityTypeGuid = button.ActivateActivityTypeGuid.AsGuid();
+                activityTypeGuid = button.ActivateActivityTypeGuid.AsGuidOrNull();
 
                 if ( !string.IsNullOrWhiteSpace( button.ResponseText ) )
                 {
                     responseText = button.ResponseText.ResolveMergeFields( mergeFields );
                 }
-            }
-
-            _action.MarkComplete();
-            _action.FormAction = formAction;
-            _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
-
-            if ( _action.ActionTypeCache.IsActivityCompletedOnSuccess )
-            {
-                _action.Activity.MarkComplete();
             }
 
             if ( _actionType.WorkflowForm.ActionAttributeGuid.HasValue )
@@ -1638,11 +1658,31 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+            _action.FormAction = formAction;
+            _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
+
+            CompleteCurrentWorkflowAction( activityTypeGuid, responseText );
+        }
+
+        /// <summary>
+        /// Completes the current workflow action.
+        /// </summary>
+        /// <param name="activateActivityTypeGuid">The activate activity type unique identifier.</param>
+        /// <param name="responseText">The response text.</param>
+        private void CompleteCurrentWorkflowAction( Guid? activateActivityTypeGuid, string responseText )
+        {
+            _action.MarkComplete();
+
+            if ( _action.ActionTypeCache.IsActivityCompletedOnSuccess )
+            {
+                _action.Activity.MarkComplete();
+            }
+
             var _workflowType = GetWorkflowType();
 
-            if ( !activityTypeGuid.IsEmpty() )
+            if ( activateActivityTypeGuid.HasValue )
             {
-                var activityType = _workflowType.ActivityTypes.Where( a => a.Guid.Equals( activityTypeGuid ) ).FirstOrDefault();
+                var activityType = _workflowType.ActivityTypes.Where( a => a.Guid.Equals( activateActivityTypeGuid.Value ) ).FirstOrDefault();
                 if ( activityType != null )
                 {
                     WorkflowActivity.Activate( activityType, _workflow );
@@ -1738,7 +1778,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    pnlForm.Visible = false;
+                    pnlWorkflowUserForm.Visible = false;
+                    pnlWorkflowActionElectronicSignature.Visible = false;
                 }
             }
         }
@@ -1760,7 +1801,8 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( hideForm )
             {
-                pnlForm.Visible = false;
+                pnlWorkflowUserForm.Visible = false;
+                pnlWorkflowActionElectronicSignature.Visible = false;
             }
         }
 
@@ -1831,6 +1873,210 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         #endregion Methods
+
+        #region ElectronicSignature Related stuff
+
+        /// <summary>
+        /// Builds the workflow action digital signature.
+        /// </summary>
+        /// <param name="electronicSignatureWorkflowAction">The electronic signature workflow action.</param>
+        /// <param name="workflowAction">The workflow action.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void BuildWorkflowActionDigitalSignature( Rock.Workflow.Action.ElectronicSignature electronicSignatureWorkflowAction, WorkflowAction workflowAction, bool setValues )
+        {
+            ShowNotes( false );
+            pnlWorkflowUserForm.Visible = false;
+            pnlWorkflowActionElectronicSignature.Visible = true;
+
+            var rockContext = new RockContext();
+
+            var signatureDocumentTemplate = electronicSignatureWorkflowAction.GetSignatureDocumentTemplate( rockContext, workflowAction );
+            if ( signatureDocumentTemplate == null )
+            {
+                return;
+            }
+
+            escElectronicSignatureControl.SignatureType = signatureDocumentTemplate.SignatureType;
+            escElectronicSignatureControl.DocumentTerm = signatureDocumentTemplate.DocumentTerm;
+
+            var signedByPersonAliasId = electronicSignatureWorkflowAction.GetSignedByPersonAliasId( rockContext, workflowAction, this.CurrentPersonAliasId );
+            if ( signedByPersonAliasId.HasValue )
+            {
+                // Default email to the SignedByPerson's email
+                var signedByPerson = new PersonAliasService( rockContext ).GetPerson( signedByPersonAliasId.Value );
+                escElectronicSignatureControl.SignedByEmail = signedByPerson?.Email;
+
+                // When in Drawn Mode, we want to prefill the 'Confirm' Legal Name. (But not the Signed Name)
+                escElectronicSignatureControl.LegalName = signedByPerson?.FullName;
+            }
+
+            // If not logged-in or the Workflow hasn't specified a SignedByPerson, show the name that was typed when on the Completion step
+            escElectronicSignatureControl.ShowNameOnCompletionStepWhenInTypedSignatureMode = ( signedByPersonAliasId == null );
+
+            escElectronicSignatureControl.EmailAddressPrompt = signatureDocumentTemplate.CompletionSystemCommunicationId.HasValue
+                ? ElectronicSignatureControl.EmailAddressPromptType.CompletionEmail
+                : ElectronicSignatureControl.EmailAddressPromptType.PersonEmail;
+
+            if ( setValues )
+            {
+                var mergeFields = GetWorkflowEntryMergeFields();
+                var lavaTemplate = signatureDocumentTemplate.LavaTemplate;
+                this.SignatureDocumentHtml = lavaTemplate?.ResolveMergeFields( mergeFields );
+                iframeSignatureDocumentHTML.Attributes["srcdoc"] = this.SignatureDocumentHtml;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the <see cref="ElectronicSignatureControl" />
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSignSignature_Click( object sender, EventArgs e )
+        {
+            // From Workflow
+            var electronicSignatureWorkflowAction = _actionType?.WorkflowAction as Rock.Workflow.Action.ElectronicSignature;
+            if ( electronicSignatureWorkflowAction == null )
+            {
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unable to determine Signature Action." );
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var workflowAction = _action;
+            var signatureDocumentTemplate = electronicSignatureWorkflowAction.GetSignatureDocumentTemplate( rockContext, workflowAction );
+            if ( signatureDocumentTemplate == null )
+            {
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unable to determine Signature Template." );
+                return;
+            }
+
+            var signedByPersonAliasId = electronicSignatureWorkflowAction.GetSignedByPersonAliasId( rockContext, workflowAction, this.CurrentPersonAliasId );
+            Person signedByPerson;
+            if ( signedByPersonAliasId.HasValue )
+            {
+                signedByPerson = new PersonAliasService( rockContext ).GetPerson( signedByPersonAliasId.Value );
+            }
+            else
+            {
+                signedByPerson = null;
+            }
+
+            var appliesToPersonAliasId = electronicSignatureWorkflowAction.GetAppliesToPersonAliasId( rockContext, workflowAction );
+
+            Dictionary<string, object> mergeFields = GetWorkflowEntryMergeFields();
+            mergeFields.Add( "SignatureDocumentTemplate", signatureDocumentTemplate );
+
+            var signatureDocumentName = electronicSignatureWorkflowAction.GetSignatureDocumentName( workflowAction, mergeFields );
+            if ( signatureDocumentName.IsNullOrWhiteSpace() )
+            {
+                signatureDocumentName = "Signed Document";
+            }
+
+            var assignedToPersonAliasId = electronicSignatureWorkflowAction.GetAssignedToPersonAliasId( rockContext, workflowAction );
+
+            // Glue stuff into the signature document
+            var signatureDocument = new SignatureDocument();
+
+            // From Workflow Action
+            signatureDocument.SignatureDocumentTemplateId = signatureDocumentTemplate.Id;
+            signatureDocument.Status = SignatureDocumentStatus.Signed;
+            signatureDocument.Name = signatureDocumentName;
+            signatureDocument.EntityTypeId = EntityTypeCache.GetId<Workflow>();
+            signatureDocument.EntityId = _workflow?.Id;
+            signatureDocument.SignedByPersonAliasId = signedByPersonAliasId;
+            signatureDocument.AssignedToPersonAliasId = assignedToPersonAliasId;
+            signatureDocument.AppliesToPersonAliasId = appliesToPersonAliasId;
+
+            // From Workflow Entry
+            signatureDocument.SignedDocumentText = this.SignatureDocumentHtml;
+            signatureDocument.LastStatusDate = RockDateTime.Now;
+            signatureDocument.SignedDateTime = RockDateTime.Now;
+
+            // From ElectronicSignatureControl
+            signatureDocument.SignatureData = escElectronicSignatureControl.DrawnSignatureImageDataUrl;
+            signatureDocument.SignedName = escElectronicSignatureControl.SignedName;
+            signatureDocument.SignedByEmail = escElectronicSignatureControl.SignedByEmail;
+
+            // From System.Web            
+            signatureDocument.SignedClientIp = this.GetClientIpAddress();
+            signatureDocument.SignedClientUserAgent = Request.UserAgent;
+
+            // Needed before determing SignatureInformation (Signed Name, metadata)
+            signatureDocument.SignatureVerificationHash = signatureDocument.CalculateSignatureVerificationHash();
+
+            var signatureInformationHtmlArgs = new GetSignatureInformationHtmlOptions
+            {
+                SignatureType = signatureDocumentTemplate.SignatureType,
+                SignedName = escElectronicSignatureControl.SignedName,
+                DrawnSignatureDataUrl = escElectronicSignatureControl.DrawnSignatureImageDataUrl,
+                SignedByPerson = signedByPerson,
+                SignedDateTime = signatureDocument.SignedDateTime,
+                SignedClientIp = signatureDocument.SignedClientIp,
+                SignatureVerificationHash = signatureDocument.SignatureVerificationHash
+            };
+
+            // Helper takes care of generating HTML and combining SignatureDocumentHTML and signedSignatureDocumentHtml into the final Signed Document
+            var signatureInformationHtml = ElectronicSignatureHelper.GetSignatureInformationHtml( signatureInformationHtmlArgs );
+            var signedSignatureDocumentHtml = ElectronicSignatureHelper.GetSignedDocumentHtml( this.SignatureDocumentHtml, signatureInformationHtml );
+
+            // PDF Generator to BinaryFile
+            BinaryFile pdfFile;
+            try
+            {
+                using ( var pdfGenerator = new PdfGenerator() )
+                {
+                    var binaryFileTypeId = signatureDocumentTemplate.BinaryFileTypeId;
+                    if ( !binaryFileTypeId.HasValue )
+                    {
+                        binaryFileTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.DIGITALLY_SIGNED_DOCUMENTS.AsGuid() );
+                    }
+
+                    pdfFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId ?? 0, signatureDocumentName, signedSignatureDocumentHtml );
+                }
+            }
+            catch ( PdfGeneratorException pdfGeneratorException )
+            {
+                LogException( pdfGeneratorException );
+                ShowMessage( NotificationBoxType.Danger, "Document Error", pdfGeneratorException.Message );
+                return;
+            }
+
+            pdfFile.IsTemporary = false;
+            new BinaryFileService( rockContext ).Add( pdfFile );
+            rockContext.SaveChanges();
+            signatureDocument.BinaryFileId = pdfFile.Id;
+
+            // Save Signature Documen to database
+            var signatureDocumentService = new SignatureDocumentService( rockContext );
+            signatureDocumentService.Add( signatureDocument );
+            rockContext.SaveChanges();
+
+            // reload with new context to get navigation properties to load. This wil be needed to save values back to Workflow Attributes
+            signatureDocument = new SignatureDocumentService( new RockContext() ).Get( signatureDocument.Id );
+            var recalcuatedHash = signatureDocument.CalculateSignatureVerificationHash();
+
+            // Save to Workflow Attributes
+            electronicSignatureWorkflowAction.SaveSignatureDocumentValuesToAttributes( _workflowRockContext, workflowAction, signatureDocument );
+
+            // Send Communication
+            if ( signatureDocumentTemplate.CompletionSystemCommunication != null )
+            {
+                ElectronicSignatureHelper.SendSignatureCompletionCommunication( signatureDocument.Id, out _ );
+            }
+
+            // Workflow
+            CompleteSignatureAction();
+        }
+
+        /// <summary>
+        /// Completes the signature action.
+        /// </summary>
+        private void CompleteSignatureAction()
+        {
+            CompleteCurrentWorkflowAction( null, "Your signature has been submitted successfully." );
+        }
+
+        #endregion Electronic Signature Related stuff
 
         #region Interaction Methods
 

@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class DefinedValueViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the CategoryId.
+        /// </summary>
+        /// <value>
+        /// The CategoryId.
+        /// </value>
+        public int? CategoryId { get; set; }
+
+        /// <summary>
         /// Gets or sets the DefinedTypeId.
         /// </summary>
         /// <value>

@@ -540,6 +540,29 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Verify the "equals" comparison operator for Enum values.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "DayOfWeekMonday == 1", true )]
+        [DataRow( "DayOfWeekMonday == 'Monday'", true )]
+        [DataRow( "1 == DayOfWeekMonday", true )]
+        [DataRow( "'Monday' == DayOfWeekMonday", true )]
+        [DataRow( "DayOfWeekMonday == 2", false )]
+        [DataRow( "DayOfWeekMonday == 'Tuesday'", false )]
+        [DataRow( "2 == DayOfWeekMonday", false )]
+        [DataRow( "'Tuesday' == DayOfWeekMonday", false )]
+        public void FluidEqual_EnumOperands_PerformsEnumComparison( string expression, bool expectedResult )
+        {
+            var values = new LavaDataDictionary();
+            values.Add( "DayOfWeekMonday", DayOfWeek.Monday );
+
+            var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
+
+            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, values, ignoreWhitespace: true );
+        }
+
+
+        /// <summary>
         /// Verify the "equals" comparison operator.
         /// </summary>
         [DataTestMethod]

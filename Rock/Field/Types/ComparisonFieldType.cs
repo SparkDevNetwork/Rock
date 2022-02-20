@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Defined Types
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ComparisonFieldType : FieldType
     {
 

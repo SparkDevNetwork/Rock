@@ -426,10 +426,29 @@ namespace Rock.Model
                 }
             }
 
-            // Remove transactions that have refunds
-            query = query.Where( t => !t.Refunds.Any() );
+            // We'll need to factor in partial amount refunds...
+            // Exclude transactions that have full refunds.
+            // If it does have a refund, include the transaction if it is just a partial refund
+            query = query.Where( t =>
+                    // Limit to ones that don't have refunds, or has a partial refund
+                    !t.Refunds.Any()
+                    ||
+                    // If it does have refunds, we can exclude the transaction if the refund amount is the same amount (full refund)
+                    // Otherwise, we'll have to include the transaction and figure out the partial amount left after the refund.
+                    (
+                        (
+                        // total original amount
+                        t.TransactionDetails.Sum( xx => xx.Amount )
 
-            // Remove transactions with $0 or negative amounts
+                           // total amount of any refund(s) for this transaction
+                           + t.Refunds.Sum( r => r.FinancialTransaction.TransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.00M )
+                        )
+
+                        != 0.00M
+                    )
+                );
+
+            // Remove transactions with $0 or negative amounts. If those are refunds, those will factored in above
             query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
 
             return query;
@@ -476,7 +495,13 @@ namespace Rock.Model
                 {
                     TransactionDateTime = t.TransactionDateTime.Value,
                     td.AccountId,
-                    td.Amount
+                    td.Amount,
+
+                        // For each Refund (there could be more than one) get the refund amount for each if the refunds's Detail records for the Account.
+                        // Then sum that up for the total refund amount for the account
+                        AccountRefundAmount = td.Transaction
+                        .Refunds.Select( a => a.FinancialTransaction.TransactionDetails.Where( rrr => rrr.AccountId == td.AccountId )
+                        .Sum( rrrr => ( decimal? ) rrrr.Amount ) ).Sum() ?? 0.0M
                 } ) )
                 .ToList();
 
@@ -487,7 +512,7 @@ namespace Rock.Model
                     Year = t.Key.Year,
                     Month = t.Key.Month,
                     AccountId = t.Key.AccountId,
-                    Amount = t.Sum( d => d.Amount )
+                    Amount = t.Sum( d => d.Amount + d.AccountRefundAmount )
                 } )
                 .OrderByDescending( a => a.Year )
                 .ThenByDescending( a => a.Month )

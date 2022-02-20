@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of <see cref="System.TimeZoneInfo"/>
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class TimeZoneFieldType : FieldType
     {
         #region Edit Control

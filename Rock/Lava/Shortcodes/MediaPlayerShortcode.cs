@@ -351,7 +351,19 @@ so you can customize this to be exactly what you want.</p>
             var currentPerson = GetCurrentPerson( context );
             var parms = ParseMarkup( _markup, context );
 
-            RenderToWriter( parms, currentPerson, result );
+            Guid? sessionGuid;
+
+            // Attempt to get the session guid
+            try
+            {
+                sessionGuid = ( HttpContext.Current.Handler as RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+            }
+            catch
+            {
+                sessionGuid = null;
+            }
+
+            RenderToWriter( parms, currentPerson, sessionGuid, result );
         }
 
         /// <summary>
@@ -382,8 +394,9 @@ so you can customize this to be exactly what you want.</p>
         /// </summary>
         /// <param name="parms">The parameters that will be used to construct the content.</param>
         /// <param name="currentPerson">The current person.</param>
+        /// <param name="rockSessionGuid">The current Rock session unique identifier.</param>
         /// <param name="result">The writer that output should be written to.</param>
-        internal static void RenderToWriter( Dictionary<string, string> parms, Person currentPerson, TextWriter result )
+        internal static void RenderToWriter( Dictionary<string, string> parms, Person currentPerson, Guid? rockSessionGuid, TextWriter result )
         {
             var options = new MediaPlayerOptions
             {
@@ -399,6 +412,7 @@ so you can customize this to be exactly what you want.</p>
                 RelatedEntityId = parms[ParameterKeys.RelatedEntityId].AsIntegerOrNull(),
                 RelatedEntityTypeId = parms[ParameterKeys.RelatedEntityTypeId].AsIntegerOrNull(),
                 SeekTime = parms[ParameterKeys.SeekTime].AsIntegerOrNull() ?? 10,
+                SessionGuid = rockSessionGuid,
                 TrackProgress = true,
                 Type = parms[ParameterKeys.Type],
                 Volume = parms[ParameterKeys.Volume].AsDoubleOrNull() ?? 1.0,

@@ -48,6 +48,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the amount.
+        /// Note that this amount factors in refunds, so no additional adjustment is needed.
         /// </summary>
         /// <value>
         /// The amount.

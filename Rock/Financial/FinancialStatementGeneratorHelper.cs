@@ -490,14 +490,18 @@ namespace Rock.Financial
                             // remove the refund's original TransactionDetails from the results
                             if ( transactionDetailListAll.Contains( refundedOriginalTransactionDetail ) )
                             {
-                                transactionDetailListAll.Remove( refundedOriginalTransactionDetail );
                                 foreach ( var refundDetailId in refund.FinancialTransaction.TransactionDetails.Select( a => a.Id ) )
                                 {
-                                    // remove the refund's transaction from the results
                                     var refundDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == refundDetailId );
                                     if ( refundDetail != null )
                                     {
-                                        transactionDetailListAll.Remove( refundDetail );
+                                        // If this is full refund, remove it from the list of transactions.
+                                        // If this is a partial refund, we'll need to keep it otherwise the totals won't match.
+                                        if ( ( refundDetail.AccountId == refundedOriginalTransactionDetail.AccountId ) && ( refundDetail.Amount + refundedOriginalTransactionDetail.Amount == 0 ) )
+                                        {
+                                            transactionDetailListAll.Remove( refundDetail );
+                                            transactionDetailListAll.Remove( refundedOriginalTransactionDetail );
+                                        }
                                     }
                                 }
                             }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,7 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display an address value
     /// </summary>
-    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class AddressFieldType : FieldType, IEntityFieldType
     {
 
@@ -76,9 +77,9 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var guid = value.AsGuidOrNull();
+            var guid = privateValue.AsGuidOrNull();
             Location location = null;
 
             if ( guid.HasValue )
@@ -111,9 +112,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var addressValue = clientValue.FromJsonOrNull<AddressFieldValue>();
+            var addressValue = publicValue.FromJsonOrNull<AddressFieldValue>();
 
             if (addressValue == null)
             {

@@ -1,8 +1,6 @@
 ﻿using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -17,10 +15,36 @@ namespace Rock.Workflow.Action.WorkflowControl
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Set Campus" )]
 
-    [PersonField( "Person", "The person whose primary campus to set the workflow campusId to. Leave blank to set person to nobody.", false, "", "", 1 )]
-    [CampusField( "Campus", "The campus for the request. If blank the person's campus will be used.", false, "", "", 4 )]
+    #region Block Attributes
+
+    [WorkflowAttribute( "Campus",
+        Key = AttributeKey.Campus,
+        Description = "Workflow attribute that contains the Campus to use to set the workflow's campus. If both Person and Campus are provided, Campus takes precedence over the Person's Campus. If Campus is not provided, the Person's primary Campus will be used.",
+        IsRequired = false,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.CampusFieldType" } )]
+
+    [WorkflowAttribute( "Person",
+        Key = AttributeKey.Person,
+        Description = "Workflow attribute that contains the person to use to set the workflow's campus.",
+        IsRequired = false,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+
+    #endregion
+
     public class SetWorkflowCampus : ActionComponent
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string Person = "Person";
+            public const string Campus = "Campus";
+        }
+
+        #endregion Attribute Keys
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -33,29 +57,50 @@ namespace Rock.Workflow.Action.WorkflowControl
         {
             errorMessages = new List<string>();
 
-            Guid? personAliasGuid = GetAttributeValue( action, "Person" ).AsGuidOrNull();
-            // get campus
-            var campusCache = CampusCache.Get( GetAttributeValue( action, "Campus" ).AsGuid() );
-            int? campusId = campusCache?.Id;
-            string campusName = campusCache?.Name;
+            var person = GetPersonFromAttributeValue( action, AttributeKey.Person, true, rockContext );
+            var campus = GetEntityFromAttributeValue<Campus>( action, AttributeKey.Campus, true, rockContext );
 
-            if ( !campusId.HasValue && personAliasGuid.HasValue )
+            if ( person == null && campus == null )
             {
-                var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );
-                if ( personAlias != null && personAlias.Person != null )
+                return HandleError( "Neither a Person nor a Campus was provided. You must provide at least one of these.", errorMessages );
+            }
+
+            if ( campus == null )
+            {
+                // look for the Campus on the Person entity first
+                campus = person.PrimaryCampus;
+
+                if ( campus == null )
                 {
-                    var campus = personAlias.Person.GetCampus();
-                    campusId = campus?.Id;
-                    campusName = campus?.Name;
+                    // if the Person's PrimaryCampus was not defined, grab the Campus from the Person's primary family
+                    var family = person.GetFamily( rockContext );
+
+                    string msg = string.Format( "Could not find {0}'s Campus.", person.FullName );
+
+                    if ( family == null )
+                    {
+                        return HandleError( msg, errorMessages );
+                    }
+
+                    campus = family.Campus;
+                    if ( campus == null )
+                    {
+                        return HandleError( msg, errorMessages );
+                    }
                 }
             }
 
-            if ( campusId.HasValue )
-            {
-                action.Activity.Workflow.CampusId = campusId;
-                action.AddLogEntry( string.Format( "Assigned Campus to '{0} ({1})' ", campusName, campusId ) );
-                return true;
-            }
+            SetWorkflowAttributeValue( action, AttributeKey.Campus, campus.Id );
+
+            action.Activity.Workflow.CampusId = campus.Id;
+            action.AddLogEntry( string.Format( "Set Workflow Campus to '{0}'.", campus.Name ) );
+
+            return true;
+        }
+
+        private bool HandleError( string msg, List<string> errorMessages )
+        {
+            errorMessages.Add( msg );
 
             return false;
         }

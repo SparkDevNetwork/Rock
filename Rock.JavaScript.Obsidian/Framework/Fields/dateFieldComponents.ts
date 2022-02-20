@@ -14,14 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
-import { getFieldEditorProps } from "./utils";
-import DatePicker from "../Elements/datePicker";
-import { asBoolean } from "../Services/boolean";
+import { defineComponent, ref, watch } from "vue";
+import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
+import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
+import { toNumberOrNull } from "../Services/number";
 import { toNumber } from "../Services/number";
-import DatePartsPicker, { getDefaultDatePartsPickerModel } from "../Elements/datePartsPicker";
 import { ConfigurationValueKey } from "./dateField";
 import { RockDateTime } from "../Util/rockDateTime";
+import DatePicker from "../Elements/datePicker";
+import DatePartsPicker, { getDefaultDatePartsPickerModel } from "../Elements/datePartsPicker";
+import DropDownList from "../Elements/dropDownList";
+import TextBox from "../Elements/textBox";
+import NumberBox from "../Elements/numberBox";
+import CheckBox from "../Elements/checkBox";
 
 export const EditComponent = defineComponent({
     name: "DateField.Edit",
@@ -131,5 +136,142 @@ export const EditComponent = defineComponent({
     template: `
 <DatePartsPicker v-if="isDatePartsPicker" v-model="internalDateParts" v-bind="configAttributes" />
 <DatePicker v-else v-model="internalValue" v-bind="configAttributes" />
+`
+});
+
+const defaults = {
+    [ConfigurationValueKey.Format]: "",
+    [ConfigurationValueKey.DisplayDiff]: "False",
+    [ConfigurationValueKey.DisplayCurrentOption]: "False",
+    [ConfigurationValueKey.DatePickerControlType]: "Date Picker",
+    [ConfigurationValueKey.FutureYearCount]: ""
+};
+
+export const ConfigurationComponent = defineComponent({
+    name: "DateField.Configuration",
+
+    components: {
+        TextBox,
+        CheckBox,
+        DropDownList,
+        NumberBox
+    },
+
+    props: getFieldConfigurationProps(),
+
+    emits: [
+        "update:modelValue",
+        "updateConfiguration",
+        "updateConfigurationValue"
+    ],
+
+    setup(props, { emit }) {
+        // Define the properties that will hold the current selections.
+        const format = ref("");
+        const displayDiff = ref(false);
+        const displayCurrentOption = ref(false);
+        const pickerControlType = ref("Date Picker");
+        const futureYears = ref<number | null>(null);
+
+        const pickerControlTypeOptions = [
+            { text: "Date Picker", value: "Date Picker" },
+            { text: "Date Parts Picker", value: "Date Parts Picker" }
+        ];
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {};
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.Format] = format.value ?? defaults[ConfigurationValueKey.Format];
+            newValue[ConfigurationValueKey.DisplayDiff] = asTrueFalseOrNull(displayDiff.value) ?? defaults[ConfigurationValueKey.DisplayDiff];
+            newValue[ConfigurationValueKey.DisplayCurrentOption] = asTrueFalseOrNull(displayCurrentOption.value) ?? defaults[ConfigurationValueKey.DisplayCurrentOption];
+            newValue[ConfigurationValueKey.DatePickerControlType] = pickerControlType.value ?? defaults[ConfigurationValueKey.DatePickerControlType];
+            newValue[ConfigurationValueKey.FutureYearCount] = futureYears.value?.toString() ?? defaults[ConfigurationValueKey.FutureYearCount];
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.Format] !== (props.modelValue[ConfigurationValueKey.Format] ?? defaults[ConfigurationValueKey.Format])
+                || newValue[ConfigurationValueKey.DisplayDiff] !== (props.modelValue[ConfigurationValueKey.DisplayDiff] ?? defaults[ConfigurationValueKey.DisplayDiff])
+                || newValue[ConfigurationValueKey.DisplayCurrentOption] !== (props.modelValue[ConfigurationValueKey.DisplayCurrentOption] ?? defaults[ConfigurationValueKey.DisplayCurrentOption])
+                || newValue[ConfigurationValueKey.DatePickerControlType] !== (props.modelValue[ConfigurationValueKey.DatePickerControlType] ?? defaults[ConfigurationValueKey.DatePickerControlType])
+                || newValue[ConfigurationValueKey.FutureYearCount] !== (props.modelValue[ConfigurationValueKey.FutureYearCount] ?? defaults[ConfigurationValueKey.FutureYearCount]);
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         * 
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            format.value = props.modelValue[ConfigurationValueKey.Format] ?? "";
+            displayDiff.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayDiff]);
+            displayCurrentOption.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayCurrentOption]);
+            pickerControlType.value = props.modelValue[ConfigurationValueKey.DatePickerControlType] ?? "Date Picker";
+            futureYears.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.FutureYearCount]);
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
+        // THIS FIELD DOES NOT NEED THIS
+        watch([], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(format, (val) => maybeUpdateConfiguration(ConfigurationValueKey.Format, val ?? defaults[ConfigurationValueKey.Format]));
+        watch(displayDiff, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DisplayDiff, asTrueFalseOrNull(val) ?? defaults[ConfigurationValueKey.DisplayDiff]));
+        watch(displayCurrentOption, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DisplayCurrentOption, asTrueFalseOrNull(val) ?? defaults[ConfigurationValueKey.DisplayCurrentOption]));
+        watch(pickerControlType, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DatePickerControlType, val || defaults[ConfigurationValueKey.DatePickerControlType]));
+        watch(futureYears, (val) => maybeUpdateConfiguration(ConfigurationValueKey.FutureYearCount, val?.toString() ?? defaults[ConfigurationValueKey.FutureYearCount]));
+
+        return {
+            format,
+            displayDiff,
+            displayCurrentOption,
+            pickerControlType,
+            futureYears,
+            pickerControlTypeOptions
+        };
+    },
+
+    template: `
+<div>
+    <TextBox v-model="format" label="Date Format" help="The format string to use for date (default is system short date)" />
+    <CheckBox v-model="displayDiff" label="Display as Elapsed Time" text="Yes" help="Display value as an elapsed time" />
+    <DropDownList v-model="pickerControlType" :options="pickerControlTypeOptions" :show-blank-item="false" label="Control Type" help="Select 'Date Picker' to use a Date Picker, or 'Date Parts Picker' to select Month, Day, and Year individually" />
+    <CheckBox v-if="pickerControlType == 'Date Picker'" v-model="displayCurrentOption" label="Display Current Option" text="Yes" help="Include option to specify value as the current date" />
+    <NumberBox v-else v-model="futureYears"  label="Future Years" help="The number of years  in the future to include in the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50." />
+</div>
 `
 });

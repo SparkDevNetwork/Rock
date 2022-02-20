@@ -132,6 +132,15 @@ namespace Rock.Model
         [DataMember]
         public bool EnableSecurityOnValues { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if the Defined Values associated with this Defined Type can be grouped into categories.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this DefinedType supports values that can be grouped into categories; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? CategorizedValuesEnabled { get; set; }
+
         #endregion 
 
         #region Navigation Properties
@@ -152,7 +161,7 @@ namespace Rock.Model
         /// The category.
         /// </value>
         [DataMember]
-        public virtual Category Category { get; set; }
+        public virtual Category Category { get; set; }  
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FieldType"/> that is used to set/select, and at times display the <see cref="Rock.Model.DefinedValue">DefinedValues</see> that are associated with

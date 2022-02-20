@@ -876,5 +876,27 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202109212048053_Rollup_20210921_routemigration", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge", resourceCulture);
+            }
+        }
     }
 }

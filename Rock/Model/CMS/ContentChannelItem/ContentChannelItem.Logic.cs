@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Rock.Lava;
@@ -51,23 +50,6 @@ namespace Rock.Model
             get
             {
                 return ContentChannelItemSlugs.Select( a => a.Slug ).FirstOrDefault();
-            }
-        }
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        [NotMapped]
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
-                return supportedActions;
             }
         }
 

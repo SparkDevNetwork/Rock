@@ -174,6 +174,24 @@ namespace Rock.Model
         private ICollection<FinancialTransaction> _transactions;
 
         #endregion Navigation Properties
+
+        #region ISecured overrides
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "Delete", "The roles and/or users that can delete a batch." );
+                supportedActions.AddOrReplace( "ReopenBatch", "The roles and/or users that can reopen a closed batch." );
+                return supportedActions;
+            }
+        }
+
+        #endregion ISecured overrides
     }
 
     #region Entity Configuration

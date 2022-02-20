@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Stored as "Page.Guid" or "Page.Guid,PageRoute.Guid"
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class PageReferenceFieldType : FieldType
     {
 

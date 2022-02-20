@@ -20,6 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -28,7 +30,13 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
-    class DocumentTypeFieldType : FieldType
+    /// <summary>
+    /// Class DocumentTypeFieldType.
+    /// Implements the <see cref="Rock.Field.FieldType" />
+    /// </summary>
+    /// <seealso cref="Rock.Field.FieldType" />
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    public class DocumentTypeFieldType : FieldType
     {
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
 
