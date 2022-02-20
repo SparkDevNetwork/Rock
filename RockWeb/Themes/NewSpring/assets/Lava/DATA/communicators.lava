@@ -1,0 +1,5 @@
+{%- if dataset and dataset != empty and cciid and cciid != empty -%}
+{%- assign cciid = cciid | AsInteger -%}
+{%- assign communicators = dataset | PersistedDataset | Where:'Id',cciid | First | Property:'Communicators' -%}
+{%- for communicator in communicators -%}{{ communicator.Name }}{% unless forloop.last %}, {% endunless %}{%- endfor -%}
+{%- endif -%}

@@ -1,0 +1,49 @@
+{% sql %}
+    SELECT TOP 1 AuthorizedPersonAliasId
+    FROM FinancialScheduledTransaction
+    WHERE Id = '{{ ScheduledTransaction.Id }}'
+{% endsql %}
+
+{% assign giver = results | First | Property:'AuthorizedPersonAliasId' | PersonByAliasId %}
+
+{% comment %}
+    Sum Transactions together
+{% endcomment %}
+{% assign total = 0 %}
+{% for transaction in ScheduledTransaction.TransactionDetails %}
+    {% assign total = total | Plus:transaction.Amount %}
+{% endfor %}
+
+{% definedvalue where:'DefinedTypeId == 11 && Value == "{{ ScheduledTransaction.CreditCardType }}"' iterator:'values' %}
+    {% for value in values %}
+        {% assign ccClass = value | Attribute:'IconCSSClass' %}
+        {% assign ccColor = value | Attribute:'Color' %}
+    {% endfor %}
+{% enddefinedvalue %}
+
+<h3 class="xs-h4 push-half-bottom">Schedule #{{ ScheduledTransaction.Id }}</h3>
+
+<div class="row">
+    <div class="col-xs-12 col-md-6">
+
+        <p class="push-half-bottom">
+            <small class="label label-default sans-serif letter-spacing-condensed circular">{{ ScheduledTransaction.FrequencyDescription }}</small>
+            <small class="label label-default sans-serif letter-spacing-condensed circular">{% if ScheduledTransaction.CurrencyType == 'Credit Card' %}{{ ScheduledTransaction.CreditCardType }}{% else %}ACH{% endif %} {{ ScheduledTransaction.AccountNumberMasked | Right:4 }}</small>
+        </p>
+
+        <p class="push-half-bottom">
+            <span class="circular background-cover" style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span> &nbsp;<span class="stronger">{{ giver.NickName }} {{ giver.LastName }}</span>
+        </p>
+    </div><div class="col-xs-12 col-md-6">
+        <ul class="list-unstyled push-half-bottom xs-push-bottom xs-push-half-top">
+        {% for transaction in ScheduledTransaction.TransactionDetails %}
+            <li>{{ transaction.AccountName }} <span class="pull-right"><b>{{ transaction.Amount | FormatAsCurrency }}</b></span></li>
+        {% endfor %}
+            <li class="display-inline-block width-full push-half-top soft-half-top" style="border-top: 2px solid #eee;">Total <span class="pull-right"><b>{{ total | FormatAsCurrency }}</b></span></li>
+        </ul>
+
+        {% if ScheduledTransaction.NextPaymentDate and ScheduledTransaction.NextPaymentDate != '' %}
+            <p class="stronger push-half-bottom">Next Payment: {{ ScheduledTransaction.NextPaymentDate | Date:'MMM d, yyyy' }}</p>
+        {% endif %}
+    </div>
+</div>

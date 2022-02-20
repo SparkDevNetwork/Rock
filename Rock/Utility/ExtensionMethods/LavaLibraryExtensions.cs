@@ -57,7 +57,7 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
-            System.Web.HttpContext taskContext = System.Web.HttpContext.Current; 
+            System.Web.HttpContext taskContext = System.Web.HttpContext.Current;
             var formatLavaTask = new Task( () =>
             {
                 System.Web.HttpContext.Current = taskContext;
@@ -196,7 +196,7 @@ namespace Rock
 
                 foreach ( var key in liquidObject.AvailableKeys )
                 {
-                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion) 
+                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion)
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
                         result.AddOrIgnore( key, string.Empty );
