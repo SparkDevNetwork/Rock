@@ -600,10 +600,25 @@ namespace Rock.Transactions
             // Get existing (or create new) interaction channel and interaction component for this interaction.
             if ( this.InteractionChannelId == default )
             {
-                this.InteractionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( this.ChannelTypeMediumValueId, this.ChannelEntityId, this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+                if ( this.ChannelName != null && this.ChannelEntityId == null )
+                {
+                    // If channel name is specified and entity is not, get the channel by name.
+                    this.InteractionChannelId = InteractionChannelCache.GetOrCreateChannelIdByName( this.ChannelTypeMediumValueId.GetValueOrDefault(), this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+                }
+                else
+                {
+                    this.InteractionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( this.ChannelTypeMediumValueId, this.ChannelEntityId, this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+                }
             }
 
-            this.InteractionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( this.InteractionChannelId, this.ComponentEntityId, this.ComponentName );
+            if ( this.ComponentName != null && this.ComponentEntityId == null )
+            {
+                this.InteractionComponentId = InteractionComponentCache.GetOrCreateComponentIdByName( this.InteractionChannelId, this.ComponentName );
+            }
+            else
+            {
+                this.InteractionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( this.InteractionChannelId, this.ComponentEntityId, this.ComponentName );
+            }
 
             queue.Enqueue( this );
         }
