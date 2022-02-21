@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field used to configure and display the social Network accounts
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class SocialMediaAccountFieldType : FieldType
     {
         #region Configuration

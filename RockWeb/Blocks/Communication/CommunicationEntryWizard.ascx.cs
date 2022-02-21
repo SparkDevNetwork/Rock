@@ -493,7 +493,6 @@ function onTaskCompleted( resultData )
                 IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
             }
 
-
             int? personId = null;
             if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
             {
@@ -542,7 +541,6 @@ function onTaskCompleted( resultData )
             }
             else
             {
-
                 // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
                 if ( ddlCommunicationGroupList.Items.Count <= 1 || ( communication.Id != 0 && communication.ListGroupId == null ) )
                 {
@@ -650,7 +648,7 @@ function onTaskCompleted( resultData )
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
-            var smsDefinedValues = smsFromDefinedType.DefinedValues.Where(v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
+            var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
             if ( selectedNumberGuids.Any() )
             {
                 smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
@@ -737,7 +735,6 @@ function onTaskCompleted( resultData )
                 result.Add( CommunicationType.SMS );
                 result.Add( CommunicationType.PushNotification );
             }
-
 
             return result;
         }
@@ -1122,6 +1119,7 @@ function onTaskCompleted( resultData )
                 .Include( a => a.PhoneNumbers )
                 .OrderBy( a => a.LastName )
                 .ThenBy( a => a.NickName );
+
             // Bind the list items to the grid.
             gRecipientList.SetLinqDataSource( qryPersons );
             gRecipientList.DataBind();
@@ -1750,7 +1748,7 @@ function onTaskCompleted( resultData )
             var communicationTypeIsAllowed = !allowedCommunicationTypes.Any() || allowedCommunicationTypes.Contains( communicationType );
 
             var selectedCommunicationType = SelectedCommunicationType;
-            var communicationTypeIsSelected = selectedCommunicationType == communicationType || ( selectedCommunicationType == CommunicationType.RecipientPreference && communicationType != CommunicationType.PushNotification); 
+            var communicationTypeIsSelected = selectedCommunicationType == communicationType || ( selectedCommunicationType == CommunicationType.RecipientPreference && communicationType != CommunicationType.PushNotification );
 
             return communicationTypeIsAllowed && communicationTypeIsSelected;
         }
@@ -1895,7 +1893,6 @@ function onTaskCompleted( resultData )
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
-
                         foreach ( var attachment in communication.Attachments )
                         {
                             var cloneAttachment = attachment.Clone( false );
@@ -2017,6 +2014,7 @@ function onTaskCompleted( resultData )
                                 {
                                     communicationService.Delete( testCommunication );
                                 }
+
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
 
                                 // Delete any Person History that was created for the Test Communication
@@ -3084,7 +3082,10 @@ function onTaskCompleted( resultData )
                     var allowedCommunicationTypes = GetAllowedCommunicationTypes();
                     var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
                     var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
-                    var pushTransportEnabled = false; //_pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification ); // Recipient preference should not use push
+
+                    // Recipient preference should not use push.
+                    // _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
+                    var pushTransportEnabled = false;
 
                     if ( emailTransportEnabled )
                     {
@@ -3381,6 +3382,13 @@ function onTaskCompleted( resultData )
             recipient.Communication = communication;
             recipient.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( recipientPersonId );
 
+            // If there are additional merge fields, get the merge values connected to the sample recipient.
+            if ( communication.AdditionalMergeFields.Any() )
+            {
+                recipient.AdditionalMergeValues = new CommunicationRecipientService( rockContext ).GetByCommunicationId( communication.Id )
+                    .Where( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id ).First().AdditionalMergeValues;
+            }
+
             return recipient;
         }
 
@@ -3662,7 +3670,7 @@ function onTaskCompleted( resultData )
 
                     currentCount++;
 
-                    ReportProgress( progressReporter, 20 + decimal.Divide( currentCount, totalCount ) * 70, 0, "Processing Recipients ({0} of {1})...", currentCount, totalCount );
+                    ReportProgress( progressReporter, 20 + ( decimal.Divide( currentCount, totalCount ) * 70 ), 0, "Processing Recipients ({0} of {1})...", currentCount, totalCount );
                 }
 
                 return communication;

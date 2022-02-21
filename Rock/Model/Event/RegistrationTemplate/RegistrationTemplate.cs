@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -712,6 +713,30 @@ namespace Rock.Model
         }
 
         private ICollection<RegistrationTemplateForm> _registrationTemplateForms;
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>
+                    {
+                        { Authorization.VIEW, "The roles and/or users that have access to view." },
+                        { "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." },
+                        { Authorization.EDIT, "The roles and/or users that have access to edit." },
+                        { Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." }
+                    };
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion Navigation Properties
 

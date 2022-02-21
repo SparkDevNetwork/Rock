@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -28,7 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// stored as comma delimited list of int value that can each be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
-    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class DaysOfWeekFieldType : FieldType
     {
 

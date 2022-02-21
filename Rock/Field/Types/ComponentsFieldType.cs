@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a checkbox list of MEF Components of a specific type
     /// Stored as a pipe-delimited list of EntityType.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ComponentsFieldType : FieldType
     {
 

@@ -68,7 +68,7 @@
                         <Rock:Switch
                             ID="swOnlyShowMyConnections"
                             runat="server"
-                            Checked="false"
+                            Checked="true"
                             FormGroupCssClass="custom-switch-centered hide-label-sm"
                             Text="Only Show My Connections" />
                     </div>

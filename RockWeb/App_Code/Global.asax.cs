@@ -218,6 +218,8 @@ namespace RockWeb
 
             StartCompileThemesThread();
 
+            StartEnsureChromeEngineThread();
+
             Rock.Bus.RockMessageBus.IsRockStarted = true;
         }
 
@@ -254,6 +256,17 @@ namespace RockWeb
             } );
 
             CompileThemesThread.Start();
+        }
+
+        private static void StartEnsureChromeEngineThread()
+        {
+            new Thread( () =>
+            {
+                /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                Rock.Pdf.PdfGenerator.EnsureChromeEngineInstalled();
+            } ).Start();
         }
 
         /// <summary>

@@ -14,13 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
@@ -94,19 +88,6 @@ namespace Rock.Model
                 }
 
                 return hasFeeConverageInfo ? totalFeeCoverage : ( decimal? ) null;
-            }
-        }
-
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "Refund", "The roles and/or users that have access to refund a transaction." );
-                return supportedActions;
             }
         }
 

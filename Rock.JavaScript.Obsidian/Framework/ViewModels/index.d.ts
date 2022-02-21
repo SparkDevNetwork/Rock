@@ -16,9 +16,9 @@
 //
 
 import { IEntity } from "./entity";
-import { ClientAttributeValue } from "./clientAttributeValue";
-import { ClientEditableAttributeValue } from "./clientEditableAttributeValue";
-import { ClientAttributeValueCategory } from "./clientAttributeValueCategory";
+import { PublicAttributeValue } from "./publicAttributeValue";
+import { PublicEditableAttributeValue } from "./publicEditableAttributeValue";
+import { PublicAttributeValueCategory } from "./publicAttributeValueCategory";
 import { ListItem } from "./listItem";
 import { SavedFinancialAccountListItem } from "./savedFinancialAccountListItem";
 import { DebugTiming } from "./debugTiming";
@@ -27,9 +27,9 @@ export * from "./CodeGenerated/generated-index";
 
 export {
     IEntity,
-    ClientAttributeValue,
-    ClientEditableAttributeValue,
-    ClientAttributeValueCategory,
+    PublicAttributeValue,
+    PublicEditableAttributeValue,
+    PublicAttributeValueCategory,
     DebugTiming,
     ListItem,
     SavedFinancialAccountListItem

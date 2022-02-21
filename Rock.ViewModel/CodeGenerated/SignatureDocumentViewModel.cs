@@ -120,12 +120,12 @@ namespace Rock.ViewModel
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignatureData.
+        /// Gets or sets the SignatureDataEncrypted.
         /// </summary>
         /// <value>
-        /// The SignatureData.
+        /// The SignatureDataEncrypted.
         /// </value>
-        public string SignatureData { get; set; }
+        public string SignatureDataEncrypted { get; set; }
 
         /// <summary>
         /// Gets or sets the SignatureDocumentTemplateId.
@@ -136,12 +136,12 @@ namespace Rock.ViewModel
         public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignatureVerficationHash.
+        /// Gets or sets the SignatureVerificationHash.
         /// </summary>
         /// <value>
-        /// The SignatureVerficationHash.
+        /// The SignatureVerificationHash.
         /// </value>
-        public string SignatureVerficationHash { get; set; }
+        public string SignatureVerificationHash { get; set; }
 
         /// <summary>
         /// Gets or sets the SignedByEmail.

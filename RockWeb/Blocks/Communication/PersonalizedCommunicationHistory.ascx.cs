@@ -315,7 +315,7 @@ namespace RockWeb.Blocks.Communication
                                                 {% if Communication.CommunicationType != 'PushNotification' %}
                                                 <td class='wrap-contents'>{{ item.Details }}</td>
                                                 {% endif %}
-                                                <td class='w-1 text-nowrap'>{{ item.DateTime | Date }}</td>
+                                                <td class='w-1 text-nowrap'>{{ item.DateTime | Date:'' }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>

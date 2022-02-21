@@ -147,7 +147,7 @@ namespace Rock.Web.Cache
         public Workflow.ActionComponent WorkflowAction => WorkflowActionType.GetWorkflowAction( EntityTypeId );
 
         /// <summary>
-        /// Gets the type of the field.
+        /// If this Workflow Action Type is a <see cref="Rock.Workflow.Action.UserEntryForm"/>, this is the <see cref="WorkflowActionForm"/> for this workflow ction
         /// </summary>
         /// <value>
         /// The type of the field.

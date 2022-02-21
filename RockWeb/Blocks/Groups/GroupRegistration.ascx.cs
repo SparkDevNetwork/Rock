@@ -184,7 +184,6 @@ namespace RockWeb.Blocks.Groups
                 Person spouse = null;
                 Group family = null;
                 GroupLocation homeLocation = null;
-                bool isMatch = false;
 
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
                 if ( _autoFill )
@@ -194,7 +193,6 @@ namespace RockWeb.Blocks.Groups
                         tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     {
                         person = personService.Get( CurrentPerson.Id );
-                        isMatch = true;
                     }
                 }
 
@@ -203,10 +201,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnCell.Text.Trim() );
                     person = personService.FindPerson( personQuery, true );
-                    if ( person != null )
-                    {
-                        isMatch = true;
-                    }
                 }
 
                 // Check to see if this is a new person

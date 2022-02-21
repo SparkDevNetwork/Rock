@@ -1888,6 +1888,7 @@ namespace RockWeb.Blocks.Crm
                 hasUpdateActions = hasUpdateActions || ( this.UpdateNoteAction != NoteChangeActionSpecifier.None );
                 hasUpdateActions = hasUpdateActions || ( this.UpdatePersonAttributeValues != null && this.UpdatePersonAttributeValues.Any() );
                 hasUpdateActions = hasUpdateActions || ( this.UpdateGroupAttributeValues != null && this.UpdateGroupAttributeValues.Any() );
+                hasUpdateActions = hasUpdateActions || ( this.PostUpdateWorkflowIdList != null && this.PostUpdateWorkflowIdList.Any() );
 
                 if ( !hasUpdateActions )
                 {

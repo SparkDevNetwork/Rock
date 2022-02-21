@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -27,6 +28,7 @@ namespace Rock.Field.Types
     /// Field Type to select 0 or more ContentChannels 
     /// Stored as comma-delimited list of ContentChannel.Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ContentChannelsFieldType : SelectFromListFieldType
     {
         /// <summary>

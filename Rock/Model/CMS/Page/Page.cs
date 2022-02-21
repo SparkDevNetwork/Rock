@@ -449,11 +449,8 @@ namespace Rock.Model
         public virtual BinaryFile IconBinaryFile { get; set; }
 
         /// <summary>
-        /// Gets the supported actions.
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
         /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
         public override Dictionary<string, string> SupportedActions
         {
             get

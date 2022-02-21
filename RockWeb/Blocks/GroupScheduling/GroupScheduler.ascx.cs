@@ -346,7 +346,7 @@ btnCopyToClipboard.ClientID );
         }
 
         /// <summary>
-        /// Gets the authorized listed groups
+        /// Gets the authorized listed groups for which the current person has EDIT or SCHEDULE permission
         /// </summary>
         /// <returns></returns>
         private List<Group> GetAuthorizedListedGroups()
@@ -700,7 +700,12 @@ btnCopyToClipboard.ClientID );
 
             if ( selectedGroup != null && selectedGroup.SchedulingMustMeetRequirements )
             {
-                var sameGroupSourceTypes = new GroupSchedulerResourceListSourceType[] { GroupSchedulerResourceListSourceType.GroupMembers, GroupSchedulerResourceListSourceType.GroupMatchingPreference };
+                var sameGroupSourceTypes = new GroupSchedulerResourceListSourceType[]
+                {
+                    GroupSchedulerResourceListSourceType.GroupMembers,
+                    GroupSchedulerResourceListSourceType.GroupMatchingPreference,
+                    GroupSchedulerResourceListSourceType.GroupMatchingAssignment
+                };
 
                 // if SchedulingMustMeetRequirements
                 // -- don't show options for other groups or people
@@ -1060,6 +1065,7 @@ btnCopyToClipboard.ClientID );
             {
                 case GroupSchedulerResourceListSourceType.GroupMembers:
                 case GroupSchedulerResourceListSourceType.GroupMatchingPreference:
+                case GroupSchedulerResourceListSourceType.GroupMatchingAssignment:
                     {
                         resourceGroupId = groupId;
                         break;
@@ -1833,7 +1839,7 @@ btnCopyToClipboard.ClientID );
         }
 
         /// <summary>
-        /// Sets the type of the resource list source.
+        /// Sets the hidden field values for GroupSchedulerResourceListSourceType and SchedulerResourceGroupMemberFilterType and updates the text of the filter controls.
         /// </summary>
         /// <param name="schedulerResourceListSourceType">Type of the scheduler resource list source.</param>
         /// <param name="schedulerResourceGroupMemberFilterType">Type of the scheduler resource group member filter.</param>
@@ -1841,55 +1847,8 @@ btnCopyToClipboard.ClientID );
         {
             hfSchedulerResourceListSourceType.Value = schedulerResourceListSourceType.ConvertToInt().ToString();
             hfResourceGroupMemberFilterType.Value = schedulerResourceGroupMemberFilterType.ConvertToInt().ToString();
-
-            switch ( schedulerResourceListSourceType )
-            {
-                case GroupSchedulerResourceListSourceType.GroupMembers:
-                case GroupSchedulerResourceListSourceType.GroupMatchingPreference:
-                    {
-                        if ( schedulerResourceGroupMemberFilterType == SchedulerResourceGroupMemberFilterType.ShowMatchingPreference )
-                        {
-                            lSelectedResourceTypeDropDownText.Text = "Group Members (Matching Preference)";
-                        }
-                        else
-                        {
-                            lSelectedResourceTypeDropDownText.Text = "Group Members";
-                        }
-
-                        sfResource.Placeholder = "Search";
-
-                        break;
-                    }
-
-                case GroupSchedulerResourceListSourceType.AlternateGroup:
-                    {
-                        lSelectedResourceTypeDropDownText.Text = "Alternate Group";
-                        sfResource.Placeholder = "Search Alternate Group";
-                        break;
-                    }
-
-                case GroupSchedulerResourceListSourceType.DataView:
-                    {
-                        lSelectedResourceTypeDropDownText.Text = "Data View";
-                        sfResource.Placeholder = "Search Data View";
-                        break;
-                    }
-
-                case GroupSchedulerResourceListSourceType.ParentGroup:
-                    {
-                        lSelectedResourceTypeDropDownText.Text = "Parent Group";
-                        sfResource.Placeholder = "Search";
-                        break;
-                    }
-
-                default:
-                    {
-                        // another case statement should have done this, but just in case
-                        lSelectedResourceTypeDropDownText.Text = "Group Members";
-                        sfResource.Placeholder = "Search";
-                        break;
-                    }
-            }
+            lSelectedResourceTypeDropDownText.Text = schedulerResourceListSourceType.GetDescription();
+            sfResource.Placeholder = $"Search \"{lSelectedResourceTypeDropDownText.Text.Replace( "Group Members - ", string.Empty )}\"";
         }
 
         /// <summary>
@@ -2519,6 +2478,9 @@ btnCopyToClipboard.ClientID );
             }
 
             rockContext.SaveChanges();
+
+            ApplyFilter();
+
         }
 
         #endregion Events

@@ -18,8 +18,10 @@
 import { computed, defineComponent, PropType, reactive, watch } from "vue";
 import RockField from "../../../Controls/rockField";
 import Alert from "../../../Elements/alert";
+import { ComparisonType } from "../../../Reporting/comparisonType";
+import { FilterExpressionType } from "../../../Reporting/filterExpressionType";
 import { Guid } from "../../../Util/guid";
-import { ComparisonType, FilterExpressionType, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./registrationEntryBlockViewModel";
+import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./registrationEntryBlockViewModel";
 
 function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>): boolean {
     const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";

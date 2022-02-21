@@ -48,7 +48,8 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets the field type class names.
+        /// Gets or sets the <see cref="Rock.Field.FieldType">Rock.Field.FieldType's</see> allowed for this Workflow Attribute.
+        /// For example: <code>new string[] { "Rock.Field.Types.PersonFieldType","Rock.FieldType.TextFieldType" }</code> 
         /// </summary>
         /// <value>
         /// The field type class names.
@@ -58,7 +59,7 @@ namespace Rock.Attribute
             get
             {
                 var configValues = FieldConfigurationValues.GetValueOrNull( ATTRIBUTE_FIELD_TYPES_KEY );
-                if (configValues != null )
+                if ( configValues != null )
                 {
                     return configValues.Split( '|' );
                 }

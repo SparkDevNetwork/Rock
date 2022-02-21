@@ -184,7 +184,7 @@ namespace Rock.Web.Cache
             {
                 var supportedActions = base.SupportedActions;
                 supportedActions.AddOrReplace( Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
-                supportedActions.AddOrReplace( Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                supportedActions.AddOrReplace( Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
                 return supportedActions;
             }
         }

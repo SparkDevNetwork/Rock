@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
@@ -27,27 +26,6 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialBatch : Model<FinancialBatch>
     {
-        #region ISecured overrides
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "Delete", "The roles and/or users that can delete a batch." );
-                supportedActions.AddOrReplace( "ReopenBatch", "The roles and/or users that can reopen a closed batch." );
-                return supportedActions;
-            }
-        }
-
-        #endregion ISecured overrides
-
         #region Public Methods
 
         /// <summary>
@@ -113,11 +91,11 @@ namespace Rock.Model
         /// Total transaction amount of all the transactions in the batch
         /// </summary>
         /// <returns></returns>
-        public virtual decimal GetTotalTransactionAmount( RockContext rockContext)
+        public virtual decimal GetTotalTransactionAmount( RockContext rockContext )
         {
-            return new FinancialTransactionService(rockContext).Queryable()
-                .Where(a => a.BatchId == this.Id)
-                .Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M;
+            return new FinancialTransactionService( rockContext ).Queryable()
+                .Where( a => a.BatchId == this.Id )
+                .Sum( t => ( decimal? ) ( t.TransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M ) ) ?? 0.0M;
         }
 
         /// <summary>
@@ -126,8 +104,8 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual bool HasUnmatchedTransactions( RockContext rockContext )
         {
-            return new FinancialTransactionService(rockContext).Queryable()
-                .Where(a => a.BatchId == this.Id)
+            return new FinancialTransactionService( rockContext ).Queryable()
+                .Where( a => a.BatchId == this.Id )
                 .Any( t => !t.AuthorizedPersonAliasId.HasValue );
         }
 

@@ -5,7 +5,6 @@
 
         <div class="row">
             <div id="divForm" runat="server" class="col-md-6">
-
                 <div class="panel panel-block">
 
                     <div class="panel-heading">
@@ -22,7 +21,7 @@
 
                         <asp:Literal ID="lSummary" runat="server" Visible="false" />
 
-                        <asp:Panel ID="pnlForm" CssClass="workflow-entry-panel" runat="server">
+                        <asp:Panel ID="pnlWorkflowUserForm" CssClass="workflow-entry-panel" runat="server">
 
                             <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
@@ -39,7 +38,7 @@
                                     <div class="col-md-6">
                                     </div>
                                 </div>
-                                
+
                                 <%-- Special input with rock-fullname class --%>
                                 <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
                                 <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
@@ -71,8 +70,8 @@
                                 <asp:Literal ID="lPersonEntryPostHtml" runat="server" />
                             </asp:Panel>
 
-                            <%-- Workflow Attribute Controls  --%>
-                            <asp:PlaceHolder ID="phAttributes" runat="server" />
+                            <%-- Workflow Form Attribute Controls  --%>
+                            <asp:PlaceHolder ID="phWorkflowFormAttributes" runat="server" />
 
                             <asp:Literal ID="lFormFooterText" runat="server" />
 
@@ -80,6 +79,17 @@
                                 <asp:PlaceHolder ID="phActions" runat="server" />
                             </div>
 
+                        </asp:Panel>
+
+                        <%-- Electronic Signature UI --%>
+                        <asp:Panel ID="pnlWorkflowActionElectronicSignature" runat="server" CssClass="js-validation-group" Visible="false">
+
+
+                            <%-- Put the signature document html in an Iframe so it doesn't inherit styling from the page --%>
+                            <asp:Panel ID="pnlIframeSignatureDocumentHTML" runat="server">
+                                <iframe id="iframeSignatureDocumentHTML" name="signature-document-html-iframe" class="signaturedocument-container js-signaturedocument-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="width: 100%; height: 450px"></iframe>
+                            </asp:Panel>
+                            <Rock:ElectronicSignatureControl ID="escElectronicSignatureControl" runat="server" OnCompleteSignatureClicked="btnSignSignature_Click" CssClass="well" />
                         </asp:Panel>
 
                         <%-- This needs a 'js-workflow-entry-message-notification-box' javascript hook so that Rock.Workflow.Action.ShowHtml can find it.--%>
@@ -90,7 +100,7 @@
 
             </div>
 
-            <div id="divNotes" runat="server" class="col-md-6">
+            <div id="divWorkflowActionUserFormNotes" runat="server" class="col-md-6">
                 <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" NoteLabel="Note"
                     ShowHeading="true" Title="Notes" TitleIconCssClass="fa fa-comment"
                     DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="true"
@@ -102,7 +112,7 @@
         </div>
 
         <script>
-            function handleWorkflowActionButtonClick(validationGroup, causesValidation) {
+            function handleWorkflowActionButtonClick (validationGroup, causesValidation) {
                 if (causesValidation) {
                     // make sure page is valid before doing the postback (from this button's href)
                     if (!Page_ClientValidate(validationGroup)) {
@@ -110,9 +120,9 @@
                     }
                 }
 
-                //$(this).button('loading');
                 return true;
             }
+
         </script>
 
     </ContentTemplate>

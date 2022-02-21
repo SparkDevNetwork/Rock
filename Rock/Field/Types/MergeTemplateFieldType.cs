@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -30,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) MergeTemplate
     /// Stored as MergeTemplate's Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class MergeTemplateFieldType : FieldType, IEntityFieldType
     {
         #region Formatting

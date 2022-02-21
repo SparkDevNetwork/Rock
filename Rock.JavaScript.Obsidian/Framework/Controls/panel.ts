@@ -247,6 +247,10 @@ export default defineComponent({
                 border-radius: 0px;
             }
 
+            .panel.panel-flex .panel-flex-fill-body {
+                margin: -24px;
+            }
+
             .panel.panel-flex.panel-fullscreen > .panel-body {
                 flex-grow: 1;
                 position: relative;
@@ -259,6 +263,16 @@ export default defineComponent({
 
             .page-fullscreen-capable .panel.panel-flex.panel-block > .panel-body {
                 position: relative;
+            }
+
+            .page-fullscreen-capable .panel.panel-flex.panel-block .panel-flex-fill-body,
+            body.is-fullscreen .panel.panel-flex.panel-block .panel-flex-fill-body {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                margin: 0px;
             }
         </v-style>
 

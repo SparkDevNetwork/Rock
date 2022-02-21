@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -28,6 +30,7 @@ namespace Rock.Field.Types
     /// Class that represents the LocationList field type.
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class LocationListFieldType : FieldType, IEntityFieldType
     {
         #region Configuration

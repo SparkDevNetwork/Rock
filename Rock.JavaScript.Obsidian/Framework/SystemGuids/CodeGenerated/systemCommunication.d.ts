@@ -57,6 +57,8 @@ export const enum SystemCommunication {
     WorkflowFormNotification = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D",
     /** Gets the template guid for digital signature invite */
     DigitalSignatureInvite = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9",
+    /** Gets the template guid for the system Electronic Signature Receipt */
+    SystemElectronicSignatureReceipt = "224A0E80-069B-463C-8187-E13682F8A550",
     /** Gets the template guid for a notewatch notification */
     NoteWatchNotification = "21B92DE2-6825-45F3-BD27-43B47FE490D8",
     /** Gets the template guid for a note approval notification */

@@ -25,7 +25,7 @@ import JavaScriptAnchor from "../../Elements/javaScriptAnchor";
 import RockForm from "../../Controls/rockForm";
 import TextBox from "../../Elements/textBox";
 import RockButton from "../../Elements/rockButton";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../../ViewModels";
+import { PublicAttributeValue, PublicEditableAttributeValue } from "../../ViewModels";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import { List } from "../../Util/linq";
 
@@ -42,10 +42,10 @@ type ConfigurationValues = {
 
     categoryGuids: Guid[];
 
-    attributes: ClientAttributeValue[];
+    attributes: PublicAttributeValue[];
 };
 
-function sortedAttributeValues(attributeValues: ClientAttributeValue[]): ClientAttributeValue[] {
+function sortedAttributeValues(attributeValues: PublicAttributeValue[]): PublicAttributeValue[] {
     return new List(attributeValues)
         .orderBy(v => v.order)
         .thenBy(v => v.name)
@@ -78,7 +78,7 @@ export default defineComponent({
         };
 
         const goToEditMode = async (): Promise<void> => {
-            const result = await invokeBlockAction<ClientEditableAttributeValue[]>("GetAttributeValuesForEdit");
+            const result = await invokeBlockAction<PublicEditableAttributeValue[]>("GetAttributeValuesForEdit");
             if (result.isSuccess) {
                 attributeValues.value = sortedAttributeValues(result.data ?? []);
                 isEditMode.value = true;
@@ -91,10 +91,10 @@ export default defineComponent({
             const keyValueMap: Record<string, string | null> = {};
 
             for (const a of attributeValues.value) {
-                keyValueMap[(a as ClientEditableAttributeValue).key] = a.value || "";
+                keyValueMap[(a as PublicEditableAttributeValue).key] = a.value || "";
             }
 
-            const result = await invokeBlockAction<ClientAttributeValue[]>("SaveAttributeValues", {
+            const result = await invokeBlockAction<PublicAttributeValue[]>("SaveAttributeValues", {
                 personGuid: personGuid.value,
                 keyValueMap
             });

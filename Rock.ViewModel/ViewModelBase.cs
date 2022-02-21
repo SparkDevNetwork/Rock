@@ -47,6 +47,6 @@ namespace Rock.ViewModel
         /// The attributes.
         /// </value>
         [TypeScriptType( "Record<string, ClientAttributeValue> | null", "import { ClientAttributeValue } from './clientAttributeValue';" )]
-        public Dictionary<string, ClientAttributeValueViewModel> Attributes { get; set; }
+        public Dictionary<string, PublicAttributeValueViewModel> Attributes { get; set; }
     }
 }

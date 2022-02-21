@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -26,6 +28,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as PersistedDataset.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class PersistedDatasetFieldType : FieldType, ICachedEntitiesFieldType
     {
         #region Formatting

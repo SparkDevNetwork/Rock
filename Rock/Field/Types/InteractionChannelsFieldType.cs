@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -25,6 +26,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Select multiple Interaction Channels from a checkbox list. Stored as a comma-delimited list of InteractionChannel Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class InteractionChannelsFieldType : SelectFromListFieldType
     {
         /// <summary>

@@ -19,10 +19,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -96,7 +96,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Name of the Category
         /// </summary>
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>
@@ -168,6 +168,39 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var entityTypeCache = EntityTypeCache.Get( this.EntityTypeId );
+                if ( entityTypeCache == null && this.EntityType != null )
+                {
+                    entityTypeCache = EntityTypeCache.Get( this.EntityType.Id );
+                }
+
+                if ( entityTypeCache != null )
+                {
+                    switch ( entityTypeCache.Name )
+                    {
+                        case "Rock.Model.Tag":
+                            {
+                                var supportedActions = new Dictionary<string, string>();
+                                supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                                supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
+                                supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                                supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                                return supportedActions;
+                            }
+                    }
+                }
+
+                return base.SupportedActions;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -204,5 +237,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

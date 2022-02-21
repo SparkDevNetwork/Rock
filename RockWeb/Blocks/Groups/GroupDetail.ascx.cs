@@ -221,6 +221,8 @@ namespace RockWeb.Blocks.Groups
 
         #region Fields
 
+        private bool _isScheduleTabVisible = false;
+
         private readonly List<string> _tabs = new List<string> { MEMBER_LOCATION_TAB_TITLE, OTHER_LOCATION_TAB_TITLE };
 
         /// <summary>
@@ -1985,7 +1987,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                wpMeetingDetails.Visible = pnlSchedule.Visible;
+                wpMeetingDetails.Visible = _isScheduleTabVisible;
                 gGroupLocations.Visible = false;
             }
 
@@ -2000,7 +2002,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                wpMeetingDetails.Visible = pnlSchedule.Visible;
+                wpMeetingDetails.Visible = _isScheduleTabVisible;
                 gGroupLocations.Visible = false;
             }
 
@@ -2075,7 +2077,7 @@ namespace RockWeb.Blocks.Groups
                 ListItem li = new ListItem( "Weekly", "1" );
                 li.Selected = group != null && group.Schedule != null && group.Schedule.ScheduleType == ScheduleType.Weekly;
                 rblScheduleSelect.Items.Add( li );
-                pnlSchedule.Visible = true;
+                pnlSchedule.Visible = _isScheduleTabVisible = true;
             }
 
             if ( groupType != null && ( groupType.AllowedScheduleTypes & ScheduleType.Custom ) == ScheduleType.Custom )
@@ -2083,7 +2085,7 @@ namespace RockWeb.Blocks.Groups
                 ListItem li = new ListItem( "Custom", "2" );
                 li.Selected = group != null && group.Schedule != null && group.Schedule.ScheduleType == ScheduleType.Custom;
                 rblScheduleSelect.Items.Add( li );
-                pnlSchedule.Visible = true;
+                pnlSchedule.Visible = _isScheduleTabVisible = true;
             }
 
             if ( groupType != null && ( groupType.AllowedScheduleTypes & ScheduleType.Named ) == ScheduleType.Named )
@@ -2091,7 +2093,7 @@ namespace RockWeb.Blocks.Groups
                 ListItem li = new ListItem( "Named", "4" );
                 li.Selected = group != null && group.Schedule != null && group.Schedule.ScheduleType == ScheduleType.Named;
                 rblScheduleSelect.Items.Add( li );
-                pnlSchedule.Visible = true;
+                pnlSchedule.Visible = _isScheduleTabVisible = true;
             }
 
             SetScheduleDisplay();

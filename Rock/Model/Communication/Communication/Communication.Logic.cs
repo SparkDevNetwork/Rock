@@ -542,7 +542,7 @@ namespace Rock.Model
         {
             CommunicationRecipient recipient = null;
 
-            var delayTime = RockDateTime.Now.AddMinutes( -10 );
+            var delayTime = RockDateTime.Now.AddMinutes( -240 );
 
             lock ( _obj )
             {
@@ -558,6 +558,7 @@ namespace Rock.Model
 
                 if ( recipient != null )
                 {
+                    recipient.ModifiedDateTime = RockDateTime.Now;
                     recipient.Status = CommunicationRecipientStatus.Sending;
                     rockContext.SaveChanges();
                 }
