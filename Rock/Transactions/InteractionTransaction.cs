@@ -515,7 +515,7 @@ namespace Rock.Transactions
             {
                 try
                 {
-                    rockPage = HttpContext.Current.Handler as RockPage;
+                    rockPage = HttpContext.Current?.Handler as RockPage;
                 }
                 catch
                 {
