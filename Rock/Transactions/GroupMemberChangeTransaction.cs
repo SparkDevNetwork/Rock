@@ -29,6 +29,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a group member change workflow. Will also recalculate group member requirements when a member is added
     /// </summary>
+    [Obsolete( "Use UpdateGroupMember Task instead." )]
+    [RockObsolete( "1.13" )]
     public class GroupMemberChangeTransaction : ITransaction
     {
         private EntityState State;

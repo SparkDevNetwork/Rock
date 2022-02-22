@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Crm
         Order = 0,
         Key = AttributeKeys.HeadingTitle )]
 
-    [TextField( "Heading Icon Css Class",
+    [TextField( "Heading Icon CSS Class",
         Description = "The Icon CSS Class for use in the heading.",
         IsRequired = false,
         Order = 1,
@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void PopulateEditDocumentTypeDropDownList( bool isNew = false )
         {
-            var filteredDocumentTypes = GetFilteredDocumentTypes( true );
+            var filteredDocumentTypes = GetFilteredDocumentTypes( false );
 
             /*
                SK 20120-10-10

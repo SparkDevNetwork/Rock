@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Connection
         Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Order = 5,
         Key = AttributeKey.ConnectionStatus )]
 
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Connection
         Order = 10,
         Key = AttributeKey.ExcludeNonPublicAttributes )]
     #endregion Block Attributes
-    public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
+    public partial class ConnectionOpportunitySignup : RockBlock
     {
         #region Attribute Keys
 

@@ -95,7 +95,7 @@ iframe {
 
 .tip {
   padding: 0 6px 2px;
-  font-size: 11px;
+  font-size: @font-size-xs;
   color: #fff;
   background-color: #71a5bf;
   border-radius: 4px;
@@ -166,6 +166,11 @@ a.warning {
   }
 }
 
+.rock-fullname {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 
 // 4. Bootstrap Overrides
 //--------------------------------
@@ -209,12 +214,12 @@ a.warning {
 }
 
 // make icons inside of a button fixed with
-.btn i.fa {
-  width: 1.25em;
-  text-align: center;
-}
+// .btn > .fa {
+//   width: 1.25em;
+//   text-align: center;
+// }
 
-.btn i.btn-icon {
+.btn > .btn-icon {
   position: relative;
   top: -1px;
   width: 1em;
@@ -277,10 +282,16 @@ th[align="right"] {
 }
 
 .control-label {
-  font-weight: @control-label-weight;
-
   .label-hidden > & {
     display: none;
+  }
+}
+
+.control-label-offset {
+  margin-top: @line-height-computed + 5px;
+
+  &.checkbox {
+    margin-top: @line-height-computed + 10px;
   }
 }
 
@@ -341,7 +352,7 @@ th[align="right"] {
     h3 {
       float: left;
       margin: 0 0 0 6px;
-      font-size: 18px;
+      font-size: @font-size-lg;
       font-weight: @font-weight-normal;
 
       small {
@@ -380,9 +391,9 @@ th[align="right"] {
 
 .panel {
   .panel-heading {
-    a.btn-link {
-      color: @panel-heading-text-color;
-    }
+    // a.btn-link {
+    //   color: @panel-heading-text-color;
+    // }
 
     .panel-title {
       small {
@@ -400,9 +411,9 @@ th[align="right"] {
       margin: @panel-options-margin;
 
       button {
-        padding: 9px 12px 10px;
+        padding: @panel-options-button-padding;
         border: 0;
-        border-radius: 0;
+        border-radius: 0 @panel-border-radius 0 0;
       }
     }
 
@@ -414,11 +425,12 @@ th[align="right"] {
     .panel-labels {
       float: right;
       margin-top: -(round(@font-size-base * .3125, 1));
+      margin-bottom: -(round(@font-size-base * .3125, 1));
 
       .panel-text {
         float: left;
         margin-top: 5px;
-        font-size: 12px;
+        font-size: @font-size-xs;
       }
     }
 
@@ -431,9 +443,9 @@ th[align="right"] {
     }
   }
 
-  .panel-body {
-    border-radius: 0 0 4px 4px;
-  }
+  // .panel-body {
+  //   border-radius: 0 0 @border-radius-base @border-radius-base;
+  // }
 
   .panel-footer {
     color: @panel-footer-color;
@@ -443,7 +455,7 @@ th[align="right"] {
   .panel-settings {
     padding: @panel-body-padding;
     margin: -(@panel-body-padding);
-    border-bottom: 1px solid lighten(@panel-heading-border, 3%);
+    border-bottom: 1px solid @panel-heading-border;
   }
 
   .panel-settings-group {
@@ -496,19 +508,28 @@ th[align="right"] {
 
 .panel-toolbar {
   padding: 4px 16px;
-  font-size: 12px;
+  font-size: @font-size-xs;
   border-bottom: 1px solid #dbdbdb;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  @media (min-width: @screen-sm-min) {
+    flex-wrap: nowrap;
+  }
 
   .btn-tool,
   .picker .picker-label {
     padding: 1px 5px;
-    font-size: 12px;
+    color: #6f7782;
+    font-size: @font-size-xs;
     font-weight: 600;
     line-height: @line-height-small;
     color: #6f7782;
     background: transparent;
     border: 1px solid transparent;
 
+    &:focus,
     &:hover,
     &:active,
     &.active {
@@ -523,7 +544,11 @@ th[align="right"] {
 }
 
 .panel-widget {
-  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  .panel-variant(@panel-widget-border; @panel-widget-text; @panel-widget-heading-bg; @panel-widget-heading-border;);
+
+  &.collapsed {
+    overflow: hidden;
+  }
 
   .panel-heading {
     border: 0;
@@ -545,13 +570,22 @@ th[align="right"] {
       color: lighten(@panel-heading-text-color, 20%);
     }
   }
+
+  > .panel-body {
+    border-top: 1px solid @panel-widget-heading-border;
+  }
 }
 
 .panel-persondetails {
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  background-color: @white;
 
   .panel-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     .actions {
+      margin: -4px 0 -4px auto;
       a {
         margin-left: 4px;
       }
@@ -559,7 +593,6 @@ th[align="right"] {
   }
 
   .panel-body {
-    background-color: @white;
 
     .form-group.static-control {
       margin-bottom: 2px;
@@ -570,6 +603,8 @@ th[align="right"] {
         width: 40%;
         padding-right: 12px;
         text-align: right;
+        font-size: @font-size-base;
+        line-height: @line-height-base;
       }
 
       .form-control-static {
@@ -618,7 +653,8 @@ th[align="right"] {
       float: left;
 
       i {
-        color: #6a6a6a;
+        color: @panel-heading-icon-color;
+        display: none;
       }
     }
   }
@@ -628,11 +664,20 @@ th[align="right"] {
   }
 
   .panel-body {
+    .panel-fullwidth,
     .grid.grid-panel {
-      margin: -16px;
+      margin: 0 -@panel-body-padding;
+      // TODO: WAS NEEDED FOR BORDER RADIUS TRIM
+      // overflow: hidden;
 
-      .grid-filter {
-        border-radius: 0;
+      &:first-child {
+        margin-top: -@panel-body-padding;
+      }
+
+      &:last-child {
+        margin-bottom: -@panel-body-padding;
+        // TODO: This doesn't work without overflow hidden
+        // border-radius: 0 0 @border-radius-base @border-radius-base;
       }
 
       .table-bordered {
@@ -657,17 +702,12 @@ th[align="right"] {
 
 .panel-analytics {
   .panel-body {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0 (@grid-gutter-width / 2);
 
-    & > .row > [class*="col-"]:first-child {
-      padding-top: 15px;
-      padding-bottom: 15px;
-    }
-
-    .col-md-9 {
-      margin-right: -2px;
-    }
+    // & > .row > [class*="col-"]:first-child {
+    //   padding-top: 15px;
+    //   padding-bottom: 15px;
+    // }
 
     .grid.grid-panel {
       margin-bottom: 0;
@@ -681,23 +721,28 @@ th[align="right"] {
     }
   }
 
+  .filter-options,
+  .analysis-types {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    background-color: @panel-drawer-bg;
+  }
+
   .filter-options {
-    background-color: @panel-heading-bg;
+    border-bottom-left-radius: @panel-border-radius;
+    border-right: 1px solid @panel-border;
   }
 
   .analysis-types {
-    padding: 15px 0;
-    margin-bottom: 15px;
-    background-color: @panel-heading-bg;
+    margin-bottom: (@grid-gutter-width / 2);
+    border-bottom: 1px solid @panel-border;
   }
 }
 
 // styles for panel drawers
-@drawer-bg: @panel-heading-bg;
-
 .panel-drawer {
   width: 100%;
-  background-color: @drawer-bg;
+  background-color: @panel-drawer-bg;
 }
 
 .drawer-content {
@@ -728,8 +773,10 @@ th[align="right"] {
   -ms-flex-pack: end;
   align-items: center;
   justify-content: flex-end;
-  height: 32px;
+  height: 38px;
   border-bottom: 1px solid @panel-border;
+  background-color: @panel-badges-bg;
+  padding: 0 24px;
 
   &:empty {
     display: none;
@@ -802,38 +849,38 @@ th[align="right"] {
     background-color: darken(@btn-default-bg, 10%);
   }
 
-  &.facebook {
+  &.facebook,
+  &.google,
+  &.twitter {
     color: #fff;
-    background-color: #3d5a96;
 
     &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
+    }
+  }
+
+  &.facebook {
+    background-color: @brand-facebook;
+
+    &::before {
       content: @fa-var-facebook;
     }
   }
 
   &.google {
-    color: #fff;
-    background-color: #ed4e23;
+    background-color: @brand-googleplus;
 
     &::before {
-      margin-right: 12px;
-      font-family: "@{fa-font-face} Brands";
-      font-weight: 400;
       content: @fa-var-google;
     }
   }
 
   &.twitter {
-    color: #fff;
-    background-color: #2aa3ef;
+    background-color: @brand-twitter;
 
     &::before {
-      margin-right: 12px;
-      font-family: "@{fa-font-face} Brands";
-      font-weight: 400;
       content: @fa-var-twitter;
     }
   }

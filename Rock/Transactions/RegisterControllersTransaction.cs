@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Model;
 
 namespace Rock.Transactions
@@ -21,6 +22,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Registers controllers
     /// </summary>
+    [Obsolete( "Use RegisterRestControllers Task instead." )]
+    [RockObsolete( "1.13" )]
     public class RegisterControllersTransaction : ITransaction
     {
         /// <summary>

@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The control group.
         /// </value>
-        [System.Obsolete( "Use NumberUpDownControls Instead" )]
+        [System.Obsolete( "Use NumberUpDownControls Instead", true )]
         [RockObsolete( "1.9" )]
         public List<NumberUpDown> ControlGroup
         {

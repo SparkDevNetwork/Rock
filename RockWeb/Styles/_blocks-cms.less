@@ -5,6 +5,7 @@
     2. My Account - Used on external sites for setting person details
     3. Lava Debug - Used to style the lava debug panel
     4. Social Tools - Used for showing social media links
+    5. Media Element
 */
 
 
@@ -21,9 +22,6 @@
 }
 
 .codeeditor-header {
-  /* position: absolute;
-    top: -4px;
-    right: 0; */
 
   .picker-mergefield {
     float: right;
@@ -107,6 +105,7 @@
   }
 
   .panel.panel-lavadebug {
+    background-color: lighten(@state-info-bg, 3%);
     border: 0;
 
     .panel-heading {
@@ -118,10 +117,6 @@
       &.collapsed i::before {
         content: @fa-var-chevron-down;
       }
-    }
-
-    .panel-body {
-      background-color: lighten(@state-info-bg, 3%);
     }
   }
 }
@@ -148,11 +143,11 @@
     }
 
     .socialicon-facebook {
-      background-color: #4c66a4;
+      background-color: @brand-facebook;
     }
 
     .socialicon-twitter {
-      background-color: #2c77ba;
+      background-color: @brand-twitter;
     }
 
     .socialicon-email {
@@ -161,6 +156,141 @@
 
     .socialicon-calendar {
       background-color: #f00;
+    }
+  }
+}
+
+// 5. Media Element
+// -------------------------
+
+.nav-segment {
+  padding: 4px;
+  background: @gray-100;
+  border-radius: @border-radius-large;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, .05);
+
+  > li {
+    float: left;
+
+    + li {
+      margin-left: 2px;
+    }
+  }
+
+  > li > a {
+    min-width: 140px;
+    padding: 10px 24px;
+    color: @text-muted;
+    text-align: center;
+    border-radius: @border-radius-base;
+  }
+
+  > li.active > a,
+  > li.active > a:hover,
+  > li.active > a:focus {
+    font-weight: 600;
+    color: @text-color;
+    background: @white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+  }
+}
+
+.provider-analytics {
+  --kpi-col-lg: 50%;
+  --kpi-col-md: 50%;
+}
+
+.media-element-detail {
+  .video-container {
+    position: relative;
+  }
+
+  .video-container > .chart-container {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    cursor: col-resize;
+    background: rgba(0,0,0,.3);
+  }
+
+  video {
+    max-width: 100% !important;
+  }
+
+  .analytic-value {
+    font-size: 28px;
+    font-weight: 600;
+  }
+}
+
+.individual-play-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+  @media (min-width: @screen-sm) {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .individual-play-date {
+    flex: 0 0 auto;
+    padding: 4px 8px 4px 0;
+    font-size: 12px;
+    line-height: initial;
+    color: @text-muted;
+
+    @media (min-width: @screen-sm) {
+      width: 100px;
+      text-align: right;
+
+      span {
+        display: block;
+      }
+    }
+  }
+
+  .individual-play-bar {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: @gray-200;
+    border-radius: @border-radius-large;
+
+    @media (min-width: @screen-sm) {
+      flex-direction: row;
+    }
+  }
+
+  .individual-play-percent,
+  .individual-play-person {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    padding: 8px;
+    font-weight: 600;
+  }
+  @media (min-width: @screen-sm) {
+    .individual-play-person {
+      width: 200px;
+    }
+
+    .individual-play-percent {
+      justify-content: center;
+      width: 60px;
+    }
+  }
+
+  .individual-play-chart {
+    flex: 1 1 auto;
+    height: 60px;
+    background: @gray-100;
+
+    > svg {
+      width: 100%;
+      height: 60px;
+      pointer-events: none;
     }
   }
 }

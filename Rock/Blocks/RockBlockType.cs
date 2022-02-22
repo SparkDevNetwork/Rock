@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
@@ -64,6 +65,11 @@ namespace Rock.Blocks
 
         #endregion
 
+        #region Methods
+
+        /// <inheritdoc/>
+        public abstract object GetBlockInitialization( RockClientType clientType );
+
         /// <summary>
         /// Gets the attribute value.
         /// </summary>
@@ -75,6 +81,36 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetAttributeValueAsFieldType( string key )
+        {
+            var stringValue = GetAttributeValue( key );
+            var attribute = BlockCache.Attributes.GetValueOrNull( key );
+            var field = attribute?.FieldType?.Field;
+
+            if ( field == null )
+            {
+                return stringValue;
+            }
+
+            return field.ValueAsFieldType( stringValue, attribute.QualifierValues );
+        }
+
+        /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public T GetAttributeValueAsFieldType<T>( string key ) where T : class
+        {
+            var asObject = GetAttributeValueAsFieldType( key );
+            return asObject as T;
+        }
+
+        /// <summary>
         /// Gets the current person.
         /// </summary>
         /// <returns></returns>
@@ -82,6 +118,8 @@ namespace Rock.Blocks
         {
             return RequestContext.CurrentPerson;
         }
+
+        #endregion
 
         #region Action Response Methods
 
@@ -141,6 +179,46 @@ namespace Rock.Blocks
             else
             {
                 return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
+                {
+                    Error = message
+                };
+            }
+        }
+
+        /// <summary>
+        /// Creates a 401-Unauthorized response with an optional error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A BlockActionResult instance.</returns>
+        protected BlockActionResult ActionUnauthorized( string message = null )
+        {
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
+                {
+                    Error = message
+                };
+            }
+        }
+
+        /// <summary>
+        /// Creates a 403-Forbidden response with an optional error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A BlockActionResult instance.</returns>
+        protected BlockActionResult ActionForbidden( string message = null )
+        {
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Forbidden );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Forbidden )
                 {
                     Error = message
                 };

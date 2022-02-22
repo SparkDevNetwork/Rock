@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,6 +34,7 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
+        private const string CLIENT_VALUES = "values";
         private const string REPEAT_COLUMNS = "repeatColumns";
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
@@ -46,6 +48,32 @@ namespace Rock.Field.Types
             configKeys.Add( REPEAT_COLUMNS );
             configKeys.Add( ENHANCED_SELECTION_KEY );
             return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        {
+            var clientValues = base.GetClientConfigurationValues( configurationValues );
+
+            var repeatColumns = configurationValues.GetValueOrNull( REPEAT_COLUMNS )?.AsIntegerOrNull() ?? 0;
+
+            if ( repeatColumns == 0 )
+            {
+                repeatColumns = 4;
+            }
+
+            var values = GetListSource( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+                    .Select( kvp => new ListItemViewModel
+                    {
+                        Value = kvp.Key,
+                        Text = kvp.Value
+                    } )
+                    .ToList()
+                    .ToCamelCaseJson( false, true );
+
+            clientValues.AddOrReplace( CLIENT_VALUES, values );
+
+            return clientValues;
         }
 
         /// <summary>
@@ -129,6 +157,23 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( value == null )
+            {
+                return string.Empty;
+            }
+
+            var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            return GetListSource( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+                .Where( a => valueGuidList.Contains( a.Key.AsGuid() ) )
+                .Select( s => s.Value )
+                .ToList()
+                .AsDelimited( ", " );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -139,12 +184,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( value == null )
-            {
-                return string.Empty;
-            }
-            var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-            return this.GetListSource( configurationValues ).Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( ", " );
+            return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

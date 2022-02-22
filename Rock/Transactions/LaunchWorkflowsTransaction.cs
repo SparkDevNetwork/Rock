@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Launches multiple workflows and optionally sets the entity, name and/or attribute values
+    /// Launches multiple workflows and optionally sets the entity, name and/or attribute values.
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class LaunchWorkflowsTransaction : ITransaction

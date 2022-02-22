@@ -50,25 +50,46 @@ namespace Rock.Search.Person
         }
 
         /// <summary>
+        /// Gets the search result entity queryable that matches the search term.
+        /// </summary>
+        /// <param name="searchTerm">The search term used to find results.</param>
+        /// <returns>A queryable of entity objects that match the search term.</returns>
+        private IQueryable<Model.Person> GetSearchResults( string searchTerm )
+        {
+            // notes, due to how AsDateTime() works:
+            // * a searchterm of 'mm/d' will get converted to 'mm/dd/currentyear'
+            // * 1 or 2 digit years will assume the current century
+            // * 3 digit years will result in a year < 1000
+            DateTime? birthDate = searchTerm.AsDateTime();
+
+            if ( !birthDate.HasValue || birthDate.Value.Year < 1000 )
+            {
+                // return no results if a full birthdate hasn't been specified
+                return new List<Model.Person>().AsQueryable();
+            }
+
+            var personService = new PersonService( new RockContext() );
+
+            return personService.Queryable()
+                .Where( a => a.BirthDate.HasValue && a.BirthDate.Value == birthDate );
+        }
+
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            return GetSearchResults( searchTerm )
+                .OrderBy( p => p.NickName )
+                .ThenBy( p => p.LastName );
+        }
+
+        /// <summary>
         /// Returns a list of matching people
         /// </summary>
         /// <param name="searchterm"></param>
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            // notes, due to how AsDateTime() works:
-            // * a searchterm of 'mm/d' will get converted to 'mm/dd/currentyear'
-            // * 1 or 2 digit years will assume the current century
-            // * 3 digit years will result in a year < 1000
-            DateTime? birthDate = searchterm.AsDateTime();
-
-            if ( !birthDate.HasValue || birthDate.Value.Year < 1000 )
-            {
-                // return no results if a full birthdate hasn't been specified
-                return new List<string>().AsQueryable();
-            }
-
-            var qryList = new PersonService( new RockContext() ).Queryable().Where( a => a.BirthDate.HasValue && a.BirthDate.Value == birthDate )
+            var qryList = GetSearchResults( searchterm )
                 .Select( a => new
                 {
                     a.Id,

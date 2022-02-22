@@ -223,8 +223,8 @@ namespace RockWeb.Blocks.Core
                         entityTypeFriendlyName = cachedEntityType.FriendlyName;
                     }
 
+                    lPanelTitle.Text = entityTypeFriendlyName;
                     lbAddItem.ToolTip = "Add " + entityTypeFriendlyName;
-                    lAddItem.Text = entityTypeFriendlyName;
 
                     string entityTypeQualiferColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
                     string entityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Core
                                         if ( selectedCategory != null )
                                         {
                                             string categoryExpandedID = CategoryNodePrefix + selectedCategory.Id.ToString();
-                                            parentIdList.Insert( 0, CategoryNodePrefix + categoryExpandedID );
+                                            parentIdList.Insert( 0, categoryExpandedID );
                                         }
                                     }
                                 }

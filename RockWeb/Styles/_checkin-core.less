@@ -25,12 +25,26 @@
 
 @checkin-keypad-width: 260px;
 
-@header-letter-spacing: -.03em;
+@header-letter-spacing: -0.03em;
 
 @font-size-base: 18px;
 @font-size-h1: 28px;
 
 @checkin-button-alttext-font-size: 20px;
+@celebration-color-1: #f24730;
+@celebration-color-2: #6abfd3;
+@celebration-color-3: #ffc639;
+@celebration-color-4: #ff9239;
+@celebration-color-5: #fc83a3;
+@celebration-color-6: #5395e5;
+@celebration-box-shadow-color: rgb(126,205,239);
+
+@grid-gutter-width: 30px;
+@card-bottom-margin: 30px;
+
+@card-color: #161e2e;
+@card-spacer-y: 18px;
+@card-spacer-x: 18px;
 
 // 2. Bootstrap Overrides
 // -------------------------
@@ -129,7 +143,20 @@ h1 {
 }
 
 .btn-barcode {
+  position: relative;
   margin-top: 40px;
+  overflow: hidden;
+
+  video {
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    height: 100%;
+  }
+
+  #qr-shaded-region {
+    bottom: -5px !important;
+  }
 }
 
 .btn-checkin-change {
@@ -224,7 +251,6 @@ body {
   overflow-x: hidden;
   -webkit-background-size: cover;
   -moz-background-size: cover;
-  -o-background-size: cover;
   background-size: cover;
 
   @media all and (-webkit-min-device-pixel-ratio: 1.5) {
@@ -494,6 +520,7 @@ input.namesearch {
 .checkin-messages,
 .checkin-summary {
   padding: 0;
+  margin: 0;
   list-style-type: none;
 
   li {
@@ -597,7 +624,6 @@ input.namesearch {
       border-radius: 50px;
 
       &:active {
-        -webkit-box-shadow: none;
         box-shadow: none;
 
         &:focus {
@@ -619,7 +645,6 @@ input.namesearch {
       color: #fff;
       background-color: #76c24e;
       border-color: #76c24e;
-      -webkit-box-shadow: none;
       box-shadow: none;
     }
   }
@@ -674,7 +699,6 @@ input.namesearch {
 
 
 //
-
 // 6. Scroll Container
 // --------------------------------------
 
@@ -701,13 +725,11 @@ input.namesearch {
   -webkit-transform: translateZ(0);
   -moz-transform: translateZ(0);
   -ms-transform: translateZ(0);
-  -o-transform: translateZ(0);
   transform: translateZ(0);
 
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -webkit-touch-callout: none;
   -moz-text-size-adjust: none;
-  -o-text-size-adjust: none;
   text-size-adjust: none;
 }
 
@@ -813,5 +835,244 @@ input.namesearch {
   .kioskmanager-counts ul li {
     float: left;
     margin-right: 24px;
+  }
+}
+
+//
+
+// 8. Celebrations
+// --------------------------------------
+
+//   /* Only Needed for Testing */
+//   .checkin-summary.checkin-body-container {
+//     margin-top: 72px;
+// }
+
+.checkin-summary {
+  h3 {
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    margin-bottom: @card-bottom-margin;
+    text-align: left;
+  }
+
+  .person-name {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+.checkin-celebrations > .row,
+.checkin-confirmations > .row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Celebration Adds */
+.checkin-celebrations{
+
+  + .checkin-confirmations {
+    padding: 48px 0 0;
+    margin: 36px 0 0;
+    border-top: 1px solid @card-border-color;
+  }
+
+  .card {
+    box-shadow: 0 0 12px 0 @celebration-box-shadow-color;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .person-name {
+    -webkit-animation:
+      fade-in-bottom .6s cubic-bezier(.25, .1, .25, 1) 200ms
+      both;
+    animation: fade-in-bottom .6s cubic-bezier(.25, .1, .25, 1) 200ms both;
+  }
+
+  .person-checkin-details {
+    -webkit-animation: fade-in 1.2s cubic-bezier(.25, .1, .25, 1) 200ms both;
+    animation: fade-in 1.2s cubic-bezier(.25, .1, .25, 1) 200ms both;
+  }
+}
+
+.left-icon {
+  padding-left: 1rem;
+  margin-right: 1rem;
+  -webkit-animation: scale-in-center .5s cubic-bezier(.25, .46, .45, .94) both;
+  animation: scale-in-center .5s cubic-bezier(.25, .46, .45, .94) both;
+}
+
+.right-icon {
+  margin-left: auto;
+
+  svg {
+    -webkit-animation: rotate-in-diag-1 .5s cubic-bezier(.25, .46, .45, .94) 650ms both;
+    animation: rotate-in-diag-1 .5s cubic-bezier(.25, .46, .45, .94) 650ms both;
+  }
+}
+
+.celebration-progress {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16px 0 0;
+  margin: 16px 0 0;
+  border-top: 1px solid @card-border-color;
+}
+
+.celebration-progress-name {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.celebration-progress-stat {
+  align-self: flex-end;
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* Icon Incomplete */
+.checkin-confirmations .left-icon {
+  padding-left: 0;
+  opacity: .6;
+  -webkit-animation: none;
+  animation: none;
+}
+
+.checkin-confirmations .left-icon.complete {
+  opacity: 1;
+}
+
+/**
+* ----------------------------------------
+* animation rotate-in-diag-1
+* ----------------------------------------
+*/
+@-webkit-keyframes rotate-in-diag-1 {
+  0% {
+    opacity: 0;
+    -webkit-transform: rotate3d(1, 1, 0, -360deg);
+    transform: rotate3d(1, 1, 0, -360deg);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: rotate3d(1, 1, 0, 0deg);
+    transform: rotate3d(1, 1, 0, 0deg);
+  }
+}
+
+@keyframes rotate-in-diag-1 {
+  0% {
+    opacity: 0;
+    -webkit-transform: rotate3d(1, 1, 0, -360deg);
+    transform: rotate3d(1, 1, 0, -360deg);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: rotate3d(1, 1, 0, 0deg);
+    transform: rotate3d(1, 1, 0, 0deg);
+  }
+}
+
+/**
+* ----------------------------------------
+* animation scale-in-center
+* ----------------------------------------
+*/
+@-webkit-keyframes scale-in-center {
+  0% {
+    opacity: 1;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes scale-in-center {
+  0% {
+    opacity: 1;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+/**
+* ----------------------------------------
+* animation fade-in-bottom
+* ----------------------------------------
+*/
+@-webkit-keyframes fade-in-bottom {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(18px);
+    transform: translateY(18px);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-bottom {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateY(18px);
+    transform: translateY(18px);
+  }
+
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+/**
+* ----------------------------------------
+* animation fade-in
+* ----------------------------------------
+*/
+@-webkit-keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
   }
 }

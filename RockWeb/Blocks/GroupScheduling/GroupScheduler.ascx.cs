@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string GroupIds = "GroupIds";
             public const string ShowChildGroups = "ShowChildGroups";
 
-            public const string SundayDate = "SundayDate";
+            public const string EndOfWeekDate = "EndOfWeekDate";
 
             public const string SelectAllSchedules = "SelectAllSchedules";
             public const string ScheduleId = "ScheduleId";
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.GroupScheduling
             // the value of the ShowChildGroups checkbox
             public const string ShowChildGroups = PageParameterKey.ShowChildGroups;
 
-            public const string SelectedDate = PageParameterKey.SundayDate;
+            public const string SelectedDate = PageParameterKey.EndOfWeekDate;
 
             public const string SelectAllSchedules = PageParameterKey.SelectAllSchedules;
             public const string SelectedIndividualScheduleId = PageParameterKey.ScheduleId;
@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.GroupScheduling
             Page.Response.Cache.SetNoStore();
 
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js", true );
+            RockPage.AddScriptLink( "~/Scripts/Rock/Controls/GroupScheduler/groupScheduler.js" );
             RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-scheduler.css", true );
 
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -214,27 +215,25 @@ btnCopyToClipboard.ClientID );
 
         #region Methods
 
-        private List<DateTime> _listedSundayDates = null;
+        private List<DateTime> _listedEndOfWeekDates = null;
 
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
         private void LoadDropDowns()
         {
+            _listedEndOfWeekDates = new List<DateTime>();
             int numOfWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 6;
+            var endOfWeekDate = RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek );
 
-            _listedSundayDates = new List<DateTime>();
-
-            var sundayDate = RockDateTime.Now.SundayDate();
-            int weekNum = 0;
-            while ( weekNum < numOfWeeks )
+            for ( int i = 0; i < numOfWeeks; i++ )
             {
-                _listedSundayDates.Add( sundayDate );
-                weekNum++;
-                sundayDate = sundayDate.AddDays( 7 );
+                _listedEndOfWeekDates.Add( endOfWeekDate );
+                endOfWeekDate = endOfWeekDate.AddDays( 7 );
+                i++;
             }
 
-            rptWeekSelector.DataSource = _listedSundayDates;
+            rptWeekSelector.DataSource = _listedEndOfWeekDates;
             rptWeekSelector.DataBind();
         }
 
@@ -421,14 +420,17 @@ btnCopyToClipboard.ClientID );
         /// </summary>
         private void LoadFilterFromUserPreferencesOrURL()
         {
-            DateTime selectedSundayDate = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.SundayDate, UserPreferenceKey.SelectedDate ).AsDateTime() ?? RockDateTime.Now.SundayDate();
-            if ( _listedSundayDates != null && _listedSundayDates.Contains( selectedSundayDate ) )
+            DateTime selectedEndOfWeekDate =
+                this.GetUrlSettingOrBlockUserPreference( PageParameterKey.EndOfWeekDate, UserPreferenceKey.SelectedDate ).AsDateTime()
+                ?? RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek );
+
+            if ( _listedEndOfWeekDates != null && _listedEndOfWeekDates.Contains( selectedEndOfWeekDate ) )
             {
-                hfWeekSundayDate.Value = selectedSundayDate.ToISO8601DateString();
+                hfWeekSundayDate.Value = selectedEndOfWeekDate.ToISO8601DateString();
             }
             else
             {
-                hfWeekSundayDate.Value = RockDateTime.Now.SundayDate().ToISO8601DateString();
+                hfWeekSundayDate.Value = RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek ).ToISO8601DateString();
             }
 
             int? selectedGroupId = null;
@@ -514,14 +516,19 @@ btnCopyToClipboard.ClientID );
             }
 
             SchedulerResourceGroupMemberFilterType groupMemberFilterType;
-            var resourceListSourceType = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.ResourceListSourceType, UserPreferenceKey.SelectedResourceListSourceType ).ConvertToEnumOrNull<GroupSchedulerResourceListSourceType>() ?? GroupSchedulerResourceListSourceType.GroupMembers;
+            var resourceListSourceType = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.ResourceListSourceType, UserPreferenceKey.SelectedResourceListSourceType )
+                .ConvertToEnumOrNull<GroupSchedulerResourceListSourceType>()
+                ?? GroupSchedulerResourceListSourceType.GroupMembers;
+
             if ( resourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference )
             {
                 groupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowMatchingPreference;
             }
             else
             {
-                groupMemberFilterType = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.GroupMemberFilterType, UserPreferenceKey.GroupMemberFilterType ).ConvertToEnumOrNull<SchedulerResourceGroupMemberFilterType>() ?? SchedulerResourceGroupMemberFilterType.ShowAllGroupMembers;
+                groupMemberFilterType = this.GetUrlSettingOrBlockUserPreference( PageParameterKey.GroupMemberFilterType, UserPreferenceKey.GroupMemberFilterType )
+                    .ConvertToEnumOrNull<SchedulerResourceGroupMemberFilterType>()
+                    ?? SchedulerResourceGroupMemberFilterType.ShowAllGroupMembers;
             }
 
             // if PageParameters have a DataViewId or AlternateGroupId, but didn't specify ResourceListSourceType,
@@ -634,15 +641,15 @@ btnCopyToClipboard.ClientID );
 
             List<int> scheduleIds = GetSelectedScheduleIds( authorizedListedGroups );
 
-            var sundayDate = hfWeekSundayDate.Value.AsDateTime() ?? RockDateTime.Now.SundayDate();
+            var endOfWeekDate = hfWeekSundayDate.Value.AsDateTime() ?? RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek );
 
-            lWeekFilterText.Text = string.Format( "<i class='fa fa-calendar-alt'></i> Week: {0}", sundayDate.ToShortDateString() );
+            lWeekFilterText.Text = string.Format( "<i class='fa fa-calendar-alt'></i> Week: {0}", endOfWeekDate.ToShortDateString() );
 
             this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupId, selectedGroupId.ToString(), false );
             this.SetBlockUserPreference( UserPreferenceKey.PickerGroupIds, gpPickedGroups.SelectedIds.ToList().AsDelimited( "," ), false );
             this.SetBlockUserPreference( UserPreferenceKey.ShowChildGroups, btnShowChildGroups.Attributes["show-child-groups"], false );
 
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedDate, sundayDate.ToISO8601DateString(), false );
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedDate, endOfWeekDate.ToISO8601DateString(), false );
 
             this.SetBlockUserPreference( UserPreferenceKey.PickedLocationIds, hfPickedLocationIds.Value, false );
             bool selectAllSchedules = hfSelectedScheduleId.Value.AsIntegerOrNull() == null;
@@ -840,7 +847,7 @@ btnCopyToClipboard.ClientID );
                 pageReference.Parameters.AddOrReplace( pagePageParameterKey, this.GetBlockUserPreference( pagePageParameterKey ) );
             }
 
-            Uri requestUri = new Uri( Request.Url.ToString() );
+            Uri requestUri = new Uri( Request.UrlProxySafe().ToString() );
             var linkUrl = requestUri.GetLeftPart( UriPartial.Authority ) + pageReference.BuildUrl();
             btnCopyToClipboard.Attributes["data-clipboard-text"] = linkUrl;
             btnCopyToClipboard.Disabled = false;
@@ -1080,7 +1087,7 @@ btnCopyToClipboard.ClientID );
 
             hfOccurrenceGroupId.Value = groupId.ToString();
             hfOccurrenceScheduleIds.Value = scheduleIds.AsDelimited( "," );
-            hfOccurrenceSundayDate.Value = ( hfWeekSundayDate.Value.AsDateTime() ?? RockDateTime.Now.SundayDate() ).ToISO8601DateString();
+            hfOccurrenceSundayDate.Value = ( hfWeekSundayDate.Value.AsDateTime() ?? RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek ) ).ToISO8601DateString();
 
             hfResourceGroupId.Value = resourceGroupId.ToString();
             hfResourceDataViewId.Value = resourceDataViewId.ToString();
@@ -1093,13 +1100,13 @@ btnCopyToClipboard.ClientID );
         /// </summary>
         private void BindAttendanceOccurrences( List<Group> authorizedListedGroups, List<int> selectedLocationIds )
         {
-            var occurrenceSundayDate = hfOccurrenceSundayDate.Value.AsDateTime().Value.Date;
-            var occurrenceSundayWeekStartDate = occurrenceSundayDate.AddDays( -6 );
+            var occurrenceDateEndRange = hfOccurrenceSundayDate.Value.AsDateTime().Value.Date;
+            var occurrenceDateStartRange = occurrenceDateEndRange.AddDays( -6 );
 
             // make sure we don't let them schedule dates in the past
-            if ( occurrenceSundayWeekStartDate <= RockDateTime.Today )
+            if ( occurrenceDateStartRange <= RockDateTime.Today )
             {
-                occurrenceSundayWeekStartDate = RockDateTime.Today;
+                occurrenceDateStartRange = RockDateTime.Today;
             }
 
             var scheduleIds = GetSelectedScheduleIds( authorizedListedGroups );
@@ -1121,7 +1128,7 @@ btnCopyToClipboard.ClientID );
                 // we only want create occurrences start times for this specific schedule
                 // Note that it could be more than once a week if it is a daily scheduled, or it might not be in the selected week if it is every 2 weeks, etc
                 var scheduleOccurrenceDates = occurrenceSchedule
-                    .GetScheduledStartTimes( occurrenceSundayWeekStartDate, occurrenceSundayDate.AddDays( 1 ) )
+                    .GetScheduledStartTimes( occurrenceDateStartRange, occurrenceDateEndRange.AddDays( 1 ) )
                     .Select( a => a.Date )
                     .Distinct()
                     .ToList();
@@ -1339,7 +1346,7 @@ btnCopyToClipboard.ClientID );
                     } )
                     .OrderBy( a => a.OccurrenceDate )
                     .ThenBy( a => a.Schedule.Order )
-                    .ThenBy( a => a.Schedule.GetNextStartDateTime( occurrenceSundayWeekStartDate ) )
+                    .ThenBy( a => a.Schedule.GetNextStartDateTime( occurrenceDateStartRange ) )
                     .ToList();
             }
 
@@ -1989,7 +1996,7 @@ btnCopyToClipboard.ClientID );
         protected void btnSendNowAllGroups_Click( object sender, EventArgs e )
         {
             List<Group> sendToGroups = GetAuthorizedListedGroups();
-            SendConfirmationEmails( sendToGroups );
+            SendConfirmations( sendToGroups );
         }
 
         /// <summary>
@@ -2006,14 +2013,14 @@ btnCopyToClipboard.ClientID );
                 sendToGroups.Add( currentlySelectedGroup );
             }
 
-            SendConfirmationEmails( sendToGroups );
+            SendConfirmations( sendToGroups );
         }
 
         /// <summary>
         /// Sends the confirmation emails to the specified groups
         /// </summary>
         /// <param name="groups">The groups.</param>
-        protected void SendConfirmationEmails( List<Group> groups )
+        protected void SendConfirmations( List<Group> groups )
         {
             upnlContent.Update();
             var rockContext = new RockContext();
@@ -2035,35 +2042,43 @@ btnCopyToClipboard.ClientID );
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 
-            List<string> errorMessages;
-            var emailsSent = attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
-            bool isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
+            var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
+            var isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
             rockContext.SaveChanges();
 
-            StringBuilder summaryMessageBuilder = new StringBuilder();
-            ModalAlertType alertType;
+            var summaryMessageBuilder = new StringBuilder();
+            var alertType = ModalAlertType.Information;
 
-            if ( errorMessages.Any() )
+            if ( sendMessageResult.Errors.Any() )
             {
                 alertType = ModalAlertType.Alert;
 
-                var logException = new Exception( "One or more errors occurred when sending confirmation emails: " + Environment.NewLine + errorMessages.AsDelimited( Environment.NewLine ) );
+                var logException = new Exception( "One or more errors occurred when sending confirmations: " + Environment.NewLine + sendMessageResult.Errors.AsDelimited( Environment.NewLine ) );
 
                 ExceptionLogService.LogException( logException );
 
                 summaryMessageBuilder.AppendLine( logException.Message );
             }
-            else
+
+            if ( sendMessageResult.Warnings.Any() )
             {
-                alertType = ModalAlertType.Information;
-                if ( emailsSent > 0 && isSendConfirmationAttendancesFound )
+                if( alertType != ModalAlertType.Alert )
                 {
-                    summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} confirmation {1}", emailsSent, "email".PluralizeIf( emailsSent != 1 ) ) );
+                    alertType = ModalAlertType.Warning;
                 }
-                else
-                {
-                    summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation email. No additional confirmation emails sent." );
-                }
+
+                var warningMessage = "One or more warnings occurred when sending confirmations: " + Environment.NewLine + sendMessageResult.Warnings.AsDelimited( Environment.NewLine );
+
+                summaryMessageBuilder.AppendLine( warningMessage );
+            }
+
+            if ( sendMessageResult.MessagesSent > 0 && isSendConfirmationAttendancesFound )
+            {
+                summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} {1}.", sendMessageResult.MessagesSent, "confirmation".PluralizeIf( sendMessageResult.MessagesSent != 1 ) ) );
+            }
+            else if ( !isSendConfirmationAttendancesFound )
+            {
+                summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation. No additional confirmations sent." );
             }
 
             maSendNowResults.Show( summaryMessageBuilder.ToString().ConvertCrLfToHtmlBr(), alertType );
@@ -2110,12 +2125,12 @@ btnCopyToClipboard.ClientID );
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptWeekSelector_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var sundayDate = ( DateTime ) e.Item.DataItem;
-            string weekTitle = string.Format( "{0} to {1}", sundayDate.AddDays( -6 ).ToShortDateString(), sundayDate.ToShortDateString() );
+            var endOfWeekDate = ( DateTime ) e.Item.DataItem;
+            string weekTitle = $"{endOfWeekDate.AddDays( -6 ).ToShortDateString()} to {endOfWeekDate.ToShortDateString()}";
 
             var btnSelectWeek = e.Item.FindControl( "btnSelectWeek" ) as LinkButton;
             btnSelectWeek.Text = weekTitle;
-            btnSelectWeek.CommandArgument = sundayDate.ToISO8601DateString();
+            btnSelectWeek.CommandArgument = endOfWeekDate.ToISO8601DateString();
         }
 
         /// <summary>
@@ -2298,7 +2313,7 @@ btnCopyToClipboard.ClientID );
                 var currentSchedulePreferencesHTMLBuilder = new StringBuilder();
                 currentSchedulePreferencesHTMLBuilder.AppendLine( "<span class='control-label'>These other preferences will be removed and replaced.</span>" );
                 currentSchedulePreferencesHTMLBuilder.AppendLine( "<ul>" );
-                var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
+                var occurrenceDate = RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 1 );
                 var otherPreferencesSortedBySchedule = otherPreferencesForGroup
                     .OrderBy( a => a.Schedule.Order )
                     .ThenBy( a => a.Schedule.GetNextStartDateTime( occurrenceDate ) )

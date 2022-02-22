@@ -1217,6 +1217,11 @@ namespace RockWeb.Blocks.Administration
         /// <returns></returns>
         private void OnPopulateListItems( RockContext dataContext, Grid listControl, Dictionary<string, string> filterSettingsKeyValueMap, SortProperty sortProperty )
         {
+            if ( _exceptionTemplate == null )
+            {
+                return;
+            }
+
             string filterDescriptionPrefix = null;
 
             filterDescriptionPrefix = _exceptionTemplate.Description;

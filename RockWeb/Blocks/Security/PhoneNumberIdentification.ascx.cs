@@ -493,7 +493,7 @@ namespace RockWeb.Blocks.Security
             }
             else
             {
-                returnUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects( returnUrl );
+                returnUrl = returnUrl.ScrubEncodedStringForXSSObjects();
                 returnUrl = Server.UrlDecode( returnUrl );
             }
 

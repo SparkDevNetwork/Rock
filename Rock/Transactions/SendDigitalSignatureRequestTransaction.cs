@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,6 +26,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Writes entity audits 
     /// </summary>
+    [Obsolete( "Use ProcessSendDigitalSignatureRequest Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SendDigitalSignatureRequestTransaction : ITransaction
     {
         /// <summary>

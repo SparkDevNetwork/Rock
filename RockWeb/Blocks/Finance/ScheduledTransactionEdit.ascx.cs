@@ -19,12 +19,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -305,7 +307,7 @@ achieve our mission.  We are so grateful for your commitment.
                     SetSavedAccounts( scheduledTransaction );
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
-                    tbSummary.Text = scheduledTransaction.Summary;
+                    tbComments.Text = scheduledTransaction.Summary;
 
                     dvpForeignCurrencyCode.SelectedDefinedValueId = scheduledTransaction.ForeignCurrencyCodeValueId;
                     dvpForeignCurrencyCode.Visible = !new RockCurrencyCodeInfo( scheduledTransaction.ForeignCurrencyCodeValueId ).IsOrganizationCurrency;
@@ -1210,9 +1212,10 @@ achieve our mission.  We are so grateful for your commitment.
                         detail.Amount = account.Amount;
                     }
 
-                    scheduledTransaction.Summary = tbSummary.Text;
+                    scheduledTransaction.Summary = tbComments.Text;
 
                     rockContext.SaveChanges();
+                    Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
 
                     ScheduleId = scheduledTransaction.GatewayScheduleId;
                     TransactionCode = scheduledTransaction.TransactionCode;
@@ -1654,7 +1657,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 foreach ( var workflowType in workflowTypes )
                 {
-                    schedule.LaunchWorkflow( workflowType.Guid );
+                    schedule.LaunchWorkflow( workflowType.Guid, string.Empty, null, null );
                 }
             }
         }

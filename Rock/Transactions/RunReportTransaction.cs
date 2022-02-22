@@ -27,6 +27,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Tracks when a report is run.
     /// </summary>
+    [Obsolete( "Use UpdateReportStatistics Task instead." )]
+    [RockObsolete( "1.13" )]
     public class RunReportTransaction : ITransaction
     {
         /// <summary>

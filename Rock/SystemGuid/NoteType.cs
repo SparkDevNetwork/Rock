@@ -22,6 +22,11 @@ namespace Rock.SystemGuid
     public class NoteType
     {
         /// <summary>
+        /// Generic prayer comment note type
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST_NOTE = "CC49BF39-8D3E-4512-B8F4-853FE49CDBC7";
+
+        /// <summary>
         /// The content channel item structured content user value
         /// </summary>
         public const string CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE = "860C37A0-1A44-4681-B96D-4703813609D2";
@@ -64,6 +69,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The workflow change log note
         /// </summary>
-        public const string WORKFLOW_CHANGE_LOG_NOTE = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6";        
+        public const string WORKFLOW_CHANGE_LOG_NOTE = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6";
+
+        /// <summary>
+        /// The pastoral note type.
+        /// </summary>
+        public const string PASTORAL_NOTE = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42";
     }
 }

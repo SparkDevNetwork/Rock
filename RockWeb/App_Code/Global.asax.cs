@@ -27,8 +27,6 @@ using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -36,6 +34,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
@@ -169,9 +168,6 @@ namespace RockWeb
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Routes" );
 
-                // Perform any Rock startups
-                RunStartups();
-
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
@@ -195,6 +191,10 @@ namespace RockWeb
                 }
 
                 ExceptionLogService.AlwaysLogToFile = false;
+
+                // Perform any Rock startups
+                RunStartups();
+
             }
             catch ( Exception ex )
             {
@@ -763,7 +763,7 @@ namespace RockWeb
                             "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
                                 person != null ? " for " + person.FullName : string.Empty,
                                 siteName,
-                                Context.Request.Url.OriginalString,
+                                Context.Request.UrlProxySafe().OriginalString,
                                 FormatException( ex, string.Empty ) );
 
                         // setup merge codes for email
@@ -772,7 +772,7 @@ namespace RockWeb
 
                         try
                         {
-                            mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                            mergeFields.Add( "Exception", ex );
                         }
                         catch
                         {
@@ -837,7 +837,7 @@ namespace RockWeb
                     "IISCallBack",
                     60,
                     null,
-                    DateTime.Now.AddSeconds( 60 ),
+                    RockInstanceConfig.SystemDateTime.AddSeconds( 60 ),
                     Cache.NoSlidingExpiration,
                     CacheItemPriority.NotRemovable,
                     _onCacheRemove );

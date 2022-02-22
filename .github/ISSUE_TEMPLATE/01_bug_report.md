@@ -15,6 +15,9 @@ about: Create a report to help us improve
     * Can you reproduce the problem on a fresh install or the [demo site](http://rock.rocksolidchurchdemo.com/)?
     * Did you include your Rock version number and [client culture](https://github.com/SparkDevNetwork/Rock/wiki/Environment-and-Diagnostics-Information) setting?
 
+#### A Picture Is worth a Thousand Words
+Did you know you you can simply copy and paste an image below?  Please do that. It really helps us quickly understand the problem.
+
 ### Description
 
 _[Write a clear and concise description and include **full window** (non-partial) screenshots. FYI: You can just copy and paste an image directly into here and it will magically upload.]_

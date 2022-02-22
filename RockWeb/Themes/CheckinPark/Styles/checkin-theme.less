@@ -18,6 +18,16 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 
+@import "_balloons.less";
+
+:root {
+  --celebration-1: @celebration-color-1;
+  --celebration-2: @celebration-color-2;
+  --celebration-3: @celebration-color-3;
+  --celebration-4: @celebration-color-4;
+  --celebration-5: @celebration-color-5;
+  --celebration-6: @celebration-color-6;
+}
 
 // Fonts
 // -------------------------
@@ -86,6 +96,13 @@
 // Custom Overrides
 // --------------------------------------------------
 
+@media (min-width: 768px) {
+  .body-content {
+    width: 100% !important;
+    padding: 0 30px;
+  }
+}
+
 .administration {
   .checkin-scroll-panel {
     background: @btn-default-bg;
@@ -101,9 +118,9 @@
 .checkin-messages,
 .checkin-summary {
   li {
-    border-radius: @border-radius-base;
-    background: @btn-default-bg;
     padding: 15px;
+    background: @btn-default-bg;
+    border-radius: @border-radius-base;
   }
 }
 

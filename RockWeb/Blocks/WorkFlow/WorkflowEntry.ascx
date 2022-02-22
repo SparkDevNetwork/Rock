@@ -39,6 +39,10 @@
                                     <div class="col-md-6">
                                     </div>
                                 </div>
+                                
+                                <%-- Special input with rock-fullname class --%>
+                                <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                                <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
 
                                 <asp:Panel ID="pnlPersonEntryRow1" runat="server" CssClass="row">
                                     <%-- Person 1 --%>
@@ -78,7 +82,8 @@
 
                         </asp:Panel>
 
-                        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" CssClass="margin-t-lg" />
+                        <%-- This needs a 'js-workflow-entry-message-notification-box' javascript hook so that Rock.Workflow.Action.ShowHtml can find it.--%>
+                        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" CssClass="margin-t-lg js-workflow-entry-message-notification-box" />
                     </div>
 
                 </div>

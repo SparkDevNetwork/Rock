@@ -240,11 +240,11 @@ namespace RockWeb.Blocks.Streaks
             var progressBarClass = progressLong >= 100 ? "progress-bar-success" : string.Empty;
 
             return string.Format(
-@"<div class=""progress"" style=""margin-bottom: 0;"">
+@"<div class=""progress m-0"">
     <div class=""progress-bar {5}"" role=""progressbar"" style=""width: {0}%;"">
         {1}{2}
     </div>
-    <span style=""padding-left: 5px;"">{3}{4}</span>
+    <span class=""pl-1"">{3}{4}</span>
 </div>", progressBarWidth, insideProgress, insideProgress.HasValue ? "%" : string.Empty, outsideProgress, outsideProgress.HasValue ? "%" : string.Empty, progressBarClass );
         }
 

@@ -106,12 +106,12 @@ public class Lava : IHttpHandler
     /// </returns>
     protected DefinedValueCache GetApiForRequest( HttpRequest request, Dictionary<string, object> mergeFields )
     {
-        var url = "/" + string.Join( "", request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() );
+        var url = "/" + string.Join( "", request.UrlProxySafe().Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() );
 
         var dt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_LAVA.AsGuid() );
         if ( dt != null )
         {
-            foreach ( DefinedValueCache api in dt.DefinedValues.OrderBy( h => h.Order ) )
+            foreach ( DefinedValueCache api in dt.DefinedValues.Where( dv => dv.IsActive).OrderBy( dv => dv.Order ) )
             {
                 string apiUrl = api.Value;
                 string apiMethod = api.GetAttributeValue( "Method" );
@@ -189,9 +189,11 @@ public class Lava : IHttpHandler
     {
         var dictionary = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
         var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+        var proxySafeUri = request.UrlProxySafe();
+
         // Set the standard values to be used.
-        dictionary.Add( "Url", "/" + string.Join( "", request.Url.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() ) );
-        dictionary.Add( "RawUrl", request.Url.AbsoluteUri );
+        dictionary.Add( "Url", "/" + string.Join( "", proxySafeUri.Segments.SkipWhile( s => !s.EndsWith( ".ashx", StringComparison.InvariantCultureIgnoreCase ) && !s.EndsWith( ".ashx/", StringComparison.InvariantCultureIgnoreCase ) ).Skip( 1 ).ToArray() ) );
+        dictionary.Add( "RawUrl", proxySafeUri.AbsoluteUri );
         dictionary.Add( "Method", request.HttpMethod );
         dictionary.Add( "QueryString", request.QueryString.Cast<string>().ToDictionary( q => q, q => request.QueryString[q] ) );
         dictionary.Add( "RemoteAddress", request.UserHostAddress );

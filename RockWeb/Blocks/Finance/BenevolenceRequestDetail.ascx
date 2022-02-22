@@ -1,93 +1,154 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BenevolenceRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BenevolenceRequestDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BenevolenceRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BenevolenceRequestDetailView" %>
+<style>
+    .person-image {
+        background-color: #fafafa;
+        background-size: cover;
+        border: none;
+        border-color: #cccccc;
+        border-radius: 50%;
+        width: 117px;
+        height: 117px;
+        background-size: cover;
+        border: 1px solid #dfe0e1
+    }
+
+    .person-image-small {
+        position: relative;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        margin-bottom: 4px;
+        vertical-align: top;
+        background: center/cover #cbd4db;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.07)
+    }
+
+    .request-date {
+        font-size: 14px;
+        font-weight: 400;
+        color: #737475;
+        letter-spacing: 0.32px;
+    }
+
+    .label-info {
+        background-color: #009ce3;
+        color: #ffffff;
+    }
+
+    .label-orange {
+        background-color: #ee7725;
+        color: #ffffff;
+    }
+
+    .label-gray {
+        background-color: #767676;
+        color: #ffffff;
+    }
+</style>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-            <asp:HiddenField ID="hfBenevolenceRequestId" runat="server" />
+        <!-- Edit Panel -->
+        <asp:Panel ID="pnlEditDetail" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title pull-left"><i class="fa fa-paste"></i> Benevolence Request</h1>
+                <h1 class="panel-title pull-left"><i class="fa fa-paste"></i>Benevolence Request</h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Default" Text="Pending" />
+                    <Rock:HighlightLabel ID="hlEditStatus" runat="server" LabelType="Default" Text="Pending" />
                 </div>
             </div>
-            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+            <Rock:PanelDrawer ID="pdEditAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
-                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <asp:ValidationSummary ID="valEditValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div class="">
                     <div class="row">
                         <div class="col-md-3">
-                            <Rock:DatePicker ID="dpRequestDate" runat="server" Label="Request Date" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestDateTime" />
+                            <Rock:DatePicker ID="dpEditRequestDate" runat="server" Label="Request Date" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestDateTime" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:PersonPicker ID="ppCaseWorker" runat="server" Label="Case Worker" Visible="false" />
-                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" EnhanceForLongLists="true" />
+                            <Rock:RockDropDownList ID="ddlEditRequestType" runat="server" Label="Request Type" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                            <Rock:DefinedValuePicker ID="dvpEditRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValueId" Required="true" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <Rock:PersonPicker ID="ppEditCaseWorker" runat="server" Label="Assigned To" Visible="false" />
+                            <Rock:RockDropDownList ID="ddlEditCaseWorker" runat="server" Label="Assigned To" EnhanceForLongLists="true" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:DefinedValuePicker ID="dvpRequestStatus" runat="server" Label="Request Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestStatusValueId" Required="true" />
+                            <Rock:CampusPicker ID="cpEditCampus" runat="server" Label="Campus" />
                         </div>
                     </div>
                 </div>
 
-                <Rock:PanelWidget ID="wpRequestor" runat="server" Title="Requestor" Expanded="true" CssClass="margin-t-md">
-                <div class="row">
-                    <div class="col-md-8">
-                        <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" OnSelectPerson="ppPerson_SelectPerson" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestedByPersonAlias" />
+                <Rock:PanelWidget ID="wpEditRequestor" runat="server" Title="Requestor" Expanded="true" CssClass="margin-t-md">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-6 pr-md-0">
+                                    <Rock:PersonPicker ID="ppEditPerson" ClientIDMode="Static" runat="server" Label="Person" OnSelectPerson="ppPerson_SelectPerson" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" FormGroupCssClass="" PropertyName="RequestedByPersonAlias" />
+                                </div>
+                                <div class="col-md-4 p-md-0 pt-md-4">
+                                    <asp:LinkButton ID="lbEditCreatePerson" ClientIDMode="Static" runat="server" Text="Create Record From Fields" CssClass="btn btn-link" OnClick="lbEditCreatePerson_Click"></asp:LinkButton>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <Rock:DataTextBox ID="dtbFirstName" runat="server" Label="First Name" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="FirstName" />
+                    <div class="row">
+                        <div class="col-md-4">
+                            <Rock:DataTextBox ID="dtbEditFirstName" runat="server" Label="First Name" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="FirstName" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:DataTextBox ID="dtbEditLastName" runat="server" Label="Last Name" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="LastName" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:DefinedValuePicker ID="dvpEditConnectionStatus" runat="server" Label="Connection Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ConnectionStatusValue" Required="true" />
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <Rock:DataTextBox ID="dtbLastName" runat="server" Label="Last Name" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="LastName" />
-                    </div>
-                    <div class="col-md-4">
-                        <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ConnectionStatusValue" />
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <Rock:EmailBox ID="ebEmail" runat="server" Label="Email" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Email" />
+                    <div class="row">
+                        <div class="col-md-4">
+                            <Rock:EmailBox ID="ebEditEmail" runat="server" Label="Email" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Email" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:LocationAddressPicker ID="lapEditAddress" runat="server" Label="Address" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Location" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:DataTextBox ID="dtbEditGovernmentId" runat="server" Label="Government ID" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="GovernmentId" />
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <Rock:LocationAddressPicker ID="lapAddress" runat="server" Label="Address" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Location" />
-                    </div>
-                    <div class="col-md-4">
-                        <Rock:DataTextBox ID="dtbGovernmentId" runat="server" Label="Government ID" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="GovernmentId" />
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <Rock:PhoneNumberBox ID="pnbHomePhone" runat="server" Label="Home Phone" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="HomePhone" />
+                    <div class="row">
+                        <div class="col-md-4">
+                            <Rock:PhoneNumberBox ID="pnbEditHomePhone" runat="server" Label="Home Phone" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="HomePhone" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:PhoneNumberBox ID="pnbEditCellPhone" runat="server" Label="Cell Phone" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="CellPhone" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:PhoneNumberBox ID="pnbEditWorkPhone" runat="server" Label="Work Phone" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="WorkPhone" />
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <Rock:PhoneNumberBox ID="pnbCellPhone" runat="server" Label="Cell Phone" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="CellPhone" />
-                    </div>
-                    <div class="col-md-4">
-                        <Rock:PhoneNumberBox ID="pnbWorkPhone" runat="server" Label="Work Phone" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="WorkPhone" />
-                    </div>
-                </div>
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="pwRequest" runat="server" Title="Request Details" Expanded="true">
-                    <Rock:DataTextBox ID="dtbRequestText" runat="server" Label="Description of Request" TextMode="MultiLine" Rows="4" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestText" />
+                <Rock:PanelWidget ID="pwEditRequest" runat="server" Title="Request Details" Expanded="true">
+                    <Rock:DataTextBox ID="dtbEditRequestText" runat="server" Label="Description of Request" TextMode="MultiLine" Rows="4" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestText" />
 
-                    <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                    <Rock:DynamicPlaceholder ID="phEditAttributes" runat="server" />
 
-                    <Rock:RockControlWrapper ID="rcwDocuments" runat="server" Label="Related Documents">
-                        <asp:DataList ID="dlDocuments" runat="server" CellPadding="4" RepeatDirection="Horizontal" RepeatColumns="4" >
+                    <Rock:RockControlWrapper ID="rcwEditDocuments" runat="server" Label="Related Documents">
+                        <asp:DataList ID="dlEditDocuments" runat="server" CellPadding="4" RepeatDirection="Horizontal" RepeatColumns="4">
                             <ItemTemplate>
                                 <div class="margin-r-sm margin-b-sm">
-                                    <Rock:FileUploader ID="fileUpDoc" BinaryFileId='<%# Container.DataItem %>' runat="server" OnFileUploaded="fileUpDoc_FileUploaded" OnFileRemoved="fileUpDoc_FileRemoved" />
+                                    <Rock:FileUploader ID="fuEditDoc" BinaryFileId='<%# Container.DataItem %>' runat="server" OnFileUploaded="fuEditDoc_FileUploaded" OnFileRemoved="fuEditDoc_FileRemoved" />
                                 </div>
                             </ItemTemplate>
                         </asp:DataList>
@@ -96,53 +157,212 @@
 
 
 
-                <Rock:PanelWidget ID="pwResults" runat="server" Title="Results" Expanded="true">
+                <Rock:PanelWidget ID="pwEditResults" runat="server" Title="Results" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="dtbSummary" runat="server" Label="Result Summary" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
+                            <Rock:DataTextBox ID="dtbEditSummary" runat="server" Label="Result Summary" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="dtbProvidedNextSteps" runat="server" Label="Provided Next Steps" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
+                            <Rock:DataTextBox ID="dtbEditProvidedNextSteps" runat="server" Label="Next Steps Provided" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
                         </div>
                     </div>
-
-                    <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="true" ShowActionRow="true" RowItemText="Result" AllowPaging="false" OnRowSelected="gResults_RowSelected">
-                        <Columns>
-                            <Rock:RockBoundField DataField="ResultTypeName" HeaderText="Result Type" SortExpression="ResultType" />
-                            <Rock:CurrencyField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
-                            <Rock:RockBoundField DataField="ResultSummary" HeaderText="Details" SortExpression="Details" />
-                            <Rock:DeleteField OnClick="gResults_DeleteClick" />
-                        </Columns>
-                    </Rock:Grid>
                 </Rock:PanelWidget>
 
                 <div class="actions">
-                    <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                    <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
-                    <asp:LinkButton ID="lbPrint" runat="server" Text="<i class='fa fa-print'></i>" CssClass="btn btn-sm btn-default btn-square pull-right" OnClick="lbPrint_Click" />
+                    <asp:LinkButton ID="lbEditSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbEditSave_Click" />
+                    <asp:LinkButton ID="lbEditCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbEditCancel_Click" />
+                </div>
+            </div>
+            <Rock:ConfirmPageUnload ID="confirmEditExit" runat="server" ConfirmationMessage="Changes have been made to this benevolence request that have not yet been saved." Enabled="false" />
+        </asp:Panel>
+        <!-- End Edit Panel -->
+
+        <!-- View Panel -->
+        <asp:Panel ID="pnlViewDetail" CssClass="panel panel-block" runat="server">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-plug"></i>Benevolence Request</h1>
+
+                <div class="panel-labels">
+                    <asp:Literal ID="lViewBenevolenceType" runat="server" />
+                    <asp:Literal ID="lViewCampus" runat="server" />
+                    <asp:Literal ID="lViewStatus" runat="server" />
+                </div>
+            </div>
+            <div class="panel panel-body">
+                <!-- Person & Request Information  -->
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="row">
+                            <div class="col-md-4 col-lg-2">
+                                <asp:Image CssClass="person-image img-responsive" ID="imgViewRequestor" runat="server" />
+                            </div>
+                            <div class="col-md-8 col-lg-10">
+                                <h3>
+                                    <asp:Literal ID="lName" runat="server" />
+                                </h3>
+                                <Rock:BadgeListControl ID="blViewStatus" runat="server" />
+                                <asp:LinkButton ID="lbViewProfile" runat="server" OnClick="lbViewProfile_Click"></asp:LinkButton>
+                                <asp:Literal ID="lViewNotLinkedProfile" runat="server"></asp:Literal>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Assigned To</h6>
+                        <asp:Image CssClass="person-image-small float-left" ID="imgViewAssignedTo" runat="server" />
+                        <asp:Literal ID="lViewAssignedTo" runat="server"></asp:Literal>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="request-date">Request Date</span><br />
+                        <asp:Literal ID="lViewRequestDate" runat="server"></asp:Literal>
+                    </div>
+                </div>
+                <!-- Contact Information -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h6>Contact Information</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="email" style="padding-bottom: 10px">
+                            <asp:Literal ID="lViewEmail" runat="server" />
+                        </div>
+                        <ul class="list-unstyled phonenumbers">
+                            <asp:Repeater ID="rptViewPhones" runat="server">
+                                <ItemTemplate>
+                                    <li data-value="<%# Eval("Number") %>"><%# FormatPhoneNumber( (bool)Eval("IsUnlisted"), Eval("CountryCode"), Eval("Number"), (int?)Eval("NumberTypeValueId") ?? 0, (bool)Eval("IsMessagingEnabled") ) %></li>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="address">
+                            <small>Home</small><br />
+                            <asp:Literal ID="lViewAddress" runat="server" />
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <asp:Literal ID="lViewGovernmentId" runat="server" />
+                    </div>
+                </div>
+                <!-- Workflows -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h5>Available Workflows</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:ModalAlert ID="mdViewWorkflowLaunched" runat="server" />
+                        <asp:Repeater ID="rptViewRequestWorkflows" runat="server">
+                            <ItemTemplate>
+                                <asp:LinkButton ID="lbLaunchRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
+                                        <i class="<%# Eval("WorkflowType.IconCssClass") %>"></i>&nbsp;<%# Eval("WorkflowType.Name") %>
+                                </asp:LinkButton>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <asp:Literal ID="lViewBenevolenceTypeLava" runat="server"></asp:Literal>
+                    </div>
+                </div>
+                <!-- Details -->
+                <hr />
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h5>Request Details</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6>Description of Request</h6>
+                        <asp:Literal ID="lViewBenevolenceTypeDescription" runat="server"></asp:Literal>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <Rock:AttributeValuesContainer ID="avcViewBenevolenceTypeAttributes" runat="server" ShowCategoryLabel="false" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6>Related Documents</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <asp:Repeater ID="rptViewBenevolenceDocuments" runat="server">
+                        <ItemTemplate>
+                            <div class="col-md-2">
+                                <asp:HyperLink ID="lnkViewUploadedFile" runat="server" Target="_blank" CssClass="btn-link"></asp:HyperLink>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
+                <!-- Summary -->
+                <hr />
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h5>Summary of Results</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Results Summary</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Next Steps Provided</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:Literal ID="lViewSummaryResults" runat="server"></asp:Literal>
+                    </div>
+                    <div class="col-md-6">
+                        <asp:Literal ID="lViewSummaryNextSteps" runat="server"></asp:Literal>
+                    </div>
+                </div>
+                <asp:Panel ID="pnlResults" runat="server" class="row mt-3">
+                    <div class="col-md-12">
+                        <Rock:Grid ID="gViewResults" runat="server" DisplayType="Light" AllowSorting="false" ShowActionRow="true" RowItemText="Result" AllowPaging="false"
+                            OnRowSelected="gViewResults_RowSelected">
+                            <Columns>
+                                <Rock:RockBoundField DataField="ResultTypeValue.Value" HeaderText="Result Type" SortExpression="ResultType" />
+                                <Rock:CurrencyField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
+                                <Rock:RockBoundField DataField="ResultSummary" HeaderText="Details" SortExpression="Details" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
+                </asp:Panel>
+                <div class="actions">
+                    <asp:LinkButton ID="lbViewEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbViewEdit_Click" />
+                    <asp:LinkButton ID="lbViewCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbViewCancel_Click" />
+                    <asp:LinkButton ID="lbViewPrint" runat="server" Text="<i class='fa fa-print'></i>" CssClass="btn btn-sm btn-default btn-square pull-right" OnClick="lbViewPrint_Click" />
                 </div>
             </div>
 
+            <!-- Modals -->
+            <Rock:ModalDialog ID="mdViewAddResult" runat="server" ScrollbarEnabled="false" SaveButtonText="Save" OnSaveClick="btnAddResult_SaveClick" Title="Benevolence Request Result"
+                ValidationGroup="valResult">
+                <Content>
+                    <asp:ValidationSummary ID="valViewResultsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="valViewResult" />
+                    <asp:HiddenField ID="hfInfoGuid" runat="server" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DefinedValuePicker ID="dvpResultType" runat="server" Label="Result Type" ValidationGroup="valViewResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultTypeValue" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:CurrencyBox ID="dtbAmount" runat="server" Label="Amount" ValidationGroup="valViewResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="Amount" />
+                        </div>
+                    </div>
+
+                    <Rock:DataTextBox ID="dtbResultSummary" runat="server" Label="Details" ValidationGroup="valViewResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" TextMode="MultiLine" Rows="3" PropertyName="ResultSummary" />
+
+                    <Rock:DynamicPlaceholder ID="phViewResultAttributes" runat="server" />
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
-
-        <Rock:ModalDialog ID="mdAddResult" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddResults_Click" Title="Benevolence Request Result" ValidationGroup="valResult">
-            <Content>
-                <asp:ValidationSummary ID="valResultsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="valResult" />
-                <asp:HiddenField ID="hfInfoGuid" runat="server" />
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:DefinedValuePicker ID="dvpResultType" runat="server" Label="Result Type" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="ResultTypeValue" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:CurrencyBox ID="dtbAmount" runat="server" Label="Amount" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" PropertyName="Amount" />
-                    </div>
-                </div>
-
-                <Rock:DataTextBox ID="dtbResultSummary" runat="server" Label="Details" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" TextMode="MultiLine" Rows="3" PropertyName="ResultSummary" />
-            </Content>
-        </Rock:ModalDialog>
-
-        <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this benevolence request that have not yet been saved." Enabled="false" />
-
+        <!-- End View Panel -->
     </ContentTemplate>
 </asp:UpdatePanel>

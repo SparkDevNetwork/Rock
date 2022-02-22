@@ -279,7 +279,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "form-control-group row" );
+            writer.AddAttribute( "class", "form-control-group row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Bootstrap this to horizontal

@@ -23,6 +23,7 @@ using System.Web;
 
 using Quartz;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -37,12 +38,29 @@ namespace Rock.Jobs
     [DisplayName( "Data Automation" )]
     [Description( "Updates person/family information based on data automation settings." )]
 
+    [IntegerField( "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time, in seconds, to wait for each step to complete.",
+        IsRequired = false,
+        DefaultIntegerValue = 180 )]
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
     {
         private const string SOURCE_OF_CHANGE = "Data Automation";
         private HttpContext _httpContext = null;
+        private int commandTimeout;
 
+        #region AttributeKeys
+
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string CommandTimeout = "CommandTimeout";
+        }
+
+        #endregion
         #region Constructor
 
         /// <summary> 
@@ -66,7 +84,8 @@ namespace Rock.Jobs
         public void Execute( IJobExecutionContext context )
         {
             _httpContext = HttpContext.Current;
-
+            var dataMap = context.JobDetail.JobDataMap;
+            commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 180;
             string reactivateResult = ReactivatePeople( context );
             string inactivateResult = InactivatePeople( context );
             string updateFamilyCampusResult = UpdateFamilyCampus( context );
@@ -124,6 +143,7 @@ Update Family Status: {updateFamilyStatus}
                     using ( RockContext rockContext = new RockContext() )
                     {
                         rockContext.SourceOfChange = SOURCE_OF_CHANGE;
+                        rockContext.Database.CommandTimeout = commandTimeout;
                         // attach the person object to this rockContext so that it will do changetracking on it
                         rockContext.People.Attach( person );
 
@@ -227,15 +247,17 @@ Update Family Status: {updateFamilyStatus}
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
-                    rockContext.Database.CommandTimeout = 180;
+                    rockContext.Database.CommandTimeout = commandTimeout;
 
+                    var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
                     // Get all the person ids with selected activity
                     personIds = GetPeopleWhoContributed( settings.IsLastContributionEnabled, settings.LastContributionPeriod, rockContext );
                     personIds.AddRange( GetPeopleWhoAttendedServiceGroup( settings.IsAttendanceInServiceGroupEnabled, settings.AttendanceInServiceGroupPeriod, rockContext ) );
+                    personIds.AddRange( GetPeopleWhoRegisteredForAnyEvent( settings.IsRegisteredInAnyEventEnabled, settings.RegisteredInAnyEventPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsAttendanceInGroupTypeEnabled, settings.AttendanceInGroupType, null, settings.AttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsSiteLoginEnabled, settings.SiteLoginPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsPrayerRequestEnabled, settings.PrayerRequestPeriod, rockContext ) );
-                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, null, settings.PersonAttributesDays, rockContext ) );
+                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, excludeAttributeIds, settings.PersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsInteractionsEnabled, settings.Interactions, rockContext ) );
 
                     var dataViewQry = GetPeopleInDataViewQuery( settings.IsIncludeDataViewEnabled, settings.IncludeDataView, rockContext );
@@ -354,6 +376,25 @@ Update Family Status: {updateFamilyStatus}
             }
         }
 
+        /// <summary>
+        /// Get the ignored person attribute list
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<int> GetIgnoredPersonAttributeList( RockContext rockContext )
+        {
+            var excludeAttributeIds = new List<int>();
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.DATA_AUTOMATION_IGNORED_PERSON_ATTRIBUTES.AsGuid() );
+            if ( definedType != null )
+            {
+                var attributeKeys = definedType.DefinedValues.Select( a => a.Value ).ToList();
+                var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
+                excludeAttributeIds = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == personEntityTypeId && attributeKeys.Contains( a.Key ) ).Select( a => a.Id ).ToList();
+            }
+
+            return excludeAttributeIds;
+        }
+
         #endregion
 
         #region Inactivate People
@@ -415,16 +456,19 @@ Update Family Status: {updateFamilyStatus}
                 var personIds = new List<int>();
                 using ( var rockContext = new RockContext() )
                 {
+                    var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
+
                     // increase the timeout just in case.
-                    rockContext.Database.CommandTimeout = 180;
+                    rockContext.Database.CommandTimeout = commandTimeout;
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     // Get all the person ids with selected activity
                     personIds = GetPeopleWhoContributed( settings.IsNoLastContributionEnabled, settings.NoLastContributionPeriod, rockContext );
+                    personIds.AddRange( GetPeopleWhoRegisteredForAnyEvent( settings.IsNotRegisteredInAnyEventEnabled, settings.NotRegisteredInAnyEventDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsNoAttendanceInGroupTypeEnabled, null, settings.AttendanceInGroupType, settings.NoAttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsNoPrayerRequestEnabled, settings.NoPrayerRequestPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsNoSiteLoginEnabled, settings.NoSiteLoginPeriod, rockContext ) );
-                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsNoPersonAttributesEnabled, null, settings.PersonAttributes, settings.NoPersonAttributesDays, rockContext ) );
+                    personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsNoPersonAttributesEnabled, null, settings.PersonAttributes.Union( excludeAttributeIds ).ToList(), settings.NoPersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsNoInteractionsEnabled, settings.NoInteractions, rockContext ) );
 
                     // Get the distinct person ids
@@ -561,7 +605,7 @@ Update Family Status: {updateFamilyStatus}
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
-                    rockContext.Database.CommandTimeout = 180;
+                    rockContext.Database.CommandTimeout = commandTimeout;
 
                     // Start a qry for all family ids
                     var familyIdQry = new GroupService( rockContext )
@@ -576,17 +620,16 @@ Update Family Status: {updateFamilyStatus}
 
                         // Find any families that has a campus manually added/updated within the configured number of days
                         var groupEntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
-                        var familyIdsWithManualUpdate = new HistoryService( rockContext )
+
+                        var familyIdsWithManualUpdateQuery = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
                                 m.CreatedDateTime >= startPeriod &&
                                 m.EntityTypeId == groupEntityTypeId &&
                                 m.ValueName == "Campus" )
-                            .Select( a => a.EntityId )
-                            .ToList()
-                            .Distinct();
+                            .Select( a => a.EntityId );
 
-                        familyIdQry = familyIdQry.Where( f => !familyIdsWithManualUpdate.Contains( f.Id ) );
+                        familyIdQry = familyIdQry.Where( f => !familyIdsWithManualUpdateQuery.Contains( f.Id ) );
                     }
 
                     // Query for the family ids
@@ -888,7 +931,7 @@ Update Family Status: {updateFamilyStatus}
                 using ( var rockContext = new RockContext() )
                 {
                     // increase the timeout just in case.
-                    rockContext.Database.CommandTimeout = 180;
+                    rockContext.Database.CommandTimeout = commandTimeout;
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     var qry = new GroupMemberService( rockContext )
@@ -1140,7 +1183,7 @@ Update Family Status: {updateFamilyStatus}
                                 // Launch all the workflows
                                 foreach ( var wfId in settings.WorkflowTypeIds )
                                 {
-                                    person.LaunchWorkflow( wfId, person.FullName, workflowParameters );
+                                    person.LaunchWorkflow( wfId, person.FullName, workflowParameters, null );
                                 }
                             }
                         }
@@ -1213,6 +1256,7 @@ Update Family Status: {updateFamilyStatus}
                 int dataViewId = connectionStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
+                    dataViewRockContext.Database.CommandTimeout = commandTimeout;
                     var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
                     if ( dataView == null )
                     {
@@ -1300,6 +1344,7 @@ Update Family Status: {updateFamilyStatus}
                 int dataViewId = groupStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
+                    dataViewRockContext.Database.CommandTimeout = commandTimeout;
                     var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
                     if ( dataView == null )
                     {
@@ -1402,6 +1447,33 @@ Update Family Status: {updateFamilyStatus}
                         a.StartDateTime >= startDate &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value == true &&
+                        a.PersonAlias != null )
+                    .Select( a => a.PersonAlias.PersonId )
+                    .Distinct()
+                    .ToList();
+            }
+
+            return new List<int>();
+        }
+
+        /// <summary>
+        /// Gets the people who registered for any event.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<int> GetPeopleWhoRegisteredForAnyEvent( bool enabled, int periodInDays, RockContext rockContext )
+        {
+            if ( enabled )
+            {
+                var startDate = RockDateTime.Now.AddDays( -periodInDays );
+
+                return new RegistrationRegistrantService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( a =>
+                        a.CreatedDateTime != null &&
+                        a.CreatedDateTime >= startDate &&
                         a.PersonAlias != null )
                     .Select( a => a.PersonAlias.PersonId )
                     .Distinct()

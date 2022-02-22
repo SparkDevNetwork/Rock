@@ -25,7 +25,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -85,6 +84,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
             + Rock.SystemGuid.Badge.BAPTISM + ","
             + Rock.SystemGuid.Badge.IN_SERVING_TEAM,
         Order = 7 )]
+
+    [LinkedPage(
+        "Attendance History Page",
+        Key = AttributeKey.PersonAttendanceHistoryPage,
+        Description = "Page to shows a history of changes to person's attendances.",
+        DefaultValue = Rock.SystemGuid.Page.CHECK_IN_MANAGER_PERSON_ATTENDANCE_CHANGE_HISTORY,
+        IsRequired = true,
+        Order = 8 )]
     public partial class PersonRight : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -96,6 +103,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string BadgesLeft = "BadgesLeft";
             public const string BadgesRight = "BadgesRight";
             public const string AttendanceDetailPage = "AttendanceDetailPage";
+            public const string PersonAttendanceHistoryPage = "PersonAttendanceHistoryPage";
         }
 
         #endregion
@@ -409,7 +417,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 nbReprintLabelMessages.Text = "Please select a printer.";
                 return;
             }
-            
+
             var selectedAttendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
             var fileGuids = cblLabels.SelectedValues.AsGuidList();
@@ -446,6 +454,26 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnPersonAttendanceHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnPersonAttendanceHistory_Click( object sender, EventArgs e )
+        {
+            // Get the person Id from the PersonId page parameter, or look it up based on the Person Guid page parameter.
+            int? personIdParam = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            int personId = personIdParam.HasValue
+                ? personIdParam.Value
+                : new PersonService( new RockContext() ).GetId( GetPersonGuid() ).GetValueOrDefault();
+
+            var queryParams = new Dictionary<string, string>() {
+                { "PersonId", personId.ToString() }
+            };
+
+            this.NavigateToLinkedPage( AttributeKey.PersonAttendanceHistoryPage, queryParams );
+        }
 
         #endregion
 

@@ -10,6 +10,7 @@
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
+    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/balloons.js", true) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -40,6 +41,11 @@
             volume: 0.8
         });
 
+        var celebrateSound = new Howl( {
+                src: [ '<%= ResolveRockUrl("~~/Assets/Sounds/fanfare_trumpets.mp3") %>' ],
+                volume: 0.8
+            });
+
         // Apply Rock Fade in With Document Ready for Modal Compatibility
         $(document).ready(function() {
             // add quick fade-in effect to the page
@@ -65,6 +71,14 @@
                     tapSound.play();
                 }
             });
+
+            if ($('.checkin-celebrations').length) {
+                createBalloons(30);
+                setTimeout(
+                    function () {
+                        celebrateSound.play();
+                    }, 500);
+            }
         }
     </script>
 </body>

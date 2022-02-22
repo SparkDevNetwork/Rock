@@ -276,19 +276,25 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gList_Add( object sender, EventArgs e )
         {
-            var parms = new Dictionary<string, string>();
             var addScheduledTransactionPage = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.AddPage ) );
             if ( addScheduledTransactionPage != null )
             {
-                // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                if ( this.TargetPerson != null )
+                if ( !this.TargetPerson.IsPersonTokenUsageAllowed() )
                 {
-                    var impersonationToken = this.TargetPerson.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
-                    parms.Add( "Person", impersonationToken );
+                    mdWarningAlert.Show( $"Due to their protection profile level you cannot add a transaction on behalf of this person.", ModalAlertType.Warning );
+                    return;
+                }
+
+                // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
+                var personKey = this.TargetPerson.GetImpersonationToken(
+                    RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
+
+                if ( personKey.IsNotNullOrWhiteSpace() )
+                {
+                    addScheduledTransactionPage.QueryString["Person"] = personKey;
+                    Response.Redirect( addScheduledTransactionPage.BuildUrl() );
                 }
             }
-
-            NavigateToLinkedPage( AttributeKey.AddPage, parms );
         }
 
         /// <summary>
@@ -520,6 +526,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
+            if ( !this.TargetPerson.IsPersonTokenUsageAllowed() )
+            {
+                mdWarningAlert.Show( $"Due to their protection profile level you cannot add a transaction on behalf of this person.", ModalAlertType.Warning );
+                return;
+            }
+
             var parms = new Dictionary<string, string>();
             parms.Add( "ScheduledTransactionId", id.ToString() );
             parms.Add( "Person", TargetPerson.UrlEncodedKey );

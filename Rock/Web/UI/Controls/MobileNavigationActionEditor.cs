@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Mobile;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -458,72 +459,5 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
-
-        /// <summary>
-        /// A single navigation action for the mobile shell.
-        /// </summary>
-        /// <remarks>
-        /// This needs to move somewhere else before it is marked as public.
-        /// </remarks>
-        internal class MobileNavigationAction
-        {
-            /// <summary>
-            /// Gets or sets the type of navigation to perform.
-            /// </summary>
-            /// <value>
-            /// The type of navigation to perform.
-            /// </value>
-            public MobileNavigationActionType Type { get; set; }
-
-            /// <summary>
-            /// Gets or sets the number of pages to pop off the stack.
-            /// </summary>
-            /// <value>
-            /// The number of pages to pop off the stack.
-            /// </value>
-            public int? PopCount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the page unique identifier.
-            /// </summary>
-            /// <value>
-            /// The page unique identifier.
-            /// </value>
-            public Guid? PageGuid { get; set; }
-        }
-
-        /// <summary>
-        /// The type of navigation action to perform on the mobile shell.
-        /// </summary>
-        /// <remarks>
-        /// This needs to move somewhere else before it is marked as public.
-        /// </remarks>
-        internal enum MobileNavigationActionType
-        {
-            /// <summary>
-            /// No navigation action should be performed.
-            /// </summary>
-            None = 0,
-
-            /// <summary>
-            /// The current page should be popped off the navigation stack.
-            /// </summary>
-            PopPage = 1,
-
-            /// <summary>
-            /// The navigation stack should be cleared and replaced with a new page.
-            /// </summary>
-            ResetToPage = 2,
-
-            /// <summary>
-            /// The current page should be replaced with a new page.
-            /// </summary>
-            ReplacePage = 3,
-
-            /// <summary>
-            /// A new page should be pushed onto the navigation stack.
-            /// </summary>
-            PushPage = 4
-        }
     }
 }

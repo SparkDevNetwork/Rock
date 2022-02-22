@@ -31,8 +31,8 @@ namespace Rock.Store
         /// <summary>
         /// Initializes a new instance of the <see cref="StoreService"/> class.
         /// </summary>
-        public StoreService() :base()
-        {}
+        public StoreService() : base()
+        { }
 
         /// <summary>
         /// Authenticates the user.
@@ -43,7 +43,7 @@ namespace Rock.Store
         public bool AuthenicateUser( string username, string password )
         {
             string errorResponse = string.Empty;
-            return AuthenicateUser( username, password, out  errorResponse );
+            return AuthenicateUser( username, password, out errorResponse );
         }
 
         /// <summary>
@@ -57,19 +57,10 @@ namespace Rock.Store
         {
             errorResponse = string.Empty;
 
-            // url encode the password
-            password = HttpUtility.UrlEncode( password );
-
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
             string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
-            string requestUrl = string.Format( "api/Store/AuthenicateUser/{0}/{1}", encodedUserName, encodedPassword );
-            var request = new RestRequest( requestUrl, Method.GET );
 
-            // deserialize to list of packages
-            var response = client.Execute<bool>( request );
+            var response = ExecuteRestGetRequest<bool>( $"api/Store/AuthenicateUser/{encodedUserName}/{encodedPassword}" );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {
@@ -94,19 +85,11 @@ namespace Rock.Store
         {
             errorResponse = string.Empty;
 
-            // get organization key
             string organizationKey = GetOrganizationKey();
-
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
             string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
-            string requestUrl = string.Format( "api/Store/Purchase/{0}/{1}/{2}/{3}", encodedUserName, encodedPassword, organizationKey, packageId.ToString() );
-            var request = new RestRequest( requestUrl, Method.GET );
 
-            // deserialize to list of packages
-            var response = client.Execute<PurchaseResponse>( request );
+            var response = ExecuteRestGetRequest<PurchaseResponse>( $"api/Store/Purchase/{encodedUserName}/{encodedPassword}/{organizationKey}/{packageId}" );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {
@@ -135,49 +118,6 @@ namespace Rock.Store
             {
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Gets the organization key.
-        /// </summary>
-        /// <returns></returns>
-        public static string GetOrganizationKey()
-        {
-            string encryptedStoreKey = Rock.Web.SystemSettings.GetValue( "StoreOrganizationKey" );
-
-            string decryptedStoreKey = Rock.Security.Encryption.DecryptString( encryptedStoreKey );
-
-            if ( decryptedStoreKey == null && encryptedStoreKey.Length < 90 )
-            {
-                // if the decryption fails, it could be that the StoreOrganizationKey isn't encrypted, so encrypt and store it again 
-                decryptedStoreKey = encryptedStoreKey;
-                SetOrganizationKey( decryptedStoreKey );
-            }
-
-            if ( decryptedStoreKey == null || decryptedStoreKey.Length > 90 )
-            {
-                Model.ExceptionLogService.LogException( "The Rock 'Store Key' for the organization is too long. This typically means it was copied from another system and is unable to be decrypted by this system." );
-                return string.Empty;
-            }
-
-            return decryptedStoreKey;
-        }
-
-        /// <summary>
-        /// Sets the organization key.
-        /// </summary>
-        /// <param name="storeKey">The store key.</param>
-        public static void SetOrganizationKey( string storeKey )
-        {
-            Rock.Web.SystemSettings.SetValue( "StoreOrganizationKey", Rock.Security.Encryption.EncryptString( storeKey ) );
-        }
-
-        /// <summary>
-        /// Revokes the organization key.
-        /// </summary>
-        public static void RevokeOrganizationKey()
-        {
-            Rock.Web.SystemSettings.SetValue( "StoreOrganizationKey", null );
         }
     }
 }

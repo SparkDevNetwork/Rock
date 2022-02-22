@@ -76,6 +76,18 @@ namespace Rock.Blocks
         /// </summary>
         /// <param name="statusCode">The status code.</param>
         /// <param name="content">The content.</param>
+        public BlockActionResult( HttpStatusCode statusCode, object content )
+        {
+            StatusCode = statusCode;
+            Content = content;
+            ContentClrType = content.GetType();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockActionResult"/> class.
+        /// </summary>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="content">The content.</param>
         /// <param name="clrType">Type of the content.</param>
         public BlockActionResult( HttpStatusCode statusCode, object content, Type clrType )
         {

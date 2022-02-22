@@ -474,7 +474,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
             writer.WriteLine();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             var addButtonCssClass = "btn btn-action btn-xs btn-square value-list-add";

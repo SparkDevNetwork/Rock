@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
@@ -31,7 +32,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Base Index Model
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    public class IndexModelBase : DynamicObject, Lava.ILiquidizable
+    public class IndexModelBase : DynamicObject, ILavaDataDictionary, Lava.ILiquidizable
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
@@ -374,6 +375,19 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( string key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -482,7 +496,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public List<string> AvailableKeys
         {
             get
@@ -556,5 +570,15 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         #endregion
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( string key )
+        {
+            return this.GetDynamicMemberNames().Contains( key.ToString() );
+        }
     }
 }

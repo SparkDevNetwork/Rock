@@ -72,7 +72,7 @@
                                                 <asp:Literal ID="lChannelUrl" runat="server" />
                                                 <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
                                                 <span class="js-slug-literal"><%# Eval("Slug") %></span>
-                                                <div class="rollover-item actions pull-right">
+                                                <div class="rollover-item control-actions pull-right">
                                                     <a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>
                                                     <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
                                                 </div>
@@ -161,19 +161,21 @@
         <asp:Panel ID="pnlChildrenParents" runat="server" CssClass="panel panel-widget">
 
             <div class="panel-heading">
-                <asp:Literal ID="lChildrenParentsTitle" runat="server" Text="Related Items" />
+                <h3 class="panel-title">
+                    <asp:Literal ID="lChildrenParentsTitle" runat="server" Text="Related Items" />
+                </h3>
             </div>
 
             <div class="panel-body">
                 <asp:HiddenField ID="hfActivePill" runat="server" />
                 <asp:PlaceHolder ID="phPills" runat="server">
-                    <ul class="nav nav-pills">
+                    <ul class="nav nav-pills margin-b-lg">
                         <li id="liChildren" runat="server" class="active"><a href='#<%=divChildItems.ClientID%>' data-toggle="pill">Child Items</a></li>
                         <li id="liParents" runat="server"><a href='#<%=divParentItems.ClientID%>' data-toggle="pill">Parent Items</a></li>
                     </ul>
                 </asp:PlaceHolder>
 
-                <div class="tab-content margin-t-lg">
+                <div class="tab-content">
                     <div id="divChildItems" runat="server" class="tab-pane active">
                         <Rock:Grid ID="gChildItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item" ShowConfirmDeleteDialog="false" OnRowSelected="gChildItems_RowSelected">
                             <Columns>

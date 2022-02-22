@@ -213,8 +213,8 @@ textarea,
   .btn-xs &,
   .btn-group-xs > .btn & {
     top: -2px;
-    line-height: 1;
     font-size: 11px;
+    line-height: 1;
   }
 }
 
@@ -410,6 +410,11 @@ textarea,
     // Remove padding offset on center
     &[align="center"] {
       padding: 18px 6px;
+    }
+
+    // Remove padding offset on center
+    &[align="right"] {
+      padding: 18px 12px 18px 0;
     }
   }
 
@@ -1028,7 +1033,6 @@ td.grid-actions {
 }
 
 
-
 // expanded view
 @media (min-width: @screen-sm-min) {
   .navbar-static-side {
@@ -1144,7 +1148,6 @@ td.grid-actions {
     margin: -35px -35px 0;
   }
 }
-
 
 
 // workflow page
@@ -1359,6 +1362,15 @@ td.grid-actions {
       }
     }
   }
+}
+
+.badge-icon.badge-disabled {
+  color: @badge-bg;
+  opacity: 1;
+}
+
+.checkin-person-name {
+  font-weight: 500;
 }
 
 @import "includes/_person-profile.less";

@@ -164,7 +164,7 @@ namespace Rock.Rest.Controllers
         {
             var processResponse = string.Empty;
 
-            Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
+            Rock.Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
 
             return processResponse;
         }

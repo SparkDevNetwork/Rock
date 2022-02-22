@@ -7,3 +7,30 @@
 @import "_variables.less";
 @import (reference) "_variable-overrides.less";
 @import (reference) "_css-overrides.less";
+
+
+.label-variant(@color) {
+  color: darken(@color, 10%);
+  background-color: mix(lighten(@color, 4%), #ffffff, 15%);
+}
+
+.label-default {
+  color: @gray-800;
+  background: @label-default-bg;
+}
+
+.label-success {
+  color: #065f46;
+}
+
+.label-warning {
+  color: #92400e;
+}
+
+.label-type {
+  color: @gray-800 !important;
+}
+
+.label-campus {
+  color: #5f5568;
+}

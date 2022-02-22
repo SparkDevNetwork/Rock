@@ -316,9 +316,9 @@ namespace Rock.Web.UI
         protected const string FILTER_GENDER_ID = "ddlGenderFilter";
 
         /// <summary>
-        /// Filter martial status Identifier
+        /// Filter marital status Identifier
         /// </summary>
-        protected const string FILTER_MARTIAL_STATUS_ID = "dvpMaritalStatusFilter";
+        protected const string FILTER_MARITAL_STATUS_ID = "dvpMaritalStatusFilter";
 
         /// <summary>
         /// Filter connection status Identifier
@@ -684,7 +684,7 @@ namespace Rock.Web.UI
                             case RegistrationPersonFieldType.MaritalStatus:
                                 {
                                     var dvpMaritalStatusFilter = new DefinedValuePicker();
-                                    dvpMaritalStatusFilter.ID = FILTER_MARTIAL_STATUS_ID;
+                                    dvpMaritalStatusFilter.ID = FILTER_MARITAL_STATUS_ID;
                                     dvpMaritalStatusFilter.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
                                     dvpMaritalStatusFilter.Label = "Marital Status";
 

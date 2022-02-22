@@ -28,6 +28,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -69,12 +70,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> that is  <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the Id of the LocationType <see cref="Rock.Model.DefinedValue" /> that is used to identify the type of <see cref="Rock.Model.Location" />
@@ -348,7 +344,7 @@ namespace Rock.Model
         /// <value>
         /// A Location object representing the parent location of the current location. If this Location does not have a parent Location, this value will be null.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>
@@ -397,7 +393,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupLocation"/> entities that reference this Location.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<GroupLocation> GroupLocations
         {
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
@@ -429,7 +425,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted address.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string FormattedAddress
         {
             get { return GetFullStreetAddress(); }
@@ -441,7 +437,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted HTML address.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string FormattedHtmlAddress
         {
             get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
@@ -506,7 +502,7 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int? CampusId
         {
             get
@@ -568,7 +564,7 @@ namespace Rock.Model
         /// <value>
         /// The polygon for google maps.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string GooglePolygon
         {
             get { return EncodeGooglePolygon(); }
@@ -706,7 +702,7 @@ namespace Rock.Model
                     02/05/2021 MDP 
 
                     Even if Location.Name has a value, return the Full Street Address
-                    for ToString() if there is a full address. This way to don't change
+                    for ToString() if there is a full address. This way we don't change
                     the behavior of how this has worked before.
 
                     UIs, etc, that should be showing Location.Name should use Location.Name instead

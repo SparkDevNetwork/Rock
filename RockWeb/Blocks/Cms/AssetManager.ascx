@@ -1,5 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AssetManager.ascx.cs" Inherits="RockWeb.Blocks.Cms.AssetManager" %>
-
+<style>
+    .asset-has-error {
+        color: red !important;
+    }
+</style>
 <asp:Panel ID="pnlAssetManager" runat="server" CssClass="picker-wrapper clearfix">
     <div class="picker-folders js-pickerfolders">
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
@@ -71,10 +75,10 @@
 
                     <div class="actions assetmanager-actions">
                         <div class="pull-left">
-                            <Rock:FileUploader ID="fupUpload" runat="server" CausesValidation="false" ToolTip="Upload a file to the selected location" IsBinaryFile="false" DisplayMode="DefaultButton" Enabled="false"/>&nbsp;
+                            <Rock:FileUploader ID="fupUpload" runat="server" CausesValidation="false" ToolTip="Upload a file to the selected location" IsBinaryFile="false" DisplayMode="DefaultButton" Enabled="false"/>
                         </div>
 
-                        <div class="btn-group">
+                        <div class="btn-group mr-1">
                             <asp:LinkButton ID="lbDownload" runat="server" CssClass="btn btn-xs btn-default js-singleselect aspNetDisabled" OnClick="lbDownload_Click" CausesValidation="false" ToolTip="Download selected file"><i class="fa fa-download"></i> <span class="hidden-xs">Download</span></asp:LinkButton>
 
                             <asp:LinkButton ID="lbRename" runat="server" CssClass="btn btn-xs btn-default js-singleselect js-renamefile aspNetDisabled" CausesValidation="false" ToolTip="Rename selected file" OnClientClick="return false;">
@@ -83,7 +87,7 @@
 
                             <asp:LinkButton ID="lbDelete" runat="server"  CssClass="btn btn-xs btn-default js-minselect aspNetDisabled" OnClick="lbDelete_Click" CausesValidation="false" ToolTip="Delete selected files" OnClientClick="Rock.dialogs.confirmDelete(event, ' file')"><i class="fa fa-trash-alt"></i> <span class="hidden-xs">Delete</span></asp:LinkButton>
                         </div>
-                        <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-xs btn-default js-assetselect" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-sync"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-xs btn-square btn-default js-assetselect" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-sync"></i></asp:LinkButton>
                     </div>
 
                     <div class="actions well well-sm js-renamefile-div" id="divRenameFile" style="display: none;" runat="server">
@@ -102,13 +106,13 @@
                     </div>
 
                     <table class="table table-striped table-responsive table-no-border assetmanager-files">
-                        <asp:Repeater ID="rptFiles" runat="server">
+                        <asp:Repeater ID="rptFiles" runat="server" OnItemDataBound="rptFiles_ItemDataBound">
                             <ItemTemplate>
-                                <tr>
+                                <tr id="rptFileRow" runat="server">
                                     <td><Rock:RockCheckBox ID="cbSelected" runat="server" CssClass="js-checkbox" /></td>
                                     <td><img id="imgIconPath" src='<%# Eval("IconPath") %>' style='max-width:60px;' runat="server"></td>
                                     <td>
-                                        <asp:Label ID="lbName" runat="server" Text='<%# Eval("Name") %>' CssClass="align-middle js-assetManager-name"></asp:Label>
+                                        <asp:Label ID="lbName" runat="server" CssClass="align-middle js-assetManager-name"></asp:Label>
                                         <asp:Label ID="lbUrl" runat="server" Text='<%# Eval("Uri") %>' style="display: none" CssClass="js-assetManager-uri" ></asp:Label>
                                     </td>
                                     <td data-priority="3"><asp:Label ID="lbLastModified" runat="server" Text='<%# Eval("LastModifiedDateTime") %>'></asp:Label></td>

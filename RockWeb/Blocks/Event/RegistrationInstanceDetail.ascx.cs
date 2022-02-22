@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Event
         Order = 1 )]
 
     #endregion Block Attributes
-    public partial class RegistrationInstanceDetail : RegistrationInstanceBlock, IDetailBlock
+    public partial class RegistrationInstanceDetail : RegistrationInstanceBlock
     {
         #region Attribute Keys
 
@@ -595,6 +595,7 @@ namespace RockWeb.Blocks.Event
             {
                 lCost.Visible = false;
                 lMinimumInitialPayment.Visible = false;
+                lDefaultPaymentAmount.Visible = false;
             }
 
             lAccount.Visible = registrationInstance.Account != null;

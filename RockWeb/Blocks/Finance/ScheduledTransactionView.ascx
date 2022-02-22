@@ -14,6 +14,7 @@
                 </div>
             </div>
 
+            <Rock:ModalAlert ID="mdWarningAlert" runat="server" />
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
@@ -64,7 +65,7 @@
                             </div>
                         </asp:Panel>
 
-                        <Rock:RockLiteral ID="lSummary" runat="server" Label="Summary" />
+                        <Rock:RockLiteral ID="lComments" runat="server" Label="Comments" />
 
                     </div>
                 </div>

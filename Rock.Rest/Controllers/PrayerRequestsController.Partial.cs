@@ -161,7 +161,7 @@ namespace Rock.Rest.Controllers
         {
             System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
-            var found = PrayForRequest( guid, new RockRequestContext( Request ), workflowTypeGuid, recordInteraction );
+            var found = PrayForRequest( guid, RockRequestContext, workflowTypeGuid, recordInteraction );
 
             if ( !found )
             {

@@ -34,20 +34,9 @@ public class BundleConfig
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" ).Include(
             "~/Scripts/jquery-3.5.1.min.js",
             "~/Scripts/jquery-migrate-3.1.0.min.js" ) );
-
-        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/WebFormsJs" ).Include(
-            "~/Scripts/WebForms/MsAjax/MicrosoftAjax.js",
-            "~/Scripts/WebForms/MsAjax/MicrosoftAjaxWebForms.js",
-            "~/Scripts/WebForms/WebForms.js",
-            "~/Scripts/WebForms/WebUIValidation.js",
-            "~/Scripts/WebForms/MenuStandards.js",
-            "~/Scripts/WebForms/Focus.js",
-            "~/Scripts/WebForms/GridView.js",
-            "~/Scripts/WebForms/DetailsView.js",
-            "~/Scripts/WebForms/TreeView.js",
-            "~/Scripts/WebForms/WebParts.js" ) );
-
+        
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockLibs" ).Include(
+            "~/Scripts/Rock/microsoft-ajax-shims.js",
             "~/Scripts/jquery-ui-1.12.1.custom.min.js",
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",
@@ -87,10 +76,17 @@ public class BundleConfig
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockHtmlEditorPlugins" ).Include(
             "~/Scripts/summernote/plugins/*.js" ) );
 
-        // Creating a separate "StructureContentEditorPlugins" bundle specifically for JS functionality that needs
-        // to be included for HtmlEditor
-        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/StructureContentEditorPlugins" ).Include(
-            "~/Scripts/editor.js/*.js" ) );
+        // Add Obsidian scripts
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" ).Include(
+            "~/ObsidianJs/Obsidian.js",
+            "~/ObsidianJs/Vendor/axios.js",
+            "~/ObsidianJs/Vendor/mitt.js",
+            "~/ObsidianJs/Vendor/system.js",
+            "~/ObsidianJs/Vendor/vue.js",
+            "~/ObsidianJs/Vendor/vee-validate.js",
+            "~/ObsidianJs/Vendor/vuex.js",
+            "~/ObsidianJs/PluginsJs/Register.js"
+        ) );
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occasionally was an empty string.
         foreach ( var bundle in bundles )

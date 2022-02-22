@@ -1,5 +1,3 @@
-
-
 .noframe-fields(inline) {
   .form-group {
     float: left;
@@ -46,7 +44,9 @@
 }
 .navigation-bar-fixed(@enable-fixed-navigation);
 
+/* stylelint-disable block-no-empty */
 .required-indicator-toggle(true){}
+/* stylelint-enable block-no-empty */
 .required-indicator-toggle(false) {
   .form-group.required .control-label::after {
     display: none;
@@ -64,7 +64,9 @@
   }
 }
 
+/* stylelint-disable block-no-empty */
 .navigation-bar-toggle(true){}
+/* stylelint-enable block-no-empty */
 .navigation-bar-toggle(false){
   .navbar {
     display: none;

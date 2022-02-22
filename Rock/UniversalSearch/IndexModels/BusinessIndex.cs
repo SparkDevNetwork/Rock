@@ -19,6 +19,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexModels
@@ -44,6 +45,52 @@ namespace Rock.UniversalSearch.IndexModels
         /// The contacts.
         /// </value>
         public string Contacts { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the street address.
+        /// </summary>
+        /// <value>
+        /// The street address.
+        /// </value>
+        [RockIndexField]
+        public string StreetAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the city.
+        /// </summary>
+        /// <value>
+        /// The city.
+        /// </value>
+        [RockIndexField]
+        public string City { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        /// <value>
+        /// The state.
+        /// </value>
+        [RockIndexField]
+        public string State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the postal code.
+        /// </summary>
+        /// <value>
+        /// The postal code.
+        /// </value>
+        [RockIndexField]
+        public string PostalCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the country.
+        /// </summary>
+        /// <value>
+        /// The country.
+        /// </value>
+        [RockIndexField]
+        public string Country { get; set; }
 
         /// <summary>
         /// Gets the icon CSS class.
@@ -75,6 +122,18 @@ namespace Rock.UniversalSearch.IndexModels
             businessIndex.Id = business.Id;
             businessIndex.Name = business.LastName;
             businessIndex.DocumentName = business.LastName;
+
+            // get mailing address
+            var address = business.GetMailingLocation();
+
+            if ( address != null )
+            {
+                businessIndex.StreetAddress = address.Street1 + " " + address.Street2;
+                businessIndex.City = address.City;
+                businessIndex.State = address.State;
+                businessIndex.PostalCode = address.PostalCode;
+                businessIndex.Country = address.Country;
+            }
 
             var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
             var knownRelationshipOwnerRoleId = knownRelationshipGroupType.Roles.Where( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ).FirstOrDefault().Id;

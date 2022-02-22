@@ -18,20 +18,24 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Transactions;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -363,9 +367,9 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.PersonConnectionStatus,
         Category = AttributeCategory.PersonOptions,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
         AllowMultiple = false,
-        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         IsRequired = true,
         Order = 4 )]
 
@@ -813,6 +817,7 @@ mission. We are so grateful for your commitment.</p>
             public const string HostPaymentInfoSubmitScript = "HostPaymentInfoSubmitScript";
             public const string TransactionCode = "TransactionCode";
             public const string CustomerTokenEncrypted = "CustomerTokenEncrypted";
+            public const string TargetPersonGuid = "TargetPersonGuid";
         }
 
         #endregion ViewState Keys
@@ -1184,7 +1189,7 @@ mission. We are so grateful for your commitment.</p>
             var feeCoverageGatewayComponent = FinancialGateway.GetGatewayComponent() as IFeeCoverageGatewayComponent;
             if ( feeCoverageGatewayComponent == null )
             {
-                // the gateway doesn't have fee converage options
+                // the gateway doesn't have fee coverage options
                 return;
             }
 
@@ -1678,6 +1683,10 @@ mission. We are so grateful for your commitment.</p>
             savedAccountService.Add( savedAccount );
             rockContext.SaveChanges();
 
+            // If we created a new saved account, update the transaction to say it that is used this saved account.
+            paymentDetail.FinancialPersonSavedAccountId = savedAccount.Id;
+            rockContext.SaveChanges();
+
             cbSaveAccount.Visible = false;
             tbSaveAccount.Visible = false;
             pnlCreateLogin.Visible = false;
@@ -2026,11 +2035,11 @@ mission. We are so grateful for your commitment.</p>
 
             if ( targetPerson != null )
             {
-                hfTargetPersonId.Value = targetPerson.Id.ToString();
+                ViewState[ViewStateKey.TargetPersonGuid] = Rock.Security.Encryption.EncryptString( targetPerson.Guid.ToString() );
             }
             else
             {
-                hfTargetPersonId.Value = string.Empty;
+                ViewState[ViewStateKey.TargetPersonGuid] = string.Empty;
             }
 
             SetCampus( targetPerson );
@@ -2114,13 +2123,19 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private Person GetTargetPerson( RockContext rockContext )
         {
-            int? targetPersonId = hfTargetPersonId.Value.AsIntegerOrNull();
-            if ( targetPersonId == null )
+            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
+            if ( targetPersonValue.IsNullOrWhiteSpace() )
             {
                 return null;
             }
 
-            var targetPerson = new PersonService( rockContext ).Get( targetPersonId.Value );
+            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
+            if ( targetPersonGuid == null )
+            {
+                return null;
+            }
+
+            var targetPerson = new PersonService( rockContext ).Get( targetPersonGuid.Value );
             return targetPerson;
         }
 
@@ -2382,15 +2397,22 @@ mission. We are so grateful for your commitment.</p>
             ddlPersonSavedAccount.Visible = false;
             var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
 
-            int? targetPersonId = hfTargetPersonId.Value.AsIntegerOrNull();
-            if ( targetPersonId == null )
+            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
+            if ( targetPersonValue.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
+            if ( targetPersonGuid == null )
             {
                 return;
             }
 
             var rockContext = new RockContext();
+            var targetPersonId = new PersonService( rockContext ).Get( targetPersonGuid.Value ).Id;
             var personSavedAccountsQuery = new FinancialPersonSavedAccountService( rockContext )
-                .GetByPersonId( targetPersonId.Value )
+                .GetByPersonId( targetPersonId )
                 .Where( a => !a.IsSystem )
                 .AsNoTracking();
 
@@ -2445,7 +2467,7 @@ mission. We are so grateful for your commitment.</p>
                 }
                 else
                 {
-                    displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked}";
+                    displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked})";
                 }
 
                 ddlPersonSavedAccount.Items.Add( new ListItem( displayName, personSavedAccount.Id.ToString() ) );
@@ -2675,7 +2697,7 @@ mission. We are so grateful for your commitment.</p>
                     targetPerson = this.CreateTargetPerson();
                 }
 
-                hfTargetPersonId.Value = targetPerson.Id.ToString();
+                ViewState[ViewStateKey.TargetPersonGuid] = Rock.Security.Encryption.EncryptString( targetPerson.Guid.ToString() );
             }
 
             UpdatePersonFromInputInformation( targetPerson, givingAsBusiness ? PersonInputSource.BusinessContact : PersonInputSource.Person );
@@ -3050,6 +3072,8 @@ mission. We are so grateful for your commitment.</p>
             batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
             rockContext.SaveChanges();
 
+            Task.Run( () => GiftWasGivenMessage.PublishTransactionEvent( transaction.Id, GiftEventTypes.GiftSuccess ) );
+
             HistoryService.SaveChanges(
                 rockContext,
                 typeof( FinancialBatch ),
@@ -3210,6 +3234,8 @@ mission. We are so grateful for your commitment.</p>
             financialScheduledTransactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
 
+            Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
+
             BindScheduledTransactions();
         }
 
@@ -3247,9 +3273,9 @@ mission. We are so grateful for your commitment.</p>
             if ( receiptEmail.HasValue )
             {
                 // Queue a transaction to send receipts
-                var newTransactionIds = new List<int> { transactionId };
-                var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                var transactionIds = new List<int> { transactionId };
+                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
+                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
         }
 
@@ -3264,6 +3290,20 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGiveNow_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName_AmountEntry.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName_AmountEntry.Visible = true;
+                nbRockFullName_AmountEntry.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName_AmountEntry.Text = "Invalid Form Value";
+                return;
+            }
+
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
             nbProcessTransactionError.Visible = false;
@@ -3391,6 +3431,20 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPersonalInformationNext_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName_PersonalInformation.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName_PersonalInformation.Visible = true;
+                nbRockFullName_PersonalInformation.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName_PersonalInformation.Text = "Invalid Form Value";
+                return;
+            }
+
             ProcessTransaction();
         }
 

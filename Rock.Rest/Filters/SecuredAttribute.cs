@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Channels;
@@ -121,8 +122,37 @@ namespace Rock.Rest.Filters
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             }
 
-            var action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ? Security.Authorization.VIEW : Security.Authorization.EDIT;
-            if ( !item.IsAuthorized( action, person ) )
+            string action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
+                Security.Authorization.VIEW : Security.Authorization.EDIT;
+
+            bool authorized = false;
+
+            if ( item.IsAuthorized( action, person ) )
+            {
+                authorized = true;
+            }
+            else if ( actionContext.Request.Headers.Contains( "X-Rock-App-Id" ) && actionContext.Request.Headers.Contains( "X-Rock-Mobile-Api-Key" ) )
+            {
+                // Normal authorization failed, but this is a Mobile App request so check
+                // if the application itself has been given permission.
+                var appId = actionContext.Request.Headers.GetValues( "X-Rock-App-Id" ).First().AsIntegerOrNull();
+                var mobileApiKey = actionContext.Request.Headers.GetValues( "X-Rock-Mobile-Api-Key" ).First();
+
+                if ( appId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var appUser = Mobile.MobileHelper.GetMobileApplicationUser( appId.Value, mobileApiKey, rockContext );
+
+                        if ( appUser != null && item.IsAuthorized( action, appUser.Person ) )
+                        {
+                            authorized = true;
+                        }
+                    }
+                }
+            }
+
+            if ( !authorized )
             {
                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
             }

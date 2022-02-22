@@ -39,6 +39,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether listitem to sorted by name Or by Order then by name (default false)
+        /// NOTE: Make sure you set this before setting .GroupTypes
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [use unique identifier as value]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSortedByName { get; set; }
+
+        /// <summary>
         /// Sets the group types. Note: Use SetGroupTypes instead to set this using List&lt;GroupTypeCache&gt;
         /// </summary>
         /// <value>
@@ -59,7 +68,8 @@ namespace Rock.Web.UI.Controls
         public void SetGroupTypes( IEnumerable<GroupTypeCache> groupTypes )
         {
             this.Items.Clear();
-            foreach ( var groupType in groupTypes )
+            var orderedGroupTypes = IsSortedByName ? groupTypes.OrderBy( a => a.Name ) : groupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name );
+            foreach ( var groupType in orderedGroupTypes )
             {
                 ListItem groupTypeItem = new ListItem();
                 groupTypeItem.Value = groupType.Id.ToString();

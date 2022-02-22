@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.SharedSection,
         Order = 0)]
 
-    public partial class PersonalLinkSectionDetail : RockBlock, IDetailBlock
+    public partial class PersonalLinkSectionDetail : RockBlock
     {
         #region Attribute Keys
 

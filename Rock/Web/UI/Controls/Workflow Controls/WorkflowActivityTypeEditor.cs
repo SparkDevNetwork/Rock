@@ -343,13 +343,14 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lblActivityTypeDescription );
             _lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
             _lblActivityTypeDescription.ID = this.ID + "_lblActivityTypeDescription";
+            _lblActivityTypeDescription.CssClass = "workflow-activity-description";
 
             _lblInactive = new Label();
             Controls.Add( _lblInactive );
             _lblInactive.ClientIDMode = ClientIDMode.Static;
             _lblInactive.ID = this.ID + "_lblInactive";
-            _lblInactive.CssClass = "pull-right";
-            _lblInactive.Text = "<span class='label label-danger'>Inactive</span>";
+            _lblInactive.CssClass = "label label-danger mx-1";
+            _lblInactive.Text = "Inactive";
 
             _lbDeleteActivityType = new LinkButton();
             Controls.Add( _lbDeleteActivityType );
@@ -368,6 +369,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };
             Controls.Add( _cbActivityTypeIsActive );
             _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
+            _cbActivityTypeIsActive.ContainerCssClass = "m-0";
             string checkboxScriptFormat = @"
 javascript:
     if ($(this).is(':checked')) {{
@@ -400,6 +402,7 @@ javascript:
             _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Text = "Activated with Workflow" };
             Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
+            _cbActivityTypeIsActivatedWithWorkflow.ContainerCssClass = "m-0";
             checkboxScriptFormat = @"
 javascript:
     if ($(this).is(':checked')) {{
@@ -520,8 +523,11 @@ javascript:
             // Name/Description div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right flex-shrink-0 align-self-start" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            _lblInactive.Style[HtmlTextWriterStyle.Display] = _cbActivityTypeIsActive.Checked ? "none" : string.Empty;
+            _lblInactive.RenderControl( writer );
 
             if ( _sbSecurity.EntityId != 0 )
             {
@@ -541,11 +547,8 @@ javascript:
                 _lbDeleteActivityType.Visible = false;
             }
 
-            // Add/ChevronUpDown/Delete div
+            // End div pull-right
             writer.RenderEndTag();
-
-            _lblInactive.Style[HtmlTextWriterStyle.Display] = _cbActivityTypeIsActive.Checked ? "none" : string.Empty;
-            _lblInactive.RenderControl( writer );
 
             // header div
             writer.RenderEndTag();
@@ -562,20 +565,20 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbActivityTypeName.ValidationGroup = ValidationGroup;
             _tbActivityTypeName.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-2" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6 control-label-offset d-flex justify-content-between align-items-center" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             _cbActivityTypeIsActive.ValidationGroup = ValidationGroup;
             _cbActivityTypeIsActive.RenderControl( writer );
-            writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbActivityTypeIsActivatedWithWorkflow.ValidationGroup = ValidationGroup;
+            _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
 
             if ( _sbSecurity.EntityId > 0 )
             {
@@ -583,8 +586,6 @@ javascript:
                 _sbSecurity.RenderControl( writer );
             }
 
-            _cbActivityTypeIsActivatedWithWorkflow.ValidationGroup = ValidationGroup;
-            _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();

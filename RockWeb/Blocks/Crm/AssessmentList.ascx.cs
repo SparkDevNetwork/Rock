@@ -25,7 +25,9 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -200,7 +202,9 @@ namespace Rockweb.Blocks.Crm
                 .Where( x => x.IsActive == true )
                 .Select( t => new AssessmentTypeListItem
                 {
+                    Id = t.Id,
                     Title = t.Title,
+                    Description = t.Description,
                     AssessmentPath = t.AssessmentPath,
                     AssessmentResultsPath = t.AssessmentResultsPath,
                     AssessmentRetakeLinkButton = "",
@@ -289,7 +293,7 @@ namespace Rockweb.Blocks.Crm
             }
         }
 
-        public class LastAssessmentTaken : DotLiquid.Drop
+        public class LastAssessmentTaken : RockDynamic
         {
             public DateTime? RequestedDate { get; set; }
             public DateTime? CompletedDate { get; set; }
@@ -297,9 +301,11 @@ namespace Rockweb.Blocks.Crm
             public string Requester { get; set; }
         }
 
-        public class AssessmentTypeListItem : DotLiquid.Drop
+        public class AssessmentTypeListItem : RockDynamic
         {
+            public int Id { get; set; }
             public string Title { get; set; }
+            public string Description { get; set; }
             public string AssessmentPath { get; set; }
             public string AssessmentResultsPath { get; set; }
             public string AssessmentRetakeLinkButton { get; set; }

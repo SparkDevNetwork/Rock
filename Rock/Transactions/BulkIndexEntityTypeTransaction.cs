@@ -24,9 +24,10 @@ namespace Rock.Transactions
     /// <summary>
     /// Tracks when a person is viewed.
     /// </summary>
+    [Obsolete( "Use ProcessEntityTypeBulkIndex Task instead." )]
+    [RockObsolete( "1.13" )]
     public class BulkIndexEntityTypeTransaction : ITransaction
     {
-
         /// <summary>
         /// Gets or sets the viewer person id.
         /// </summary>

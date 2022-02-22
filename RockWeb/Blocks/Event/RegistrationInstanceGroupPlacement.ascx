@@ -292,7 +292,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbAddExistingPlacementGroupWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
-                                <Rock:GroupPicker ID="gpAddExistingPlacementGroup" runat="server" Label="Group" ValidationGroup="vgAddPlacementGroup" OnSelectItem="gpAddExistingPlacementGroup_SelectItem" />
+                                <Rock:GroupPicker ID="gpAddExistingPlacementGroup" runat="server" Label="Group" ValidationGroup="vgAddPlacementGroup" AllowMultiSelect="true" OnSelectItem="gpAddExistingPlacementGroup_SelectItem" />
                             </div>
                         </div>
                     </asp:Panel>

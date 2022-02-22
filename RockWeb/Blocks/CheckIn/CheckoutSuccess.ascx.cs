@@ -57,12 +57,6 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
-
-            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
-            if ( bodyTag != null )
-            {
-                bodyTag.AddCssClass( "checkin-checkoutsuccess-bg" );
-            }
         }
 
         /// <summary>
@@ -132,7 +126,9 @@ namespace RockWeb.Blocks.CheckIn
 
                         if ( printFromClient.Any() )
                         {
-                            var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+                            var safeProxySafeUrl = Request.UrlProxySafe();
+                            var urlRoot = $"{safeProxySafeUrl.Scheme}://{safeProxySafeUrl.Authority}";
+
                             printFromClient
                                 .OrderBy( l => l.PersonId )
                                 .ThenBy( l => l.Order )

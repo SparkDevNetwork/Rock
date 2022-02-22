@@ -1,0 +1,15 @@
+{
+  "extends": "../Framework/tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../Tests",
+    "outDir": "./",
+    "noEmit": false,
+    "module": "CommonJS",
+    "baseUrl": ".."
+  },
+  "references": [
+    { "path": "../Framework"}
+  ],
+  "include": ["**/*.ts"],
+  "exclude": ["**/*.ignored.ts"]
+}

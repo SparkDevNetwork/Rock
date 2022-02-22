@@ -156,7 +156,15 @@ namespace Rock.Web.UI.Controls
 
                     if ( nodes.Count > 1 )
                     {
-                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
+                        var previousNodePath = string.Empty;
+                        var pathedNodes = new List<string>();
+                        foreach ( var node in nodes )
+                        {
+                            pathedNodes.Add( previousNodePath + node );
+                            previousNodePath = previousNodePath + node + "|";
+                        }
+
+                        InitialItemParentIds = pathedNodes.Take( pathedNodes.Count - 1 ).ToList().AsDelimited( "," );
                     }
                 }
             }
@@ -211,7 +219,15 @@ namespace Rock.Web.UI.Controls
 
                         if ( InitialItemParentIds == string.Empty && nodes.Count > 1 )
                         {
-                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
+                            var previousNodePath = string.Empty;
+                            var pathedNodes = new List<string>();
+                            foreach ( var node in nodes )
+                            {
+                                pathedNodes.Add( previousNodePath + node );
+                                previousNodePath = previousNodePath + node + "|";
+                            }
+
+                            InitialItemParentIds = pathedNodes.Take( pathedNodes.Count - 1 ).ToList().AsDelimited( "," );
                         }
                     }
                 }

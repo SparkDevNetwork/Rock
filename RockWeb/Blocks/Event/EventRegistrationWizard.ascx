@@ -155,7 +155,7 @@
                 <div class="panel-body">
 
                     <asp:Panel ID="pnlInitiate" runat="server">
-                        <asp:ValidationSummary ID="vsInitiate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsInitiate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">
@@ -190,7 +190,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlRegistration" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsRegistration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsRegistration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">
@@ -247,6 +247,11 @@
                                         ControlToValidate="tbSlug"
                                         OnServerValidate="cvUrlSlug_ServerValidate"
                                         Display="None" />
+                                    <asp:RegularExpressionValidator runat="server"
+                                        ID="rvUrlSlug"
+                                        ErrorMessage="URL Slug cannot contain any special characters other than -"
+                                        ControlToValidate="tbSlug"
+                                        ValidationExpression="^[a-z0-9]+(?:-[a-z0-9]+)*$" />
                                 </div>
                             </div>
 
@@ -268,7 +273,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlGroup" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">
@@ -306,7 +311,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlEvent" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsEvent" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <asp:Panel ID="pnlNewEventSelection" runat="server">
@@ -383,7 +388,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlEventOccurrence" runat="server" Visible="false">
-                        <asp:ValidationSummary ID="vsEventOccurrence" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-warning" />
+                        <asp:ValidationSummary ID="vsEventOccurrence" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                         <fieldset>
                             <div class="row">

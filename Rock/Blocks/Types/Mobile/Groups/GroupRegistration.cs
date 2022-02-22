@@ -102,7 +102,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Key = AttributeKey.ConnectionStatus,
         Order = 7 )]
 

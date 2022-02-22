@@ -29,6 +29,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a group attendance workflow
     /// </summary>
+    [Obsolete( "Use LaunchMemberAttendedGroupWorkflow Task instead." )]
+    [RockObsolete( "1.13" )]
     public class GroupAttendedTransaction : ITransaction
     {
         private int? GroupTypeId;
@@ -37,7 +39,7 @@ namespace Rock.Transactions
         private DateTime? AttendanceDateTime;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
+        /// Initializes a new instance of the <see cref="GroupAttendedTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
         public GroupAttendedTransaction( DbEntityEntry entry )
@@ -48,7 +50,7 @@ namespace Rock.Transactions
                 var attendance = entry.Entity as Attendance;
 
                 // If attendance record is valid and the DidAttend is true (not null or false)
-                if ( attendance != null &&  ( attendance.DidAttend == true ) )
+                if ( attendance != null && ( attendance.DidAttend == true ) )
                 {
                     // Save for all adds
                     bool valid = entry.State == EntityState.Added;

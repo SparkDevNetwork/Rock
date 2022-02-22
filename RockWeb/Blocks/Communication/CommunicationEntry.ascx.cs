@@ -33,6 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using System.Data.Entity;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -665,22 +666,14 @@ namespace RockWeb.Blocks.Communication
                     using ( var rockContext = new RockContext() )
                     {
                         // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                        var testCommunication = communication.Clone( false );
-                        testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.NewGuid();
+                        var testCommunication = communication.CloneWithoutIdentity();
                         testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
                         testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
-
                         testCommunication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                        testCommunication.ForeignGuid = null;
-                        testCommunication.ForeignId = null;
-                        testCommunication.ForeignKey = null;
-
                         testCommunication.FutureSendDateTime = null;
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
-
                         testCommunication.Subject = string.Format( "[Test] {0}", testCommunication.Subject );
 
                         foreach ( var attachment in communication.Attachments )
@@ -828,9 +821,11 @@ namespace RockWeb.Blocks.Communication
                         // send approval email if needed (now that we have a communication id)
                         if ( communication.Status == CommunicationStatus.PendingApproval )
                         {
-                            var approvalTransaction = new Rock.Transactions.SendCommunicationApprovalEmail();
-                            approvalTransaction.CommunicationId = communication.Id;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( approvalTransaction );
+                            var approvalTransactionMsg = new ProcessSendCommunicationApprovalEmail.Message()
+                            {
+                                CommunicationId = communication.Id
+                            };
+                            approvalTransactionMsg.Send();
                         }
 
                         if ( communication.Status == CommunicationStatus.Approved &&
@@ -838,10 +833,11 @@ namespace RockWeb.Blocks.Communication
                         {
                             if ( GetAttributeValue( AttributeKey.SendWhenApproved ).AsBoolean() )
                             {
-                                var transaction = new Rock.Transactions.SendCommunicationTransaction();
-                                transaction.CommunicationId = communication.Id;
-                                transaction.PersonAlias = CurrentPersonAlias;
-                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                                var transactionMsg = new ProcessSendCommunication.Message()
+                                {
+                                    CommunicationId = communication.Id
+                                };
+                                transactionMsg.Send();
                             }
                         }
 
@@ -1191,8 +1187,14 @@ namespace RockWeb.Blocks.Communication
                 }
                 else if ( mediumControl is Rock.Web.UI.Controls.Communication.Sms )
                 {
-                    ( ( Rock.Web.UI.Controls.Communication.Sms )mediumControl ).SelectedNumbers = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+                    var allowedSmsNumbersGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+
+                    ( ( Sms ) mediumControl ).SelectedNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues
+                        .Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && allowedSmsNumbersGuids.ContainsOrEmpty( v.Guid ) )
+                        .Select( v => v.Guid )
+                        .ToList();
                 }
+
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = false;
                 mediumControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();

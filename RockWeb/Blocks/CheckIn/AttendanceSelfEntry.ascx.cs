@@ -914,11 +914,14 @@ ORDER BY [Text]",
                     if ( locationId.HasValue && group.GroupLocations.Select( l => l.LocationId == locationId ).Any() )
                     {
                         GroupLocation groupLocation = group.GroupLocations.Where( l => l.LocationId == locationId ).FirstOrDefault();
-                        var schedule = groupLocation.Schedules.Where( a => a.WasScheduleActive( campusCurrentDateTime ) ).FirstOrDefault();
-                        if ( schedule != null )
+                        if ( groupLocation != null )
                         {
-                            scheduleId = schedule.Id;
-                            attendanceGroup = group;
+                            var schedule = groupLocation.Schedules.Where( a => a.WasScheduleActive( campusCurrentDateTime ) ).FirstOrDefault();
+                            if ( schedule != null )
+                            {
+                                scheduleId = schedule.Id;
+                                attendanceGroup = group;
+                            }
                         }
                     }
 
@@ -1007,7 +1010,7 @@ ORDER BY [Text]",
                             }
                             parameters.Add( "CheckedInPersonIds", personIds.AsDelimited( "," ) );
 
-                            primaryPerson.LaunchWorkflow( workflowTypeGuid, primaryPerson.FullName, parameters );
+                            primaryPerson.LaunchWorkflow( workflowTypeGuid, primaryPerson.FullName, parameters, null );
 
                         }
                         catch ( Exception ex )
@@ -1339,7 +1342,7 @@ ORDER BY [Text]",
             var recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             var recordStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             var connectionStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
-            var marriedMartialStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var marriedMaritalStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
@@ -1402,10 +1405,10 @@ ORDER BY [Text]",
                     if ( watcher.RelationshipTypeGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
                     {
 
-                        person.MaritalStatusValueId = marriedMartialStatusValueId;
-                        if ( primaryPerson.MaritalStatusValueId != marriedMartialStatusValueId )
+                        person.MaritalStatusValueId = marriedMaritalStatusValueId;
+                        if ( primaryPerson.MaritalStatusValueId != marriedMaritalStatusValueId )
                         {
-                            primaryPerson.MaritalStatusValueId = marriedMartialStatusValueId;
+                            primaryPerson.MaritalStatusValueId = marriedMaritalStatusValueId;
                         }
                     }
 

@@ -30,12 +30,12 @@
 
                 <div class="panel-labels">
 
-                    <a href="#" onclick="$('.js-slidingdaterange-help').toggle()" class="btn btn-xs btn-square btn-link margin-l-sm">
-                        <i class='fa fa-question-circle'></i>
+                    <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()" class="btn btn-default btn-xs btn-square">
+                        <i class='fa fa-question'></i>
                     </a>
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
-                        class="btn btn-xs btn-square btn-default margin-l-sm btn-copy-to-clipboard"
+                        class="btn btn-xs btn-square btn-default btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
@@ -43,8 +43,9 @@
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
-            <div class="panel-info">
-                <div class="alert alert-info js-slidingdaterange-help margin-b-none" style="display: none">
+            <div class="panel-collapsable p-0">
+                <div class="panel-drawer js-slidingdaterange-help border-bottom border-panel p-3" style="display: none">
+                    <h5 class="mt-0 mb-4">Sliding Date Range Help</h5>
                     <asp:Literal ID="lSlidingDateRangeHelp" runat="server" />
                 </div>
             </div>
@@ -97,8 +98,8 @@
                                 </div>
                             </div>
                             <div class="col-sm-4">
-                                <div class="actions text-right">
-                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                <div class="panel-actions text-right">
+                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary pull-right" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>
                         </div>
@@ -219,9 +220,9 @@
                                         </asp:Panel>
                                     </Rock:RockControlWrapper>
 
-                                    <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Dataview Results" RepeatDirection="Vertical" Visible="false">
-                                        <asp:ListItem Text="Only show people from dataview that have giving data" Value="Limit" />
-                                        <asp:ListItem Text="Include all people from dataview" Value="All" />
+                                    <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Data View Results" RepeatDirection="Vertical" Visible="false">
+                                        <asp:ListItem Text="Only show people from Data View that have giving data" Value="Limit" />
+                                        <asp:ListItem Text="Include all people from Data View" Value="All" />
                                     </Rock:RockRadioButtonList>
 
                                     <div class="actions margin-b-md">

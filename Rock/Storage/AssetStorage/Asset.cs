@@ -125,6 +125,14 @@ namespace Rock.Storage.AssetStorage
         public Stream AssetStream { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has error.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has error; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasError { get; set; } = false;
+
+        /// <summary>
         /// Clones this instance.
         /// </summary>
         /// <returns></returns>
@@ -136,6 +144,7 @@ namespace Rock.Storage.AssetStorage
                 AssetStream = AssetStream,
                 Description = Description,
                 FileSize = FileSize,
+                HasError = HasError,
                 IconPath = IconPath,
                 Key = Key,
                 LastModifiedDateTime = LastModifiedDateTime,

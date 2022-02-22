@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK,
         Key = AttributeKey.MapStyle )]
 
-    public partial class DeviceDetail : RockBlock, IDetailBlock
+    public partial class DeviceDetail : RockBlock
     {
         public static class AttributeKey
         {
@@ -191,7 +191,8 @@ namespace RockWeb.Blocks.Core
                 device.PrintFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
                 device.IsActive = cbIsActive.Checked;
                 device.HasCamera = cbHasCamera.Checked;
-                device.CameraBarcodeConfigurationType = ddlCameraBarcodeConfigurationType.SelectedValue.ConvertToEnumOrNull<CameraBarcodeConfiguration>();
+                device.KioskType = rblKioskType.SelectedValueAsEnumOrNull<KioskType>();
+                device.CameraBarcodeConfigurationType = ddlIPadCameraBarcodeConfigurationType.SelectedValue.ConvertToEnumOrNull<CameraBarcodeConfiguration>();
 
                 if ( device.Location == null )
                 {
@@ -200,7 +201,7 @@ namespace RockWeb.Blocks.Core
 
                 // Custom validation checking
                 string errorMessage = string.Empty;
-                if ( ! geopFence.IsGeoFenceValid( out errorMessage ) )
+                if ( !geopFence.IsGeoFenceValid( out errorMessage ) )
                 {
                     geopFence.RequiredErrorMessage = "error";
                     nbGeoFence.Visible = true;
@@ -290,9 +291,8 @@ namespace RockWeb.Blocks.Core
                 device = new Device();
             }
 
-            SetPrinterSettingsVisibility();
-            SetCameraVisibility();
-            UpdateControlsForDeviceType( device );
+            SetDeviceTypeControlsVisibility();
+            UpdateAttributeControlsForDeviceType( device );
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlPrintTo_SelectedIndexChanged( object sender, EventArgs e )
         {
-            SetPrinterVisibility();
+            SetDeviceTypeControlsVisibility();
         }
 
         /// <summary>
@@ -388,6 +388,27 @@ namespace RockWeb.Blocks.Core
                 nbGeoFence.Visible = false;
             }
         }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblKioskType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblKioskType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetDeviceTypeControlsVisibility();
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbHasCamera control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbHasCamera_CheckedChanged( object sender, EventArgs e )
+        {
+            SetDeviceTypeControlsVisibility();
+        }
+
         #endregion
 
         #region Methods
@@ -410,7 +431,9 @@ namespace RockWeb.Blocks.Core
             ddlPrinter.DataBind();
             ddlPrinter.Items.Insert( 0, new ListItem() );
 
-            ddlCameraBarcodeConfigurationType.BindToEnum<CameraBarcodeConfiguration>( true );
+            rblKioskType.BindToEnum<KioskType>();
+
+            ddlIPadCameraBarcodeConfigurationType.BindToEnum<CameraBarcodeConfiguration>( true );
         }
 
         /// <summary>
@@ -453,11 +476,13 @@ namespace RockWeb.Blocks.Core
             ddlPrinter.SetValue( device.PrinterDeviceId );
             ddlPrintFrom.SetValue( device.PrintFrom.ConvertToInt().ToString() );
             cbHasCamera.Checked = device.HasCamera;
-            ddlCameraBarcodeConfigurationType.SetValue( device.CameraBarcodeConfigurationType.HasValue ? device.CameraBarcodeConfigurationType.ConvertToInt().ToString() : null );
+            if ( device.KioskType.HasValue )
+            {
+                rblKioskType.SetValue( device.KioskType.ConvertToInt() );
+            }
+            ddlIPadCameraBarcodeConfigurationType.SetValue( device.CameraBarcodeConfigurationType.HasValue ? device.CameraBarcodeConfigurationType.ConvertToInt().ToString() : null );
 
-            SetPrinterVisibility();
-            SetPrinterSettingsVisibility();
-            SetCameraVisibility();
+            SetDeviceTypeControlsVisibility();
 
             Guid? orgLocGuid = GlobalAttributesCache.Get().GetValue( "OrganizationAddress" ).AsGuidOrNull();
             if ( orgLocGuid.HasValue )
@@ -496,7 +521,7 @@ namespace RockWeb.Blocks.Core
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
 
-            UpdateControlsForDeviceType( device );
+            UpdateAttributeControlsForDeviceType( device );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -545,7 +570,7 @@ namespace RockWeb.Blocks.Core
         /// Updates the type of the controls for device.
         /// </summary>
         /// <param name="device">The device.</param>
-        private void UpdateControlsForDeviceType( Device device )
+        private void UpdateAttributeControlsForDeviceType( Device device )
         {
             AddAttributeControls( device );
         }
@@ -595,33 +620,23 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Decide if the printer settings section should be hidden.
+        /// Decide visibiliy of controls based on selected kiosk type, etc
         /// </summary>
-        private void SetPrinterSettingsVisibility()
-        {
-            var checkinKioskDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() ).Id;
-            pnlPrinterSettings.Visible = dvpDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId;
-        }
-
-        /// <summary>
-        /// Decide if the printer drop down list should be hidden.
-        /// </summary>
-        private void SetPrinterVisibility()
-        {
-            var printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
-            ddlPrinter.Visible = printTo != PrintTo.Location;
-        }
-
-        /// <summary>
-        /// Decide if the camera settings section should be hidden.
-        /// </summary>
-        private void SetCameraVisibility()
+        private void SetDeviceTypeControlsVisibility()
         {
             var deviceTypeValueId = dvpDeviceType.SelectedValue.AsInteger();
+            var checkinKioskDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() ).Id;
+            var kioskType = rblKioskType.SelectedValueAsEnumOrNull<KioskType>();
             var deviceType = DefinedValueCache.Get( deviceTypeValueId );
 
-            cbHasCamera.Visible = deviceType != null && deviceType.GetAttributeValue( "core_SupportsCameras" ).AsBoolean();
-            ddlCameraBarcodeConfigurationType.Visible = deviceType != null && deviceType.GetAttributeValue( "core_SupportsCameras" ).AsBoolean();
+            pnlPrinterSettings.Visible = deviceTypeValueId == checkinKioskDeviceTypeId;
+            var printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
+            ddlPrinter.Visible = printTo != PrintTo.Location;
+            rblKioskType.Visible = deviceTypeValueId == checkinKioskDeviceTypeId;
+
+            bool deviceSupportsCameras = deviceType?.GetAttributeValue( "core_SupportsCameras" ).AsBoolean() == true;
+            cbHasCamera.Visible = deviceSupportsCameras;
+            ddlIPadCameraBarcodeConfigurationType.Visible = deviceSupportsCameras && kioskType == KioskType.IPad && cbHasCamera.Checked;
         }
 
         /// <summary>

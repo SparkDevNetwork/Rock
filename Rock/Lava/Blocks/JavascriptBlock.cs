@@ -1,0 +1,240 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Web;
+
+using Rock.Web.UI;
+
+namespace Rock.Lava.Blocks
+{
+    /// <summary>
+    /// Tag which allows a snippet of JavaScript to be executed in the browser.
+    /// </summary>
+    public class JavascriptBlock : LavaBlockBase
+    {
+        private static readonly Regex Syntax = new Regex( @"(\w+)" );
+
+        string _markup = string.Empty;
+
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
+        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
+        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        {
+            _markup = markup;
+
+            base.OnInitialize( tagName, markup, tokens );
+        }
+
+        /// <summary>
+        /// Renders the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="result">The result.</param>
+        public override void OnRender( ILavaRenderContext context, TextWriter result )
+        {
+            // Get the current page object if it is available.
+            RockPage page = null;
+
+            if ( HttpContext.Current != null )
+            {
+                page = HttpContext.Current.Handler as RockPage;
+            }
+
+            var parms = ParseMarkup( _markup, context );
+
+            using ( TextWriter twJavascript = new StringWriter() )
+            {
+                base.OnRender( context, twJavascript );
+
+                if ( parms["url"].IsNullOrWhiteSpace() )
+                {
+                    string javascript = "";
+
+                    if ( !parms["disableanonymousfunction"].AsBoolean() )
+                    {
+                        javascript = $@"(function(){{
+  {twJavascript.ToString()}
+}})({parms["references"]});";
+                    }
+                    else
+                    {
+                        javascript = twJavascript.ToString();
+                    }
+
+                    var scriptText = $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}";
+
+                    if ( parms.ContainsKey( "id" ) )
+                    {
+                        var identifier = parms["id"];
+                        if ( identifier.IsNotNullOrWhiteSpace() )
+                        {
+                            var controlId = "js-" + identifier;
+                            System.Web.UI.Control scriptControl = null;
+
+                            if ( page != null )
+                            {
+                                scriptControl = page.Header.FindControl( controlId );
+
+                                if ( scriptControl == null )
+                                {
+                                    scriptControl = new System.Web.UI.LiteralControl( scriptText );
+                                    scriptControl.ID = controlId;
+                                    page.Header.Controls.Add( scriptControl );
+                                }
+                            }
+                            else
+                            {
+                                result.Write( scriptText );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if ( page != null )
+                        {
+                            page.Header.Controls.Add( new System.Web.UI.LiteralControl( scriptText ) );
+                        }
+                        else
+                        {
+                            result.Write( scriptText );
+                        }
+                    }
+                }
+                else
+                {
+                    var url = ResolveRockUrl( parms["url"] );
+
+                    var scriptText = $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}";
+                    if ( parms.ContainsKey( "id" ) )
+                    {
+                        var identifier = parms["id"];
+                        if ( identifier.IsNotNullOrWhiteSpace() )
+                        {
+                            var controlId = "js-" + identifier;
+                            System.Web.UI.Control scriptControl = null;
+
+                            if ( page != null )
+                            {
+                                scriptControl = page.Header.FindControl( controlId );
+
+                                if ( scriptControl == null )
+                                {
+                                    scriptControl = new System.Web.UI.LiteralControl( scriptText );
+                                    scriptControl.ID = controlId;
+                                    page.Header.Controls.Add( scriptControl );
+                                }
+                            }
+                            else
+                            {
+                                result.Write( scriptText );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if ( page != null )
+                        {
+                            page.Header.Controls.Add( new System.Web.UI.LiteralControl( scriptText ) );
+                        }
+                        else
+                        {
+                            result.Write( scriptText );
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        private string ResolveRockUrl(string url )
+        {
+            // If we are not operating in the context of a page, return the unresolved URL.
+            if ( HttpContext.Current == null )
+            {
+                return url;
+            }
+
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( url.StartsWith( "~~" ) )
+            {
+                string theme = "Rock";
+                if ( page.Theme.IsNotNullOrWhiteSpace() )
+                {
+                    theme = page.Theme;
+                }
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
+                {
+                    theme = page.Site.Theme;
+                }
+
+                url = "~/Themes/" + theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
+            }
+
+            return page.ResolveUrl( url );
+        }
+
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
+        {
+            // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
+
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            var parms = new Dictionary<string, string>();
+            parms.Add( "cacheduration", "0" );
+            parms.Add( "references", string.Empty );
+            parms.Add( "disableanonymousfunction", "false" );
+            parms.Add( "url", string.Empty );
+
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+            return parms;
+        }
+    }
+}

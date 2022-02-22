@@ -133,7 +133,7 @@
             //
             // Create the row container as an input-group so things look pretty.
             //
-            var $row = $('<div class="input-group margin-t-sm"></div>');
+            var $row = $('<div class="input-group margin-b-sm"></div>');
 
             //
             // Create the text field the user can type into.
@@ -143,11 +143,11 @@
             //
             // Create the drop down that indicates what type of filter row this is.
             //
-            var $fieldTypeContainer = $('<span class="input-group-btn" />').appendTo($row);
-            var $fieldTypeBtn = $('<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span /> <span class="caret" /></button>')
-                .appendTo($fieldTypeContainer);
+            var $inputGroupBtns = $('<span class="input-group-btn" />').appendTo($row);
+            var $fieldTypeBtn = $('<button type="button" class="btn btn-default dropdown-toggle filter-dropdown-toggle" data-toggle="dropdown"><span /> <span class="caret" /></button>')
+                .appendTo($inputGroupBtns);
             var $fieldTypeOptions = $('<ul class="dropdown-menu dropdown-menu-right"></ul>')
-                .appendTo($fieldTypeContainer);
+                .appendTo($inputGroupBtns);
             for (var i in options.comparisonTypes) {
                 var $btn = $('<li><a href="#" data-value="' + options.comparisonTypes[i].Value + '">' + options.comparisonTypes[i].Text + '</a></li>').appendTo($fieldTypeOptions);
                 if (type === options.comparisonTypes[i].Value) {
@@ -159,9 +159,8 @@
             //
             // Create the delete button.
             //
-            var $btnDeleteContainer = $('<span class="input-group-btn" />').appendTo($row);
             $('<button type="button" class="btn btn-danger btn-square"><i class="fa fa-times"></i></button>')
-                .appendTo($btnDeleteContainer);
+                .appendTo($inputGroupBtns);
 
             //
             // Set default values.
@@ -318,7 +317,7 @@
                 // Setup the add button.
                 //
                 var $addButtonContainer = $('<div class="text-right" />').appendTo($filter);
-                var $addButton = $('<a href="#" class="btn btn-default btn-square btn-sm margin-t-sm"><i class="fa fa-plus"></i></a>').appendTo($addButtonContainer);
+                var $addButton = $('<a href="#" class="btn btn-default btn-square btn-sm"><i class="fa fa-plus"></i></a>').appendTo($addButtonContainer);
 
                 //
                 // Store all the objects we need access to later as jQuery data objects

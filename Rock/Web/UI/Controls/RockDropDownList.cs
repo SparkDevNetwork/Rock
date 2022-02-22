@@ -298,6 +298,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the last selected value stored by the control state.
+        /// </summary>
+        /// <value>The last selected value stored by the control state.</value>
+        public string LastSelectedValue
+        {
+            get { return ViewState["LastSelectedValue"] as string; }
+            private set { ViewState["LastSelectedValue"] = value; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockDropDownList" /> class.
         /// </summary>
         public RockDropDownList()
@@ -306,6 +316,40 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
+        }
+
+        /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Init">Init</see> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs">EventArgs</see> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            Page.RegisterRequiresControlState( this );
+            base.OnInit( e );
+        }
+
+        /// <summary>
+        /// Saves any server control state changes that have occurred since the time the page was posted back to the server.
+        /// </summary>
+        /// <returns>
+        /// Returns the server control's current state. If there is no state associated with the control, this method returns <span class="keyword"><span class="languageSpecificText"><span class="cs">null</span><span class="vb">Nothing</span><span class="cpp">nullptr</span></span></span><span class="nu">a null reference (<span class="keyword">Nothing</span> in Visual Basic)</span>.
+        /// </returns>
+        protected override object SaveControlState()
+        {
+            LastSelectedValue = SelectedValue;
+            return SelectedValue;
+        }
+
+        /// <summary>
+        /// Restores control-state information from a previous page request that was saved by the <see cref="M:System.Web.UI.Control.SaveControlState">SaveControlState</see> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object">Object</see> that represents the control state to be restored.</param>
+        protected override void LoadControlState( object savedState )
+        {
+            if ( null != savedState )
+            {
+                LastSelectedValue = savedState.ToString();
+            }
         }
 
         /// <summary>

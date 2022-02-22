@@ -399,6 +399,8 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Constructor
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeGroupPicker"/> class.
         /// </summary>
@@ -411,6 +413,52 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
         }
 
+        #endregion
+
+        #region Overridden Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            EnsureChildControls();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load">Load</see> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs">EventArgs</see> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+                        
+            /*
+             * 2021-11-30 DMV
+             * 
+             * Drop-downs have a unique problem if they are dependent on another control (aka Cascading Drop-Downs).
+             * After a post-back they may reload with no items and setting the SelectedValue will fail.
+             * This workaround attempts to prevent that in most cases. #4162
+             * 
+            */
+            if (null != _ddlGroupType.SelectedValue &&
+                ((null != _ddlGroup.LastSelectedValue &&
+                _ddlGroup.LastSelectedValue != _ddlGroup.SelectedValue &&
+                _ddlGroup.Items.Count == 0) ||
+                (null != _ddlGroupRole.LastSelectedValue &&
+                _ddlGroupRole.LastSelectedValue != _ddlGroupRole.SelectedValue &&
+                _ddlGroupRole.Items.Count == 0)))
+            {
+                // Load the dependent data
+                int groupTypeId = _ddlGroupType.SelectedValue.AsInteger();
+                LoadGroupsAndRoles( groupTypeId );
+                _ddlGroup.Items.FindByValue( _ddlGroup.LastSelectedValue ).Selected = true;
+                _ddlGroupRole.Items.FindByValue( _ddlGroupRole.LastSelectedValue ).Selected = true;
+            }
+        }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -419,38 +467,34 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            _ddlGroupType = new RockDropDownList();
-            _ddlGroup = new RockDropDownList();
-            _ddlGroupRole = new RockDropDownList();
-            
-            RockControlHelper.CreateChildControls( this, Controls );
-            
-            _ddlGroupType.ID = this.ID + "_ddlGroupType";
-            _ddlGroupType.AutoPostBack = true;
+            _ddlGroupType = new RockDropDownList()
+            {
+                ID = $"{this.ID}_ddlGroupType",
+                AutoPostBack = true,
+                Label = "Group Type",
+                ViewStateMode = this.ViewStateMode
+            };
             _ddlGroupType.SelectedIndexChanged += _ddlGroupType_SelectedIndexChanged;
-            _ddlGroupType.Label = "Group Type";
             Controls.Add( _ddlGroupType );
-            
-            _ddlGroup.ID = this.ID + "_ddlGroup";
+
+            _ddlGroup = new RockDropDownList()
+            {
+                ID = $"{this.ID}_ddlGroup",
+                ViewStateMode = this.ViewStateMode
+            };
             Controls.Add( _ddlGroup );
 
-            this.RequiredFieldValidator.ControlToValidate = _ddlGroup.ID;
-            
-            _ddlGroupRole.ID = this.ID + "_ddlGroupRole";
+            _ddlGroupRole = new RockDropDownList()
+            {
+                ID = $"{this.ID}_ddlGroupRole",
+                ViewStateMode = this.ViewStateMode
+            };
             Controls.Add( _ddlGroupRole );
+            
+            RockControlHelper.CreateChildControls( this, Controls );
+            this.RequiredFieldValidator.ControlToValidate = _ddlGroup.ID;
 
             LoadGroupTypes();
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the _ddlGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void _ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            int groupTypeId = _ddlGroupType.SelectedValue.AsInteger();
-            LoadGroupsAndRoles( groupTypeId );
         }
 
         /// <summary>
@@ -464,6 +508,25 @@ namespace Rock.Web.UI.Controls
                 RockControlHelper.RenderControl( this, writer );
             }
         }
+
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the _ddlGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int groupTypeId = _ddlGroupType.SelectedValue.AsInteger();
+            LoadGroupsAndRoles( groupTypeId );
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Renders the base control.
@@ -539,5 +602,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        #endregion
     }
 }

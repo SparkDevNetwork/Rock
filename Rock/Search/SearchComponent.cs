@@ -66,6 +66,21 @@ namespace Rock.Search
             }
         }
 
+        /// <summary>
+        /// Returns a queryable of objects that match the search term.
+        /// </summary>
+        /// <param name="searchTerm">The search term.</param>
+        /// <returns>A queryable of objects that match the search.</returns>
+        /// <remarks>Results should be limited to implementations of
+        /// <see cref="Rock.Data.IEntity"/> or
+        /// <see cref="Rock.UniversalSearch.IndexModels.IndexModelBase"/>.
+        /// Any other object type included in the results is currently considered
+        /// an error.
+        /// </remarks>
+        public virtual IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            return Array.Empty<object>().AsQueryable().OrderBy( a => a );
+        }
 
         /// <summary>
         /// Returns a list of value/label results matching the searchterm

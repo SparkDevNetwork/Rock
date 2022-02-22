@@ -73,7 +73,7 @@ namespace Rock.Web.UI.Controls
                     parentCategory = parentCategory.ParentCategory;
                 }
 
-                InitialItemParentIds = parentCategoryIds.AsDelimited( "," );
+                ExpandedCategoryIds = parentCategoryIds.AsDelimited( "," );
                 ItemName = metricCategory.Name;
             }
             else
@@ -113,7 +113,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ExpandedCategoryIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemIds = ids;
                 ItemNames = names;
             }

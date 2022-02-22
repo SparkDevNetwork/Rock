@@ -26,9 +26,11 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -41,7 +43,14 @@ namespace RockWeb.Blocks.Groups
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
-    [BooleanField( "Limit to Security Role Groups", "Any groups can be flagged as a security group (even if they're not a security role).  Should the list of groups be limited to these groups?", false, "", 2 )]
+
+    [BooleanField(
+        "Limit to Security Role Groups",
+        Key = AttributeKey.LimittoSecurityRoleGroups,
+        Description = "Any groups can be flagged as a security group (even if they're not a security role).  Should the list of groups be limited to these groups?",
+        DefaultBooleanValue = false,
+        Order = 2 )]
+
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 3 )]
     [BooleanField( "Display Group Path", "Should the Group path be displayed?", false, "", 4 )]
     [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 5 )]
@@ -58,7 +67,7 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Group Picker Type",
         description: "Used to control which kind of picker is used when adding a person to a group.",
         listSource: "GroupPicker^Group Picker, Dropdown^Drop-down",
-        IsRequired =  false,
+        IsRequired = false,
         DefaultValue = "Dropdown",
         Category = "Add Group",
         Order = 16,
@@ -108,6 +117,7 @@ namespace RockWeb.Blocks.Groups
         {
             public const string GroupPickerType = "GroupPickerType";
             public const string RootGroup = "RootGroup";
+            public const string LimittoSecurityRoleGroups = "LimittoSecurityRoleGroups";
         }
 
         #endregion
@@ -257,6 +267,30 @@ namespace RockWeb.Blocks.Groups
                 if ( !groupInfo.IsActive || groupInfo.IsArchived )
                 {
                     e.Row.AddCssClass( "is-inactive" );
+                }
+
+                if ( groupInfo.IsSecurityRole && this.GroupListGridMode == GridListGridMode.GroupList )
+                {
+                    var lElevatedSecurityLevel = e.Row.FindControl( "lElevatedSecurityLevel" ) as Literal;
+                    if ( groupInfo.ElevatedSecurityLevel >= ElevatedSecurityLevel.High )
+                    {
+                        lElevatedSecurityLevel.Visible = true;
+                        string cssClass;
+                        if ( groupInfo.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
+                        {
+                            cssClass = "label label-danger";
+                        }
+                        else
+                        {
+                            cssClass = "label label-warning";
+                        }
+
+                        lElevatedSecurityLevel.Text = $"<span class='{cssClass}'>Security Level: {groupInfo.ElevatedSecurityLevel.ConvertToString( true )}</span>";
+                    }
+                    else
+                    {
+                        lElevatedSecurityLevel.Visible = false;
+                    }
                 }
 
                 var deleteOrArchiveField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
@@ -653,9 +687,9 @@ namespace RockWeb.Blocks.Groups
             groupMemberService.Add( groupMember );
             rockContext.SaveChanges();
 
-            modalDetails.Hide();
-            BindFilter();
-            BindGrid();
+            // Reload the page so that other blocks will know about any data that changed as a result of a new member added to a group.
+            // On the PersonProfile page, this will help update the UserProtectionProfile label just in case it was changed.
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
@@ -733,7 +767,12 @@ namespace RockWeb.Blocks.Groups
                 sortProperty = new SortProperty( new GridViewSortEventArgs( "Name", SortDirection.Ascending ) );
             }
 
-            bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
+            bool onlySecurityGroups = GetAttributeValue( AttributeKey.LimittoSecurityRoleGroups ).AsBoolean();
+            var lElevatedSecurityLevelField = gGroups.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lElevatedSecurityLevel" ).FirstOrDefault();
+            if ( lElevatedSecurityLevelField != null )
+            {
+                lElevatedSecurityLevelField.Visible = onlySecurityGroups && GroupListGridMode == GridListGridMode.GroupList;
+            }
 
             var qryGroups = groupService.Queryable()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
@@ -817,6 +856,8 @@ namespace RockWeb.Blocks.Groups
                             Description = m.Group.Description,
                             IsSystem = m.Group.IsSystem,
                             GroupRole = m.GroupMember.GroupRole.Name,
+                            ElevatedSecurityLevel = m.GroupMember.Group.ElevatedSecurityLevel,
+                            IsSecurityRole = m.GroupMember.Group.IsSecurityRole,
                             DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
                             IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
                             IsArchived = m.Group.IsArchived || m.GroupMember.IsArchived,
@@ -869,6 +910,8 @@ namespace RockWeb.Blocks.Groups
                         IsArchived = g.IsArchived,
                         IsActiveOrder = g.IsActive ? 1 : 2,
                         GroupRole = string.Empty,
+                        ElevatedSecurityLevel = g.ElevatedSecurityLevel,
+                        IsSecurityRole = g.IsSecurityRole,
                         DateAdded = DateTime.MinValue,
                         IsSynced = g.GroupSyncs.Any(),
                         MemberCount = g.Members.Count()
@@ -989,7 +1032,7 @@ namespace RockWeb.Blocks.Groups
                 var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
                 if ( rootGroupGuid.HasValue )
                 {
-                    var group = new GroupService( new RockContext() ).Get(rootGroupGuid.Value);
+                    var group = new GroupService( new RockContext() ).Get( rootGroupGuid.Value );
                     if ( group != null )
                     {
                         gpGroup.RootGroupId = group.Id;
@@ -1000,9 +1043,9 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlGroup.Items.Clear();
                 ddlGroup.Required = true;
-                
+
                 var groupService = new GroupService( new RockContext() );
-                bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
+                bool onlySecurityGroups = GetAttributeValue( AttributeKey.LimittoSecurityRoleGroups ).AsBoolean();
 
                 var qryGroups = groupService
                     .Queryable()
@@ -1212,6 +1255,18 @@ namespace RockWeb.Blocks.Groups
             /// The member count.
             /// </value>
             public int MemberCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the elevated security level.
+            /// </summary>
+            /// <value>The elevated security level.</value>
+            public ElevatedSecurityLevel ElevatedSecurityLevel { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the group is security role.
+            /// </summary>
+            /// <value>The group is security role.</value>
+            public bool IsSecurityRole { get; internal set; }
         }
     }
 }

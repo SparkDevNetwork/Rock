@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,6 +29,8 @@ namespace Rock.Transactions
     /// it is possible that thousands of Person records have this signal type, we
     /// process in the background and process in small chunks.
     /// </summary>
+    [Obsolete( "Use UpdatePersonSignalTypes Task instead." )]
+    [RockObsolete( "1.13" )]
     public class UpdatePersonsTopSignal : ITransaction
     {
         /// <summary>

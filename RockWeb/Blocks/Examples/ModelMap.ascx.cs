@@ -34,6 +34,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.UI;
 using Newtonsoft.Json;
@@ -265,7 +266,7 @@ namespace RockWeb.Blocks.Examples
                     if ( entityCategory == null )
                     {
                         entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntityIds = new List<int>() };
-                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : "fa fa-th-large";
+                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : "fa fa-network-wired";
                         entityCategories.Add( entityCategory );
                     }
 
@@ -351,21 +352,23 @@ namespace RockWeb.Blocks.Examples
                             .ToArray();
                         foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
                         {
+#pragma warning disable CS0618 // LavaIncludeAttribute is obsolete
                             var property = new MProperty
                             {
                                 Name = p.Name,
                                 IsInherited = p.DeclaringType != type,
                                 IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
-                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
+                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( LavaVisibleAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
                                 IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
                                 ObsoleteMessage = GetObsoleteMessage( p ),
                                 NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                                 Required = p.IsDefined( typeof( RequiredAttribute ) ),
                                 Id = p.MetadataToken,
-                                Comment = GetComments( p, xmlComments ),
+                                Comment = GetComments( p, xmlComments, properties ),
                                 IsEnum = p.PropertyType.IsEnum,
                                 IsDefinedValue = p.Name.EndsWith( "ValueId" ) && p.IsDefined( typeof( DefinedValueAttribute ) )
                             };
+#pragma warning restore CS0618 // LavaIncludeAttribute is obsolete
 
                             if ( property.IsEnum )
                             {
@@ -595,6 +598,63 @@ namespace RockWeb.Blocks.Examples
                     var reader = name.Element( "summary" ).CreateReader();
                     reader.MoveToContent();
                     xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml() );
+                    xmlComment.Value = name.Element( "value" ).ValueSafe();
+                    xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
+                    xmlComment.Returns = name.Element( "returns" ).ValueSafe();
+                }
+            }
+            catch
+            {
+            }
+
+            return xmlComment;
+        }
+
+        /// <summary>
+        /// Gets the comments from the data in the assembly's XML file for the
+        /// given member object.
+        /// </summary>
+        /// <param name="p">The MemberInfo instance.</param>
+        /// <param name="properties">The properties.</param>
+        /// <returns>an XmlComment object</returns>
+        private XmlComment GetComments( MemberInfo p, Dictionary<string, XElement> xmlComments, PropertyInfo[] properties )
+        {
+            XmlComment xmlComment = new XmlComment();
+
+            try
+            {
+                var prefix = "P:";
+
+                string path = string.Format( "{0}{1}.{2}", prefix, ( p.DeclaringType != null ) ? p.DeclaringType.FullName : "Rock.Model", p.Name );
+
+                var name = xmlComments != null && xmlComments.ContainsKey( path ) ? xmlComments[path] : null;
+                if ( name != null )
+                {
+                    if ( name.Element( "summary" ) == null )
+                    {
+                        var reader = name.CreateReader();
+                        reader.MoveToContent();
+                        var xml = reader.ReadInnerXml();
+                        var match = System.Text.RegularExpressions.Regex.Match( xml, @"<inheritdoc cref=""P:(.*?)""(?: />|>(.*)</inheritdoc>)" );
+                        if ( match.Success )
+                        {
+                            System.Text.RegularExpressions.Regex.Match( match.Value, @"<inheritdoc cref=""P:(.*?)""(?: />|>(.*)</inheritdoc>)" );
+                            var property = properties.Where( a => a.Name == match.Groups[1].Value.Split( '.' ).LastOrDefault() ).FirstOrDefault();
+                            if ( property != null )
+                            {
+                                xmlComment = GetComments( property, xmlComments );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Read the InnerXml contents of the summary Element.
+                        var reader = name.Element( "summary" ).CreateReader();
+                        reader.MoveToContent();
+                        var xml = reader.ReadInnerXml();
+                        xmlComment.Summary = MakeSummaryHtml( xml );
+                    }
+
                     xmlComment.Value = name.Element( "value" ).ValueSafe();
                     xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
                     xmlComment.Returns = name.Element( "returns" ).ValueSafe();

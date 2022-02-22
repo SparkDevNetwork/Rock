@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Net.Http;
 using System.ServiceModel.Channels;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Rest
 {
@@ -38,6 +44,27 @@ namespace Rock.Rest
     public class ApiControllerBase : ApiController
     {
         /// <summary>
+        /// Gets the rock request context that describes the current request
+        /// being made.
+        /// </summary>
+        /// <value>
+        /// The rock request context that describes the current request
+        /// being made.
+        /// </value>
+        public RockRequestContext RockRequestContext => _rockRequestContext.Value;
+        private Lazy<RockRequestContext> _rockRequestContext;
+
+        /// <inheritdoc/>
+        public override Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
+        {
+            // Initialize as lazy since very few API calls use this yet. Once
+            // it becomes more common the lazy part can be removed.
+            _rockRequestContext = new Lazy<RockRequestContext>( () => new Net.RockRequestContext( controllerContext.Request ) );
+
+            return base.ExecuteAsync( controllerContext, cancellationToken );
+        }
+
+        /// <summary>
         /// Gets the currently logged in Person
         /// </summary>
         /// <returns></returns>
@@ -49,16 +76,17 @@ namespace Rock.Rest
         /// <summary>
         /// Gets the currently logged in Person
         /// </summary>
+        /// <param name="controller">The ApiController instance that is looking up the current person.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        protected virtual Rock.Model.Person GetPerson( RockContext rockContext )
+        internal static Rock.Model.Person GetPerson( ApiController controller, RockContext rockContext )
         {
-            if ( Request.Properties.Keys.Contains( "Person" ) )
+            if ( controller.Request.Properties.Keys.Contains( "Person" ) )
             {
-                return Request.Properties["Person"] as Person;
+                return controller.Request.Properties["Person"] as Person;
             }
 
-            var principal = ControllerContext.Request.GetUserPrincipal();
+            var principal = controller.ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
@@ -78,13 +106,23 @@ namespace Rock.Rest
                     if ( userLogin != null )
                     {
                         var person = userLogin.Person;
-                        Request.Properties.Add( "Person", person );
+                        controller.Request.Properties.Add( "Person", person );
                         return userLogin.Person;
                     }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the currently logged in Person
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        protected virtual Rock.Model.Person GetPerson( RockContext rockContext )
+        {
+            return GetPerson( this, rockContext );
         }
 
         /// <summary>

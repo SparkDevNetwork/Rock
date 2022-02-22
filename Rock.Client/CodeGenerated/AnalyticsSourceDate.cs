@@ -38,7 +38,7 @@ namespace Rock.Client
         public string CalendarMonthName { get; set; }
 
         /// <summary />
-        public string CalendarMonthNameAbbrevated { get; set; }
+        public string CalendarMonthNameAbbreviated { get; set; }
 
         /// <summary />
         public string CalendarQuarter { get; set; }
@@ -104,7 +104,7 @@ namespace Rock.Client
         public string FiscalMonth { get; set; }
 
         /// <summary />
-        public string FiscalMonthAbbrevated { get; set; }
+        public string FiscalMonthAbbreviated { get; set; }
 
         /// <summary />
         public int FiscalMonthNumberInYear { get; set; }
@@ -143,13 +143,25 @@ namespace Rock.Client
         public bool LastDayInMonthIndictor { get; set; }
 
         /// <summary />
+        public bool LeapYearIndicator { get; set; }
+
+        /// <summary />
         public DateTime SundayDate { get; set; }
+
+        /// <summary />
+        public int SundayDateYear { get; set; }
+
+        /// <summary />
+        public int WeekCounter { get; set; }
 
         /// <summary />
         public bool WeekHolidayIndicator { get; set; }
 
         /// <summary />
         public int WeekNumberInMonth { get; set; }
+
+        /// <summary />
+        public int WeekOfYear { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source AnalyticsSourceDate object
@@ -159,7 +171,7 @@ namespace Rock.Client
         {
             this.CalendarMonth = source.CalendarMonth;
             this.CalendarMonthName = source.CalendarMonthName;
-            this.CalendarMonthNameAbbrevated = source.CalendarMonthNameAbbrevated;
+            this.CalendarMonthNameAbbreviated = source.CalendarMonthNameAbbreviated;
             this.CalendarQuarter = source.CalendarQuarter;
             this.CalendarWeek = source.CalendarWeek;
             this.CalendarYear = source.CalendarYear;
@@ -181,7 +193,7 @@ namespace Rock.Client
             this.EasterWeekIndicator = source.EasterWeekIndicator;
             this.FiscalHalfYear = source.FiscalHalfYear;
             this.FiscalMonth = source.FiscalMonth;
-            this.FiscalMonthAbbrevated = source.FiscalMonthAbbrevated;
+            this.FiscalMonthAbbreviated = source.FiscalMonthAbbreviated;
             this.FiscalMonthNumberInYear = source.FiscalMonthNumberInYear;
             this.FiscalMonthYear = source.FiscalMonthYear;
             this.FiscalQuarter = source.FiscalQuarter;
@@ -194,9 +206,13 @@ namespace Rock.Client
             this.GivingMonthName = source.GivingMonthName;
             this.HolidayIndicator = source.HolidayIndicator;
             this.LastDayInMonthIndictor = source.LastDayInMonthIndictor;
+            this.LeapYearIndicator = source.LeapYearIndicator;
             this.SundayDate = source.SundayDate;
+            this.SundayDateYear = source.SundayDateYear;
+            this.WeekCounter = source.WeekCounter;
             this.WeekHolidayIndicator = source.WeekHolidayIndicator;
             this.WeekNumberInMonth = source.WeekNumberInMonth;
+            this.WeekOfYear = source.WeekOfYear;
 
         }
     }

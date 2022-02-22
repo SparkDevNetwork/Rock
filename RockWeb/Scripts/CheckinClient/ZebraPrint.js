@@ -10,22 +10,28 @@ var ZebraPrintPlugin = {
 
     hasClientPrinter: function () {
         if (typeof window.RockCheckinNative != 'undefined') {
+            // this is running on the IPad App
             return true;
         }
 
         if (typeof Cordova != 'undefined') {
+            // this is running the old Cordova based IPad app. This hasn't existed since Feb 2020.
             return true;
         }
 
         if (typeof eoWebBrowser != 'undefined') {
+            // Rock Windows Client 2.0
             return true;
         }
 
-        if ( typeof window.external != 'undefined' && typeof window.external.PrintLabels != 'undefined') {
+        if (typeof window.external != 'undefined' && typeof window.external.PrintLabels != 'undefined') {
+            // Rock Windows Client 1.0
+            // possibly Rock Windows Client 3.0
             return true;
         }
 
         if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage !== "undefined") {
+            // Rock Windows Client 4.0
             return true;
         }
 
@@ -38,13 +44,13 @@ var ZebraPrintPlugin = {
         var labels = JSON.parse(tagJson);
 
         for (var label in labels) {
-            if (labels[label].PrinterDeviceId == null) {
-                labels[label].PrinterDeviceId = 0;
+            if (labels[ label ].PrinterDeviceId == null) {
+                labels[ label ].PrinterDeviceId = 0;
             }
 
             // clean up null printer address
-            if (labels[label].PrinterAddress == null) {
-                labels[label].PrinterAddress = "";
+            if (labels[ label ].PrinterAddress == null) {
+                labels[ label ].PrinterAddress = "";
             }
         }
 
@@ -58,14 +64,14 @@ var ZebraPrintPlugin = {
                     .then(function (result) {
                         success(result);
                     }, function (result) {
-                        fail([result.Error, result.CanReprint]);
+                        fail([ result.Error, result.CanReprint ]);
                     });
             } else if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {
                 console.log('Printing with Rock iPad Client');
-                Cordova.exec(success, fail, "ZebraPrint", "printTags", [tagJson]);
+                Cordova.exec(success, fail, "ZebraPrint", "printTags", [ tagJson ]);
             } else if (navigator.userAgent.match(/rockwinclient/)) {
                 console.log('Printing with Rock Windows Client 2.0');
-                eoWebBrowser.extInvoke("printLabels", [tagJson]);
+                eoWebBrowser.extInvoke("printLabels", [ tagJson ]);
             } else if (navigator.userAgent.match(/.NET CLR/)) {
                 console.log('Printing with Rock Windows Client 1.0');
                 window.external.PrintLabels(tagJson);

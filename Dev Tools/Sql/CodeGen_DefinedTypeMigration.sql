@@ -1,7 +1,7 @@
--- set @definedTypeNameFilter to the specific DefinedType that you want to codegen for
 declare
- @definedTypeNameFilter nvarchar(max) = '%Family Status%' 
-
+ -- set @definedTypeId based on what your defined type id is
+ -- select * from DefinedType where [Name] like '%ChangeMe%'
+ @definedTypeId int = 12345 
 
 select 
     CONCAT('RockMigrationHelper.AddDefinedType("', 
@@ -15,7 +15,7 @@ select
 FROM 
     [DefinedType] [dt]
 	INNER JOIN [Category] [c] ON [c].Id = [dt].CategoryId
-where (dt.Name like @definedTypeNameFilter)
+where (dt.Id = @definedTypeId)
 union
 select 
     CONCAT('RockMigrationHelper.AddDefinedTypeAttribute("', 
@@ -37,7 +37,7 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and (dt.Name like @definedTypeNameFilter)
+and (dt.Id = @definedTypeId)
 union
 select 
     CONCAT('RockMigrationHelper.AddAttributeQualifier("', 
@@ -56,7 +56,7 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and (dt.Name like @definedTypeNameFilter)
+and ((dt.Id = @definedTypeId))
 union
 SELECT 
     CONCAT('RockMigrationHelper.UpdateDefinedValue("', 
@@ -69,7 +69,7 @@ SELECT
     3 [CodeGenSortOrder]
   FROM [DefinedValue] [dv]
     join [DefinedType] [dt] on [dv].[DefinedTypeId] = [dt].[Id]
-   where (dt.Name like @definedTypeNameFilter)
+   where (dt.Id = @definedTypeId)
 union
 select 
     CONCAT('RockMigrationHelper.AddDefinedValueAttributeValue("', 
@@ -85,7 +85,7 @@ FROM [AttributeValue] [av]
 where 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
 and
-    (dt.Name like @definedTypeNameFilter)
+    ((dt.Id = @definedTypeId))
 order by [CodeGenSortOrder]
 
 select 
@@ -102,7 +102,7 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and (dt.Name like @definedTypeNameFilter)
+and ((dt.Id = @definedTypeId))
 union
 SELECT 
     CONCAT('RockMigrationHelper.DeleteDefinedValue("', 
@@ -112,7 +112,7 @@ SELECT
     1 [CodeGenSortOrder]
   FROM [DefinedValue] [dv]
     join [DefinedType] [dt] on [dv].[DefinedTypeId] = [dt].[Id]
-   where (dt.Name like @definedTypeNameFilter)
+   where ((dt.Id = @definedTypeId))
 union
 select 
     CONCAT('RockMigrationHelper.DeleteDefinedType("', 
@@ -122,5 +122,5 @@ select
     2 [CodeGenSortOrder]
 FROM 
     [DefinedType] [dt]
-where (dt.Name like @definedTypeNameFilter)
+where ((dt.Id = @definedTypeId))
 order by [CodeGenSortOrder]

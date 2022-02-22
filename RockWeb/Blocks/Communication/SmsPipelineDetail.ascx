@@ -40,7 +40,7 @@
                         <Rock:RockLiteral ID="lSmsName" runat="server" Label="Name" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockLiteral ID="lWebhookUrl" runat="server" Label="Webhook Url" />
+                        <Rock:RockLiteral ID="lWebhookUrl" runat="server" Label="Webhook URL" />
                     </div>
                 </div>
 
@@ -62,7 +62,7 @@
 
                 <div class="panel-labels">
                     <a href="#" class="btn btn-xs btn-square btn-default" onclick="$('.js-test-results').slideToggle( function () { $('#hfIsTestingDrawerOpen').val( $('#divTestingDrawer').css('display') !== 'none' ) } )">
-                        <i class='fa fa-tools'></i>
+                        <i class='fa fa-cog'></i>
                     </a>
                 </div>
             </div>
@@ -143,40 +143,52 @@
                         <asp:Panel ID="pnlEditAction" runat="server" CssClass="js-sms-action-settings" Visible="false">
                             <asp:HiddenField ID="hfEditActionId" runat="server" />
                             <div class="panel panel-palette">
-                            <div class="panel-heading">
-                                <div class="panel-title">
-                                    <asp:Literal ID="lActionType" runat="server" />
-                                </div>
-                            </div>
-
-                            <div class="panel-body">
-
-                                <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
-
-                                <div class="row form-row">
-                                    <div class="col-md-6">
-                                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Help="An action that is not active will not attempt to process any SMS messages." />
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <Rock:RockCheckBox ID="cbContinue" runat="server" Label="Continue" Help="If the continue option is enabled then processing will continue even if this action successfully processes the SMS message." />
+                                <div class="panel-heading">
+                                    <div class="panel-title">
+                                        <asp:Literal ID="lActionType" runat="server" />
                                     </div>
                                 </div>
 
+                                <div class="panel-body">
 
-                                <h4>Filters</h4>
-                                <Rock:AttributeValuesContainer ID="avcFilters" runat="server" ShowCategoryLabel="false" />
+                                    <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                                    <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SmsAction" PropertyName="Name" />
 
-                                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+                                    <div class="row form-row">
+                                        <div class="col-md-6">
+                                            <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Help="An action that is not active will not attempt to process any SMS messages." />
+                                        </div>
 
-                                <div class="actions">
-                                    <asp:LinkButton ID="btnSaveActionSettings" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveActionSettings_Click" />
-                                    <asp:LinkButton ID="btnCancelActionSettings" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelActionSettings_Click" CausesValidation="false" />
+                                        <div class="col-md-6">
+                                            <Rock:RockCheckBox ID="cbContinue" runat="server" Label="Continue" Help="If the continue option is enabled then processing will continue even if this action successfully processes the SMS message." />
+                                        </div>
+                                    </div>
+                                    <div class="row form-row">
+                                        <div class="col-sm-12 text-right">
+                                            <asp:HiddenField ID="hfShowAdvancedSettings" runat="server" />
+                                            <asp:LinkButton ID="lbToggleAdvancedSettings" runat="server" OnClick="lbToggleAdvancedSettings_Click" CausesValidation="false" />
+                                        </div>
+                                    </div>
+                                    <div class="row form-row" id="divAdvanced" runat="server">
 
-                                    <asp:LinkButton ID="btnDeleteAction" runat="server" CssClass="pull-right btn btn-danger" Text="Delete" OnClick="btnDeleteAction_Click" CausesValidation="false" />
+                                        <div class="col-md-6">
+                                            <Rock:DatePicker ID="dpExpireDate" runat="server" Label="Expire Date" Help="The Rock clean-up job will remove this SMS action after this date. The exact time and day will depend on your clean-up job schedule settings." />
+                                        </div>
+
+                                    </div>
+
+                                    <h4>Filters</h4>
+                                    <Rock:AttributeValuesContainer ID="avcFilters" runat="server" ShowCategoryLabel="false" />
+
+                                    <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+
+                                    <div class="actions">
+                                        <asp:LinkButton ID="btnSaveActionSettings" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveActionSettings_Click" />
+                                        <asp:LinkButton ID="btnCancelActionSettings" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelActionSettings_Click" CausesValidation="false" />
+
+                                        <asp:LinkButton ID="btnDeleteAction" runat="server" CssClass="pull-right btn btn-danger" Text="Delete" OnClick="btnDeleteAction_Click" CausesValidation="false" />
+                                    </div>
                                 </div>
-                            </div>
                             </div>
                         </asp:Panel>
                     </div>

@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Security;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -82,7 +83,7 @@ namespace RockWeb.Blocks.Crm
             {
                 signalType = new SignalType();
                 pdAuditDetails.Visible = false;
-                lActionTitle.Text = ActionTitle.Add( signalType.Name ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( SignalType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
@@ -169,8 +170,12 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                var transaction = new Rock.Transactions.UpdatePersonsTopSignal( people );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                var updatePersonSignalTypesMsg = new UpdatePersonSignalTypes.Message()
+                {
+                    PersonIds = people
+                };
+
+                updatePersonSignalTypesMsg.Send();
             }
 
             NavigateToParentPage();

@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Security.Oidc
     [DisplayName( "OpenID Connect Claims" )]
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect claims." )]
-    public partial class AuthClaims : RockBlock, ICustomGridColumns, IDetailBlock
+    public partial class AuthClaims : RockBlock, ICustomGridColumns
     {
         public class PageParameterKey
         {

@@ -15,16 +15,20 @@
 // </copyright>
 //
 using System;
+using System.Web.UI.WebControls;
+
+using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting items from a checkbox list. Value is saved as a comma-delimited list
+    /// Field Attribute for selecting items from a <seealso cref="RockCheckBoxList"/>. Value is saved as a comma-delimited list
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomCheckboxListFieldAttribute : SelectFieldAttribute
     {
         private const string VALUES = "values";
+        private const string REPEAT_DIRECTION = "repeatDirection";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomCheckboxListFieldAttribute"/> class.
@@ -69,6 +73,25 @@ namespace Rock.Attribute
             set
             {
                 FieldConfigurationValues.AddOrReplace( VALUES, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the repeat direction for the CheckBoxList
+        /// </summary>
+        /// <value>
+        /// The repeat direction.
+        /// </value>
+        public RepeatDirection RepeatDirection
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( REPEAT_DIRECTION ).ConvertToEnumOrNull<RepeatDirection>() ?? RepeatDirection.Horizontal;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( REPEAT_DIRECTION, new Field.ConfigurationValue( value.ConvertToString( false ) ) );
             }
         }
     }

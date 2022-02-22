@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Tag Detail" )]
     [Category( "Core" )]
     [Description( "Block for administrating a tag." )]
-    public partial class TagDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class TagDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
 

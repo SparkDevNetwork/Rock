@@ -70,7 +70,7 @@ namespace Rock.Jobs
 
                 // disable Obsolete warning since we need to run this, but don't want anybody else to start using it
 #pragma warning disable 612, 618
-                registrationTemplateFeeService.MigrateFeeCostValueToFeeItems();
+                // registrationTemplateFeeService.MigrateFeeCostValueToFeeItems();
 #pragma warning restore 612, 618
                 rockContext.SaveChanges();
             }

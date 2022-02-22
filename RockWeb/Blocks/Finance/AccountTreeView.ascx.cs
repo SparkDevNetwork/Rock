@@ -151,14 +151,8 @@ namespace RockWeb.Blocks.Finance
                             }
                             else
                             {
-                                if ( this.Request.QueryString.Count == 0 )
-                                {
-                                    redirectUrl = this.Request.Url + "?AccountId=" + _accountId.ToString();
-                                }
-                                else
-                                {
-                                    redirectUrl = this.Request.Url + "&AccountId=" + _accountId.ToString();
-                                }
+                                var queryStringSeperator = this.Request.QueryString.Count == 0 ? "?" : "&";
+                                redirectUrl = $"{this.Request.UrlProxySafe()}{queryStringSeperator}AccountId={_accountId}";
                             }
 
                             this.Response.Redirect( redirectUrl, false );

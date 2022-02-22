@@ -949,18 +949,6 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
-        /// Gets the cache key for the selected page id.
-        /// </summary>
-        /// <param name="pageId">The page identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed", true )]
-        public static string CacheKey( int pageId )
-        {
-            return string.Format( "Rock:Page:{0}", pageId );
-        }
-
-        /// <summary>
         /// Formats the page url based on the selected theme and layout
         /// </summary>
         /// <param name="theme"></param>

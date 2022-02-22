@@ -30,39 +30,33 @@
                 <asp:HiddenField runat="server" ID="hfIsCardView" ClientIDMode="Static" />
 
                 <asp:Panel runat="server" id="pnlGridView">
-                    <div class="row add-step-buttons">
-                        <div class="col-xs-12">
-                            <p class="add-step-label"><asp:Literal runat="server" ID="lAddStepButtonsLabel" /></p>
-                            <asp:repeater id="rAddStepButtons" runat="server" OnItemDataBound="rAddStepButtons_ItemDataBound">
-                                <itemtemplate>
-                                    <button runat="server" id="bAddStep" class="btn btn-sm btn-default" OnCommand="AddStep" CommandArgument='<%# Eval("StepTypeId") %>' onserverclick="bAddStep_ServerClick">
-                                        <%# Eval("ButtonContents") %>
-                                    </button>
-                                </itemtemplate>
-                            </asp:repeater>
-                        </div><!-- col -->
+                    <div class="add-step-buttons">
+                        <p class="add-step-label"><asp:Literal runat="server" ID="lAddStepButtonsLabel" /></p>
+                        <asp:repeater id="rAddStepButtons" runat="server" OnItemDataBound="rAddStepButtons_ItemDataBound">
+                            <itemtemplate>
+                                <button runat="server" id="bAddStep" class="btn btn-sm btn-default" OnCommand="AddStep" CommandArgument='<%# Eval("StepTypeId") %>' onserverclick="bAddStep_ServerClick">
+                                    <%# Eval("ButtonContents") %>
+                                </button>
+                            </itemtemplate>
+                        </asp:repeater>
                     </div><!-- row -->
-                    <div class="row">
-                        <div class="col-xs-12">
-                            <div class="grid grid-panel">
-                                <Rock:GridFilter ID="gfGridFilter" runat="server">
-                                    <Rock:RockTextBox ID="tbStepTypeName" runat="server"></Rock:RockTextBox>
-                                    <Rock:RockTextBox ID="tbStepStatus" runat="server"></Rock:RockTextBox>
-                                </Rock:GridFilter>
-                                <Rock:Grid ID="gStepList" runat="server" RowItemText="Step" AllowSorting="true" OnRowSelected="gStepList_RowSelected">
-                                    <Columns>
-                                        <Rock:RockLiteralField ID="lStepType" SortExpression="StepTypeName" OnDataBound="lStepType_DataBound" />
-                                        <Rock:CampusField DataField="CampusId" HeaderText="Campus" SortExpression="CampusName" />
-                                        <Rock:DateField DataField="StartDateTime" HeaderText="Start Date" SortExpression="StartDateTime" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
-                                        <Rock:DateField DataField="CompletedDateTime" HeaderText="Completion Date" SortExpression="CompletedDateTime" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
-                                        <Rock:RockLiteralField HeaderText="Summary" ID="lSummary" SortExpression="Summary" OnDataBound="lSummary_DataBound" />
-                                        <Rock:RockLiteralField HeaderText="Status" ID="lStepStatus" SortExpression="StepStatusName" OnDataBound="lStepStatus_DataBound" />
-                                        <Rock:DeleteField OnClick="gStepList_Delete" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </div><!-- .grid -->
-                        </div><!-- col -->
-                    </div><!-- row -->
+                    <div class="grid grid-panel">
+                        <Rock:GridFilter ID="gfGridFilter" runat="server">
+                            <Rock:RockTextBox ID="tbStepTypeName" runat="server"></Rock:RockTextBox>
+                            <Rock:RockTextBox ID="tbStepStatus" runat="server"></Rock:RockTextBox>
+                        </Rock:GridFilter>
+                        <Rock:Grid ID="gStepList" runat="server" RowItemText="Step" AllowSorting="true" OnRowSelected="gStepList_RowSelected">
+                            <Columns>
+                                <Rock:RockLiteralField ID="lStepType" SortExpression="StepTypeName" OnDataBound="lStepType_DataBound" />
+                                <Rock:CampusField DataField="CampusId" HeaderText="Campus" SortExpression="CampusName" />
+                                <Rock:DateField DataField="StartDateTime" HeaderText="Start Date" SortExpression="StartDateTime" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
+                                <Rock:DateField DataField="CompletedDateTime" HeaderText="Completion Date" SortExpression="CompletedDateTime" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left" />
+                                <Rock:RockLiteralField HeaderText="Summary" ID="lSummary" SortExpression="Summary" OnDataBound="lSummary_DataBound" />
+                                <Rock:RockLiteralField HeaderText="Status" ID="lStepStatus" SortExpression="StepStatusName" OnDataBound="lStepStatus_DataBound" />
+                                <Rock:DeleteField OnClick="gStepList_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div><!-- .grid -->
                 </asp:Panel><!-- pnlGridView -->
 
                 <asp:Panel runat="server" id="pnlCardView">

@@ -9,32 +9,34 @@
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" ClientIDMode="Static" />
 
         <div class="treeview">
-            <div class="treeview-actions" id="divTreeviewActions" runat="server">
-
-                <div class="btn-group">
-                    <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i> Add Location <span class="fa fa-caret-down"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><asp:LinkButton ID="lbAddLocationRoot" OnClick="lbAddLocationRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                        <li><asp:LinkButton ID="lbAddLocationChild" OnClick="lbAddLocationChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
-                    </ul>
-                </div>
-
-            </div>
-
-            <div class="treeview-scroll scroll-container scroll-container-horizontal">
-
-                <div class="viewport">
-                    <div class="overview">
-                        <div class="panel-body treeview-frame">
-                            <div id="treeview-content">
-                            </div>
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><asp:Literal ID="lPanelTitle" runat="server" Text="Locations" /></h1>
+                    <div class="panel-labels treeview-actions" id="divTreeviewActions" runat="server">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                <li><asp:LinkButton ID="lbAddLocationRoot" OnClick="lbAddLocationRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                                <li><asp:LinkButton ID="lbAddLocationChild" OnClick="lbAddLocationChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                            </ul>
                         </div>
-
                     </div>
                 </div>
-                <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+                <div class="panel-body treeview">
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="treeview-frame">
+                                    <div id="treeview-content">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -628,10 +628,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             // Look for a subpage route (anything after the "/Person/{id}" part of the URL)
-            var subpageRoute = Request.Url.AbsolutePath.Replace( ResolveRockUrl( string.Format( "~/Person/{0}", currentPersonId ) ), "" );
+            var subpageRoute = Request.UrlProxySafe().AbsolutePath.ReplaceCaseInsensitive( ResolveRockUrl( $"~/Person/{currentPersonId}" ), "" );
 
             // If the path is different, then append it onto the link
-            if ( subpageRoute != Request.Url.AbsolutePath )
+            if ( subpageRoute != Request.UrlProxySafe().AbsolutePath )
             {
                 return ResolveRockUrl( string.Format( "~/Person/{0}{1}", personId, subpageRoute ) );
             }

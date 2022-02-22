@@ -58,11 +58,12 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.GetPeople( !loadAll ) )
                     {
-                        var memberGroupIds = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                                                                  .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active
-                                                                                               && m.PersonId == person.Person.Id )
-                                                                                  .Select( m => m.GroupId )
-                                                                                  .ToList();
+                        var memberGroupIds = new GroupMemberService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.PersonId == person.Person.Id )
+                            .Select( m => m.GroupId )
+                            .ToList();
 
                         foreach ( var groupType in person.GetGroupTypes( !loadAll ) )
                         {
@@ -75,7 +76,14 @@ namespace Rock.Workflow.Action.CheckIn
                                 foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive ) )
                                 {
                                     bool validGroup = true;
-                                    if ( groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyBelongs )
+
+                                    var configuredKioskGroup = checkInState.ConfiguredGroups;
+                                    if ( configuredKioskGroup.Any() )
+                                    {
+                                        validGroup = configuredKioskGroup.Contains( kioskGroup.Group.Id );
+                                    }
+
+                                    if ( validGroup && groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyBelongs )
                                     {
                                         validGroup = memberGroupIds.Contains( kioskGroup.Group.Id );
                                     }

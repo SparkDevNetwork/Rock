@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// This obsolete PersonMergeField was used in the RockWeb.Blocks.Crm.PersonMerge block
     /// to handle controlling the fields that are displayed/edited during a merge.
     /// </summary>
-    [Obsolete( "Use MergePersonField Instead" )]
+    [Obsolete( "Use MergePersonField Instead", true )]
     [RockObsolete( "1.9" )]
     public class PersonMergeField : SelectField, INotRowSelectedField
     {
@@ -186,7 +186,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     ///
     /// </summary>
-    [Obsolete( "Use MergePersonFieldHeaderTemplate Instead" )]
+    [Obsolete( "Use MergePersonFieldHeaderTemplate Instead", true )]
     [RockObsolete( "1.9" )]
     public class PersonMergeFieldHeaderTemplate : ITemplate
     {

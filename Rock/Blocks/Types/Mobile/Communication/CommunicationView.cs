@@ -165,6 +165,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             var clientOs = string.Empty;
             var ipAddress = RequestContext.ClientInformation.IpAddress;
             var site = MobileHelper.GetCurrentApplicationSite( false, rockContext );
+            var siteName = site?.Name ?? "Unknown";
             var now = RockDateTime.Now;
 
             //
@@ -181,9 +182,9 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
             recipient.Status = CommunicationRecipientStatus.Opened;
             recipient.OpenedDateTime = now;
-            recipient.OpenedClient = $"{clientOs} {site.Name} ({clientType})";
+            recipient.OpenedClient = $"{clientOs} {siteName} ({clientType})";
 
-            interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, now, site.Name, clientOs, clientType, string.Empty, ipAddress, null );
+            interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, now, siteName, clientOs, clientType, string.Empty, ipAddress, null );
 
             rockContext.SaveChanges();
         }

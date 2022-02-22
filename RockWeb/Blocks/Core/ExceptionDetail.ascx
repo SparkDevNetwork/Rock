@@ -12,14 +12,13 @@
             <div class="panel-body">
 
                 <fieldset>
-                    <h4>Summary</h4>
                     <div class="row">
                         <div class="col-md-12">
                             <asp:Literal ID="lExceptionSummary" runat="server" />
                         </div>
                     </div>
 
-                    <div class="actions">
+                    <div class="panel-actions">
                         <a href="#" id="btnShowCookies" runat="server" class="js-btn-show-cookies btn btn-default">
                             <i class="fa fa-laptop"></i>
                             Show Cookies
@@ -28,10 +27,6 @@
                             <i class="fa fa-hdd-o"></i>
                             Show Server Variables
 
-                        </a>
-                        <a href="#" id="btnShowFormData" runat="server" class="js-btn-show-formdata btn btn-default">
-                            <i class="fa fa-hdd-o"></i>
-                            Show Form Data
                         </a>
                     </div>
 
@@ -47,12 +42,6 @@
                     <fieldset>
                         <h4>Server Variables</h4>
                         <asp:Literal ID="lServerVariables" runat="server" />
-                    </fieldset>
-                </div>
-                <div id="divFormData" style="display: none">
-                    <fieldset>
-                        <h4>Form Data</h4>
-                        <asp:Literal ID="lFormData" runat="server" />
                     </fieldset>
                 </div>
                 <div id="divExceptionDetails">
@@ -115,7 +104,6 @@
 
 <script type="text/javascript">
     function toggleStackTrace(exceptionId) {
-        debugger
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-hide");
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-show");
 

@@ -374,6 +374,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lblActivityTypeDescription );
             _lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
             _lblActivityTypeDescription.ID = this.ID + "_lblActivityTypeDescription";
+            _lblActivityTypeDescription.CssClass = "workflow-activity-description";
 
             _lblStatus = new Label();
             Controls.Add( _lblStatus );

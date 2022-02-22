@@ -83,6 +83,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -110,6 +111,7 @@ namespace Rock.Web.UI.Controls
             {
                 return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( WarningBlock != null )
@@ -161,6 +163,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( RequiredFieldValidator != null )
@@ -218,6 +221,7 @@ namespace Rock.Web.UI.Controls
             {
                 return base.ValidationGroup;
             }
+
             set
             {
                 base.ValidationGroup = value;
@@ -228,6 +232,7 @@ namespace Rock.Web.UI.Controls
                 {
                     RequiredFieldValidator.ValidationGroup = value;
                 }
+
                 if ( _regexValidator != null )
                 {
                     _regexValidator.ValidationGroup = value;
@@ -298,6 +303,7 @@ namespace Rock.Web.UI.Controls
             {
                 return base.TextMode;
             }
+
             set
             {
                 base.TextMode = value;
@@ -333,9 +339,9 @@ namespace Rock.Web.UI.Controls
         public bool ShowCountDown
         {
             get { return ViewState["ShowCountDown"] as bool? ?? false; }
+
             set { ViewState["ShowCountDown"] = value; }
         }
-
 
         #endregion
 
@@ -402,6 +408,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderBeginTag( HtmlTextWriterTag.Em );
                     writer.RenderEndTag();
                 }
+
                 RockControlHelper.RenderControl( this, writer );
             }
         }
@@ -418,6 +425,7 @@ namespace Rock.Web.UI.Controls
                 {
                     this.Text = Password;
                 }
+
                 this.Attributes["value"] = this.Text;
             }
 
@@ -487,16 +495,10 @@ namespace Rock.Web.UI.Controls
 
             if ( this.MaxLength != 0 && this.ShowCountDown )
             {
-                string scriptFormat = string.Format( @"
-        $('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});
-        
-", this.ClientID, this.MaxLength, this.ClientID + "_em" );
+                string scriptFormat = string.Format( @"$('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});", this.ClientID, this.MaxLength, this.ClientID + "_em" );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "MaxLengthScript_" + this.ClientID, scriptFormat, true );
             }
-
-
         }
-
 
         /// <summary>
         /// Renders any data validator.
@@ -508,7 +510,18 @@ namespace Rock.Web.UI.Controls
             {
                 _regexValidator.Enabled = true;
                 _regexValidator.ValidationExpression = @"^((.|\n){0," + this.MaxLength.ToString() + "})$";
-                _regexValidator.ErrorMessage = Rock.Constants.WarningMessage.TextLengthInvalid( this.Label, this.MaxLength );
+
+                /*
+                    8/14/2021 - CWR
+
+                    The TextLengthInvalid method expects a plain, text-only Label, not one with markup or extra spaces.
+                    The BulkUpdate page (and possibly others) add HTML to the Label, which TextLengthInvalid does not expect.
+                    It will affect the resulting page's style and structure, as noted below from GitHub.
+                    Therefore, we will strip HTML out and trim whitespace before passing the label on to the 'length invalid' message.
+
+                    Reason: GitHub Issue #4231 (https://github.com/SparkDevNetwork/Rock/issues/4231)
+                */
+                _regexValidator.ErrorMessage = Rock.Constants.WarningMessage.TextLengthInvalid( this.Label.StripHtml().Trim(), this.MaxLength );
                 _regexValidator.ValidationGroup = this.ValidationGroup;
                 _regexValidator.RenderControl( writer );
             }
@@ -551,6 +564,7 @@ namespace Rock.Web.UI.Controls
                     return base.Text.Trim();
                 }
             }
+
             set
             {
                 base.Text = value;
@@ -570,6 +584,5 @@ namespace Rock.Web.UI.Controls
                 return base.Text;
             }
         }
-
     }
 }

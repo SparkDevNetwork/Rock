@@ -317,7 +317,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             lCheckinScheduleName.Text = attendanceInfo.ScheduleName;
             if ( lWhoCheckedIn != null && attendanceInfo.CheckInByPersonGuid.HasValue )
             {
-                var oldWayUrl = String.Format( "{0}{1}{2}{3}?Person={4}", Request.Url.Scheme, Uri.SchemeDelimiter, Request.Url.Authority, Request.Url.AbsolutePath, attendanceInfo.CheckInByPersonGuid );
+                var proxySafeUrl = Request.UrlProxySafe();
+                var oldWayUrl = $"{proxySafeUrl.Scheme}{Uri.SchemeDelimiter}{proxySafeUrl.Authority}{proxySafeUrl.AbsolutePath}?Person={attendanceInfo.CheckInByPersonGuid}";
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "Person", attendanceInfo.CheckInByPersonGuid.ToString() );
                 var urlWithPersonParameter = GetCurrentPageUrl( queryParams );
@@ -596,8 +597,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var fileGuids = cblLabels.SelectedValues.AsGuidList();
 
+            var reprintLabelOptions = new ReprintLabelOptions
+            {
+                PrintFrom = PrintFrom.Server,
+                ServerPrinterIPAddress = ddlPrinter.SelectedValue
+            };
+
             // Now, finally, re-print the labels.
-            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, nbReprintMessage, this.Request, ddlPrinter.SelectedValue );
+            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, nbReprintMessage, this.Request, reprintLabelOptions );
             nbReprintMessage.Visible = true;
             nbReprintMessage.Text = messages.JoinStrings( "<br>" );
 
@@ -928,7 +935,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private string GetRelatedPersonUrl( Rock.Model.Person currentPerson, Guid relatedPersonGuid, int relatedPersonId )
         {
             var template = "{0}={1}";
-            var relatedPersonUrl = Request.Url.ToString()
+            var relatedPersonUrl = Request.UrlProxySafe().ToString()
                 .ReplaceCaseInsensitive( string.Format( template, PageParameterKey.PersonGuid, currentPerson.Guid ), string.Format( template, PageParameterKey.PersonGuid, relatedPersonGuid ) )
                 .ReplaceCaseInsensitive( string.Format( template, PageParameterKey.PersonId, currentPerson.Id ), string.Format( template, PageParameterKey.PersonId, relatedPersonId ) );
 
