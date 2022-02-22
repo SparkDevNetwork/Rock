@@ -96,6 +96,11 @@ export default defineComponent({
             return this.viewModel.spotsRemaining < 1;
         },
 
+        /** True if the user is allowed to move on to the next screen. */
+        canContinue(): boolean {
+            return !(this.isFull && this.numberToAddToWaitlist !== this.numberOfRegistrants);
+        },
+
         registrantTerm (): string {
             this.viewModel.instanceName;
             return (this.viewModel.registrantTerm || "registrant").toLowerCase();
@@ -191,7 +196,8 @@ export default defineComponent({
         The first {{pluralConditional(viewModel.spotsRemaining, registrantTerm, viewModel.spotsRemaining + ' ' + registrantTermPlural)}} you add will be registered for {{viewModel.instanceName}}.
         The remaining {{pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural)}} will be added to the waitlist. 
     </Alert>
-    <div class="actions text-right">
+
+    <div v-if="canContinue" class="actions text-right">
         <RockButton btnType="primary" @click="onNext">
             Next
         </RockButton>

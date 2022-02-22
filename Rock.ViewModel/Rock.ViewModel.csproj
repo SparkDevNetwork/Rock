@@ -49,7 +49,10 @@
     <Compile Include="CodeGenerated\BenevolenceTypeViewModel.cs" />
     <Compile Include="CodeGenerated\BenevolenceWorkflowViewModel.cs" />
     <Compile Include="CodeGenerated\ConnectionStatusAutomationViewModel.cs" />
+    <Compile Include="CodeGenerated\RemoteAuthenticationSessionViewModel.cs" />
     <Compile Include="Connection\ConnectionRequest\ConnectionRequestCountsViewModel.cs" />
+    <Compile Include="Controls\FieldTypeConfigurationViewModel.cs" />
+    <Compile Include="Controls\FieldTypeConfigurationPropertiesViewModel.cs" />
     <Compile Include="NonEntities\ClientAttributeValueCategoryViewModel.cs" />
     <Compile Include="NonEntities\ClientEditableAttributeValueViewModel.cs" />
     <Compile Include="NonEntities\ClientAttributeValueViewModel.cs" />
@@ -273,8 +276,10 @@
     <Compile Include="IViewModel.cs" />
     <Compile Include="IViewModelWithAttributes.cs" />
     <Compile Include="NonEntities\AttributeConfigurationValue.cs" />
+    <Compile Include="NonEntities\PublicEditableAttributeViewModel.cs" />
     <Compile Include="NonEntities\ListItemViewModel.cs" />
     <Compile Include="NonEntities\SavedFinancialAccountListItemViewModel.cs" />
+    <Compile Include="NonEntities\TreeItemViewModel.cs" />
     <Compile Include="Partials\AttributeValueViewModel.partial.cs" />
     <Compile Include="Partials\AttributeViewModel.partial.cs" />
     <Compile Include="Partials\PersonViewModel.partial.cs" />

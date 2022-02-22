@@ -15,13 +15,14 @@
 // </copyright>
 //
 
-import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
-import { Component, defineComponent, PropType, reactive } from "vue";
-import PanelWidget from "../../Elements/panelWidget";
+import { Component, defineComponent, PropType, reactive, ref } from "vue";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
-import { Guid } from "../../Util/guid";
+import PanelWidget from "../../Elements/panelWidget";
 import TextBox from "../../Elements/textBox";
 import { FieldType as FieldTypeGuids } from "../../SystemGuids";
+import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
+import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
+import { Guid } from "../../Util/guid";
 import { ClientEditableAttributeValue, ListItem } from "../../ViewModels";
 
 /**
@@ -327,10 +328,17 @@ const galleryTemplate: string = Object.keys(galleryComponents).sort().map(g => `
 
 export default defineComponent({
     name: "Example.FieldTypeGallery",
+
     components: {
         PaneledBlockTemplate,
         ...galleryComponents
     },
+
+    setup() {
+        return {
+        };
+    },
+
     template: `
 <PaneledBlockTemplate>
     <template v-slot:title>
@@ -340,5 +348,6 @@ export default defineComponent({
     <template v-slot:default>
         ${galleryTemplate}
     </template>
-</PaneledBlockTemplate>`
+</PaneledBlockTemplate>
+`
 });

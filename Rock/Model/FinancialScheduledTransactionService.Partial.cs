@@ -23,7 +23,6 @@ using System.Text;
 using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
-using Rock.Tasks;
 using System.Threading.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -81,11 +80,121 @@ namespace Rock.Model
         /// <returns></returns>
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId, int gatewayId )
         {
-            return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
+            var cleanedScheduleId = scheduleId.Trim();
+
+            var scheduledTransaction = Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
                 .Where( t =>
                     t.FinancialGatewayId == gatewayId &&
-                    t.GatewayScheduleId == scheduleId.Trim() )
+                    t.GatewayScheduleId == cleanedScheduleId )
                 .FirstOrDefault();
+
+            if ( scheduledTransaction != null )
+            {
+                return scheduledTransaction;
+            }
+
+            /* 12/16/2021 MDP
+
+            If unable to find the schedule id, the scheduleId might have been changed. If so, we can dig for it by looking for ScheduleTransactions that had PreviousGatewayScheduleIds.
+            This can happen in cases where a person changes their scheduled transaction, but there are un-downloaded transactions that occurred with the old schedule id.
+
+            https://github.com/SparkDevNetwork/Rock/issues/4526 does a good job explaining how this could happen:
+
+            --
+            9/27: User creates a scheduled transaction that occurs on the 15th of every month with schedule ID: xxx1234
+            10/15: First payment successfully imported.
+            11/15 5am: The Download Payments job is run. Past payments are pulled into Rock
+            11/15 Noon-ish: A new transaction with schedule ID xxx1234 is processed
+            11/15 10pm: User updates their scheduled transaction with an increase in giving. The schedule Id is updated from xxx1234 to xxx5678
+            11/16 5am: The Download Payments job is run. A transaction with schedule ID xxx1234 is pulled into Rock. Since there's no matching scheduled transactions, it isn't saved to Rock.
+            --
+
+            To help avoid this from happening, we now store any previous gateway schedule Ids so that a matching transaction can be found in PreviousGatewayScheduleIds.
+
+            */
+
+            // Note that we'll have to get all the scheduled transactions that have PreviousGatewayScheduleIdsJson, and then look thru PreviousGatewayScheduleIds on each one.
+            var scheduleTransactionsWithPreviousGatewayScheduleIds = Queryable()
+                .Where( a => a.FinancialGatewayId == gatewayId && !string.IsNullOrEmpty( a.PreviousGatewayScheduleIdsJson ) )
+                .AsNoTracking().ToList();
+
+            var scheduleTransactionWithPreviousGatewayScheduleId = scheduleTransactionsWithPreviousGatewayScheduleIds
+                .Where( a => a.PreviousGatewayScheduleIds != null && a.PreviousGatewayScheduleIds.Contains( cleanedScheduleId ) )
+                .OrderByDescending( a => a.Id )
+                .FirstOrDefault();
+
+            if ( scheduleTransactionWithPreviousGatewayScheduleId != null )
+            {
+                // found it, re-fetch it to include ScheduledTransactionDetails and AuthorizedPersonAlias.Person
+                scheduledTransaction = Queryable()
+                            .Include( a => a.ScheduledTransactionDetails )
+                            .Include( a => a.AuthorizedPersonAlias.Person )
+                            .Where( a => a.Id == scheduleTransactionWithPreviousGatewayScheduleId.Id ).FirstOrDefault();
+            }
+
+            return scheduledTransaction;
+        }
+
+        /// <summary>
+        /// Gets the status of each of the <see cref="IEnumerable{FinancialScheduledTransaction}" /> from it's <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// If the schedule is no longer active on the gateway, <see cref="FinancialScheduledTransaction.IsActive"/> is set to <c>false</c>.
+        /// </summary>
+        /// <param name="financialScheduledTransactions">The financial scheduled transactions.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active scheduled transactions only].</param>
+        /// <returns>
+        ///   <c>true</c> if there are no error, <c>false</c> otherwise.</returns>
+        public bool GetStatus( IEnumerable<FinancialScheduledTransaction> financialScheduledTransactions, bool activeOnly )
+        {
+            return GetStatus( financialScheduledTransactions, activeOnly, out _ );
+        }
+
+        /// <summary>
+        /// Gets the status of each of the <see cref="IEnumerable{FinancialScheduledTransaction}" /> from it's <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// If the schedule is no longer active on the gateway, <see cref="FinancialScheduledTransaction.IsActive"/> is set to <c>false</c>.
+        /// If this method returns false, see <paramref name="errorMessages"/>.
+        /// </summary>
+        /// <param name="financialScheduledTransactions">The financial scheduled transactions.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active scheduled transactions only].</param>
+        /// <param name="errorMessages">The error messages. The <see cref="IDictionary{TKey, TValue}"/> is keyed by the schedule Id.</param>
+        /// <returns>
+        ///   <c>true</c> if there are no error, <c>false</c> otherwise.</returns>
+        public bool GetStatus( IEnumerable<FinancialScheduledTransaction> financialScheduledTransactions, bool activeOnly, out IDictionary<int, string> errorMessages )
+        {
+            errorMessages = new Dictionary<int, string>();
+            /*
+             * 13-JAN-22 DMV
+             *
+             * This call to GetStatus goes out to the financial gateway
+             * to update the status and next payment date on each transaction.
+             * This can add O^2 runtime to this data bind and cause it to run
+             * very slowly. #4871
+             *
+             */
+            foreach ( var schedule in financialScheduledTransactions )
+            {
+                try
+                {
+                    // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
+                    if ( activeOnly && !schedule.IsActive )
+                    {
+                        continue;
+                    }
+
+                    this.GetStatus( schedule, out string errMsg );
+
+                    if ( !string.IsNullOrEmpty( errMsg ) )
+                    {
+                        errorMessages.Add( schedule.Id, errMsg );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // log and ignore
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+
+            return errorMessages.Count > 0;
         }
 
         /// <summary>
@@ -98,6 +207,13 @@ namespace Rock.Model
         /// <returns></returns>
         public bool GetStatus( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
+            /*
+             * 12-JAN-22 DMV
+             *
+             * This method introduces significant overhead to performance
+             * when run across many transactions.
+             *
+             */
             if ( scheduledTransaction != null &&
                 scheduledTransaction.FinancialGateway != null &&
                 scheduledTransaction.FinancialGateway.IsActive )

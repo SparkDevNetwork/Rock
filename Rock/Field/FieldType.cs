@@ -93,6 +93,28 @@ namespace Rock.Field
         {
         }
 
+        /// <inheritdoc/>
+        public virtual Dictionary<string, string> GetClientEditConfigurationProperties( Dictionary<string, string> configurationValues )
+        {
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public virtual Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public virtual Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( publicConfigurationValues );
+        }
+
         #endregion
 
         #region Formatting

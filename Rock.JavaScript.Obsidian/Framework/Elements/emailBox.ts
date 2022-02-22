@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { ruleStringToArray, ruleArrayToString } from "../Rules/index";
 import { defineComponent, PropType } from "vue";
+import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
@@ -36,10 +36,7 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: false
         },
-        rules: {
-            type: String as PropType<string>,
-            default: ""
-        }
+        rules: rulesPropType
     },
     emits: [
         "update:modelValue"
@@ -50,14 +47,14 @@ export default defineComponent({
         };
     },
     computed: {
-        computedRules() {
-            const rules = ruleStringToArray(this.rules);
+        computedRules(): ValidationRule[] {
+            const rules = normalizeRules(this.rules);
 
             if (rules.indexOf("email") === -1 && !this.allowLava && !this.allowMultiple) {
                 rules.push("email");
             }
 
-            return ruleArrayToString(rules);
+            return rules;
         },
         computedType(): string {
             return this.allowLava || this.allowMultiple ? "text" : "email";
@@ -77,13 +74,13 @@ export default defineComponent({
     formGroupClasses="rock-text-box"
     name="textbox"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, tabIndex, disabled}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="input-group">
                 <span class="input-group-addon">
                     <i class="fa fa-envelope"></i>
                 </span>
-                <input :id="uniqueId" class="form-control" v-bind="field" :disabled="disabled" :tabindex="tabIndex" :type="computedType" />
+                <input v-model="internalValue" :id="uniqueId" class="form-control" v-bind="field" :type="computedType" />
             </div>
         </div>
     </template>

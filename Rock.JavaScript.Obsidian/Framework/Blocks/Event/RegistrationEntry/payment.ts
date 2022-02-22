@@ -281,45 +281,6 @@ export default defineComponent({
 
     template: `
 <div class="registrationentry-payment">
-    <v-style>
-        .payment-method-options .payment-method {
-            margin-bottom: 20px;
-        }
-
-        .payment-method .payment-method-image {
-            height: 1.4em;
-            margin-right: 8px;
-        }
-
-        .payment-method-account {
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .payment-method .payment-method-name {
-            font-weight: 600;
-            margin-right: 8px;
-        }
-
-        .hosted-payment-control {
-            margin-bottom: 60px;
-        }
-
-        @media (min-width: 500px) {
-            .payment-method-options .payment-method-entry {
-                padding-left: 28px;
-            }
-        }
-        .slide-enter-active, .slide-leave-active {
-            transition: all .6s ease;
-        }
-
-        .slide-enter, .slide-leave-to {
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-    </v-style>
-
     <RockForm @submit="onNext">
         <h4>Payment Information</h4>
         <div>
@@ -345,7 +306,7 @@ export default defineComponent({
             </div>
 
             <div class="position-relative overflow-hidden">
-                <transition name="slide">
+                <transition name="rockslide">
                     <div v-if="showGateway" class="hosted-gateway-container payment-method-entry">
                         <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
                         <RockValidation :errors="gatewayValidationFields" />

@@ -26,6 +26,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a numeric value
     /// </summary>
     [Serializable]
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class UrlLinkFieldType : FieldType
     {
         /// <summary>

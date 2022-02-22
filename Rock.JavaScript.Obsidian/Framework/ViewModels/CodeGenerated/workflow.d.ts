@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type Workflow = IEntity & {
     activatedDateTime?: string | null;
+    campusId?: number | null;
     completedDateTime?: string | null;
     description?: string | null;
     entityId?: number | null;

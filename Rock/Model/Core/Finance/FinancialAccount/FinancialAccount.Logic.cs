@@ -17,10 +17,8 @@
 using Rock.Data;
 using Rock.Lava;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -29,21 +27,7 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialAccount
     {
-        #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets a collection containing the FinancialAccounts that are sub accounts/child accounts of this account.  This is not a recursive search.
-        /// </summary>
-        /// <value>
-        /// A collection containing all FinancialAccounts that are sub accounts/child accounts of this account.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<FinancialAccount> ChildAccounts
-        {
-            get { return _childAccounts ?? ( _childAccounts = new Collection<FinancialAccount>() ); }
-            set { _childAccounts = value; }
-        }
-        private ICollection<FinancialAccount> _childAccounts;
+        #region Properties
 
         /// <summary>
         /// Returns an enumerable collection of the <see cref="Rock.Model.FinancialAccount" /> Ids that are ancestors of a specified accountId sorted starting with the most immediate parent
@@ -99,7 +83,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion Virtual Properties
+        #endregion
 
         #region Public Methods
 

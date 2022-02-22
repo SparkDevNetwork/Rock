@@ -41,7 +41,7 @@ export default defineComponent({
             default: false
         }
     },
-    setup(props) {
+    setup(props, { emit }) {
         const field = computed(() => {
             const fieldType = getFieldType(props.attributeValue.fieldTypeGuid);
 
@@ -91,6 +91,8 @@ export default defineComponent({
                 if (instanceOfEditable(props.attributeValue)) {
                     field.value.updateTextValue(props.attributeValue);
                 }
+
+                emit("update:attributeValue", props.attributeValue);
             }
         });
 

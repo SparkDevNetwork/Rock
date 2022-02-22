@@ -15,6 +15,8 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -152,6 +154,23 @@ namespace Rock.Model
 
         private DateTime? _lastPaymentReminderDateTime;
 
+        /// <summary>
+        /// Gets the created date key.
+        /// </summary>
+        /// <value>
+        /// The created date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? CreatedDateKey
+        {
+            get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?
+                        ( int? ) null :
+                        CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+
+            private set { }
+        }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -191,6 +210,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate CreatedSourceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrants.
+        /// </summary>
+        /// <value>
+        /// The registrants.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<RegistrationRegistrant> Registrants
+        {
+            get { return _registrants ?? ( _registrants = new Collection<RegistrationRegistrant>() ); }
+            set { _registrants = value; }
+        }
+
+        private ICollection<RegistrationRegistrant> _registrants;
 
         #endregion Navigation Properties
     }

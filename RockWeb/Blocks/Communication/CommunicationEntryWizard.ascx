@@ -1811,6 +1811,8 @@
                 }
             }
 
+            var $currentComponent;
+
             function loadPropertiesPage(componentType, $component) {
                 $currentComponent = $component;
                 var $currentPropertiesPanel = $('.js-propertypanels').find("[data-component='" + componentType + "']");
@@ -1824,31 +1826,32 @@
                 // temp - set text of summernote
                 switch (componentType) {
                     case 'text':
-                        Rock.controls.emailEditor.textComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.textComponentHelper.setProperties($currentComponent);
                         break;
                     case 'rsvp':
-                        Rock.controls.emailEditor.rsvpComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.rsvpComponentHelper.setProperties($currentComponent);
                         break;
                     case 'button':
-                        Rock.controls.emailEditor.buttonComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.buttonComponentHelper.setProperties($currentComponent);
                         break;
                     case 'image':
-                        Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
                         break;
                     case 'video':
-				        Rock.controls.emailEditor.videoComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.videoComponentHelper.setProperties($currentComponent);
 				        break;
                     case 'section':
-                        Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
                         break;
                     case 'divider':
-                        Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
                         break;
                     case 'code':
-                        Rock.controls.emailEditor.codeComponentHelper.setProperties($currentComponent);
+                        $currentComponent = Rock.controls.emailEditor.codeComponentHelper.setProperties($currentComponent);
                         break;
                     default:
                         clearPropertyPane(null);
+                        $currentComponent = null;
                 }
 
                 // show proper panel

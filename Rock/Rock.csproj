@@ -207,8 +207,8 @@
     <Reference Include="Microsoft.Azure.Storage.Common, Version=11.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Storage.Common.11.1.3\lib\net452\Microsoft.Azure.Storage.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net46\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
@@ -304,6 +304,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Common.Tv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
+    </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
     </Reference>
@@ -381,8 +385,8 @@
     <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Json.4.7.2\lib\net461\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=5.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.5.0.2\lib\net461\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -459,6 +463,7 @@
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\CheckinConfigurationTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\FieldTypeUsageAttribute.cs" />
     <Compile Include="Attribute\FinancialStatementTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\LocationListFieldAttribute.cs" />
     <Compile Include="Attribute\MobileNavigationActionFieldAttribute.cs" />
@@ -466,6 +471,7 @@
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
+    <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
     <Compile Include="Attribute\StepFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\InteractionChannelInteractionComponentFieldAttribute.cs" />
@@ -614,6 +620,8 @@
     <Compile Include="ClientService\Connection\ConnectionType\ConnectionTypeClientService.cs" />
     <Compile Include="ClientService\Core\Campus\CampusClientService.cs" />
     <Compile Include="ClientService\Core\Campus\Options\CampusOptions.cs" />
+    <Compile Include="ClientService\Core\Category\CategoryClientService.cs" />
+    <Compile Include="ClientService\Core\Category\Options\CategoryItemTreeOptions.cs" />
     <Compile Include="ClientService\Core\DefinedValue\DefinedValueClientService.cs" />
     <Compile Include="ClientService\Core\DefinedValue\Options\DefinedValueOptions.cs" />
     <Compile Include="ClientService\Finance\FinancialPersonSavedAccount\FinancialPersonSavedAccountClientService.cs" />
@@ -746,6 +754,7 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
+    <Compile Include="Field\FieldTypeUsage.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianHostedGatewayComponent.cs" />
@@ -780,10 +789,14 @@
     <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.Logic.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetDataFormat.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetScriptType.cs" />
+    <Compile Include="Model\CMS\RestAction\RestAction.Logic.cs" />
+    <Compile Include="Model\CMS\RestController\RestController.Logic.cs" />
+    <Compile Include="Model\CMS\RestController\RestControllerService.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\AuthAuditLogService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceWorkflowService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\RemoteAuthenticationSessionService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientServiceExtensions.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientStatus.cs" />
@@ -836,8 +849,13 @@
     <Compile Include="Model\Core\BinaryFile\BinaryFile.SaveHook.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFileService.WebService.cs" />
     <Compile Include="Model\Core\Category\Category.Logic.cs" />
+    <Compile Include="Model\Core\Category\Options\CategorizedItemQueryOptions.cs" />
+    <Compile Include="Model\Core\Category\Options\ChildCategoryQueryOptions.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItem.Logic.cs" />
+    <Compile Include="Model\Core\History\History.Logic.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
+    <Compile Include="Model\Core\RelatedEntity\RelatedEntityPurposeKey.cs" />
+    <Compile Include="Model\Core\RemoteAuthenticationSession\RemoteAuthenticationSession.cs" />
     <Compile Include="Model\Core\TaggedItem\TaggedItem.Logic.cs" />
     <Compile Include="Model\CRM\Badge\Badge.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
@@ -894,7 +912,6 @@
     <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.cs" />
     <Compile Include="Model\Engagement\AchievementTypePrerequisite\AchievementTypePrerequisite.Logic.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementType.Logic.cs" />
-    <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.Logic.cs" />
     <Compile Include="Model\Engagement\StepProgram\StepProgram.Logic.cs" />
     <Compile Include="Model\Engagement\StepStatus\StepStatus.Logic.cs" />
     <Compile Include="Model\Engagement\StepType\StepType.Logic.cs" />
@@ -964,7 +981,6 @@
     <Compile Include="Model\Finance\BenevolenceWorkflow\BenevolenceWorkflowService.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
-    <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.cs" />
     <Compile Include="Model\Group\GroupHistorical\GroupHistorical.Logic.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalSchedule.cs" />
@@ -1091,6 +1107,10 @@
     <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
     <Compile Include="Model\Reporting\Report\Report.Logic.cs" />
     <Compile Include="Model\Reporting\ReportField\ReportFieldType.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNodeLog\SeverityLevel.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNodeLog\WebFarmNodeLog.Logic.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNodeMetric\WebFarmNodeMetric.Logic.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNode\WebFarmNode.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.LiquidButton.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.Logic.cs" />
@@ -1110,6 +1130,8 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.WebForms.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
+    <Compile Include="Plugin\HotFixes\147_MigrationRolupsFor13_1.cs" />
+    <Compile Include="Plugin\HotFixes\146_UpdateStatementGeneratorDownloadLink.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ActivityFilter.cs" />
@@ -1177,11 +1199,15 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
+    <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
+    <Compile Include="Tv\Classes\ApplicationSettings.cs" />
+    <Compile Include="Tv\TvHelper.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\CodeGenFeature.cs" />
     <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
     <Compile Include="Plugin\HotFixes\142_AddMobileGroupFinderBlock.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
+    <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
@@ -1305,10 +1331,10 @@
     <Compile Include="Model\Event\RegistrationSession\RegistrationSession.cs" />
     <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.cs" />
     <Compile Include="Model\Engagement\StepProgram\StepProgramService.cs" />
-    <Compile Include="Model\WebFarmNodeMetric.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNodeMetric\WebFarmNodeMetric.cs" />
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedService.cs" />
-    <Compile Include="Model\WebFarmNodeLog.cs" />
-    <Compile Include="Model\WebFarmNode.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNodeLog\WebFarmNodeLog.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNode\WebFarmNode.cs" />
     <Compile Include="Model\Event\AttendanceCheckInSession\AttendanceCheckInSession.cs" />
     <Compile Include="Model\Core\AuthClaim\AuthClaim.cs" />
     <Compile Include="Model\Core\AuthClient\AuthClient.cs" />
@@ -1323,8 +1349,8 @@
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestService.cs" />
     <Compile Include="Model\Core\Document\DocumentService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
-    <Compile Include="Model\WebFarmNodeService.Partial.cs" />
-    <Compile Include="Model\WebFarmNodeMetricService.Partial.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNode\WebFarmNodeService.cs" />
+    <Compile Include="Model\WebFarm\WebFarmNodeMetric\WebFarmNodeMetricService.cs" />
     <Compile Include="Plugin\HotFixes\141_MigratePlacementGroupsData.cs" />
     <Compile Include="Plugin\HotFixes\140_MigrateFieldVisibilityRulesJSONData.cs" />
     <Compile Include="Plugin\HotFixes\139_ProfileEdit_RequireGender.cs" />
@@ -1518,13 +1544,13 @@
     <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrantService.cs" />
     <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacement.cs" />
     <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacementService.cs" />
-    <Compile Include="Model\RelatedEntity.cs" />
+    <Compile Include="Model\Core\RelatedEntity\RelatedEntity.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDataset.cs" />
     <Compile Include="Model\Core\Document\Document.cs" />
     <Compile Include="Model\Core\DocumentType\DocumentType.cs" />
     <Compile Include="Model\CMS\PersistedDataset\PersistedDatasetService.cs" />
     <Compile Include="Model\Communication\SmsPipeline\SmsPipeline.cs" />
-    <Compile Include="Model\RelatedEntityService.Partial.cs" />
+    <Compile Include="Model\Core\RelatedEntity\RelatedEntityService.cs" />
     <Compile Include="Model\Engagement\StepType\StepTypeService.cs" />
     <Compile Include="Model\Engagement\Step\StepService.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttempt.cs" />
@@ -2527,8 +2553,8 @@
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRoleService.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannelService.cs" />
     <Compile Include="Model\Group\GroupType\GroupTypeService.cs" />
-    <Compile Include="Model\History.cs" />
-    <Compile Include="Model\HistoryService.Partial.cs" />
+    <Compile Include="Model\Core\History\History.cs" />
+    <Compile Include="Model\Core\History\HistoryService.cs" />
     <Compile Include="Model\HtmlContent.cs" />
     <Compile Include="Model\HtmlContentService.Partial.cs" />
     <Compile Include="Model\Core\Interaction\Interaction.cs" />
@@ -2561,7 +2587,7 @@
     <Compile Include="Model\PageRoute.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
     <Compile Include="Model\PageService.Partial.cs" />
-    <Compile Include="Model\Person.cs" />
+    <Compile Include="Model\CRM\Person\Person.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.cs" />
     <Compile Include="Model\CRM\PersonAlias\PersonAlias.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDeviceService.cs" />
@@ -2572,14 +2598,14 @@
     <Compile Include="Model\CRM\PersonPreviousName\PersonPreviousName.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKey.cs" />
     <Compile Include="Model\CRM\PersonSearchKey\PersonSearchKeyService.cs" />
-    <Compile Include="Model\PersonService.Partial.cs" />
-    <Compile Include="Model\PersonSignal.cs" />
+    <Compile Include="Model\CRM\Person\PersonService.Partial.cs" />
+    <Compile Include="Model\Core\PersonSignal\PersonSignal.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.cs" />
     <Compile Include="Model\Core\PersonToken\PersonTokenService.cs" />
     <Compile Include="Model\CRM\PersonViewed\PersonViewed.cs" />
     <Compile Include="Model\CRM\PersonViewed\PersonViewedService.cs" />
-    <Compile Include="Model\PhoneNumber.cs" />
-    <Compile Include="Model\PhoneNumberService.Partial.cs" />
+    <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.cs" />
+    <Compile Include="Model\CRM\PhoneNumber\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\PrayerRequest.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />
@@ -2598,15 +2624,15 @@
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateForm.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.cs" />
     <Compile Include="Model\Reporting\Report\Report.cs" />
-    <Compile Include="Model\ScheduleCategoryExclusion.cs" />
+    <Compile Include="Model\Core\ScheduleCategoryExclusion\ScheduleCategoryExclusion.cs" />
     <Compile Include="Model\Reporting\ReportField\ReportField.cs" />
     <Compile Include="Model\Reporting\Report\ReportService.cs" />
-    <Compile Include="Model\RestAction.cs" />
-    <Compile Include="Model\RestActionService.partial.cs" />
-    <Compile Include="Model\RestController.cs" />
-    <Compile Include="Model\RestControllerService.Partial.cs" />
-    <Compile Include="Model\Schedule.cs" />
-    <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\CMS\RestAction\RestAction.cs" />
+    <Compile Include="Model\CMS\RestAction\RestActionService.cs" />
+    <Compile Include="Model\CMS\RestController\RestController.cs" />
+    <Compile Include="Model\CMS\RestController\RestControllerService.cs" />
+    <Compile Include="Model\Core\Schedule\Schedule.cs" />
+    <Compile Include="Model\Core\Schedule\ScheduleService.Partial.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistory.cs" />
     <Compile Include="Model\Core\ServiceJobHistory\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Core\SignalType\SignalType.cs" />
@@ -3544,6 +3570,7 @@
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\SetWorkflowCampus.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ShowHtml.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromEntity.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromPerson.cs" />

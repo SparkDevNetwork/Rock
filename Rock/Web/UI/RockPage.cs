@@ -3543,9 +3543,11 @@ Sys.Application.add_load(function () {
             try
             {
                 var obsidianPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Obsidian" );
+                var pluginsPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Plugins" );
 
                 // Find the last date any obsidian file was modified.
                 var lastWriteTime = Directory.EnumerateFiles( obsidianPath, "*.js", SearchOption.AllDirectories )
+                    .Union( Directory.EnumerateFiles( pluginsPath, "*.js", SearchOption.AllDirectories ) )
                     .Select( f =>
                     {
                         try
@@ -3568,24 +3570,8 @@ Sys.Application.add_load(function () {
                 var cfg = ( CompilationSection ) ConfigurationManager.GetSection( "system.web/compilation" );
                 if ( cfg != null && cfg.Debug )
                 {
-                    // Setup a watcher to notify us of any changes to the directory.
-                    var watcher = new FileSystemWatcher
-                    {
-                        Path = obsidianPath,
-                        IncludeSubdirectories = true,
-                        NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
-                        Filter = "*.js"
-                    };
-
-                    // Add event handlers.
-                    watcher.Changed += ObsidianFileSystemWatcher_OnChanged;
-                    watcher.Created += ObsidianFileSystemWatcher_OnChanged;
-                    watcher.Renamed += ObsidianFileSystemWatcher_OnRenamed;
-
-                    _obsidianFileWatchers.Add( watcher );
-
-                    // Begin watching.
-                    watcher.EnableRaisingEvents = true;
+                    AddObsidianFileSystemWatcher( obsidianPath, "*.js" );
+                    AddObsidianFileSystemWatcher( pluginsPath, "*.js" );
                 }
             }
             catch ( Exception ex )
@@ -3593,6 +3579,35 @@ Sys.Application.add_load(function () {
                 _obsidianFingerprint = RockDateTime.Now.Ticks;
                 Debug.WriteLine( ex.Message );
             }
+        }
+
+        /// <summary>
+        /// Add a new file system watcher for the specified <paramref name="directory"/>.
+        /// It will update the fingerprint whenever a file matching the
+        /// <paramref name="filter"/> changes.
+        /// </summary>
+        /// <param name="directory">The directory, and any sub-directories, to watch.</param>
+        /// <param name="filter">The filename filter to use when watching for changes.</param>
+        private static void AddObsidianFileSystemWatcher( string directory, string filter )
+        {
+            // Setup a watcher to notify us of any changes to the directory.
+            var watcher = new FileSystemWatcher
+            {
+                Path = directory,
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
+                Filter = filter
+            };
+
+            // Add event handlers.
+            watcher.Changed += ObsidianFileSystemWatcher_OnChanged;
+            watcher.Created += ObsidianFileSystemWatcher_OnChanged;
+            watcher.Renamed += ObsidianFileSystemWatcher_OnRenamed;
+
+            _obsidianFileWatchers.Add( watcher );
+
+            // Begin watching.
+            watcher.EnableRaisingEvents = true;
         }
 
         /// <summary>
@@ -3625,7 +3640,6 @@ Sys.Application.add_load(function () {
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine( $"OnChanged: {fileSystemEventArgs.FullPath}" );
                 var dateTime = new FileInfo( fileSystemEventArgs.FullPath ).LastWriteTime;
 
                 dateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( dateTime );

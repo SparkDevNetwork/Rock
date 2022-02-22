@@ -45,7 +45,7 @@
       },
       setProperties: function ($textComponent)
       {
-        Rock.controls.emailEditor.$currentTextComponent = $textComponent.hasClass('component-text') ? $currentComponent : $(false);
+        Rock.controls.emailEditor.$currentTextComponent = $textComponent.hasClass('component-text') ? $textComponent : $(false);
 
         // replace the component div with a table that has special inner td that we can put border, padding, etc on
         var $innerWrapper = Rock.controls.emailEditor.$currentTextComponent.find('.js-component-text-wrapper');
@@ -60,6 +60,8 @@
           $tableWrapper.attr('style', 'border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;');
           Rock.controls.emailEditor.$currentTextComponent.contents().unwrap();
 
+          // DV 25-JAN-2022: This must be returned to the caller as the compenent DOM has been
+          // manipulated at this point. Without a return the delete doesn't work as expected. #4862
           Rock.controls.emailEditor.$currentTextComponent = $tableWrapper;
         }
 
@@ -79,6 +81,9 @@
         $('#component-text-padding-bottom').val(parseFloat(textEl.style['padding-bottom']) || '');
 
         $('.js-component-text-lineheight').val(textEl.style['line-height']);
+
+        // Return this to the previous function caller
+        return Rock.controls.emailEditor.$currentTextComponent;
       },
       setBackgroundColor: function ()
       {

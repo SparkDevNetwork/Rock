@@ -25,7 +25,7 @@ using Rock.Client;
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     internal static class FinancialStatementGeneratorRecipientExtensions
     {
@@ -70,7 +70,7 @@ namespace Rock.Apps.StatementGenerator
         /// <returns></returns>
         internal static string GetRecipientKey( this FinancialStatementGeneratorRecipient recipient )
         {
-            return $"GroupId_{recipient.GroupId}_PersonID_{recipient.PersonId}";
+            return $"GroupId_{recipient.GroupId}_PersonID_{recipient.PersonId}_LocationID_{recipient.LocationId}";
         }
 
         /// <summary>

@@ -14,107 +14,101 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
 import RockButton from "../Elements/rockButton";
-
-export enum ValidationField {
-    CardNumber,
-    Expiry,
-    SecurityCode
-}
+import { trackModalState } from "../Util/page";
 
 export default defineComponent({
     name: "Dialog",
+
     components: {
         RockButton
     },
+
     props: {
         modelValue: {
             type: Boolean as PropType<boolean>,
             required: true
         },
+
         dismissible: {
             type: Boolean as PropType<boolean>,
             default: true
         }
     },
-    data () {
-        return {
-            doShake: false
-        };
-    },
-    computed: {
-        hasHeader (): boolean {
-            return !!this.$slots[ "header" ];
-        }
-    },
-    methods: {
-        close () {
-            this.$emit("update:modelValue", false);
-        },
-        shake () {
-            if (!this.doShake) {
-                this.doShake = true;
-                setTimeout(() => this.doShake = false, 1000);
-            }
-        },
-        centerOnScreen () {
-            this.$nextTick(() => {
-                const div = this.$refs[ "modalDiv" ] as HTMLElement | null;
 
-                if (!div) {
+    setup(props, { emit, slots }) {
+        const doShake = ref(false);
+        const modalDiv = ref<HTMLElement | null>(null);
+
+        const hasHeader = computed(() => !!slots.header);
+
+        const close = (): void => {
+            emit("update:modelValue", false);
+        };
+
+        const shake = (): void => {
+            if (!doShake.value) {
+                doShake.value = true;
+                setTimeout(() => doShake.value = false, 1000);
+            }
+        };
+
+        const centerOnScreen = (): void => {
+            nextTick(() => {
+                if (!modalDiv.value) {
                     return;
                 }
 
-                const height = div.offsetHeight;
+                const height = modalDiv.value.offsetHeight;
                 const margin = height / 2;
-                div.style.marginTop = `-${margin}px`;
+                modalDiv.value.style.marginTop = `-${margin}px`;
             });
-        }
-    },
-    watch: {
-        modelValue: {
-            immediate: true,
-            handler () {
-                const body = document.body;
-                const cssClasses = [ "modal-open", "page-overflow" ];
+        };
 
-                if (this.modelValue) {
-                    for (const cssClass of cssClasses) {
-                        body.classList.add(cssClass);
-                    }
-
-                    this.centerOnScreen();
-                }
-                else {
-                    for (const cssClass of cssClasses) {
-                        body.classList.remove(cssClass);
-                    }
-                }
-            }
+        if (props.modelValue) {
+            trackModalState(true);
         }
+
+        watch(() => props.modelValue, () => {
+            trackModalState(props.modelValue);
+        });
+
+        return {
+            centerOnScreen,
+            close,
+            doShake,
+            hasHeader,
+            modalDiv,
+            shake
+        };
     },
+
     template: `
-<div v-if="modelValue">
-    <div @click="shake" class="modal-scrollable" style="z-index: 1060;">
-        <div @click.stop ref="modalDiv" class="modal fade in" :class="{'animated shake': doShake}" tabindex="-1" role="dialog" style="display: block;">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div v-if="hasHeader" class="modal-header">
-                        <button v-if="dismissible" @click="close" type="button" class="close" style="margin-top: -10px;">×</button>
-                        <slot name="header" />
-                    </div>
-                    <div class="modal-body">
-                        <button v-if="!hasHeader && dismissible" @click="close" type="button" class="close" style="margin-top: -10px;">×</button>
-                        <slot />
-                    </div>
-                    <div v-if="$slots.footer" class="modal-footer">
-                        <slot name="footer" />
+<teleport to="body" v-if="modelValue">
+    <div>
+        <div class="modal-backdrop fade in" style="z-index: 1060;"></div>
+
+        <div @click="shake" class="modal-scrollable" style="z-index: 1060;">
+            <div @click.stop ref="modalDiv" class="modal fade in" :class="{'animated shake': doShake}" tabindex="-1" role="dialog" style="display: block;">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div v-if="hasHeader" class="modal-header">
+                            <button v-if="dismissible" @click="close" type="button" class="close" style="margin-top: -10px;">×</button>
+                            <slot name="header" />
+                        </div>
+                        <div class="modal-body">
+                            <button v-if="!hasHeader && dismissible" @click="close" type="button" class="close" style="margin-top: -10px;">×</button>
+                            <slot />
+                        </div>
+                        <div v-if="$slots.footer" class="modal-footer">
+                            <slot name="footer" />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal-backdrop fade in" style="z-index: 1050;"></div>
-</div>`
+</teleport>
+`
 });

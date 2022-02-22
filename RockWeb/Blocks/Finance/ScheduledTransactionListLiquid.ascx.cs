@@ -114,17 +114,18 @@ namespace RockWeb.Blocks.Finance
             public const string TransferButtonText = "TransferButtonText";
         }
 
+        private static class PageParameterKey
+        {
+            public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
+            public const string Transfer = "transfer";
+        }
+
         #region Fields
 
         /// <summary>
         /// The _transfer to gateway unique identifier is set to non-null if the block setting is set.
         /// </summary>
         private Guid? _transferToGatewayGuid = null;
-
-        /// <summary>
-        /// This constant-like value is used to avoid hard-coding the string "transfer" in multiple places.
-        /// </summary>
-        private const string TRANSFER = "transfer";
 
         #endregion
 
@@ -209,7 +210,7 @@ namespace RockWeb.Blocks.Finance
                     btnEdit.Text = GetAttributeValue( AttributeKey.TransferButtonText );
 
                     HiddenField hfTransfer = ( HiddenField ) e.Item.FindControl( "hfTransfer" );
-                    hfTransfer.Value = TRANSFER;
+                    hfTransfer.Value = PageParameterKey.Transfer;
                 }
 
                 // if there isn't an Edit page defined for the transaction, don't show th button
@@ -314,12 +315,12 @@ namespace RockWeb.Blocks.Finance
             We really don't want to actually delete a FinancialScheduledTransaction.
             Just inactivate it, even if there aren't FinancialTransactions associated with it.
             It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
-            If that happens, Rock won't be able to match a record for that downloaded transaction! 
+            If that happens, Rock won't be able to match a record for that downloaded transaction!
             We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
             so we'll need the ScheduledTransaction to do that.
 
             So, don't delete ScheduledTransactions.
-             
+
             */
 
             BootstrapButton bbtnDelete = ( BootstrapButton ) sender;
@@ -375,8 +376,7 @@ namespace RockWeb.Blocks.Finance
 
             HiddenField hfScheduledTransactionId = ( HiddenField ) riItem.FindControl( "hfScheduledTransactionId" );
             var scheduledTransactionId = hfScheduledTransactionId.Value.AsIntegerOrNull();
-            HiddenField hfTransfer = ( HiddenField ) riItem.FindControl( "hfTransfer" );
-
+            
             if ( !scheduledTransactionId.HasValue )
             {
                 return;
@@ -389,12 +389,13 @@ namespace RockWeb.Blocks.Finance
             }
 
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
-            qryParams.Add( "ScheduledTransactionId", scheduledTransactionId.Value.ToString() );
+            qryParams.Add( PageParameterKey.ScheduledTransactionGuid, financialScheduledTransaction.Guid.ToString() );
 
             // If this is a transfer, go to the TransactionEntry page/block
-            if ( _transferToGatewayGuid != null && hfTransfer.Value == TRANSFER && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.ScheduledTransactionEntryPage ) ) )
+            HiddenField hfTransfer = ( HiddenField ) riItem.FindControl( "hfTransfer" );
+            if ( _transferToGatewayGuid != null && hfTransfer.Value == PageParameterKey.Transfer && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.ScheduledTransactionEntryPage ) ) )
             {
-                qryParams.Add( TRANSFER, "true" );
+                qryParams.Add( PageParameterKey.Transfer, "true" );
                 this.NavigateToLinkedPage( AttributeKey.ScheduledTransactionEntryPage, qryParams );
             }
             else
@@ -454,20 +455,8 @@ namespace RockWeb.Blocks.Finance
                     schedules = schedules.Where( s => s.FinancialGateway.Guid == gatewayFilterGuid );
                 }
 
-                foreach ( var schedule in schedules )
-                {
-                    try
-                    {
-                        // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
-                        string errorMessage;
-                        transactionService.GetStatus( schedule, out errorMessage );
-                    }
-                    catch ( Exception ex )
-                    {
-                        // log and ignore
-                        LogException( ex );
-                    }
-                }
+                // Refresh the active transactions
+                transactionService.GetStatus( schedules, true );
 
                 rptScheduledTransactions.DataSource = schedules.ToList();
                 rptScheduledTransactions.DataBind();

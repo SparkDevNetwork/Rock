@@ -13,13 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -85,7 +83,7 @@ namespace Rock.Jobs
             public const int CommandTimeout = 180;
         }
 
-        DateTime _lastProgressUpdate = DateTime.MinValue;
+        private DateTime _lastProgressUpdate = DateTime.MinValue;
 
         #endregion Keys
 
@@ -110,7 +108,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
-            SqlCommandTimeoutSeconds = context.JobDetail.JobDataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+            _sqlCommandTimeoutSeconds = context.JobDetail.JobDataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
 
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
@@ -144,7 +142,7 @@ namespace Rock.Jobs
             }
         }
 
-        private int SqlCommandTimeoutSeconds = AttributeDefaultValue.CommandTimeout;
+        private int _sqlCommandTimeoutSeconds = AttributeDefaultValue.CommandTimeout;
 
         /// <summary>
         /// Processes the step type. Add steps for everyone in the dataview
@@ -165,7 +163,7 @@ namespace Rock.Jobs
         {
             errorMessages = new List<string>();
             var rockContextGetList = new RockContext();
-            rockContextGetList.Database.CommandTimeout = SqlCommandTimeoutSeconds;
+            rockContextGetList.Database.CommandTimeout = _sqlCommandTimeoutSeconds;
 
             // Steps are created with a status of "complete", so if we need to know the status id
             var stepStatusId = stepTypeView.CompletedStepStatusIds.FirstOrDefault();
@@ -190,7 +188,7 @@ namespace Rock.Jobs
             var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
                 DbContext = rockContextGetList,
-                DatabaseTimeoutSeconds = SqlCommandTimeoutSeconds
+                DatabaseTimeoutSeconds = _sqlCommandTimeoutSeconds
             };
 
             IQueryable<IEntity> dataviewQuery;
@@ -245,6 +243,8 @@ namespace Rock.Jobs
             var updatedCount = 0;
 
             // Query for existing incomplete steps for the people
+            // Just in case the Person is has more than one incomplete step for this step type, just use the latest one.
+            // It should clean it self up on subsequent runs since the other steps for this person wouldn't have been marked complete yet
             var existingIncompleteStepIdsByPersonId = stepServiceGetList.Queryable()
                 .Where( s =>
                     s.StepTypeId == stepTypeView.StepTypeId &&
@@ -257,13 +257,7 @@ namespace Rock.Jobs
                 } )
                 .ToList()
                 .GroupBy( a => a.PersonId )
-                .ToDictionary(
-                    k => k.Key,
-                    // just in case the Person is has more than one incomplete step for this step type, just use the latest one
-                    // it should clean it self up on subsequent runs since the other steps for this person wouldn't have been marked complete yet
-                    v => v.Max( s => s.StepId )
-                );
-
+                .ToDictionary( k => k.Key, v => v.Max( s => s.StepId ) );
 
             long totalCount = personInfoList.Count;
             long progressCount = 0;
@@ -345,7 +339,7 @@ namespace Rock.Jobs
         {
             var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
+            rockContext.Database.CommandTimeout = _sqlCommandTimeoutSeconds;
             var stepTypeService = new StepTypeService( rockContext );
 
             var views = stepTypeService.Queryable().AsNoTracking()
@@ -563,7 +557,6 @@ namespace Rock.Jobs
             /// Prerequisite StepTypeIds
             /// </summary>
             public IEnumerable<int> PrerequisiteStepTypeIds { get; set; }
-
         }
 
         #endregion SQL Views

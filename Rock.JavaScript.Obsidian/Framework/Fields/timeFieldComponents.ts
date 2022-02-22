@@ -90,3 +90,9 @@ export const EditComponent = defineComponent({
 <TimePicker v-model="internalTimeValue" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "TimeField.Configuration",
+
+    template: ``
+});

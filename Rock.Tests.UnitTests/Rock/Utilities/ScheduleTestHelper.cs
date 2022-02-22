@@ -30,7 +30,7 @@ namespace Rock.Tests
     /// </summary>
     public static class ScheduleTestHelper
     {
-        public static Schedule GetScheduleWithDailyRecurrence( DateTime? startDateTime = null, DateTime? endDate = null, TimeSpan? eventDuration = null, int? occurrenceCount = null )
+        public static Schedule GetScheduleWithDailyRecurrence( DateTimeOffset? startDateTime = null, DateTimeOffset? endDate = null, TimeSpan? eventDuration = null, int? occurrenceCount = null )
         {
             var calendarEvent = GetCalendarEvent( startDateTime ?? RockDateTime.Today, eventDuration );
 
@@ -70,11 +70,14 @@ namespace Rock.Tests
             return calendar;
         }
 
-        public static Event GetCalendarEvent( DateTime eventStartDate, TimeSpan? eventDuration )
+        public static Event GetCalendarEvent( DateTimeOffset eventStartDate, TimeSpan? eventDuration )
         {
+            // Convert the start date to Rock time.
+            var startDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
+
             var calendarEvent = new Event
             {
-                DtStart = new CalDateTime( eventStartDate ),
+                DtStart = new CalDateTime( startDate.DateTime ),
                 Duration = eventDuration ?? new TimeSpan( 1, 0, 0 ),
                 DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
             };
@@ -82,7 +85,7 @@ namespace Rock.Tests
             return calendarEvent;
         }
 
-        public static RecurrencePattern GetDailyRecurrencePattern( DateTime? recurrenceEndDate = null, int? occurrenceCount = null, int? interval = 1 )
+        public static RecurrencePattern GetDailyRecurrencePattern( DateTimeOffset? recurrenceEndDate = null, int? occurrenceCount = null, int? interval = 1 )
         {
             // Repeat daily from the start date until the specified end date or a set number of recurrences, at the specified interval.
             var pattern = $"RRULE:FREQ=DAILY;INTERVAL={interval}";

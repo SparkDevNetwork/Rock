@@ -16,6 +16,7 @@
 //
 
 using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Model;
 
@@ -33,5 +34,6 @@ namespace Rock.Blocks.Example
 
     public class FieldTypeGallery : RockObsidianBlockType
     {
+
     }
 }

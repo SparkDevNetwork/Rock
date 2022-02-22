@@ -310,6 +310,13 @@ namespace Rock.Web.Cache
         public int? GroupTypePurposeValueId { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is capacity required.
+        /// </summary>
+        /// <value><c>true</c> if this instance is capacity required; otherwise, <c>false</c>.</value>
+        [DataMember]
+        public bool IsCapacityRequired { get; set; }
+
+        /// <summary>
         /// Gets the group type purpose value.
         /// </summary>
         /// <value>
@@ -882,6 +889,7 @@ namespace Rock.Web.Cache
             ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
             RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
             AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
+            IsCapacityRequired = groupType.IsCapacityRequired;
 #pragma warning disable CS0618 // Type or member is obsolete
             ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
             ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;

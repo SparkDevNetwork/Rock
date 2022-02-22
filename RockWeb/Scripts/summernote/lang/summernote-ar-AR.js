@@ -1,3 +1,27 @@
+/*!
+ * 
+ * Super simple WYSIWYG editor v0.8.20
+ * https://summernote.org
+ *
+ *
+ * Copyright 2013- Alan Hong and contributors
+ * Summernote may be freely distributed under the MIT license.
+ *
+ * Date: 2021-10-14T21:15Z
+ *
+ */
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
 (function ($) {
   $.extend($.summernote.lang, {
     'ar-AR': {
@@ -9,6 +33,8 @@
         height: 'إرتفاع السطر',
         name: 'الخط',
         strikethrough: 'فى وسطه خط',
+        subscript: 'مخطوطة',
+        superscript: 'حرف فوقي',
         size: 'الحجم'
       },
       image: {
@@ -20,20 +46,28 @@
         floatLeft: 'تطيير لليسار',
         floatRight: 'تطيير لليمين',
         floatNone: 'ثابته',
+        shapeRounded: 'الشكل: تقريب',
+        shapeCircle: 'الشكل: دائرة',
+        shapeThumbnail: 'الشكل: صورة مصغرة',
+        shapeNone: 'الشكل: لا شيء',
         dragImageHere: 'إدرج الصورة هنا',
+        dropImage: 'إسقاط صورة أو نص',
         selectFromFiles: 'حدد ملف',
+        maximumFileSize: 'الحد الأقصى لحجم الملف',
+        maximumFileSizeError: 'تم تجاوز الحد الأقصى لحجم الملف',
         url: 'رابط الصورة',
-        remove: 'حذف الصورة'
+        remove: 'حذف الصورة',
+        original: 'Original'
       },
       video: {
         video: 'فيديو',
         videoLink: 'رابط الفيديو',
         insert: 'إدراج الفيديو',
         url: 'رابط الفيديو',
-        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion ou Youku)'
+        providers: '(YouTube, Google Drive, Vimeo, Vine, Instagram, DailyMotion or Youku)'
       },
       link: {
-        link: 'رابط رابط',
+        link: 'رابط',
         insert: 'إدراج',
         unlink: 'حذف الرابط',
         edit: 'تعديل',
@@ -42,14 +76,21 @@
         openInNewWindow: 'فتح في نافذة جديدة'
       },
       table: {
-        table: 'جدول'
+        table: 'جدول',
+        addRowAbove: 'إضافة سطر أعلاه',
+        addRowBelow: 'إضافة سطر أدناه',
+        addColLeft: 'إضافة عمود قبله',
+        addColRight: 'إضافة عمود بعده',
+        delRow: 'حذف سطر',
+        delCol: 'حذف عمود',
+        delTable: 'حذف الجدول'
       },
       hr: {
         insert: 'إدراج خط أفقي'
       },
       style: {
         style: 'تنسيق',
-        normal: 'عادي',
+        p: 'عادي',
         blockquote: 'إقتباس',
         pre: 'شفيرة',
         h1: 'عنوان رئيسي 1',
@@ -85,7 +126,8 @@
         transparent: 'شفاف',
         setTransparent: 'بدون خلفية',
         reset: 'إعادة الضبط',
-        resetToDefault: 'إعادة الضبط'
+        resetToDefault: 'إعادة الضبط',
+        cpSelect: 'اختار'
       },
       shortcut: {
         shortcuts: 'إختصارات',
@@ -93,12 +135,51 @@
         textFormatting: 'تنسيق النص',
         action: 'Action',
         paragraphFormatting: 'تنسيق الفقرة',
-        documentStyle: 'تنسيق المستند'
+        documentStyle: 'تنسيق المستند',
+        extraKeys: 'أزرار إضافية'
+      },
+      help: {
+        'insertParagraph': 'إدراج فقرة',
+        'undo': 'تراجع عن آخر أمر',
+        'redo': 'إعادة تنفيذ آخر أمر',
+        'tab': 'إزاحة (تاب)',
+        'untab': 'سحب النص باتجاه البداية',
+        'bold': 'تنسيق عريض',
+        'italic': 'تنسيق مائل',
+        'underline': 'تنسيق خط سفلي',
+        'strikethrough': 'تنسيق خط متوسط للنص',
+        'removeFormat': 'إزالة التنسيقات',
+        'justifyLeft': 'محاذاة لليسار',
+        'justifyCenter': 'محاذاة توسيط',
+        'justifyRight': 'محاذاة لليمين',
+        'justifyFull': 'محاذاة كاملة',
+        'insertUnorderedList': 'قائمة منقّطة',
+        'insertOrderedList': 'قائمة مرقّمة',
+        'outdent': 'إزاحة للأمام على الفقرة الحالية',
+        'indent': 'إزاحة للخلف على الفقرة الحالية',
+        'formatPara': 'تغيير التنسيق للكتلة الحالية إلى فقرة',
+        'formatH1': 'تغيير التنسيق للكتلة الحالية إلى ترويسة 1',
+        'formatH2': 'تغيير التنسيق للكتلة الحالية إلى ترويسة 2',
+        'formatH3': 'تغيير التنسيق للكتلة الحالية إلى ترويسة 3',
+        'formatH4': 'تغيير التنسيق للكتلة الحالية إلى ترويسة 4',
+        'formatH5': 'تغيير التنسيق للكتلة الحالية إلى ترويسة 5',
+        'formatH6': 'تغيير التنسيق للكتلة الحالية إلى ترويسة 6',
+        'insertHorizontalRule': 'إدراج خط أفقي',
+        'linkDialog.show': 'إظهار خصائص الرابط'
       },
       history: {
         undo: 'تراجع',
         redo: 'إعادة'
+      },
+      specialChar: {
+        specialChar: 'محارف خاصة',
+        select: 'اختر المحرف الخاص'
       }
     }
   });
 })(jQuery);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});
+//# sourceMappingURL=summernote-ar-AR.js.map

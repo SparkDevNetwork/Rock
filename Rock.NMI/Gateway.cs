@@ -1761,12 +1761,21 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             }
 
             // since we can't update a subscription in NMI, we'll have to Delete and Create a new one
+            var deletedGatewayScheduleId = scheduledTransaction.GatewayScheduleId;
             DeleteSubscription( scheduledTransaction.FinancialGateway, scheduledTransaction.GatewayScheduleId );
 
             // add the scheduled payment, but don't use the financialScheduledTransaction that was returned since we already have one
             var dummyFinancialScheduledTransaction = AddScheduledPayment( scheduledTransaction.FinancialGateway, paymentSchedule, paymentInfo, out errorMessage );
             if ( dummyFinancialScheduledTransaction != null )
             {
+                // keep track of the deleted schedule id in case some have been processed but not downloaded yet.
+                if ( scheduledTransaction.PreviousGatewayScheduleIds == null)
+                {
+                    scheduledTransaction.PreviousGatewayScheduleIds = new List<string>();
+                }
+
+                scheduledTransaction.PreviousGatewayScheduleIds.Add( deletedGatewayScheduleId );
+
                 scheduledTransaction.GatewayScheduleId = dummyFinancialScheduledTransaction.GatewayScheduleId;
 
                 scheduledTransaction.IsActive = true;
