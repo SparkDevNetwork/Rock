@@ -119,6 +119,8 @@ namespace Rock
             /// </value>
             internal bool EnableForAllDbContexts { get; set; } = false;
 
+            private const string UserStateKey = "DebugLoggingDbCommandInterceptorKey";
+
             /// <summary>
             /// </summary>
             /// <param name="command"></param>
@@ -128,7 +130,7 @@ namespace Rock
             {
                 object userState;
                 this.CommandExecuting( command, interceptionContext, out userState );
-                interceptionContext.UserState = userState;
+                interceptionContext.SetUserState( UserStateKey, userState );
             }
 
             /// <summary>
@@ -138,7 +140,7 @@ namespace Rock
             /// <inheritdoc />
             public override void NonQueryExecuted( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
             {
-                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+                this.CommandExecuted( command, interceptionContext, interceptionContext.FindUserState( UserStateKey ) );
             }
 
             /// <summary>
@@ -150,7 +152,7 @@ namespace Rock
             {
                 object userState;
                 this.CommandExecuting( command, interceptionContext, out userState );
-                interceptionContext.UserState = userState;
+                interceptionContext.SetUserState( UserStateKey, userState );
             }
 
             /// <summary>
@@ -160,7 +162,7 @@ namespace Rock
             /// <inheritdoc />
             public override void ScalarExecuted( DbCommand command, DbCommandInterceptionContext<object> interceptionContext )
             {
-                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+                this.CommandExecuted( command, interceptionContext, interceptionContext.FindUserState( UserStateKey ) );
             }
 
             /// <summary>
@@ -172,7 +174,7 @@ namespace Rock
             {
                 object userState;
                 this.CommandExecuting( command, interceptionContext, out userState );
-                interceptionContext.UserState = userState;
+                interceptionContext.SetUserState( UserStateKey, userState );
             }
 
             /// <summary>
@@ -182,7 +184,7 @@ namespace Rock
             /// <inheritdoc />
             public override void ReaderExecuted( DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext )
             {
-                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+                this.CommandExecuted( command, interceptionContext, interceptionContext.FindUserState( UserStateKey ) );
             }
 
             /// <summary>
