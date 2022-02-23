@@ -251,7 +251,7 @@
 
 							<strong>{{ member.Person.FullName }}</strong>
 							<small>({{ member.GroupRole.Name }}){{- attendanceCheck -}}<!-- {{ WaiverIcon }} --></small>
-
+							<br /><small>{{ member.Person.BirthDate | Date:'MM/dd/yyyy'}}}}</small>
 							{% for phone in member.Person.PhoneNumbers %}
 							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
 							{% endfor %}
