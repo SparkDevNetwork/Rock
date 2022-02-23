@@ -282,6 +282,8 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        private const string AllCategoriesListItemText = "All Categories";
+
         /// <inheritdoc/>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
@@ -480,14 +482,14 @@ namespace Rock.Field.Types
 
             if ( childCategoryNodes.Any() )
             {
-                var allCategoriesNode = childCategoryNodes.FirstOrDefault( x => x.Value.Text == "(All Categories)" );
+                var allCategoriesNode = childCategoryNodes.FirstOrDefault( x => x.Value.Text == AllCategoriesListItemText );
 
                 if ( allCategoriesNode == null )
                 {
                     var allCategoriesItem = new DefinedValueTreeNode
                     {
                         Key = parentNode.Value.Key + "_all",
-                        Text = "(All Categories)",
+                        Text = AllCategoriesListItemText,
                         CategoryLabel = definedValue.DefinedType.Name,
                         IsDefaultSelection = true
                     };
