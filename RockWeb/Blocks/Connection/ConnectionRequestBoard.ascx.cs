@@ -1317,9 +1317,15 @@ namespace RockWeb.Blocks.Connection
 
             var state = rblRequestModalAddEditModeState.SelectedValueAsEnumOrNull<ConnectionState>();
 
+            // If a value is selected in the radio button list, use it, otherwise use "Active".
+            // This prevents the "FutureFollowUp" State from remaining on a Connection Request if the Connection Type's "Enable Future Follow-up" was unchecked.
             if ( state.HasValue )
             {
                 connectionRequest.ConnectionState = rblRequestModalAddEditModeState.SelectedValueAsEnum<ConnectionState>();
+            }
+            else
+            {
+                connectionRequest.ConnectionState = ConnectionState.Active;
             }
 
             connectionRequest.ConnectionStatusId = rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value;
@@ -1328,7 +1334,17 @@ namespace RockWeb.Blocks.Connection
             connectionRequest.AssignedGroupMemberRoleId = ddlRequestModalAddEditModePlacementRole.SelectedValueAsInt();
             connectionRequest.AssignedGroupMemberStatus = ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
             connectionRequest.Comments = tbRequestModalAddEditModeComments.Text.SanitizeHtml();
-            connectionRequest.FollowupDate = dpRequestModalAddEditModeFollowUp.SelectedDate;
+
+            // If this request is a Future FollowUp state, use the selected date from the date picker, otherwise it should be null.
+            if ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
+            {
+                connectionRequest.FollowupDate = dpRequestModalAddEditModeFollowUp.SelectedDate;
+            }
+            else
+            {
+                connectionRequest.FollowupDate = null;
+            }
+
             connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValuesFromAddModal();
 
             // if the connectionRequest IsValid is false, and the UI controls didn't report any errors, it is probably
@@ -1871,13 +1887,24 @@ namespace RockWeb.Blocks.Connection
             var viewModel = GetConnectionRequestViewModel();
             var campusId = viewModel != null ? viewModel.CampusId : CampusId;
             var connectorPersonAliasId = viewModel == null ? null : viewModel.ConnectorPersonAliasId;
+            var connectionType = GetConnectionType();
 
             BindConnectorOptions( ddlRequestModalAddEditModeConnector, true, campusId, connectorPersonAliasId );
-            rblRequestModalAddEditModeState.BindToEnum<ConnectionState>();
+
+            ConnectionState[] ignoredConnectionTypes = { };
+
+            // If this Connection Type does not allow Future Follow-Up, ignore it from the ConnectionState types.
+            if ( !connectionType.EnableFutureFollowup )
+            {
+                ignoredConnectionTypes = new ConnectionState[] { ConnectionState.FutureFollowUp };
+            }
+
+            // Ignore binding the Connection Types that are in the provided array.
+            rblRequestModalAddEditModeState.BindToEnum( ignoreTypes: ignoredConnectionTypes );
 
             // Status
             rblRequestModalAddEditModeStatus.Items.Clear();
-            var allStatuses = GetConnectionType().ConnectionStatuses
+            var allStatuses = connectionType.ConnectionStatuses
                 .OrderBy( cs => cs.Order )
                 .ThenByDescending( cs => cs.IsDefault )
                 .ThenBy( cs => cs.Name );
@@ -1899,6 +1926,7 @@ namespace RockWeb.Blocks.Connection
 
                 ppRequestModalAddEditModePerson.SetValue( requestor );
                 ddlRequestModalAddEditModeConnector.SetValue( connectorPersonAliasId );
+
                 rblRequestModalAddEditModeState.SetValue( ( int ) viewModel.ConnectionState );
                 tbRequestModalAddEditModeComments.Text = viewModel.Comments;
                 rblRequestModalAddEditModeStatus.SetValue( viewModel.StatusId );
@@ -2428,7 +2456,8 @@ namespace RockWeb.Blocks.Connection
 ";
             }
 
-            ScriptManager.RegisterStartupScript( gRequestModalViewModeWorkflows,
+            ScriptManager.RegisterStartupScript(
+                gRequestModalViewModeWorkflows,
                 gRequestModalViewModeWorkflows.GetType(),
                 "openWorkflowScript",
                 script,
