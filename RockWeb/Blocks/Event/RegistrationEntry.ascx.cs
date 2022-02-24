@@ -5971,6 +5971,18 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
+            if ( RegistrationState.DiscountPercentage > 0 )
+            {
+                // If there is a Registration Discount Percentage already, don't replace with an active auto-applied discount.
+                return false;
+            }
+
+            if ( RegistrationState.DiscountAmount > 0 )
+            {
+                // If there is a Registration Discount Amount already, don't replace with an active auto-applied discount.
+                return false;
+            }
+
             foreach ( var discount in discounts )
             {
                 RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );

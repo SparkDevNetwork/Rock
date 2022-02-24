@@ -831,6 +831,20 @@ namespace RockWeb.Blocks.Event
             cbDiscountAmount.Value = discount != null && discount.DiscountAmount != 0.0m ? discount.DiscountAmount : ( decimal? ) null;
         }
 
+        protected void cbDiscountAmount_TextChanged( object sender, EventArgs e )
+        {
+            // Clear out the other discount controls since only one discount control can be used.
+            ddlDiscountCode.SelectedValue = string.Empty;
+            nbDiscountPercentage.Text = string.Empty;
+        }
+
+        protected void nbDiscountPercentage_TextChanged( object sender, EventArgs e )
+        {
+            // Clear out the other discount controls since only one discount control can be used.
+            ddlDiscountCode.SelectedValue = string.Empty;
+            cbDiscountAmount.Value = null;
+        }
+
         protected void lbResendConfirmation_Click( object sender, EventArgs e )
         {
             if ( RegistrationId.HasValue )
