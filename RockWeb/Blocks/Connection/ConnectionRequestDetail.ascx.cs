@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Connection
         private static class Lava
         {
             public const string ConnectionRequestDetails = @"
-{% comment %}
+/-
    This is the default lava template for the ConnectionRequestDetail block's Activity List.
 
    Available Lava Fields:
@@ -158,90 +158,52 @@ namespace RockWeb.Blocks.Connection
        Context
        PageParameter
        Campuses
-{% endcomment %}
-<style>
-    .card:hover {
-      transform: scale(1.01);
-      box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
-    }
+-/
 
-    .person-image-small {
-        position: relative;
-        box-sizing: border-box;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        vertical-align: top;
-        background: center/cover #cbd4db;
-        border-radius: 50%;
-        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.07)
-    }
+<h2 class=""mt-0"">Activity</h2>
 
-  .delete-button {
-        color: black !important;
-   }
-
-  .delete-button:hover {
-        color: red !important;
-    }
-</style>
-
-    <div class='row>
-       <div class='col-xs-12>
-           <h2>Activity</h2>
-       </div>
-    </div>
-
-{% for connectionRequestActivity in ConnectionRequest.ConnectionRequestActivities %}
-   {% if connectionRequestActivity.CreatedByPersonAliasId == CurrentPerson.PrimaryAliasId or connectionRequestActivity.ConnectorPersonAliasId == CurrentPerson.PrimaryAliasId %}
-      {%if connectionRequestActivity.ConnectionActivityType.ConnectionTypeId %}
-          {% assign canEdit = true %}
-      {% else %}
-          {% assign canEdit = false %}
-      {% endif %}
-   {% endif %}
-
-    <a href='javascript:void(0);' stretched-link>
-        <div class='card mb-2'>
-            <div class='card-body'>
-                <div class='row pt-2' style='height:60px;'>
-                    <div class='col-xs-2 col-md-1 mx-auto'>
-                        <img class='person-image-small' src='{{ connectionRequestActivity.ConnectorPersonAlias.Person.PhotoUrl | Default: '/Assets/Images/person-no-photo-unknown.svg'  }}' alt=''>
-                    </div>     
-                    <div class='col-xs-6 col-md-9 pl-md-0 mx-auto'>
-                       <strong class='text-color'>{{ connectionRequestActivity.ConnectorPersonAlias.Person.FullName | Default: 'Unassigned' }}</strong>
-                       <br/>
-                       {% if connectionRequestActivity.Note | StripNewlines | Trim | Size > 0 %}
-                          <span class='text-muted'><small><strong>{{ connectionRequestActivity.ConnectionActivityType.Name }}</strong>: {{ connectionRequestActivity.Note }}</small></span>
-                       {% else %}
-                          <span class='text-muted'><small><strong>{{ connectionRequestActivity.ConnectionActivityType.Name }}</strong></small></span>         
-                       {% endif %}
+{% for connectionRequestActivity in ConnectionRequest.ConnectionRequestActivities reversed %}
+    {% if connectionRequestActivity.CreatedByPersonAliasId == CurrentPerson.PrimaryAliasId or connectionRequestActivity.ConnectorPersonAliasId == CurrentPerson.PrimaryAliasId %}
+        {% if connectionRequestActivity.ConnectionActivityType.ConnectionTypeId %}
+            {% assign canEdit = true | AsBoolean %}
+        {% else %}
+            {% assign canEdit = false | AsBoolean %}
+        {% endif %}
+    {% endif %}
+    {% assign noteSize = connectionRequestActivity.Note | StripNewlines | Trim | Size %}
+    <div class=""card card-sm mb-2"">
+        <div class=""card-body"">
+            <div class=""d-flex"">
+                <img class=""avatar avatar-lg flex-shrink-0"" src=""{{ connectionRequestActivity.ConnectorPersonAlias.Person.PhotoUrl }}"" alt="""">
+                <div class=""d-flex flex-fill flex-column flex-wrap"">
+                    <div class=""d-flex flex-fill flex-wrap align-items-center"">
+                        <div class=""flex-grow-1 px-3"">
+                            <span class=""d-block text-color""><strong>{{ connectionRequestActivity.ConnectorPersonAlias.Person.FullName | Default:'Unassigned' }}</strong></span>
+                            <span class=""text-muted""><strong>{{ connectionRequestActivity.ConnectionActivityType.Name }}</strong></span>
+                        </div>
                     </div>
-                    <div class='col-xs-4 col-md-2 mx-auto text-right'>
-                        <small class='text-muted'>{{ connectionRequestActivity.CreatedDateTime | Date:'M/d/yy' }}</small>
+                        </div>
+
+                                <small class=""text-muted mr-2 "" title=""{{ connectionRequestActivity.CreatedDateTime }}"">{{ connectionRequestActivity.CreatedDateTime | Date:'sd' }}</small>
+                                {% if canEdit %}
+                                    <a title=""Delete"" class=""btn btn-danger btn-sm btn-square grid-delete-button"" href=""#"" onclick=""{{ connectionRequestActivity.Id | Postback:'DeleteActivity' }}"">
+                                        <i class=""fa fa-times""></i>
+                                    </a>
+                                {% else %}
+                                    <a title=""Delete"" class=""btn btn-danger btn-sm btn-square grid-delete-button aspNetDisabled"" href=""#"">
+                                        <i class=""fa fa-times""></i>
+                                    </a>
+                                {% endif %}
                     </div>
-                </div>
-                <div class='row grid-actions text-right'>
-                    <div class='col-xs-12'>
-                         {% if canEdit == true %}
-                             <a title='Delete' class='btn btn-grid-action btn-sm grid-delete-button delete-button' href='javascript:void(0);' onclick=""{{ connectionRequestActivity.Id | Postback : 'DeleteActivity' }}"">
-                             <i class='fa fa-times' style='font-size:22px;'></i>
-                         </a>
-                         {% else %}
-                             <a title='Delete' class='btn btn-grid-action btn-sm grid-delete-button aspNetDisabled' href='javascript:void(0);'>
-                                 <i class='fa fa-times' style='font-size:22px;'></i>
-                            </a>
-                         {% endif %}
-                    </div>
+
+                    {% if noteSize > 0 %}
+                        <div class=""px-3 pt-2 text-sm"">{{ connectionRequestActivity.Note }}</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-    </a>
-{% endfor %}
-
-{% comment %} {{ 'Lava' | Debug }} {% endcomment %}";
+    </div>
+{% endfor %}";
         }
 
         #endregion Lava
@@ -3200,7 +3162,7 @@ namespace RockWeb.Blocks.Connection
             {
                 // Open the workflow detail page.
                 script = $@"
-<script language='javascript' type='text/javascript'> 
+<script language='javascript' type='text/javascript'>
     Sys.Application.add_load(openWorkflowEntryPage);
     function openWorkflowEntryPage() {{
         Sys.Application.remove_load( openWorkflowEntryPage );
@@ -3213,7 +3175,7 @@ namespace RockWeb.Blocks.Connection
                 // Show a modal message dialog, and open the workflow detail page when the dialog is closed.
                 message = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
                 script = $@"
-<script language='javascript' type='text/javascript'> 
+<script language='javascript' type='text/javascript'>
     Sys.Application.add_load(openWorkflowEntryPage);
     function openWorkflowEntryPage() {{
         Sys.Application.remove_load( openWorkflowEntryPage );
