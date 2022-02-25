@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Connection
         private static class Lava
         {
             public const string ConnectionOpportunities = @"
-{% comment %}
+/-
    This is the default lava template for the ConnectionOpportunitySelect block
 
    Available Lava Fields:
@@ -82,39 +82,37 @@ namespace RockWeb.Blocks.Connection
        Context
        PageParameter
        Campuses
-{% endcomment %}
+-/
 <style>
     .card:hover {
       transform: scale(1.01);
       box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
     }
 </style>
-
-{% for connectionOpportunity in ConnectionOpportunities %}
-    {% assign opportunityId = connectionOpportunity.Id | ToString %}
-    {% assign count = ConnectionRequestCounts[opportunityId] | AsInteger %}
-    {% if count >0 %}
-      <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionOpportunityGuid={{ connectionOpportunity.Guid }}' stretched-link>
-        <div class='card mb-2'>
-            <div class='card-body'>
-              <div class='row pt-2' style='height:60px;'>
-                    <div class='col-xs-2 col-md-1 mx-auto'>
-                        <i class='{{ connectionOpportunity.IconCssClass }} text-gray-600' style=';font-size:30px;'></i>
+{% if ConnectionRequestCounts.size > 0 %}
+    {% for connectionOpportunity in ConnectionOpportunities %}
+        {% assign opportunityId = connectionOpportunity.Id | ToString %}
+        {% assign count = ConnectionRequestCounts[opportunityId] | AsInteger %}
+        {% if count > 0 %}
+            <div class=""card card-sm mb-2"">
+                {% if DetailPage != '' and DetailPage != null %}
+                {% capture pageRouteParams %}ConnectionOpportunityGuid={{ connectionOpportunity.Guid }}{% endcapture %}
+                <a href=""{{ DetailPage | PageRoute:pageRouteParams }}"" class=""stretched-link""></a>
+                {% endif %}
+                <div class=""card-body d-flex flex-wrap align-items-center"" style=""min-height:60px;"">
+                    <i class=""{{ connectionOpportunity.IconCssClass }} fa-2x text-muted""></i>
+                    <div class=""px-3 flex-fill"">
+                        <span class=""d-block text-color""><strong>{{ connectionOpportunity.Name }}</strong></span>
+                        <span class=""text-muted text-sm"">{{ connectionOpportunity.Summary | Truncate:100,'...' }}</span>
                     </div>
-                    <div class='col-xs-8 col-md-10 pl-md-0 mx-auto'>
-                        <span class='text-black'><strong>{{ connectionOpportunity.Name }}</strong></span>
-                        </br>
-                        <span class='text-gray-600'><small>{{ connectionOpportunity.Description | Truncate:100,'...' }}</small></span>
-                    </div>
-                    <div class='col-xs-1 col-md-1 text-right mx-auto'>
-                        <span class='badge badge-pill badge-primary bg-blue-500'><small>{{ count }}</small></span>
-                    </div>
+                    <span class=""badge badge-pill badge-info small"">{{ count }}</span>
                 </div>
             </div>
-        </div>
-      </a>
-    {% endif %}
-{% endfor %}";
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <div class=""alert alert-info"">No Connection Requests Currently Available</div>
+{% endif %}";
         }
         #endregion Lava
 
