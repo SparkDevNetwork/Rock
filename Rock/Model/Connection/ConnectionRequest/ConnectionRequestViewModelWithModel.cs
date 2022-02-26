@@ -25,7 +25,7 @@ namespace Rock.Model
     /// <seealso cref="Rock.Model.ConnectionRequestViewModel" />
     public class ConnectionRequestViewModelWithModel : ConnectionRequestViewModel
     {
-        // <summary>
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ConnectionRequest"/>.
         /// </summary>
         /// <value>
