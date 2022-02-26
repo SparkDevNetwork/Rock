@@ -154,6 +154,7 @@ Example End<br>
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
+
         [TestMethod]
         public void LavaHelperRemoveComments_BlockCommentSpanningMultipleLines_RemovesNewLinesContainedInComment()
         {
@@ -176,6 +177,37 @@ Line 3<br>
         }
 
         [TestMethod]
+        public void LavaHelperRemoveComments_CommentsInIncludeFile_AreRemoved()
+        {
+            var fileProvider = GetFileProviderWithComments();
+
+            var input = @"
+{%- include '_comments.lava' -%}
+";
+
+            var expectedOutput = @"
+Line 1<br>
+Line 2<br>
+Line 3<br>
+Line 4<br>
+";
+
+            var options = new LavaEngineConfigurationOptions
+            {
+                FileSystem = GetFileProviderWithComments()
+            };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // Create a new engine instance of the same type, but with a test file system configuration.
+                var testEngine = LavaService.NewEngineInstance( engine.GetType(), options );
+
+                TestHelper.AssertTemplateOutput( testEngine, expectedOutput, input );
+            } );
+
+        }
+
+        [TestMethod]
         public void LavaHelperRemoveComments_BlockCommentInline_RendersCorrectLineContent()
         {
             var input = @"
@@ -191,6 +223,27 @@ Line 3<br>
 ";
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        private MockFileProvider GetFileProviderWithComments()
+        {
+            var fileProvider = new MockFileProvider();
+
+            // Add a lava template that includes Lava-specific comments.
+            var commentsTemplate = @"
+Line 1<br>
+//- Lava single line comment
+Line 2<br>
+/- Lava multi-line
+   comment -/
+Line 3<br>
+{%- comment -%} Liquid comment {%- endcomment -%}
+Line 4<br>
+";
+
+            fileProvider.Add( "_comments.lava", commentsTemplate );
+
+            return fileProvider;
         }
     }
 }
