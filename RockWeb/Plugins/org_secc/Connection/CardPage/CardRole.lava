@@ -1,0 +1,24 @@
+			{%- assign role = partition -%}
+			{%- if role.Limit > 0 or role.Limit == null %}
+				{%- assign spotsLeft = role.Limit | Minus: role.Filled -%}
+				<div class="col-sm-6 col-md-4">
+					<div class="serve-card" style="height: 180px;">
+					{% if role.Limit == null or spotsLeft > 0 %}
+					<a href="{{partition.Url}}&GroupId={{partition.GroupId}}" title="Sign Up">
+					{% endif %}
+                        <div class="box text-center">
+							<div class="clearfix">
+								<span class="label label-default pull-right" style="margin: 10px">{% if role.Limit == null %}Unlimited{% else %}{% if spotsLeft <= 0 %}Full{% else %}{{spotsLeft}} {{ 'Spot' | PluralizeForQuantity:spotsLeft }} Remaining{% endif %}{% endif %}</span>
+							</div>
+							{% assign icon = role.Entity | Attribute:"Icon" %}
+							{% if icon != '' and icon != empty %}
+								<i class="{{icon}} fa-5x"></i>
+							{% endif %}
+                            <h3>{{ role.Entity.Name }}</h3>
+                        </div>
+					{%- if role.Limit == null or spotsLeft > 0 -%}
+                    </a>
+					{%- endif -%}
+					</div>
+                </div>
+			{%- endif -%}

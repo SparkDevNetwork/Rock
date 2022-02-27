@@ -1674,7 +1674,7 @@ ORDER BY [Text]";
                     childRow.ID = string.Format( "row_{0}", childGuidString );
                     childRow.PersonId = child.Id;
                     childRow.PersonGuid = child.Guid;
-
+                    childRow.CssClass = "col-xs-12 col-sm-6";
                     childRow.ShowSuffix = showSuffix;
                     childRow.ShowGender = showGender;
                     childRow.RequireGender = requireGender;

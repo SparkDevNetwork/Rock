@@ -40,6 +40,7 @@
         </section>
 
         <section id="page-content">
+
             <!-- Ajax Error -->
             <div class="alert alert-danger ajax-error no-index" style="display:none">
                 <p><strong>Error</strong></p>

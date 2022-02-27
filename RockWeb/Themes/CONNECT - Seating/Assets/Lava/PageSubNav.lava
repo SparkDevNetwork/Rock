@@ -1,0 +1,13 @@
+<section class="pad-section nav-sub">
+
+  {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+  <div class="col-xs-12">
+    {% for childPage in Page.Pages %}
+    {% if childPage.Current == 'true' %} class="active"{% endif%}>
+    <a class="btn btn-primary btn-lg btn-block" href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</section>

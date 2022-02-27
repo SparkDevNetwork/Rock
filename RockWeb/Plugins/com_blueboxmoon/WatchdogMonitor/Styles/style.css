@@ -1,0 +1,673 @@
+/*
+    The accent colors are deprecated and should not be used in new theme development. They will be
+    removed in Rock v 6.0.
+*/
+.wm-list-as-blocks h3 {
+  margin: 6px 0;
+  margin-top: 0;
+  font-size: 14px;
+  font-weight: 400;
+}
+.wm-list-as-blocks ul {
+  padding: 0;
+  margin-top: 16px;
+  list-style: none;
+}
+.wm-list-as-blocks ul li {
+  position: relative;
+  float: left;
+  width: 47.5%;
+  margin: 0 1.25% 15px;
+  overflow: hidden;
+  overflow: visible;
+  text-align: center;
+  border-radius: 4px;
+}
+.wm-list-as-blocks ul li > * {
+  display: block;
+  height: 90px;
+  padding: 15px;
+  border-radius: 4px;
+}
+.wm-list-as-blocks ul li > * i {
+  margin-top: 6px;
+  font-size: 26px;
+}
+.wm-list-as-blocks ul li > *:focus {
+  text-decoration: none;
+}
+.wm-list-as-blocks ul li > * div.notification {
+  position: absolute;
+  top: -10px;
+  right: -6px;
+}
+.wm-list-as-blocks ul li > * div.notification .label {
+  padding: 2px 6px;
+  border-radius: 36px;
+}
+.wm-list-as-blocks.has-count * {
+  position: relative;
+}
+.wm-list-as-blocks.has-count *::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  content: "";
+  border-right: 45px solid transparent;
+  border-bottom: 45px solid transparent;
+}
+.wm-list-as-blocks.has-count .item-count {
+  position: absolute;
+  top: 5px;
+  right: 1px;
+  display: block;
+  width: 25px;
+  font-size: 12px;
+  color: #fff;
+}
+.wm-list-as-blocks .block-status a {
+  height: 105px;
+  padding: 8px 15px;
+}
+.wm-list-as-blocks .block-status a .status-list {
+  position: absolute;
+  right: 0;
+  bottom: 5px;
+  left: 0;
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .wm-list-as-blocks ul li {
+    width: 32%;
+    margin: 0 1% 15px;
+  }
+  .wm-list-as-blocks ul li:nth-child(3n) {
+    margin-right: 0;
+  }
+  .wm-list-as-blocks ul li:nth-child(3n+1) {
+    margin-left: 0;
+  }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+  .wm-list-as-blocks ul li {
+    width: 23.5%;
+    margin: 0 1% 15px;
+  }
+  .wm-list-as-blocks ul li:nth-child(4n) {
+    margin-right: 0;
+  }
+  .wm-list-as-blocks ul li:nth-child(4n+1) {
+    margin-left: 0;
+  }
+}
+@media (min-width: 1200px) {
+  .wm-list-as-blocks ul li {
+    width: 18.4%;
+    margin: 0 1% 15px;
+  }
+  .wm-list-as-blocks ul li:nth-child(5n) {
+    margin-right: 0;
+  }
+  .wm-list-as-blocks ul li:nth-child(5n+1) {
+    margin-left: 0;
+  }
+}
+/* Define the static backgrounds */
+.wm-bg-unknown {
+  background-color: #b3b3b3;
+}
+.wm-bg-ok {
+  background-color: #cbe0c2;
+}
+.wm-bg-warning {
+  background-color: #fcf8e3;
+}
+.wm-bg-error {
+  background-color: #f2dede;
+}
+/* Define the animated backgrounds */
+.wm-bg-unknown-ok {
+  background-color: #b3b3b3;
+  animation-name: wm-unknown-ok;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-unknown-ok {
+  0% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  85% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  100% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+}
+.wm-bg-unknown-warning {
+  background-color: #b3b3b3;
+  animation-name: wm-unknown-warning;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-unknown-warning {
+  0% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  85% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  100% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+}
+.wm-bg-unknown-error {
+  background-color: #b3b3b3;
+  animation-name: wm-unknown-error;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-unknown-error {
+  0% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  85% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  100% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+}
+.wm-bg-ok-unknown {
+  background-color: #cbe0c2;
+  animation-name: wm-ok-unknown;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-ok-unknown {
+  0% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  85% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  100% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+}
+.wm-bg-ok-warning {
+  background-color: #cbe0c2;
+  animation-name: wm-ok-warning;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-ok-warning {
+  0% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  85% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  100% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+}
+.wm-bg-ok-error {
+  background-color: #cbe0c2;
+  animation-name: wm-ok-error;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-ok-error {
+  0% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  85% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  100% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+}
+.wm-bg-warning-unknown {
+  background-color: #fcf8e3;
+  animation-name: wm-warning-unknown;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-warning-unknown {
+  0% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  85% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  100% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+}
+.wm-bg-warning-ok {
+  background-color: #fcf8e3;
+  animation-name: wm-warning-ok;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-warning-ok {
+  0% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  85% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  100% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+}
+.wm-bg-warning-error {
+  background-color: #fcf8e3;
+  animation-name: wm-warning-error;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-warning-error {
+  0% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  85% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  100% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+}
+.wm-bg-error-unknown {
+  background-color: #f2dede;
+  animation-name: wm-error-unknown;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-error-unknown {
+  0% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  85% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  100% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+}
+.wm-bg-error-ok {
+  background-color: #f2dede;
+  animation-name: wm-error-ok;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-error-ok {
+  0% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  85% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  100% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+}
+.wm-bg-error-warning {
+  background-color: #f2dede;
+  animation-name: wm-error-warning;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-error-warning {
+  0% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  85% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  100% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+}
+/* Define the animated backgrounds */
+.wm-state-unknown-ok {
+  background-color: #b3b3b3;
+  color: #edeae6;
+  animation-name: wm-state-unknown-ok;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-unknown-ok {
+  0% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  85% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  100% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+}
+.wm-state-unknown-warning {
+  background-color: #b3b3b3;
+  color: #edeae6;
+  animation-name: wm-state-unknown-warning;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-unknown-warning {
+  0% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  85% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  100% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+}
+.wm-state-unknown-error {
+  background-color: #b3b3b3;
+  color: #edeae6;
+  animation-name: wm-state-unknown-error;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-unknown-error {
+  0% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  85% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+  100% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+}
+.wm-state-ok-unknown {
+  background-color: #cbe0c2;
+  color: #5c9e7d;
+  animation-name: wm-state-ok-unknown;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-ok-unknown {
+  0% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  85% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  100% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+}
+.wm-state-ok-warning {
+  background-color: #cbe0c2;
+  color: #5c9e7d;
+  animation-name: wm-state-ok-warning;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-ok-warning {
+  0% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  85% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  100% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+}
+.wm-state-ok-error {
+  background-color: #cbe0c2;
+  color: #5c9e7d;
+  animation-name: wm-state-ok-error;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-ok-error {
+  0% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  85% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+  100% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+}
+.wm-state-warning-unknown {
+  background-color: #fcf8e3;
+  color: #ecc759;
+  animation-name: wm-state-warning-unknown;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-warning-unknown {
+  0% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  85% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  100% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+}
+.wm-state-warning-ok {
+  background-color: #fcf8e3;
+  color: #ecc759;
+  animation-name: wm-state-warning-ok;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-warning-ok {
+  0% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  85% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  100% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+}
+.wm-state-warning-error {
+  background-color: #fcf8e3;
+  color: #ecc759;
+  animation-name: wm-state-warning-error;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-warning-error {
+  0% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  85% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+  100% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+}
+.wm-state-error-unknown {
+  background-color: #f2dede;
+  color: #bb5454;
+  animation-name: wm-state-error-unknown;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-error-unknown {
+  0% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  85% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  100% {
+    background-color: #b3b3b3;
+    color: #edeae6;
+  }
+}
+.wm-state-error-ok {
+  background-color: #f2dede;
+  color: #bb5454;
+  animation-name: wm-state-error-ok;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-error-ok {
+  0% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  85% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  100% {
+    background-color: #cbe0c2;
+    color: #5c9e7d;
+  }
+}
+.wm-state-error-warning {
+  background-color: #f2dede;
+  color: #bb5454;
+  animation-name: wm-state-error-warning;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes wm-state-error-warning {
+  0% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  85% {
+    background-color: #f2dede;
+    color: #bb5454;
+  }
+  100% {
+    background-color: #fcf8e3;
+    color: #ecc759;
+  }
+}
+/* Define static foregrounds */
+.wm-text-unknown {
+  color: #edeae6 !important;
+}
+.wm-text-ok {
+  color: #5c9e7d !important;
+}
+.wm-text-warning {
+  color: #ecc759 !important;
+}
+.wm-text-error {
+  color: #bb5454 !important;
+}
+.wm-state-unknown {
+  background-color: #b3b3b3;
+  color: #edeae6;
+}
+.wm-state-ok {
+  background-color: #cbe0c2;
+  color: #5c9e7d;
+}
+.wm-state-warning {
+  background-color: #fcf8e3;
+  color: #ecc759;
+}
+.wm-state-error {
+  background-color: #f2dede;
+  color: #bb5454;
+}

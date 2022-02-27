@@ -75,7 +75,7 @@ namespace RockWeb
         {
             try
             {
-                lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
+                //lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
 
                 string errorType = Request["type"];
                 if ( string.IsNullOrWhiteSpace( errorType ) )

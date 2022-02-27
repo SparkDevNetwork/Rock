@@ -1,0 +1,336 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Owin.Security.OAuth.Validation</name>
+    </assembly>
+    <members>
+        <member name="T:Owin.Security.OAuth.Validation.ApplyChallengeContext">
+            <summary>
+            Allows customization of the challenge process.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.ApplyChallengeContext.Properties">
+            <summary>
+            Gets the authentication properties associated with the challenge.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.ApplyChallengeContext.Error">
+            <summary>
+            Gets or sets the "error" value returned to the caller as part
+            of the WWW-Authenticate header. This property may be null when
+            <see cref="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.IncludeErrorDetails"/> is set to <c>false</c>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.ApplyChallengeContext.ErrorDescription">
+            <summary>
+            Gets or sets the "error_description" value returned to the caller as part
+            of the WWW-Authenticate header. This property may be null when
+            <see cref="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.IncludeErrorDetails"/> is set to <c>false</c>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.ApplyChallengeContext.ErrorUri">
+            <summary>
+            Gets or sets the "error_uri" value returned to the caller as part of the
+            WWW-Authenticate header. This property is always null unless explicitly set.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.ApplyChallengeContext.Realm">
+            <summary>
+            Gets or sets the "realm" value returned to
+            the caller as part of the WWW-Authenticate header.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.ApplyChallengeContext.Scope">
+            <summary>
+            Gets or sets the "scope" value returned to
+            the caller as part of the WWW-Authenticate header.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.CreateTicketContext">
+            <summary>
+            Allows interception of the AuthenticationTicket creation process.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.CreateTicketContext.Ticket">
+            <summary>
+            Gets or sets the <see cref="T:Microsoft.Owin.Security.AuthenticationTicket"/> created by the application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.DecryptTokenContext">
+            <summary>
+            Allows custom decryption of access tokens.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.DecryptTokenContext.Token">
+            <summary>
+            Gets the access token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.DecryptTokenContext.DataFormat">
+            <summary>
+            Gets or sets the data format used to deserialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.DecryptTokenContext.Ticket">
+            <summary>
+            Gets or sets the <see cref="T:Microsoft.Owin.Security.AuthenticationTicket"/>
+            extracted from the access token.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.RetrieveTokenContext">
+            <summary>
+            Allows custom parsing of access tokens from requests.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.RetrieveTokenContext.Token">
+            <summary>
+            Gets or sets the access token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.RetrieveTokenContext.Ticket">
+            <summary>
+            Gets or sets the <see cref="T:Microsoft.Owin.Security.AuthenticationTicket"/> created by the application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.ValidateTokenContext">
+            <summary>
+            Allows customization of the token validation logic.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.ValidateTokenContext.Ticket">
+            <summary>
+            Gets or sets the <see cref="T:Microsoft.Owin.Security.AuthenticationTicket"/>
+            extracted from the access token.
+            </summary>
+        </member>
+        <member name="F:Owin.Security.OAuth.Validation.OAuthValidationDefaults.AuthenticationScheme">
+            <summary>
+            Gets the default scheme used by the validation middleware.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.OAuthValidationError">
+            <summary>
+            Represents an OAuth2 validation error.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationError.Error">
+            <summary>
+            Gets or sets the error code.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationError.ErrorDescription">
+            <summary>
+            Gets or sets the error_description.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationError.ErrorUri">
+            <summary>
+            Gets or sets the error_uri.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationError.Realm">
+            <summary>
+            Gets or sets the realm.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationError.Scope">
+            <summary>
+            Gets or sets the scope.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.OAuthValidationEvents">
+            <summary>
+            Allows customization of validation handling within the middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationEvents.OnApplyChallenge">
+            <summary>
+            Invoked when a challenge response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationEvents.OnCreateTicket">
+            <summary>
+            Invoked when a ticket is to be created from an access token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationEvents.OnDecryptToken">
+            <summary>
+            Invoked when a token is to be decrypted.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationEvents.OnRetrieveToken">
+            <summary>
+            Invoked when a token is to be parsed from a newly-received request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationEvents.OnValidateToken">
+            <summary>
+            Invoked when a token is to be validated, before final processing.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationEvents.ApplyChallenge(Owin.Security.OAuth.Validation.ApplyChallengeContext)">
+            <summary>
+            Invoked when a challenge response is returned to the caller.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationEvents.CreateTicket(Owin.Security.OAuth.Validation.CreateTicketContext)">
+            <summary>
+            Invoked when a ticket is to be created from an access token.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationEvents.DecryptToken(Owin.Security.OAuth.Validation.DecryptTokenContext)">
+            <summary>
+            Invoked when a token is to be decrypted.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationEvents.RetrieveToken(Owin.Security.OAuth.Validation.RetrieveTokenContext)">
+            <summary>
+            Invoked when a token is to be parsed from a newly-received request.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationEvents.ValidateToken(Owin.Security.OAuth.Validation.ValidateTokenContext)">
+            <summary>
+            Invoked when a token is to be validated, before final processing.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.OAuthValidationHandler">
+            <summary>
+            Provides the logic necessary to extract and validate tokens from HTTP requests.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.OAuthValidationHelpers">
+            <summary>
+            Defines a set of commonly used helpers.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationHelpers.GetProperty(Microsoft.Owin.Security.AuthenticationProperties,System.String)">
+            <summary>
+            Gets a given property from the authentication properties.
+            </summary>
+            <param name="properties">The authentication properties.</param>
+            <param name="property">The specific property to look for.</param>
+            <returns>The value corresponding to the property, or <c>null</c> if the property cannot be found.</returns>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.OAuthValidationMiddleware">
+            <summary>
+            Provides the entry point necessary to register the
+            OAuth2 validation handler in an OWIN/Katana pipeline.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationMiddleware.#ctor(Microsoft.Owin.OwinMiddleware,System.Collections.Generic.IDictionary{System.String,System.Object},Owin.Security.OAuth.Validation.OAuthValidationOptions)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OAuth.Validation.OAuthValidationMiddleware"/> class.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationMiddleware.CreateHandler">
+            <summary>
+            Returns a new <see cref="T:Owin.Security.OAuth.Validation.OAuthValidationHandler"/> instance.
+            </summary>
+            <returns>A new instance of the <see cref="T:Owin.Security.OAuth.Validation.OAuthValidationHandler"/> class.</returns>
+        </member>
+        <member name="T:Owin.Security.OAuth.Validation.OAuthValidationOptions">
+            <summary>
+            Exposes various settings needed to control
+            the behavior of the validation middleware.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OAuth.Validation.OAuthValidationOptions.#ctor">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OAuth.Validation.OAuthValidationOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.Audiences">
+            <summary>
+            Gets the intended audiences of this resource server.
+            Setting this property is recommended when the authorization
+            server issues access tokens for multiple distinct resource servers.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.Realm">
+            <summary>
+            Gets or sets the optional "realm" value returned to
+            the caller as part of the WWW-Authenticate header.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.SaveToken">
+            <summary>
+            Gets or sets a boolean determining whether the access token should be stored in the
+            <see cref="T:Microsoft.Owin.Security.AuthenticationProperties"/> after a successful authentication process.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.IncludeErrorDetails">
+            <summary>
+            Gets or sets a boolean determining whether the token validation errors should be returned to the caller.
+            Enabled by default, this option can be disabled to prevent the validation middleware from returning
+            an error, an error_description and/or an error_uri in the WWW-Authenticate header.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.Logger">
+            <summary>
+            Gets or sets the logger used by <see cref="T:Owin.Security.OAuth.Validation.OAuthValidationMiddleware"/>.
+            When unassigned, a default instance is created using the logger factory.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.SystemClock">
+            <summary>
+            Gets or sets the clock used to determine the current date/time.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.AccessTokenFormat">
+            <summary>
+            Gets or sets the data format used to unprotect the
+            access tokens received by the validation middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.DataProtectionProvider">
+            <summary>
+            Gets or sets the data protection provider used to create the default
+            data protector used by <see cref="T:Owin.Security.OAuth.Validation.OAuthValidationMiddleware"/>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OAuth.Validation.OAuthValidationOptions.Events">
+            <summary>
+            Gets or sets the object provided by the application to process events raised by the authentication middleware.
+            The application may implement the interface fully, or it may create an instance of
+            <see cref="T:Owin.Security.OAuth.Validation.OAuthValidationEvents"/> and assign delegates only to the events it wants to process.
+            </summary>
+        </member>
+        <member name="T:Owin.OAuthValidationExtensions">
+            <summary>
+            Provides extension methods used to configure the OAuth2
+            validation middleware in an OWIN/Katana pipeline.
+            </summary>
+        </member>
+        <member name="M:Owin.OAuthValidationExtensions.UseOAuthValidation(Owin.IAppBuilder)">
+            <summary>
+            Adds a new instance of the OAuth2 validation middleware in the OWIN/Katana pipeline.
+            </summary>
+            <param name="app">The application builder.</param>
+            <returns>The application builder.</returns>
+        </member>
+        <member name="M:Owin.OAuthValidationExtensions.UseOAuthValidation(Owin.IAppBuilder,System.Action{Owin.Security.OAuth.Validation.OAuthValidationOptions})">
+            <summary>
+            Adds a new instance of the OAuth2 validation middleware in the OWIN/Katana pipeline.
+            </summary>
+            <param name="app">The application builder.</param>
+            <param name="configuration">The delegate used to configure the validation options.</param>
+            <returns>The application builder.</returns>
+        </member>
+        <member name="M:Owin.OAuthValidationExtensions.UseOAuthValidation(Owin.IAppBuilder,Owin.Security.OAuth.Validation.OAuthValidationOptions)">
+            <summary>
+            Adds a new instance of the OAuth2 validation middleware in the OWIN/Katana pipeline.
+            </summary>
+            <param name="app">The application builder.</param>
+            <param name="options">The options used to configure the validation middleware.</param>
+            <returns>The application builder.</returns>
+        </member>
+        <member name="M:Owin.OAuthValidationExtensions.UseLogging(Owin.Security.OAuth.Validation.OAuthValidationOptions,System.Action{Microsoft.Extensions.Logging.ILoggerFactory})">
+            <summary>
+            Configures the OAuth2 validation middleware to enable logging.
+            </summary>
+            <param name="options">The options used to configure the OAuth2 validation middleware.</param>
+            <param name="configuration">The delegate used to configure the logger factory.</param>
+            <returns>The options used to configure the OAuth2 validation middleware.</returns>
+        </member>
+    </members>
+</doc>

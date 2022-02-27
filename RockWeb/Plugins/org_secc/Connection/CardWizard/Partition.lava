@@ -1,0 +1,87 @@
+		{% if level > 0 %}
+			{% assign divId = partition.ParentIdentifier | Append:'_' | Append: partition.Value %}
+		{% else %}
+			{% assign url = '' %}
+			{% assign level = 0 %}
+			{% assign divId = 'signup' %}
+			{% assign show = 'Global' | PageParameter:'show' %}
+			{% assign foundDiv = false %}
+		{% endif %}
+		{% assign level = level | Plus:1 %}
+		<div id="{{divId}}" data-level="{{level}}" class="slide-box {% if show == '' and show == empty and level == 1 %}{% assign foundDiv = true %}active" style="left: 0%;{% elseif show == divId %}{% assign foundDiv = true %}active" style="left: 0%;{% endif %}">
+			{% if level > 1 %}
+			<div class="row">
+				<div class="col-xs-12">
+					<a href="#" onclick="doSlide('#{{partition.ParentIdentifier}}'); return false;" title="Go Back" class="btn btn-default">
+						Back
+					</a>
+					{% if partitionDescriptionShow == "True" %}
+					<br />
+					<header class="col-sm-10 col-sm-offset-1">
+						<br />
+						<h2>{{ parentPartition.Entity.Name }}</h2>
+						<p>{{ parentPartition.Entity.Description }}</p>
+						<br />
+					</header>
+					{% endif %}
+				</div>
+			</div>
+			{% endif %}
+
+			<div class="row">
+	            <div class="col-sm-10 col-sm-offset-1">
+				{% assign parameterName = '' %}
+	            {% for partition in Tree %}
+					{% assign partitionSize = partition.Partitions | Size %}
+					{% if partitionSize > 0 or CardWizardMode == "Single" %}
+						{% if partition.PartitionType == 'DefinedType' %}
+							{% if forloop.first %}<h3 class="section-header">Please select from the following:</h3>{% endif %}
+							{% include '~/Plugins/org_secc/Connection/CardWizard/CardDefinedType.lava' %}
+						{% elseif partition.PartitionType == 'Schedule' %}
+							{% if forloop.first %}<h3 class="section-header">Please select your schedule:</h3>{% endif %}
+							{% include '~/Plugins/org_secc/Connection/CardWizard/CardSchedule.lava' %}
+						{% elseif partition.PartitionType == 'Campus' %}
+							{% if forloop.first %}<h3 class="section-header">Please select your campus:</h3>{% endif %}
+							{% include '~/Plugins/org_secc/Connection/CardWizard/CardCampus.lava' %}
+						{% elseif partition.PartitionType == 'Role' %}
+							{% if forloop.first %}<h3 class="section-header">Please select your serving role:</h3>{% endif %}
+							{% include '~/Plugins/org_secc/Connection/CardWizard/CardRole.lava' %}
+						{% endif %}
+					{% else %}
+						{% assign parameterName = partition.ParameterName %}
+						{% assign type = partition.PartitionType %}
+						{% if partition.PartitionType == 'DefinedType' and forloop.first %}
+							<h3 class="section-header">Please select from the following:</h3>
+						{% elseif partition.PartitionType == 'Schedule' and forloop.first %}
+							<h3 class="section-header">Please select your schedule(s):</h3>
+						{% elseif partition.PartitionType == 'Campus' and forloop.first %}
+							<h3 class="section-header">Please select from the following:</h3>
+						{% elseif partition.PartitionType == 'Role' and forloop.first %}
+							<h3 class="section-header">Please select your serving role(s):</h3>
+						{% endif %}
+						{% include '~/Plugins/org_secc/Connection/CardWizard/PartitionList.lava' %}
+					{% endif %}
+	            {% endfor %}
+	            </div>
+			</div>
+
+			{% if parameterName != '' and CardWizardMode != "Single" %}
+			<div class="row">
+				<div class="col-sm-10 col-sm-offset-1">
+					<a href="{{partition.Url}}" data-type="{{type}}" data-group-id="{{partition.GroupId}}" data-role="{{partition.RoleGuid}}" data-parameter-name="{{parameterName}}" title="Sign Up" class="btn btn-primary pull-right signup-button">
+						Sign Up
+					</a>
+				</div>
+			</div>
+			{% endif %}
+
+        </div>
+        {% for partition in Tree %}
+			{% assign partitionSize = partition.Partitions | Size %}
+			{% if partitionSize > 0 %}
+				{% assign Tree = partition.Partitions %}
+				{% assign parentPartition = partition %}
+				{% include '~/Plugins/org_secc/Connection/CardWizard/Partition.lava' %}
+			{% endif %}
+        {% endfor %}
+		{% assign level =  level | Minus:1 %}

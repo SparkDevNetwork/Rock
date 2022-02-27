@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.Extensions.Options</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.Extensions.Options.ConfigureOptions`1">
+            <summary>
+            Implementation of IConfigureOptions.
+            </summary>
+            <typeparam name="TOptions"></typeparam>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.ConfigureOptions`1.#ctor(System.Action{`0})">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="action">The action to register.</param>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.ConfigureOptions`1.Action">
+            <summary>
+            The configuration action.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.ConfigureOptions`1.Configure(`0)">
+            <summary>
+            Invokes the registered configure Action.
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="T:Microsoft.Extensions.Options.IConfigureOptions`1">
+            <summary>
+            Represents something that configures the TOptions type.
+            </summary>
+            <typeparam name="TOptions"></typeparam>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.IConfigureOptions`1.Configure(`0)">
+            <summary>
+            Invoked to configure a TOptions instance.
+            </summary>
+            <param name="options">The options instance to configure.</param>
+        </member>
+        <member name="T:Microsoft.Extensions.Options.IOptions`1">
+            <summary>
+            Used to retreive configured TOptions instances.
+            </summary>
+            <typeparam name="TOptions">The type of options being requested.</typeparam>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.IOptions`1.Value">
+            <summary>
+            The configured TOptions instance.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.Options.IOptionsMonitor`1">
+            <summary>
+            Used for notifications when TOptions instances change.
+            </summary>
+            <typeparam name="TOptions">The options type.</typeparam>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.IOptionsMonitor`1.CurrentValue">
+            <summary>
+            Returns the current TOptions instance.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.IOptionsMonitor`1.OnChange(System.Action{`0})">
+            <summary>
+            Registers the listener to be called whenever TOptions changes.
+            </summary>
+            <param name="listener">The action to be invoked when TOptions has changed.</param>
+            <returns>An IDisposable which should be disposed to stop listening for changes.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.Options.Options">
+            <summary>
+            Helper class.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.Options.Create``1(``0)">
+            <summary>
+            Creates a wrapper around an instance of TOptions to return itself as an IOptions.
+            </summary>
+            <typeparam name="TOptions"></typeparam>
+            <param name="options"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Microsoft.Extensions.Options.OptionsManager`1">
+            <summary>
+            Implementation of IOptions.
+            </summary>
+            <typeparam name="TOptions"></typeparam>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.OptionsManager`1.#ctor(System.Collections.Generic.IEnumerable{Microsoft.Extensions.Options.IConfigureOptions{`0}})">
+            <summary>
+            Initializes a new instance with the specified options configurations.
+            </summary>
+            <param name="setups">The configuration actions to run.</param>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.OptionsManager`1.Value">
+            <summary>
+            The configured options instance.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.Options.OptionsWrapper`1">
+            <summary>
+            IOptions wrapper that returns the options instance.
+            </summary>
+            <typeparam name="TOptions"></typeparam>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.OptionsWrapper`1.#ctor(`0)">
+            <summary>
+            Intializes the wrapper with the options instance to return.
+            </summary>
+            <param name="options">The options instance to return.</param>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.OptionsWrapper`1.Value">
+            <summary>
+            The options instance.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.Resources.Error_CannotActivateAbstractOrInterface">
+            <summary>
+            Cannot create instance of type '{0}' because it is either abstract or an interface.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.Resources.FormatError_CannotActivateAbstractOrInterface(System.Object)">
+            <summary>
+            Cannot create instance of type '{0}' because it is either abstract or an interface.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.Resources.Error_FailedBinding">
+            <summary>
+            Failed to convert '{0}' to type '{1}'.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.Resources.FormatError_FailedBinding(System.Object,System.Object)">
+            <summary>
+            Failed to convert '{0}' to type '{1}'.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.Resources.Error_FailedToActivate">
+            <summary>
+            Failed to create instance of type '{0}'.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.Resources.FormatError_FailedToActivate(System.Object)">
+            <summary>
+            Failed to create instance of type '{0}'.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.Options.Resources.Error_MissingParameterlessConstructor">
+            <summary>
+            Cannot create instance of type '{0}' because it is missing a public parameterless constructor.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Options.Resources.FormatError_MissingParameterlessConstructor(System.Object)">
+            <summary>
+            Cannot create instance of type '{0}' because it is missing a public parameterless constructor.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.DependencyInjection.OptionsServiceCollectionExtensions">
+            <summary>
+            Extension methods for adding options services to the DI container.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.OptionsServiceCollectionExtensions.AddOptions(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Adds services required for using options.
+            </summary>
+            <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the services to.</param>
+            <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.OptionsServiceCollectionExtensions.Configure``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{``0})">
+            <summary>
+            Registers an action used to configure a particular type of options.
+            </summary>
+            <typeparam name="TOptions">The options type to be configured.</typeparam>
+            <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the services to.</param>
+            <param name="configureOptions">The action used to configure the options.</param>
+            <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.</returns>
+        </member>
+    </members>
+</doc>

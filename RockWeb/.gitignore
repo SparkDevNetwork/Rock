@@ -1,14 +1,3 @@
-/bin/*/*.dll
-/bin/*.dll
-!/bin/roslyn/*.dll
-!/bin/Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
-!/bin/Rock.Common.Mobile.dll
-
-/bin/*.pdb
-/bin/*.xml
-
-/*.suo
-/*.user
-/Test.aspx
-/Test.aspx.cs
-/vwd.webinfo
+# Ignore specific files
+web.ConnectionStrings.config
+web.ConnectionStrings.config.example

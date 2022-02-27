@@ -1,0 +1,1033 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AspNet.Security.OpenIdConnect.Primitives</name>
+    </assembly>
+    <members>
+        <member name="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectConverter">
+            <summary>
+            Represents a JSON.NET converter able to convert <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/>
+            and <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse"/> instances.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectConverter.CanConvert(System.Type)">
+            <summary>
+            Determines whether the specified type is supported by this converter.
+            </summary>
+            <param name="type">The type to convert.</param>
+            <returns><c>true</c> if the type is supported, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectConverter.ReadJson(Newtonsoft.Json.JsonReader,System.Type,System.Object,Newtonsoft.Json.JsonSerializer)">
+            <summary>
+            Deserializes an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage"/> instance.
+            </summary>
+            <param name="reader">The JSON reader.</param>
+            <param name="type">The type of the deserialized instance.</param>
+            <param name="value">The existing <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage"/>, if applicable.</param>
+            <param name="serializer">The JSON serializer.</param>
+            <returns>The deserialized <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectConverter.WriteJson(Newtonsoft.Json.JsonWriter,System.Object,Newtonsoft.Json.JsonSerializer)">
+            <summary>
+            Serializes an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage"/>.
+            </summary>
+            <param name="writer">The JSON writer.</param>
+            <param name="value">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage"/> instance.</param>
+            <param name="serializer">The JSON serializer.</param>
+        </member>
+        <member name="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions">
+            <summary>
+            Provides extension methods to make <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/>
+            and <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse"/> easier to work with.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.GetAcrValues(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Extracts the authentication context class values from an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/>.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.GetResources(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Extracts the resources from an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/>.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.GetScopes(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Extracts the scopes from an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/>.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.HasAcrValue(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Determines whether the requested authentication context class values contain the specified item.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <param name="value">The component to look for in the parameter.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.HasPrompt(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Determines whether the requested prompt contains the specified value.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <param name="prompt">The component to look for in the parameter.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.HasResponseType(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Determines whether the requested response type contains the specified value.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <param name="type">The component to look for in the parameter.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.HasScope(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Determines whether the requested scope contains the specified value.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <param name="scope">The component to look for in the parameter.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsAuthorizationRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is an authorization request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is an authorization request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsConfidential(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the request was transmitted using a confidential channel
+            (i.e if the transaction was only visible by the client and if client authentication was enforced).
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a configuration request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsConfigurationRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is a configuration request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a configuration request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsCryptographyRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is a cryptography request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a cryptography request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsIntrospectionRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is an introspection request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is an introspection request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsLogoutRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is a logout request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a logout request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsRevocationRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is a revocation request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a revocation request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsTokenRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is a token request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a token request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsUserinfoRequest(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the given request is a userinfo request.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a userinfo request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsNoneFlow(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "response_type" parameter corresponds to the "none" response type.
+            See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a response_type=none request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsAuthorizationCodeFlow(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "response_type" parameter corresponds to the authorization code flow.
+            See http://tools.ietf.org/html/rfc6749#section-4.1.1 for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a code flow request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsImplicitFlow(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "response_type" parameter corresponds to the implicit flow.
+            See http://tools.ietf.org/html/rfc6749#section-4.2.1 and
+            http://openid.net/specs/openid-connect-core-1_0.html for more information
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is an implicit flow request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsHybridFlow(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "response_type" parameter corresponds to the hybrid flow.
+            See http://tools.ietf.org/html/rfc6749#section-4.2.1 and
+            http://openid.net/specs/openid-connect-core-1_0.html for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is an hybrid flow request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsFragmentResponseMode(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "response_mode" parameter corresponds to the fragment response mode.
+            See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns>
+            <c>true</c> if the request specified the fragment response mode or if
+            it's the default value for the requested flow, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsQueryResponseMode(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "response_mode" parameter corresponds to the query response mode.
+            See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns>
+            <c>true</c> if the request specified the query response mode or if
+            it's the default value for the requested flow, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsFormPostResponseMode(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "response_mode" parameter corresponds to the form post response mode.
+            See http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns>
+            <c>true</c> if the request specified the form post response mode or if
+            it's the default value for the requested flow, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsAuthorizationCodeGrantType(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "grant_type" parameter corresponds to the authorization code grant.
+            See http://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a code grant request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsClientCredentialsGrantType(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "grant_type" parameter corresponds to the client credentials grant.
+            See http://tools.ietf.org/html/rfc6749#section-4.4.2 for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a client credentials grant request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsPasswordGrantType(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "grant_type" parameter corresponds to the password grant.
+            See http://tools.ietf.org/html/rfc6749#section-4.3.2 for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a password grant request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectExtensions.IsRefreshTokenGrantType(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Determines whether the "grant_type" parameter corresponds to the refresh token grant.
+            See http://tools.ietf.org/html/rfc6749#section-6 for more information.
+            </summary>
+            <param name="request">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance.</param>
+            <returns><c>true</c> if the request is a refresh token grant request, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage">
+            <summary>
+            Represents an abstract OpenID Connect message.
+            </summary>
+            <remarks>
+            Security notice: developers instantiating this type are responsible of ensuring that the
+            imported parameters are safe and won't cause the resulting message to grow abnormally,
+            which may result in an excessive memory consumption and a potential denial of service.
+            </remarks>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.#ctor">
+            <summary>
+            Initializes a new OpenID Connect message.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Newtonsoft.Json.Linq.JToken}})">
+            <summary>
+            Initializes a new OpenID Connect message.
+            </summary>
+            <param name="parameters">The message parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter}})">
+            <summary>
+            Initializes a new OpenID Connect message.
+            </summary>
+            <param name="parameters">The message parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new OpenID Connect message.
+            </summary>
+            <param name="parameters">The message parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String[]}})">
+            <summary>
+            Initializes a new OpenID Connect message.
+            </summary>
+            <param name="parameters">The message parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Microsoft.Extensions.Primitives.StringValues}})">
+            <summary>
+            Initializes a new OpenID Connect message.
+            </summary>
+            <param name="parameters">The message parameters.</param>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.Item(System.String)">
+            <summary>
+            Gets or sets a parameter.
+            </summary>
+            <param name="name">The parameter name.</param>
+            <returns>The parameter value.</returns>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.Parameters">
+            <summary>
+            Gets the dictionary containing the parameters.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.Properties">
+            <summary>
+            Gets the dictionary containing the properties associated with this OpenID Connect message.
+            Note: these properties are not meant to be publicly shared and shouldn't be serialized.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.AddParameter(System.String,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter)">
+            <summary>
+            Adds a parameter.
+            </summary>
+            <param name="name">The parameter name.</param>
+            <param name="value">The parameter value.</param>
+            <returns>The current instance, which allows chaining calls.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.AddProperty(System.String,System.Object)">
+            <summary>
+            Adds a property.
+            </summary>
+            <param name="name">The property name.</param>
+            <param name="value">The property value.</param>
+            <returns>The current instance, which allows chaining calls.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.GetParameter(System.String)">
+            <summary>
+            Gets the value corresponding to a given parameter.
+            </summary>
+            <param name="name">The parameter name.</param>
+            <returns>The parameter value, or <c>null</c> if it cannot be found.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.GetParameters">
+            <summary>
+            Gets all the parameters associated with this instance.
+            </summary>
+            <returns>The parameters associated with this instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.GetProperties">
+            <summary>
+            Gets all the properties associated with this instance.
+            </summary>
+            <returns>The properties associated with this instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.GetProperty(System.String)">
+            <summary>
+            Gets the value corresponding to a given property associated with this message.
+            </summary>
+            <param name="name">The property name.</param>
+            <returns>The property value, or <c>null</c> if it cannot be found.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.GetProperty``1(System.String)">
+            <summary>
+            Gets the value corresponding to a given property associated with this message.
+            </summary>
+            <typeparam name="T">The type of the property.</typeparam>
+            <param name="name">The property name.</param>
+            <returns>The property value, or <c>null</c> if it cannot be found.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.HasParameter(System.String)">
+            <summary>
+            Determines whether the current message contains the specified parameter.
+            </summary>
+            <param name="name">The parameter name.</param>
+            <returns><c>true</c> if the parameter is present, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.HasProperty(System.String)">
+            <summary>
+            Determines whether the current message contains the specified property.
+            </summary>
+            <param name="name">The property name.</param>
+            <returns><c>true</c> if the property is present, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.RemoveParameter(System.String)">
+            <summary>
+            Removes a parameter.
+            </summary>
+            <param name="name">The parameter name.</param>
+            <returns>The current instance, which allows chaining calls.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.RemoveProperty(System.String)">
+            <summary>
+            Removes a property.
+            </summary>
+            <param name="name">The property name.</param>
+            <returns>The current instance, which allows chaining calls.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.SetParameter(System.String,System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})">
+            <summary>
+            Adds, replaces or removes a parameter.
+            Note: this method automatically removes empty parameters.
+            </summary>
+            <param name="name">The parameter name.</param>
+            <param name="value">The parameter value.</param>
+            <returns>The current instance, which allows chaining calls.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.SetProperty(System.String,System.Object)">
+            <summary>
+            Adds, replaces or removes a property.
+            Note: this method automatically removes empty parameters.
+            </summary>
+            <param name="name">The property name.</param>
+            <param name="value">The property value.</param>
+            <returns>The current instance, which allows chaining calls.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectMessage.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> representation of the current instance that can be used in logs.
+            Note: sensitive parameters like client secrets are automatically removed for security reasons.
+            </summary>
+            <returns>The indented JSON representation corresponding to this message.</returns>
+        </member>
+        <member name="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Represents an OpenID Connect parameter value, that can be either a primitive value,
+            an array of strings or a complex JSON representation containing child nodes.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new OpenID Connect
+            parameter using the specified value.
+            </summary>
+            <param name="value">The parameter value.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.#ctor(System.Nullable{System.Boolean})">
+            <summary>
+            Initializes a new OpenID Connect
+            parameter using the specified value.
+            </summary>
+            <param name="value">The parameter value.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.#ctor(Newtonsoft.Json.Linq.JToken)">
+            <summary>
+            Initializes a new OpenID Connect
+            parameter using the specified value.
+            </summary>
+            <param name="value">The parameter value.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.#ctor(System.Int64)">
+            <summary>
+            Initializes a new OpenID Connect
+            parameter using the specified value.
+            </summary>
+            <param name="value">The parameter value.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.#ctor(System.Nullable{System.Int64})">
+            <summary>
+            Initializes a new OpenID Connect
+            parameter using the specified value.
+            </summary>
+            <param name="value">The parameter value.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.#ctor(System.String)">
+            <summary>
+            Initializes a new OpenID Connect
+            parameter using the specified value.
+            </summary>
+            <param name="value">The parameter value.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.#ctor(System.String[])">
+            <summary>
+            Initializes a new OpenID Connect
+            parameter using the specified value.
+            </summary>
+            <param name="value">The parameter value.</param>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.Item(System.Int32)">
+            <summary>
+            Gets the child item corresponding to the specified index.
+            </summary>
+            <param name="index">The index of the child item.</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance containing the item value.</returns>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.Item(System.String)">
+            <summary>
+            Gets the child item corresponding to the specified name.
+            </summary>
+            <param name="name">The name of the child item.</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance containing the item value.</returns>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.Value">
+            <summary>
+            Gets the associated value, that can be either a primitive CLR type
+            (e.g bool, string, long), an array of strings or a complex JSON object.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.Equals(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter)">
+            <summary>
+            Determines whether the current <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/>
+            instance is equal to the specified <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/>.
+            </summary>
+            <param name="parameter">The other object to which to compare this instance.</param>
+            <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.Equals(System.Object)">
+            <summary>
+            Determines whether the current <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/>
+            instance is equal to the specified <see cref="T:System.Object"/>.
+            </summary>
+            <param name="value">The other object to which to compare this instance.</param>
+            <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.GetHashCode">
+            <summary>
+            Returns the hash code of the current <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <returns>The hash code for the current instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.GetParameter(System.Int32)">
+            <summary>
+            Gets the child item corresponding to the specified index.
+            </summary>
+            <param name="index">The index of the child item.</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance containing the item value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.GetParameter(System.String)">
+            <summary>
+            Gets the child item corresponding to the specified name.
+            </summary>
+            <param name="name">The name of the child item.</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance containing the item value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.GetParameters">
+            <summary>
+            Gets the child items associated with the current parameter.
+            </summary>
+            <returns>An enumeration of all the parameters associated with the current instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.ToString">
+            <summary>
+            Returns the <see cref="T:System.String"/> representation of the current instance.
+            </summary>
+            <returns>The <see cref="T:System.String"/> representation associated with the parameter value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Equality(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter)">
+            <summary>
+            Determines whether two <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instances are equal.
+            </summary>
+            <param name="left">The first instance.</param>
+            <param name="right">The second instance.</param>
+            <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Inequality(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter)">
+            <summary>
+            Determines whether two <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instances are not equal.
+            </summary>
+            <param name="left">The first instance.</param>
+            <param name="right">The second instance.</param>
+            <returns><c>true</c> if the two instances are not equal, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~System.Boolean">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a boolean.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~System.Nullable{System.Boolean}">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a nullable boolean.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~Newtonsoft.Json.Linq.JArray">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a <see cref="T:Newtonsoft.Json.Linq.JArray"/>.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~Newtonsoft.Json.Linq.JObject">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a <see cref="T:Newtonsoft.Json.Linq.JObject"/>.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~Newtonsoft.Json.Linq.JToken">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a <see cref="T:Newtonsoft.Json.Linq.JToken"/>.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~Newtonsoft.Json.Linq.JValue">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a <see cref="T:Newtonsoft.Json.Linq.JValue"/>.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~System.Int64">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a long integer.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~System.Nullable{System.Int64}">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a nullable long integer.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~System.String">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to a string.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Explicit(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})~System.String[]">
+            <summary>
+            Converts an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance to an array of strings.
+            </summary>
+            <param name="parameter">The parameter to convert.</param>
+            <returns>The converted value.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Implicit(System.Boolean)~AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Converts a boolean to an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <param name="value">The value to convert</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Implicit(System.Nullable{System.Boolean})~AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Converts a nullable boolean to an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <param name="value">The value to convert</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Implicit(Newtonsoft.Json.Linq.JToken)~AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Converts a <see cref="T:Newtonsoft.Json.Linq.JToken"/> to an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <param name="value">The value to convert</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Implicit(System.Int64)~AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Converts a long integer to an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <param name="value">The value to convert</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Implicit(System.Nullable{System.Int64})~AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Converts a nullable long integer to an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <param name="value">The value to convert</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Implicit(System.String)~AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Converts a string to an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <param name="value">The value to convert</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.op_Implicit(System.String[])~AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter">
+            <summary>
+            Converts an array of strings to an <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.
+            </summary>
+            <param name="value">The value to convert</param>
+            <returns>An <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.Convert``1(System.Nullable{AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter})">
+            <summary>
+            Converts the parameter to the specified generic type.
+            </summary>
+            <typeparam name="T">The type the parameter will be converted to.</typeparam>
+            <param name="parameter">The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter"/> instance.</param>
+            <returns>The converted parameter.</returns>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter.IsNullOrEmpty(AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter)">
+            <summary>
+            Determines whether an OpenID Connect parameter is null or empty.
+            </summary>
+            <param name="parameter">The OpenID Connect parameter.</param>
+            <returns><c>true</c> if the parameter is null or empty, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest">
+            <summary>
+            Represents a generic OpenID Connect request.
+            </summary>
+            <remarks>
+            Security notice: developers instantiating this type are responsible of ensuring that the
+            imported parameters are safe and won't cause the resulting message to grow abnormally,
+            which may result in an excessive memory consumption and a potential denial of service.
+            </remarks>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.#ctor">
+            <summary>
+            Initializes a new OpenID Connect request.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Newtonsoft.Json.Linq.JToken}})">
+            <summary>
+            Initializes a new OpenID Connect request.
+            </summary>
+            <param name="parameters">The request parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter}})">
+            <summary>
+            Initializes a new OpenID Connect request.
+            </summary>
+            <param name="parameters">The request parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new OpenID Connect request.
+            </summary>
+            <param name="parameters">The request parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String[]}})">
+            <summary>
+            Initializes a new OpenID Connect request.
+            </summary>
+            <param name="parameters">The request parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Microsoft.Extensions.Primitives.StringValues}})">
+            <summary>
+            Initializes a new OpenID Connect request.
+            </summary>
+            <param name="parameters">The request parameters.</param>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.AccessToken">
+            <summary>
+            Gets or sets the "access_token" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.AcrValues">
+            <summary>
+            Gets or sets the "acr_values" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Assertion">
+            <summary>
+            Gets or sets the "assertion" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Claims">
+            <summary>
+            Gets or sets the "claims" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.ClaimsLocales">
+            <summary>
+            Gets or sets the "claims_locales" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.ClientAssertion">
+            <summary>
+            Gets or sets the "client_assertion" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.ClientAssertionType">
+            <summary>
+            Gets or sets the "client_assertion_type" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.ClientId">
+            <summary>
+            Gets or sets the "client_id" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.ClientSecret">
+            <summary>
+            Gets or sets the "client_secret" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Code">
+            <summary>
+            Gets or sets the "code" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.CodeChallenge">
+            <summary>
+            Gets or sets the "code_challenge" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.CodeChallengeMethod">
+            <summary>
+            Gets or sets the "code_challenge_method" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.CodeVerifier">
+            <summary>
+            Gets or sets the "code_verifier" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Display">
+            <summary>
+            Gets or sets the "display" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.GrantType">
+            <summary>
+            Gets or sets the "grant_type" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.IdentityProvider">
+            <summary>
+            Gets or sets the "identity_provider" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.IdTokenHint">
+            <summary>
+            Gets or sets the "id_token_hint" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.LoginHint">
+            <summary>
+            Gets or sets the "login_hint" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.MaxAge">
+            <summary>
+            Gets or sets the "max_age" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Nonce">
+            <summary>
+            Gets or sets the "nonce" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Password">
+            <summary>
+            Gets or sets the "password" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.PostLogoutRedirectUri">
+            <summary>
+            Gets or sets the "post_logout_redirect_uri" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Prompt">
+            <summary>
+            Gets or sets the "prompt" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.RedirectUri">
+            <summary>
+            Gets or sets the "redirect_uri" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.RefreshToken">
+            <summary>
+            Gets or sets the "refresh_token" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Request">
+            <summary>
+            Gets or sets the "request" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.RequestId">
+            <summary>
+            Gets or sets the "request_id" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.RequestUri">
+            <summary>
+            Gets or sets the "request_uri" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Resource">
+            <summary>
+            Gets or sets the "resource" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.ResponseMode">
+            <summary>
+            Gets or sets the "response_mode" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.ResponseType">
+            <summary>
+            Gets or sets the "response_type" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Scope">
+            <summary>
+            Gets or sets the "scope" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.State">
+            <summary>
+            Gets or sets the "state" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Token">
+            <summary>
+            Gets or sets the "token" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.TokenTypeHint">
+            <summary>
+            Gets or sets the "token_type_hint" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Registration">
+            <summary>
+            Gets or sets the "registration" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.UiLocales">
+            <summary>
+            Gets or sets the "ui_locales" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest.Username">
+            <summary>
+            Gets or sets the "username" parameter.
+            </summary>
+        </member>
+        <member name="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse">
+            <summary>
+            Represents a generic OpenID Connect response.
+            </summary>
+            <remarks>
+            Security notice: developers instantiating this type are responsible of ensuring that the
+            imported parameters are safe and won't cause the resulting message to grow abnormally,
+            which may result in an excessive memory consumption and a potential denial of service.
+            </remarks>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.#ctor">
+            <summary>
+            Initializes a new OpenID Connect response.
+            </summary>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Newtonsoft.Json.Linq.JToken}})">
+            <summary>
+            Initializes a new OpenID Connect response.
+            </summary>
+            <param name="parameters">The response parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectParameter}})">
+            <summary>
+            Initializes a new OpenID Connect response.
+            </summary>
+            <param name="parameters">The response parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new OpenID Connect response.
+            </summary>
+            <param name="parameters">The response parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String[]}})">
+            <summary>
+            Initializes a new OpenID Connect response.
+            </summary>
+            <param name="parameters">The response parameters.</param>
+        </member>
+        <member name="M:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Microsoft.Extensions.Primitives.StringValues}})">
+            <summary>
+            Initializes a new OpenID Connect response.
+            </summary>
+            <param name="parameters">The response parameters.</param>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.AccessToken">
+            <summary>
+            Gets or sets the "access_token" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.Code">
+            <summary>
+            Gets or sets the "code" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.Error">
+            <summary>
+            Gets or sets the "error" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.ErrorDescription">
+            <summary>
+            Gets or sets the "error_description" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.ErrorUri">
+            <summary>
+            Gets or sets the "error_uri" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.ExpiresIn">
+            <summary>
+            Gets or sets the "expires_in" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.IdToken">
+            <summary>
+            Gets or sets the "id_token" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.RefreshToken">
+            <summary>
+            Gets or sets the "refresh_token" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.Resource">
+            <summary>
+            Gets or sets the "resource" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.Scope">
+            <summary>
+            Gets or sets the "scope" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.State">
+            <summary>
+            Gets or sets the "state" parameter.
+            </summary>
+        </member>
+        <member name="P:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse.TokenType">
+            <summary>
+            Gets or sets the "token_type" parameter.
+            </summary>
+        </member>
+    </members>
+</doc>

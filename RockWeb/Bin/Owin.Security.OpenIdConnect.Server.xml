@@ -1,0 +1,2629 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Owin.Security.OpenIdConnect.Server</name>
+    </assembly>
+    <members>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyAuthorizationResponse(Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,Microsoft.Owin.Security.AuthenticationTicket,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.Request">
+            <summary>
+            Gets the authorization request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the authorization request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.Response">
+            <summary>
+            Gets the authorization response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.AccessToken">
+            <summary>
+            Gets the access code expected to
+            be returned to the client application.
+            Depending on the flow, it may be null.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.AuthorizationCode">
+            <summary>
+            Gets the authorization code expected to
+            be returned to the client application.
+            Depending on the flow, it may be null.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.RedirectUri">
+            <summary>
+            Gets or sets the callback URL the user agent will be redirected to, if applicable.
+            Note: manually changing the value of this property is generally not recommended
+            and extreme caution must be taken to ensure the user agent is not redirected to
+            an untrusted address, which would result in an "open redirection" vulnerability.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext.ResponseMode">
+            <summary>
+            Gets or sets the response mode used to redirect the user agent, if applicable.
+            Note: manually changing the value of this property is generally not recommended.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyConfigurationResponse(Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext.Request">
+            <summary>
+            Gets the configuration request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the configuration request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext.Response">
+            <summary>
+            Gets the configuration response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyCryptographyResponse(Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext.Request">
+            <summary>
+            Gets the cryptography request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the cryptography request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext.Response">
+            <summary>
+            Gets the cryptography response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyIntrospectionResponse(Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext.Request">
+            <summary>
+            Gets the introspection request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the introspection request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext.Response">
+            <summary>
+            Gets the introspection response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyLogoutResponse(Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext.Request">
+            <summary>
+            Gets the logout request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the logout request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext.Response">
+            <summary>
+            Gets the logout response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext.PostLogoutRedirectUri">
+            <summary>
+            Gets or sets the callback URL the user agent will be redirected to, if applicable.
+            Note: manually changing the value of this property is generally not recommended
+            and extreme caution must be taken to ensure the user agent is not redirected to
+            an untrusted address, which would result in an "open redirection" vulnerability.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyRevocationResponse(Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext.Request">
+            <summary>
+            Gets the revocation request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the revocation request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext.Response">
+            <summary>
+            Gets the revocation response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyTokenResponse(Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,Microsoft.Owin.Security.AuthenticationTicket,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext.Request">
+            <summary>
+            Gets the token request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the token request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext.Response">
+            <summary>
+            Gets the token response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyUserinfoResponse(Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext.Request">
+            <summary>
+            Gets the userinfo request.
+            </summary>
+            <remarks>
+            Note: this property may be null if an error occurred while
+            extracting the userinfo request from the HTTP request.
+            </remarks>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext.Response">
+            <summary>
+            Gets the userinfo response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext.Error">
+            <summary>
+            Gets the error code returned to the client application.
+            When the response indicates a successful response,
+            this property returns <c>null</c>.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext">
+            <summary>
+            Represents an abstract base class used for certain event contexts.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.ClientId">
+            <summary>
+            Gets the "client_id" parameter for the current request.
+            The authorization server application is responsible for
+            validating this value to ensure it identifies a registered client.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.ClientSecret">
+            <summary>
+            Gets the "client_secret" parameter for the current request.
+            The authorization server application is responsible for
+            validating this value to ensure it identifies a registered client.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.IsSkipped">
+            <summary>
+            Gets a boolean indicating whether the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.Skip"/> method was called.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.Skip">
+            <summary>
+            Skips the request validation.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.Reject">
+            <summary>
+            Rejects the request.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.Validate">
+            <summary>
+            Validates the request.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingClientContext.Validate(System.String)">
+            <summary>
+            Validates the request and uses the specified identifier as the client identifier.
+            </summary>
+            <param name="identifier">The "client_id" validated by the user code.</param>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.BaseValidatingContext">
+            <summary>
+            Represents an abstract base class used for certain event contexts.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.BaseValidatingContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.IsValidated">
+            <summary>
+            Gets a boolean indicating whether the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Validate"/> method was called.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.IsRejected">
+            <summary>
+            Gets a boolean indicating whether the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Reject"/> method was called.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Error">
+            <summary>
+            Gets or sets the "error" parameter returned to the client application.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.ErrorDescription">
+            <summary>
+            Gets or sets the "error_description" parameter returned to the client application.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.ErrorUri">
+            <summary>
+            Gets or sets the "error_uri" parameter returned to the client application.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Validate">
+            <summary>
+            Validates the request.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Reject">
+            <summary>
+            Rejects the request.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Reject(System.String)">
+            <summary>
+            Rejects the request.
+            </summary>
+            <param name="error">The "error" parameter returned to the client application.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Reject(System.String,System.String)">
+            <summary>
+            Rejects the request.
+            </summary>
+            <param name="error">The "error" parameter returned to the client application.</param>
+            <param name="description">The "error_description" parameter returned to the client application.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingContext.Reject(System.String,System.String,System.String)">
+            <summary>
+            Rejects the request.
+            </summary>
+            <param name="error">The "error" parameter returned to the client application.</param>
+            <param name="description">The "error_description" parameter returned to the client application.</param>
+            <param name="uri">The "error_uri" parameter returned to the client application.</param>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.BaseValidatingTicketContext">
+            <summary>
+            Represents an abstract base class used for certain event contexts.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingTicketContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.BaseValidatingTicketContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.BaseValidatingTicketContext.Ticket">
+            <summary>
+            Gets or sets the authentication ticket that will be
+            used to generate an authorization or token response.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingTicketContext.Validate(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Validates the request and sets the authentication ticket that
+            will be used to generate an authorization or token response.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.BaseValidatingTicketContext.Validate(System.Security.Claims.ClaimsIdentity)">
+            <summary>
+            Validates the request and sets the claims principal that
+            will be used to generate an authorization or token response.
+            </summary>
+            <param name="identity">The claims identity.</param>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeAccessToken(Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.Ticket">
+            <summary>
+            Gets or sets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.TokenValidationParameters">
+            <summary>
+            Gets or sets the validation parameters used to verify the authenticity of access tokens.
+            Note: this property is only used when <see cref="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.SecurityTokenHandler"/> is not <c>null</c>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.DataFormat">
+            <summary>
+            Gets or sets the data format used to deserialize the authentication ticket.
+            Note: this property is only used when <see cref="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.SecurityTokenHandler"/> is <c>null</c>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.SecurityTokenHandler">
+            <summary>
+            Gets or sets the security token handler used to
+            deserialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext.AccessToken">
+            <summary>
+            Gets the access token used by the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeAuthorizationCode(Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext.Ticket">
+            <summary>
+            Gets or sets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext.DataFormat">
+            <summary>
+            Gets or sets the data format used to deserialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext.AuthorizationCode">
+            <summary>
+            Gets the authorization code
+            used by the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeIdentityToken(Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext.Ticket">
+            <summary>
+            Gets or sets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext.TokenValidationParameters">
+            <summary>
+            Gets or sets the validation parameters used to verify the authenticity of identity tokens.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext.SecurityTokenHandler">
+            <summary>
+            Gets or sets the security token handler used to
+            deserialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext.IdentityToken">
+            <summary>
+            Gets the identity token used by the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeRefreshToken(Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext.Ticket">
+            <summary>
+            Gets or sets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext.DataFormat">
+            <summary>
+            Gets or sets the data format used to deserialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext.RefreshToken">
+            <summary>
+            Gets the refresh token used by the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractAuthorizationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractAuthorizationRequest(Owin.Security.OpenIdConnect.Server.ExtractAuthorizationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractAuthorizationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractAuthorizationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractConfigurationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractConfigurationRequest(Owin.Security.OpenIdConnect.Server.ExtractConfigurationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractConfigurationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractConfigurationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractCryptographyRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractCryptographyRequest(Owin.Security.OpenIdConnect.Server.ExtractCryptographyRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractCryptographyRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractCryptographyRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractIntrospectionRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractIntrospectionRequest(Owin.Security.OpenIdConnect.Server.ExtractIntrospectionRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractIntrospectionRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractIntrospectionRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractLogoutRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractLogoutRequest(Owin.Security.OpenIdConnect.Server.ExtractLogoutRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractLogoutRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractLogoutRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractRevocationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractRevocationRequest(Owin.Security.OpenIdConnect.Server.ExtractRevocationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractRevocationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractRevocationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractTokenRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractTokenRequest(Owin.Security.OpenIdConnect.Server.ExtractTokenRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractTokenRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractTokenRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ExtractUserinfoRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractUserinfoRequest(Owin.Security.OpenIdConnect.Server.ExtractUserinfoRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ExtractUserinfoRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ExtractUserinfoRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleAuthorizationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleAuthorizationRequest(Owin.Security.OpenIdConnect.Server.HandleAuthorizationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleAuthorizationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleAuthorizationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleConfigurationRequest(Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.Metadata">
+            <summary>
+            Gets the additional parameters returned to the client application.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.AuthorizationEndpoint">
+            <summary>
+            Gets or sets the authorization endpoint address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.CryptographyEndpoint">
+            <summary>
+            Gets or sets the JWKS endpoint address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.IntrospectionEndpoint">
+            <summary>
+            Gets or sets the introspection endpoint address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.LogoutEndpoint">
+            <summary>
+            Gets or sets the logout endpoint address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.RevocationEndpoint">
+            <summary>
+            Gets or sets the revocation endpoint address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.TokenEndpoint">
+            <summary>
+            Gets or sets the token endpoint address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.UserinfoEndpoint">
+            <summary>
+            Gets or sets the userinfo endpoint address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.Issuer">
+            <summary>
+            Gets or sets the issuer address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.Claims">
+            <summary>
+            Gets the list of claims supported by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.CodeChallengeMethods">
+            <summary>
+            Gets a list of the code challenge methods
+            supported by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.GrantTypes">
+            <summary>
+            Gets the list of grant types
+            supported by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.IdTokenSigningAlgorithms">
+            <summary>
+            Gets a list of signing algorithms supported by the
+            authorization server for signing the identity tokens.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.IntrospectionEndpointAuthenticationMethods">
+            <summary>
+            Gets a list of client authentication methods supported by
+            the introspection endpoint provided by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.ResponseModes">
+            <summary>
+            Gets the list of response modes
+            supported by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.ResponseTypes">
+            <summary>
+            Gets the list of response types
+            supported by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.RevocationEndpointAuthenticationMethods">
+            <summary>
+            Gets a list of client authentication methods supported by
+            the revocation endpoint provided by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.Scopes">
+            <summary>
+            Gets the list of scope values
+            supported by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.SubjectTypes">
+            <summary>
+            Gets the list of subject types
+            supported by the authorization server.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext.TokenEndpointAuthenticationMethods">
+            <summary>
+            Gets a list of client authentication methods supported by
+            the token endpoint provided by the authorization server.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleCryptographyRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleCryptographyRequest(Owin.Security.OpenIdConnect.Server.HandleCryptographyRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleCryptographyRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleCryptographyRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleCryptographyRequestContext.Keys">
+            <summary>
+            Gets the list of JSON Web Keys exposed by the JWKS endpoint.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleIntrospectionRequest(Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Claims">
+            <summary>
+            Gets the additional claims returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Active">
+            <summary>
+            Gets or sets the flag indicating
+            whether the token is active or inactive.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Audiences">
+            <summary>
+            Gets the list of audiences returned to the caller
+            as part of the "aud" claim, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.ClientId">
+            <summary>
+            Gets or sets the "client_id" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.ExpiresAt">
+            <summary>
+            Gets or sets the "exp" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.IssuedAt">
+            <summary>
+            Gets or sets the "iat" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Issuer">
+            <summary>
+            Gets or sets the "iss" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.NotBefore">
+            <summary>
+            Gets or sets the "nbf" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Scopes">
+            <summary>
+            Gets the list of scopes returned to the caller
+            as part of the "scope" claim, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Subject">
+            <summary>
+            Gets or sets the "sub" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.TokenId">
+            <summary>
+            Gets or sets the "jti" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.TokenType">
+            <summary>
+            Gets or sets the "token_type" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.TokenUsage">
+            <summary>
+            Gets or sets the "token_usage" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext.Username">
+            <summary>
+            Gets or sets the "username" claim
+            returned to the caller, if applicable.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleLogoutRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleLogoutRequest(Owin.Security.OpenIdConnect.Server.HandleLogoutRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleLogoutRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleLogoutRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleRevocationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleRevocationRequest(Owin.Security.OpenIdConnect.Server.HandleRevocationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleRevocationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleRevocationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleRevocationRequestContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleRevocationRequestContext.Revoked">
+            <summary>
+            Gets or sets a boolean indicating whether
+            the token was successfully revoked.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleTokenRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleTokenRequest(Owin.Security.OpenIdConnect.Server.HandleTokenRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleTokenRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleTokenRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleUserinfoRequest(Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Claims">
+            <summary>
+            Gets the additional claims returned to the client application.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Address">
+            <summary>
+            Gets or sets the value used for the "address" claim.
+            Note: this value should only be populated if the "address"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Audiences">
+            <summary>
+            Gets or sets the values used for the "aud" claim.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.BirthDate">
+            <summary>
+            Gets or sets the value used for the "birthdate" claim.
+            Note: this value should only be populated if the "profile"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Email">
+            <summary>
+            Gets or sets the value used for the "email" claim.
+            Note: this value should only be populated if the "email"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.EmailVerified">
+            <summary>
+            Gets or sets the value used for the "email_verified" claim.
+            Note: this value should only be populated if the "email"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.FamilyName">
+            <summary>
+            Gets or sets the value used for the "family_name" claim.
+            Note: this value should only be populated if the "profile"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.GivenName">
+            <summary>
+            Gets or sets the value used for the "given_name" claim.
+            Note: this value should only be populated if the "profile"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Issuer">
+            <summary>
+            Gets or sets the value used for the "iss" claim.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.PhoneNumber">
+            <summary>
+            Gets or sets the value used for the "phone_number" claim.
+            Note: this value should only be populated if the "phone"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.PhoneNumberVerified">
+            <summary>
+            Gets or sets the value used for the "phone_number_verified" claim.
+            Note: this value should only be populated if the "phone"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.PreferredUsername">
+            <summary>
+            Gets or sets the value used for the "preferred_username" claim.
+            Note: this value should only be populated if the "profile"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Profile">
+            <summary>
+            Gets or sets the value used for the "profile" claim.
+            Note: this value should only be populated if the "profile"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Subject">
+            <summary>
+            Gets or sets the unique value
+            used for the mandatory "sub" claim.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext.Website">
+            <summary>
+            Gets or sets the value used for the "website" claim.
+            Note: this value should only be populated if the "profile"
+            scope was requested and accepted by the resource owner.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.MatchEndpointContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.MatchEndpoint(Owin.Security.OpenIdConnect.Server.MatchEndpointContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.MatchEndpointContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsAuthorizationEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the authorization endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsConfigurationEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the configuration endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsCryptographyEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the cryptography endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsIntrospectionEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the introspection endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsLogoutEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the logout endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsRevocationEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the revocation endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsTokenEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the token endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.IsUserinfoEndpoint">
+            <summary>
+            Gets a boolean indicating whether the request
+            should be handled by the userinfo endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchAuthorizationEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the authorization endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchConfigurationEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the configuration endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchCryptographyEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the cryptography endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchIntrospectionEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the introspection endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchLogoutEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the logout endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchRevocationEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the revocation endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchTokenEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the token endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchUserinfoEndpoint">
+            <summary>
+            Indicates that the request should be
+            handled by the userinfo endpoint.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.MatchEndpointContext.MatchNothing">
+            <summary>
+            Indicates that the request shouldn't be handled
+            by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ProcessChallengeResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ProcessChallengeResponse(Owin.Security.OpenIdConnect.Server.ProcessChallengeResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ProcessChallengeResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,Microsoft.Owin.Security.AuthenticationProperties,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ProcessChallengeResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessChallengeResponseContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessChallengeResponseContext.Properties">
+            <summary>
+            Gets or sets the authentication properties.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ProcessSigninResponse(Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,Microsoft.Owin.Security.AuthenticationTicket,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext.IncludeAccessToken">
+            <summary>
+            Gets or sets a boolean indicating whether an access token
+            should be returned to the client application.
+            Note: overriding the value of this property is generally not
+            recommended, except when dealing with non-standard clients.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext.IncludeAuthorizationCode">
+            <summary>
+            Gets or sets a boolean indicating whether an authorization code
+            should be returned to the client application.
+            Note: overriding the value of this property is generally not
+            recommended, except when dealing with non-standard clients.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext.IncludeIdentityToken">
+            <summary>
+            Gets or sets a boolean indicating whether an identity token
+            should be returned to the client application.
+            Note: overriding the value of this property is generally not
+            recommended, except when dealing with non-standard clients.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext.IncludeRefreshToken">
+            <summary>
+            Gets or sets a boolean indicating whether a refresh token
+            should be returned to the client application.
+            Note: overriding the value of this property is generally not
+            recommended, except when dealing with non-standard clients.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ProcessSignoutResponseContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ProcessSignoutResponse(Owin.Security.OpenIdConnect.Server.ProcessSignoutResponseContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ProcessSignoutResponseContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,Microsoft.Owin.Security.AuthenticationProperties,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ProcessSignoutResponseContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessSignoutResponseContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ProcessSignoutResponseContext.Properties">
+            <summary>
+            Gets or sets the authentication properties.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeAccessToken(Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.Issuer">
+            <summary>
+            Gets or sets the issuer address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.Audiences">
+            <summary>
+            Gets or sets the audiences associated with the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.Presenters">
+            <summary>
+            Gets or sets the presenters associated with the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.Scopes">
+            <summary>
+            Gets or sets the scopes associated with the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.SigningCredentials">
+            <summary>
+            Gets or sets the signing credentials used to sign the access token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.DataFormat">
+            <summary>
+            Gets or sets the data format used to serialize the authentication ticket.
+            Note: this property is only used when <see cref="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.SecurityTokenHandler"/> is <c>null</c>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.SecurityTokenHandler">
+            <summary>
+            Gets or sets the security token handler used to serialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext.AccessToken">
+            <summary>
+            Gets or sets the access token returned to the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeAuthorizationCode(Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext.Presenters">
+            <summary>
+            Gets or sets the presenters associated with the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext.DataFormat">
+            <summary>
+            Gets or sets the data format used to serialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext.AuthorizationCode">
+            <summary>
+            Gets or sets the authorization code returned to the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeIdentityToken(Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.Issuer">
+            <summary>
+            Gets or sets the issuer address.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.Audiences">
+            <summary>
+            Gets or sets the audiences associated with the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.Presenters">
+            <summary>
+            Gets or sets the presenters associated with the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.SigningCredentials">
+            <summary>
+            Gets or sets the signing credentials used to sign the identity token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.SecurityTokenHandler">
+            <summary>
+            Gets or sets the security token handler used to serialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext.IdentityToken">
+            <summary>
+            Gets or sets the identity token returned to the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeRefreshToken(Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse,Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext.Request">
+            <summary>
+            Gets the OpenID Connect request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext.Response">
+            <summary>
+            Gets the OpenID Connect response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext.Ticket">
+            <summary>
+            Gets the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext.Presenters">
+            <summary>
+            Gets or sets the presenters associated with the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext.DataFormat">
+            <summary>
+            Gets or sets the data format used to serialize the authentication ticket.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext.RefreshToken">
+            <summary>
+            Gets or sets the refresh token returned to the client application.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateAuthorizationRequest(Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext.ClientId">
+            <summary>
+            Gets the client_id specified by the client application.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext.RedirectUri">
+            <summary>
+            Gets the redirect_uri specified by the client application.
+            If it's not provided by the client, it must be set by
+            the user code by calling <see cref="M:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext.Validate(System.String)"/>.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext.Validate">
+            <summary>
+            Marks this context as validated by the application.
+            IsValidated becomes true and HasError becomes false as a result of calling.
+            </summary>>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext.Validate(System.String)">
+            <summary>
+            Checks the redirect URI to determine whether it equals <see cref="P:Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext.RedirectUri"/>.
+            </summary>
+            <param name="address"></param>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateConfigurationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateConfigurationRequest(Owin.Security.OpenIdConnect.Server.ValidateConfigurationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateConfigurationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateConfigurationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateCryptographyRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateCryptographyRequest(Owin.Security.OpenIdConnect.Server.ValidateCryptographyRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateCryptographyRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateCryptographyRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateIntrospectionRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateIntrospectionRequest(Owin.Security.OpenIdConnect.Server.ValidateIntrospectionRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateIntrospectionRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateIntrospectionRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ValidateIntrospectionRequestContext.TokenTypeHint">
+            <summary>
+            Gets the optional token_type_hint parameter extracted from the
+            introspection request, or <c>null</c> if it cannot be found.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateLogoutRequest(Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext.PostLogoutRedirectUri">
+            <summary>
+            Gets the post_logout_redirect_uri specified by the client application.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext.Validate(System.String)">
+            <summary>
+            Checks the redirect URI to determine whether it equals <see cref="P:Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext.PostLogoutRedirectUri"/>.
+            </summary>
+            <param name="address"></param>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateRevocationRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateRevocationRequest(Owin.Security.OpenIdConnect.Server.ValidateRevocationRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateRevocationRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateRevocationRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.ValidateRevocationRequestContext.TokenTypeHint">
+            <summary>
+            Gets the optional token_type_hint parameter extracted from the
+            revocation request, or <c>null</c> if it cannot be found.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateTokenRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateTokenRequest(Owin.Security.OpenIdConnect.Server.ValidateTokenRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateTokenRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateTokenRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.ValidateUserinfoRequestContext">
+            <summary>
+            Represents the context class associated with the
+            <see cref="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateUserinfoRequest(Owin.Security.OpenIdConnect.Server.ValidateUserinfoRequestContext)"/> event.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.ValidateUserinfoRequestContext.#ctor(Microsoft.Owin.IOwinContext,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.ValidateUserinfoRequestContext"/> class.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerDefaults">
+            <summary>
+            Exposes the default values used by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="F:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerDefaults.AuthenticationType">
+            <summary>
+            Default value for <see cref="P:Microsoft.Owin.Security.AuthenticationOptions.AuthenticationType"/>.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerHandler">
+            <summary>
+            Provides the logic necessary to extract, validate and handle  OpenID Connect requests.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware">
+            <summary>
+            Provides the entry point necessary to register the
+            OpenID Connect server in an OWIN/Katana pipeline.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware.#ctor(Microsoft.Owin.OwinMiddleware,System.Collections.Generic.IDictionary{System.String,System.Object},Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions)">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware"/> class.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware.CreateHandler">
+            <summary>
+            Returns a new <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerHandler"/> instance.
+            </summary>
+            <returns>A new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerHandler"/> class.</returns>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions">
+            <summary>
+            Exposes various settings needed to control
+            the behavior of the OpenID Connect server.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.#ctor">
+            <summary>
+            Creates a new instance of the <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.Issuer">
+            <summary>
+            Gets or sets the optional base address used to uniquely identify the authorization server.
+            The URI must be absolute and may contain a path, but no query string or fragment part.
+            Unless <see cref="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AllowInsecureHttp"/> has been set to true, an HTTPS address must be provided.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.SigningCredentials">
+            <summary>
+            Gets the list of credentials used to sign the JWT tokens issued by the OpenID Connect server middleware.
+            Both asymmetric and symmetric keys are supported, but only asymmetric keys can be used to sign identity tokens.
+            Note that only asymmetric RSA keys can be exposed by the JWKS metadata endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AuthorizationEndpointPath">
+            <summary>
+            Gets or sets the request path where client applications will redirect the user-agent in order to
+            obtain user consent to issue a token. Must begin with a leading slash (e.g "/connect/authorize").
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.ConfigurationEndpointPath">
+            <summary>
+            Gets or sets the request path where client applications will be able to retrieve the OpenID Connect
+            configuration metadata. Must begin with a leading slash, (e.g "/.well-known/openid-configuration").
+            This setting can be set to <see cref="F:Microsoft.Owin.PathString.Empty"/> to disable the configuration endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.CryptographyEndpointPath">
+            <summary>
+            Gets or sets the request path where client applications will be able to retrieve the public
+            cryptographic keys used to sign tokens. Must begin with a leading slash (e.g "/.well-known/jwks").
+            This setting can be set to <see cref="F:Microsoft.Owin.PathString.Empty"/> to disable the cryptography endpoint.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.IntrospectionEndpointPath">
+            <summary>
+            Gets or sets the request path client applications communicate with to introspect tokens.
+            Must begin with a leading slash (e.g "/connect/introspect").
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.LogoutEndpointPath">
+            <summary>
+            Gets or sets the request path client applications communicate with to log out.
+            Must begin with a leading slash (e.g "/connect/logout").
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.RevocationEndpointPath">
+            <summary>
+            Gets or sets the request path client applications communicate with
+            to revoke tokens. Must begin with a leading slash (e.g "/connect/revoke").
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.TokenEndpointPath">
+            <summary>
+            Gets or sets the request path client applications communicate with to retrieve
+            an access token. Must begin with a leading slash (e.g "/connect/token").
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.UserinfoEndpointPath">
+            <summary>
+            Gets or sets the request path client applications communicate with to retrieve
+            user information. Must begin with a leading slash (e.g "/connect/userinfo").
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.Provider">
+            <summary>
+            Gets or sets the <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider"/> that the <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware" />
+            invokes to enable developer control over the entire authentication/authorization process.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AuthorizationCodeFormat">
+            <summary>
+            Gets or sets the ticket format used to serialize and encrypt the
+            authorization codes issued by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AccessTokenFormat">
+            <summary>
+            Gets or sets the ticket format used to serialize and encrypt the
+            access tokens issued by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.RefreshTokenFormat">
+            <summary>
+            Gets or sets the ticket format used to serialize and encrypt the
+            refresh tokens issued by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AccessTokenHandler">
+            <summary>
+            Gets or sets the optional security token handler used to serialize
+            and the access tokens issued by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.IdentityTokenHandler">
+            <summary>
+            Gets or sets the security token handler used to serialize and
+            the identity tokens issued by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AuthorizationCodeLifetime">
+            <summary>
+            Gets or sets the period of time the authorization codes remain valid after being issued.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AccessTokenLifetime">
+            <summary>
+            Gets or sets the period of time access tokens remain valid after being issued. The default value is 1 hour.
+            The client application is expected to refresh or acquire a new access token after the token has expired.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.IdentityTokenLifetime">
+            <summary>
+            Gets or sets the period of time identity tokens remain valid after being issued. The default value is 20 minutes.
+            The client application is expected to refresh or acquire a new identity token after the token has expired.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.RefreshTokenLifetime">
+            <summary>
+            Gets or sets the period of time refresh tokens remain valid after being issued. The default value is 14 days.
+            The client application is expected to start a whole new authentication flow after the refresh token has expired.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.UseSlidingExpiration">
+            <summary>
+            Gets or sets a boolean indicating whether new refresh tokens should be issued during a refresh token request.
+            Set this property to <c>true</c> to issue a new refresh token, <c>false</c> to prevent the OpenID Connect
+            server middleware from issuing new refresh tokens when receiving a grant_type=refresh_token request.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.ApplicationCanDisplayErrors">
+            <summary>
+            Gets or sets a boolean indicating whether the web application is able
+            to render error messages on the authorization and logout endpoints.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.SystemClock">
+            <summary>
+            Gets or sets the system clock used by the OpenID Connect server middleware to determine the current time.
+            If necessary, the default instance can be replaced by a mocked clock for unit testing purposes.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.AllowInsecureHttp">
+            <summary>
+            Gets or sets a boolean indicating whether incoming requests arriving on non-HTTPS endpoints should be rejected.
+            By default, this property is set to <c>false</c> to help mitigate man-in-the-middle attacks.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.HtmlEncoder">
+            <summary>
+            Gets or sets the encoder used to sanitize HTML responses. If no explicit instance is provided,
+            a default instance is automatically retrieved through the dependency injection system.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.DataProtectionProvider">
+            <summary>
+            Gets or sets the data protection provider used to create the default
+            data protectors used by <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware"/>.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions.Logger">
+            <summary>
+            Gets or sets the logger used by <see cref="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware"/>.
+            When unassigned, a default instance is created using the default logger factory.
+            </summary>
+        </member>
+        <member name="T:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider">
+            <summary>
+            Defines a provider exposing events used by the OpenID Connect server to communicate
+            with the web application while processing incoming requests. This class can be used
+            as a virtual base class, but it also offers delegate properties that can be used to
+            handle individual calls without having to explicitly declare a new subclassed type.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnMatchEndpoint">
+            <summary>
+            Represents an event called for each HTTP request to determine if
+            it should be handled by the OpenID Connect server middleware.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractAuthorizationRequest">
+            <summary>
+            Represents an event called for each request to the authorization endpoint to give the user code
+            a chance to manually extract the authorization request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractConfigurationRequest">
+            <summary>
+            Represents an event called for each request to the configuration endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractCryptographyRequest">
+            <summary>
+            Represents an event called for each request to the cryptography endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractIntrospectionRequest">
+            <summary>
+            Represents an event called for each request to the introspection endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractLogoutRequest">
+            <summary>
+            Represents an event called for each request to the logout endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractRevocationRequest">
+            <summary>
+            Represents an event called for each request to the revocation endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractTokenRequest">
+            <summary>
+            Represents an event called for each request to the token endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnExtractUserinfoRequest">
+            <summary>
+            Represents an event called for each request to the userinfo endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateAuthorizationRequest">
+            <summary>
+            Represents an event called for each request to the authorization endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateConfigurationRequest">
+            <summary>
+            Represents an event called for each request to the configuration endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateCryptographyRequest">
+            <summary>
+            Represents an event called for each request to the cryptography endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateIntrospectionRequest">
+            <summary>
+            Represents an event called for each request to the introspection endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateLogoutRequest">
+            <summary>
+            Represents an event called for each request to the logout endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateRevocationRequest">
+            <summary>
+            Represents an event called for each request to the revocation endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateTokenRequest">
+            <summary>
+            Represents an event called for each request to the token endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnValidateUserinfoRequest">
+            <summary>
+            Represents an event called for each request to the userinfo endpoint
+            to determine if the request is valid and should continue to be processed.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleAuthorizationRequest">
+            <summary>
+            Represents an event called for each validated authorization request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleConfigurationRequest">
+            <summary>
+            Represents an event called for each validated configuration request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleCryptographyRequest">
+            <summary>
+            Represents an event called for each validated cryptography request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleIntrospectionRequest">
+            <summary>
+            Represents an event called for each validated introspection request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleLogoutRequest">
+            <summary>
+            Represents an event called for each validated logout request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleRevocationRequest">
+            <summary>
+            Represents an event called for each validated revocation request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleTokenRequest">
+            <summary>
+            Represents an event called for each validated token request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnHandleUserinfoRequest">
+            <summary>
+            Represents an event called for each validated userinfo request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnProcessChallengeResponse">
+            <summary>
+            Represents an event called when processing a challenge response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnProcessSigninResponse">
+            <summary>
+            Represents an event called when processing a sign-in response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnProcessSignoutResponse">
+            <summary>
+            Represents an event called when processing a sign-out response.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyAuthorizationResponse">
+            <summary>
+            Represents an event called before the authorization response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyConfigurationResponse">
+            <summary>
+            Represents an event called before the configuration response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyCryptographyResponse">
+            <summary>
+            Represents an event called before the cryptography response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyIntrospectionResponse">
+            <summary>
+            Represents an event called before the introspection response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyLogoutResponse">
+            <summary>
+            Represents an event called before the logout response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyRevocationResponse">
+            <summary>
+            Represents an event called before the revocation response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyTokenResponse">
+            <summary>
+            Represents an event called before the token response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnApplyUserinfoResponse">
+            <summary>
+            Represents an event called before the userinfo response is returned to the caller.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnSerializeAuthorizationCode">
+            <summary>
+            Represents an event called when serializing an authorization code.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnSerializeAccessToken">
+            <summary>
+            Represents an event called when serializing an access token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnSerializeIdentityToken">
+            <summary>
+            Represents an event called when serializing an identity token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnSerializeRefreshToken">
+            <summary>
+            Represents an event called when serializing a refresh token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnDeserializeAuthorizationCode">
+            <summary>
+            Represents an event called when deserializing an authorization code.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnDeserializeAccessToken">
+            <summary>
+            Represents an event called when deserializing an access token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnDeserializeIdentityToken">
+            <summary>
+            Represents an event called when deserializing an identity token.
+            </summary>
+        </member>
+        <member name="P:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.OnDeserializeRefreshToken">
+            <summary>
+            Represents an event called when deserializing a refresh token.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.MatchEndpoint(Owin.Security.OpenIdConnect.Server.MatchEndpointContext)">
+            <summary>
+            Represents an event called for each HTTP request to determine if
+            it should be handled by the OpenID Connect server middleware.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractAuthorizationRequest(Owin.Security.OpenIdConnect.Server.ExtractAuthorizationRequestContext)">
+            <summary>
+            Represents an event called for each request to the authorization endpoint to give the user code
+            a chance to manually extract the authorization request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractConfigurationRequest(Owin.Security.OpenIdConnect.Server.ExtractConfigurationRequestContext)">
+            <summary>
+            Represents an event called for each request to the configuration endpoint to give the user code
+            a chance to manually extract the configuration request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractCryptographyRequest(Owin.Security.OpenIdConnect.Server.ExtractCryptographyRequestContext)">
+            <summary>
+            Represents an event called for each request to the cryptography endpoint to give the user code
+            a chance to manually extract the cryptography request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractIntrospectionRequest(Owin.Security.OpenIdConnect.Server.ExtractIntrospectionRequestContext)">
+            <summary>
+            Represents an event called for each request to the introspection endpoint to give the user code
+            a chance to manually extract the introspection request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractLogoutRequest(Owin.Security.OpenIdConnect.Server.ExtractLogoutRequestContext)">
+            <summary>
+            Represents an event called for each request to the logout endpoint to give the user code
+            a chance to manually extract the logout request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractRevocationRequest(Owin.Security.OpenIdConnect.Server.ExtractRevocationRequestContext)">
+            <summary>
+            Represents an event called for each request to the revocation endpoint to give the user code
+            a chance to manually extract the revocation request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractTokenRequest(Owin.Security.OpenIdConnect.Server.ExtractTokenRequestContext)">
+            <summary>
+            Represents an event called for each request to the token endpoint to give the user code
+            a chance to manually extract the token request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ExtractUserinfoRequest(Owin.Security.OpenIdConnect.Server.ExtractUserinfoRequestContext)">
+            <summary>
+            Represents an event called for each request to the userinfo endpoint to give the user code
+            a chance to manually extract the userinfo request from the ambient HTTP context.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateAuthorizationRequest(Owin.Security.OpenIdConnect.Server.ValidateAuthorizationRequestContext)">
+            <summary>
+            Represents an event called for each request to the authorization endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateConfigurationRequest(Owin.Security.OpenIdConnect.Server.ValidateConfigurationRequestContext)">
+            <summary>
+            Represents an event called for each request to the configuration endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateCryptographyRequest(Owin.Security.OpenIdConnect.Server.ValidateCryptographyRequestContext)">
+            <summary>
+            Represents an event called for each request to the cryptography endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateIntrospectionRequest(Owin.Security.OpenIdConnect.Server.ValidateIntrospectionRequestContext)">
+            <summary>
+            Represents an event called for each request to the introspection endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateLogoutRequest(Owin.Security.OpenIdConnect.Server.ValidateLogoutRequestContext)">
+            <summary>
+            Represents an event called for each request to the logout endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateRevocationRequest(Owin.Security.OpenIdConnect.Server.ValidateRevocationRequestContext)">
+            <summary>
+            Represents an event called for each request to the revocation endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateTokenRequest(Owin.Security.OpenIdConnect.Server.ValidateTokenRequestContext)">
+            <summary>
+            Represents an event called for each request to the token endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ValidateUserinfoRequest(Owin.Security.OpenIdConnect.Server.ValidateUserinfoRequestContext)">
+            <summary>
+            Represents an event called for each request to the userinfo endpoint
+            to determine if the request is valid and should continue.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleAuthorizationRequest(Owin.Security.OpenIdConnect.Server.HandleAuthorizationRequestContext)">
+            <summary>
+            Represents an event called for each validated authorization request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleConfigurationRequest(Owin.Security.OpenIdConnect.Server.HandleConfigurationRequestContext)">
+            <summary>
+            Represents an event called for each validated configuration request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleCryptographyRequest(Owin.Security.OpenIdConnect.Server.HandleCryptographyRequestContext)">
+            <summary>
+            Represents an event called for each validated cryptography request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleIntrospectionRequest(Owin.Security.OpenIdConnect.Server.HandleIntrospectionRequestContext)">
+            <summary>
+            Represents an event called for each validated introspection request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleLogoutRequest(Owin.Security.OpenIdConnect.Server.HandleLogoutRequestContext)">
+            <summary>
+            Represents an event called for each validated logout request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleRevocationRequest(Owin.Security.OpenIdConnect.Server.HandleRevocationRequestContext)">
+            <summary>
+            Represents an event called for each validated revocation request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleTokenRequest(Owin.Security.OpenIdConnect.Server.HandleTokenRequestContext)">
+            <summary>
+            Represents an event called for each validated token request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.HandleUserinfoRequest(Owin.Security.OpenIdConnect.Server.HandleUserinfoRequestContext)">
+            <summary>
+            Represents an event called for each validated userinfo request
+            to allow the user code to decide how the request should be handled.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ProcessChallengeResponse(Owin.Security.OpenIdConnect.Server.ProcessChallengeResponseContext)">
+            <summary>
+            Represents an event called when processing a challenge response.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ProcessSigninResponse(Owin.Security.OpenIdConnect.Server.ProcessSigninResponseContext)">
+            <summary>
+            Represents an event called when processing a sign-in response.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ProcessSignoutResponse(Owin.Security.OpenIdConnect.Server.ProcessSignoutResponseContext)">
+            <summary>
+            Represents an event called when processing a sign-out response.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyAuthorizationResponse(Owin.Security.OpenIdConnect.Server.ApplyAuthorizationResponseContext)">
+            <summary>
+            Represents an event called before the authorization response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyConfigurationResponse(Owin.Security.OpenIdConnect.Server.ApplyConfigurationResponseContext)">
+            <summary>
+            Represents an event called before the configuration response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyCryptographyResponse(Owin.Security.OpenIdConnect.Server.ApplyCryptographyResponseContext)">
+            <summary>
+            Represents an event called before the cryptography response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyIntrospectionResponse(Owin.Security.OpenIdConnect.Server.ApplyIntrospectionResponseContext)">
+            <summary>
+            Represents an event called before the introspection response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyLogoutResponse(Owin.Security.OpenIdConnect.Server.ApplyLogoutResponseContext)">
+            <summary>
+            Represents an event called before the logout response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyRevocationResponse(Owin.Security.OpenIdConnect.Server.ApplyRevocationResponseContext)">
+            <summary>
+            Represents an event called before the revocation response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyTokenResponse(Owin.Security.OpenIdConnect.Server.ApplyTokenResponseContext)">
+            <summary>
+            Represents an event called before the token response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.ApplyUserinfoResponse(Owin.Security.OpenIdConnect.Server.ApplyUserinfoResponseContext)">
+            <summary>
+            Represents an event called before the userinfo response is returned to the caller.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeAuthorizationCode(Owin.Security.OpenIdConnect.Server.SerializeAuthorizationCodeContext)">
+            <summary>
+            Represents an event called when serializing an authorization code.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeAccessToken(Owin.Security.OpenIdConnect.Server.SerializeAccessTokenContext)">
+            <summary>
+            Represents an event called when serializing an access token.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeIdentityToken(Owin.Security.OpenIdConnect.Server.SerializeIdentityTokenContext)">
+            <summary>
+            Represents an event called when serializing an identity token.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.SerializeRefreshToken(Owin.Security.OpenIdConnect.Server.SerializeRefreshTokenContext)">
+            <summary>
+            Represents an event called when serializing a refresh token.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeAuthorizationCode(Owin.Security.OpenIdConnect.Server.DeserializeAuthorizationCodeContext)">
+            <summary>
+            Represents an event called when deserializing an authorization code.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeAccessToken(Owin.Security.OpenIdConnect.Server.DeserializeAccessTokenContext)">
+            <summary>
+            Represents an event called when deserializing an access token.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeIdentityToken(Owin.Security.OpenIdConnect.Server.DeserializeIdentityTokenContext)">
+            <summary>
+            Represents an event called when deserializing an identity token.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Server.OpenIdConnectServerProvider.DeserializeRefreshToken(Owin.Security.OpenIdConnect.Server.DeserializeRefreshTokenContext)">
+            <summary>
+            Represents an event called when deserializing a refresh token.
+            </summary>
+            <param name="context">The context instance associated with this event.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> that can be used to monitor the asynchronous operation.</returns>
+        </member>
+        <member name="T:Owin.OpenIdConnectServerExtensions">
+            <summary>
+            Provides extension methods allowing to easily register an
+            OWIN/Katana-powered OpenID Connect server and to retrieve
+            various OpenID Connect primitives from the OWIN environment.
+            </summary>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.UseOpenIdConnectServer(Owin.IAppBuilder,System.Action{Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions})">
+            <summary>
+            Adds a new OpenID Connect server instance in the OWIN pipeline.
+            </summary>
+            <param name="app">The web application builder.</param>
+            <param name="configuration">
+            A delegate allowing to modify the options
+            controlling the behavior of the OpenID Connect server.
+            </param>
+            <returns>The application builder.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.UseOpenIdConnectServer(Owin.IAppBuilder,Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions)">
+            <summary>
+            Adds a new OpenID Connect server instance in the OWIN pipeline.
+            </summary>
+            <param name="app">The web application builder.</param>
+            <param name="options">The options controlling the behavior of the OpenID Connect server.</param>
+            <returns>The application builder.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddCertificate(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.Security.Cryptography.X509Certificates.X509Certificate2)">
+            <summary>
+            Adds a specific <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> to sign the tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="certificate">The certificate used to sign security tokens issued by the server.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddCertificate(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.Reflection.Assembly,System.String,System.String)">
+            <summary>
+            Adds a specific <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> retrieved from an
+            embedded resource to sign the tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="assembly">The assembly containing the certificate.</param>
+            <param name="resource">The name of the embedded resource.</param>
+            <param name="password">The password used to open the certificate.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddCertificate(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.Reflection.Assembly,System.String,System.String,System.Security.Cryptography.X509Certificates.X509KeyStorageFlags)">
+            <summary>
+            Adds a specific <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> retrieved from an
+            embedded resource to sign the tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="assembly">The assembly containing the certificate.</param>
+            <param name="resource">The name of the embedded resource.</param>
+            <param name="password">The password used to open the certificate.</param>
+            <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddCertificate(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.IO.Stream,System.String)">
+            <summary>
+            Adds a specific <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> contained in
+            a stream to sign the tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="stream">The stream containing the certificate.</param>
+            <param name="password">The password used to open the certificate.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddCertificate(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.IO.Stream,System.String,System.Security.Cryptography.X509Certificates.X509KeyStorageFlags)">
+            <summary>
+            Adds a specific <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> contained in
+            a stream to sign tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="stream">The stream containing the certificate.</param>
+            <param name="password">The password used to open the certificate.</param>
+            <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddCertificate(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.String)">
+            <summary>
+            Adds a specific <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> retrieved from the X.509
+            user/machine store to sign the tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddCertificate(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.String,System.Security.Cryptography.X509Certificates.StoreName,System.Security.Cryptography.X509Certificates.StoreLocation)">
+            <summary>
+            Adds a specific <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> retrieved from the given
+            X.509 store to sign the tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+            <param name="name">The name of the X.509 store.</param>
+            <param name="location">The location of the X.509 store.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddEphemeralKey(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials})">
+            <summary>
+            Adds a new ephemeral key used to sign the tokens issued by the OpenID Connect server:
+            the key is discarded when the application shuts down and tokens signed using this key
+            are automatically invalidated. This method should only be used during development.
+            On production, using a X.509 certificate stored in the machine store is recommended.
+            </summary>
+            <param name="credentials">The signing credentials.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddEphemeralKey(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.String)">
+            <summary>
+            Adds a new ephemeral key used to sign the tokens issued by the OpenID Connect server:
+            the key is discarded when the application shuts down and tokens signed using this key
+            are automatically invalidated. This method should only be used during development.
+            On production, using a X.509 certificate stored in the machine store is recommended.
+            </summary>
+            <param name="credentials">The signing credentials.</param>
+            <param name="algorithm">The algorithm associated with the signing key.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.AddKey(System.Collections.Generic.IList{System.IdentityModel.Tokens.SigningCredentials},System.IdentityModel.Tokens.SecurityKey)">
+            <summary>
+            Adds a specific <see cref="T:System.IdentityModel.Tokens.SecurityKey"/> to sign the tokens issued by the OpenID Connect server.
+            </summary>
+            <param name="credentials">The options used to configure the OpenID Connect server.</param>
+            <param name="key">The key used to sign security tokens issued by the server.</param>
+            <returns>The signing credentials.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.UseLogging(Owin.Security.OpenIdConnect.Server.OpenIdConnectServerOptions,System.Action{Microsoft.Extensions.Logging.ILoggerFactory})">
+            <summary>
+            Configures the OpenID Connect server to enable logging.
+            </summary>
+            <param name="options">The options used to configure the OpenID Connect server.</param>
+            <param name="configuration">The delegate used to configure the logger factory.</param>
+            <returns>The options used to configure the OpenID Connect server.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.GetOpenIdConnectRequest(Microsoft.Owin.IOwinContext)">
+            <summary>
+            Retrieves the <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> instance
+            associated with the current request from the OWIN context.
+            </summary>
+            <param name="context">The OWIN context.</param>
+            <returns>The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> associated with the current request.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.GetOpenIdConnectResponse(Microsoft.Owin.IOwinContext)">
+            <summary>
+            Retrieves the <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse"/> instance
+            associated with the current response from the OWIN context.
+            </summary>
+            <param name="context">The OWIN context.</param>
+            <returns>The <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse"/> associated with the current response.</returns>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.SetOpenIdConnectRequest(Microsoft.Owin.IOwinContext,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest)">
+            <summary>
+            Inserts the ambient <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/> request in the OWIN context.
+            </summary>
+            <param name="context">The OWIN context.</param>
+            <param name="request">The ambient <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectRequest"/>.</param>
+        </member>
+        <member name="M:Owin.OpenIdConnectServerExtensions.SetOpenIdConnectResponse(Microsoft.Owin.IOwinContext,AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse)">
+            <summary>
+            Inserts the ambient <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse"/> response in the OWIN context.
+            </summary>
+            <param name="context">The OWIN context.</param>
+            <param name="response">The ambient <see cref="T:AspNet.Security.OpenIdConnect.Primitives.OpenIdConnectResponse"/>.</param>
+        </member>
+    </members>
+</doc>

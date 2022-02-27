@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "C07mohtdKnYZyUHWmi/+c91g3CuyNNgODVeYgPrOZkyDo1ock0vuq3EuO1Sd0tLveyDJ8pphksKOeUZfHclKsg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\PassionTech\\Source\\Repos\\Rock\\Rock.Common\\Rock.Common.NG.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\PassionTech\\.nuget\\packages\\humanizer.core\\2.1.0\\humanizer.core.2.1.0.nupkg.sha512",
+    "C:\\Users\\PassionTech\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\PassionTech\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
+    "C:\\Users\\PassionTech\\.nuget\\packages\\newtonsoft.json\\11.0.2\\newtonsoft.json.11.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}

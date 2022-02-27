@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>antlr.runtime</name>
+    </assembly>
+    <members>
+        <member name="T:antlr.collections.AST">
+            <summary>
+            Minimal AST node interface used by ANTLR AST generation and tree-walker.
+            </summary>
+        </member>
+        <member name="M:antlr.collections.AST.addChild(antlr.collections.AST)">
+            <summary>
+            Add a (rightmost) child to this node
+            </summary>
+            <param name="c"></param>
+        </member>
+        <member name="M:antlr.collections.AST.getFirstChild">
+            <summary>
+            Get the first child of this node; null if no children
+            </summary>
+        </member>
+        <member name="M:antlr.collections.AST.getNextSibling">
+            <summary>
+            Get	the next sibling in line after this one
+            </summary>
+        </member>
+        <member name="M:antlr.collections.AST.getText">
+            <summary>
+            Get the token text for this node
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:antlr.collections.AST.Type">
+            <summary>
+            Get the token type for this node
+            </summary>
+        </member>
+        <member name="M:antlr.collections.AST.getNumberOfChildren">
+            <summary>
+            Get number of children of this node; if leaf, returns 0
+            </summary>
+            <returns>Number of children</returns>
+        </member>
+        <member name="M:antlr.collections.AST.setFirstChild(antlr.collections.AST)">
+            <summary>
+            Set the first child of a node.
+            </summary>
+            <param name="c"></param>
+        </member>
+        <member name="M:antlr.collections.AST.setNextSibling(antlr.collections.AST)">
+            <summary>
+            Set the next sibling after this one.
+            </summary>
+            <param name="n"></param>
+        </member>
+        <member name="M:antlr.collections.AST.setText(System.String)">
+            <summary>
+            Set the token text for this node
+            </summary>
+            <param name="text"></param>
+        </member>
+        <member name="M:antlr.collections.AST.setType(System.Int32)">
+            <summary>
+            Set the token type for this node
+            </summary>
+            <param name="ttype"></param>
+        </member>
+        <member name="F:antlr.ByteBuffer.buf">
+            <summary>
+            Small buffer used to avoid reading individual chars
+            </summary>
+        </member>
+        <member name="F:antlr.CharBuffer.buf">
+            <summary>
+            Small buffer used to avoid reading individual chars
+            </summary>
+        </member>
+        <member name="F:antlr.CharScanner.tokenCreator">
+            <summary>Used for creating Token instances.</summary>
+        </member>
+        <member name="F:antlr.CharScanner.cached_LA1">
+            <summary>Used for caching lookahead characters.</summary>
+        </member>
+        <member name="M:antlr.CharScanner.panic(System.String)">
+            <summary>
+            This method is executed by ANTLR internally when it detected an illegal
+            state that cannot be recovered from.
+            The previous implementation of this method called <see cref="M:System.Environment.Exit(System.Int32)"/>
+            and writes directly to <see cref="P:System.Console.Error"/>, which is usually not 
+            appropriate when a translator is embedded into a larger application.
+            </summary>
+            <param name="s">Error message.</param>
+        </member>
+        <member name="P:antlr.CommonToken.CommonTokenCreator.TokenTypeName">
+            <summary>
+            Returns the fully qualified name of the Token type that this
+            class creates.
+            </summary>
+        </member>
+        <member name="M:antlr.CommonToken.CommonTokenCreator.Create">
+            <summary>
+            Constructs a <see cref="T:antlr.Token"/> instance.
+            </summary>
+        </member>
+        <member name="T:antlr.InputBuffer">
+            <summary>
+            Represents a stream of characters fed to the lexer from that can be rewound 
+            via mark()/rewind() methods.
+            </summary>
+            <remarks>
+            <para>
+            A dynamic array is used to buffer up all the input characters.  Normally,
+            "k" characters are stored in the buffer.  More characters may be stored 
+            during guess mode (testing syntactic predicate), or when LT(i>k) is referenced.
+            Consumption of characters is deferred.  In other words, reading the next
+            character is not done by conume(), but deferred until needed by LA or LT.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:antlr.IToken">
+            <summary>
+            A token is minimally a token type.  Subclasses can add the text matched
+            for the token and line info. 
+            </summary>
+        </member>
+        <member name="M:antlr.MismatchedCharException.appendCharName(System.Text.StringBuilder,System.Int32)">
+            <summary>
+            Append a char to the msg buffer.  If special, then show escaped version
+            </summary>
+            <param name="sb">Message buffer</param>
+            <param name="c">Char to append</param>
+        </member>
+        <member name="T:antlr.TokenCreator">
+            <summary>
+            A creator of Token object instances.
+            </summary>
+            <remarks>
+            <para>
+            This class and it's sub-classes exists primarily as an optimization
+            of the reflection-based mechanism(s) previously used exclusively to 
+            create instances of Token objects.
+            </para>
+            <para>
+            Since Lexers in ANTLR use a single Token type, each TokenCreator can 
+            create one class of Token objects (that's why it's not called TokenFactory).
+            </para>
+            </remarks>
+        </member>
+        <member name="P:antlr.TokenCreator.TokenTypeName">
+            <summary>
+            Returns the fully qualified name of the Token type that this
+            class creates.
+            </summary>
+        </member>
+        <member name="M:antlr.TokenCreator.Create">
+            <summary>
+            Constructs a <see cref="T:antlr.Token"/> instance.
+            </summary>
+        </member>
+    </members>
+</doc>

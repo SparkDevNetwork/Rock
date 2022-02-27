@@ -1,0 +1,13 @@
+﻿{% for item in Items %}
+{% if item.Id == PageParameter.Item %}
+<div class="margin-b-lg">
+  <h3>{{ item.Title }}</h3>
+
+  <div class="margin-b-lg">
+    <img class="image-responsive" src="{{ item | Attribute:'Image','Url' }}"/>
+  </div>
+
+  {{ item.Content }}
+</div>
+{% endif %}
+{% endfor %}

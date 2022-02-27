@@ -19,7 +19,7 @@
         <div class="container d-flex flex-column" style="min-height: 100vh">
             <div class="row my-auto">
                 <Rock:Zone Name="Headline" CssClass="zone-headline col-lg-5 col-md-10 col-sm-12 py-5 text-white my-lg-auto my-5 text-center text-lg-left mx-auto ml-lg-0 mr-lg-auto" runat="server" />
-                <Rock:Zone Name="Workflow" CssClass="zone-workflow pad-workflow col-lg-5 col-md-8 col-sm-12 py-5 px-sm-4 px-0 mx-auto ml-lg-auto mr-lg-0" runat="server" />
+                <Rock:Zone Name="Workflow" CssClass="zone-workflow pad-workflow col-lg-5 col-md-12 col-sm-12 py-5 px-sm-4 px-0 mx-auto ml-lg-auto mr-lg-0" runat="server" />
             </div>
         </div>
     </div>

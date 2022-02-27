@@ -663,8 +663,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
 
-                var allowCheckedOut = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( true );
-                var enablePresence = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
+                var allowCheckedOut = true;
+                var enablePresence = false;
                 NavData.AllowCheckout = allowCheckedOut;
                 NavData.EnablePresence = enablePresence;
 

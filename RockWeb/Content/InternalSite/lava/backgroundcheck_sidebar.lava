@@ -1,0 +1,9 @@
+<row>
+<h4>Background Check Tools</h4>
+<div style="margin:5px">
+<a href="https://rock.passion.team/page/689?{{ blockGroupID }}"><button type="button" class="btn btn-primary btn-bckchk">Adjust Team</button></a>
+</div>
+<div style="margin:5px">
+<a href="https://rock.passion.team/page/288?WorkflowTypeId={{ blockBGCKWorkflows }}"><button type="button" class="btn btn-primary btn-bckchk">View Background Check Workflows</a>
+</div>
+</row>

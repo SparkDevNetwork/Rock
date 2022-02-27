@@ -1,0 +1,23 @@
+﻿<div class="wm-list-as-blocks clearfix">
+	<ul>
+		{% assign orderedDevices = Devices | Sort:'Name' %}
+		{% for device in orderedDevices %}
+			{% assign serviceErrorCount = device | Property:'ServiceChecks' | Where:'State','Error' | Size %}
+			{% assign serviceWarningCount = device | Property:'ServiceChecks' | Where:'State','Warning' | Size %}
+			{% assign serviceOKCount = device | Property:'ServiceChecks' | Where:'State','OK' | Size %}
+			{% assign serviceUnknownCount = device | Property:'ServiceChecks' | Where:'State','Unknown' | Size %}
+			<li>
+				<a href="{% if LinkedPages.DevicePage %}{{ LinkedPages.DevicePage }}?DeviceId={{ device.Id }}{% else %}#{% endif %}" class="wm-state-{{ device.OverallState | AsString | Downcase }}{% if device.OverallSoftState != device.OverallState %}-{{ device.OverallSoftState | AsString | Downcase }}{% endif %}">
+					<i class="{% if device.DeviceProfile.IconCssClass != '' %}{{ device.DeviceProfile.IconCssClass }}{% else %}fa fa-square{% endif %} wm-text-{{ device.State | AsString | Downcase }}"></i>
+					<h3>{{ device.Name }}</h3>
+					<div class="notification">
+						<span class="label label-danger" title="Services in Error state">{% if serviceErrorCount > 0 %}{{ serviceErrorCount }}{% endif %}</span>
+						<span class="label label-warning" title="Services in Warning state">{% if serviceWarningCount > 0 %}{{ serviceWarningCount }}{% endif %}</span>
+						<span class="label label-success" title="Services in OK state">{% if serviceOKCount > 0 %}{{ serviceOKCount }}{% endif %}</span>
+						<span class="label label-default" title="Services in Unknown state">{% if serviceUnknownCount > 0 %}{{ serviceUnknownCount }}{% endif %}</span>
+					</div>
+				</a>
+			</li>
+		{% endfor %}
+	</ul>
+</div>

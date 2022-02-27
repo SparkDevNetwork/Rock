@@ -1,0 +1,760 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rock.StatementGenerator</name>
+    </assembly>
+    <members>
+        <member name="T:Rock.StatementGenerator.Migrations.StatementGeneratorMoreOptions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGeneratorMoreOptions.Up">
+            <summary>
+            The commands to run to migrate plugin to the specific version
+            </summary>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGeneratorMoreOptions.Down">
+            <summary>
+            The commands to undo a migration from a specific version
+            </summary>
+        </member>
+        <member name="T:Rock.StatementGenerator.Migrations.StatementGeneratorUpdateTemplates">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGeneratorUpdateTemplates.Up">
+            <summary>
+            The commands to run to migrate plugin to the specific version
+            </summary>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGeneratorUpdateTemplates.UpdateDefinedValueIfNotModified(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Updates the defined value if not modified.
+            </summary>
+            <param name="definedValueGuid">The defined value unique identifier.</param>
+            <param name="value">The value.</param>
+            <param name="description">The description.</param>
+            <param name="order">The order.</param>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGeneratorUpdateTemplates.UpdateDefinedValueAttributeValueIfNotModified(System.String,System.String,System.String)">
+            <summary>
+            Updates the defined value attribute value if not modified.
+            </summary>
+            <param name="definedValueGuid">The defined value unique identifier.</param>
+            <param name="attributeGuid">The attribute unique identifier.</param>
+            <param name="attributeValue">The attribute value.</param>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGeneratorUpdateTemplates.Down">
+            <summary>
+            The commands to undo a migration from a specific version
+            </summary>
+        </member>
+        <member name="T:Rock.StatementGenerator.Migrations.StatementGenerator">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGenerator.Up">
+            <summary>
+            The commands to run to migrate plugin to the specific version
+            </summary>
+        </member>
+        <member name="M:Rock.StatementGenerator.Migrations.StatementGenerator.Down">
+            <summary>
+            The commands to undo a migration from a specific version
+            </summary>
+        </member>
+        <member name="T:Rock.StatementGenerator.Migrations.MigrationResource">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource._001_StatementGenerator_Alternate1">
+             <summary>
+               Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+            {% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+            {% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+            {% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+            {% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+            {% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+            {% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource._001_StatementGenerator_Alternate2">
+             <summary>
+               Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+            {% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+            {% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+            {% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+            {% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+            {% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+            {% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource._001_StatementGenerator_RockDefault">
+             <summary>
+               Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+            {% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+            {% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+            {% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+            {% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+            {% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+            {% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource._001_StatementGenerator_RockDefault_Footer">
+             <summary>
+               Looks up a localized string similar to &lt;!DOCTYPE html&gt;
+            &lt;html&gt;
+            
+            &lt;head&gt;
+                &lt;script&gt;
+                    function subst() {
+                        var vars = {};
+                        var query_strings_from_url = document.location.search.substring(1).split(&apos;&amp;&apos;);
+                        for (var query_string in query_strings_from_url) {
+                            if (query_strings_from_url.hasOwnProperty(query_string)) {
+                                var temp_var = query_strings_from_url[query_string].split(&apos;=&apos;, 2);
+                                vars[temp_var[0]] = decodeURI(temp_var[1]);
+                            }
+                [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource._002_StatementGeneratorUpdateTemplates_Alternate1">
+             <summary>
+               Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+            {% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+            {% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+            {% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+            {% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+            {% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+            {% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource._002_StatementGeneratorUpdateTemplates_Alternate2">
+             <summary>
+               Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+            {% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+            {% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+            {% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+            {% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+            {% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+            {% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.Migrations.MigrationResource._002_StatementGeneratorUpdateTemplates_RockDefault">
+             <summary>
+               Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+            {% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+            {% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+            {% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+            {% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+            {% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+            {% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+             </summary>
+        </member>
+        <member name="T:Rock.StatementGenerator.SystemGuid.DefinedType">
+            <summary>
+            Static Guids used by the Rock.StatementGenerator application
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE">
+            <summary>
+            The statement generator lava template (Legacy)
+            </summary>
+        </member>
+        <member name="T:Rock.StatementGenerator.SystemGuid.Attribute">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT">
+            <summary>
+            The person do not send giving statement
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE">
+            <summary>
+            The defined value statement generator lava template lava template
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LOGO">
+            <summary>
+            The defined value statement generator lava template logo
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHTML">
+            <summary>
+            The defined value statement generator lava template footer HTML
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_PDFOBJECTSETTINGS">
+            <summary>
+            The defined value statement generator lava template PDF Object Settings
+            </summary>
+        </member>
+        <member name="T:Rock.StatementGenerator.Rest.FinancialGivingStatementController">
+            <summary>
+            NOTE: WebApi doesn't support Controllers with the Same Name, even if they have different NameSpaces, so can't call this FinancialTransactionsController
+            </summary>
+            <seealso cref="T:Rock.Rest.ApiControllerBase" />
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.FinancialGivingStatementController.GetFinancialStatementGeneratorRecipients(Rock.Financial.FinancialStatementGeneratorOptions)">
+            <summary>
+            Gets the statement generator recipients. This will be sorted based on the StatementGeneratorOptions
+            </summary>
+            <param name="financialStatementGeneratorOptions">The financial statement generator options.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.FinancialGivingStatementController.GetStatementGeneratorRecipientResult(Rock.Financial.FinancialStatementGeneratorRecipientRequest)">
+            <summary>
+            Gets the statement generator recipient result for a specific person and associated group (family) with the specified address (locationGuid)
+            NOTE: If a person is in multiple families, call this for each of the families so that the statement will go to the address of each family
+            </summary>
+            <param name="financialStatementGeneratorRecipientRequest">The financial statement generator recipient request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.FinancialGivingStatementController.UploadGivingStatementDocument(Rock.Financial.FinancialStatementGeneratorUploadGivingStatementData)">
+            <summary>
+            Uploads the giving statement document, and returns the <see cref="T:Rock.Model.Document"/> Id
+            </summary>
+            <param name="uploadGivingStatementData">The upload giving statement data.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.FinancialGivingStatementController.RenderGivingStatement(System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Boolean)">
+            <summary>
+            Render and return a giving statement for the specified person.
+            </summary>
+            <param name="personId">The person that made the contributions. That person's entire
+            giving group is included, which is typically the family.</param>
+            <param name="year">The contribution calendar year. ie 2019.  If not specified, the
+            current year is assumed.</param>
+            <param name="templateDefinedValueId">[Obsolete] The defined value ID that represents the statement
+            lava. This defined value should be a part of the Statement Generator Lava Template defined
+            type. If no ID is specified, then the default defined value for the Statement Generator Lava
+            Template defined type is assumed.</param>
+            <param name="financialStatementTemplateId"></param>
+            <param name="hideRefundedTransactions">if set to <c>true</c> transactions that have any
+            refunds will be hidden.</param>
+            <returns>
+            The rendered giving statement
+            </returns>
+        </member>
+        <member name="T:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController">
+            <summary>
+            NOTE: WebApi doesn't support Controllers with the Same Name, even if they have different namespaces, so can't call this FinancialTransactionsController
+            </summary>
+            <seealso cref="T:Rock.Rest.ApiControllerBase" />
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetStatementGeneratorTemplates">
+            <summary>
+            Gets the statement generator templates.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetStatementGeneratorRecipients(Rock.StatementGenerator.StatementGeneratorOptions)">
+            <summary>
+            Gets the statement generator recipients. This will be sorted based on the StatementGeneratorOptions
+            </summary>
+            <param name="options">The options.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetGroupLocationQuery(Rock.Data.RockContext)">
+            <summary>
+            Gets the group location query.
+            </summary>
+            <param name="rockContext">The rock context.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetStatementGeneratorRecipientResult(System.Int32,Rock.StatementGenerator.StatementGeneratorOptions)">
+            <summary>
+            Gets the statement generator recipient result for a GivingGroup that doesn't have an address
+            </summary>
+            <param name="groupId">The group identifier.</param>
+            <param name="options">The options.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetStatementGeneratorRecipientResult(System.Int32,System.Nullable{System.Int32},Rock.StatementGenerator.StatementGeneratorOptions)">
+            <summary>
+            Gets the statement generator recipient result for an individual that doesn't have an address
+            </summary>
+            <param name="groupId">The group identifier.</param>
+            <param name="personId">The person identifier.</param>
+            <param name="options">The options.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetStatementGeneratorRecipientResult(System.Int32,System.Nullable{System.Guid},Rock.StatementGenerator.StatementGeneratorOptions)">
+            <summary>
+            Gets the statement generator recipient result for a GivingGroup with the specified address (locationGuid)
+            </summary>
+            <param name="groupId">The group identifier.</param>
+            <param name="locationGuid">The location unique identifier.</param>
+            <param name="options">The options.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetStatementGeneratorRecipientResult(System.Int32,System.Nullable{System.Int32},System.Nullable{System.Guid},Rock.StatementGenerator.StatementGeneratorOptions)">
+            <summary>
+            Gets the statement generator recipient result for a specific person and associated group (family) with the specified address (locationGuid)
+            NOTE: If a person is in multiple families, call this for each of the families so that the statement will go to the address of each family
+            </summary>
+            <param name="groupId">The group identifier.</param>
+            <param name="personId">The person identifier.</param>
+            <param name="locationGuid">The location unique identifier.</param>
+            <param name="options">The options.</param>
+            <returns></returns>
+            <exception cref="T:System.Exception">
+            StatementGenerationOption options must be specified
+            or
+            LayoutDefinedValueGuid option must be specified
+            </exception>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GenerateStatementGeneratorRecipientResult(System.Int32,System.Nullable{System.Int32},System.Nullable{System.Guid},Rock.Model.Person,Rock.StatementGenerator.StatementGeneratorOptions)">
+            <summary>
+            Generates the statement generator recipient result.
+            </summary>
+            <param name="groupId">The group identifier.</param>
+            <param name="personId">The person identifier.</param>
+            <param name="locationGuid">The location unique identifier.</param>
+            <param name="currentPerson">The current person.</param>
+            <param name="options">The options.</param>
+            <returns></returns>
+            <exception cref="T:System.Exception">
+            StatementGenerationOption options must be specified
+            or
+            LayoutDefinedValueGuid option must be specified
+            </exception>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetGivingStatementHTML(System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Boolean,Rock.Model.Person)">
+            <summary>
+            Gets the giving statement HTML.
+            </summary>
+            <param name="personId">The person identifier.</param>
+            <param name="year">The year.</param>
+            <param name="templateDefinedValueId">The template defined value identifier.</param>
+            <param name="hideRefundedTransactions">if set to <c>true</c> [hide refunded transactions].</param>
+            <param name="currentPerson">The current person.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetFinancialPledgeQuery(Rock.StatementGenerator.StatementGeneratorOptions,Rock.Data.RockContext,System.Boolean)">
+            <summary>
+            Gets the financial pledge query.
+            </summary>
+            <param name="options">The options.</param>
+            <param name="rockContext">The rock context.</param>
+            <param name="usePersonFilters">if set to <c>true</c> [use person filters].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.StatementGenerator.Rest.StatementGeneratorFinancialTransactionsController.GetFinancialTransactionQuery(Rock.StatementGenerator.StatementGeneratorOptions,Rock.Data.RockContext,System.Boolean)">
+            <summary>
+            Gets the financial transaction query.
+            </summary>
+            <param name="options">The options.</param>
+            <param name="rockContext">The rock context.</param>
+            <param name="usePersonFilters">if set to <c>true</c> [use person filters].</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.StatementGenerator.PledgeSummary">
+            <summary>
+            A Pledge (or Multiple Pledges) for a specific Account
+            </summary>
+            <seealso cref="T:DotLiquid.Drop" />
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.PledgeList">
+            <summary>
+            Gets or sets the pledge list.
+            </summary>
+            <value>
+            The pledge list.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.PledgeStartDate">
+            <summary>
+            Gets or sets the pledge start date.
+            </summary>
+            <value>
+            The pledge start date.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.PledgeEndDate">
+            <summary>
+            Gets or sets the pledge end date.
+            </summary>
+            <value>
+            The pledge end date.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.AmountPledged">
+            <summary>
+            Gets or sets the amount pledged.
+            </summary>
+            <value>
+            The amount pledged.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.AccountId">
+            <summary>
+            Gets or sets the pledge account identifier.
+            </summary>
+            <value>
+            The pledge account identifier.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.AccountName">
+            <summary>
+            Gets or sets the pledge account.
+            </summary>
+            <value>
+            The pledge account.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.AccountPublicName">
+            <summary>
+            Gets or sets the pledge account.
+            </summary>
+            <value>
+            The pledge account.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.Account">
+            <summary>
+            Gets or sets the account.
+            </summary>
+            <value>
+            The account.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.PercentComplete">
+            <summary>
+            Gets the percent complete.
+            </summary>
+            <value>
+            The percent complete.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.AmountRemaining">
+            <summary>
+            Gets or sets the amount remaining.
+            </summary>
+            <value>
+            The amount remaining.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.PledgeSummary.AmountGiven">
+            <summary>
+            Gets or sets the amount given.
+            </summary>
+            <value>
+            The amount given.
+            </value>
+        </member>
+        <member name="M:Rock.StatementGenerator.PledgeSummary.ToString">
+            <summary>
+            Returns a <see cref="T:System.String" /> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String" /> that represents this instance.
+            </returns>
+        </member>
+        <member name="T:Rock.StatementGenerator.StatementGeneratorRecipientResult">
+            <summary>
+            
+            </summary>
+            <seealso cref="T:Rock.StatementGenerator.StatementGeneratorRecipient" />
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorRecipientResult.Html">
+            <summary>
+            Gets or sets the HTML.
+            NOTE: If this is NULL/EmptyString or OptedOut == True, don't show the statement
+            </summary>
+            <value>
+            The HTML.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorRecipientResult.FooterHtml">
+            <summary>
+            Gets or sets the footer HTML.
+            </summary>
+            <value>
+            The footer HTML.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorRecipientResult.OptedOut">
+            <summary>
+            Gets or sets a value indicating whether this statement should not be included due to the 'Do Not Send Giving Statement' option
+            </summary>
+            <value>
+              <c>true</c> if [opted out]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:Rock.StatementGenerator.StatementGeneratorRecipient">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorRecipient.GroupId">
+            <summary>
+            Gets or sets the GroupId of the Family to use as the Address.
+            if PersonId is null, this is also the GivingGroupId to use when fetching transactions
+            </summary>
+            <value>
+            The group identifier.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorRecipient.PersonId">
+            <summary>
+            Gets or sets the person identifier for people that give as Individuals. If this is null, get the Transactions based on the GivingGroupId
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorRecipient.LocationGuid">
+            <summary>
+            Gets or sets the location identifier.
+            This is the Mailing Address that the statement should be sent to
+            </summary>
+            <value>
+            The location identifier.
+            </value>
+        </member>
+        <member name="M:Rock.StatementGenerator.StatementGeneratorRecipient.ToString">
+            <summary>
+            Returns a <see cref="T:System.String" /> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String" /> that represents this instance.
+            </returns>
+        </member>
+        <member name="T:Rock.StatementGenerator.StatementGeneratorOptions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.StartDate">
+            <summary>
+            Gets or sets the start date.
+            </summary>
+            <value>
+            The start date.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.EndDate">
+            <summary>
+            Gets or sets the end date.
+            </summary>
+            <value>
+            The end date.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.TransactionAccountIds">
+            <summary>
+            Gets or sets the transaction account ids.
+            </summary>
+            <value>
+            The transaction account ids.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.CurrencyTypeIdsCash">
+            <summary>
+            Gets or sets the currency type ids cash.
+            </summary>
+            <value>
+            The currency type ids cash.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.CurrencyTypeIdsNonCash">
+            <summary>
+            Gets or sets the currency type ids non cash.
+            </summary>
+            <value>
+            The currency type ids non cash.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.PledgesIncludeChildAccounts">
+            <summary>
+            Gets a value indicating whether [pledges include child accounts].
+            </summary>
+            <value>
+              <c>true</c> if [pledges include child accounts]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.PledgesIncludeNonCashGifts">
+            <summary>
+            Gets a value indicating whether [pledges include non cash gifts].
+            </summary>
+            <value>
+              <c>true</c> if [pledges include non cash gifts]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.PledgesAccountIds">
+            <summary>
+            Gets or sets the pledges account ids.
+            </summary>
+            <value>
+            The pledges account ids.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.PersonId">
+            <summary>
+            Gets or sets the person unique identifier.
+            NULL means to get all individuals
+            </summary>
+            <value>
+            The person unique identifier.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.DataViewId">
+            <summary>
+            Gets or sets the Person DataViewId to filter the statements to
+            </summary>
+            <value>
+            The data view identifier.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.IncludeIndividualsWithNoAddress">
+            <summary>
+            Gets or sets a value indicating whether [include individuals with no address].
+            </summary>
+            <value>
+            <c>true</c> if [include individuals with no address]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.ExcludeInActiveIndividuals">
+            <summary>
+            Gets or sets a value indicating whether [exclude in active individuals].
+            </summary>
+            <value>
+              <c>true</c> if [exclude in active individuals]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.ExcludeOptedOutIndividuals">
+            <summary>
+            Gets or sets a value indicating whether [exclude opted out individuals].
+            </summary>
+            <value>
+              <c>true</c> if [exclude opted out individuals]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.IncludeBusinesses">
+            <summary>
+            Gets or sets a value indicating whether [include businesses].
+            </summary>
+            <value>
+              <c>true</c> if [include businesses]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.HideRefundedTransactions">
+            <summary>
+            Gets or sets a value indicating whether [hide refunded transactions].
+            </summary>
+            <value>
+              <c>true</c> if [hide refunded transactions]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.HideCorrectedTransactions">
+            <summary>
+            Hide transactions that are corrected on the same date. Transactions that have a matching negative dollar amount on the same date and same account will not be shown.
+            </summary>
+            <value>
+              <c>true</c> if [hide corrected transactions]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.TransactionTypeIds">
+            <summary>
+            Gets or sets the transaction type ids.
+            </summary>
+            <value>
+            The transaction type ids.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.LayoutDefinedValueGuid">
+            <summary>
+            Gets the layout defined value unique identifier.
+            </summary>
+            <value>
+            The layout defined value unique identifier.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.OrderByPostalCode">
+            <summary>
+            Gets or sets a value indicating whether [order by postal code].
+            </summary>
+            <value>
+              <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.OrderBy">
+            <summary>
+            Gets or sets the order by.
+            </summary>
+            <value>
+            The order by.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.BaseFileName">
+            <summary>
+            Gets or sets the name of the base file.
+            </summary>
+            <value>
+            The name of the base file.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.SaveDirectory">
+            <summary>
+            Gets or sets the save directory.
+            </summary>
+            <value>
+            The save directory.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.StatementsPerChapter">
+            <summary>
+            The maximum number of statements in a single pdf file
+            </summary>
+            <value>
+            The size of the chapter.
+            </value>
+        </member>
+        <member name="P:Rock.StatementGenerator.StatementGeneratorOptions.GroupByPageCount">
+            <summary>
+            Gets or sets a value indicating whether [group by page count].
+            </summary>
+            <value>
+              <c>true</c> if [group by page count]; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:Rock.StatementGenerator.OrderBy">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.OrderBy.PostalCode">
+            <summary>
+            Sort by postal code
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.OrderBy.LastName">
+            <summary>
+            Sort by Last Name
+            </summary>
+        </member>
+        <member name="F:Rock.StatementGenerator.OrderBy.PageCount">
+            <summary>
+            Sort by Page Count
+            </summary>
+        </member>
+    </members>
+</doc>

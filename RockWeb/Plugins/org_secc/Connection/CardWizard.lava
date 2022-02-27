@@ -1,0 +1,116 @@
+<div id="signup-parent" style="height: 1362px;">
+    <div id="signup-container" style="display: none;">
+		{% include '~/Plugins/org_secc/Connection/CardWizard/Partition.lava' %}
+    </div>
+</div>
+<script type="text/javascript">
+
+	$('[data-toggle="tooltip"]').tooltip();
+	/**
+	 * Handle the Signup Button functionality
+	 */
+	$('.signup-button').click(function() {
+		checked = []
+		$(this).parents('.slide-box').find("input:checked").each(function () {
+			   checked.push($(this).val())
+		});
+		if (checked.length == 0) {
+			return false;
+		}
+
+		roleRequests = [];
+		if ($(this).attr('data-type') == 'Role' || $(this).attr('data-type') == 'Campus')
+		{
+
+			for(var i = 0; i<checked.length; i++) {
+				var request = {};
+				if ($(this).attr('data-type') == 'Campus') {
+					request.GroupId = checked[i];
+				} else {
+					request.GroupId = $(this).attr('data-group-id');
+				}
+				if ($(this).attr('data-type') == 'Role') {
+					request.GroupTypeRole = checked[i];
+				} else {
+					request.GroupTypeRole = $(this).attr('data-role');
+				}
+				roleRequests.push(request);
+			}
+		} else {
+			var request = {};
+			request.GroupId = $(this).attr('data-group-id');
+			request.GroupTypeRole = $(this).attr('data-role');
+			request.Attributes = { };
+			request.Attributes[$(this).attr('data-parameter-name')] = checked.join(',');
+			roleRequests.push(request);
+		}
+		window.location.href=$(this).attr('href') + "&RoleRequests=" + JSON.stringify(roleRequests);
+		return false;
+	});
+
+	/**
+	 * Handle the slide functionality for each partition.
+	 */
+    doSlide = function(slideIn, captureHistory) {
+		if(captureHistory === undefined) {
+		  captureHistory = true;
+		}
+		slideOutEl = $(".slide-box.active");
+		if (slideOutEl.attr('id') == $(slideIn).attr('id')) {
+			return;
+		}
+        //  Make sure we have the max height to accomodate the new area
+        if (slideOutEl.height() < $(slideIn).height())
+        {
+            resizeblock(slideIn);
+        }
+		slideOutEl.removeClass('active');
+		$(slideIn).addClass('active');
+		// Slide Left
+		if (slideOutEl.data("level") < $(slideIn).data("level")) {
+			$(slideIn).css("left", '100%');
+            $(slideIn).animate({
+                left: '0%',
+            }, 500, "swing", function() {resizeblock(slideIn);} );
+            slideOutEl.animate({
+                left: '-100%',
+            }, 500, "swing", function() {resizeblock(slideIn);} );
+		}
+		// Slide Right
+		if (slideOutEl.data("level") >= $(slideIn).data("level")) {
+
+			$(slideIn).css("left", '-100%');
+            $(slideIn).animate({
+                left: '0%',
+            }, 500, "swing", function() {resizeblock(slideIn);} );
+            slideOutEl.animate({
+                left: '100%',
+            }, 500, "swing", function() {resizeblock(slideIn);} );
+		}
+
+		slideInId = slideIn.replace("#","");
+		if (captureHistory) {
+			history.pushState({slideIn:slideIn}, slideInId, "?show="+slideInId);
+		}
+    }
+    resizeblock = function(selector){
+        ch = $(selector).height();
+        $('#signup-parent').css({
+            height : ch + 50 + 'px'
+        });
+    }
+    $( window ).resize(function() {resizeblock("#"+$(".slide-box.active").attr('id'))});
+
+    $(document).ready(function() {
+       $('#signup-container').css('display', 'block');
+       resizeblock('#{% assign showDiv = 'Global' | PageParameter:'show' | Size > 0 %}{% if show > 0 %}{{'Global' | PageParameter:'show'}}{% else %}signup{% endif %}');
+    });
+
+	$(window).on("popstate", function(e) {
+		if (e.originalEvent != null && e.originalEvent.state != null) {
+			doSlide(e.originalEvent.state.slideIn, false);
+		} else {
+			doSlide("#signup");
+		}
+	});
+</script>

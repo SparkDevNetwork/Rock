@@ -1,0 +1,23 @@
+﻿﻿<div class="wm-list-as-blocks clearfix">
+  <ul>
+    {% assign orderedGroups = Groups | Sort:'Name' %}
+    {% for group in orderedGroups %}
+      {% assign deviceErrorCount = group | Property:'Devices' | Where:'OverallState','Error' | Size %}
+      {% assign deviceWarningCount = group | Property:'Devices' | Where:'OverallState','Warning' | Size %}
+      {% assign deviceOKCount = group | Property:'Devices' | Where:'OverallState','OK' | Size %}
+      {% assign deviceUnknownCount = group | Property:'Devices' | Where:'OverallState','Unknown' | Size %}
+      <li>
+        <span class="wm-state-{{ group.OverallState | AsString | Downcase }}">
+          <i class="fa fa-object-group"></i>
+          <h3>{{ group.Name }}</h3>
+          <div class="notification">
+            <span class="label label-danger" title="Devices in Error state">{% if deviceErrorCount > 0 %}{{ deviceErrorCount }}{% endif %}</span>
+            <span class="label label-warning" title="Devices in Warning state">{% if deviceWarningCount > 0 %}{{ deviceWarningCount }}{% endif %}</span>
+            <span class="label label-success" title="Devices in OK state">{% if deviceOKCount > 0 %}{{ deviceOKCount }}{% endif %}</span>
+            <span class="label label-default" title="Devices in Unknown state">{% if deviceUnknownCount > 0 %}{{ deviceUnknownCount }}{% endif %}</span>
+          </div>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

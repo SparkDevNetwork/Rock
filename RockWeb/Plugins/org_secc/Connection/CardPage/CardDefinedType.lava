@@ -1,0 +1,21 @@
+			{%- assign definedType = partition -%}
+			{%- if definedType.Limit > 0 or definedType.Limit == null %}
+				{%- assign spotsLeft = definedType.Limit | Minus: definedType.Filled -%}
+				<div class="col-sm-6 col-md-4" style="margin-bottom: 20px;">
+					<div class="serve-card" style="height: 180px;">
+					{% if definedType.Limit == null or spotsLeft > 0 %}
+					<a href="{{partition.Url}}" title="Sign Up">
+					{% endif %}                        
+						<div class="box text-center">
+							<div class="clearfix">
+								<span class="label label-default pull-right" style="margin: 10px">{% if definedType.Limit == null %}Unlimited{% else %}{% if spotsLeft <= 0 %}Full{% else %}{{spotsLeft}} {{ 'Spot' | PluralizeForQuantity:spotsLeft }} Remaining{% endif %}{% endif %}</span>
+							</div>
+                            <h3>{{ definedType.Entity.Value }}</h3>
+                            <span>{{ definedType.Entity.Description }}</span>
+                        </div>
+					{%- if definedType.Limit == null or spotsLeft > 0 -%}
+                    </a>
+					{%- endif -%}
+					</div>
+                </div>
+			{%- endif -%}

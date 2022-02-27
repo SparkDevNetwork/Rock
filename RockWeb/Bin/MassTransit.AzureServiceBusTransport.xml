@@ -1,0 +1,1708 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MassTransit.AzureServiceBusTransport</name>
+    </assembly>
+    <members>
+        <member name="M:MassTransit.AzureServiceBusTransport.AzureBusFactory.CreateUsingServiceBus(System.Action{MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator})">
+            <summary>
+            Configure and create a bus for Azure Service Bus (later, we'll use Event Hubs instead)
+            </summary>
+            <param name="configure">The configuration callback to configure the bus</param>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.BrokeredMessageContext">
+            <summary>
+            The context of a BrokeredMessage from AzureServiceBus - gives access to the transport
+            message when requested.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.BrokeredMessageContext.RenewLockAsync">
+            <summary>
+            Renew the message lock
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.ClientContext">
+            <summary>
+            The client context is used to access the queue/subscription/topic client.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ClientContext.InputAddress">
+            <summary>
+            The input address for the client/transport
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ClientContext.EntityPath">
+            <summary>
+            The path of the messaging entity
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.ClientContext.RegisterSessionHandlerFactoryAsync(Microsoft.ServiceBus.Messaging.IMessageSessionAsyncHandlerFactory,System.EventHandler{Microsoft.ServiceBus.Messaging.ExceptionReceivedEventArgs})">
+            <summary>
+            Register a session handler factory asynchronously using the underlying client
+            </summary>
+            <param name="factory"></param>
+            <param name="exceptionHandler"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.ClientContext.OnMessageAsync(System.Func{Microsoft.ServiceBus.Messaging.BrokeredMessage,System.Threading.Tasks.Task},System.EventHandler{Microsoft.ServiceBus.Messaging.ExceptionReceivedEventArgs})">
+            <summary>
+            Register an message handler for the client
+            </summary>
+            <param name="callback"></param>
+            <param name="exceptionHandler"></param>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Configuration.IServiceBusBusConfiguration.DeployTopologyOnly">
+            <summary>
+            If true, only the broker topology will be deployed
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Configuration.IServiceBusBusConfiguration.CreateHostConfiguration(MassTransit.AzureServiceBusTransport.ServiceBusHostSettings)">
+            <summary>
+            Create a host configuration, by adding a host to the bus
+            </summary>
+            <param name="settings"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Configuration.IServiceBusBusConfiguration.CreateReceiveEndpointConfiguration(System.String)">
+            <summary>
+            Create a receive endpoint configuration for the default host
+            </summary>
+            <param name="queueName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Configuration.IServiceBusBusConfiguration.CreateReceiveEndpointConfiguration(MassTransit.AzureServiceBusTransport.Settings.ReceiveEndpointSettings,MassTransit.AzureServiceBusTransport.Configuration.IServiceBusEndpointConfiguration)">
+            <summary>
+            Create a receive endpoint configuration for the default host
+            </summary>
+            <param name="settings"></param>
+            <param name="endpointConfiguration"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Configuration.IServiceBusBusConfiguration.CreateSubscriptionEndpointConfiguration(System.String,System.String)">
+            <summary>
+            Create a subscription endpoint configuration for the default host
+            </summary>
+            <param name="subscriptionName"></param>
+            <param name="topicPath"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Configuration.IServiceBusHostConfiguration.CreateReceiveEndpointConfiguration(System.String)">
+            <summary>
+            Create a receive endpoint configuration using the specified host
+            </summary>
+            <param name="queueName">The queue name for the receive endpoint</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Configuration.IServiceBusHostConfiguration.CreateSubscriptionEndpointConfiguration(MassTransit.AzureServiceBusTransport.Settings.SubscriptionEndpointSettings)">
+            <summary>
+            Create a subscription endpoint on the host
+            </summary>
+            <param name="settings"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Configurators.IReceiverConfigurator.InputAddress">
+            <summary>
+            Set the input address of the receiver 
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Configurators.IReceiverConfigurator.Log">
+            <summary>
+            Set the logger for the receiver
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.DeployTopologyOnly">
+            <summary>
+            Set to true if the topology should be deployed only
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.Send``1(System.Action{MassTransit.AzureServiceBusTransport.Topology.Configuration.IServiceBusMessageSendTopologyConfigurator{``0}})">
+            <summary>
+            Configure the send topology of the message type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configureTopology"></param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.Publish``1(System.Action{MassTransit.AzureServiceBusTransport.Topology.Configuration.IServiceBusMessagePublishTopologyConfigurator{``0}})">
+            <summary>
+            Configure the send topology of the message type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configureTopology"></param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.OverrideDefaultBusEndpointQueueName(System.String)">
+            <summary>
+            In most cases, this is not needed and should not be used. However, if for any reason the default bus
+            endpoint queue name needs to be changed, this will do it. Do NOT set it to the same name as a receive
+            endpoint or you will screw things up.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.Host(MassTransit.AzureServiceBusTransport.ServiceBusHostSettings)">
+            <summary>
+            Configures a host
+            </summary>
+            <param name="settings"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.ReceiveEndpoint(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.String,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator})">
+            <summary>
+            Declare a ReceiveEndpoint on the broker and configure the endpoint settings and message consumers.
+            </summary>
+            <param name="host">The host for this endpoint</param>
+            <param name="queueName">The input queue name</param>
+            <param name="configure">The configuration method</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.ReceiveEndpoint(MassTransit.AzureServiceBusTransport.IServiceBusHost,MassTransit.IEndpointDefinition,MassTransit.IEndpointNameFormatter,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator})">
+            <summary>
+            Specify a receive endpoint for the bus, using an endpoint definition
+            </summary>
+            <param name="host"></param>
+            <param name="definition">An endpoint definition, which abstracts specific endpoint behaviors from the transport</param>
+            <param name="endpointNameFormatter"></param>
+            <param name="configureEndpoint">The configuration callback</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.SubscriptionEndpoint``1(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.String,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator})">
+            <summary>
+            Declare a subscription endpoint on the broker and configure the endpoint settings and message consumers
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="host"></param>
+            <param name="subscriptionName"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator.SubscriptionEndpoint(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.String,System.String,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator})">
+            <summary>
+            Declare a subscription endpoint on the broker and configure the endpoint settings and message consumers
+            </summary>
+            <param name="host">The host for this endpoint</param>
+            <param name="subscriptionName">The name of the subscription</param>
+            <param name="topicPath">The topic name to subscribe</param>
+            <param name="configure"></param>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.PrefetchCount">
+            <summary>
+            Specify the number of messages to prefetch from the queue to the service
+            </summary>
+            <value>The limit</value>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.MaxConcurrentCalls">
+            <summary>
+            Specify the number of concurrent consumers (separate from prefetch count)
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.AutoDeleteOnIdle">
+            <summary>
+            True if the queue should be deleted if idle
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.DefaultMessageTimeToLive">
+            <summary>
+            Set the default message time to live in the queue
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.EnableBatchedOperations">
+            <summary>
+            Sets a value that indicates whether server-side batched operations are enabled
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.EnableDeadLetteringOnMessageExpiration">
+            <summary>
+            Move messages to the dead letter queue on expiration (time to live exceeded)
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.ForwardDeadLetteredMessagesTo">
+            <summary>
+            Sets the path to the recipient to which the dead lettered message is forwarded.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.LockDuration">
+            <summary>
+            Specify the lock duration for messages read from the queue
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.MaxDeliveryCount">
+            <summary>
+            Sets the maximum delivery count. A message is automatically deadlettered after this number of deliveries.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.RequiresSession">
+            <summary>
+            Sets the queue in session mode, requiring a session for inbound messages
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.UserMetadata">
+            <summary>
+            Sets the user metadata.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusEndpointConfigurator.SelectBasicTier">
+            <summary>
+            IF using the Basic Tier of Service Bus, this resets some values to avoid failing
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator.TokenProvider">
+            <summary>
+            Sets the TokenProvider for the host
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator.OperationTimeout">
+            <summary>
+            Sets the operation timeout for the messaging factory
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator.RetryMinBackoff">
+            <summary>
+            The minimum back off interval for the exponential retry policy
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator.RetryMaxBackoff">
+            <summary>
+            The maximum back off interval for the exponential retry policy
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator.RetryLimit">
+            <summary>
+            The retry limit for service bus operations
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator.TransportType">
+            <summary>
+            Sets the messaging protocol to use with the messaging factory, defaults to AMQP.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator.BatchFlushInterval">
+            <summary>
+            Sets the batch flush interval to use with the messaging factory, default is 20ms. 
+            </summary>
+            <remarks>
+            Currently the Microsoft ServiceBus client defaults to 20ms. For more information
+            regarding batching and performance see: 
+            https://azure.microsoft.com/en-us/blog/new-article-best-practices-for-performance-improvements-using-service-bus-brokered-messaging/
+            </remarks>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.DuplicateDetectionHistoryTimeWindow">
+            <summary>
+            Sets the TimeSpan structure that defines the duration of the duplicate detection history. The default value is 10 minutes
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.EnableExpress">
+            <summary>
+            If express is enabled, messages are not persisted to durable storage
+            </summary>
+            <value>True for a durable queue, False for an in-memory queue</value>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.EnablePartitioning">
+            <summary>
+            Sets a value that indicates whether the queue to be partitioned across multiple message brokers is enabled
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.IsAnonymousAccessible">
+            <summary>
+            Sets a value that indicates whether the message is anonymous accessible.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.MaxSizeInMegabytes">
+            <summary>
+            Sets the maximum size of the queue in megabytes, which is the size of memory allocated for the queue
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.RequiresDuplicateDetection">
+            <summary>
+            Sets the value indicating if this queue requires duplicate detection.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.SupportOrdering">
+            <summary>
+            Sets a value that indicates whether the queue supports ordering.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.EnableDuplicateDetection(System.TimeSpan)">
+            <summary>
+            Enable duplicate detection on the queue, specifying the time window
+            </summary>
+            <param name="historyTimeWindow">The time window for duplicate history</param>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusQueueEndpointConfigurator.MessageWaitTimeout">
+            <summary>
+            Sets the message session timeout period
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator">
+            <summary>
+            Configure an Azure Service Bus receive endpoint
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator.Host">
+            <summary>
+            The host on which the endpoint is being configured
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator.SubscribeMessageTopics">
+            <summary>
+            If true, adds subscriptions for the message types to the related topics.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator.RemoveSubscriptions">
+            <summary>
+            If true, on shutdown, the subscriptions added are removed. This is used to avoid auto-delete
+            queues from creating abandoned subscriptions on the topic, resulting in a quota overflow.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator.Subscribe(System.String,System.String,System.Action{MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator})">
+            <summary>
+            Create a topic subscription on the endpoint
+            </summary>
+            <param name="topicName">The topic name</param>
+            <param name="subscriptionName">The name for the subscription</param>
+            <param name="callback">Configure the exchange and binding</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator.Subscribe``1(System.String,System.Action{MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator})">
+            <summary>
+            Create a topic subscription for the message type
+            </summary>
+            <param name="subscriptionName">The name for the subscription</param>
+            <param name="callback">Configure the topic subscription</param>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator">
+            <summary>
+            Configure an Azure Service Bus receive endpoint
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator.Host">
+            <summary>
+            The host on which the endpoint is being configured
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator.Filter">
+            <summary>
+            Specify the filter for the subscription
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator.Rule">
+            <summary>
+            Specify a rule for the subscription
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Contexts.SendEndpointContext.EntityPath">
+            <summary>
+            The path of the messaging entity
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Contexts.SendEndpointContext.Send(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+            <summary>
+            Send the message to the messaging entity
+            </summary>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Contexts.SendEndpointContext.ScheduleSend(Microsoft.ServiceBus.Messaging.BrokeredMessage,System.DateTime)">
+            <summary>
+            Schedule a send in the future to the messaging entity
+            </summary>
+            <param name="message"></param>
+            <param name="scheduleEnqueueTimeUtc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Contexts.SendEndpointContext.CancelScheduledSend(System.Int64)">
+            <summary>
+            Cancel a previously schedule send on the messaging entity
+            </summary>
+            <param name="sequenceNumber"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Hosting.ServiceBusAmqpTransportSettings">
+            <summary>
+            Represents the Advanced Message Queuing Protocol transport settings.
+            </summary>
+            <remarks>
+            All properties are nullable so that default values are not overwritten unless
+            a configuraiton value is provided.
+            </remarks>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Hosting.ServiceBusAmqpTransportSettings.BatchFlushInterval">
+            <summary>
+            Sets the batch flush interval to use with the messaging factory, default is 20ms.
+            </summary>
+            <remarks>
+            Currently the Microsoft ServiceBus client defaults to 20ms. For more inforamtion
+            regarding batching and performance see: 
+            https://azure.microsoft.com/en-us/blog/new-article-best-practices-for-performance-improvements-using-service-bus-brokered-messaging/
+            </remarks>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Hosting.ServiceBusNetMessagingTransportSettings">
+            <summary>
+            Represents.NET messaging transport settings.
+            </summary>
+            <remarks>
+            All properties are nullable so that default values are not overwritten unless
+            a configuraiton value is provided.
+            </remarks>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Hosting.ServiceBusNetMessagingTransportSettings.BatchFlushInterval">
+            <summary>
+            Sets the batch flush interval to use with the messaging factory, default is 20ms.
+            </summary>
+            <remarks>
+            Currently the Microsoft ServiceBus client defaults to 20ms. For more inforamtion
+            regarding batching and performance see: 
+            https://azure.microsoft.com/en-us/blog/new-article-best-practices-for-performance-improvements-using-service-bus-brokered-messaging/
+            </remarks>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Hosting.ServiceBusServiceConfigurator">
+            <summary>
+            A hosted service can specify receive endpoints using the service configurator
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.IServiceBusHost">
+            <summary>
+            An Azure ServiceBus Host, which caches the messaging factory and namespace manager
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHost.BasePath">
+            <summary>
+            The base path used for queues on this host
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHost.Topology">
+            <summary>
+            Returns the topology of the service bus host
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHost.MessagingFactoryContextSupervisor">
+            <summary>
+            The default messaging factory cache, could be AMQP or NET-TCP, depending upon configuration
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHost.NamespaceContextSupervisor">
+            <summary>
+            The namespace cache for operating on the service bus namespace (management)
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.IServiceBusHost.RetryPolicy">
+            <summary>
+            The retry policy shared by transports communicating with the host. Should be
+            used for all operations against Azure.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusHost.ConnectReceiveEndpoint(MassTransit.IEndpointDefinition,MassTransit.IEndpointNameFormatter,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator})">
+            <summary>
+            Connect a receive endpoint for the host, using an endpoint definition
+            </summary>
+            <param name="definition">An endpoint definition, which abstracts specific endpoint behaviors from the transport</param>
+            <param name="endpointNameFormatter"></param>
+            <param name="configureEndpoint">The configuration callback</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusHost.ConnectReceiveEndpoint(System.String,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator})">
+            <summary>
+            Create a receive endpoint on the host, with a separate handle for stopping/removing the endpoint
+            </summary>
+            <param name="queueName"></param>
+            <param name="configure"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusHost.ConnectSubscriptionEndpoint``1(System.String,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator})">
+            <summary>
+            Create a subscription endpoint on the host, which can be stopped independently from the bus
+            </summary>
+            <typeparam name="T">The topic message type</typeparam>
+            <param name="subscriptionName">The subscription name for this endpoint</param>
+            <param name="configure">Configuration callback for the endpoint</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.IServiceBusHost.ConnectSubscriptionEndpoint(System.String,System.String,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusSubscriptionEndpointConfigurator})">
+            <summary>
+            Create a subscription endpoint on the host, which can be stopped independently from the bus
+            </summary>
+            <param name="subscriptionName">The subscription name for this endpoint</param>
+            <param name="topicName">The topic name to subscribe for this endpoint</param>
+            <param name="configure">Configuration callback for the endpoint</param>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.MessageSessionContext">
+            <summary>
+            A context for a message consumed within a message session
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.MessageSessionContext.SessionId">
+            <summary>
+            The SessionId of the session
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.MessageSessionContext.LockedUntilUtc">
+            <summary>
+            The session is locked until...
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.MessageSessionContext.GetStateAsync">
+            <summary>
+            Returns the state as a stream
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.MessageSessionContext.SetStateAsync(System.IO.Stream)">
+            <summary>
+            Writes the message state from the specified stream
+            </summary>
+            <param name="sessionState"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.MessageSessionContext.RenewLockAsync">
+            <summary>
+            Renews the session lock
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.MessagingFactoryContext">
+            <summary>
+            Handles the connection of a messaging factory
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.MessagingFactoryContext.ServiceAddress">
+            <summary>
+            The base address of the messaging factory, which will not include any scope within the namespace
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.NamespaceContext">
+            <summary>
+            A service bus namespace which has the appropropriate messaging factories available
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.NamespaceContext.ServiceAddress">
+            <summary>
+            The address of the service bus namespace, including any scope specified at host configuration
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.NamespaceContext.CreateQueue(Microsoft.ServiceBus.Messaging.QueueDescription)">
+            <summary>
+            Create a queue in the host namespace (which is scoped to the full ServiceUri)
+            </summary>
+            <param name="queueDescription"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.NamespaceContext.CreateTopic(Microsoft.ServiceBus.Messaging.TopicDescription)">
+            <summary>
+            Create a topic in the root namespace
+            </summary>
+            <param name="topicDescription"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.NamespaceContext.CreateTopicSubscription(Microsoft.ServiceBus.Messaging.SubscriptionDescription,Microsoft.ServiceBus.Messaging.RuleDescription,Microsoft.ServiceBus.Messaging.Filter)">
+            <summary>
+            Create a topic subscription
+            </summary>
+            <param name="subscriptionDescription"></param>
+            <param name="rule"></param>
+            <param name="filter"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.NamespaceContext.DeleteTopicSubscription(Microsoft.ServiceBus.Messaging.SubscriptionDescription)">
+            <summary>
+            Delete a subscription from the topic
+            </summary>
+            <param name="description"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Pipeline.MessageReceiverFilter">
+            <summary>
+            Creates a message receiver and receives messages from the input queue of the endpoint
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Pipeline.MessageSessionReceiverFilter">
+            <summary>
+            Creates a message session receiver
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Pipeline.PropertyOfContextFilter`2">
+            <summary>
+            Allows a filter using a property of a context
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TProperty"></typeparam>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Pipeline.ServiceBusMessageSchedulerFilter">
+            <summary>
+            Adds the service bus message scheduler filter
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Saga.MessageSessionSagaRepository`1">
+            <summary>
+            A saga repository that uses the message session in Azure Service Bus to store the state 
+            of the saga.
+            </summary>
+            <typeparam name="TSaga">The saga state type</typeparam>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Saga.MessageSessionSagaRepository`1.WriteSagaState(MassTransit.AzureServiceBusTransport.MessageSessionContext,`0)">
+            <summary>
+            Writes the saga state to the message session
+            </summary>
+            <param name="context">The message session context</param>
+            <param name="saga">The saga state</param>
+            <returns>An awaitable task, of course</returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Saga.MessageSessionSagaRepository`1.MissingPipe`1">
+            <summary>
+            Once the message pipe has processed the saga instance, add it to the saga repository
+            </summary>
+            <typeparam name="TMessage"></typeparam>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Scheduling.ServiceBusScheduleMessagePipe`1">
+            <summary>
+            Sets the message enqueue time when sending the message, and invokes
+            any developer-specified pipes.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Scheduling.ServiceBusScheduleMessagePipe">
+            <summary>
+            Sets the message enqueue time when sending the message, and invokes
+            any developer-specified pipes.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.ServiceBusConfigurationExtensions.CreateUsingAzureServiceBus(MassTransit.IBusFactorySelector,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator})">
+            <summary>
+            Configure and create a bus for Azure Service Bus
+            </summary>
+            <param name="selector">Hang off the selector interface for visibility</param>
+            <param name="configure">The configuration callback to configure the bus</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.ServiceBusEndpointDefinitionExtensions.Apply(MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator,MassTransit.IEndpointDefinition,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator})">
+            <summary>
+            We may want to have a builder/endpoint context that could store things like management endpoint, etc. to configure
+            filters and add configuration interfaces for things like concurrency limit and prefetch count
+            </summary>
+            <param name="configurator"></param>
+            <param name="definition"></param>
+            <param name="configure">The callback to invoke after the definition configuration has been applied</param>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings">
+            <summary>
+            The host settings used to configure the service bus connection
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.ServiceUri">
+            <summary>
+            The address of the service bus namespace (and accompanying service scope)
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.TokenProvider">
+            <summary>
+            The token provider to access the namespace
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.OperationTimeout">
+            <summary>
+            The operation timeout for timing out operations
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.RetryMinBackoff">
+            <summary>
+            The minimum back off interval for the exponential retry policy
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.RetryMaxBackoff">
+            <summary>
+            The maximum back off interval for the exponential retry policy
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.RetryLimit">
+            <summary>
+            The retry limit for service bus operations
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.TransportType">
+            <summary>
+            The type of transport to use AMQP or NetMessaging
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.AmqpTransportSettings">
+            <summary>
+            The AMQP settings
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusHostSettings.NetMessagingTransportSettings">
+            <summary>
+            The net messaging settings
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusSendContext.ScheduledEnqueueTimeUtc">
+            <summary>
+            Set the time at which the message should be enqueued, which is essentially scheduling the message for future delivery to the queue.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusSendContext.PartitionKey">
+            <summary>
+            Set the partition key for the message, which is used to split load across nodes in Azure
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusSendContext.SessionId">
+            <summary>
+            Set the sessionId of the message
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.ServiceBusSendContext.ReplyToSessionId">
+            <summary>
+            Set the replyToSessionId of the message
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.ServiceBusSendContextExtensions.SetScheduledEnqueueTime(MassTransit.SendContext,System.DateTime)">
+            <summary>
+            Set the time at which the message should be delivered to the queue
+            </summary>
+            <param name="context"></param>
+            <param name="scheduledTime">The scheduled time for the message</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.ServiceBusSendContextExtensions.SetScheduledEnqueueTime(MassTransit.SendContext,System.TimeSpan)">
+            <summary>
+            Set the time at which the message should be delivered to the queue
+            </summary>
+            <param name="context"></param>
+            <param name="delay">The time to wait before the message shuould be enqueued</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Builders.IBrokerTopologyBuilder.CreateTopic(Microsoft.ServiceBus.Messaging.TopicDescription)">
+            <summary>
+            Creates a topic
+            </summary>
+            <param name="topicDescription">The immutable topic description</param>
+            <returns>An entity handle used to reference the exchange in subsequent calls</returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Builders.IBrokerTopologyBuilder.CreateSubscription(MassTransit.AzureServiceBusTransport.Topology.Entities.TopicHandle,Microsoft.ServiceBus.Messaging.SubscriptionDescription,Microsoft.ServiceBus.Messaging.RuleDescription,Microsoft.ServiceBus.Messaging.Filter)">
+            <summary>
+            Creates a subscription
+            </summary>
+            <param name="topic">The source exchange</param>
+            <param name="subscriptionDescription"></param>
+            <param name="rule"></param>
+            <param name="filter"></param>
+            <returns>An entity handle used to reference the binding in subsequent calls</returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Builders.IBrokerTopologyBuilder.CreateTopicSubscription(MassTransit.AzureServiceBusTransport.Topology.Entities.TopicHandle,MassTransit.AzureServiceBusTransport.Topology.Entities.TopicHandle,Microsoft.ServiceBus.Messaging.SubscriptionDescription)">
+            <summary>
+            Creates a subscription which forwards to a different topic
+            </summary>
+            <param name="source">The source topic</param>
+            <param name="destination">The destination topic</param>
+            <param name="subscriptionDescription"></param>
+            <returns>An entity handle used to reference the binding in subsequent calls</returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Builders.IBrokerTopologyBuilder.CreateQueue(Microsoft.ServiceBus.Messaging.QueueDescription)">
+            <summary>
+            Creates a queue
+            </summary>
+            <param name="queueDescription"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Builders.IBrokerTopologyBuilder.CreateQueueSubscription(MassTransit.AzureServiceBusTransport.Topology.Entities.TopicHandle,MassTransit.AzureServiceBusTransport.Topology.Entities.QueueHandle,Microsoft.ServiceBus.Messaging.SubscriptionDescription,Microsoft.ServiceBus.Messaging.RuleDescription,Microsoft.ServiceBus.Messaging.Filter)">
+            <summary>
+            Creates a subscription which forwards to a queue
+            </summary>
+            <param name="exchange"></param>
+            <param name="queue"></param>
+            <param name="subscriptionDescription"></param>
+            <param name="rule"></param>
+            <param name="filter"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Builders.IPublishEndpointBrokerTopologyBuilder">
+            <summary>
+            A builder for creating the topology when publishing a message
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Builders.IPublishEndpointBrokerTopologyBuilder.Topic">
+            <summary>
+            The topic to which the message is published
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Builders.IPublishEndpointBrokerTopologyBuilder.CreateImplementedBuilder">
+            <summary>
+            Create an implemented builder which can be passed to implemented types
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Builders.IReceiveEndpointBrokerTopologyBuilder">
+            <summary>
+            A unique builder context should be created for each specification, so that the items added
+            by it can be combined together into a group - so that if a subsequent specification yanks 
+            something that conflicts, the system can yank the group or warn that it's impacted.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Builders.IReceiveEndpointBrokerTopologyBuilder.Queue">
+            <summary>
+            A handle to the consuming queue
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Builders.ISendEndpointBrokerTopologyBuilder">
+            <summary>
+            A builder for creating the topology when publishing a message
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Builders.ISendEndpointBrokerTopologyBuilder.Queue">
+            <summary>
+            The topic to which the message is published
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Builders.ISubscriptionEndpointBrokerTopologyBuilder">
+            <summary>
+            A unique builder context should be created for each specification, so that the items added
+            by it can be combined together into a group - so that if a subsequent specification yanks 
+            something that conflicts, the system can yank the group or warn that it's impacted.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Builders.ISubscriptionEndpointBrokerTopologyBuilder.Topic">
+            <summary>
+            A handle to the subscription topic
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Builders.PublishEndpointBrokerTopologyBuilder.Topic">
+            <summary>
+            The topic where the published message is sent
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEndpointEntityConfigurator.LockDuration">
+            <summary>
+            Specify the lock duration for messages read from the queue
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEndpointEntityConfigurator.MaxDeliveryCount">
+            <summary>
+            Sets the maximum delivery count. A message is automatically deadlettered after this number of deliveries.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEndpointEntityConfigurator.RequiresSession">
+            <summary>
+            Sets the subscription in session mode, requiring a session for inbound messages
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEndpointEntityConfigurator.EnableDeadLetteringOnMessageExpiration">
+            <summary>
+            Move messages to the dead letter queue on expiration (time to live exceeded)
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEndpointEntityConfigurator.ForwardDeadLetteredMessagesTo">
+            <summary>
+            Sets the path to the recipient to which the dead lettered message is forwarded.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEntityConfigurator.AutoDeleteOnIdle">
+            <summary>
+            True if the queue should be deleted if idle
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEntityConfigurator.DefaultMessageTimeToLive">
+            <summary>
+            Set the default message time to live in the queue
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEntityConfigurator.EnableBatchedOperations">
+            <summary>
+            Sets a value that indicates whether server-side batched operations are enabled
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IEntityConfigurator.UserMetadata">
+            <summary>
+            Sets the user metadata.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.Path">
+            <summary>
+            The entity path
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.BasePath">
+            <summary>
+            The base path for the message entity
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.FullPath">
+            <summary>
+            The full path of the message entity
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.DuplicateDetectionHistoryTimeWindow">
+            <summary>
+            How long of a window to use to detect duplicate messages
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.EnableExpress">
+            <summary>
+            If express is enabled, messages are not persisted to durable storage
+            </summary>
+            <value>True for a durable queue, False for an in-memory queue</value>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.EnablePartitioning">
+            <summary>
+            Sets a value that indicates whether the queue to be partitioned across multiple message brokers is enabled
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.IsAnonymousAccessible">
+            <summary>
+            Sets a value that indicates whether the message is anonymous accessible.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.MaxSizeInMegabytes">
+            <summary>
+            Sets the maximum size of the queue in megabytes, which is the size of memory allocated for the queue
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.RequiresDuplicateDetection">
+            <summary>
+            Sets the value indicating if this queue requires duplicate detection.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.SupportOrdering">
+            <summary>
+            Sets a value that indicates whether the queue supports ordering.
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Configuration.IMessageEntityConfigurator.EnableDuplicateDetection(System.TimeSpan)">
+            <summary>
+            Enable duplicate detection on the queue, specifying the time window
+            </summary>
+            <param name="historyTimeWindow">The time window for duplicate history</param>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IQueueConfigurator.EnableDeadLetteringOnFilterEvaluationExceptions">
+            <summary>
+            Move messages to the dead letter queue on filter evaluation exception
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.IQueueConfigurator.ForwardTo">
+            <summary>
+            Sets the path where messages are forwarded to
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Configuration.IQueueConfigurator.GetQueueDescription">
+            <summary>
+            Create the queueDescription for the configuration
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Configuration.IServiceBusConsumeTopologyConfigurator.Subscribe(System.String,System.String,System.Action{MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator})">
+            <summary>
+            Create a topic subscription on the endpoint
+            </summary>
+            <param name="topicName">The topic name</param>
+            <param name="subscriptionName">The name for the subscription</param>
+            <param name="callback">Configure the exchange and binding</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Configuration.IServiceBusMessageConsumeTopologyConfigurator`1.Subscribe(System.String,System.Action{MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator})">
+            <summary>
+            Create a topic subscription for the message type
+            </summary>
+            <param name="subscriptionName"></param>
+            <param name="configure">Configure the binding and the exchange</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.Configuration.IServiceBusMessageConsumeTopologyConfigurator.Apply(MassTransit.AzureServiceBusTransport.Topology.Builders.IReceiveEndpointBrokerTopologyBuilder)">
+            <summary>
+            Apply the message topology to the builder
+            </summary>
+            <param name="builder"></param>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator.TopicPath">
+            <summary>
+            The path of the subscription's topic
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator.SubscriptionName">
+            <summary>
+            The subscription name, unique per topic
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator.ForwardTo">
+            <summary>
+            Sets the path where messages are forwarded to
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator.EnableDeadLetteringOnFilterEvaluationExceptions">
+            <summary>
+            Move messages to the dead letter queue on filter evaluation exception
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator.Filter">
+            <summary>
+            Specify the filter for the subscription
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.ISubscriptionConfigurator.Rule">
+            <summary>
+            Specify a rule for the subscription
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Configuration.ITopicConfigurator.EnableFilteringMessagesBeforePublishing">
+            <summary>
+            If messages should be filtered before publishing
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Configuration.Specifications.SubscriptionConsumeTopologySpecification">
+            <summary>
+            Used to bind an exchange to the consuming queue's exchange
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Conventions.IPartitionKeySendTopologyConvention.DefaultFormatter">
+            <summary>
+            The default, non-message specific routing key formatter used by messages
+            when no specific convention has been specified.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Conventions.ISessionIdSendTopologyConvention.DefaultFormatter">
+            <summary>
+            The default, non-message specific routing key formatter used by messages
+            when no specific convention has been specified.
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Entities.Queue">
+            <summary>
+            The queue details used to declare the queue to Azure Service Bus
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Entities.QueueSubscription">
+            <summary>
+            The exchange to queue binding details to declare the binding to RabbitMQ
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Entities.QueueSubscription.Source">
+            <summary>
+            The source exchange
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Entities.QueueSubscription.Destination">
+            <summary>
+            The destination exchange
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Entities.QueueSubscription.Subscription">
+            <summary>
+            The subscription that binds them
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Entities.Subscription">
+            <summary>
+            A subscription, as defined
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Entities.Topic">
+            <summary>
+            The exchange details used to declare the exchange to Azure Service Bus
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Topology.Entities.TopicSubscription">
+            <summary>
+            A subscription that forwards to another topic
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Entities.TopicSubscription.Source">
+            <summary>
+            The source topic
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Entities.TopicSubscription.Destination">
+            <summary>
+            The destination topic
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.Entities.TopicSubscription.Subscription">
+            <summary>
+            The subscription that binds them together
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.EntityNameFormatter.FormatDeadLetterPath(System.String)">
+            <summary>
+            Formats the dead letter path for either a queue, or a subscription.
+            </summary>
+            <param name="entityPath">The name of the queue, or path of the subscription.</param>
+            <returns>The path as a string of the dead letter entity.</returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.EntityNameFormatter.FormatErrorPath(System.String)">
+            <summary>
+            Formats the dead letter path for either a queue, or a subscription.
+            </summary>
+            <param name="entityPath">The name of the queue, or path of the subscription.</param>
+            <returns>The path as a string of the dead letter entity.</returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.EntityNameFormatter.FormatSubQueuePath(System.String,System.String)">
+            <summary>
+            Formats the subqueue path for either a queue, or a subscription.
+            </summary>
+            <param name="entityPath">The name of the queue, or path of the subscription.</param>
+            <param name="subQueueName">The name of the subQueue</param>
+            <returns>The path as a string of the subqueue entity.</returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.EntityNameFormatter.FormatSubscriptionPath(System.String,System.String)">
+            <summary>
+            Formats the subscription path, based on the topic path and subscription name.
+            </summary>
+            <param name="topicPath">The name of the topic, including slashes.</param>
+            <param name="subscriptionName">The subscription name</param>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.EntityNameFormatter.FormatTransferDeadLetterPath(System.String)">
+            <summary>
+            Utility method that creates the name for the transfer dead letter receiver, specified by <paramref name="entityPath"/>
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.IServiceBusConsumeTopology.Apply(MassTransit.AzureServiceBusTransport.Topology.Builders.IReceiveEndpointBrokerTopologyBuilder)">
+            <summary>
+            Apply the entire topology to the builder
+            </summary>
+            <param name="builder"></param>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Topology.IServiceBusMessagePublishTopology`1.TopicDescription">
+            <summary>
+            Returns the topic description for the message type
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Topology.IServiceBusMessagePublishTopology.Apply(MassTransit.AzureServiceBusTransport.Topology.Builders.IPublishEndpointBrokerTopologyBuilder)">
+            <summary>
+            Apply the message topology to the builder, including any implemented types
+            </summary>
+            <param name="builder">The topology builder</param>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Transport.BrokeredMessageReceiver">
+            <summary>
+            Receives a <see cref="T:Microsoft.ServiceBus.Messaging.BrokeredMessage"/>.
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.MaxConcurrentCalls">
+            <summary>
+            The number of concurrent messages to process
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.PrefetchCount">
+            <summary>
+            The number of messages to push from the server to the client
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.AutoRenewTimeout">
+            <summary>
+            The timeout before the session state is renewed
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.MessageWaitTimeout">
+            <summary>
+            The timeout before a message session is abandoned
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.LockDuration">
+            <summary>
+            The lock duration for messages read from the client
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.RequiresSession">
+            <summary>
+            True if a session is required/desired
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.UsingBasicTier">
+            <summary>
+            True if the basic tier was selected
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.Path">
+            <summary>
+            The path of the message entity
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.Name">
+            <summary>
+            The name of the message entity
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Transport.ClientSettings.GetInputAddress(System.Uri,System.String)">
+            <summary>
+            Get the input address for the client on the specified host
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Transport.IBrokeredMessageReceiver.Handle(Microsoft.ServiceBus.Messaging.BrokeredMessage,System.Action{MassTransit.ReceiveContext})">
+            <summary>
+            Handles the <paramref name="message"/>
+            </summary>
+            <param name="message"></param>
+            <param name="contextCallback">Callback to adjust the context</param>
+            <returns></returns>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ISendClient.Path">
+            <summary>
+            The path of the messaging entity for this client
+            </summary>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Transport.ISendClient.Send(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+            <summary>
+            Send the message to the messaging entity
+            </summary>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Transport.ISendClient.Close">
+            <summary>
+            Close the messaging client
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Transport.ISendClient.ScheduleSend(Microsoft.ServiceBus.Messaging.BrokeredMessage,System.DateTime)">
+            <summary>
+            Schedule a send in the future to the messaging entity
+            </summary>
+            <param name="message"></param>
+            <param name="scheduleEnqueueTimeUtc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.AzureServiceBusTransport.Transport.ISendClient.CancelScheduledSend(System.Int64)">
+            <summary>
+            Cancel a previously schedule send on the messaging entity
+            </summary>
+            <param name="sequenceNumber"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.ReceiveSettings.RemoveSubscriptions">
+            <summary>
+            If TRUE, subscriptions will be removed on shutdown to avoid overflowing the topic
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Transport.SendSettings">
+            <summary>
+            The settings for sending to an endpoint
+            </summary>
+        </member>
+        <member name="P:MassTransit.AzureServiceBusTransport.Transport.SendSettings.EntityPath">
+            <summary>
+            The path of the messaging entity
+            </summary>
+        </member>
+        <member name="T:MassTransit.AzureServiceBusTransport.Transport.ServiceBusSendTransport">
+             <summary>
+             Send messages to an azure transport using the message sender.
+            
+             May be sensible to create a IBatchSendTransport that allows multiple
+             messages to be sent as a single batch (perhaps using Tx support?)
+             </summary>
+        </member>
+        <member name="M:MassTransit.RenewLockConfigurationExtensions.UseRenewLock(GreenPipes.IPipeConfigurator{MassTransit.ConsumeContext},System.Nullable{System.TimeSpan})">
+            <summary>
+            Use the automatic lock renewal filter with Azure Service Bus, so that longer running consumers can run without losing the
+            message lock.
+            </summary>
+            <param name="configurator"></param>
+            <param name="delay">The delay before the lock is renewed (should be reasonably less than the lock time).</param>
+        </member>
+        <member name="M:MassTransit.ServiceBusBusFactoryConfiguratorExtensions.Host(MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator,System.Uri,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator})">
+            <summary>
+            Adds a service bus host using the MassTransit style URI host name
+            </summary>
+            <param name="configurator">The bus factory configurator</param>
+            <param name="hostAddress">The host address, in MassTransit format (sb://namespace.servicebus.windows.net/scope)</param>
+            <param name="configure">A callback to further configure the service bus</param>
+            <returns>The service bus host</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusBusFactoryConfiguratorExtensions.Host(MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator,System.String,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusHostConfigurator})">
+            <summary>
+            Adds a Service Bus host using a connection string (Endpoint=...., etc.).
+            </summary>
+            <param name="configurator">The bus factory configurator</param>
+            <param name="connectionString">The connection string in the proper format</param>
+            <param name="configure">A callback to further configure the service bus</param>
+            <returns>The service bus host</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusBusFactoryConfiguratorExtensions.ReceiveEndpoint(MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator,MassTransit.AzureServiceBusTransport.IServiceBusHost,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator})">
+            <summary>
+            Declare a ReceiveEndpoint using a unique generated queue name. This queue defaults to auto-delete
+            and non-durable. By default all services bus instances include a default receiveEndpoint that is
+            of this type (created automatically upon the first receiver binding).
+            </summary>
+            <param name="configurator"></param>
+            <param name="host"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:MassTransit.ServiceBusBusFactoryConfiguratorExtensions.ReceiveEndpoint(MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator,MassTransit.AzureServiceBusTransport.IServiceBusHost,MassTransit.IEndpointDefinition,System.Action{MassTransit.AzureServiceBusTransport.IServiceBusReceiveEndpointConfigurator})">
+            <summary>
+            Declare a ReceiveEndpoint using a unique generated queue name. This queue defaults to auto-delete
+            and non-durable. By default all services bus instances include a default receiveEndpoint that is
+            of this type (created automatically upon the first receiver binding).
+            </summary>
+            <param name="configurator"></param>
+            <param name="host"></param>
+            <param name="definition"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:MassTransit.ServiceBusRequestClientExtensions.CreateRequestClient``2(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.Uri,System.TimeSpan,System.Nullable{System.TimeSpan},System.Action{MassTransit.SendContext{``0}})">
+            <summary>
+            Creates a request client that uses the bus to retrieve the endpoint and send the request.
+            </summary>
+            <typeparam name="TRequest">The request type</typeparam>
+            <typeparam name="TResponse">The response type</typeparam>
+            <param name="host"></param>
+            <param name="destinationAddress">The service address that handles the request</param>
+            <param name="timeout">The timeout before the request is cancelled</param>
+            <param name="timeToLive">THe time to live for the request message</param>
+            <param name="callback">Callback when the request is sent</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusRequestClientExtensions.CreatePublishRequestClient``2(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.TimeSpan,System.Nullable{System.TimeSpan},System.Action{MassTransit.SendContext{``0}})">
+            <summary>
+            Creates a request client that uses the bus to publish a request.
+            </summary>
+            <typeparam name="TRequest">The request type</typeparam>
+            <typeparam name="TResponse">The response type</typeparam>
+            <param name="timeout">The timeout before the request is cancelled</param>
+            <param name="callback">Callback when the request is sent</param>
+            <param name="timeToLive">The time that the request will live for</param>
+            <param name="host"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusRequestClientExtensions.CreateRequestClientFactory``2(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.Uri,System.TimeSpan,System.Nullable{System.TimeSpan},System.Action{MassTransit.SendContext{``0}})">
+            <summary>
+            Creates a request client factory which can be used to create a request client per message within a consume context.
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResponse"></typeparam>
+            <param name="host">The host for the response endpoint</param>
+            <param name="destinationAddress">The service address</param>
+            <param name="timeout">The request timeout</param>
+            <param name="timeToLive">The request time to live</param>
+            <param name="callback">Customize the send context</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusRequestClientExtensions.CreatePublishRequestClientFactory``2(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.TimeSpan,System.Nullable{System.TimeSpan},System.Action{MassTransit.SendContext{``0}})">
+            <summary>
+            Creates a request client factory which can be used to create a request client per message within a consume context.
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResponse"></typeparam>
+            <param name="host">The host for the response endpoint</param>
+            <param name="timeout">The request timeout</param>
+            <param name="timeToLive">The request time to live</param>
+            <param name="callback">Customize the send context</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusRequestClientExtensions.CreateClientFactory(MassTransit.AzureServiceBusTransport.IServiceBusHost,MassTransit.RequestTimeout)">
+            <summary>
+            Connects a new receive endpoint to the host, and creates a <see cref="T:MassTransit.IClientFactory"/>.
+            </summary>
+            <param name="host">The host to connect the new receive endpoint</param>
+            <param name="timeout">The default request timeout</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusRequestClientExtensions.CreateRequestClient``1(MassTransit.AzureServiceBusTransport.IServiceBusHost,System.Uri,MassTransit.RequestTimeout)">
+            <summary>
+            Connects a new receive endpoint to the host, and creates a <see cref="T:MassTransit.IClientFactory"/>.
+            </summary>
+            <param name="host">The host to connect the new receive endpoint</param>
+            <param name="destinationAddress">The request service address</param>
+            <param name="timeout">The default request timeout</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusRequestClientExtensions.CreateRequestClient``1(MassTransit.AzureServiceBusTransport.IServiceBusHost,MassTransit.RequestTimeout)">
+            <summary>
+            Create a request client from the bus, creating a response endpoint, and publishing the request versus sending it.
+            </summary>
+            <param name="host">The host to connect the new receive endpoint</param>
+            <param name="timeout">The default request timeout</param>
+            <returns></returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusScheduleMessageExtensions.UseServiceBusMessageScheduler(GreenPipes.IPipeConfigurator{MassTransit.ConsumeContext})">
+            <summary>
+            Uses the Enqueue time of Service Bus messages to schedule future delivery of messages instead
+            of using Quartz. A natively supported feature that is highly reliable.
+            </summary>
+            <param name="configurator"></param>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.DateTime,``0,System.Threading.CancellationToken)">
+            <summary>
+            Send a message
+            </summary>
+            <typeparam name="T">The message type</typeparam>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.DateTime,``0,GreenPipes.IPipe{MassTransit.SendContext{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Send a message
+            </summary>
+            <typeparam name="T">The message type</typeparam>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.DateTime,``0,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+            Send a message
+            </summary>
+            <typeparam name="T">The message type</typeparam>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.DateTime,System.Object,System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the type of the message instance.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message object</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.DateTime,System.Object,System.Type,System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the message type specified. If the object cannot be cast
+                to the specified message type, an exception will be thrown.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message object</param>
+            <param name="messageType">The type of the message (use message.GetType() if desired)</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.DateTime,System.Object,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the message type specified. If the object cannot be cast
+                to the specified message type, an exception will be thrown.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message object</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.DateTime,System.Object,System.Type,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the message type specified. If the object cannot be cast
+                to the specified message type, an exception will be thrown.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message object</param>
+            <param name="messageType">The type of the message (use message.GetType() if desired)</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.DateTime,System.Object,System.Threading.CancellationToken)">
+            <summary>
+                Sends an interface message, initializing the properties of the interface using the anonymous
+                object specified
+            </summary>
+            <typeparam name="T">The interface type to send</typeparam>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="values">The property values to initialize on the interface</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.DateTime,System.Object,GreenPipes.IPipe{MassTransit.SendContext{``0}},System.Threading.CancellationToken)">
+            <summary>
+                Sends an interface message, initializing the properties of the interface using the anonymous
+                object specified
+            </summary>
+            <typeparam name="T">The interface type to send</typeparam>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="values">The property values to initialize on the interface</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.DateTime,System.Object,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+                Sends an interface message, initializing the properties of the interface using the anonymous
+                object specified
+            </summary>
+            <typeparam name="T">The interface type to send</typeparam>
+            <param name="context">The consume context</param>
+            <param name="scheduledTime">The time at which the message should be delivered to the queue</param>
+            <param name="values">The property values to initialize on the interface</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.TimeSpan,``0,System.Threading.CancellationToken)">
+            <summary>
+            Send a message
+            </summary>
+            <typeparam name="T">The message type</typeparam>
+            <param name="context">The consume context</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.TimeSpan,``0,GreenPipes.IPipe{MassTransit.SendContext{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Send a message
+            </summary>
+            <typeparam name="T">The message type</typeparam>
+            <param name="context">The consume context</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="message">The message</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.TimeSpan,``0,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+            Send a message
+            </summary>
+            <typeparam name="T">The message type</typeparam>
+            <param name="context">The consume context</param>
+            <param name="message">The message</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.TimeSpan,System.Object,System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the type of the message instance.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="message">The message object</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.TimeSpan,System.Object,System.Type,System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the message type specified. If the object cannot be cast
+                to the specified message type, an exception will be thrown.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="message">The message object</param>
+            <param name="messageType">The type of the message (use message.GetType() if desired)</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.TimeSpan,System.Object,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the message type specified. If the object cannot be cast
+                to the specified message type, an exception will be thrown.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="message">The message object</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish(MassTransit.ConsumeContext,System.TimeSpan,System.Object,System.Type,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+                Sends an object as a message, using the message type specified. If the object cannot be cast
+                to the specified message type, an exception will be thrown.
+            </summary>
+            <param name="context">The consume context</param>
+            <param name="message">The message object</param>
+            <param name="messageType">The type of the message (use message.GetType() if desired)</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.TimeSpan,System.Object,System.Threading.CancellationToken)">
+            <summary>
+                Sends an interface message, initializing the properties of the interface using the anonymous
+                object specified
+            </summary>
+            <typeparam name="T">The interface type to send</typeparam>
+            <param name="context">The consume context</param>
+            <param name="values">The property values to initialize on the interface</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.TimeSpan,System.Object,GreenPipes.IPipe{MassTransit.SendContext{``0}},System.Threading.CancellationToken)">
+            <summary>
+                Sends an interface message, initializing the properties of the interface using the anonymous
+                object specified
+            </summary>
+            <typeparam name="T">The interface type to send</typeparam>
+            <param name="context">The consume context</param>
+            <param name="values">The property values to initialize on the interface</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusSchedulePublishExtensions.SchedulePublish``1(MassTransit.ConsumeContext,System.TimeSpan,System.Object,GreenPipes.IPipe{MassTransit.SendContext},System.Threading.CancellationToken)">
+            <summary>
+                Sends an interface message, initializing the properties of the interface using the anonymous
+                object specified
+            </summary>
+            <typeparam name="T">The interface type to send</typeparam>
+            <param name="context">The consume context</param>
+            <param name="values">The property values to initialize on the interface</param>
+            <param name="delay">The time at which the message should be delivered to the queue</param>
+            <param name="pipe"></param>
+            <param name="cancellationToken"></param>
+            <returns>The task which is completed once the Send is acknowledged by the broker</returns>
+        </member>
+        <member name="M:MassTransit.ServiceBusTurnoutConfigurationExtensions.TurnoutEndpoint``1(MassTransit.AzureServiceBusTransport.IServiceBusBusFactoryConfigurator,MassTransit.AzureServiceBusTransport.IServiceBusHost,System.String,System.Action{MassTransit.Turnout.Configuration.ITurnoutServiceConfigurator{``0}})">
+            <summary>
+            Configures a Turnout on the receive endpoint, which executes a long-running job and supervises the job until it
+            completes.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="busFactoryConfigurator">The bus factory configuration to use a separate endpoint for the control traffic</param>
+            <param name="queueName"></param>
+            <param name="configure"></param>
+            <param name="host"></param>
+        </member>
+        <member name="M:MassTransit.PartitionKeyConventionExtensions.UsePartitionKeyFormatter``1(MassTransit.Topology.ISendTopologyConfigurator,MassTransit.AzureServiceBusTransport.Topology.Conventions.IMessagePartitionKeyFormatter{``0})">
+            <summary>
+            Use the partition key formatter for the specified message type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="formatter"></param>
+        </member>
+        <member name="M:MassTransit.PartitionKeyConventionExtensions.UsePartitionKeyFormatter``1(MassTransit.Topology.ISendTopologyConfigurator,System.Func{MassTransit.SendContext{``0},System.String})">
+            <summary>
+            Use the delegate to format the partition key, using Empty if the string is null upon return
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="formatter"></param>
+        </member>
+        <member name="M:MassTransit.PartitionKeyConventionExtensions.UsePartitionKeyFormatter``1(MassTransit.Topology.IMessageSendTopologyConfigurator{``0},System.Func{MassTransit.SendContext{``0},System.String})">
+            <summary>
+            Use the delegate to format the partition key, using Empty if the string is null upon return
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="formatter"></param>
+        </member>
+        <member name="M:MassTransit.SessionIdConventionExtensions.UseSessionIdFormatter``1(MassTransit.Topology.ISendTopologyConfigurator,MassTransit.AzureServiceBusTransport.Topology.Conventions.IMessageSessionIdFormatter{``0})">
+            <summary>
+            Use the session id formatter for the specified message type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="formatter"></param>
+        </member>
+        <member name="M:MassTransit.SessionIdConventionExtensions.UseSessionIdFormatter``1(MassTransit.Topology.ISendTopologyConfigurator,System.Func{MassTransit.SendContext{``0},System.String})">
+            <summary>
+            Use the delegate to format the session id, using Empty if the string is null upon return
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="formatter"></param>
+        </member>
+        <member name="M:MassTransit.SessionIdConventionExtensions.UseSessionIdFormatter``1(MassTransit.Topology.IMessageSendTopologyConfigurator{``0},System.Func{MassTransit.SendContext{``0},System.String})">
+            <summary>
+            Use the delegate to format the session id, using Empty if the string is null upon return
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="formatter"></param>
+        </member>
+    </members>
+</doc>

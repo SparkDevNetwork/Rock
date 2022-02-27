@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rock.SendGrid</name>
+    </assembly>
+    <members>
+        <member name="T:Rock.Communication.Transport.SendGridHttp">
+            <summary>
+            Used to send communication through SendGrid's HTTP API.
+            </summary>
+            <seealso cref="T:Rock.Communication.EmailTransportComponent" />
+        </member>
+        <member name="T:Rock.Communication.Transport.SendGridHttp.AttributeKey">
+            <summary>
+            Class for storing attribute keys.
+            </summary>
+        </member>
+        <member name="F:Rock.Communication.Transport.SendGridHttp.AttributeKey.TrackOpens">
+            <summary>
+            The track opens
+            </summary>
+        </member>
+        <member name="F:Rock.Communication.Transport.SendGridHttp.AttributeKey.ApiKey">
+            <summary>
+            The API key
+            </summary>
+        </member>
+        <member name="F:Rock.Communication.Transport.SendGridHttp.AttributeKey.BaseUrl">
+            <summary>
+            The base URL
+            </summary>
+        </member>
+        <member name="P:Rock.Communication.Transport.SendGridHttp.CanTrackOpens">
+            <summary>
+            Gets a value indicating whether transport has ability to track recipients opening the communication.
+            Mailgun automatically trackes opens, clicks, and unsubscribes. Use this to override domain setting.
+            </summary>
+            <value>
+            <c>true</c> if transport can track opens; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="M:Rock.Communication.Transport.SendGridHttp.SendEmail(Rock.Communication.RockEmailMessage)">
+            <summary>
+            Send the implementation specific email. This class will call this method and pass the post processed data in a  rock email message which
+            can then be used to send the implementation specific message.
+            </summary>
+            <param name="rockEmailMessage">The rock email message.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.SendGrid.Webhook.SendGridEvent">
+            <summary>
+            A class to represent the events sent by send grid to the webhook.
+            </summary>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.Timestamp">
+            <summary>
+            Gets or sets the timestamp.
+            </summary>
+            <value>
+            The timestamp.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.EventType">
+            <summary>
+            Gets or sets the type of the event.
+            </summary>
+            <value>
+            The type of the event.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.SmtpId">
+            <summary>
+            Gets or sets the SMTP identifier.
+            </summary>
+            <value>
+            The SMTP identifier.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.UserAgent">
+            <summary>
+            Gets or sets the user agent.
+            </summary>
+            <value>
+            The user agent.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.IpAddress">
+            <summary>
+            Gets or sets the ip address.
+            </summary>
+            <value>
+            The ip address.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.SendGridEventId">
+            <summary>
+            Gets or sets the send grid event identifier.
+            </summary>
+            <value>
+            The send grid event identifier.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.SendGridMessageId">
+            <summary>
+            Gets or sets the send grid message identifier.
+            </summary>
+            <value>
+            The send grid message identifier.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.EventTypeReason">
+            <summary>
+            Gets or sets the event type reason.
+            </summary>
+            <value>
+            The event type reason.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.ServerResponse">
+            <summary>
+            Gets or sets the server response.
+            </summary>
+            <value>
+            The server response.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.Tls">
+            <summary>
+            Gets or sets the TLS.
+            </summary>
+            <value>
+            The TLS.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.Url">
+            <summary>
+            Gets or sets the URL.
+            </summary>
+            <value>
+            The URL.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.UrlOffset">
+            <summary>
+            Gets or sets the URL offset.
+            </summary>
+            <value>
+            The URL offset.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.DeliveryAttemptCount">
+            <summary>
+            Gets or sets the delivery attempt count.
+            </summary>
+            <value>
+            The delivery attempt count.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.Category">
+            <summary>
+            Gets or sets the category.
+            </summary>
+            <value>
+            The category.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.BounceType">
+            <summary>
+            Gets or sets the type of the bounce.
+            </summary>
+            <value>
+            The type of the bounce.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.WorkflowActionGuid">
+            <summary>
+            Gets or sets the workflow action unique identifier.
+            </summary>
+            <value>
+            The workflow action unique identifier.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.CommunicationRecipientGuid">
+            <summary>
+            Gets or sets the communication recipient unique identifier.
+            </summary>
+            <value>
+            The communication recipient unique identifier.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.ClientOs">
+            <summary>
+            Gets the client os.
+            </summary>
+            <value>
+            The client os.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.ClientBrowser">
+            <summary>
+            Gets the client browser.
+            </summary>
+            <value>
+            The client browser.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.ClientDeviceType">
+            <summary>
+            Gets the type of the client device.
+            </summary>
+            <value>
+            The type of the client device.
+            </value>
+        </member>
+        <member name="P:Rock.SendGrid.Webhook.SendGridEvent.ClientDeviceBrand">
+            <summary>
+            Gets the client device brand.
+            </summary>
+            <value>
+            The client device brand.
+            </value>
+        </member>
+    </members>
+</doc>

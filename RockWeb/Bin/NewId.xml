@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NewId</name>
+    </assembly>
+    <members>
+        <member name="T:MassTransit.NewId">
+            <summary>
+            A NewId is a type that fits into the same space as a Guid/Uuid/uniqueidentifier,
+            but is guaranteed to be both unique and ordered, assuming it is generated using
+            a single instance of the generator for each network address used.
+            </summary>
+        </member>
+        <member name="M:MassTransit.NewId.#ctor(System.Byte[])">
+            <summary>
+            Creates a NewId using the specified byte array.
+            </summary>
+            <param name="bytes"></param>
+        </member>
+    </members>
+</doc>

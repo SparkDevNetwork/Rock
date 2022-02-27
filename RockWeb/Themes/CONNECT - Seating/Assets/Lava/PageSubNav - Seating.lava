@@ -1,0 +1,17 @@
+
+<section class="pad-section">
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+    <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+  {% for childPage in Page.Pages %}
+  {% if childPage.Current == 'true' %} class="active"{% endif%}
+  <div class="grid-actions form-group">
+    <a class="btn btn-primary btn-lg btn-block" href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+  </div>
+
+
+  {% endfor %}
+</div>
+{% endif %}
+
+</section>

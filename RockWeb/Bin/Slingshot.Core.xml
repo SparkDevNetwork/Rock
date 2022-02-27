@@ -1,0 +1,3034 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Slingshot.Core</name>
+    </assembly>
+    <members>
+        <member name="T:Slingshot.Core.Data.EntityAttribute">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityAttribute.Key">
+            <summary>
+            Gets or sets the attribute key.
+            </summary>
+            <value>
+            The attribute key.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityAttribute.Name">
+            <summary>
+            Gets or sets the name of the attribute.
+            </summary>
+            <value>
+            The name of the attribute.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityAttribute.FieldType">
+            <summary>
+            Gets or sets the type of the attribute field.
+            </summary>
+            <value>
+            The type of the attribute field.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityAttribute.Category">
+            <summary>
+            Gets or sets the attribute category.
+            </summary>
+            <value>
+            The attribute category.
+            </value>
+        </member>
+        <member name="T:Slingshot.Core.Data.EntityNote">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.NoteType">
+            <summary>
+            Gets or sets the type of the note.
+            </summary>
+            <value>
+            The type of the note.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.Caption">
+            <summary>
+            Gets or sets the caption
+            Max length is 200
+            </summary>
+            <value>
+            A <see cref="T:System.String"/> representing the caption of the Note.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.IsAlert">
+            <summary>
+            Gets or sets a flag indicating if this note is an alert.
+            </summary>
+            <value>
+            A <see cref="T:System.Boolean"/> value that is <c>true</c> if this note is an alert; otherwise <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.IsPrivateNote">
+            <summary>
+            Gets or sets a value indicating whether this note is viewable to only the person that created the note
+            </summary>
+            <value>
+            <c>true</c> if this instance is private note; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.Text">
+            <summary>
+            Gets or sets the text/body of the note.
+            </summary>
+            <value>
+            A <see cref="T:System.String"/> representing the text/body of the note.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.DateTime">
+            <summary>
+            The date/time of the note
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Data.EntityNote.CreatedByPersonId">
+            <summary>
+            The Id of the Person that created the note
+            </summary>
+            <value>
+            The created by person identifier.
+            </value>
+        </member>
+        <member name="T:Slingshot.Core.Model.Attendance">
+            <summary>
+            ImportModel for Attendance
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.AttendanceId">
+            <summary>
+            Gets or sets the attendance identifier.
+            For systems that don't have AttendanceId, or can't produce attendance ids by hashing, this can be set to 0. However, this will create duplicate records if attendance is imported more than once
+            </summary>
+            <value>
+            The attendance identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.PersonId">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.GroupId">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.LocationId">
+            <summary>
+            Gets or sets the location identifier.
+            </summary>
+            <value>
+            The location identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.ScheduleId">
+            <summary>
+            Gets or sets the schedule identifier.
+            </summary>
+            <value>
+            The schedule identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.DeviceId">
+            <summary>
+            Gets or sets the device identifier.
+            </summary>
+            <value>
+            The device identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.StartDateTime">
+            <summary>
+            Gets or sets the start date time.
+            </summary>
+            <value>
+            The start date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.EndDateTime">
+            <summary>
+            Gets or sets the end date time.
+            </summary>
+            <value>
+            The end date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.Note">
+            <summary>
+            Gets or sets the note.
+            </summary>
+            <value>
+            The note.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Attendance.CampusId">
+            <summary>
+            Gets or sets the campus identifier.
+            </summary>
+            <value>
+            The campus identifier.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.Attendance.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.GroupAttributeValue">
+            <summary>
+            ImportModel for GroupAttributeValue
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAttributeValue.GroupId">
+            <summary>
+            Gets or sets the group identifier.
+            </summary>
+            <value>
+            The group identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAttributeValue.AttributeKey">
+            <summary>
+            Gets or sets the attribute key.
+            </summary>
+            <value>
+            The attribute key.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAttributeValue.AttributeValue">
+            <summary>
+            Gets or sets the attribute value.
+            </summary>
+            <value>
+            The attribute value.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.GroupAttributeValue.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.GroupAttribute">
+            <summary>
+            ImportModel for GroupAttribute
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.Model.GroupAttribute.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.GroupAddress">
+            <summary>
+            ImportModel for GroupAddress
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.GroupId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.Street1">
+            <summary>
+            Gets or sets the street1.
+            </summary>
+            <value>
+            The street1.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.Street2">
+            <summary>
+            Gets or sets the street2.
+            </summary>
+            <value>
+            The street2.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.City">
+            <summary>
+            Gets or sets the city.
+            </summary>
+            <value>
+            The city.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.State">
+            <summary>
+            Gets or sets the state.
+            </summary>
+            <value>
+            The state.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.PostalCode">
+            <summary>
+            Gets or sets the postal code.
+            </summary>
+            <value>
+            The postal code.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.Country">
+            <summary>
+            Gets or sets the country.
+            </summary>
+            <value>
+            The country.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.Latitude">
+            <summary>
+            Gets or sets the latitude.
+            </summary>
+            <value>
+            The latitude.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.Longitude">
+            <summary>
+            Gets or sets the longitude.
+            </summary>
+            <value>
+            The longitude.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.IsMailing">
+            <summary>
+            Gets or sets a value indicating whether this instance is mailing.
+            </summary>
+            <value>
+              <c>true</c> if this instance is mailing; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupAddress.AddressType">
+            <summary>
+            Gets or sets the type of the address.
+            </summary>
+            <value>
+            The type of the address.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.GroupAddress.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.Business">
+            <summary>
+             ImportModel for Business
+            </summary>
+            <seealso cref="T:Slingshot.Core.Model.IImportModel" />
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Name">
+            <summary>
+            Gets or sets the name of the Business.
+            </summary>
+            <value>
+            The name of the Business.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.RecordStatus">
+            <summary>
+            Gets or sets the record status.
+            </summary>
+            <value>
+            The record status.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.InactiveReason">
+            <summary>
+            Gets or sets the inactive reason.
+            </summary>
+            <value>
+            The inactive reason.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.EmailPreference">
+            <summary>
+            Gets or sets the email preference.
+            </summary>
+            <value>
+            The email preference.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.CreatedDateTime">
+            <summary>
+            Gets or sets the created date time.
+            </summary>
+            <value>
+            The created date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.ModifiedDateTime">
+            <summary>
+            Gets or sets the modified date time.
+            </summary>
+            <value>
+            The modified date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Campus">
+            <summary>
+            Gets or sets the campus.
+            </summary>
+            <value>
+            The campus.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Note">
+            <summary>
+            Gets or sets the note.
+            </summary>
+            <value>
+            The note.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Attributes">
+            <summary>
+            Gets or sets the attributes.
+            </summary>
+            <value>
+            The attributes.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.PhoneNumbers">
+            <summary>
+            Gets or sets the phone numbers.
+            </summary>
+            <value>
+            The phone numbers.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Addresses">
+            <summary>
+            Gets or sets the addresses.
+            </summary>
+            <value>
+            The addresses.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Business.Contacts">
+            <summary>
+            Gets or sets the business Contacts.
+            </summary>
+            <value>
+            The business contacts.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.Business.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.BusinessAttribute">
+            <summary>
+            ImportModel for a Business Attribute
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.Model.BusinessAttribute.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.BusinessAttributeValue">
+            <summary>
+            ImportModel for a Business Attribute Value
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAttributeValue.BusinessId">
+            <summary>
+            Gets or sets the business (person ) identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAttributeValue.AttributeKey">
+            <summary>
+            Gets or sets the attribute key.
+            </summary>
+            <value>
+            The attribute key.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAttributeValue.AttributeValue">
+            <summary>
+            Gets or sets the attribute value.
+            </summary>
+            <value>
+            The attribute value.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.BusinessAttributeValue.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.BusinessAddress">
+            <summary>
+            ImportModel for A Business Address
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.BusinessId">
+            <summary>
+            Gets or sets the business identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.Street1">
+            <summary>
+            Gets or sets the street1.
+            </summary>
+            <value>
+            The street1.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.Street2">
+            <summary>
+            Gets or sets the street2.
+            </summary>
+            <value>
+            The street2.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.City">
+            <summary>
+            Gets or sets the city.
+            </summary>
+            <value>
+            The city.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.State">
+            <summary>
+            Gets or sets the state.
+            </summary>
+            <value>
+            The state.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.PostalCode">
+            <summary>
+            Gets or sets the postal code.
+            </summary>
+            <value>
+            The postal code.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.Country">
+            <summary>
+            Gets or sets the country.
+            </summary>
+            <value>
+            The country.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.Latitude">
+            <summary>
+            Gets or sets the latitude.
+            </summary>
+            <value>
+            The latitude.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.Longitude">
+            <summary>
+            Gets or sets the longitude.
+            </summary>
+            <value>
+            The longitude.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.IsMailing">
+            <summary>
+            Gets or sets a value indicating whether this instance is mailing.
+            </summary>
+            <value>
+              <c>true</c> if this instance is mailing; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessAddress.AddressType">
+            <summary>
+            Gets or sets the type of the address.
+            </summary>
+            <value>
+            The type of the address.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.BusinessAddress.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.BusinessContact">
+            <summary>
+            ImportModel for Business Contact
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessContact.PersonId">
+            <summary>
+            Gets or sets the person indentifier.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessContact.BusinessId">
+            <summary>
+            Gets or sets the business indentifier.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.BusinessContact.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.PersonSearchKey">
+            <summary>
+            ImportModel for Person Search Key.
+            Search Keys can be used to help find a person record
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonSearchKey.PersonId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonSearchKey.SearchValue">
+            <summary>
+            Gets or sets the search value (max length of 255)
+            </summary>
+            <value>
+            The search value.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.PersonSearchKey.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.PersonNote">
+            <summary>
+            ImportModel for PersonNote
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonNote.PersonId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.PersonNote.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.FamilyNote">
+            <summary>
+            ImportModel for FamilyNote
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.FamilyNote.FamilyId">
+            <summary>
+            Gets or sets the family identifier.
+            </summary>
+            <value>
+            The family identifier.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.FamilyNote.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.FamilyAttribute">
+            <summary>
+            ImportModel for FamilyAttribute
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.Model.FamilyAttribute.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.FinancialPledge">
+            <summary>
+            ImportModel for Financial Pledge
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.PersonId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.AccountId">
+            <summary>
+            Gets or sets the account identifier.
+            </summary>
+            <value>
+            The account identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.StartDate">
+            <summary>
+            Gets or sets the start date.
+            </summary>
+            <value>
+            The start date.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.EndDate">
+            <summary>
+            Gets or sets the end date.
+            </summary>
+            <value>
+            The end date.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.PledgeFrequency">
+            <summary>
+            Gets or sets the pledge frequency.
+            </summary>
+            <value>
+            The pledge frequency.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.TotalAmount">
+            <summary>
+            Gets or sets the pledge amount that is promised to be given at the specified <see cref="P:Slingshot.Core.Model.FinancialPledge.PledgeFrequency"/>.
+            </summary>
+            <value>
+            A <see cref="T:System.Decimal"/> representing the amount to be pledged at the specified frequency.
+            </value>
+            <remarks>
+            An example is that a person pledges $100.00 to be given monthly for the next year. This value will be $100.00 and the grand total of the pledge would be $1,200.00
+            </remarks>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.CreatedDateTime">
+            <summary>
+            Gets or sets the created date time.
+            </summary>
+            <value>
+            The created date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialPledge.ModifiedDateTime">
+            <summary>
+            Gets or sets the modified date time.
+            </summary>
+            <value>
+            The modified date time.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.FinancialPledge.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.PledgeFrequency">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.OneTime">
+            <summary>
+            One time
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.Weekly">
+            <summary>
+            Every Week
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.BiWeekly">
+            <summary>
+            Every Two Weeks
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.TwiceAMonth">
+            <summary>
+            Twice a Month
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.Monthly">
+            <summary>
+            Once a Month
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.Quarterly">
+            <summary>
+            Every Quarter
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.TwiceAYear">
+            <summary>
+            Every Six Months
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.PledgeFrequency.Yearly">
+            <summary>
+            Every Year
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.BusinessPhone">
+            <summary>
+            ImportModel for Business Phone
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessPhone.BusinessId">
+            <summary>
+            Gets or sets the business identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessPhone.PhoneType">
+            <summary>
+            Gets or sets the type of the phone.
+            </summary>
+            <value>
+            The type of the phone.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessPhone.PhoneNumber">
+            <summary>
+            Gets or sets the phone number.
+            </summary>
+            <value>
+            The phone number.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessPhone.IsMessagingEnabled">
+            <summary>
+            Gets or sets the is messaging enabled.
+            </summary>
+            <value>
+            The is messaging enabled.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.BusinessPhone.IsUnlisted">
+            <summary>
+            Gets or sets the is unlisted.
+            </summary>
+            <value>
+            The is unlisted.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.BusinessPhone.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.Schedule">
+            <summary>
+            ImportModel for Schedule
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.Schedule.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Schedule.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.Schedule.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.Location">
+            <summary>
+            ImportModel for Location
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.ParentLocationId">
+            <summary>
+            Gets or sets the parent account identifier.
+            </summary>
+            <value>
+            The parent account identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.IsActive">
+            <summary>
+            Gets or sets a value indicating whether this instance is active.
+            </summary>
+            <value>
+              <c>true</c> if this instance is active; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.LocationType">
+            <summary>
+            Gets or sets the type of the location.
+            </summary>
+            <value>
+            The type of the location.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.Street1">
+            <summary>
+            Gets or sets the street1.
+            </summary>
+            <value>
+            The street1.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.Street2">
+            <summary>
+            Gets or sets the street2.
+            </summary>
+            <value>
+            The street2.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.City">
+            <summary>
+            Gets or sets the city.
+            </summary>
+            <value>
+            The city.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.State">
+            <summary>
+            Gets or sets the state.
+            </summary>
+            <value>
+            The state.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.Country">
+            <summary>
+            Gets or sets the country.
+            </summary>
+            <value>
+            The country.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.PostalCode">
+            <summary>
+            Gets or sets the postal code.
+            </summary>
+            <value>
+            The postal code.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Location.County">
+            <summary>
+            Gets or sets the county.
+            </summary>
+            <value>
+            The county.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.Location.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.LocationType">
+            <summary>
+            Location Types
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.LocationType.Home">
+            <summary>
+            home
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.LocationType.Work">
+            <summary>
+            work
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.LocationType.Previous">
+            <summary>
+            previous
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.LocationType.MeetingLocation">
+            <summary>
+            meeting location
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.LocationType.GeographicArea">
+            <summary>
+            geographic area
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.GroupMember">
+            <summary>
+            ImportModel for GroupMember
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupMember.PersonId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupMember.GroupId">
+            <summary>
+            Gets or sets the group identifier.
+            </summary>
+            <value>
+            The group identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupMember.Role">
+            <summary>
+            Gets or sets the role.
+            </summary>
+            <value>
+            The role.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.GroupMember.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.Group">
+            <summary>
+            ImportModel for Group
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.Description">
+            <summary>
+            Gets or sets the description.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.Order">
+            <summary>
+            Gets or sets the order.
+            </summary>
+            <value>
+            The order.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.ParentGroupId">
+            <summary>
+            Gets or sets the parent group identifier.
+            </summary>
+            <value>
+            The parent group identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.GroupTypeId">
+            <summary>
+            Gets or sets the group type identifier.
+            </summary>
+            <value>
+            The group type identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.CampusId">
+            <summary>
+            Gets or sets the campus identifier.
+            </summary>
+            <value>
+            The campus identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.Capacity">
+            <summary>
+            Gets or sets the group capacity.
+            </summary>
+            <value>
+            The group capacity.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.MeetingDay">
+            <summary>
+            Gets or sets the meeting day.
+            </summary>
+            <value>
+            The meeting day.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.MeetingTime">
+             <summary>
+             Gets or sets the meeting time.
+             </summary>
+             <value>
+             The meeting time.
+             </value>
+            
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.IsActive">
+            <summary>
+            Gets or sets a value indicating whether this group is active.
+            </summary>
+            <value>
+              <c>true</c> if this group is active; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.IsPublic">
+            <summary>
+            Gets or sets a value indicating whether this group is public.
+            </summary>
+            <value>
+              <c>true</c> if this group is public; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.GroupMembers">
+            <summary>
+            Gets or sets the group members.
+            </summary>
+            <value>
+            The group members.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.Attributes">
+            <summary>
+            Gets or sets the attributes.
+            </summary>
+            <value>
+            The attributes.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Group.Addresses">
+            <summary>
+            Gets or sets the addresses.
+            </summary>
+            <value>
+            The addresses.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.Group.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.GroupType">
+            <summary>
+            ImportModel for GroupType
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupType.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.GroupType.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.GroupType.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.FinancialTransactionDetail">
+            <summary>
+            ImportModel for FinancialTransactionDetail
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.TransactionId">
+            <summary>
+            Gets or sets the transaction identifier.
+            </summary>
+            <value>
+            The transaction identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.AccountId">
+            <summary>
+            Gets or sets the account identifier.
+            </summary>
+            <value>
+            The account identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.Amount">
+            <summary>
+            Gets or sets the amount.
+            </summary>
+            <value>
+            The amount.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.Summary">
+            <summary>
+            Gets or sets the summary.
+            </summary>
+            <value>
+            The summary.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.CreatedByPersonId">
+            <summary>
+            Gets or sets the created by person identifier.
+            </summary>
+            <value>
+            The created by person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.CreatedDateTime">
+            <summary>
+            Gets or sets the created date time.
+            </summary>
+            <value>
+            The created date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.ModifiedByPersonId">
+            <summary>
+            Gets or sets the modified by person identifier.
+            </summary>
+            <value>
+            The modified by person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransactionDetail.ModifiedDateTime">
+            <summary>
+            Gets or sets the modified date time.
+            </summary>
+            <value>
+            The modified date time.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.FinancialTransactionDetail.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.FinancialTransaction">
+            <summary>
+            ImportModel for FinancialTransaction
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.BatchId">
+            <summary>
+            Gets or sets the batch identifier.
+            </summary>
+            <value>
+            The batch identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.AuthorizedPersonId">
+            <summary>
+            Gets or sets the authorized person identifier.
+            </summary>
+            <value>
+            The authorized person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.TransactionDate">
+            <summary>
+            Gets or sets the transaction date.
+            </summary>
+            <value>
+            The transaction date.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.TransactionType">
+            <summary>
+            Gets or sets the type of the transaction.
+            </summary>
+            <value>
+            The type of the transaction.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.TransactionSource">
+            <summary>
+            Gets or sets the transaction source.
+            </summary>
+            <value>
+            The transaction source.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.CurrencyType">
+            <summary>
+            Gets or sets the type of the currency.
+            </summary>
+            <value>
+            The type of the currency.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.Summary">
+            <summary>
+            Gets or sets the summary.
+            </summary>
+            <value>
+            The summary.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.TransactionCode">
+            <summary>
+            Gets or sets the transaction code.
+            </summary>
+            <value>
+            The transaction code.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.CreatedByPersonId">
+            <summary>
+            Gets or sets the created by person identifier.
+            </summary>
+            <value>
+            The created by person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.CreatedDateTime">
+            <summary>
+            Gets or sets the created date time.
+            </summary>
+            <value>
+            The created date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.ModifiedByPersonId">
+            <summary>
+            Gets or sets the modified by person identifier.
+            </summary>
+            <value>
+            The modified by person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.ModifiedDateTime">
+            <summary>
+            Gets or sets the modified date time.
+            </summary>
+            <value>
+            The modified date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialTransaction.FinancialTransactionDetails">
+            <summary>
+            Gets or sets the financial transaction details.
+            </summary>
+            <value>
+            The financial transaction details.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.FinancialTransaction.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.TransactionType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionType.Contribution">
+            <summary>
+            Transaction type of Contribution 
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionType.EventRegistration">
+            <summary>
+            Transaction type of Event Registration
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionType.Receipt">
+            <summary>
+            Transaction type of Reciept
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.TransactionSource">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionSource.Website">
+            <summary>
+            website
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionSource.Kiosk">
+            <summary>
+            kiosk
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionSource.MobileApplication">
+            <summary>
+            mobile application
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionSource.OnsiteCollection">
+            <summary>
+            onsite collection
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.TransactionSource.BankChecks">
+            <summary>
+            bank checks
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.CurrencyType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.CurrencyType.Unknown">
+            <summary>
+            unknown
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.CurrencyType.Check">
+            <summary>
+            check
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.CurrencyType.Cash">
+            <summary>
+            cash
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.CurrencyType.CreditCard">
+            <summary>
+            credit card
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.CurrencyType.ACH">
+            <summary>
+            ach
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.CurrencyType.Other">
+            <summary>
+            other
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.CurrencyType.NonCash">
+            <summary>
+            non cash
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.FinancialBatch">
+            <summary>
+            ImportModel for Financial Batch
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.CampusId">
+            <summary>
+            Gets or sets the campus identifier.
+            </summary>
+            <value>
+            The campus identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.StartDate">
+            <summary>
+            Gets or sets the start date.
+            </summary>
+            <value>
+            The start date.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.EndDate">
+            <summary>
+            Gets or sets the end date.
+            </summary>
+            <value>
+            The end date.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.CreatedByPersonId">
+            <summary>
+            Gets or sets the created by person identifier.
+            </summary>
+            <value>
+            The created by person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.CreatedDateTime">
+            <summary>
+            Gets or sets the created date time.
+            </summary>
+            <value>
+            The created date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.ModifiedByPersonId">
+            <summary>
+            Gets or sets the modified by person identifier.
+            </summary>
+            <value>
+            The modified by person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.ModifiedDateTime">
+            <summary>
+            Gets or sets the modified date time.
+            </summary>
+            <value>
+            The modified date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.ControlAmount">
+            <summary>
+            Gets or sets the control amount.
+            </summary>
+            <value>
+            The control amount.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialBatch.FinancialTransactions">
+            <summary>
+            Gets or sets the financial transactions.
+            </summary>
+            <value>
+            The financial transactions.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.FinancialBatch.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.BatchStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.BatchStatus.Pending">
+            <summary>
+            Pending
+            In the process of scanning the checks to it
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.BatchStatus.Open">
+            <summary>
+            Open
+            Transactions are all entered and are ready to be matched
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.BatchStatus.Closed">
+            <summary>
+            Closed
+            All is well and good
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.FinancialAccount">
+            <summary>
+            ImportModel for FinancialAccount
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialAccount.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialAccount.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialAccount.IsTaxDeductible">
+            <summary>
+            Gets or sets a value indicating whether this instance is tax deductible.
+            </summary>
+            <value>
+            <c>true</c> if this instance is tax deductible; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialAccount.CampusId">
+            <summary>
+            Gets or sets the campus identifier.
+            </summary>
+            <value>
+            The campus identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.FinancialAccount.ParentAccountId">
+            <summary>
+            Gets or sets the parent account identifier.
+            </summary>
+            <value>
+            The parent account identifier.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.FinancialAccount.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.PersonAddress">
+            <summary>
+            ImportModel for PersonAddress
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.PersonId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.Street1">
+            <summary>
+            Gets or sets the street1.
+            </summary>
+            <value>
+            The street1.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.Street2">
+            <summary>
+            Gets or sets the street2.
+            </summary>
+            <value>
+            The street2.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.City">
+            <summary>
+            Gets or sets the city.
+            </summary>
+            <value>
+            The city.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.State">
+            <summary>
+            Gets or sets the state.
+            </summary>
+            <value>
+            The state.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.PostalCode">
+            <summary>
+            Gets or sets the postal code.
+            </summary>
+            <value>
+            The postal code.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.Country">
+            <summary>
+            Gets or sets the country.
+            </summary>
+            <value>
+            The country.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.Latitude">
+            <summary>
+            Gets or sets the latitude.
+            </summary>
+            <value>
+            The latitude.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.Longitude">
+            <summary>
+            Gets or sets the longitude.
+            </summary>
+            <value>
+            The longitude.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.IsMailing">
+            <summary>
+            Gets or sets a value indicating whether this Address is their mailing address
+            </summary>
+            <value>
+              <c>true</c> if this instance is mailing; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAddress.AddressType">
+            <summary>
+            Gets or sets the type of the address.
+            </summary>
+            <value>
+            The type of the address.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.PersonAddress.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.AddressType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.AddressType.Home">
+            <summary>
+            Home Address
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.AddressType.Work">
+            <summary>
+            Work Address
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.AddressType.Previous">
+            <summary>
+            Previous Address
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.AddressType.Other">
+            <summary>
+            Some other address type
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.PersonAttribute">
+            <summary>
+            ImportModel for PersonAttribute
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.Model.PersonAttribute.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.PersonPhone">
+            <summary>
+            ImportModel for PersonPhone
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonPhone.PersonId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonPhone.PhoneType">
+            <summary>
+            Gets or sets the type of the phone.
+            </summary>
+            <value>
+            The type of the phone.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonPhone.PhoneNumber">
+            <summary>
+            Gets or sets the phone number.
+            </summary>
+            <value>
+            The phone number.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonPhone.IsMessagingEnabled">
+            <summary>
+            Gets or sets the is messaging enabled.
+            </summary>
+            <value>
+            The is messaging enabled.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonPhone.IsUnlisted">
+            <summary>
+            Gets or sets the is unlisted.
+            </summary>
+            <value>
+            The is unlisted.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.PersonPhone.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.PersonAttributeValue">
+            <summary>
+            ImportModel for PersonAttributeValue
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAttributeValue.PersonId">
+            <summary>
+            Gets or sets the person identifier.
+            </summary>
+            <value>
+            The person identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAttributeValue.AttributeKey">
+            <summary>
+            Gets or sets the attribute key.
+            </summary>
+            <value>
+            The attribute key.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.PersonAttributeValue.AttributeValue">
+            <summary>
+            Gets or sets the attribute value.
+            </summary>
+            <value>
+            The attribute value.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.PersonAttributeValue.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.Campus">
+            <summary>
+            ImportModel for Campus
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.Campus.CampusId">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Campus.CampusName">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.Campus.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.IImportModel">
+            <summary>
+            Interface for import models. These will turned into CSV files and stored in the *.slingshot file, which will then be handed off to Rock to get imported
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.Model.IImportModel.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.Person">
+            <summary>
+            ImportModel for Person
+            </summary>
+            <seealso cref="T:Slingshot.Core.Model.IImportModel" />
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>
+            The identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.FamilyId">
+            <summary>
+            Gets or sets the family identifier.
+            </summary>
+            <value>
+            The family identifier.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.FamilyName">
+            <summary>
+            Gets or sets the name of the family.
+            </summary>
+            <value>
+            The name of the family.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.FamilyImageUrl">
+            <summary>
+            Gets or sets the family image URL.
+            </summary>
+            <value>
+            The family image URL.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.FamilyRole">
+            <summary>
+            Gets or sets the family role.
+            </summary>
+            <value>
+            The family role.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.FirstName">
+            <summary>
+            Gets or sets the first name.
+            </summary>
+            <value>
+            The first name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.NickName">
+            <summary>
+            Gets or sets the name of the nick.
+            </summary>
+            <value>
+            The name of the nick.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.LastName">
+            <summary>
+            Gets or sets the last name.
+            </summary>
+            <value>
+            The last name.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.MiddleName">
+            <summary>
+            Gets or sets the name of the middle.
+            </summary>
+            <value>
+            The name of the middle.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Salutation">
+            <summary>
+            Gets or sets the salutation.
+            </summary>
+            <value>
+            The salutation.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Suffix">
+            <summary>
+            Gets or sets the suffix.
+            </summary>
+            <value>
+            The suffix.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Gender">
+            <summary>
+            Gets or sets the gender.
+            </summary>
+            <value>
+            The gender.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.MaritalStatus">
+            <summary>
+            Gets or sets the marital status.
+            </summary>
+            <value>
+            The marital status.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Birthdate">
+            <summary>
+            Gets or sets the birthdate.
+            Magic Year of 9999 (see <see cref="F:Slingshot.Core.Model.Person.BirthdateNoYearMagicYear"/>) if only Month and Day are known 
+            </summary>
+            <value>
+            The birthdate.
+            </value>
+        </member>
+        <member name="F:Slingshot.Core.Model.Person.BirthdateNoYearMagicYear">
+            <summary>
+            A BirthDate.Year of 9999 indicates that only Month and Day are known. 
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.AnniversaryDate">
+            <summary>
+            Gets or sets the anniversay.
+            </summary>
+            <value>
+            The anniversay.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.RecordStatus">
+            <summary>
+            Gets or sets the record status.
+            </summary>
+            <value>
+            The record status.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.InactiveReason">
+            <summary>
+            Gets or sets the inactive reason.
+            </summary>
+            <value>
+            The inactive reason.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.ConnectionStatus">
+            <summary>
+            Gets or sets the connection status.
+            </summary>
+            <value>
+            The connection status.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.EmailPreference">
+            <summary>
+            Gets or sets the email preference.
+            </summary>
+            <value>
+            The email preference.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.CreatedDateTime">
+            <summary>
+            Gets or sets the created date time.
+            </summary>
+            <value>
+            The created date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.ModifiedDateTime">
+            <summary>
+            Gets or sets the modified date time.
+            </summary>
+            <value>
+            The modified date time.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.PersonPhotoUrl">
+            <summary>
+            Gets or sets the person photo URL.
+            </summary>
+            <value>
+            The person photo URL.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Campus">
+            <summary>
+            Gets or sets the campus.
+            </summary>
+            <value>
+            The campus.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Note">
+            <summary>
+            Gets or sets the note.
+            </summary>
+            <value>
+            The note.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Grade">
+            <summary>
+            Gets or sets the grade.
+            </summary>
+            <value>
+            The grade.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.PersonSearchKeys">
+            <summary>
+            Gets or sets the person search keys.
+            </summary>
+            <value>
+            The person search keys.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Attributes">
+            <summary>
+            Gets or sets the attributes.
+            </summary>
+            <value>
+            The attributes.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.PhoneNumbers">
+            <summary>
+            Gets or sets the phone numbers.
+            </summary>
+            <value>
+            The phone numbers.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.Addresses">
+            <summary>
+            Gets or sets the addresses.
+            </summary>
+            <value>
+            The addresses.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.GiveIndividually">
+            <summary>
+            Gets or sets the give individually.
+            </summary>
+            <value>
+            The give individually.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Model.Person.IsDeceased">
+            <summary>
+            Gets or sets a value indicating whether this instance is deceased.
+            </summary>
+            <value>
+            <c>true</c> if this instance is deceased; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Model.Person.GetFileName">
+            <summary>
+            Gets the name of the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Model.EmailPreference">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.EmailPreference.EmailAllowed">
+            <summary>
+            An email preference of Email Allowed
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.EmailPreference.NoMassEmails">
+            <summary>
+            An email preference of No Mass Emails
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.EmailPreference.DoNotEmail">
+            <summary>
+            An email preference of Do Not Email
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.FamilyRole">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.FamilyRole.Adult">
+            <summary>
+            Adult
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.FamilyRole.Child">
+            <summary>
+            Child
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.Gender">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.Gender.Unknown">
+            <summary>
+            Unknown
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.Gender.Male">
+            <summary>
+            Male
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.Gender.Female">
+            <summary>
+            Femail
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.MaritalStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.MaritalStatus.Married">
+            <summary>
+            married
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.MaritalStatus.Divorced">
+            <summary>
+            divorced
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.MaritalStatus.Single">
+            <summary>
+            single
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.MaritalStatus.Unknown">
+            <summary>
+            unknown
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.Model.RecordStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.RecordStatus.Active">
+            <summary>
+            active
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.RecordStatus.Inactive">
+            <summary>
+            inactive
+            </summary>
+        </member>
+        <member name="F:Slingshot.Core.Model.RecordStatus.Pending">
+            <summary>
+            pending
+            </summary>
+        </member>
+        <member name="T:Slingshot.Core.ExtensionMethods">
+            <summary>
+            Boolean Extensions
+            </summary>
+            <summary>
+            DateTime and TimeStamp Extensions
+            </summary>
+             <summary>
+            
+             </summary>
+            <summary>
+            System.Enum extensions
+            </summary>
+            <summary>
+            Handy string extensions that don't require any nuget packages
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Bit(System.Boolean)">
+            <summary>
+            Returns a numeric 1 (if true) or 0 (if false).
+            </summary>
+            <param name="field"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToYesNo(System.Boolean)">
+            <summary>
+            Returns either "Yes" or "No".
+            </summary>
+            <param name="value">if set to <c>true</c> [value].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToTrueFalse(System.Boolean)">
+            <summary>
+            Returns the string "True" or "False".
+            </summary>
+            <param name="value">if set to <c>true</c> [value].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Age(System.Nullable{System.DateTime})">
+            <summary>
+            Returns the age at the current date.
+            </summary>
+            <param name="start"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Age(System.DateTime)">
+            <summary>
+            Returns the age at the current date.
+            </summary>
+            <param name="start"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.TotalMonths(System.DateTime,System.DateTime)">
+            <summary>
+            The total months.
+            </summary>
+            <param name="start">The start.</param>
+            <param name="end">The end.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.TotalYears(System.DateTime,System.DateTime)">
+            <summary>
+            The total years.
+            </summary>
+            <param name="start">The start.</param>
+            <param name="end">The end.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToElapsedString(System.Nullable{System.DateTime},System.Boolean,System.Boolean)">
+            <summary>
+            Returns a friendly elapsed time string.
+            </summary>
+            <param name="dateTime">The date time.</param>
+            <param name="condensed">if set to <c>true</c> [condensed].</param>
+            <param name="includeTime">if set to <c>true</c> [include time].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToElapsedString(System.DateTime,System.Boolean,System.Boolean)">
+            <summary>
+            Returns a friendly elapsed time string.
+            </summary>
+            <param name="dateTime">The date time.</param>
+            <param name="condensed">if set to <c>true</c> [condensed].</param>
+            <param name="includeTime">if set to <c>true</c> [include time].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToRelativeDateString(System.Nullable{System.DateTime},System.Nullable{System.Int32})">
+            <summary>
+            Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
+            or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm).
+            </summary>
+            <param name="dateTime">the datetime to convert to relative time.</param>
+            <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToRelativeDateString(System.DateTime,System.Nullable{System.Int32})">
+            <summary>
+            Returns a string in relative format (x seconds ago, x minutes ago, about an hour ago, in x seconds,
+            in x minutes, in about an hour, etc.) or if time difference is greater than max days in long format (February
+            13 at 11:28am or November 5, 2011 at 1:57pm).
+            </summary>
+            <param name="dateTime">the datetime to convert to relative time.</param>
+            <param name="maxDays">maximum number of days before formatting in long format (ex. November 5, 2011 at 1:57pm) </param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToJavascriptMilliseconds(System.DateTime)">
+            <summary>
+            Converts the date to an Epoch of milliseconds since 1970/1/1.
+            </summary>
+            <param name="dateTime">The date time.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToMonthDayString(System.DateTime)">
+            <summary>
+            Converts the date to a string containing month and day values ( culture-specific ).
+            </summary>
+            <param name="dateTime">The date time.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.StartOfWeek(System.DateTime,System.DayOfWeek)">
+            <summary>
+            Returns the date of the start of the week for the specified date/time
+            For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-11"
+            from http://stackoverflow.com/a/38064/1755417
+            </summary>
+            <param name="dt">The dt.</param>
+            <param name="startOfWeek">The start of week.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.EndOfWeek(System.DateTime,System.DayOfWeek)">
+            <summary>
+            Returns the date of the last day of the week for the specified date/time
+            For example, if Monday is considered the start of the week: "2015-05-13" would return "2015-05-17"
+            from http://stackoverflow.com/a/38064/1755417
+            </summary>
+            <param name="dt">The dt.</param>
+            <param name="startOfWeek">The start of week.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.SundayDate(System.DateTime,System.DayOfWeek)">
+            <summary>
+            Sundays the date.
+            </summary>
+            <param name="dt">The date to check.</param>
+            <param name="startOfWeek">The start of week.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.GetWeekOfMonth(System.DateTime,System.DayOfWeek)">
+            <summary>
+            Gets the week of month.
+            from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
+            </summary>
+            <param name="dateTime">The date time.</param>
+            <param name="firstDayOfWeek">The first day of week. For example" RockDateTime.FirstDayOfWeek</param>
+            <returns></returns>
+        </member>
+        <member name="F:Slingshot.Core.ExtensionMethods._gregorianCalendar">
+            <summary>
+            The _gregorian calendar
+            from http://stackoverflow.com/a/2136549/1755417
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.GetWeekOfYear(System.DateTime,System.Globalization.CalendarWeekRule,System.DayOfWeek)">
+            <summary>
+            Gets the week of year.
+            from http://stackoverflow.com/a/2136549/1755417, but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
+            </summary>
+            <param name="dateTime">The date time.</param>
+            <param name="calendarWeekRule">The calendar week rule.</param>
+            <param name="firstDayOfWeek">The first day of week.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToShortDateTimeString(System.DateTime)">
+            <summary>
+            Converts a datetime to the short date/time format.
+            </summary>
+            <param name="dt">The dt.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToTimeString(System.TimeSpan)">
+            <summary>
+            Returns a TimeSpan as h:mm AM/PM (culture invariant)
+            Examples: 1:45 PM, 12:01 AM
+            </summary>
+            <param name="timespan">The timespan.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.GetDecimalPrecision(System.Decimal)">
+            <summary>
+            Returns the number of digits following the decimal place. 5.68 would return 2. 17.9998 would return 4.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Floor(System.Nullable{System.Decimal},System.Int32)">
+            <summary>
+            Returns the floor (round down) value with the given decimal precision
+            </summary>
+            <param name="value">The value.</param>
+            <param name="precision">The precision.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ConvertToString(System.Enum,System.Boolean)">
+            <summary>
+            Converts to the enum value to its string value.
+            </summary>
+            <param name="eff">The eff.</param>
+            <param name="SplitCase">if set to <c>true</c> [split case].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.GetDescription(System.Enum)">
+            <summary>
+            Gets the enum description.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ConvertToInt(System.Enum)">
+            <summary>
+            Converts to int.
+            </summary>
+            <param name="eff">The eff.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ConvertToEnum``1(System.String,System.Nullable{``0})">
+            <summary>
+            Converts a string value to an enum value.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="enumValue">The enum value.</param>
+            <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ConvertToEnumOrNull``1(System.String,System.Nullable{``0})">
+            <summary>
+            Converts to enum or null.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="enumValue">The enum value.</param>
+            <param name="defaultValue">The default value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.RemoveCrLf(System.String)">
+            <summary>
+            Removes any carriage return and/or line feed characters.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.RemoveSpecialCharacters(System.String)">
+            <summary>
+            Removes special characters from the string so that only Alpha, Numeric, '.' and '_' remain;
+            </summary>
+            <param name="str">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.IsNotNullOrWhitespace(System.String)">
+            <summary>
+            Determines whether the string is not null or whitespace.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.IsNullOrWhiteSpace(System.String)">
+            <summary>
+            Determines whether [is null or white space].
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.IsDigitsOnly(System.String)">
+            <summary>
+            Determines whether the string is made up of only digits
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.MakeInt64HashCode(System.String)">
+            <summary>
+            Makes the Int64 hash code from the provided string.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.MakeValidFileName(System.String)">
+            <summary>
+            removes any invalid FileName chars in a filename
+            from http://stackoverflow.com/a/14836763/1755417
+            </summary>
+            <param name="name">The name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.SplitCase(System.String)">
+            <summary>
+            Splits a Camel or Pascal cased identifier into seperate words.
+            </summary>
+            <param name="str">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.SplitDelimitedValues(System.String,System.Boolean)">
+            <summary>
+            Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters.
+            </summary>
+            <param name="str">The string.</param>
+            <param name="whitespace">if set to <c>true</c> whitespace will be treated as a delimiter</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ReplaceCaseInsensitive(System.String,System.String,System.String)">
+            <summary>
+            Replaces every instance of oldValue (regardless of case) with the newValue.
+            (from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace)
+            </summary>
+            <param name="str">The source string.</param>
+            <param name="oldValue">The value to replace.</param>
+            <param name="newValue">The value to insert.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ReplaceWhileExists(System.String,System.String,System.String)">
+            <summary>
+            Replaces every instance of oldValue with newValue.  Will continue to replace
+            values after each replace until the oldValue does not exist.
+            </summary>
+            <param name="str">The source string.</param>
+            <param name="oldValue">The value to replace.</param>
+            <param name="newValue">The value to insert.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.EscapeQuotes(System.String)">
+            <summary>
+            Adds escape character for quotes in a string.
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Quoted(System.String,System.String)">
+            <summary>
+            Adds Quotes around the specified string and escapes any quotes that are already in the string.
+            </summary>
+            <param name="str">The string.</param>
+            <param name="QuoteChar">The quote character.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Left(System.String,System.Int32)">
+            <summary>
+            Returns the specified number of characters, starting at the left side of the string.
+            </summary>
+            <param name="str">The string.</param>
+            <param name="length">The desired length.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Truncate(System.String,System.Int32)">
+            <summary>
+            Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength.
+            </summary>
+            <param name="str"></param>
+            <param name="maxLength"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsNumeric(System.String)">
+            <summary>
+            Removes any non-numeric characters.
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ReplaceLastOccurrence(System.String,System.String,System.String)">
+            <summary>
+            Replaces the last occurrence of a given string with a new value
+            </summary>
+            <param name="source">The string.</param>
+            <param name="find">The search parameter.</param>
+            <param name="replace">The replacement parameter.</param>
+            <returns></returns>
+        </member>
+        <member name="F:Slingshot.Core.ExtensionMethods.trueStrings">
+            <summary>
+            The true strings for AsBoolean and AsBooleanOrNull.
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsBoolean(System.String,System.Boolean)">
+            <summary>
+            Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive).
+            </summary>
+            <param name="str">The string.</param>
+            <param name="resultIfNullOrEmpty">if set to <c>true</c> [result if null or empty].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsBooleanOrNull(System.String)">
+            <summary>
+            Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive), null for emptystring/null.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsDictionary(System.String)">
+            <summary>
+            Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>                     
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsDictionaryOrNull(System.String)">
+            <summary>
+            Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns null if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsInteger(System.String)">
+            <summary>
+            Attempts to convert string to integer.  Returns 0 if unsuccessful.
+            </summary>
+            <param name="str">The STR.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsIntegerOrNull(System.String)">
+            <summary>
+            Attempts to convert string to an integer.  Returns null if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsGuid(System.String)">
+            <summary>
+            Attempts to convert string to Guid.  Returns Guid.Empty if unsuccessful.
+            </summary>
+            <param name="str">The STR.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsGuidOrNull(System.String)">
+            <summary>
+            Attempts to convert string to Guid.  Returns null if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.IsEmpty(System.Guid)">
+            <summary>
+            Determines whether the specified unique identifier is Guid.Empty.
+            </summary>
+            <param name="guid">The unique identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsDecimal(System.String)">
+            <summary>
+            Attempts to convert string to decimal.  Returns 0 if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsDecimalOrNull(System.String)">
+            <summary>
+            Attempts to convert string to decimal.  Returns null if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsDouble(System.String)">
+            <summary>
+            Attempts to convert string to double.  Returns 0 if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsDoubleOrNull(System.String)">
+            <summary>
+            Attempts to convert string to double.  Returns null if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsDateTime(System.String)">
+            <summary>
+            Attempts to convert string to DateTime.  Returns null if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsTimeSpan(System.String)">
+            <summary>
+            Attempts to convert string to TimeSpan.  Returns null if unsuccessful.
+            </summary>
+            <param name="str">The string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.AsType``1(System.String)">
+            <summary>
+            Converts the value to Type, or if unsuccessful, returns the default value of Type.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.Masked(System.String)">
+            <summary>
+            Masks the specified value if greater than 4 characters (such as a credit card number).
+            For example, the return string becomes "************6789".
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.EnsureTrailingBackslash(System.String)">
+            <summary>
+            Ensures the trailing backslash. Handy when combining folder paths.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.EnsureTrailingForwardslash(System.String)">
+            <summary>
+            Ensures the trailing forward slash. Handy when combining url paths.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.RemoveLeadingForwardslash(System.String)">
+            <summary>
+            Ensures the leading forward slash. Handy when combining url paths.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.IfEmpty(System.String,System.String)">
+            <summary>
+            Evaluates string, and if null or empty, returns nullValue instead.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="nullValue">The null value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ReplaceWordChars(System.String)">
+            <summary>
+            Replaces special Microsoft Word chars with standard chars
+            For example, smart quotes will be replaced with apostrophes
+            from http://www.andornot.com/blog/post/Replace-MS-Word-special-characters-in-javascript-and-C.aspx
+            </summary>
+            <param name="text">The text.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.ToKeyValuePairList(System.String)">
+            <summary>
+            Returns a list of KeyValuePairs from a serialized list of Rock KeyValuePairs (e.g. 'Item1^Value1|Item2^Value2')
+            </summary>
+            <param name="input">The input.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.ExtensionMethods.RemoveSpaces(System.String)">
+            <summary>
+            Removes the spaces.
+            </summary>
+            <param name="input">The input.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Slingshot.Core.Utilities.ImportPackage">
+            <summary>
+            Static class to write import models to the file system
+            </summary>
+        </member>
+        <member name="P:Slingshot.Core.Utilities.ImportPackage.PackageDirectory">
+            <summary>
+            Gets the package directory.
+            </summary>
+            <value>
+            The package directory.
+            </value>
+        </member>
+        <member name="P:Slingshot.Core.Utilities.ImportPackage.ImageDirectory">
+            <summary>
+            Gets the image directory.
+            </summary>
+            <value>
+            The image directory.
+            </value>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.#cctor">
+            <summary>
+            Initializes the <see cref="T:Slingshot.Core.Utilities.ImportPackage"/> class.
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.InitalizePackageFolder">
+            <summary>
+            Initalizes the package folder.
+            </summary>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.FinalizePackage(System.String)">
+            <summary>
+            Finalizes the package.
+            </summary>
+            <param name="exportFilename">The export filename.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteToPackage``1(``0)">
+            <summary>
+            Writes to package.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="model">The model.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.GetTextWriter(System.String)">
+            <summary>
+            Gets the TextWriter.
+            </summary>
+            <param name="fileName">The file name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.EnsureWriters``1(``0)">
+            <summary>
+            Ensures that the <see cref="T:System.IO.TextWriter"/> is in the textWriters collection.
+            </summary>
+            <typeparam name="T">Any type which implements <see cref="T:Slingshot.Core.Model.IImportModel"/>.</typeparam>
+            <param name="model">The model.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.GetCsvWriter(System.IO.TextWriter)">
+            <summary>
+            Gets the CsvWriter.
+            </summary>
+            <param name="textWriter">The <see cref="T:System.IO.TextWriter"/>.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.EnsureCsvWriter``1(``0)">
+            <summary>
+            Ensures that the <see cref="T:CsvHelper.CsvWriter"/> is in the csvWriters collection.
+            </summary>
+            <typeparam name="T">Any type which implements <see cref="T:Slingshot.Core.Model.IImportModel"/>.</typeparam>
+            <param name="model">The model.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteCsvRecord``1(``0)">
+            <summary>
+            Writes an <see cref="T:Slingshot.Core.Model.IImportModel"/> record to the CSV file.
+            </summary>
+            <typeparam name="T">Any type which implements <see cref="T:Slingshot.Core.Model.IImportModel"/>.</typeparam>
+            <param name="model">The <see cref="T:Slingshot.Core.Model.IImportModel"/>.</param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.Person)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.Person"/>.
+            </summary>
+            <param name="importPerson">The <see cref="T:Slingshot.Core.Model.Person"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.FinancialBatch)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.FinancialBatch"/>.
+            </summary>
+            <param name="importBatch">The <see cref="T:Slingshot.Core.Model.FinancialBatch"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.FinancialTransaction)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.FinancialTransaction"/>.
+            </summary>
+            <param name="importTransaction">The <see cref="T:Slingshot.Core.Model.FinancialTransaction"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.Group)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.Group"/>.
+            </summary>
+            <param name="importGroup">The <see cref="T:Slingshot.Core.Model.Group"/></param>
+        </member>
+        <member name="M:Slingshot.Core.Utilities.ImportPackage.WriteRelatedModels(Slingshot.Core.Model.Business)">
+            <summary>
+            Writes related models for a <see cref="T:Slingshot.Core.Model.Business"/>.
+            </summary>
+            <param name="importBusiness">The <see cref="T:Slingshot.Core.Model.Business"/></param>
+        </member>
+    </members>
+</doc>

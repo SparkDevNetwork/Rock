@@ -1,0 +1,1 @@
+You can read the details on the official https://www.rockrms.com/releasenotes page.

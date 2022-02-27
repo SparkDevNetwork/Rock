@@ -1,0 +1,192 @@
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_print.less";
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  display: block;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.navbar {
+  position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+  // using fontawesome nav toggle button instead of the BS default
+  .navbar-toggle {
+    padding: 6px 10px;
+
+    i.fa-bars {
+      color: @navbar-inverse-toggle-icon-bar-bg;
+    }
+  }
+}
+
+a:hover i.fs {
+  text-decoration: none;
+}
+
+// 3. Theme Styling
+// -------------------------
+
+h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hidden
+  display: none;
+}
+
+.page-icon {
+  display: none;
+}
+
+header {
+  .page-menu,
+  .login-status {
+    float: right;
+  }
+
+  .navbar {
+    background-color: @header-bg;
+    border: 0;
+  }
+}
+
+// homepage items
+#announcement-rotator {
+  margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
+
+  .item {
+    img {
+      width: 100%;
+    }
+  }
+}
+
+.announcement-list {
+  .announcement {
+    max-width: 390px;
+    margin: 0 auto @spacing-lg-px;
+  }
+
+  .announcement-title {
+    margin: @spacing-sm-px 0;
+  }
+
+  img {
+    width: 100%;
+  }
+}
+
+.announcement-detail {
+  img {
+    width: 100%;
+  }
+}
+
+.nav-sub {
+  li {
+    border: 1px solid @gray-lighter;
+    border-radius: @border-radius-base;
+  }
+}
+
+footer {
+  margin-bottom: 50px;
+
+  .footer-message {
+    float: left;
+  }
+
+  .footer-address {
+    float: right;
+  }
+}
+
+#splash.error {
+  background-color: @gray-lighter;
+
+  #content {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: @body-bg;
+    border-radius: @border-radius-base;
+  }
+}
+
+.not-found h2 {
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
+
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
+}
+
+/* hide block panels */
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+// 4. Responsive Overrides
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+  #announcement-rotator {
+    margin: @spacing-lg-px 0;
+  }
+}
+
+// Medium devices (desktops, 992px and up)
+@media (min-width: @screen-md-min) {
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+}
+
+
+@import "_css-overrides.less";

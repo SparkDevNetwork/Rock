@@ -1,0 +1,20 @@
+			{%- assign schedule = partition -%}
+			{%- if schedule.Limit > 0 or schedule.Limit == null %}
+				{%- assign spotsLeft = schedule.Limit | Minus: schedule.Filled -%}
+				<div class="col-sm-6 col-md-4" style="margin-bottom: 20px;">
+					<div class="serve-card" style="height: 180px;">
+					{% if schedule.Limit == null or spotsLeft > 0 %}
+					<a href="{{partition.Url}}&{{partition.ParameterName}}={{schedule.Entity.Guid}}" title="Sign Up">
+					{% endif %}    
+					<div class="box text-center">
+							<div class="clearfix">
+								<span class="label label-default pull-right" style="margin: 10px">{% if schedule.Limit == null %}Unlimited{% else %}{% if spotsLeft <= 0 %}Full{% else %}{{spotsLeft}} {{ 'Spot' | PluralizeForQuantity:spotsLeft }} Remaining{% endif %}{% endif %}</span>
+							</div>
+                            <h3>{{ schedule.Entity.Name }}</h3>
+                        </div>
+					{%- if schedule.Limit == null or spotsLeft > 0 -%}
+                    </a>
+					{%- endif -%}
+					</div>
+                </div>
+			{%- endif -%}

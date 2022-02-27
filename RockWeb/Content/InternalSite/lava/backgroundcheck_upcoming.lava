@@ -1,0 +1,16 @@
+{% assign nextJobDay = 'Now' | NextDayOfTheWeek:'Monday' %}
+
+<div class="row">
+<h4>The following background checks will auto-renew {{ nextJobDay | DaysFromNow }}:</h4>
+<div class="col-md-6" style="background-color:#F0F0F0;border-radius: 25px;">
+
+<br />
+{% person dataview:'{{ blockGroupId }}'  %}
+    {% for person in personItems %}
+       <h5><a href="~/Person/{{ person.Id }}">{{ person.FullName }}</a> <br /></h5>
+    {% endfor %}
+{% endperson %}
+<br />
+
+</div>
+</div>

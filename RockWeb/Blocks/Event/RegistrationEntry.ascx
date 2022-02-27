@@ -55,10 +55,13 @@
     <%-- Prompt for information on each Registration --%>
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false" CssClass="registrationentry-registrant">
 
-        
-        <h1>
+        <div class="col-sm-6 col-sm-offset-3">
+            <h1>
             <asp:Literal ID="lRegistrantTitle" runat="server" />
-        </h1>        
+        </h1>  
+        </div>
+             
+             
 
         <Rock:NotificationBox ID="nbType" runat="server" NotificationBoxType="Warning"  />
 
@@ -72,12 +75,12 @@
 
         <asp:Panel id="pnlRegistrantFields" runat="server" >
 
-            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well js-registration-same-family">
+            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="col-sm-6 col-sm-offset-3 well js-registration-same-family">
                 <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same immediate family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
             </asp:Panel>
         
             <asp:Panel ID="pnlFamilyMembers" runat="server" CssClass="row" >
-                <div class="col-md-6">
+                <div class="col-sm-6 col-sm-offset-3">
                     <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member to Register" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
                 </div>
             </asp:Panel>
@@ -91,7 +94,7 @@
 
         </asp:Panel>
 
-        <asp:Panel id="pnlDigitalSignature" runat="server" visible="false">
+        <asp:Panel id="pnlDigitalSignature" CssClass="col-xs-12" runat="server" visible="false">
             <Rock:NotificationBox ID="nbDigitalSignature" runat="server" NotificationBoxType="Info"></Rock:NotificationBox>
             <asp:HiddenField ID="hfRequiredDocumentLinkUrl" runat="server" />
             <asp:HiddenField ID="hfRequiredDocumentQueryString" runat="server" />
@@ -103,7 +106,7 @@
 
         </asp:Panel>
 
-        <div class="actions">
+        <div class="actions col-sm-6 col-sm-offset-3">
             <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
             <Rock:BootstrapButton ID="lbRegistrantNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRegistrantNext_Click" />
         </div>
@@ -344,7 +347,7 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlSuccess" runat="server" Visible="false" >
+    <asp:Panel ID="pnlSuccess" CssClass="col-sm-6 col-sm-offset-3" runat="server" Visible="false" >
         
         <h1><asp:Literal ID="lSuccessTitle" runat="server" /></h1>
 

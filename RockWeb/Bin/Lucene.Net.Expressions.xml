@@ -1,0 +1,408 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Lucene.Net.Expressions</name>
+    </assembly>
+    <members>
+        <member name="T:Lucene.Net.Expressions.Bindings">
+            <summary>Binds variable names in expressions to actual data.</summary>
+            <remarks>
+            Binds variable names in expressions to actual data.
+            <para/>
+            These are typically DocValues fields/FieldCache, the document's
+            relevance score, or other <see cref="T:Lucene.Net.Queries.Function.ValueSource"/>s.
+            @lucene.experimental
+            </remarks>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Bindings.#ctor">
+            <summary>Sole constructor.</summary>
+            <remarks>
+            Sole constructor. (For invocation by subclass
+            constructors, typically implicit.)
+            </remarks>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Bindings.GetValueSource(System.String)">
+            <summary>
+            Returns a <see cref="T:Lucene.Net.Queries.Function.ValueSource"/> bound to the variable name.
+            </summary>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Bindings.GetScoreValueSource">
+            <summary>
+            Returns a <see cref="T:Lucene.Net.Queries.Function.ValueSource"/> over relevance scores
+            </summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.Expression">
+            <summary>Base class that computes the value of an expression for a document.</summary>
+            <remarks>
+            Base class that computes the value of an expression for a document.
+            <para/>
+            Example usage:
+            <code>
+            // compile an expression:
+            Expression expr = JavascriptCompiler.Compile("sqrt(_score) + ln(popularity)");
+            // SimpleBindings just maps variables to SortField instances
+            SimpleBindings bindings = new SimpleBindings();
+            bindings.Add(new SortField("_score", SortFieldType.SCORE));
+            bindings.Add(new SortField("popularity", SortFieldType.INT));
+            // create a sort field and sort by it (reverse order)
+            Sort sort = new Sort(expr.GetSortField(bindings, true));
+            Query query = new TermQuery(new Term("body", "contents"));
+            searcher.Search(query, null, 10, sort);
+            </code>
+            @lucene.experimental
+            </remarks>
+            <seealso cref="M:Lucene.Net.Expressions.JS.JavascriptCompiler.Compile(System.String)"/>
+        </member>
+        <member name="P:Lucene.Net.Expressions.Expression.SourceText">
+            <summary>The original source text</summary>
+        </member>
+        <member name="P:Lucene.Net.Expressions.Expression.Variables">
+            <summary>Named variables referred to by this expression</summary>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Expression.#ctor(System.String,System.String[])">
+            <summary>
+            Creates a new <see cref="T:Lucene.Net.Expressions.Expression"/>.
+            </summary>
+            <param name="sourceText">
+            Source text for the expression: e.g.
+            <c>ln(popularity)</c>
+            </param>
+            <param name="variables">
+            Names of external variables referred to by the expression
+            </param>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Expression.Evaluate(System.Int32,Lucene.Net.Queries.Function.FunctionValues[])">
+            <summary>Evaluates the expression for the given document.</summary>
+            <remarks>Evaluates the expression for the given document.</remarks>
+            <param name="document"><c>docId</c> of the document to compute a value for</param>
+            <param name="functionValues">
+            <see cref="T:Lucene.Net.Queries.Function.FunctionValues"/>
+            for each element of <see cref="P:Lucene.Net.Expressions.Expression.Variables">variables</see>.
+            </param>
+            <returns>The computed value of the expression for the given document.</returns>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Expression.GetValueSource(Lucene.Net.Expressions.Bindings)">
+            <summary>Get a value source which can compute the value of this expression in the context of the given bindings.</summary>
+            <remarks>Get a value source which can compute the value of this expression in the context of the given bindings.</remarks>
+            <param name="bindings">Bindings to use for external values in this expression</param>
+            <returns>A value source which will evaluate this expression when used</returns>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Expression.GetSortField(Lucene.Net.Expressions.Bindings,System.Boolean)">
+            <summary>Get a sort field which can be used to rank documents by this expression.</summary>
+            <remarks>Get a sort field which can be used to rank documents by this expression.</remarks>
+        </member>
+        <member name="M:Lucene.Net.Expressions.Expression.GetRescorer(Lucene.Net.Expressions.Bindings)">
+            <summary>
+            Get a <see cref="T:Lucene.Net.Search.Rescorer"/>, to rescore first-pass hits
+            using this expression.
+            </summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.ExpressionComparer">
+            <summary>A custom comparer for sorting documents by an expression</summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.ExpressionFunctionValues">
+            <summary>
+            A <see cref="T:Lucene.Net.Queries.Function.FunctionValues"/> which evaluates an expression
+            </summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.ExpressionRescorer">
+            <summary>
+            A <see cref="T:Lucene.Net.Search.Rescorer"/> that uses an expression to re-score
+            first pass hits.  Functionally this is the same as
+            <see cref="T:Lucene.Net.Search.SortRescorer"/> (if you build the
+            <see cref="T:Lucene.Net.Search.Sort"/> using
+            <see cref="M:Lucene.Net.Expressions.Expression.GetSortField(Lucene.Net.Expressions.Bindings,System.Boolean)"/>), except for the <see cref="M:Lucene.Net.Expressions.ExpressionRescorer.Explain(Lucene.Net.Search.IndexSearcher,Lucene.Net.Search.Explanation,System.Int32)"/> method
+            which gives more detail by showing the value of each
+            variable.
+            @lucene.experimental
+            </summary>
+        </member>
+        <member name="M:Lucene.Net.Expressions.ExpressionRescorer.#ctor(Lucene.Net.Expressions.Expression,Lucene.Net.Expressions.Bindings)">
+            <summary>
+            Uses the provided <see cref="T:Lucene.Net.Queries.Function.ValueSource"/> to assign second
+            pass scores.
+            </summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.ExpressionSortField">
+            <summary>
+            A <see cref="T:Lucene.Net.Search.SortField"/> which sorts documents by the evaluated value of an expression for each document
+            </summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.ExpressionValueSource">
+            <summary>
+            A <see cref="T:Lucene.Net.Queries.Function.ValueSource"/> which evaluates a
+            <see cref="T:Lucene.Net.Expressions.Expression"/> given the context of an <see cref="T:Lucene.Net.Expressions.Bindings"/>.
+            </summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.JS.JavascriptCompiler">
+            <summary>An expression compiler for javascript expressions.</summary>
+            <remarks>
+            An expression compiler for javascript expressions.
+            <para/>
+            Example:
+            <code>
+            Expression foo = JavascriptCompiler.Compile("((0.3*popularity)/10.0)+(0.7*score)");
+            </code>
+            <para/>
+            See the <see cref="N:Lucene.Net.Expressions.JS">package documentation</see> for
+            the supported syntax and default functions.
+            <para>
+            You can compile with an alternate set of functions via <see cref="M:Lucene.Net.Expressions.JS.JavascriptCompiler.Compile(System.String,System.Collections.Generic.IDictionary{System.String,System.Reflection.MethodInfo})"/>.
+            For example:
+            <code>
+            IDictionary&lt;string, MethodInfo&gt; functions = new Dictionary&lt;string, MethodInfo&gt;();
+            // add all the default functions
+            functions.PutAll(JavascriptCompiler.DEFAULT_FUNCTIONS);
+            // add sqrt()
+            functions.Put("sqrt", (typeof(Math)).GetMethod("Sqrt", new Type[] { typeof(double) }));
+            // call compile with customized function map
+            Expression foo = JavascriptCompiler.Compile("sqrt(score)+ln(popularity)", functions);
+            </code>
+            </para>
+            @lucene.experimental
+            </remarks>
+        </member>
+        <member name="F:Lucene.Net.Expressions.JS.JavascriptCompiler.DEFAULT_FUNCTIONS">
+            <summary>The default set of functions available to expressions.</summary>
+            <remarks>
+            The default set of functions available to expressions.
+            <para/>
+            See the <see cref="N:Lucene.Net.Expressions.JS">package documentation</see> for a list.
+            </remarks>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptCompiler.Compile(System.String)">
+            <summary>Compiles the given expression.</summary>
+            <param name="sourceText">The expression to compile</param>
+            <returns>A new compiled expression</returns>
+            <exception cref="T:Lucene.Net.Expressions.JS.ParseException">on failure to compile</exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptCompiler.Compile(System.String,System.Collections.Generic.IDictionary{System.String,System.Reflection.MethodInfo})">
+            <summary>Compiles the given expression with the supplied custom functions.</summary>
+            <remarks>
+            Compiles the given expression with the supplied custom functions.
+            <para/>
+            Functions must be <c>public static</c>, return <see cref="T:System.Double"/> and
+            can take from zero to 256 <see cref="T:System.Double"/> parameters.
+            </remarks>
+            <param name="sourceText">The expression to compile</param>
+            <param name="functions">map of <see cref="T:System.String"/> names to functions</param>
+            <returns>A new compiled expression</returns>
+            <exception cref="T:Lucene.Net.Expressions.JS.ParseException">on failure to compile</exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptCompiler.UnusedTestCompile">
+            <summary>This method is unused, it is just here to make sure that the function signatures don't change.</summary>
+            <remarks>
+            This method is unused, it is just here to make sure that the function signatures don't change.
+            If this method fails to compile, you also have to change the byte code generator to correctly
+            use the <see cref="T:Lucene.Net.Queries.Function.FunctionValues"/> class.
+            </remarks>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptCompiler.#ctor(System.String)">
+            <summary>Constructs a compiler for expressions.</summary>
+            <param name="sourceText">The expression to compile</param>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptCompiler.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.Reflection.MethodInfo})">
+            <summary>Constructs a compiler for expressions with specific set of functions</summary>
+            <param name="sourceText">The expression to compile</param>
+            <param name="functions">The set of functions to compile with</param>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptCompiler.CompileExpression">
+            <summary>Compiles the given expression with the specified parent classloader</summary>
+            <returns>A new compiled expression</returns>
+            <exception cref="T:Lucene.Net.Expressions.JS.ParseException">on failure to compile</exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptCompiler.PushInt64(System.Int64)">
+            <summary>
+            NOTE: This was pushLong() in Lucene
+            </summary>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BIT_AND">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BIT_NOT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BIT_OR">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BIT_SHL">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BIT_SHR">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BIT_SHU">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BIT_XOR">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BOOL_AND">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BOOL_NOT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_BOOL_OR">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COLON">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COMMA">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COMP_EQ">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COMP_GT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COMP_GTE">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COMP_LT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COMP_LTE">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COMP_NEQ">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_COND_QUE">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_DIVIDE">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_DOT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_LPAREN">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_MODULO">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_MULTIPLY">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_RPAREN">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MAT_SUBTRACT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MNAMESPACE_ID">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MID">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MWS">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MDECIMAL">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MOCTAL">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MHEX">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MDECIMALINTEGER">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MEXPONENT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MDECIMALDIGIT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MHEXDIGIT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptLexer.MOCTALDIGIT">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.ParseException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of this class with serialized data.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="M:Lucene.Net.Expressions.JS.JavascriptParser.Conditional">
+            <exception cref="T:Antlr.Runtime.RecognitionException"></exception>
+        </member>
+        <member name="T:Lucene.Net.Expressions.ScoreFunctionValues">
+            <summary>
+            A utility class to allow expressions to access the score as a
+            <see cref="T:Lucene.Net.Queries.Function.FunctionValues"/>.
+            </summary>
+        </member>
+        <member name="T:Lucene.Net.Expressions.ScoreValueSource">
+            <summary>
+            A <see cref="T:Lucene.Net.Queries.Function.ValueSource"/> which uses the
+            <see cref="T:Lucene.Net.Search.Scorer"/> passed through
+            the context map by <see cref="T:Lucene.Net.Expressions.ExpressionComparer"/>.
+            </summary>
+        </member>
+        <member name="M:Lucene.Net.Expressions.ScoreValueSource.GetValues(System.Collections.IDictionary,Lucene.Net.Index.AtomicReaderContext)">
+            <summary>
+            <paramref name="context"/> must contain a key "scorer" which is a
+            <see cref="T:Lucene.Net.Search.Scorer"/>.
+            </summary>
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="T:Lucene.Net.Expressions.SimpleBindings">
+            <summary>
+            Simple class that binds expression variable names to
+            <see cref="T:Lucene.Net.Search.SortField"/>s or other
+            <see cref="T:Lucene.Net.Expressions.Expression"/>s.
+            <para/>
+            Example usage:
+            <code>
+            SimpleBindings bindings = new SimpleBindings();
+            // document's text relevance score
+            bindings.Add(new SortField("_score", SortFieldType.SCORE));
+            // integer NumericDocValues field (or from FieldCache)
+            bindings.Add(new SortField("popularity", SortFieldType.INT));
+            // another expression
+            bindings.Add("recency", myRecencyExpression);
+            // create a sort field in reverse order
+            Sort sort = new Sort(expr.GetSortField(bindings, true));
+            </code>
+            @lucene.experimental
+            </summary>
+        </member>
+        <member name="M:Lucene.Net.Expressions.SimpleBindings.#ctor">
+            <summary>
+            Creates a new empty <see cref="T:Lucene.Net.Expressions.Bindings"/>
+            </summary>
+        </member>
+        <member name="M:Lucene.Net.Expressions.SimpleBindings.Add(Lucene.Net.Search.SortField)">
+            <summary>Adds a <see cref="T:Lucene.Net.Search.SortField"/> to the bindings.</summary>
+            <remarks>
+            Adds a <see cref="T:Lucene.Net.Search.SortField"/> to the bindings.
+            <para/>
+            This can be used to reference a DocValuesField, a field from
+            FieldCache, the document's score, etc.
+            </remarks>
+        </member>
+        <member name="M:Lucene.Net.Expressions.SimpleBindings.Add(System.String,Lucene.Net.Expressions.Expression)">
+            <summary>Adds an <see cref="T:Lucene.Net.Expressions.Expression"/> to the bindings.</summary>
+            <remarks>
+            Adds an <see cref="T:Lucene.Net.Expressions.Expression"/> to the bindings.
+            <para/>
+            This can be used to reference expressions from other expressions.
+            </remarks>
+        </member>
+        <member name="M:Lucene.Net.Expressions.SimpleBindings.Validate">
+            <summary>Traverses the graph of bindings, checking there are no cycles or missing references</summary>
+            <exception cref="T:System.ArgumentException">if the bindings is inconsistent</exception>
+        </member>
+    </members>
+</doc>

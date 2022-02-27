@@ -1,0 +1,353 @@
+{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.Administrate == true %}
+
+	{% assign countActive = -1 %}
+	{% assign countInactive = -1 %}
+	{% assign countPending = -1 %}
+	{% for member in Group.Members %}
+		{% case member.GroupMemberStatus %}
+			{% when 'Active' %}
+				{% assign countActive = countActive | Plus: 1 %}
+			{% when 'Inactive' %}
+				{% assign countInactive = countInactive | Plus: 1 %}
+			{% when 'Pending' %}
+				{% assign countPending = countPending | Plus: 1 %}
+			{% else %}
+		{% endcase %}
+	{% endfor %}
+
+
+	{% for groupLocation in Group.GroupLocations %}
+		{% if groupLocation.Location.GeoPoint != '' %}
+
+		<div class="packagesummary-image"
+			 style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}') no-repeat center;
+					width: 100%;
+					height: 200px;">
+		</div>
+
+		{% endif %}
+	{% endfor %}
+
+
+
+	<h1>{{ Group.Name }}</h1>
+
+	{{ Group.Description }}
+
+	{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+		{% assign warningLevel = 'warning' %}
+
+		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
+			{% assign warningLevel = 'danger' %}
+		{% endif %}
+
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
+		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
+
+		{% if overageAmount > 0 %}
+			<div class="alert alert-{{ warningLevel }} margin-t-sm">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
+		{% endif %}
+	{% endif %}
+
+	<div class="row form-group">
+		<div class="col-md-6 hidden">
+		<h4>Group Details:</h4>
+		{% for attribute in Group.AttributeValues %}
+		<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+		{% endfor %}
+		</div>
+
+		<div class="col-xs-6 col-md-6">
+		<h4 style='text-decoration: underline;'>Mentors:</h4>
+		<ul class='list-unstyled'>
+			{% for member in Group.Members %}
+
+			{% if member.GroupRole.IsLeader %}
+			<li>
+			{{ member.Person.FullName }}</small>
+			</li>
+			{% endif %}
+			{% endfor %}
+		</ul>
+		</div>
+
+		{% if AllowedActions.Edit == true %}
+			<div class="col-xs-6 actions margin-v-md hidden">
+				<a class="btn btn-default btn-sm pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>
+			</div>
+		{% endif %}
+
+		<div class='col-xs-12'><hr /></div>
+	</div>
+
+	
+
+	{% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+	<div class='row'>
+		<div class="col-xs-12 text-center form-group">
+			{% if LinkedPages.AttendancePage == CurrentPage.Path %}
+				<a class='btn btn-lg btn-primary' href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Take Attendance</a>
+			{% else %}
+				<a class='btn btn-lg btn-primary' href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Take Attendance</a>
+			{% endif %}
+		</div>
+	</div>
+	{% endif %}
+
+	{% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+		<ul class="nav nav-tabs margin-v-lg">
+			{% if LinkedPages.RosterPage != '' %}
+				{% if LinkedPages.RosterPage == CurrentPage.Path %}
+					<li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+				{% else %}
+					<li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+				{% endif %}
+			{% endif %}
+
+			<div class='hidden'>
+			{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+				<li class='pull-right'><a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}">
+					<i class="fa fa-plus"></i> Add
+				</a></li>
+			{% endif %}
+			</div>
+			{% if LinkedPages.CommunicationPage != '' %}
+				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+					<li class='pull-right'><a href="#" onclick="{{ '' | Postback:'SendCommunication' }}">
+						<i class="fa fa-envelope-o"></i> Email
+					</a></li>
+				{% endif %}
+			{% endif %}
+		
+		</ul>
+	{% endif %}
+
+	{% if LinkedPages.RosterPage == CurrentPage.Path %}
+
+		{% if countPending > -1 %}
+			{% assign icountPending = 0 %}
+
+			<div class="well">
+				<h4>Pending Members</h4>
+
+			{% for member in Group.Members %}
+
+				{% if member.GroupMemberStatus == 'Pending' %}
+
+					{% assign loopcycle = icountPending | Modulo:2 %}
+
+					{% if loopcycle == 0 %}
+						<div class="row">
+					{% endif %}
+
+					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+						{% if LinkedPages.PersonDetailPage %}
+							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+						{% endif %}
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
+						<div class="pull-left">
+							<strong>{{ member.Person.FullName }}</strong>
+							<small>({{ member.GroupRole.Name }})</small>
+
+							{% for phone in member.Person.PhoneNumbers %}
+							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+							{% endfor %}
+
+							{% assign memberAddress =  member.Person | Address:'Home' %}
+							{% if memberAddress != '' %}
+							<br />{{ member.Person | Address:'Home' }}
+							{% endif %}
+
+							<br />
+							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+						</div>
+
+						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+							<i class="fa fa-times"></i>
+							</a>
+							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+							<i class="fa fa-pencil"></i>
+							</a>
+						</div>
+						{% endif %}
+
+						{% if LinkedPages.PersonDetailPage %}
+							</a>
+						{% endif %}
+					</div>
+
+					{% if loopcycle != 0 or icountPending == countPending %}
+						</div>
+					{% endif %}
+
+					{% assign icountPending = icountPending | Plus: 1 %}
+
+				{% endif %}
+
+			{% endfor %}
+				</div>
+		{% endif %}
+
+
+
+		{% if countActive > -1 %}
+			{% assign icountActive = 0 %}
+
+			<h4>Mentees</h4>
+
+			{% for member in Group.Members %}
+
+				{% if member.GroupMemberStatus == 'Active' and member.GroupRole.IsLeader == false %}
+
+					{% assign loopcycle = icountActive | Modulo:2 %}
+
+					{% if loopcycle == 0 %}
+					<div class="row">
+					{% endif %}
+
+					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+						{% if LinkedPages.PersonDetailPage %}
+							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+						{% endif %}
+						<img src="{{ member.Person.PhotoUrl }}&height=150&width=150&mode=crop&scale=both" height="150" class="pull-left margin-r-sm" alt="">
+						<div class="pull-left">
+							<strong>{{ member.Person.FullName }}</strong>
+							<small>({{ member.GroupRole.Name }})</small>
+
+							{% for phone in member.Person.PhoneNumbers %}
+							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+							{% endfor %}
+
+							{% assign memberAddress =  member.Person | Address:'Home' %}
+							{% if memberAddress != '' %}
+							<br />{{ member.Person | Address:'Home' }}
+							{% endif %}
+
+							<br />
+							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+							<br /><br />
+							{% assign marriageLink = member.Person | Attribute:'UNITEMarriageApplicationLink','RawValue' %}
+							{% if marriageLink != '' %}
+								<a href='{{ marriageLink }}' target='_blank'>UNITE | Marriage Application Link</a>
+								<br />
+							{% endif %}
+							{% assign premaritalLink = member.Person | Attribute:'UNITEPre-maritalApplicationLink','RawValue' %}
+							{% if premaritalLink != '' %}
+								<a href='{{ premaritalLink }}' target='_blank'>UNITE | Pre-Marital Application Link</a>
+								<br />
+							{% endif %}
+							<b>Prepare & Enrich Form</b> {{ member.Person | Attribute:'PrepareEnrichFormCouples' }}
+							<br />
+							{% assign mentorAssessment = member.Person | Attribute:'PrepareEnrichFormFacilitators','RawValue' %}
+							{% if mentorAssessment != '' %}
+								<b>P&E Facilitators Assessment</b> {{ member.Person | Attribute:'PrepareEnrichFormFacilitators' }}
+							{% endif %}
+							
+						</div>
+
+						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+							<i class="fa fa-times"></i>
+							</a>
+							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+							<i class="fa fa-pencil"></i>
+							</a>
+						</div>
+						{% endif %}
+
+						{% if LinkedPages.PersonDetailPage %}
+							</a>
+						{% endif %}
+					</div>
+
+					{% if loopcycle != 0 or icountActive == countActive %}
+						</div>
+					{% endif %}
+
+					{% assign icountActive = icountActive | Plus: 1 %}
+
+				{% endif %}
+
+			{% endfor %}
+
+		{% endif %}
+
+
+
+		{% if countInactive > -1 %}
+			{% assign icountInactive = 0 %}
+
+			<h4>Inactive Members</h4>
+
+			{% for member in Group.Members %}
+
+				{% if member.GroupMemberStatus == 'Inactive' %}
+
+					{% assign loopcycle = icountInactive | Modulo:2 %}
+
+					{% if loopcycle == 0 %}
+					<div class="row">
+					{% endif %}
+
+					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+						{% if LinkedPages.PersonDetailPage %}
+							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+						{% endif %}
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
+						<div class="pull-left">
+							<strong>{{ member.Person.FullName }}</strong>
+							<small>({{ member.GroupRole.Name }})</small>
+
+							{% for phone in member.Person.PhoneNumbers %}
+							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+							{% endfor %}
+
+							{% assign memberAddress =  member.Person | Address:'Home' %}
+							{% if memberAddress != '' %}
+							<br />{{ member.Person | Address:'Home' }}
+							{% endif %}
+
+							<br />
+							<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+						</div>
+
+						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+							<i class="fa fa-times"></i>
+							</a>
+							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+							<i class="fa fa-pencil"></i>
+							</a>
+						</div>
+						{% endif %}
+
+						{% if LinkedPages.PersonDetailPage %}
+							</a>
+						{% endif %}
+					</div>
+
+					{% if loopcycle != 0 or icountInactive == countInactive %}
+						</div>
+					{% endif %}
+
+					{% assign icountInactive = icountInactive | Plus: 1 %}
+
+				{% endif %}
+
+			{% endfor %}
+
+		{% endif %}
+
+		
+		</p>
+	{% endif %}
+
+{% else %}
+	{% if Group.Id %}
+		<div class='alert alert-warning'>You do not have permission to view this group.</div>
+	{% endif %}
+{% endif %}

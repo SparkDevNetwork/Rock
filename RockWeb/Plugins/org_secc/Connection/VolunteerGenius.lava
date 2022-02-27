@@ -1,0 +1,19 @@
+{% assign depth = Settings.Partitions | Size %}
+<div id="volunteer-genius">
+  <div class="flex-container" style="margin: 1px">
+  {% assign level = 0 %}
+  {% for partition in Settings.Partitions %}
+    <div class="grid-{{100 | DividedBy:depth,0}} heading">
+      {% if partition.PartitionType == 'DefinedType'%}
+        {% definedtype where:'Guid == "{{partition.PartitionValue}}"'%}
+          {% assign entity = definedtypeItems | First %}
+          {{entity.Name}}
+        {% enddefinedtype %}
+      {% else %}
+        {{partition.PartitionType}}
+      {% endif %}
+    </div>
+  {% endfor %}
+  {% include '~/Plugins/org_secc/Connection/VolunteerGenius/Partition.lava' %}
+  </div>
+</div>

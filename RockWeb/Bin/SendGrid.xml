@@ -1,0 +1,1472 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SendGrid</name>
+    </assembly>
+    <members>
+        <member name="T:SendGrid.Helpers.Mail.MailHelper">
+            <summary>
+            Simplified email sending for common use cases.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.CreateSingleEmail(SendGrid.Helpers.Mail.EmailAddress,SendGrid.Helpers.Mail.EmailAddress,System.String,System.String,System.String)">
+            <summary>
+            Send a single simple email.
+            </summary>
+            <param name="from">An email object that may contain the recipient’s name, but must always contain the sender’s email.</param>
+            <param name="to">An email object that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="subject">The subject of your email. This may be overridden by SetGlobalSubject().</param>
+            <param name="plainTextContent">The text/plain content of the email body.</param>
+            <param name="htmlContent">The text/html content of the email body.</param>
+            <returns>A SendGridMessage object.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.CreateSingleTemplateEmail(SendGrid.Helpers.Mail.EmailAddress,SendGrid.Helpers.Mail.EmailAddress,System.String,System.Object)">
+            <summary>
+            Send a single dynamic template email.
+            </summary>
+            <param name="from">An email object that may contain the recipient’s name, but must always contain the sender’s email.</param>
+            <param name="to">An email object that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="templateId">The ID of the template.</param>
+            <param name="dynamicTemplateData">The data with which to populate the dynamic template.</param>
+            <returns>A SendGridMessage object.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.CreateSingleEmailToMultipleRecipients(SendGrid.Helpers.Mail.EmailAddress,System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.String,System.String,System.String)">
+            <summary>
+            Send a single simple email to multiple recipients.
+            </summary>
+            <param name="from">An email object that may contain the recipient’s name, but must always contain the sender’s email.</param>
+            <param name="tos">A list of email objects that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="subject">The subject of your email. This may be overridden by SetGlobalSubject().</param>
+            <param name="plainTextContent">The text/plain content of the email body.</param>
+            <param name="htmlContent">The text/html content of the email body.</param>
+            <returns>A SendGridMessage object.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.CreateSingleTemplateEmailToMultipleRecipients(SendGrid.Helpers.Mail.EmailAddress,System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.String,System.Object)">
+            <summary>
+            Send a single simple email to multiple recipients.
+            </summary>
+            <param name="from">An email object that may contain the recipient’s name, but must always contain the sender’s email.</param>
+            <param name="tos">A list of email objects that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="templateId">The ID of the template.</param>
+            <param name="dynamicTemplateData">The data with which to populate the dynamic template.</param>
+            <returns>A SendGridMessage object.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.CreateMultipleEmailsToMultipleRecipients(SendGrid.Helpers.Mail.EmailAddress,System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.Collections.Generic.List{System.String},System.String,System.String,System.Collections.Generic.List{System.Collections.Generic.Dictionary{System.String,System.String}})">
+            <summary>
+            Send multiple emails to multiple recipients.
+            </summary>
+            <param name="from">An email object that may contain the recipient’s name, but must always contain the sender’s email.</param>
+            <param name="tos">A list of email objects that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="subjects">The subject of your email. This may be overridden by SetGlobalSubject().</param>
+            <param name="plainTextContent">The text/plain content of the email body.</param>
+            <param name="htmlContent">The text/html content of the email body.</param>
+            <param name="substitutions">Substitution key/values to customize the content for each email.</param>
+            <returns>A SendGridMessage object.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.CreateMultipleTemplateEmailsToMultipleRecipients(SendGrid.Helpers.Mail.EmailAddress,System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.String,System.Collections.Generic.List{System.Object})">
+            <summary>
+            Send multiple emails to multiple recipients.
+            </summary>
+            <param name="from">An email object that may contain the recipient’s name, but must always contain the sender’s email.</param>
+            <param name="tos">A list of email objects that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="templateId">The ID of the template.</param>
+            <param name="dynamicTemplateData">The data with which to populate the dynamic template.</param>
+            <returns>A SendGridMessage object.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.StringToEmailAddress(System.String)">
+            <summary>
+            Uncomplex conversion of a <![CDATA["Name <email@email.com>"]]> to EmailAddress.
+            </summary>
+            <param name="rfc2822Email">"email@email.com" or <![CDATA["Name <email@email.com>"]]> string.</param>
+            <returns>EmailsAddress Object.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.MailHelper.CreateSingleEmailToMultipleRecipients(SendGrid.Helpers.Mail.EmailAddress,System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.String,System.String,System.String,System.Boolean)">
+            <summary>
+            Send a single simple email to multiple recipients with option for displaying all the recipients present in "To" section of email.
+            </summary>
+            <param name="from">An email object that may contain the recipient’s name, but must always contain the sender’s email.</param>
+            <param name="tos">A list of email objects that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="subject">The subject of your email. This may be overridden by SetGlobalSubject().</param>
+            <param name="plainTextContent">The text/plain content of the email body.</param>
+            <param name="htmlContent">The text/html content of the email body.</param>
+            <param name="showAllRecipients">Displays all the recipients present in the "To" section of email.The default value is false.</param>
+            <returns>A SendGridMessage object.</returns>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.ASM">
+            <summary>
+            An object allowing you to specify how to handle unsubscribes.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.ASM.GroupId">
+            <summary>
+            Gets or sets the unsubscribe group to associate with this email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.ASM.GroupsToDisplay">
+            <summary>
+            Gets or sets an array containing the unsubscribe groups that you would like to be displayed on the unsubscribe preferences page.
+            https://sendgrid.com/docs/User_Guide/Suppressions/recipient_subscription_preferences.html.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.Attachment">
+            <summary>
+            Gets or sets an array of objects in which you can specify any attachments you want to include.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Attachment.Content">
+            <summary>
+            Gets or sets the Base64 encoded content of the attachment.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Attachment.Type">
+            <summary>
+            Gets or sets the mime type of the content you are attaching. For example, application/pdf or image/jpeg.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Attachment.Filename">
+            <summary>
+            Gets or sets the filename of the attachment.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Attachment.Disposition">
+            <summary>
+            Gets or sets the content-disposition of the attachment specifying how you would like the attachment to be displayed. For example, "inline" results in the attached file being displayed automatically within the message while "attachment" results in the attached file requiring some action to be taken before it is displayed (e.g. opening or downloading the file). Defaults to "attachment". Can be either "attachment" or "inline".
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Attachment.ContentId">
+            <summary>
+            Gets or sets a unique id that you specify for the attachment. This is used when the disposition is set to "inline" and the attachment is an image, allowing the file to be displayed within the body of your email. Ex: <img src="cid:ii_139db99fdb5c3704"></img>.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.BCCSettings">
+            <summary>
+            Gets or sets the address specified in the mail_settings.bcc object will receive a blind carbon copy (BCC) of the very first personalization defined in the personalizations array.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.BCCSettings.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.BCCSettings.Email">
+            <summary>
+            Gets or sets the email address that you would like to receive the BCC.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.BypassListManagement">
+            <summary>
+            Allows you to bypass all unsubscribe groups and suppressions to ensure that the email is delivered to every single recipient. This should only be used in emergencies when it is absolutely necessary that every recipient receives your email. Ex: outage emails, or forgot password emails.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.BypassListManagement.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.ClickTracking">
+            <summary>
+            Allows you to track whether a recipient clicked a link in your email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.ClickTracking.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.ClickTracking.EnableText">
+            <summary>
+            Gets or sets if this setting should be included in the text/plain portion of your email.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.Content">
+            <summary>
+            Specifies the content of your email. You can include multiple mime types of content, but you must specify at least one. To include more than one mime type, simply add another object to the array containing the type and value parameters. If included, text/plain and text/html must be the first indices of the array in this order. If you choose to include the text/plain or text/html mime types, they must be the first indices of the content array in the order text/plain, text/html.*Content is NOT mandatory if you using a transactional template and have defined the template_id in the Request.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.Content.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Mail.Content"/> class.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.Content.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Mail.Content"/> class.
+            </summary>
+            <param name="type">The mime type of the content you are including in your email. For example, text/plain or text/html.</param>
+            <param name="value">The actual content of the specified mime type that you are including in your email.</param>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Content.Type">
+            <summary>
+            Gets or sets the mime type of the content you are including in your email. For example, text/plain or text/html.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Content.Value">
+            <summary>
+            Gets or sets the actual content of the specified mime type that you are including in your email.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.EmailAddress">
+            <summary>
+            An email object containing the email address and name of the sender or recipient.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.EmailAddress.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Mail.EmailAddress"/> class.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.EmailAddress.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Mail.EmailAddress"/> class.
+            </summary>
+            <param name="email">The email address of the sender or recipient.</param>
+            <param name="name">The name of the sender or recipient.</param>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.EmailAddress.Name">
+            <summary>
+            Gets or sets the name of the sender or recipient.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.EmailAddress.Email">
+            <summary>
+            Gets or sets the email address of the sender or recipient.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.EmailAddress.op_Equality(SendGrid.Helpers.Mail.EmailAddress,SendGrid.Helpers.Mail.EmailAddress)">
+            <summary>
+            Determines whether the two specified operands are equal.
+            </summary>
+            <param name="left">The left hand operand in the equation.</param>
+            <param name="right">The right hand operand in the equation.</param>
+            <returns>True if equal, false if not.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.EmailAddress.op_Inequality(SendGrid.Helpers.Mail.EmailAddress,SendGrid.Helpers.Mail.EmailAddress)">
+            <summary>
+            Determines whether the two specified operands are not equal.
+            </summary>
+            <param name="left">The left hand operand in the equation.</param>
+            <param name="right">The right hand operand in the equation.</param>
+            <returns>True if the two operands are not equal, and false if they are.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.EmailAddress.Equals(SendGrid.Helpers.Mail.EmailAddress)">
+            <summary>
+            Gets a value indicating whether this <see cref="T:SendGrid.Helpers.Mail.EmailAddress"/> is equal to the specified EmailAddress.
+            </summary>
+            <param name="other">The comparand email address.</param>
+            <returns>true if the objects are equal, false if they're not.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.EmailAddress.Equals(System.Object)">
+            <summary>
+            Gets a value indicating whether this <see cref="T:SendGrid.Helpers.Mail.EmailAddress"/> is equal to the specified object.
+            </summary>
+            <param name="obj">The comparand object.</param>
+            <returns>true if the objects are equal, false if they're not.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.EmailAddress.GetHashCode">
+            <summary>
+            Gets a hash code representing this object.
+            </summary>
+            <returns>A hash code representing this instance.</returns>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.FooterSettings">
+            <summary>
+            The default footer that you would like appended to the bottom of every email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.FooterSettings.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.FooterSettings.Text">
+            <summary>
+            Gets or sets the plain text content of your footer.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.FooterSettings.Html">
+            <summary>
+            Gets or sets the HTML content of your footer.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.Ganalytics">
+            <summary>
+            Allows you to enable tracking provided by Google Analytics.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Ganalytics.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Ganalytics.UtmSource">
+            <summary>
+            Gets or sets the name of the referrer source (e.g. Google, SomeDomain.com, or Marketing Email).
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Ganalytics.UtmMedium">
+            <summary>
+            Gets or sets the name of the marketing medium (e.g. Email).
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Ganalytics.UtmTerm">
+            <summary>
+            Gets or sets the identification of any paid keywords.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Ganalytics.UtmContent">
+            <summary>
+            Gets or sets the differentiation of your campaign from advertisements.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Ganalytics.UtmCampaign">
+            <summary>
+            Gets or sets the name of the campaign.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.Model.HtmlContent">
+            <summary>
+            Helper class for plain html mime types.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.Model.HtmlContent.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Mail.Model.HtmlContent"/> class.
+            </summary>
+            <param name="value">The actual content of the specified mime type that you are including in your email.</param>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.Model.PlainTextContent">
+            <summary>
+            Helper class for plain text mime types.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.Model.PlainTextContent.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Mail.Model.PlainTextContent"/> class.
+            </summary>
+            <param name="value">The actual content of the specified mime type that you are including in your email.</param>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.RemoveDuplicatesConverter`1">
+            <summary>
+            Removes duplicates when writing the JSON representation of the object.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.RemoveDuplicatesConverter`1.CanConvert(System.Type)">
+            <summary>
+            Determines whether this instance can convert the specified object type.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.RemoveDuplicatesConverter`1.WriteJson(Newtonsoft.Json.JsonWriter,System.Object,Newtonsoft.Json.JsonSerializer)">
+            <summary>
+            Writes the JSON representation of the object.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.RemoveDuplicatesConverter`1.CanRead">
+            <summary>
+            Determines whether this instance can convert the specified object type.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.RemoveDuplicatesConverter`1.ReadJson(Newtonsoft.Json.JsonReader,System.Type,System.Object,Newtonsoft.Json.JsonSerializer)">
+            <summary>
+            Reads the JSON representation of the object.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.MailSettings">
+            <summary>
+            A collection of different mail settings that you can use to specify how you would like this email to be handled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.MailSettings.BccSettings">
+            <summary>
+            Gets or sets the address specified in the mail_settings.bcc object will receive a blind carbon copy (BCC) of the very first personalization defined in the personalizations array.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.MailSettings.BypassListManagement">
+            <summary>
+            Gets or sets the bypass of all unsubscribe groups and suppressions to ensure that the email is delivered to every single recipient. This should only be used in emergencies when it is absolutely necessary that every recipient receives your email. Ex: outage emails, or forgot password emails.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.MailSettings.FooterSettings">
+            <summary>
+            Gets or sets the default footer that you would like appended to the bottom of every email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.MailSettings.SandboxMode">
+            <summary>
+            Gets or sets the ability to send a test email to ensure that your request body is valid and formatted correctly. For more information, please see our Classroom.
+            https://sendgrid.com/docs/Classroom/Send/v3_Mail_Send/sandbox_mode.html.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.MailSettings.SpamCheck">
+            <summary>
+            Gets or sets the ability to test the content of your email for spam.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.OpenTracking">
+            <summary>
+            Allows you to track whether the email was opened or not, but including a single pixel image in the body of the content. When the pixel is loaded, we can log that the email was opened.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.OpenTracking.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.OpenTracking.SubstitutionTag">
+            <summary>
+            Gets or sets the ability to specify a substitution tag that you can insert in the body of your email at a location that you desire. This tag will be replaced by the open tracking pixel.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.Personalization">
+            <summary>
+            An array of messages and their metadata. Each object within personalizations can be thought of as an envelope - it defines who should receive an individual message and how that message should be handled. For more information, please see our documentation on Personalizations. Parameters in personalizations will override the parameters of the same name from the message level.
+            https://sendgrid.com/docs/Classroom/Send/v3_Mail_Send/personalizations.html.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.Tos">
+            <summary>
+            Gets or sets an array of recipients. Each email object within this array may contain the recipient’s name, but must always contain the recipient’s email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.Ccs">
+            <summary>
+            Gets or sets an array of recipients who will receive a copy of your email. Each email object within this array may contain the recipient’s name, but must always contain the recipient’s email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.Bccs">
+            <summary>
+            Gets or sets an array of recipients who will receive a blind carbon copy of your email. Each email object within this array may contain the recipient’s name, but must always contain the recipient’s email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.Subject">
+            <summary>
+            Gets or sets the subject line of your email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.Headers">
+            <summary>
+            Gets or sets the object allowing you to specify specific handling instructions for your email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.Substitutions">
+            <summary>
+            Gets or sets an object following the pattern "substitution_tag":"value to substitute". All are assumed to be strings. These substitutions will apply to the content of your email, in addition to the subject and reply-to parameters.
+            You may not include more than 100 substitutions per personalization object, and the total collective size of your substitutions may not exceed 10,000 bytes per personalization object.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.CustomArgs">
+            <summary>
+            Gets or sets the values that are specific to this personalization that will be carried along with the email, activity data, and links. Substitutions will not be made on custom arguments. personalizations[x].custom_args will be merged with message level custom_args, overriding any conflicting keys. The combined total size of the resulting custom arguments, after merging, for each personalization may not exceed 10,000 bytes.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.SendAt">
+            <summary>
+            Gets or sets a unix timestamp allowing you to specify when you want your email to be sent from Twilio SendGrid. This is not necessary if you want the email to be sent at the time of your API request.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.Personalization.TemplateData">
+            <summary>
+            Gets or sets the template data object following the pattern "template data key":"template data value". All are assumed to be strings. These key value pairs will apply to the content of your template email, in addition to the subject and reply-to parameters.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.SandboxMode">
+            <summary>
+            This allows you to send a test email to ensure that your request body is valid and formatted correctly. For more information, please see our Classroom.
+            https://sendgrid.com/docs/Classroom/Send/v3_Mail_Send/sandbox_mode.html.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SandboxMode.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.SpamCheck">
+            <summary>
+            This allows you to test the content of your email for spam.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SpamCheck.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SpamCheck.Threshold">
+            <summary>
+            Gets or sets the threshold used to determine if your content qualifies as spam on a scale from 1 to 10, with 10 being most strict, or most likely to be considered as spam.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SpamCheck.PostToUrl">
+            <summary>
+            Gets or sets an Inbound Parse URL that you would like a copy of your email along with the spam report to be sent to. The post_to_url parameter must start with http:// or https://.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.SubscriptionTracking">
+            <summary>
+            Allows you to insert a subscription management link at the bottom of the text and html bodies of your email. If you would like to specify the location of the link within your email, you may use the substitution_tag.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SubscriptionTracking.Enable">
+            <summary>
+            Gets or sets a value indicating whether this setting is enabled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SubscriptionTracking.Text">
+            <summary>
+            Gets or sets the text to be appended to the email, with the subscription tracking link. You may control where the link is by using the tag (percent symbol) (percent symbol).
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SubscriptionTracking.Html">
+            <summary>
+            Gets or sets the HTML to be appended to the email, with the subscription tracking link. You may control where the link is by using the tag (percent symbol) (percent symbol).
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SubscriptionTracking.SubstitutionTag">
+            <summary>
+            Gets or sets a tag that will be replaced with the unsubscribe URL. for example: [unsubscribe_url]. If this parameter is used, it will override both the textand html parameters. The URL of the link will be placed at the substitution tag’s location, with no additional formatting.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.TrackingSettings">
+            <summary>
+            Settings to determine how you would like to track the metrics of how your recipients interact with your email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.TrackingSettings.ClickTracking">
+            <summary>
+            Gets or sets tracking whether a recipient clicked a link in your email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.TrackingSettings.OpenTracking">
+            <summary>
+            Gets or sets tracking whether the email was opened or not, but including a single pixel image in the body of the content. When the pixel is loaded, we can log that the email was opened.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.TrackingSettings.SubscriptionTracking">
+            <summary>
+            Gets or sets a subscription management link at the bottom of the text and html bodies of your email. If you would like to specify the location of the link within your email, you may use the substitution_tag.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.TrackingSettings.Ganalytics">
+            <summary>
+            Gets or sets tracking provided by Google Analytics.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Mail.SendGridMessage">
+            <summary>
+            Class SendGridMessage builds an object that sends an email through Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.From">
+            <summary>
+            Gets or sets an email object containing the email address and name of the sender. Unicode encoding is not supported for the from field.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Subject">
+            <summary>
+            Gets or sets the subject of your email. This may be overridden by personalizations[x].subject.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Personalizations">
+            <summary>
+            Gets or sets a list of messages and their metadata. Each object within personalizations can be thought of as an envelope - it defines who should receive an individual message and how that message should be handled. For more information, please see our documentation on Personalizations. Parameters in personalizations will override the parameters of the same name from the message level.
+            https://sendgrid.com/docs/Classroom/Send/v3_Mail_Send/personalizations.html.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Contents">
+            <summary>
+            Gets or sets a list in which you may specify the content of your email. You can include multiple mime types of content, but you must specify at least one. To include more than one mime type, simply add another object to the array containing the type and value parameters. If included, text/plain and text/html must be the first indices of the array in this order. If you choose to include the text/plain or text/html mime types, they must be the first indices of the content array in the order text/plain, text/html.*Content is NOT mandatory if you using a transactional template and have defined the template_id in the Request.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.PlainTextContent">
+            <summary>
+            Gets or sets a Content object with a Mime Type of text/plain.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.HtmlContent">
+            <summary>
+            Gets or sets a Content object with a Mime Type of text/html.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Attachments">
+            <summary>
+            Gets or sets a list of objects in which you can specify any attachments you want to include.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.TemplateId">
+            <summary>
+            Gets or sets the id of a template that you would like to use. If you use a template that contains content and a subject (either text or html), you do not need to specify those in the respective personalizations or message level parameters.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Headers">
+            <summary>
+            Gets or sets an object containing key/value pairs of header names and the value to substitute for them. You must ensure these are properly encoded if they contain unicode characters. Must not be any of the following reserved headers: x-sg-id, x-sg-eid, received, dkim-signature, Content-Type, Content-Transfer-Encoding, To, From, Subject, Reply-To, CC, BCC.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Sections">
+            <summary>
+            Gets or sets an object of key/value pairs that define large blocks of content that can be inserted into your emails using substitution tags.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Categories">
+            <summary>
+            Gets or sets a list of category names for this message. Each category name may not exceed 255 characters. You cannot have more than 10 categories per request.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.CustomArgs">
+            <summary>
+            Gets or sets values that are specific to the entire send that will be carried along with the email and its activity data. Substitutions will not be made on custom arguments, so any string that is entered into this parameter will be assumed to be the custom argument that you would like to be used. This parameter is overridden by any conflicting personalizations[x].custom_args if that parameter has been defined. If personalizations[x].custom_args has been defined but does not conflict with the values defined within this parameter, the two will be merged. The combined total size of these custom arguments may not exceed 10,000 bytes.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.SendAt">
+            <summary>
+            Gets or sets a unix timestamp allowing you to specify when you want your email to be sent from SendGrid. This is not necessary if you want the email to be sent at the time of your API request.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.Asm">
+            <summary>
+            Gets or sets an object allowing you to specify how to handle unsubscribes.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.BatchId">
+            <summary>
+            Gets or sets an ID that represents a batch of emails (AKA multiple sends of the same email) to be associated to each other for scheduling. Including a batch_id in your request allows you to include this email in that batch, and also enables you to cancel or pause the delivery of that entire batch. For more information, please read about Cancel Scheduled Sends.
+            https://sendgrid.com/docs/API_Reference/Web_API_v3/cancel_schedule_send.html.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.IpPoolName">
+            <summary>
+            Gets or sets the IP Pool that you would like to send this email from.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.MailSettings">
+            <summary>
+            Gets or sets a collection of different mail settings that you can use to specify how you would like this email to be handled.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.TrackingSettings">
+            <summary>
+            Gets or sets settings to determine how you would like to track the metrics of how your recipients interact with your email.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Mail.SendGridMessage.ReplyTo">
+            <summary>
+            Gets or sets an email object containing the email address and name of the individual who should receive responses to your email.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddTo(System.String,System.String)">
+            <summary>
+            Add a recipient email.
+            </summary>
+            <param name="email">Specify the recipient's email.</param>
+            <param name="name">Specify the recipient's name.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddTo(SendGrid.Helpers.Mail.EmailAddress,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add a recipient email.
+            </summary>
+            <param name="email">An email recipient that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the recipient email.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddTos(System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add recipient emails.
+            </summary>
+            <param name="emails">A list of recipients. Each email object within this array may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the recipient emails.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddCc(System.String,System.String)">
+            <summary>
+            Add a cc email recipient.
+            </summary>
+            <param name="email">Specify the recipient's email.</param>
+            <param name="name">Specify the recipient's name.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the email parameter is null or whitespace</exception>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddCc(SendGrid.Helpers.Mail.EmailAddress,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add a cc email recipient.
+            </summary>
+            <param name="email">An email recipient that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the cc email.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the email parameter is null</exception>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddCcs(System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add cc recipient emails.
+            </summary>
+            <param name="emails">A list of cc recipients. Each email object within this array may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the cc emails.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the emails parameter is null</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when the emails parameter is empty</exception>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddBcc(System.String,System.String)">
+            <summary>
+            Add a bcc recipient emails.
+            </summary>
+            <param name="email">Specify the recipient's email.</param>
+            <param name="name">Specify the recipient's name.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the email parameter is null or whitespace</exception>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddBcc(SendGrid.Helpers.Mail.EmailAddress,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add a bcc recipient emails.
+            </summary>
+            <param name="email">An email recipient that may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the bcc email.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the email parameter is null</exception>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddBccs(System.Collections.Generic.List{SendGrid.Helpers.Mail.EmailAddress},System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add bcc email recipients.
+            </summary>
+            <param name="emails">A list of bcc recipients. Each email object within this array may contain the recipient’s name, but must always contain the recipient’s email.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the bcc emails.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the emails parameter is null</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when the emails parameter is empty</exception>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetSubject(System.String,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add a subject to the email.
+            </summary>
+            <param name="subject">The subject line of your email.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the subject.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddHeader(System.String,System.String,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add a header to the email.
+            </summary>
+            <param name="headerKey">Header key (e.g. X-Header).</param>
+            <param name="headerValue">Header value.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the header.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddHeaders(System.Collections.Generic.Dictionary{System.String,System.String},System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add headers to the email.
+            </summary>
+            <param name="headers">A list of Headers.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the headers.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddSubstitution(System.String,System.String,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add a substitution to the email.
+            You may not include more than 100 substitutions per personalization object, and the total collective size of your substitutions may not exceed 10,000 bytes per personalization object.
+            </summary>
+            <param name="substitutionKey">The substitution key.</param>
+            <param name="substitutionValue">The substitution value.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the substitution.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddSubstitutions(System.Collections.Generic.Dictionary{System.String,System.String},System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add substitutions to the email.
+            </summary>
+            <param name="substitutions">A list of Substitutions.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the substitutions.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetTemplateData(System.Object,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add dynamic template data to the email.
+            </summary>
+            <param name="dynamicTemplateData">A Template Data object.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the substitutions.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddCustomArg(System.String,System.String,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add a custom argument to the email.
+            </summary>
+            <param name="customArgKey">The custom argument key.</param>
+            <param name="customArgValue">The custom argument value.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the custom arg.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddCustomArgs(System.Collections.Generic.Dictionary{System.String,System.String},System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Add custom arguments to the email.
+            </summary>
+            <param name="customArgs">A list of CustomArgs.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the custom args.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetSendAt(System.Int32,System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Specify the unix timestamp to specify when you want the email to be sent from Twilio SendGrid.
+            </summary>
+            <param name="sendAt">Specify the unix timestamp for when you want the email to be sent from Twilio SendGrid.</param>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the send at timestamp.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.GetPersonalization(System.Int32,SendGrid.Helpers.Mail.Personalization)">
+            <summary>
+            Retrieves a Personalization object, adds a pre-created Personalization object, or creates and adds a Personalization object.
+            </summary>
+            <param name="personalizationIndex">Specify the index of the Personalization object where you want to add the send at timestamp.</param>
+            <param name="personalization">A personalization object to append to the message.</param>
+            <returns>The Personalization.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetFrom(System.String,System.String)">
+            <summary>
+            Set the from email.
+            </summary>
+            <param name="email">Specify the recipient's email.</param>
+            <param name="name">Specify the recipient's name.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetFrom(SendGrid.Helpers.Mail.EmailAddress)">
+            <summary>
+            Set the from email.
+            </summary>
+            <param name="email">An email object containing the email address and name of the sender. Unicode encoding is not supported for the from field.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetReplyTo(SendGrid.Helpers.Mail.EmailAddress)">
+            <summary>
+            Set the reply to email.
+            </summary>
+            <param name="email">An email object containing the email address and name of the individual who should receive responses to your email.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetGlobalSubject(System.String)">
+            <summary>
+            Set a global subject line.
+            </summary>
+            <param name="subject">The subject of your email. This may be overridden by personalizations[x].subject.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddContent(System.String,System.String)">
+            <summary>
+            Add content to the email.
+            </summary>
+            <param name="mimeType">The mime type of the content you are including in your email. For example, text/plain or text/html.</param>
+            <param name="text">The actual content of the specified mime type that you are including in your email.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddContents(System.Collections.Generic.List{SendGrid.Helpers.Mail.Content})">
+            <summary>
+            Add contents to the email.
+            </summary>
+            <param name="contents">A list of Content.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddAttachmentAsync(System.String,System.IO.Stream,System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Add an attachment from a stream to the email. No attachment will be added in the case that the stream cannot be read. Streams of length greater than int.MaxValue are truncated.
+            </summary>
+            <param name="filename">The filename the attachment will display in the email.</param>
+            <param name="contentStream">The stream to use as content of the attachment.</param>
+            <param name="type">The mime type of the content you are attaching. For example, application/pdf or image/jpeg.</param>
+            <param name="disposition">The content-disposition of the attachment specifying how you would like the attachment to be displayed. For example, "inline" results in the attached file being displayed automatically within the message while "attachment" results in the attached file requiring some action to be taken before it is displayed (e.g. opening or downloading the file). Defaults to "attachment". Can be either "attachment" or "inline".</param>
+            <param name="content_id">A unique id that you specify for the attachment. This is used when the disposition is set to "inline" and the attachment is an image, allowing the file to be displayed within the body of your email. Ex: <![CDATA[ <img src="cid:ii_139db99fdb5c3704"></img> ]]>.</param>
+            <param name="cancellationToken">A cancellation token which can notify if the task should be canceled.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddAttachment(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Add an attachment to the email.
+            </summary>
+            <param name="filename">The filename the attachment will display in the email.</param>
+            <param name="base64Content">The Base64 encoded content of the attachment.</param>
+            <param name="type">The mime type of the content you are attaching. For example, application/pdf or image/jpeg.</param>
+            <param name="disposition">The content-disposition of the attachment specifying how you would like the attachment to be displayed. For example, "inline" results in the attached file being displayed automatically within the message while "attachment" results in the attached file requiring some action to be taken before it is displayed (e.g. opening or downloading the file). Defaults to "attachment". Can be either "attachment" or "inline".</param>
+            <param name="content_id">A unique id that you specify for the attachment. This is used when the disposition is set to "inline" and the attachment is an image, allowing the file to be displayed within the body of your email. Ex: <![CDATA[ <img src="cid:ii_139db99fdb5c3704"></img> ]]>.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddAttachment(SendGrid.Helpers.Mail.Attachment)">
+            <summary>
+            Add an attachment to the email.
+            </summary>
+            <param name="attachment">An Attachment.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddAttachments(System.Collections.Generic.IEnumerable{SendGrid.Helpers.Mail.Attachment})">
+            <summary>
+            Add attachments to the email.
+            </summary>
+            <param name="attachments">A list of Attachments.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetTemplateId(System.String)">
+            <summary>
+            Add a template id to the email.
+            </summary>
+            <param name="templateID">The id of a template that you would like to use. If you use a template that contains content and a subject (either text or html), you do not need to specify those in the respective personalizations or message level parameters.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddSection(System.String,System.String)">
+            <summary>
+            Add a section substitution to the email.
+            </summary>
+            <param name="key">The section key.</param>
+            <param name="value">The section replacement value.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddSections(System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Add sections to the email.
+            </summary>
+            <param name="sections">A list of Sections.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddGlobalHeader(System.String,System.String)">
+            <summary>
+            Add a global header to the email.
+            </summary>
+            <param name="key">Header key (e.g. X-Header).</param>
+            <param name="value">Header value.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddGlobalHeaders(System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Add global headers to the email.
+            </summary>
+            <param name="headers">A list of Headers.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddCategory(System.String)">
+            <summary>
+            Add a category to the email.
+            </summary>
+            <param name="category">A category name, not to exceed 255 characters. There is a limit of 10 categories per request.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddCategories(System.Collections.Generic.List{System.String})">
+            <summary>
+            Add categories to the email.
+            </summary>
+            <param name="categories">A list of Categories.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddGlobalCustomArg(System.String,System.String)">
+            <summary>
+            Add a global custom argument.
+            </summary>
+            <param name="key">The custom arguments key. The value of this key will be overridden by custom args at the personalization level.</param>
+            <param name="value">The custom argument value.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.AddGlobalCustomArgs(System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Add global custom arguments.
+            </summary>
+            <param name="customArgs">A list of CustomArgs.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetGlobalSendAt(System.Int32)">
+            <summary>
+            Set the global send at unix timestamp.
+            </summary>
+            <param name="sendAt">A unix timestamp allowing you to specify when you want your email to be sent from Twilio SendGrid. This is not necessary if you want the email to be sent at the time of your API request.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetBatchId(System.String)">
+            <summary>
+            Set the email's batch id.
+            </summary>
+            <param name="batchId">
+            This ID represents a batch of emails (AKA multiple sends of the same email) to be associated to each other for scheduling. Including a batch_id in your request allows you to include this email in that batch, and also enables you to cancel or pause the delivery of that entire batch. For more information, please read about Cancel Scheduled Sends.
+            https://sendgrid.com/docs/API_Reference/Web_API_v3/cancel_schedule_send.html.
+            </param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetAsm(System.Int32,System.Collections.Generic.List{System.Int32})">
+            <summary>
+            Set advanced suppression management (ASM).
+            </summary>
+            <param name="groupID">The unsubscribe group to associate with this email.</param>
+            <param name="groupsToDisplay">
+            An array containing the unsubscribe groups that you would like to be displayed on the unsubscribe preferences page.
+            https://sendgrid.com/docs/User_Guide/Suppressions/recipient_subscription_preferences.html.
+            </param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetIpPoolName(System.String)">
+            <summary>
+            Set this email's IP Pool.
+            </summary>
+            <param name="ipPoolName">The IP Pool that you would like to send this email from.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetBccSetting(System.Boolean,System.String)">
+            <summary>
+            Set the bcc settings.
+            The address specified in the mail_settings.bcc object will receive a blind carbon copy (BCC) of the very first personalization defined in the personalizations array.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+            <param name="email">The email address that you would like to receive the BCC.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetBypassListManagement(System.Boolean)">
+            <summary>
+            Set the bypass list management setting.
+            Allows you to bypass all unsubscribe groups and suppressions to ensure that the email is delivered to every single recipient. This should only be used in emergencies when it is absolutely necessary that every recipient receives your email. Ex: outage emails, or forgot password emails.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetFooterSetting(System.Boolean,System.String,System.String)">
+            <summary>
+            Set the footer setting.
+            The default footer that you would like appended to the bottom of every email.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+            <param name="html">The HTML content of your footer.</param>
+            <param name="text">The plain text content of your footer.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetSandBoxMode(System.Boolean)">
+            <summary>
+            Set the sandbox mode setting.
+            This allows you to send a test email to ensure that your request body is valid and formatted correctly. For more information, please see our Classroom.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetSpamCheck(System.Boolean,System.Int32,System.String)">
+            <summary>
+            Set the spam check setting.
+            This allows you to test the content of your email for spam.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+            <param name="threshold">The threshold used to determine if your content qualifies as spam on a scale from 1 to 10, with 10 being most strict, or most likely to be considered as spam.</param>
+            <param name="postToUrl">An Inbound Parse URL that you would like a copy of your email along with the spam report to be sent to. The post_to_url parameter must start with http:// or https://.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetClickTracking(System.Boolean,System.Boolean)">
+            <summary>
+            Set the click tracking setting.
+            Allows you to track whether a recipient clicked a link in your email.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+            <param name="enableText">Indicates if this setting should be included in the text/plain portion of your email.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetOpenTracking(System.Boolean,System.String)">
+            <summary>
+            Set the open tracking setting.
+            Allows you to track whether the email was opened or not, but including a single pixel image in the body of the content. When the pixel is loaded, we can log that the email was opened.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+            <param name="substitutionTag">Allows you to specify a substitution tag that you can insert in the body of your email at a location that you desire. This tag will be replaced by the open tracking pixel.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetSubscriptionTracking(System.Boolean,System.String,System.String,System.String)">
+            <summary>
+            Set the subscription tracking setting.
+            Allows you to insert a subscription management link at the bottom of the text and html bodies of your email. If you would like to specify the location of the link within your email, you may use the substitution_tag.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+            <param name="html">HTML to be appended to the email, with the subscription tracking link. You may control where the link is by using the tag <![CDATA[ <% %> ]]>.</param>
+            <param name="text">Text to be appended to the email, with the subscription tracking link. You may control where the link is by using the tag <![CDATA[ <% %> ]]>.</param>
+            <param name="substitutionTag">A tag that will be replaced with the unsubscribe URL. for example: [unsubscribe_url]. If this parameter is used, it will override both the textand html parameters. The URL of the link will be placed at the substitution tag’s location, with no additional formatting.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.SetGoogleAnalytics(System.Boolean,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Set the Google analytics setting.
+            Allows you to enable tracking provided by Google Analytics.
+            </summary>
+            <param name="enable">Gets or sets a value indicating whether this setting is enabled.</param>
+            <param name="utmCampaign">The name of the campaign.</param>
+            <param name="utmContent">Used to differentiate your campaign from advertisements.</param>
+            <param name="utmMedium">Name of the marketing medium (e.g. Email).</param>
+            <param name="utmSource">Name of the referrer source (e.g. Google, SomeDomain.com, or Marketing Email).</param>
+            <param name="utmTerm">Used to identify any paid keywords.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Mail.SendGridMessage.Serialize">
+            <summary>
+            Creates the JSON object required to make a request to Twilio SendGrid.
+            </summary>
+            <returns>The JSON object required to make a request to Twilio SendGrid.</returns>
+        </member>
+        <member name="T:SendGrid.Helpers.Reliability.ReliabilitySettings">
+            <summary>
+            Defines the reliability settings to use on HTTP requests.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Reliability.ReliabilitySettings.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Reliability.ReliabilitySettings"/> class with default settings.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Reliability.ReliabilitySettings.#ctor(System.Int32,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Reliability.ReliabilitySettings"/> class.
+            </summary>
+            <param name="maximumNumberOfRetries">The maximum number of retries to execute against when sending an HTTP Request before throwing an exception.</param>
+            <param name="minimumBackoff">The minimum amount of time to wait between between HTTP retries.</param>
+            <param name="maximumBackOff">the maximum amount of time to wait between between HTTP retries.</param>
+            <param name="deltaBackOff">the value that will be used to calculate a random delta in the exponential delay between retries.</param>
+        </member>
+        <member name="P:SendGrid.Helpers.Reliability.ReliabilitySettings.MaximumNumberOfRetries">
+            <summary>
+            Gets the maximum number of retries to execute against when sending an HTTP Request before throwing an exception. Defaults to 0 (no retries, you must explicitly enable).
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Reliability.ReliabilitySettings.MinimumBackOff">
+            <summary>
+            Gets the minimum amount of time to wait between between HTTP retries. Defaults to 1 second.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Reliability.ReliabilitySettings.MaximumBackOff">
+            <summary>
+            Gets the maximum amount of time to wait between between HTTP retries. Defaults to 10 seconds.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Helpers.Reliability.ReliabilitySettings.DeltaBackOff">
+            <summary>
+            Gets the value that will be used to calculate a random delta in the exponential delay between retries. Defaults to 1 second.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Helpers.Reliability.RetryDelegatingHandler">
+            <summary>
+            A delegating handler that provides retry functionality while executing a request.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Helpers.Reliability.RetryDelegatingHandler.#ctor(SendGrid.Helpers.Reliability.ReliabilitySettings)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Reliability.RetryDelegatingHandler"/> class.
+            </summary>
+            <param name="settings">A ReliabilitySettings instance.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Reliability.RetryDelegatingHandler.#ctor(System.Net.Http.HttpMessageHandler,SendGrid.Helpers.Reliability.ReliabilitySettings)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Helpers.Reliability.RetryDelegatingHandler"/> class.
+            </summary>
+            <param name="innerHandler">A HttpMessageHandler instance to set as the inner handler.</param>
+            <param name="settings">A ReliabilitySettings instance.</param>
+        </member>
+        <member name="M:SendGrid.Helpers.Reliability.RetryDelegatingHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SendGrid.ISendGridClient">
+            <summary>
+            A HTTP client wrapper for interacting with Twilio SendGrid's API.
+            </summary>
+        </member>
+        <member name="P:SendGrid.ISendGridClient.UrlPath">
+            <summary>
+            Gets or sets the path to the API resource.
+            </summary>
+        </member>
+        <member name="P:SendGrid.ISendGridClient.Version">
+            <summary>
+            Gets or sets the API version.
+            </summary>
+        </member>
+        <member name="P:SendGrid.ISendGridClient.MediaType">
+            <summary>
+            Gets or sets the request media type.
+            </summary>
+        </member>
+        <member name="M:SendGrid.ISendGridClient.AddAuthorization(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+            <summary>
+            Add the authorization header, override to customize.
+            </summary>
+            <param name="header">Authorization header.</param>
+            <returns>Authorization value to add to the header.</returns>
+        </member>
+        <member name="M:SendGrid.ISendGridClient.MakeRequest(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <summary>
+            Make the call to the API server, override for testing or customization.
+            </summary>
+            <param name="request">The parameters for the API call.</param>
+            <param name="cancellationToken">Cancel the asynchronous call.</param>
+            <returns>Response object.</returns>
+        </member>
+        <member name="M:SendGrid.ISendGridClient.RequestAsync(SendGrid.SendGridClient.Method,System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Prepare for async call to the API server.
+            </summary>
+            <param name="method">HTTP verb.</param>
+            <param name="requestBody">JSON formatted string.</param>
+            <param name="queryParams">JSON formatted query paramaters.</param>
+            <param name="urlPath">The path to the API endpoint.</param>
+            <param name="cancellationToken">Cancel the asynchronous call.</param>
+            <returns>Response object.</returns>
+            <exception>The method will NOT catch and swallow exceptions generated by sending a request through the internal http client. Any underlying exception will pass right through.
+            In particular, this means that you may expect a TimeoutException if you are not connected to the internet.</exception>
+        </member>
+        <member name="M:SendGrid.ISendGridClient.SendEmailAsync(SendGrid.Helpers.Mail.SendGridMessage,System.Threading.CancellationToken)">
+            <summary>
+            Make a request to send an email through Twilio SendGrid asynchronously.
+            </summary>
+            <param name="msg">A SendGridMessage object with the details for the request.</param>
+            <param name="cancellationToken">Cancel the asynchronous call.</param>
+            <returns>A Response object.</returns>
+        </member>
+        <member name="T:SendGrid.MimeType">
+            <summary>
+            Helper for the common Twilio SendGrid email mime types.
+            </summary>
+        </member>
+        <member name="F:SendGrid.MimeType.Html">
+            <summary>
+            The mime type for HTML content.
+            </summary>
+        </member>
+        <member name="F:SendGrid.MimeType.Text">
+            <summary>
+            The mime type for plain text content.
+            </summary>
+        </member>
+        <member name="T:SendGrid.Response">
+            <summary>
+            The response received from an API call to Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="F:SendGrid.Response.statusCode">
+            <summary>
+            The status code returned from Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="F:SendGrid.Response.body">
+            <summary>
+            The response body returned from Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="F:SendGrid.Response.headers">
+            <summary>
+            The response headers returned from Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Response.#ctor(System.Net.HttpStatusCode,System.Net.Http.HttpContent,System.Net.Http.Headers.HttpResponseHeaders)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.Response"/> class.
+            </summary>
+            <param name="statusCode">https://docs.microsoft.com/dotnet/api/system.net.httpstatuscode.</param>
+            <param name="responseBody">https://docs.microsoft.com/dotnet/api/system.net.http.httpcontent.</param>
+            <param name="responseHeaders">https://docs.microsoft.com/dotnet/api/system.net.http.headers.httpresponseheaders.</param>
+        </member>
+        <member name="P:SendGrid.Response.StatusCode">
+            <summary>
+            Gets or sets the status code returned from Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Response.Body">
+            <summary>
+            Gets or sets the response body returned from Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="P:SendGrid.Response.Headers">
+            <summary>
+            Gets or sets the response headers returned from Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="M:SendGrid.Response.DeserializeResponseBodyAsync(System.Net.Http.HttpContent)">
+            <summary>
+            Converts string formatted response body to a Dictionary.
+            </summary>
+            <param name="content">https://docs.microsoft.com/dotnet/api/system.net.http.httpcontent.</param>
+            <returns>Dictionary object representation of HttpContent.</returns>
+        </member>
+        <member name="M:SendGrid.Response.DeserializeResponseHeaders(System.Net.Http.Headers.HttpResponseHeaders)">
+            <summary>
+            Converts string formatted response headers to a Dictionary.
+            </summary>
+            <param name="content">https://docs.microsoft.com/dotnet/api/system.net.http.headers.httpresponseheaders.</param>
+            <returns>Dictionary object representation of HttpResponseHeaders.</returns>
+        </member>
+        <member name="T:SendGrid.SendGridClient">
+            <summary>
+            A HTTP client wrapper for interacting with Twilio SendGrid's API.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.ClientVersion">
+            <summary>
+            The <see cref="T:SendGrid.SendGridClient"/> assembly version to send in request User-Agent header.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.DefaultOptions">
+            <summary>
+            The default configuration settings to use with the SendGrid client.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.options">
+            <summary>
+            The configuration to use with current <see cref="T:SendGrid.SendGridClient"/> instance.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.client">
+            <summary>
+            The HttpClient instance to use for all calls from this SendGridClient instance.
+            </summary>
+        </member>
+        <member name="M:SendGrid.SendGridClient.#ctor(System.Net.IWebProxy,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.SendGridClient"/> class.
+            </summary>
+            <param name="webProxy">Web proxy.</param>
+            <param name="apiKey">Your Twilio SendGrid API key.</param>
+            <param name="host">Base url (e.g. https://api.sendgrid.com).</param>
+            <param name="requestHeaders">A dictionary of request headers.</param>
+            <param name="version">API version, override AddVersion to customize.</param>
+            <param name="urlPath">Path to endpoint (e.g. /path/to/endpoint).</param>
+            <returns>Interface to the Twilio SendGrid REST API.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.#ctor(SendGrid.SendGridClientOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.SendGridClient"/> class.
+            </summary>
+            <param name="options">A <see cref="T:SendGrid.SendGridClientOptions"/> instance that defines the configuration settings to use with the client.</param>
+            <returns>Interface to the Twilio SendGrid REST API.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.#ctor(System.Net.Http.HttpClient,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.SendGridClient"/> class.
+            </summary>
+            <param name="httpClient">An optional http client which may me injected in order to facilitate testing.</param>
+            <param name="apiKey">Your Twilio SendGrid API key.</param>
+            <param name="host">Base url (e.g. https://api.sendgrid.com).</param>
+            <param name="requestHeaders">A dictionary of request headers.</param>
+            <param name="version">API version, override AddVersion to customize.</param>
+            <param name="urlPath">Path to endpoint (e.g. /path/to/endpoint).</param>
+            <returns>Interface to the Twilio SendGrid REST API.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.#ctor(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.SendGridClient"/> class.
+            </summary>
+            <param name="apiKey">Your Twilio SendGrid API key.</param>
+            <param name="host">Base url (e.g. https://api.sendgrid.com).</param>
+            <param name="requestHeaders">A dictionary of request headers.</param>
+            <param name="version">API version, override AddVersion to customize.</param>
+            <param name="urlPath">Path to endpoint (e.g. /path/to/endpoint).</param>
+            <returns>Interface to the Twilio SendGrid REST API.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.#ctor(System.Net.Http.HttpClient,SendGrid.SendGridClientOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.SendGridClient"/> class.
+            </summary>
+            <param name="httpClient">An optional HTTP client which may me injected in order to facilitate testing.</param>
+            <param name="options">A <see cref="T:SendGrid.SendGridClientOptions"/> instance that defines the configuration settings to use with the client.</param>
+            <returns>Interface to the Twilio SendGrid REST API.</returns>
+        </member>
+        <member name="T:SendGrid.SendGridClient.Method">
+            <summary>
+            The supported API methods.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.Method.DELETE">
+            <summary>
+            Remove a resource.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.Method.GET">
+            <summary>
+            Get a resource.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.Method.PATCH">
+            <summary>
+            Modify a portion of the resource.
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.Method.POST">
+            <summary>
+            Create a resource or execute a function (e.g. send an email).
+            </summary>
+        </member>
+        <member name="F:SendGrid.SendGridClient.Method.PUT">
+            <summary>
+            Update an entire resource.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClient.UrlPath">
+            <summary>
+            Gets or sets the path to the API resource.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClient.Version">
+            <summary>
+            Gets or sets the API version.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClient.MediaType">
+            <summary>
+            Gets or sets the request media type.
+            </summary>
+        </member>
+        <member name="M:SendGrid.SendGridClient.AddAuthorization(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+            <summary>
+            Add the authorization header, override to customize.
+            </summary>
+            <param name="header">Authorization header.</param>
+            <returns>Authorization value to add to the header.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.MakeRequest(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <summary>
+            Make the call to the API server, override for testing or customization.
+            </summary>
+            <param name="request">The parameters for the API call.</param>
+            <param name="cancellationToken">Cancel the asynchronous call.</param>
+            <returns>Response object.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.RequestAsync(SendGrid.SendGridClient.Method,System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Prepare for async call to the API server.
+            </summary>
+            <param name="method">HTTP verb.</param>
+            <param name="requestBody">JSON formatted string.</param>
+            <param name="queryParams">JSON formatted query parameters.</param>
+            <param name="urlPath">The path to the API endpoint.</param>
+            <param name="cancellationToken">Cancel the asynchronous call.</param>
+            <returns>Response object.</returns>
+            <exception cref="T:System.Exception">The method will NOT catch and swallow exceptions generated by sending a request through the internal HTTP client. Any underlying exception will pass right through.
+            In particular, this means that you may expect a TimeoutException if you are not connected to the Internet.</exception>
+        </member>
+        <member name="M:SendGrid.SendGridClient.SendEmailAsync(SendGrid.Helpers.Mail.SendGridMessage,System.Threading.CancellationToken)">
+            <summary>
+            Make a request to send an email through Twilio SendGrid asynchronously.
+            </summary>
+            <param name="msg">A SendGridMessage object with the details for the request.</param>
+            <param name="cancellationToken">Cancel the asynchronous call.</param>
+            <returns>A Response object.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.CreateHttpClientWithWebProxy(System.Net.IWebProxy)">
+            <summary>
+            Create client with WebProxy if set.
+            </summary>
+            <param name="webProxy">the WebProxy.</param>
+            <returns>HttpClient with RetryDelegatingHandler and WebProxy if set.</returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.BuildUrl(System.String,System.String)">
+            <summary>
+            Build the final URL.
+            </summary>
+            <param name="urlPath">The URL path.</param>
+            <param name="queryParams">A string of JSON formatted query parameters (e.g. {'param': 'param_value'}).</param>
+            <returns>
+            Final URL.
+            </returns>
+        </member>
+        <member name="M:SendGrid.SendGridClient.ParseJson(System.String)">
+            <summary>
+            Parses a JSON string without removing duplicate keys.
+            </summary>
+            <remarks>
+            This function flattens all Objects/Array.
+            This means that for example {'id': 1, 'id': 2, 'id': 3} and {'id': [1, 2, 3]} result in the same output.
+            </remarks>
+            <param name="json">The JSON string to parse.</param>
+            <returns>A dictionary of all values.</returns>
+        </member>
+        <member name="T:SendGrid.SendGridClientOptions">
+            <summary>
+            Defines the options to use with the Twilio SendGrid client.
+            </summary>
+        </member>
+        <member name="M:SendGrid.SendGridClientOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SendGrid.SendGridClientOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClientOptions.ReliabilitySettings">
+            <summary>
+            Gets or sets the reliability settings to use on HTTP Requests.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClientOptions.ApiKey">
+            <summary>
+            Gets or sets the Twilio SendGrid API key.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClientOptions.RequestHeaders">
+            <summary>
+            Gets or sets the request headers to use on HttpRequests sent to Twilio SendGrid.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClientOptions.Host">
+            <summary>
+            Gets or sets base url (e.g. https://api.sendgrid.com, this is the default).
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClientOptions.Version">
+            <summary>
+            Gets or sets API version, override AddVersion to customize.
+            </summary>
+        </member>
+        <member name="P:SendGrid.SendGridClientOptions.UrlPath">
+            <summary>
+            Gets or sets the path to the API endpoint.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,3009 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GreenPipes</name>
+    </assembly>
+    <members>
+        <member name="T:GreenPipes.Agents.ActivePipeContext`1">
+            <summary>
+            An active reference to a pipe context, which is managed by an existing pipe context handle.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Agents.ActivePipeContext`1.#ctor(GreenPipes.PipeContextHandle{`0},System.Threading.Tasks.Task{`0})">
+            <summary>
+            Creates the active pipe context handle, which must have completed before this instance is created. Otherwise,
+            it would create a pretty nasty async mess that wouldn't handle faults very well (actually, it should, but I haven't tested it).
+            </summary>
+            <param name="contextHandle">The context handle of the actual context which is being used</param>
+            <param name="context">The actual context, which should be a completed Task</param>
+        </member>
+        <member name="M:GreenPipes.Agents.ActivePipeContext`1.#ctor(GreenPipes.PipeContextHandle{`0},`0)">
+            <summary>
+            Creates the active pipe context handle, which must have completed before this instance is created. Otherwise,
+            it would create a pretty nasty async mess that wouldn't handle faults very well (actually, it should, but I haven't tested it).
+            </summary>
+            <param name="contextHandle">The context handle of the actual context which is being used</param>
+            <param name="context">The actual context</param>
+        </member>
+        <member name="T:GreenPipes.Agents.ActivePipeContextAgent`1">
+            <summary>
+            An Agent Provocateur that uses a context handle for the activate state of the agent
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Agents.ActivePipeContextAgent`1.StopAgent(GreenPipes.Agents.StopContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.ActivePipeContextAgent`1.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:GreenPipes.Agents.ActivePipeContextHandle`1">
+            <summary>
+            An active, in-use reference to a pipe context.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Agents.ActivePipeContextHandle`1.Faulted(System.Exception)">
+            <summary>
+            If the use of this context results in a fault which should cause the context to be disposed, this method signals that behavior to occur.
+            </summary>
+            <param name="exception">The bad thing that happened</param>
+        </member>
+        <member name="T:GreenPipes.Agents.Agent">
+            <summary>
+            An Agent Provocateur that simply exists, out of context
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.#ctor">
+            <summary>
+            Creates the Agent
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.Agent.IsStopping">
+            <summary>
+            True if the agent is in the process of stopping or is stopped
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.Agent.IsStopped">
+            <summary>
+            True if the agent is stopped
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.Agent.Ready">
+            <inheritdoc />
+        </member>
+        <member name="P:GreenPipes.Agents.Agent.Completed">
+            <inheritdoc />
+        </member>
+        <member name="P:GreenPipes.Agents.Agent.Stopping">
+            <inheritdoc />
+        </member>
+        <member name="P:GreenPipes.Agents.Agent.Stopped">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.Stop(GreenPipes.Agents.StopContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.StopAgent(GreenPipes.Agents.StopContext)">
+            <summary>
+            Stops the agent
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.SetReady">
+            <summary>
+            Puts the agent in a ready state, explicitly
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.SetNotReady(System.Exception)">
+            <summary>
+            Puts the agent in a faulted state where it will never be ready
+            </summary>
+            <param name="exception"></param>
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.SetReady(System.Threading.Tasks.Task)">
+            <summary>
+            Set the agent ready for duty
+            </summary>
+            <param name="readyTask"></param>
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.SetCompleted(System.Threading.Tasks.Task)">
+            <summary>
+            Set the agent Completed for duty
+            </summary>
+            <param name="completedTask"></param>
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.Agent.SetFaulted(System.Threading.Tasks.Task)">
+            <summary>
+            Set the agent faulted, making it dead.
+            </summary>
+            <param name="task"></param>
+        </member>
+        <member name="M:GreenPipes.Agents.AgentExtensions.IsReady(GreenPipes.Agents.IAgent)">
+            <summary>
+            Returns true if the Agent is Ready (completed, faulted, or canceled)
+            </summary>
+            <param name="agent"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Agents.AgentExtensions.IsCompleted(GreenPipes.Agents.IAgent)">
+            <summary>
+            Returns true if the Agent is Completed (completed, faulted, or canceled)
+            </summary>
+            <param name="agent"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Agents.AsyncPipeContextAgent`1">
+            <summary>
+            A PipeContext, which as an agent can be Stopped, which disposes of the context making it unavailable
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Agents.AsyncPipeContextAgent`1.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:GreenPipes.Agents.AsyncPipeContextFilter`1">
+            <summary>
+            Completes the AsyncPipeContextAgent when the context is sent to the pipe, and doesn't return until the agent completes
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Agents.AsyncPipeContextPipe`1">
+            <summary>
+            Completes the AsyncPipeContextAgent when the context is sent to the pipe, and doesn't return until the agent completes
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Agents.IActivePipeContextAgent`1">
+            <summary>
+            An active use of a pipe context as an agent.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Agents.IAgent">
+            <summary>
+            An agent can be supervised, and signals when it has completed
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.IAgent.Ready">
+            <summary>
+            A Task which can be awaited and is completed when the agent is either ready or faulted/canceled
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.IAgent.Completed">
+            <summary>
+            A Task which is completed when the agent has completed (should never be set to Faulted, per convention)
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.IAgent.Stopping">
+            <summary>
+            The token which indicates if the agent is in the process of stopping (or stopped)
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.IAgent.Stopped">
+            <summary>
+            The token which indicates if the agent is stopped
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Agents.IAgent.Stop(GreenPipes.Agents.StopContext)">
+            <summary>
+            Stop the agent, and any supervised agents under it's control. Any faults related to stopping should
+            be returned via this method, and not propogated to the <see cref="P:GreenPipes.Agents.IAgent.Completed"/> Task.
+            </summary>
+            <param name="context">The stop context</param>
+        </member>
+        <member name="T:GreenPipes.Agents.IAgent`1">
+            <summary>
+            An agent that is also a pipe context source, of the specified context type
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Agents.IPipeContextFactory`1">
+            <summary>
+            Used to create the actual context, and the active context usages
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+        </member>
+        <member name="M:GreenPipes.Agents.IPipeContextFactory`1.CreateContext(GreenPipes.Agents.ISupervisor)">
+            <summary>
+            Create the pipe context, which is the actual context, and not a copy of it
+            </summary>
+            <param name="supervisor">The supervisor containing the context</param>
+            <returns>A handle to the pipe context</returns>
+        </member>
+        <member name="M:GreenPipes.Agents.IPipeContextFactory`1.CreateActiveContext(GreenPipes.Agents.ISupervisor,GreenPipes.PipeContextHandle{`0},System.Threading.CancellationToken)">
+            <summary>
+            Create an active pipe context, which is a reference to the actual context
+            </summary>
+            <param name="supervisor">The supervisor containing the context</param>
+            <param name="context">The actual context</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken"/> use for the active context</param>
+            <returns>A handle to the active context</returns>
+        </member>
+        <member name="T:GreenPipes.Agents.ISupervisor">
+            <summary>
+            A supervisor with a set of agents (a supervisor is also an agent)
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.ISupervisor.PeakActiveCount">
+            <summary>
+            The peak number of agents active at the same time
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.ISupervisor.TotalCount">
+            <summary>
+            The total number of agents that were added to the supervisor
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Agents.ISupervisor.Add(GreenPipes.Agents.IAgent)">
+            <summary>
+            Add an Agent to the Supervisor
+            </summary>
+            <param name="agent">The agent</param>
+        </member>
+        <member name="T:GreenPipes.Agents.ISupervisor`1">
+            <summary>
+            A supervisor that is also a <see cref="T:GreenPipes.IPipeContextSource`1"/>
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Agents.PipeContextAgent`1">
+            <summary>
+            A PipeContext, which as an agent can be Stopped, which disposes of the context making it unavailable
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Agents.PipeContextAgent`1.#ctor(`0)">
+            <summary>
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:GreenPipes.Agents.PipeContextAgent`1.#ctor(System.Threading.Tasks.Task{`0})">
+            <summary>
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:GreenPipes.Agents.PipeContextAgent`1.DisposeAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.PipeContextAgent`1.StopAgent(GreenPipes.Agents.StopContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.PipeContextAgent`1.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:GreenPipes.Agents.PipeContextSupervisor`1">
+            <summary>
+            Maintains a cached context, which is created upon first use, and recreated whenever a fault is propogated to the
+            usage.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Agents.PipeContextSupervisor`1.#ctor(GreenPipes.Agents.IPipeContextFactory{`0})">
+            <summary>
+            Create the cache
+            </summary>
+            <param name="contextFactory">Factory used to create the underlying and active contexts</param>
+        </member>
+        <member name="M:GreenPipes.Agents.PipeContextSupervisor`1.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:GreenPipes.Agents.StopContext">
+            <summary>
+            The context associated with stopping an agent
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.StopContext.Reason">
+            <summary>
+            The reason for stopping
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Agents.StopSupervisorContext.Agents">
+            <summary>
+            The agents available when the Stop was initiated
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Agents.Supervisor">
+            <summary>
+            Supervises a set of agents, allowing for graceful Start, Stop, and Ready state management
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Agents.Supervisor.#ctor">
+            <summary>
+            Creates a Supervisor
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Agents.Supervisor.Add(GreenPipes.Agents.IAgent)">
+            <inheritdoc />
+        </member>
+        <member name="P:GreenPipes.Agents.Supervisor.PeakActiveCount">
+            <inheritdoc />
+        </member>
+        <member name="P:GreenPipes.Agents.Supervisor.TotalCount">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.Supervisor.SetReady">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.Supervisor.StopAgent(GreenPipes.Agents.StopContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.Agents.Supervisor.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:GreenPipes.AsyncPipeContextHandleExtensions.Notify``1(GreenPipes.IAsyncPipeContextHandle{``0},System.Threading.Tasks.Task{``0})">
+            <summary>
+            Notify that the context creation task has completed and should be updated. If the Task has not yet completed,
+            a continuation is added to it so that it is handled when completed.
+            </summary>
+            <param name="handle"></param>
+            <param name="task"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="T:GreenPipes.BasePipeContext">
+            <summary>
+            The base for a pipe context, with the underlying support for managing paylaods (out-of-band data
+            that is carried along with the context).
+            </summary>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.#ctor">
+            <summary>
+            A new pipe context with an existing payload cache -- includes a new CancellationTokenSource. If 
+            cancellation is not supported, use the above constructor with CancellationToken.None to avoid
+            creating a token source.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.#ctor(GreenPipes.Payloads.IPayloadCache)">
+            <summary>
+            A new pipe context with an existing payload cache -- includes a new CancellationTokenSource. If 
+            cancellation is not supported, use the above constructor with CancellationToken.None to avoid
+            creating a token source.
+            </summary>
+            <param name="payloadCache"></param>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.#ctor(GreenPipes.Payloads.IPayloadCache,System.Threading.CancellationToken)">
+            <summary>
+            Uses the specified payloadCache and cancellationToken for the context
+            </summary>
+            <param name="payloadCache">A payload cache</param>
+            <param name="cancellationToken">A cancellation token</param>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.#ctor(GreenPipes.PipeContext)">
+            <summary>
+            A new pipe context based off an existing pipe context, which delegates the payloadCache
+            to the existing pipe context.
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="P:GreenPipes.BasePipeContext.CancellationToken">
+            <summary>
+            Returns the CancellationToken for the context (implicit interface)
+            </summary>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.HasPayloadType(System.Type)">
+            <summary>
+            Returns true if the payload type is included with or supported by the context type
+            </summary>
+            <param name="payloadType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.TryGetPayload``1(``0@)">
+            <summary>
+            Attemts 
+            </summary>
+            <param name="payload"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.GetOrAddPayload``1(GreenPipes.PayloadFactory{``0})">
+            <summary>
+            Get or add a payload to the context, using the provided payload factory.
+            </summary>
+            <param name="payloadFactory">The payload factory, which is only invoked if the payload is not present.</param>
+            <typeparam name="T">The payload type</typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.BasePipeContext.AddOrUpdatePayload``1(GreenPipes.PayloadFactory{``0},GreenPipes.UpdatePayloadFactory{``0})">
+            <summary>
+            Either adds a new payload, or updates an existing payload
+            </summary>
+            <param name="addFactory">The payload factory called if the payload is not present</param>
+            <param name="updateFactory">The payload factory called if the payload already exists</param>
+            <typeparam name="T">The payload type</typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.BindContext`2">
+            <summary>
+            The binding of a value to the context, which is a fancy form of Tuple
+            </summary>
+            <typeparam name="TContext">The pipe context type</typeparam>
+            <typeparam name="TSource">The source context type</typeparam>
+        </member>
+        <member name="P:GreenPipes.BindContext`2.Context">
+            <summary>
+            The original context
+            </summary>
+        </member>
+        <member name="P:GreenPipes.BindContext`2.SourceContext">
+            <summary>
+            The context bound from the source
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.CacheSettings.Capacity">
+            <summary>
+            The number of items allowed in the cache. This isn't a hard limit, but the cache will shrink
+            the cache size to be under the capacity when possible.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.CacheSettings.MaxAge">
+            <summary>
+            The maximum length of time an unused item will remain in the cache
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.CacheSettings.MinAge">
+            <summary>
+            The minimum length of time an item will remain in the cache before it is eligible for removal
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.CacheSettings.NowProvider">
+            <summary>
+            Provides the current time, which is used to manage item lifetime. Replace this to allow unit
+            tests to move time forward quickly.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.CacheSettings.BucketCount">
+            <summary>
+            The number of buckets to create per time slot (do NOT change this unless you're very smart)
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.CacheSettings.TimeSlots">
+            <summary>
+            The number of time slots per bucket (do NOT change this unless you're very smart)
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.GreenCache`1.#ctor(GreenPipes.Caching.CacheSettings)">
+            <summary>
+            Create a cache using the specified cache settings
+            </summary>
+            <param name="settings">The cache settings</param>
+        </member>
+        <member name="M:GreenPipes.Caching.ICache`1.AddIndex``1(System.String,GreenPipes.Caching.KeyProvider{``0,`0},GreenPipes.Caching.MissingValueFactory{``0,`0})">
+            <summary>
+                Create an index on the cache for the specified key type
+            </summary>
+            <param name="name">A unique index name</param>
+            <param name="keyProvider">The key factory for the value</param>
+            <param name="missingValueFactory"></param>
+            <typeparam name="TKey">The key type for the index</typeparam>
+            <returns>The index, which can be used directly to access the cache</returns>
+        </member>
+        <member name="M:GreenPipes.Caching.ICache`1.GetIndex``1(System.String)">
+            <summary>
+                Get an existing cache index by name
+            </summary>
+            <param name="name"></param>
+            <typeparam name="TKey"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Caching.ICache`1.Add(`0)">
+            <summary>
+            Adds a value, updating indices, before returning
+            </summary>
+            <param name="value">The value to add</param>
+        </member>
+        <member name="M:GreenPipes.Caching.ICache`1.GetAll">
+            <summary>
+                Returns all the values in the cache
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Caching.ICache`1.Clear">
+            <summary>
+                Forcibly clear the cache immediately (disposal of cached items may take some time, occurs asynchronously)
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Caching.ICacheValueObserver`1">
+            <summary>
+            Observes behavior within the cache
+            </summary>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="M:GreenPipes.Caching.ICacheValueObserver`1.ValueAdded(GreenPipes.Caching.INode{`0},`0)">
+            <summary>
+            Called when a new node is added to the cache, after the node has resolved.
+            </summary>
+            <param name="node">The cached node</param>
+            <param name="value">The cached value, to avoid awaiting</param>
+            <returns>An awaitable task for the observer</returns>
+        </member>
+        <member name="M:GreenPipes.Caching.ICacheValueObserver`1.ValueRemoved(GreenPipes.Caching.INode{`0},`0)">
+            <summary>
+            Called when a node is removed from the cache.
+            </summary>
+            <param name="node">The cached node</param>
+            <param name="value">The cached value, to avoid awaiting</param>
+            <returns>An awaitable task for the observer</returns>
+        </member>
+        <member name="M:GreenPipes.Caching.ICacheValueObserver`1.CacheCleared">
+            <summary>
+            Called when the cache is cleared of all nodes.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Caching.IIndex`2">
+            <summary>
+            An index is used to access items in the cache quickly
+            </summary>
+            <typeparam name="TKey"></typeparam>
+            <typeparam name="TValue"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Caching.IIndex`2.Remove(`0)">
+            <summary>
+            Forcibly removes the item from the cache, but disposal may occur asynchronously.
+            </summary>
+            <param name="key">The value key</param>
+        </member>
+        <member name="P:GreenPipes.Caching.INode`1.Value">
+            <summary>
+            The cached value
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.INode`1.HasValue">
+            <summary>
+            True if the node has a value, resolved, ready to rock
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.INode`1.IsValid">
+            <summary>
+            True if the node value is invalid
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.INode`1.GetValue(GreenPipes.Caching.IPendingValue{`0})">
+            <summary>
+            Get the node's value, passing a pending value if for some
+            reason the node's value has not yet been accepted or has
+            expired.
+            </summary>
+            <param name="pendingValue"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Caching.INotifyValueUsed">
+            <summary>
+            If a cached value implments this interface, the cache will attach itself to the
+            event so the value can signal usage to update the lifetime of the value.
+            </summary>
+        </member>
+        <member name="E:GreenPipes.Caching.INotifyValueUsed.Used">
+            <summary>
+            Should be raised by the value when used, to keep it alive in the cache.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.Bucket`1.Clear">
+            <summary>
+            Clear the bucket, no node cleanup is performed
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.Bucket`1.Push(GreenPipes.Caching.Internals.IBucketNode{`0})">
+            <summary>
+            Push a node to the front of the bucket, and set the node's bucket to this bucket
+            </summary>
+            <param name="node"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.Bucket`1.Used(GreenPipes.Caching.Internals.IBucketNode{`0})">
+            <summary>
+            When a node is used, check and rebucket if necessary to keep it in the cache
+            </summary>
+            <param name="node"></param>
+        </member>
+        <member name="T:GreenPipes.Caching.Internals.BucketCollection`1">
+            <summary>
+            An ordered collection of buckets, used by the node tracker to keep track of nodes
+            </summary>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.BucketCollection`1.Empty">
+            <summary>
+            Empties every bucket in the collection, evicting all the nodes
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Caching.Internals.BucketNode`1">
+            <summary>
+            A bucket node has been stored in a bucket, and is a fully resolved value.
+            </summary>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.MaxAge">
+            <summary>
+            How long a value can live in the cache until being swept during the next cleanup
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.MinAge">
+            <summary>
+            The shortest time a value can live in the cache, even if it means blowing up the cache size
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.BucketSize">
+            <summary>
+            How many values each bucket should hold
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.BucketCount">
+            <summary>
+            How much buckets are maintained
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.OldestBucketIndex">
+            <summary>
+            The lowest bucket index with nodes in it
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.CurrentBucketIndex">
+            <summary>
+            The current bucket for nodes
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.Capacity">
+            <summary>
+            The value limit for the cache
+            </summary>
+            <remarks>
+            The actual number of values can exceed the limit if items are being added quickly and take a while to reach the minimum age
+            </remarks>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.Count">
+            <summary>
+            Current value count
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.TotalCount">
+            <summary>
+            Total number of values added to the cache since it was created
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.Misses">
+            <summary>
+            Gets the number of times an item was requested from the cache which did not exist yet, since the cache 
+            was created.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.Hits">
+            <summary>
+            Gets the number of times an existing item was requested from the cache since the cache 
+            was created.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.CacheStatistics.CreateFaults">
+            <summary>
+            The number of node creates which faulted
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.CacheStatistics.Reset">
+            <summary>
+            Resets the statistics.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.CacheValueObservable`1.Connect(GreenPipes.Caching.ICacheValueObserver{`0})">
+            <summary>
+            Connect a connectable type
+            </summary>
+            <param name="connection">The connection to add</param>
+            <returns>The connection handle</returns>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.CacheValueObservable`1.ForEach(System.Action{GreenPipes.Caching.ICacheValueObserver{`0}})">
+            <summary>
+            Enumerate the connections invoking the callback for each connection
+            </summary>
+            <param name="callback">The callback</param>
+            <returns>An awaitable Task for the operation</returns>
+        </member>
+        <member name="T:GreenPipes.Caching.Internals.FactoryNode`1">
+            <summary>
+            A factory node is a temporary node used by an index until the node has
+            been resolved.
+            </summary>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.IBucketNode`1.Bucket">
+            <summary>
+            The node's bucket
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.IBucketNode`1.Next">
+            <summary>
+            Returns the next node in the bucket
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.IBucketNode`1.SetBucket(GreenPipes.Caching.Internals.Bucket{`0},GreenPipes.Caching.Internals.IBucketNode{`0})">
+            <summary>
+            Puts the node's bucket, once the value is resolved, so that the node
+            can be tracked.
+            </summary>
+            <param name="bucket"></param>
+            <param name="next"></param>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.IBucketNode`1.AssignToBucket(GreenPipes.Caching.Internals.Bucket{`0})">
+            <summary>
+            Assigns the node to a new bucket, but doesn't change the next node
+            until it's cleaned up
+            </summary>
+            <param name="bucket"></param>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.IBucketNode`1.Evict">
+            <summary>
+            Forcibly evicts the node by setting the internal state to
+            nothing.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.IBucketNode`1.Pop">
+            <summary>
+            Remove the node from the bucket, and return the next node
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.ICacheIndex`1.KeyType">
+            <summary>
+            The key type for the index
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.ICacheIndex`1.Clear">
+            <summary>
+            Clear the index, removing all nodes, but leaving them unmodified
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.ICacheIndex`1.Add(GreenPipes.Caching.INode{`0})">
+            <summary>
+            Adds a node to the index
+            </summary>
+            <param name="node">The node</param>
+            <returns>True if the value was added, false if the value already existed in the index</returns>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.ICacheIndex`1.TryGetExistingNode(`0,GreenPipes.Caching.INode{`0}@)">
+            <summary>
+            Check if the value is in the index, and if found, return the node
+            </summary>
+            <param name="value">The value</param>
+            <param name="node">The matching node</param>
+            <returns>True if the value was found, otherwise false</returns>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.INodeTracker`1.Statistics">
+            <summary>
+            Maintains statistics for the cache
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeTracker`1.Add(GreenPipes.Caching.Internals.INodeValueFactory{`0})">
+            <summary>
+            Adds a pending node to the cache, that once resolved, is published
+            to the indices
+            </summary>
+            <param name="nodeValueFactory"></param>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeTracker`1.Add(`0)">
+            <summary>
+            Just add the value, straight up
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeTracker`1.Rebucket(GreenPipes.Caching.Internals.IBucketNode{`0})">
+            <summary>
+            Assigns the node to the current bucket, likely do it being touched.
+            </summary>
+            <param name="node"></param>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeTracker`1.Remove(GreenPipes.Caching.INode{`0})">
+            <summary>
+            Remove a node from the cache, notifying all observers that it was removed
+            (which updates the indices as well).
+            </summary>
+            <param name="existingNode">The node being removed</param>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeTracker`1.GetAll">
+            <summary>
+            Returns every known node in the cache from the valid buckets
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeTracker`1.Clear">
+            <summary>
+            Clear the cache, throw out the buckets, time to start over
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Caching.Internals.INodeValueFactory`1">
+            <summary>
+            Holds a queue of pending values, attemping to resolve them in order until
+            one of them completes, and then using the completing value for any pending
+            values instead of calling their factory methods.
+            </summary>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="P:GreenPipes.Caching.Internals.INodeValueFactory`1.Value">
+            <summary>
+            Returns the final value of the factory, either completed or faulted
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeValueFactory`1.Add(GreenPipes.Caching.IPendingValue{`0})">
+            <summary>
+            Add a pending value to the factory, which will either use a previously
+            completed value or become the new factory method for the value.
+            </summary>
+            <param name="pendingValue">The factory method</param>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.INodeValueFactory`1.CreateValue">
+            <summary>
+            Called by the node tracker to create the value, which is then redistributed to the indices.
+            Should not be called by another as it's used to resolve the value.
+            </summary>
+            <returns>The ultimate value task, either completed or faulted</returns>
+        </member>
+        <member name="T:GreenPipes.Caching.Internals.NodeValueFactory`1">
+            <summary>
+            A factory for a node which keeps track of subsequent attempts to create the
+            same node, passing through until a valid node is created.
+            </summary>
+            <typeparam name="TValue"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Caching.Internals.NodeValueFactory`1.#ctor(GreenPipes.Caching.IPendingValue{`0},System.Int32)">
+            <summary>
+            Creates a node value factory, with the inital pending value
+            </summary>
+            <param name="initialPendingValue">The value that brought the node to the cache</param>
+            <param name="timeoutInMilliseconds">The timeout to wait for additional factories before faulting</param>
+        </member>
+        <member name="T:GreenPipes.Caching.Internals.PendingValue`2">
+            <summary>
+            This is used to store a pending value as a node, which will eventually be published to the indices
+            once it resolves. If the pending value faults, it will be removed from the index, unless a subsequent
+            factory completes successfully.
+            </summary>
+            <typeparam name="TKey">The key type</typeparam>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="T:GreenPipes.Caching.IPendingValue`1">
+            <summary>
+            A pending Get on an index, which has yet to be processed. Used by the
+            node value factory to sequentially resolve the value for an index item
+            which is then added to the cache.
+            </summary>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="M:GreenPipes.Caching.IPendingValue`1.SetValue(System.Threading.Tasks.Task{`0})">
+            <summary>
+            Sets the pending value, eliminating the need for the factory method.
+            </summary>
+            <param name="value">The resolved value</param>
+        </member>
+        <member name="M:GreenPipes.Caching.IPendingValue`1.CreateValue">
+            <summary>
+            Create the value using the missing value factory supplied to Get
+            </summary>
+            <returns>Either the value, or a faulted task.</returns>
+        </member>
+        <member name="T:GreenPipes.Caching.KeyProvider`2">
+            <summary>
+            Returns the key for a value
+            </summary>
+            <param name="value"></param>
+            <typeparam name="TKey"></typeparam>
+            <typeparam name="TValue"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Caching.MissingValueFactory`2">
+            <summary>
+            Creates the value if it is not found in the index
+            </summary>
+            <param name="key">The missing key</param>
+            <typeparam name="TKey">The key type</typeparam>
+            <typeparam name="TValue">The value type</typeparam>
+        </member>
+        <member name="M:GreenPipes.ConcurrencyLimitExtensions.SetConcurrencyLimit(GreenPipes.IPipe{GreenPipes.Contracts.CommandContext},System.Int32)">
+            <summary>
+            Set the concurrency limit of the filter
+            </summary>
+            <param name="pipe"></param>
+            <param name="concurrencyLimit"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.BindConfigurationExtensions.UseBind``1(GreenPipes.IPipeConfigurator{``0},System.Action{GreenPipes.Configurators.IBindConfigurator{``0}})">
+            <summary>
+            Adds a filter to the pipe which is of a different type than the native pipe context type
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.Builders.IBuildPipeConfigurator`1.Build">
+            <summary>
+            Builds the pipe, applying any initial specifications to the front of the pipe
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Builders.IBuildRequestPipeConfigurator`2.Build(GreenPipes.IPipe{GreenPipes.ResultContext})">
+            <summary>
+            Builds the pipe, applying any initial specifications to the front of the pipe
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Builders.IBuildResultPipeConfigurator`2.Build">
+            <summary>
+            Builds the pipe, applying any initial specifications to the front of the pipe
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.CircuitBreakerConfigurationExtensions.UseCircuitBreaker``1(GreenPipes.IPipeConfigurator{``0},System.Action{GreenPipes.Configurators.ICircuitBreakerConfigurator{``0}})">
+            <summary>
+            Puts a circuit breaker in the pipe, which can automatically prevent the flow of messages to the consumer
+            when the circuit breaker is opened.
+            </summary>
+            <typeparam name="T">The pipe context type</typeparam>
+            <param name="configurator"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.ConcurrencyLimitConfigurationExtensions.UseConcurrencyLimit``1(GreenPipes.IPipeConfigurator{``0},System.Int32,GreenPipes.IPipeRouter)">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="concurrencyLimit">The concurrency limit for the subsequent filters in the pipeline</param>
+            <param name="router">A control pipe to support runtime adjustment</param>
+        </member>
+        <member name="M:GreenPipes.Configurators.IBindConfigurator`1.Source``1(GreenPipes.IPipeContextSource{``0,`0},System.Action{GreenPipes.Configurators.IBindConfigurator{`0,``0}})">
+            <summary>
+            Specifies a pipe context source which is used to create the PipeContext bound to the BindContext.
+            </summary>
+            <param name="source"></param>
+            <param name="configureTarget"></param>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Configurators.IBindConfigurator`2">
+            <summary>
+            Configures a binding using the specified pipe context source
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TSource"></typeparam>
+        </member>
+        <member name="P:GreenPipes.Configurators.IBindConfigurator`2.ContextPipe">
+            <summary>
+            Configure a filter on the context pipe, versus the bound pipe
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Configurators.ICircuitBreakerConfigurator`1">
+            <summary>
+            Configure the settings on the circuit breaker
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="P:GreenPipes.Configurators.ICircuitBreakerConfigurator`1.TrackingPeriod">
+            <summary>
+            The period after which the attempt/failure counts are reset.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Configurators.ICircuitBreakerConfigurator`1.TripThreshold">
+            <summary>
+            The percentage of attempts that must fail before the circuit breaker trips into
+            an open state.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Configurators.ICircuitBreakerConfigurator`1.ActiveThreshold">
+            <summary>
+            The number of attempts that must occur before the circuit breaker becomes active. Until the
+            breaker activates, it will not open on failure
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Configurators.ICircuitBreakerConfigurator`1.ResetInterval">
+            <summary>
+            Sets a specific reset interval for the circuit to attempt to close after being tripped.
+            By default, this is an incrementing scale up to one minute.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:GreenPipes.Configurators.ICircuitBreakerConfigurator`1.Router">
+            <summary>
+            Configure a router for sending events from the circuit breaker
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Configurators.IRequestConfigurator">
+            <summary>
+            Configure a request, specifying the responses and their pipes
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Configurators.IRequestConfigurator.Request``2(System.Action{GreenPipes.Configurators.IResultConfigurator{``0,``1}})">
+            <summary>
+            Create a pipe that handles a request with a single response
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+            <param name="configureRequest"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Configurators.IRequestConfigurator`1">
+            <summary>
+            Configure a request, specifying the responses and their pipes
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Configurators.IRequestConfigurator`1.Result``1(System.Action{GreenPipes.Configurators.IRequestConfigurator{`0,``0}})">
+            <summary>
+            Declares a result for the request which can be set by a service
+            </summary>
+            <typeparam name="TResult">The result type</typeparam>
+            <param name="configure">Configure the result pipe</param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Configurators.IRequestConfigurator`2">
+            <summary>
+            Configure a response pipe, which handles a response from a request pipe
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="P:GreenPipes.Configurators.IRescueConfigurator`2.ContextPipe">
+            <summary>
+            Configure a filter on the context pipe, versus the rescue pipe
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Configurators.IResultConfigurator`2">
+            <summary>
+            Configure a response pipe, which handles a response from a request pipe
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Configurators.RequestConfigurator">
+            <summary>
+            Allows a request type to be specified on the pipe, and the subsequent configuration
+            of the response types and response pipes.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Configurators.RequestConfigurator`2">
+            <summary>
+            This will become a specification, since the goal is to have everything rally around
+            the dispatch pipe
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Configurators.ResultConfigurator`2">
+            <summary>
+            This will become a specification, since the goal is to have everything rally around
+            the dispatch pipe
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="M:GreenPipes.ContextFilterConfigurationExtensions.UseContextFilter``1(GreenPipes.IPipeConfigurator{``0},System.Func{``0,System.Threading.Tasks.Task{System.Boolean}})">
+            <summary>
+            Adds a content filter that uses a delegate to filter the context and only accept messages 
+            which pass the filter specification.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="filter">A filter method that returns true to accept the message, or false to discard it</param>
+        </member>
+        <member name="M:GreenPipes.DelegateConfigurationExtensions.UseExecute``1(GreenPipes.IPipeConfigurator{``0},System.Action{``0})">
+            <summary>
+            Executes a synchronous method on the pipe
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="callback">The callback to invoke</param>
+        </member>
+        <member name="M:GreenPipes.DelegateConfigurationExtensions.UseExecuteAsync``1(GreenPipes.IPipeConfigurator{``0},System.Func{``0,System.Threading.Tasks.Task})">
+            <summary>
+            Executes an asynchronous method on the pipe
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="callback">The callback to invoke</param>
+        </member>
+        <member name="M:GreenPipes.DispatchConfigurationExtensions.UseDispatch``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.Filters.IPipeContextConverterFactory{``0},System.Action{GreenPipes.Configurators.IDispatchConfigurator{``0}})">
+            <summary>
+            Adds a dispatch filter to the pipe, which can be used to route traffic
+            based on the type of the incoming context
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="pipeContextProviderFactory"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.FilterConfigurationExtensions.UseFilter``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.IFilter{``0})">
+            <summary>
+            Adds a filter to the pipe
+            </summary>
+            <typeparam name="T">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="filter">The filter to add</param>
+        </member>
+        <member name="M:GreenPipes.FilterConfigurationExtensions.UseFilters``1(GreenPipes.IPipeConfigurator{``0},System.Collections.Generic.IEnumerable{GreenPipes.IFilter{``0}})">
+            <summary>
+            Adds filters to the pipe
+            </summary>
+            <typeparam name="T">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="filters">The filters to add</param>
+        </member>
+        <member name="M:GreenPipes.FilterConfigurationExtensions.UseFilters``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.IFilter{``0}[])">
+            <summary>
+            Adds filters to the pipe
+            </summary>
+            <typeparam name="T">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="filters">The filters to add</param>
+        </member>
+        <member name="M:GreenPipes.FilterConfigurationExtensions.UseFilter``2(GreenPipes.IPipeConfigurator{``0},GreenPipes.IFilter{``1},GreenPipes.MergeFilterContextProvider{``0,``1},GreenPipes.FilterContextProvider{``1,``0})">
+            <summary>
+            Adds a filter to the pipe which is of a different type than the native pipe context type
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+            <typeparam name="TFilter">The filter context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="filter">The filter to add</param>
+            <param name="contextProvider"></param>
+            <param name="inputContextProvider"></param>
+        </member>
+        <member name="M:GreenPipes.ForkConfigurationExtensions.UseFork``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.IPipe{``0})">
+            <summary>
+            Adds a fork to the pipe, which invokes a separate pipe concurrently with the current pipe
+            </summary>
+            <typeparam name="T">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="pipe">The filter to add</param>
+        </member>
+        <member name="M:GreenPipes.InlineFilterConfigurationExtensions.UseInlineFilter``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.InlineFilterMethod{``0})">
+            <summary>
+            Creates an inline filter using a simple async method
+            </summary>
+            <typeparam name="T">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="inlineFilterMethod">The inline filter delegate</param>
+        </member>
+        <member name="M:GreenPipes.InterceptConfigurationExtensions.UseIntercept``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.IPipe{``0})">
+            <summary>
+            Adds a fork to the pipe, which invokes a separate pipe before passing to the next filter.
+            </summary>
+            <typeparam name="T">The context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="pipe">The filter to add</param>
+        </member>
+        <member name="T:GreenPipes.IPipeBuilder`1">
+            <summary>
+            A pipe builder constructs a pipe by adding filter to the end of the chain, after
+            while the builder completes the pipe/filter combination.
+            </summary>
+            <typeparam name="TContext">The pipe context type</typeparam>
+        </member>
+        <member name="M:GreenPipes.IPipeBuilder`1.AddFilter(GreenPipes.IFilter{`0})">
+            <summary>
+            Add a filter to the pipe after any existing filters
+            </summary>
+            <param name="filter">The filter to add</param>
+        </member>
+        <member name="T:GreenPipes.IPipeConfigurator`1">
+            <summary>
+            Configures a pipe with specifications
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.IPipeConfigurator`1.AddPipeSpecification(GreenPipes.IPipeSpecification{`0})">
+            <summary>
+            Adds a pipe specification to the pipe configurator at the end of the chain
+            </summary>
+            <param name="specification">The pipe specification to add</param>
+        </member>
+        <member name="T:GreenPipes.IPipeSpecification`1">
+            <summary>
+            Configures a pipe builder (typically by adding filters), but allows late binding to the
+            pipe builder with pre-validation that the operations will succeed.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.IPipeSpecification`1.Apply(GreenPipes.IPipeBuilder{`0})">
+            <summary>
+            Apply the specification to the builder
+            </summary>
+            <param name="builder">The pipe builder</param>
+        </member>
+        <member name="T:GreenPipes.ISpecification">
+            <summary>
+            A specification, that can be validated as part of a configurator, is used
+            to allow nesting and chaining of specifications while ensuring that all aspects
+            of the configuration are verified correct.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.ISpecification.Validate">
+            <summary>
+            Validate the specification, ensuring that a successful build will occur.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.LatestConfigurationExtensions.UseLatest``1(GreenPipes.IPipeConfigurator{``0},System.Action{GreenPipes.ILatestConfigurator{``0}})">
+            <summary>
+            Adds a latest value filter to the pipe
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.CreatePartitioner``1(GreenPipes.IPipeConfigurator{``0},System.Int32)">
+            <summary>
+            Create a partitioner which can be used across multiple partitioner filters
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitionCount"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},System.Int32,System.Func{``0,System.Guid})">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitionCount">The number of partitions to use when distributing message delivery</param>
+            <param name="keyProvider">Provides the key from the message</param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.Partitioning.IPartitioner,System.Func{``0,System.Guid})">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitioner">An existing partitioner that is shared</param>
+            <param name="keyProvider">Provides the key from the message</param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},System.Int32,System.Func{``0,System.String},System.Text.Encoding)">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitionCount">The number of partitions to use when distributing message delivery</param>
+            <param name="keyProvider">Provides the key from the message</param>
+            <param name="encoding"></param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.Partitioning.IPartitioner,System.Func{``0,System.String},System.Text.Encoding)">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitioner">An existing partitioner that is shared</param>
+            <param name="keyProvider">Provides the key from the message</param>
+            <param name="encoding"></param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},System.Int32,System.Func{``0,System.Int64})">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitionCount">The number of partitions to use when distributing message delivery</param>
+            <param name="keyProvider">Provides the key from the message</param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.Partitioning.IPartitioner,System.Func{``0,System.Int64})">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitioner">An existing partitioner that is shared</param>
+            <param name="keyProvider">Provides the key from the message</param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},System.Int32,System.Func{``0,System.Byte[]})">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitionCount">The number of partitions to use when distributing message delivery</param>
+            <param name="keyProvider">Provides the key from the message</param>
+        </member>
+        <member name="M:GreenPipes.PartitionerConfigurationExtensions.UsePartitioner``1(GreenPipes.IPipeConfigurator{``0},GreenPipes.Partitioning.IPartitioner,System.Func{``0,System.Byte[]})">
+            <summary>
+            Specify a concurrency limit for tasks executing through the filter. No more than the specified
+            number of tasks will be allowed to execute concurrently.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="partitioner">An existing partitioner that is shared</param>
+            <param name="keyProvider">Provides the key from the message</param>
+        </member>
+        <member name="M:GreenPipes.RateLimitConfigurationExtensions.UseRateLimit``1(GreenPipes.IPipeConfigurator{``0},System.Int32,GreenPipes.IPipeRouter)">
+            <summary>
+            Specify a rate limit for message processing, so that only the specified number of messages are allowed
+            per interval.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="rateLimit">The number of messages allowed per interval</param>
+            <param name="router">The control pipe used to adjust the rate limit dynamically</param>
+        </member>
+        <member name="M:GreenPipes.RateLimitConfigurationExtensions.UseRateLimit``1(GreenPipes.IPipeConfigurator{``0},System.Int32,System.TimeSpan,GreenPipes.IPipeRouter)">
+            <summary>
+            Specify a rate limit for message processing, so that only the specified number of messages are allowed
+            per interval.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="configurator"></param>
+            <param name="rateLimit">The number of messages allowed per interval</param>
+            <param name="interval">The reset interval for each set of messages</param>
+            <param name="router">The control pipe used to adjust the rate limit dynamically</param>
+        </member>
+        <member name="M:GreenPipes.RepeatPipeConfigurationExtensions.UseRepeat``1(GreenPipes.IPipeConfigurator{``0},System.Threading.CancellationToken)">
+            <summary>
+            Repeat the subsequent filter pipe until the cancellationToken is cancelled.
+            </summary>
+            <typeparam name="T">The pipe type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="cancellationToken">The cancellationToken to cancel the repetition</param>
+        </member>
+        <member name="M:GreenPipes.RequestConfigurationExtensions.CreateRequestPipe``1(GreenPipes.IPipe{GreenPipes.RequestContext},System.Func{GreenPipes.Configurators.IRequestConfigurator{``0},GreenPipes.IRequestPipe{``0}}[])">
+            <summary>
+            Creates a request pipe using an existing pipe
+            </summary>
+            <typeparam name="TRequest">The request type</typeparam>
+            <param name="requestPipe">The pipe configurator</param>
+            <param name="configureResults"></param>
+        </member>
+        <member name="M:GreenPipes.RequestConfigurationExtensions.CreateRequestPipe``2(GreenPipes.IPipe{GreenPipes.RequestContext},System.Action{GreenPipes.Configurators.IResultConfigurator{``0,``1}})">
+            <summary>
+            Creates a request pipe using an existing pipe
+            </summary>
+            <typeparam name="TRequest">The request type</typeparam>
+            <typeparam name="TResult"></typeparam>
+            <param name="requestPipe">The pipe configurator</param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.RequestConfigurationExtensions.Handle``1(GreenPipes.Configurators.IDispatchConfigurator{GreenPipes.RequestContext},System.Action{GreenPipes.IPipeConfigurator{GreenPipes.RequestContext{``0}}})">
+            <summary>
+            Handle the request on the dispatch pipeline
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <param name="configurator"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.RescueConfigurationExtensions.UseRescue``2(GreenPipes.IPipeConfigurator{``0},GreenPipes.IPipe{``1},GreenPipes.Filters.RescueContextFactory{``0,``1},System.Action{GreenPipes.Configurators.IRescueConfigurator{``0,``1}})">
+            <summary>
+            Rescue exceptions via the alternate pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TRescue"></typeparam>
+            <param name="configurator"></param>
+            <param name="rescuePipe"></param>
+            <param name="rescueContextFactory">Factory method to convert the pipe context to the rescue pipe context</param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.RescueConfigurationExtensions.UseRescue``2(GreenPipes.IPipeConfigurator{``0},GreenPipes.Filters.RescueContextFactory{``0,``1},System.Action{GreenPipes.Configurators.IRescueConfigurator{``0,``1}})">
+            <summary>
+            Adds a filter to the pipe which is of a different type than the native pipe context type
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+            <typeparam name="TRescue">The filter context type</typeparam>
+            <param name="configurator">The pipe configurator</param>
+            <param name="rescueContextFactory"></param>
+            <param name="configure"></param>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.None(GreenPipes.Configurators.IRetryConfigurator)">
+            <summary>
+            Create an immediate retry policy with the specified number of retries, with no
+            delay between attempts.
+            </summary>
+            <param name="configurator"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.Immediate(GreenPipes.Configurators.IRetryConfigurator,System.Int32)">
+            <summary>
+            Create an immediate retry policy with the specified number of retries, with no
+            delay between attempts.
+            </summary>
+            <param name="configurator"></param>
+            <param name="retryLimit">The number of retries to attempt</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.Intervals(GreenPipes.Configurators.IRetryConfigurator,System.TimeSpan[])">
+            <summary>
+            Create an interval retry policy with the specified intervals. The retry count equals
+            the number of intervals provided
+            </summary>
+            <param name="configurator"></param>
+            <param name="intervals">The intervals before each subsequent retry attempt</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.Intervals(GreenPipes.Configurators.IRetryConfigurator,System.Int32[])">
+            <summary>
+            Create an interval retry policy with the specified intervals. The retry count equals
+            the number of intervals provided
+            </summary>
+            <param name="configurator"></param>
+            <param name="intervals">The intervals before each subsequent retry attempt</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.Interval(GreenPipes.Configurators.IRetryConfigurator,System.Int32,System.TimeSpan)">
+            <summary>
+            Create an interval retry policy with the specified number of retries at a fixed interval
+            </summary>
+            <param name="configurator"></param>
+            <param name="retryCount">The number of retry attempts</param>
+            <param name="interval">The interval between each retry attempt</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.Interval(GreenPipes.Configurators.IRetryConfigurator,System.Int32,System.Int32)">
+            <summary>
+            Create an interval retry policy with the specified number of retries at a fixed interval
+            </summary>
+            <param name="configurator"></param>
+            <param name="retryCount">The number of retry attempts</param>
+            <param name="interval">The interval between each retry attempt</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.Exponential(GreenPipes.Configurators.IRetryConfigurator,System.Int32,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+            <summary>
+            Create an exponential retry policy with the specified number of retries at exponential
+            intervals
+            </summary>
+            <param name="configurator"></param>
+            <param name="retryLimit"></param>
+            <param name="minInterval"></param>
+            <param name="maxInterval"></param>
+            <param name="intervalDelta"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryConfigurationExtensions.Incremental(GreenPipes.Configurators.IRetryConfigurator,System.Int32,System.TimeSpan,System.TimeSpan)">
+            <summary>
+            Create an incremental retry policy with the specified number of retry attempts with an incrementing
+            interval between retries
+            </summary>
+            <param name="configurator"></param>
+            <param name="retryLimit">The number of retry attempts</param>
+            <param name="initialInterval">The initial retry interval</param>
+            <param name="intervalIncrement">The interval to add to the retry interval with each subsequent retry</param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Specifications.ConcurrencyLimitPipeSpecification`1">
+            <summary>
+            Configures a concurrency limit on the pipe. If the management endpoint is specified,
+            the consumer and appropriate mediator is created to handle the adjustment of the limit.
+            </summary>
+            <typeparam name="T">The message type being limited</typeparam>
+        </member>
+        <member name="T:GreenPipes.Specifications.FilterPipeSpecification`1">
+            <summary>
+            Adds an arbitrary filter to the pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Specifications.ForkPipeSpecification`1">
+            <summary>
+            Adds a fork to the pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Specifications.InlineFilterPipeSpecification`1">
+            <summary>
+            Adds an arbitrary filter to the pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Specifications.InterceptPipeSpecification`1">
+            <summary>
+            Adds a fork to the pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Specifications.LatestPipeSpecification`1">
+            <summary>
+            Configures the Latest filter
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Specifications.SplitFilterPipeSpecification`2">
+            <summary>
+            Adds an arbitrary filter to the pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TFilter">The filter type</typeparam>
+        </member>
+        <member name="T:GreenPipes.ValidationResult">
+            <summary>
+            Reports information about the configuration before configuring
+            so that corrections can be made without allocating resources, etc.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.ValidationResult.Disposition">
+            <summary>
+            The disposition of the result, any Failure items will prevent
+            the configuration from completing.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.ValidationResult.Message">
+            <summary>
+            The message associated with the result
+            </summary>
+        </member>
+        <member name="P:GreenPipes.ValidationResult.Key">
+            <summary>
+            The key associated with the result (chained if configurators are nested)
+            </summary>
+        </member>
+        <member name="P:GreenPipes.ValidationResult.Value">
+            <summary>
+            The value associated with the result
+            </summary>
+        </member>
+        <member name="T:GreenPipes.ConnectHandle">
+            <summary>
+            A connect handle is returned by a non-asynchronous resource that supports
+            disconnection (such as removing an observer, etc.)
+            </summary>
+        </member>
+        <member name="M:GreenPipes.ConnectHandle.Disconnect">
+            <summary>
+            Explicitly disconnect the handle without waiting for it to be disposed. If the 
+            connection is disconnected, the disconnect will be ignored when the handle is disposed.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.ContextAgentExtensions.Stop(GreenPipes.Agents.IAgent,System.Threading.CancellationToken)">
+            <summary>
+            Stop the agent, using the default StopContext
+            </summary>
+            <param name="agent"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.ContextAgentExtensions.Stop(GreenPipes.Agents.IAgent,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Stop the agent, using the default StopContext
+            </summary>
+            <param name="agent"></param>
+            <param name="reason">The reason for stopping the agent</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Contexts.AsyncPipeContextHandle`1">
+            <summary>
+            An asynchronously pipe context handle, which can be completed.
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+        </member>
+        <member name="M:GreenPipes.Contexts.AsyncPipeContextHandle`1.#ctor">
+            <summary>
+            Creates the handle
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Contexts.BindContextProxy`2">
+            <summary>
+            The BindContext
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TSource"></typeparam>
+        </member>
+        <member name="P:GreenPipes.Contracts.CircuitBreakerOpened.Exception">
+            <summary>
+            The exception that caused the circuit breaker to open
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Contracts.CommandContext.Timestamp">
+            <summary>
+            The timestamp at which the command was sent
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Contracts.CommandContext`1.Command">
+            <summary>
+            The command object
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Contracts.EventContext.Timestamp">
+            <summary>
+            The timestamp at which the command was sent
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Contracts.EventContext`1.Event">
+            <summary>
+            The event object
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Contracts.ProfileData`1">
+            <summary>
+            Profiler data emitted for each occurrence
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:GreenPipes.Contracts.ProfileData`1.Context">
+            <summary>
+            The context for the profiled send
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Contracts.ProfileData">
+            <summary>
+            Profiler data emitted for each occurrence
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Contracts.SetConcurrencyLimit.ConcurrencyLimit">
+            <summary>
+            The new concurrency limit for the filter
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Contracts.SetRateLimit">
+            <summary>
+            Set the rate limit of the RateLimitFilter
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Contracts.SetRateLimit.RateLimit">
+            <summary>
+            The new rate limit for the filter
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Filters.CircuitBreaker.CircuitBreakerEventExtensions.PublishCircuitBreakerOpened(GreenPipes.IPipe{GreenPipes.Contracts.EventContext},System.Exception)">
+            <summary>
+            Set the concurrency limit of the filter
+            </summary>
+            <param name="pipe"></param>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Filters.CircuitBreaker.CircuitBreakerEventExtensions.PublishCircuitBreakerClosed(GreenPipes.IPipe{GreenPipes.Contracts.EventContext})">
+            <summary>
+            Set the concurrency limit of the filter
+            </summary>
+            <param name="pipe"></param>
+            <returns></returns>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.CircuitBreakerSettings.TrackingPeriod">
+            <summary>
+            The window duration to keep track of errors before they fall off the breaker state
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.CircuitBreakerSettings.ResetTimeout">
+            <summary>
+            The time to wait after the breaker has opened before attempting to close it
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.CircuitBreakerSettings.TripThreshold">
+            <summary>
+            A percentage of how many failures versus successful calls before the breaker
+            is opened. Should be 0-100, but seriously like 5-10.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.CircuitBreakerSettings.ActiveThreshold">
+            <summary>
+            The active count of attempts before the circuit breaker can be tripped
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.CircuitBreakerSettings.Router">
+            <summary>
+            The router used to publish events related to the circuit breaker behavior
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Filters.CircuitBreaker.ClosedBehavior">
+            <summary>
+            Represents a closed, normally operating circuit breaker state
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Filters.CircuitBreaker.HalfOpenBehavior">
+            <summary>
+            Executes until the success count is met. If a fault occurs before the success 
+            count is reached, the circuit reopens.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Filters.CircuitBreaker.ICircuitBreaker">
+            <summary>
+            Provides access to a circuit breaker from a state object
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.ICircuitBreaker.TripThreshold">
+            <summary>
+            The number of failures before opening the circuit breaker
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.ICircuitBreaker.ActiveThreshold">
+            <summary>
+            The minimum number of attempts before the breaker can possibly trip
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Filters.CircuitBreaker.ICircuitBreaker.OpenDuration">
+            <summary>
+            Window duration before attempt/success/failure counts are reset
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Filters.CircuitBreaker.ICircuitBreaker.Open(System.Exception,GreenPipes.Filters.CircuitBreaker.ICircuitBreakerBehavior,System.Collections.Generic.IEnumerator{System.TimeSpan})">
+            <summary>
+            Open the circuit breaker, preventing any further access to the resource until
+            the timer expires
+            </summary>
+            <param name="exception">The exception to return when the circuit breaker is accessed</param>
+            <param name="behavior"></param>
+            <param name="timeoutEnumerator">A previously created enumerator for a timeout period</param>
+        </member>
+        <member name="M:GreenPipes.Filters.CircuitBreaker.ICircuitBreaker.ClosePartially(System.Exception,System.Collections.Generic.IEnumerator{System.TimeSpan},GreenPipes.Filters.CircuitBreaker.ICircuitBreakerBehavior)">
+            <summary>
+            Partially open the circuit breaker, allowing the eventual return to a closed
+            state
+            </summary>
+            <param name="exception"></param>
+            <param name="timeoutEnumerator"></param>
+            <param name="behavior"></param>
+        </member>
+        <member name="M:GreenPipes.Filters.CircuitBreaker.ICircuitBreaker.Close(GreenPipes.Filters.CircuitBreaker.ICircuitBreakerBehavior)">
+            <summary>
+            Close the circuit breaker, allowing normal execution
+            </summary>
+            <param name="behavior"></param>
+        </member>
+        <member name="T:GreenPipes.Filters.CircuitBreaker.OpenBehavior">
+            <summary>
+            Represents a circuit that is unavailable, with a timer waiting to partially close
+            the circuit.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Filters.ConcurrencyLimitFilter`1">
+            <summary>
+            Limits the concurrency of the next section of the pipeline based on the concurrency limit
+            specified.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Filters.ConcurrencyLimitFilter`1.WaitForRunningTasks(System.Threading.CancellationToken)">
+            <summary>
+            A hack, but waits for any tasks that have been sent through the filter to complete by
+            waiting and taking all the concurrent slots
+            </summary>
+            <param name="cancellationToken">Of course we can cancel the operation</param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Filters.ContextFilter`1">
+            <summary>
+            A content filter applies a delegate to the message context, and uses the result to either accept the message
+            or discard it.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.DynamicFilter`1">
+            <summary>
+            Dispatches an inbound pipe to one or more output pipes based on a dispatch
+            type.
+            </summary>
+            <typeparam name="TInput"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.ForkFilter`1">
+            <summary>
+            Forks a single pipe into two pipes, which are executed concurrently
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.IInsertFilter`1">
+            <summary>
+            Supports adding filters to a pipe at the reserved location
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Filters.IInsertFilter`1.Add(GreenPipes.IFilter{`0})">
+            <summary>
+            Add the filter to the pipe
+            </summary>
+            <param name="filter"></param>
+        </member>
+        <member name="M:GreenPipes.Filters.IInsertFilter`1.Insert(GreenPipes.IFilter{`0})">
+            <summary>
+            Insert a filter before the other filters already added/inserted
+            </summary>
+            <param name="filter"></param>
+        </member>
+        <member name="T:GreenPipes.Filters.ILatestFilter`1">
+            <summary>
+            Maintains the latest context to be passed through the filter
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:GreenPipes.Filters.ILatestFilter`1.Latest">
+            <summary>
+            The most recently completed context to pass through the filter
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Filters.InsertFilter`1">
+            <summary>
+            A filter that hold a place in the pipe so that future filters can be added at this position.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.InterceptFilter`1">
+            <summary>
+            Intercepts the pipe and executes an adjacent pipe prior to executing the next filter in the main pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.IPipeContextConverter`2">
+            <summary>
+            Converts the input context to the output context
+            </summary>
+            <typeparam name="TInput"></typeparam>
+            <typeparam name="TOutput"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Filters.IPipeContextConverterFactory`1.GetConverter``1">
+            <summary>
+            Given a known input context type, convert it to the correct output 
+            context type.
+            </summary>
+            <typeparam name="TOutput"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Filters.KeyFilter`2">
+            <summary>
+            Handles the registration of requests and connecting them to the consume pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TKey"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.LatestFilter`1">
+            <summary>
+            Retains the last value that was sent through the filter, usable as a source to a join pipe
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Filters.OutputPipeFilter`2">
+            <summary>
+            Converts an inbound context type to a pipe context type post-dispatch
+            </summary>
+            <typeparam name="TInput">The pipe context type</typeparam>
+            <typeparam name="TOutput">The subsequent pipe context type</typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.PipeContextSourceBindFilter`2">
+            <summary>
+            Binds a context to the pipe using a <see cref="T:GreenPipes.IPipeContextSource`1"/>.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TSource"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.RateLimitFilter`1">
+            <summary>
+            Limits the number of calls through the filter to a specified count per time interval
+            specified.
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.RepeatFilter`1">
+            <summary>
+            Uses a retry policy to handle exceptions, retrying the operation in according
+            with the policy
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.RescueFilter`2">
+            <summary>
+            Rescue catches an exception, and if the exception matches the exception filter,
+            passes control to the rescue pipe.
+            </summary>
+            <typeparam name="TContext">The cotext type</typeparam>
+            <typeparam name="TRescueContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.RetryFilter`1">
+            <summary>
+            Uses a retry policy to handle exceptions, retrying the operation in according
+            with the policy
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Filters.TeeFilter`1">
+            <summary>
+            Connects multiple output pipes to a single input pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Filters.TeeFilter`2">
+            <summary>
+            Connects multiple output pipes to a single input pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+            <typeparam name="TKey">The key type</typeparam>
+        </member>
+        <member name="T:GreenPipes.IAsyncPipeContextHandle`1">
+            <summary>
+            Supports the asynchronous notification of a PipeContext becoming available (this is a future of a future, basically)
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+        </member>
+        <member name="M:GreenPipes.IAsyncPipeContextHandle`1.Created(`0)">
+            <summary>
+            Called when the PipeContext has been created and is available for use.
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IAsyncPipeContextHandle`1.CreateCanceled">
+            <summary>
+            Called when the PipeContext creation was canceled
+            </summary>
+        </member>
+        <member name="M:GreenPipes.IAsyncPipeContextHandle`1.CreateFaulted(System.Exception)">
+            <summary>
+            Called when the PipeContext creation failed
+            </summary>
+            <param name="exception"></param>
+        </member>
+        <member name="M:GreenPipes.IAsyncPipeContextHandle`1.Faulted(System.Exception)">
+            <summary>
+            Called when the successfully created PipeContext becomes faulted, indicating that it
+            should no longer be used.
+            </summary>
+            <param name="exception">The exception which occurred</param>
+        </member>
+        <member name="T:GreenPipes.IDynamicRouter`1">
+            <summary>
+            A dynamic router is a pipe on which additional pipes can be connected and context is 
+            routed through the pipe based upon the output requirements of the connected pipes. It is built
+            around the dynamic filter, which is the central point of the router.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.IDynamicRouter`2">
+            <summary>
+            A dynamic router is a pipe on which additional pipes can be connected and context is 
+            routed through the pipe based upon the output requirements of the connected pipes. It is built
+            around the dynamic filter, which is the central point of the router.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.IExceptionFilter">
+            <summary>
+            Filter exceptions for policies that act based on an exception
+            </summary>
+        </member>
+        <member name="M:GreenPipes.IExceptionFilter.Match(System.Exception)">
+            <summary>
+            Returns true if the exception matches the filter and the policy should
+            be applied to the exception.
+            </summary>
+            <param name="exception">The exception</param>
+            <returns>True if the exception matches the filter, otherwise false.</returns>
+        </member>
+        <member name="T:GreenPipes.IFilter`1">
+            <summary>
+            A filter is a functional node in a pipeline, connected by pipes to
+            other filters.
+            </summary>
+            <typeparam name="TContext">The pipe context type</typeparam>
+        </member>
+        <member name="M:GreenPipes.IFilter`1.Send(`0,GreenPipes.IPipe{`0})">
+            <summary>
+            Sends a context to a filter, such that it can be processed and then passed to the
+            specified output pipe for further processing.
+            </summary>
+            <param name="context">The pipe context type</param>
+            <param name="next">The next pipe in the pipeline</param>
+            <returns>An awaitable Task</returns>
+        </member>
+        <member name="M:GreenPipes.IFilterObserver.PreSend``1(``0)">
+            <summary>
+            Called before a message is dispatched to any consumers
+            </summary>
+            <param name="context">The consume context</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IFilterObserver.PostSend``1(``0)">
+            <summary>
+            Called after the message has been dispatched to all consumers - note that in the case of an exception
+            this method is not called, and the DispatchFaulted method is called instead
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IFilterObserver.SendFault``1(``0,System.Exception)">
+            <summary>
+            Called after the message has been dispatched to all consumers when one or more exceptions have occurred
+            </summary>
+            <param name="context"></param>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IFilterObserver`1.PreSend(`0)">
+            <summary>
+            Called before a message is dispatched to any consumers
+            </summary>
+            <param name="context">The consume context</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IFilterObserver`1.PostSend(`0)">
+            <summary>
+            Called after the message has been dispatched to all consumers - note that in the case of an exception
+            this method is not called, and the DispatchFaulted method is called instead
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IFilterObserver`1.SendFault(`0,System.Exception)">
+            <summary>
+            Called after the message has been dispatched to all consumers when one or more exceptions have occurred
+            </summary>
+            <param name="context"></param>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.ExpressionExtensions.GetMemberName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+            Gets the name of the member specified
+            </summary>
+            <typeparam name="T">The type referenced</typeparam>
+            <typeparam name="TMember">The type of the member referenced</typeparam>
+            <param name="expression">The expression referencing the member</param>
+            <returns>The name of the member referenced by the expression</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.ExpressionExtensions.GetMemberName``1(System.Linq.Expressions.Expression{System.Action{``0}})">
+            <summary>
+            Gets the name of the member specified
+            </summary>
+            <typeparam name="T">The type referenced</typeparam>
+            <param name="expression">The expression referencing the member</param>
+            <returns>The name of the member referenced by the expression</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TaskExtensions.UntilCompletedOrCanceled``1(System.Threading.Tasks.Task{``0},System.Threading.CancellationToken)">
+            <summary>
+            Returns a Task that is either the completed task or an OperationCancelledException waiting for the Task
+            </summary>
+            <param name="task"></param>
+            <param name="cancellationToken"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+            <exception cref="T:System.OperationCanceledException"></exception>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TaskExtensions.UntilCompletedOrCanceled(System.Threading.Tasks.Task,System.Threading.CancellationToken)">
+            <summary>
+            Returns a Task that is either the completed task or an OperationCancelledException waiting for the Task
+            </summary>
+            <param name="task"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+            <exception cref="T:System.OperationCanceledException"></exception>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TaskExtensions.UntilCompletedOrTimeout(System.Threading.Tasks.Task,System.Int32)">
+            <summary>
+            Returns a Task that is either the completed task or a TimeoutException
+            </summary>
+            <param name="task"></param>
+            <param name="milliseconds"></param>
+            <returns></returns>
+            <exception cref="T:System.TimeoutException"></exception>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TaskExtensions.UntilCompletedOrTimeout(System.Threading.Tasks.Task,System.TimeSpan)">
+            <summary>
+            Returns a Task that is either the completed task or a TimeoutException
+            </summary>
+            <param name="task"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+            <exception cref="T:System.TimeoutException"></exception>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsConcrete(System.Type)">
+            <summary>
+            Determines if a type is neither abstract nor an interface and can be constructed.
+            </summary>
+            <param name="type">The type to check</param>
+            <returns>True if the type can be constructed, otherwise false.</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsConcreteAndAssignableTo(System.Type,System.Type)">
+            <summary>
+            Determines if a type can be constructed, and if it can, additionally determines
+            if the type can be assigned to the specified type.
+            </summary>
+            <param name="type">The type to evaluate</param>
+            <param name="assignableType">The type to which the subject type should be checked against</param>
+            <returns>True if the type is concrete and can be assigned to the assignableType, otherwise false.</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsConcreteAndAssignableTo``1(System.Type)">
+            <summary>
+            Determines if a type can be constructed, and if it can, additionally determines
+            if the type can be assigned to the specified type.
+            </summary>
+            <param name="type">The type to evaluate</param>
+            <typeparam name="T">The type to which the subject type should be checked against</typeparam>
+            <returns>True if the type is concrete and can be assigned to the assignableType, otherwise false.</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsNullable(System.Type)">
+            <summary>
+            Determines if the type is a nullable type
+            </summary>
+            <param name="type">The type</param>
+            <returns>True if the type can be null</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsNullable(System.Type,System.Type@)">
+            <summary>
+            Determines if the type is a nullable type
+            </summary>
+            <param name="type">The type</param>
+            <param name="underlyingType">The underlying type of the nullable</param>
+            <returns>True if the type can be null</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsOpenGeneric(System.Type)">
+            <summary>
+            Determines if the type is an open generic with at least one unspecified generic argument
+            </summary>
+            <param name="type">The type</param>
+            <returns>True if the type is an open generic</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.CanBeNull(System.Type)">
+            <summary>
+            Determines if a type can be null
+            </summary>
+            <param name="type">The type</param>
+            <returns>True if the type can be null</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.GetTypeName(System.Type)">
+            <summary>
+            Returns an easy-to-read type name from the specified Type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.GetAttribute``1(System.Reflection.ICustomAttributeProvider)">
+            <summary>
+            Returns the first attribute of the specified type for the object specified
+            </summary>
+            <typeparam name="T">The type of attribute</typeparam>
+            <param name="provider">An attribute provider, which can be a MethodInfo, PropertyInfo, Type, etc.</param>
+            <returns>The attribute instance if found, or null</returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.HasAttribute``1(System.Reflection.ICustomAttributeProvider)">
+            <summary>
+            Determines if the target has the specified attribute
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="provider"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsAnonymousType(System.Type)">
+            <summary>
+            Returns true if the type is an anonymous type
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Internals.Extensions.TypeExtensions.IsInNamespace(System.Type,System.String)">
+            <summary>
+            Returns true if the type is contained within the namespace
+            </summary>
+            <param name="type"></param>
+            <param name="nameSpace"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Internals.Mapping.DictionaryConverterCache">
+            <summary>
+            Caches the type converter instances
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Internals.Mapping.DynamicObjectConverterCache">
+            <summary>
+            Caches dictionary to object converters for the types requested, including the implementation
+            builder for interfaces that are dynamically proxied
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.MachineName">
+            <summary>
+            The machine name (or role instance name) of the local machine
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.ProcessName">
+            <summary>
+            The process name hosting the routing slip activity
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.ProcessId">
+            <summary>
+            The processId of the hosting process
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.Assembly">
+            <summary>
+            The assembly where the exception occurred
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.AssemblyVersion">
+            <summary>
+            The assembly version of the assembly where the exception occurred
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.FrameworkVersion">
+            <summary>
+            The .NET framework version
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.GreenPipesVersion">
+            <summary>
+            The version of MassTransit used by the process
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeHostInfo.OperatingSystemVersion">
+            <summary>
+            The operating system version hosting the application
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Introspection.ProbeResult">
+            <summary>
+            The result of a probe
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeResult.ResultId">
+            <summary>
+            Unique identifies this result
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeResult.ProbeId">
+            <summary>
+            Identifies the initiator of the probe
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeResult.StartTimestamp">
+            <summary>
+            When the probe was initiated through the system
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeResult.Duration">
+            <summary>
+            How long the probe took to execute
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeResult.Host">
+            <summary>
+            The host from which the result was generated
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Introspection.ProbeResult.Results">
+            <summary>
+            The results returned by the probe
+            </summary>
+        </member>
+        <member name="M:GreenPipes.IObserverConnector.ConnectObserver``1(GreenPipes.IFilterObserver{``0})">
+            <summary>
+            Connect an observer to the filter and/or pipe
+            </summary>
+            <param name="observer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IObserverConnector.ConnectObserver(GreenPipes.IFilterObserver)">
+            <summary>
+            Connect an observer to the filter and/or pipe
+            </summary>
+            <param name="observer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IObserverConnector`1.ConnectObserver(GreenPipes.IFilterObserver{`0})">
+            <summary>
+            Connect an observer to the filter and/or pipe
+            </summary>
+            <param name="observer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IPipe`1.Send(`0)">
+            <summary>
+            The base primitive, Send delivers the pipe context of T to the pipe.
+            </summary>
+            <param name="context">The pipe context of type T</param>
+            <returns>A task which is completed once the pipe has processed the context</returns>
+        </member>
+        <member name="T:GreenPipes.IPipeConnector">
+            <summary>
+            The intent is to connect a pipe of a specific type to a pipe of a different type,
+            for which there is a provider that knows how to convert the input type to the output type.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.IPipeConnector.ConnectPipe``1(GreenPipes.IPipe{``0})">
+            <summary>
+            Connect a pipe of the specified type to the DispatchFilter
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="pipe"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.IPipeConnector`1">
+            <summary>
+            Connect a pipe of the same type as the target pipe
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.IKeyPipeConnector`1">
+            <summary>
+            Supports connecting a pipe using a key, which is a method of dispatching to different pipes
+            based on context.
+            </summary>
+            <typeparam name="TKey"></typeparam>
+        </member>
+        <member name="M:GreenPipes.IKeyPipeConnector`1.ConnectPipe``1(`0,GreenPipes.IPipe{``0})">
+            <summary>
+            Connect a pipe to the filter using the specified key
+            </summary>
+            <param name="key"></param>
+            <param name="pipe"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.IPipeContextSource`1">
+            <summary>
+            A source provides the context which is sent to the specified pipe.
+            </summary>
+            <typeparam name="TContext">The pipe context type</typeparam>
+        </member>
+        <member name="M:GreenPipes.IPipeContextSource`1.Send(GreenPipes.IPipe{`0},System.Threading.CancellationToken)">
+            <summary>
+            Send a context from the source through the specified pipe
+            </summary>
+            <param name="pipe">The destination pipe</param>
+            <param name="cancellationToken">The cancellationToken, which should be included in the context</param>
+        </member>
+        <member name="T:GreenPipes.IPipeContextSource`2">
+            <summary>
+            A source which provides the context using the input context to select the appropriate source.
+            </summary>
+            <typeparam name="TContext">The output context type</typeparam>
+            <typeparam name="TInput">The input context type</typeparam>
+        </member>
+        <member name="M:GreenPipes.IPipeContextSource`2.Send(`1,GreenPipes.IPipe{`0})">
+            <summary>
+            Send a context from the source through the specified pipe, using the input context to select the proper source.
+            </summary>
+            <param name="context"></param>
+            <param name="pipe"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.IProbeSite">
+            <summary>
+            To support the introspection of code, this interface is used to gain
+            information about the bus.
+            </summary>
+        </member>
+        <member name="M:GreenPipes.IRequestPipe`1.Send(`0)">
+            <summary>
+            Send a request to the pipe
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.IRequestPipe`2">
+            <summary>
+            A request pipe which allows awaiting a specific response
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="M:GreenPipes.IRequestPipe`2.Send(`0)">
+            <summary>
+            Send a request to the pipe
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IRetryObserver.PostCreate``1(GreenPipes.RetryPolicyContext{``0})">
+            <summary>
+            Called before a message is dispatched to any consumers
+            </summary>
+            <param name="context">The consume context</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IRetryObserver.PostFault``1(GreenPipes.RetryContext{``0})">
+            <summary>
+            Called after a fault has occurred, but will be retried
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IRetryObserver.PreRetry``1(GreenPipes.RetryContext{``0})">
+            <summary>
+            Called immediately before an exception will be retried
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IRetryObserver.RetryFault``1(GreenPipes.RetryContext{``0})">
+            <summary>
+            Called when the retry filter is no longer going to retry, and the context is faulted.
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IRetryObserverConnector.ConnectRetryObserver(GreenPipes.IRetryObserver)">
+            <summary>
+            Connect an observer to the filter and/or pipe
+            </summary>
+            <param name="observer"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.IRetryPolicy">
+            <summary>
+            A retry policy determines how exceptions are handled, and whether or not the
+            remaining filters should be retried
+            </summary>
+        </member>
+        <member name="M:GreenPipes.IRetryPolicy.CreatePolicyContext``1(``0)">
+            <summary>
+            Creates a retry policy context for the retry, which initiates the exception tracking
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.IRetryPolicy.IsHandled(System.Exception)">
+            <summary>
+            If the retry policy handles the exception, should return true
+            </summary>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Partitioning.IHashGenerator">
+            <summary>
+            Generates a hash of the input data for partitioning purposes
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Partitioning.IPartitioner`1.Send(`0,GreenPipes.IPipe{`0})">
+            <summary>
+            Sends the context through the partitioner
+            </summary>
+            <param name="context">The context</param>
+            <param name="next">The next pipe</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Partitioning.Partition.WaitForRunningTasks(System.Threading.CancellationToken)">
+            <summary>
+            A hack, but waits for any tasks that have been sent through the filter to complete by
+            waiting and taking all the concurrent slots
+            </summary>
+            <param name="cancellationToken">Of course we can cancel the operation</param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Payloads.IPayloadCache">
+            <summary>
+            The context properties
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Payloads.IPayloadCache.GetOrAddPayload``1(GreenPipes.PayloadFactory{``0})">
+            <summary>
+            Return an existing or create a new property
+            </summary>
+            <param name="payloadFactory"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Payloads.IPayloadCache.AddOrUpdatePayload``1(GreenPipes.PayloadFactory{``0},GreenPipes.UpdatePayloadFactory{``0})">
+            <summary>
+            Either adds a new payload, or updates an existing payload
+            </summary>
+            <param name="addFactory">The payload factory called if the payload is not present</param>
+            <param name="updateFactory">The payload factory called if the payload already exists</param>
+            <typeparam name="T">The payload type</typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Payloads.IPayloadCache.CreateScope">
+            <summary>
+            Returns a scope from the current cache state
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Payloads.IPayloadCollection">
+            <summary>
+            Supports the reading and writing of the property cache
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Payloads.IPayloadValue">
+            <summary>
+            A property is a value stored in the context, which can be accessed by name or
+            by type. This is the actual property storage element
+            </summary>
+        </member>
+        <member name="P:GreenPipes.Payloads.IPayloadValue.ValueType">
+            <summary>
+            The property value type
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Payloads.IPayloadValue.Implements(System.Type)">
+            <summary>
+            Checks if the payload value implements the <paramref name="type"/>
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Payloads.IPayloadValue.TryGetValue``1(``0@)">
+            <summary>
+            Returns the value if it can be assigned to the specified type
+            </summary>
+            <typeparam name="T">The requested type</typeparam>
+            <param name="value">The output value</param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Payloads.IPayloadValue`1">
+            <summary>
+            A property value with the generic type applied
+            </summary>
+            <typeparam name="TPayload"></typeparam>
+        </member>
+        <member name="P:GreenPipes.Payloads.IPayloadValue`1.Value">
+            <summary>
+            The value of the property, already assigned to T
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Payloads.IReadOnlyPayloadCollection">
+            <summary>
+            Supports the reading of the property cache
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Payloads.IReadOnlyPayloadCollection.HasPayloadType(System.Type)">
+            <summary>
+            Checks if the property exists in the cache
+            </summary>
+            <param name="payloadType">The property type</param>
+            <returns>True if the property exists in the cache, otherwise false</returns>
+        </member>
+        <member name="M:GreenPipes.Payloads.IReadOnlyPayloadCollection.TryGetPayload``1(``0@)">
+            <summary>
+            Returns the value of the property if it exists in the cache
+            </summary>
+            <typeparam name="TPayload">The property type</typeparam>
+            <param name="payload">The property value</param>
+            <returns>True if the value was returned, otherwise false</returns>
+        </member>
+        <member name="T:GreenPipes.Payloads.PayloadCacheProxy">
+            <summary>
+            A payload cache that delegates all calls to the <see cref="T:GreenPipes.PipeContext"/> provided.
+            Does not create a scope, all changes are applied directly to the provided context.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Payloads.PayloadValue`1">
+            <summary>
+            Stores a single scope data value
+            </summary>
+            <typeparam name="TPayload"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Pipe.New``1(System.Action{GreenPipes.IPipeConfigurator{``0}})">
+            <summary>
+            Create a new pipe using the pipe configurator to add filters, etc.
+            </summary>
+            <typeparam name="T">The pipe context type</typeparam>
+            <param name="callback">The configuration callback</param>
+            <returns>An initialized pipe ready for use</returns>
+        </member>
+        <member name="M:GreenPipes.Pipe.Execute``1(System.Action{``0})">
+            <summary>
+            Constructs a simple pipe that executes the specified action
+            </summary>
+            <typeparam name="T">The pipe context type</typeparam>
+            <param name="action">The method to execute</param>
+            <returns>The constructed pipe</returns>
+        </member>
+        <member name="M:GreenPipes.Pipe.ExecuteAsync``1(System.Func{``0,System.Threading.Tasks.Task})">
+            <summary>
+            Constructs a simple pipe that executes the specified action
+            </summary>
+            <typeparam name="T">The pipe context type</typeparam>
+            <param name="action">The method to execute</param>
+            <returns>The constructed pipe</returns>
+        </member>
+        <member name="M:GreenPipes.Pipe.Empty``1">
+            <summary>
+            Returns an empty pipe of the specified context type
+            </summary>
+            <typeparam name="T">The context type</typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.Pipe.ToPipe``1(GreenPipes.IFilter{``0})">
+            <summary>
+            Returns a pipe for the filter
+            </summary>
+            <param name="filter"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:GreenPipes.Pipe.ToPipe``1(GreenPipes.IFilter{``0}[])">
+            <summary>
+            Returns a pipe containing the filters in the array
+            </summary>
+            <param name="filters"></param>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="T:GreenPipes.PipeContext">
+            <summary>
+            The base context for all pipe types, includes the payload sidebanding of data
+            with the payload, as well as the cancellationToken to avoid passing it everywhere
+            </summary>
+        </member>
+        <member name="P:GreenPipes.PipeContext.CancellationToken">
+            <summary>
+            Used to cancel the execution of the context
+            </summary>
+        </member>
+        <member name="M:GreenPipes.PipeContext.HasPayloadType(System.Type)">
+            <summary>
+            Checks if a payload is present in the context
+            </summary>
+            <param name="payloadType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.PipeContext.TryGetPayload``1(``0@)">
+            <summary>
+            Retrieves a payload from the pipe context
+            </summary>
+            <typeparam name="T">The payload type</typeparam>
+            <param name="payload">The payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.PipeContext.GetOrAddPayload``1(GreenPipes.PayloadFactory{``0})">
+            <summary>
+            Returns an existing payload or creates the payload using the factory method provided
+            </summary>
+            <typeparam name="T">The payload type</typeparam>
+            <param name="payloadFactory">The payload factory is the payload is not present</param>
+            <returns>The payload</returns>
+        </member>
+        <member name="M:GreenPipes.PipeContext.AddOrUpdatePayload``1(GreenPipes.PayloadFactory{``0},GreenPipes.UpdatePayloadFactory{``0})">
+            <summary>
+            Either adds a new payload, or updates an existing payload
+            </summary>
+            <param name="addFactory">The payload factory called if the payload is not present</param>
+            <param name="updateFactory">The payload factory called if the payload already exists</param>
+            <typeparam name="T">The payload type</typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.PipeContextHandle`1">
+            <summary>
+            A handle to a PipeContext instance (of type <typeparamref name="TContext"/>), which can be disposed
+            once it is no longer needed (or can no longer be used).
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="P:GreenPipes.PipeContextHandle`1.IsDisposed">
+            <summary>
+            True if the context has been disposed (and can no longer be used)
+            </summary>
+        </member>
+        <member name="P:GreenPipes.PipeContextHandle`1.Context">
+            <summary>
+            The <typeparamref name="TContext"/> context
+            </summary>
+        </member>
+        <member name="M:GreenPipes.PipeExtensions.GetPayload``1(GreenPipes.PipeContext)">
+            <summary>
+            Get a payload from the pipe context
+            </summary>
+            <typeparam name="TPayload">The payload type</typeparam>
+            <param name="context">The pipe context</param>
+            <returns>The payload, or throws a PayloadNotFoundException if the payload is not present</returns>
+        </member>
+        <member name="M:GreenPipes.PipeExtensions.OneTimeSetup``1(GreenPipes.PipeContext,System.Func{``0,System.Threading.Tasks.Task},GreenPipes.PayloadFactory{``0})">
+            <summary>
+            Using a filter-supplied context type, block so that the one time code is only executed once regardless of how many
+            threads are pushing through the pipe at the same time.
+            </summary>
+            <typeparam name="T">The payload type, should be an interface</typeparam>
+            <param name="context">The pipe context</param>
+            <param name="setupMethod">The setup method, called once regardless of the thread count</param>
+            <param name="payloadFactory">The factory method for the payload context, optional if an interface is specified</param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.Pipes.DynamicRouter`1">
+            <summary>
+            A dynamic router is a pipe on which additional pipes can be connected and context is 
+            routed through the pipe based upon the output requirements of the connected pipes. It is built
+            around the dynamic filter, which is the central point of the router.
+            </summary>
+        </member>
+        <member name="T:GreenPipes.Pipes.InsertPipe`1">
+            <summary>
+            A stack-based pipe used to insert filters into the pipeline without breaking up the order of the pipe
+            delivery
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:GreenPipes.Pipes.InsertPipe`1.#ctor(GreenPipes.IFilter{`0},GreenPipes.IPipe{`0})">
+            <summary>
+            Create an insert pipe, struct, on the stack, so it can be quickly used and cleaned up
+            </summary>
+            <param name="filter"></param>
+            <param name="next"></param>
+        </member>
+        <member name="T:GreenPipes.Pipes.LastPipe`1">
+            <summary>
+            The last pipe in a pipeline is always an end pipe that does nothing and returns synchronously
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Pipes.MultipleResultRequestPipe`1">
+            <summary>
+            A pipe for a single request with multiple result types
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+        </member>
+        <member name="T:GreenPipes.Pipes.SingleResultRequestPipe`2">
+            <summary>
+            A pipe for a single request with a single result type. Simplifies everything.
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="T:GreenPipes.ProbeContext">
+            <summary>
+            Passed to a probe site to inspect it for interesting things
+            </summary>
+        </member>
+        <member name="P:GreenPipes.ProbeContext.CancellationToken">
+            <summary>
+            If for some reason the probe is cancelled, allowing an early withdrawl
+            </summary>
+        </member>
+        <member name="M:GreenPipes.ProbeContext.Add(System.String,System.String)">
+            <summary>
+            Add a key/value pair to the current probe context
+            </summary>
+            <param name="key">The key name</param>
+            <param name="value">The value</param>
+        </member>
+        <member name="M:GreenPipes.ProbeContext.Add(System.String,System.Object)">
+            <summary>
+            Add a key/value pair to the current probe context
+            </summary>
+            <param name="key">The key name</param>
+            <param name="value">The value</param>
+        </member>
+        <member name="M:GreenPipes.ProbeContext.Set(System.Object)">
+            <summary>
+            Add the properties of the object as key/value pairs to the current context
+            </summary>
+            <param name="values">The object (typically anonymous with new{}</param>
+        </member>
+        <member name="M:GreenPipes.ProbeContext.Set(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Object}})">
+            <summary>
+            Add the values from the enumeration as key/value pairs
+            </summary>
+            <param name="values"></param>
+        </member>
+        <member name="P:GreenPipes.RequestContext.IsCompleted">
+            <summary>
+            True if the request has been completed and a result specified
+            </summary>
+        </member>
+        <member name="M:GreenPipes.RequestContext.TrySetResult``1(``0)">
+            <summary>
+            Attempt to specify a result for the request
+            </summary>
+            <typeparam name="T">The result type</typeparam>
+            <param name="result">The result</param>
+            <returns>True if the response was accepted, false if a response was already accepted</returns>
+        </member>
+        <member name="M:GreenPipes.RequestContext.TrySetException(System.Exception)">
+            <summary>
+            Specify that the request faulted and will have an exception
+            </summary>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RequestContext.TrySetCanceled">
+            <summary>
+            Specify that the request was cancelled
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.RequestContext`1">
+            <summary>
+            The context of a request sent to a pipe
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+        </member>
+        <member name="P:GreenPipes.RequestContext`1.Request">
+            <summary>
+            The request type that was sent to the pipe
+            </summary>
+        </member>
+        <member name="T:GreenPipes.ResultContext">
+            <summary>
+            The response context
+            </summary>
+        </member>
+        <member name="M:GreenPipes.ResultContext.GetResult``1">
+            <summary>
+            Returns the result type specified, if it is available
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.ResultContext.TryGetResult``1(``0@)">
+            <summary>
+            Returns the result type specified if matched, otherwise returns false
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="result"></param>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.ResultContext`2">
+            <summary>
+            A response context combined a request with the applied response
+            </summary>
+            <typeparam name="TRequest"></typeparam>
+            <typeparam name="TResult"></typeparam>
+        </member>
+        <member name="T:GreenPipes.RetryContext">
+            <summary>
+            The base context of a retry, used by the <see cref="T:GreenPipes.Filters.RetryFilter`1"/>
+            </summary>
+        </member>
+        <member name="P:GreenPipes.RetryContext.CancellationToken">
+            <summary>
+            Canceled when the retry should be canceled (not the same as if the underlying context
+            is canceled, which is different). This can be used to cancel retry, but not the operation
+            itself.
+            </summary>
+        </member>
+        <member name="P:GreenPipes.RetryContext.Exception">
+            <summary>
+            The exception that originally caused the retry to be initiated
+            </summary>
+        </member>
+        <member name="P:GreenPipes.RetryContext.RetryAttempt">
+            <summary>
+            The retry attempt currently being attempted (should be 1 > than RetryCount)
+            </summary>
+        </member>
+        <member name="P:GreenPipes.RetryContext.RetryCount">
+            <summary>
+            The number of retries which were attempted beyond the initial attempt
+            </summary>
+        </member>
+        <member name="P:GreenPipes.RetryContext.Delay">
+            <summary>
+            The time to wait before the next retry attempt
+            </summary>
+        </member>
+        <member name="P:GreenPipes.RetryContext.ContextType">
+            <summary>
+            The context type of the retry context
+            </summary>
+        </member>
+        <member name="M:GreenPipes.RetryContext.RetryFaulted(System.Exception)">
+            <summary>
+            Called after the retry attempt has failed
+            </summary>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryContext.PreRetry">
+            <summary>
+            Called before the retry attempt is performed
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:GreenPipes.RetryContext`1">
+            <summary>
+            The retry context, with the specified context type
+            </summary>
+            <typeparam name="TContext">The context type</typeparam>
+        </member>
+        <member name="P:GreenPipes.RetryContext`1.Context">
+            <summary>
+            The context being managed by the retry policy
+            </summary>
+        </member>
+        <member name="M:GreenPipes.RetryContext`1.CanRetry(System.Exception,GreenPipes.RetryContext{`0}@)">
+            <summary>
+            Determines if the exception can be retried
+            </summary>
+            <param name="exception">The exception that occurred</param>
+            <param name="retryContext">The retry context for the retry</param>
+            <returns>True if the task should be retried</returns>
+        </member>
+        <member name="T:GreenPipes.RetryPolicyContext`1">
+            <summary>
+            An initial context acquired to begin a retry filter
+            </summary>
+            <typeparam name="TContext"></typeparam>
+        </member>
+        <member name="P:GreenPipes.RetryPolicyContext`1.Context">
+            <summary>
+            The context being managed by the retry policy
+            </summary>
+        </member>
+        <member name="M:GreenPipes.RetryPolicyContext`1.CanRetry(System.Exception,GreenPipes.RetryContext{`0}@)">
+            <summary>
+            Determines if the exception can be retried
+            </summary>
+            <param name="exception">The exception that occurred</param>
+            <param name="retryContext">The retry context for the retry</param>
+            <returns>True if the task should be retried</returns>
+        </member>
+        <member name="M:GreenPipes.RetryPolicyContext`1.RetryFaulted(System.Exception)">
+            <summary>
+            Called after the retry attempt has failed
+            </summary>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GreenPipes.RetryPolicyContext`1.Cancel">
+            <summary>
+            Cancel any pending or subsequent retries
+            </summary>
+        </member>
+        <member name="M:GreenPipes.SupervisorExtensions.AddContext``1(GreenPipes.Agents.ISupervisor,``0)">
+            <summary>
+            Adds a context to the supervisor as an agent, which can be stopped by the supervisor.
+            </summary>
+            <param name="supervisor">The supervisor</param>
+            <param name="context">The context</param>
+            <typeparam name="T">The context type</typeparam>
+            <returns>A context handle</returns>
+        </member>
+        <member name="M:GreenPipes.SupervisorExtensions.AddContext``1(GreenPipes.Agents.ISupervisor,System.Threading.Tasks.Task{``0})">
+            <summary>
+            Adds a context to the supervisor as an agent, which can be stopped by the supervisor.
+            </summary>
+            <param name="supervisor">The supervisor</param>
+            <param name="context">The context</param>
+            <typeparam name="T">The context type</typeparam>
+            <returns>A context handle</returns>
+        </member>
+        <member name="M:GreenPipes.SupervisorExtensions.AddActiveContext``1(GreenPipes.Agents.ISupervisor,GreenPipes.PipeContextHandle{``0},System.Threading.Tasks.Task{``0})">
+            <summary>
+            Adds a context to the supervisor as an agent, which can be stopped by the supervisor.
+            </summary>
+            <param name="supervisor">The supervisor</param>
+            <param name="contextHandle">The actual context handle</param>
+            <param name="context">The active context</param>
+            <typeparam name="T">The context type</typeparam>
+            <returns>A context handle</returns>
+        </member>
+        <member name="M:GreenPipes.SupervisorExtensions.AddActiveContext``1(GreenPipes.Agents.ISupervisor,GreenPipes.PipeContextHandle{``0},``0)">
+            <summary>
+            Adds a context to the supervisor as an agent, which can be stopped by the supervisor.
+            </summary>
+            <param name="supervisor">The supervisor</param>
+            <param name="contextHandle">The actual context handle</param>
+            <param name="context">The active context</param>
+            <typeparam name="T">The context type</typeparam>
+            <returns>A context handle</returns>
+        </member>
+        <member name="M:GreenPipes.SupervisorExtensions.AddAsyncContext``1(GreenPipes.Agents.ISupervisor)">
+            <summary>
+            Adds a context to the supervisor as an agent, which can be stopped by the supervisor.
+            </summary>
+            <param name="supervisor">The supervisor</param>
+            <typeparam name="T">The context type</typeparam>
+            <returns>A context handle</returns>
+        </member>
+        <member name="T:GreenPipes.UpdatePayloadFactory`1">
+            <summary>
+            Update an existing payload, using the existing payload
+            </summary>
+            <param name="existing">The existing payload</param>
+            <typeparam name="TPayload">The payload type</typeparam>
+        </member>
+        <member name="T:GreenPipes.Util.Connectable`1">
+            <summary>
+            Maintains a collection of connections of the generic type
+            </summary>
+            <typeparam name="T">The connectable type</typeparam>
+        </member>
+        <member name="P:GreenPipes.Util.Connectable`1.Count">
+            <summary>
+            The number of connections
+            </summary>
+        </member>
+        <member name="M:GreenPipes.Util.Connectable`1.Connect(`0)">
+            <summary>
+            Connect a connectable type
+            </summary>
+            <param name="connection">The connection to add</param>
+            <returns>The connection handle</returns>
+        </member>
+        <member name="M:GreenPipes.Util.Connectable`1.ForEachAsync(System.Func{`0,System.Threading.Tasks.Task})">
+            <summary>
+            Enumerate the connections invoking the callback for each connection
+            </summary>
+            <param name="callback">The callback</param>
+            <returns>An awaitable Task for the operation</returns>
+        </member>
+        <member name="T:GreenPipes.Util.EmptyConnectHandle">
+            <summary>
+            A do-nothing connect handle, simply to satisfy
+            </summary>
+        </member>
+    </members>
+</doc>

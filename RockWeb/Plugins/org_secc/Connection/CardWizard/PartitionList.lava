@@ -1,0 +1,15 @@
+			{%- assign spotsLeft = partition.Limit | Minus: partition.Filled -%}
+			{% if partition.Limit != 0 %}
+				<div class="col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
+					<div class="clearfix">
+						<div class="check">
+							<label>
+								<input type="checkbox" name="{{partition.ParameterName}}" value="{{partition.Entity.Guid}}" {% if partition.Limit > 0 and spotsLeft <= 0 %}disabled="true"{% endif %} />
+								<div class="icon-box"><i class="fa fa-check"></i></div>
+								<h3{% if  partition.Limit > 0 and spotsLeft <= 0 %} style="text-decoration: line-through"{% endif %}><strong><i>{{partition.Entity.Name}}{{partition.Entity.Value}}</i></strong><span class="hidden-xs hidden-sm spots-left"> - <small>{% if spotsLeft <= 0 %}Full{% elseif partition.Limit == null %}Unlimited{% else %}{{spotsLeft}} {{ 'Spot' | PluralizeForQuantity:spotsLeft }} Remaining{% endif %}</small></span></h3>
+							</label>
+							<div class="hidden-md hidden-lg" style="margin: -20px 0px 0px 75px">{% if spotsLeft <= 0 %}Full{% elseif partition.Limit == null %}Unlimited{% else %}{{spotsLeft}} {{ 'Spot' | PluralizeForQuantity:spotsLeft }} Remaining{% endif %}</div>
+						</div>
+					</div>
+				</div>
+			{% endif %}

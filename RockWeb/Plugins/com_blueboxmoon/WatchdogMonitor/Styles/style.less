@@ -1,0 +1,87 @@
+﻿@import "../../../../Styles/_rock-variables.less";
+@import "../../../../Styles/Bootstrap/variables.less";
+
+@bg-unknown: #b3b3b3;
+@bg-ok: #cbe0c2;
+@bg-warning: #fcf8e3;
+@bg-error: #f2dede;
+@text-unknown: #edeae6;
+@text-ok: #5c9e7d;
+@text-warning: #ecc759;
+@text-error: #bb5454;
+
+@import "_blocks.less";
+@import "_mixins.less";
+
+/* Define the static backgrounds */
+.wm-bg-unknown {
+  background-color: @bg-unknown;
+}
+.wm-bg-ok {
+  background-color: @bg-ok;
+}
+.wm-bg-warning {
+  background-color: @bg-warning;
+}
+.wm-bg-error {
+  background-color: @bg-error;
+}
+
+/* Define the animated backgrounds */
+.pulsing-background(~"unknown", ~"ok");
+.pulsing-background(~"unknown", ~"warning");
+.pulsing-background(~"unknown", ~"error");
+.pulsing-background(~"ok", ~"unknown");
+.pulsing-background(~"ok", ~"warning");
+.pulsing-background(~"ok", ~"error");
+.pulsing-background(~"warning", ~"unknown");
+.pulsing-background(~"warning", ~"ok");
+.pulsing-background(~"warning", ~"error");
+.pulsing-background(~"error", ~"unknown");
+.pulsing-background(~"error", ~"ok");
+.pulsing-background(~"error", ~"warning");
+
+/* Define the animated backgrounds */
+.pulsing-state(~"unknown", ~"ok");
+.pulsing-state(~"unknown", ~"warning");
+.pulsing-state(~"unknown", ~"error");
+.pulsing-state(~"ok", ~"unknown");
+.pulsing-state(~"ok", ~"warning");
+.pulsing-state(~"ok", ~"error");
+.pulsing-state(~"warning", ~"unknown");
+.pulsing-state(~"warning", ~"ok");
+.pulsing-state(~"warning", ~"error");
+.pulsing-state(~"error", ~"unknown");
+.pulsing-state(~"error", ~"ok");
+.pulsing-state(~"error", ~"warning");
+
+/* Define static foregrounds */
+.wm-text-unknown {
+  color: @text-unknown !important;
+}
+.wm-text-ok {
+  color: @text-ok !important;
+}
+.wm-text-warning {
+  color: @text-warning !important;
+}
+.wm-text-error {
+  color: @text-error !important;
+}
+
+.wm-state-unknown {
+  background-color: @bg-unknown;
+  color: @text-unknown;
+}
+.wm-state-ok {
+  background-color: @bg-ok;
+  color: @text-ok;
+}
+.wm-state-warning {
+  background-color: @bg-warning;
+  color: @text-warning;
+}
+.wm-state-error {
+  background-color: @bg-error;
+  color: @text-error;
+}

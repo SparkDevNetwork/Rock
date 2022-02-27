@@ -1,0 +1,4 @@
+bin\io.lanio.stripe.dll
+bin\io.lanio.stripe.pdb
+bin\Stripe.net.dll
+Webhooks\Stripe.ashx

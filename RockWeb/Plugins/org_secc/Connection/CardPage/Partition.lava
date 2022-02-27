@@ -1,0 +1,30 @@
+	{% for partition in Tree %}
+		{% assign partitionSize = partition.Partitions | Size %}
+		{% if partitionSize > 0 %}
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">{{partition.Entity.Name}}{{partition.Entity.Value}}</h4>
+				{% if partition.Entity.Description != null and partition.Entity.Description != empty %}<p>{{partition.Entity.Description}}</p>{% endif %}
+			</div>
+			<div class="panel-body">
+				{% assign Tree = partition.Partitions %}
+				{% include '~/Plugins/org_secc/Connection/CardPage/Partition.lava' %} 
+			</div>
+		</div>
+		{% else %}
+			{% if partition.PartitionType == 'DefinedType' %}
+				{% if forloop.first %}<h2 class="section-header">Please select from the following:</h2>{% endif %}
+				{% include '~/Plugins/org_secc/Connection/CardPage/CardDefinedType.lava' %}
+			{% elseif partition.PartitionType == 'Schedule' %}
+				{% if forloop.first %}<h2 class="section-header">Please select your schedule:</h2>{% endif %}
+				{% include '~/Plugins/org_secc/Connection/CardPage/CardSchedule.lava' %}
+			{% elseif partition.PartitionType == 'Campus' %}
+				{% if forloop.first %}<h2 class="section-header">Please select your campus:</h2>{% endif %}
+				{% include '~/Plugins/org_secc/Connection/CardPage/CardCampus.lava' %}
+			{% elseif partition.PartitionType == 'Role' %}
+				{% if forloop.first %}<h2 class="section-header">Please select your serving role:</h2>{% endif %}
+				{% include '~/Plugins/org_secc/Connection/CardPage/CardRole.lava' %}
+			{% endif %}
+		{% endif %}
+	{% endfor %}
+	

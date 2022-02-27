@@ -1,0 +1,205 @@
+/*
+    These styles are loaded into the email editor iframe to help style the
+    edit surface of the email template. Style variables are defaulted to look
+    at those in the core Rock theme. Other themes that would like to use this
+    control will need to override to match.
+*/
+
+@import "../../../Styles/FontAwesome/_rock-upgrade-map-variables.less";
+@import "../../../Styles/FontAwesome/_rock-upgrade-map-classes.less";
+@import "../../../Styles/FontAwesome/_rock-fa-mixins.less";
+@import "../../../Styles/FontAwesome/fontawesome.less";
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-variables.less";
+@import (inline)  "../../../Styles/RockFont/style.css";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+.fa-font-face( @fa-theme-weight-name );
+
+.structure-dropzone {
+  width: 100%;
+  min-height: 36px;
+}
+
+.dropzone {
+  &:empty {
+    position: relative;
+    padding: 30px;
+    outline: 2px dashed rgba(0,0,0,.3);
+    outline-offset: -2px;
+    &::after {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      display: block;
+      width: 100%;
+      font-size: 10px;
+      color: rgba(0, 0, 0, .3);
+      text-align: center;
+      content: "Drop something here";
+      -webkit-transform: translateY(-50%);
+      -moz-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+      transform: translateY(-50%);
+    }
+  }
+}
+
+.editor-toolbar-container {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 12px 12px 0 12px;
+  overflow: auto;
+  font-family: @font-family-sans-serif;
+  color: @text-color;
+  color: var(--text-color);
+  background-color: @panel-heading-bg;
+}
+
+.editor-toolbar-container p {
+  margin: 0 0 2px 0;
+}
+
+.editor-toolbar-container::after {
+  display: table;
+  clear: both;
+  content: "";
+}
+
+.component-separator {
+  float: left;
+  width: 24px;
+  height: 20px;
+}
+
+.component {
+  display: block;
+  overflow: auto;
+  cursor: pointer;
+
+  outline: 2px dashed rgba(0,0,0,0);
+  outline-offset: -2px;
+  transition: .2s outline linear;
+
+  &:hover {
+    outline-color: #eaeef0;
+  }
+
+  .component-section:hover {
+    outline-color: rgba(0,0,0,0);
+  }
+
+  &.selected {
+    cursor: move;
+    outline: 2px solid #59c9a5;
+    opacity: 1;
+  }
+}
+
+.component[data-state="component"] {
+  display: table;
+  width: 100%;
+}
+
+.component-section[data-state="component"] {
+  box-sizing: border-box;
+  display: block;
+  width: ~"calc(100% + 40px)" !important;
+  padding: 0 15px;
+  margin-left: -20px;
+  border: 5px solid transparent;
+  border-top: 0;
+  border-bottom: 0;
+  outline: none !important;
+  transition: .3s border cubic-bezier(.85,.175,0,1.385);
+
+  &:hover {
+    border-color: rgba(0,0,0,.3);
+  }
+
+  &.selected{
+    cursor: move;
+    border-color: #59c9a5;
+  }
+}
+
+.component[data-state="template"] {
+  float: left;
+  width: 40px;
+  padding: 4px;
+  margin-right: 8px;
+  margin-bottom: 12px;
+  font-family: @font-family-sans-serif;
+  font-size: 11px;
+  color: @btn-default-color;
+  text-align: center;
+  cursor: move;
+  background-color: @btn-default-bg;
+  border: 1px solid @btn-default-border;
+  border-radius: 4px;
+}
+
+.component[data-state="template"] i {
+  font-size: 22px;
+}
+
+// miniturize the image component when dragging to make it easier to
+// precisly place it in tight areas
+.gu-mirror.component-image {
+  max-width: 150px;
+  height: auto !important;
+}
+
+/*
+-=-=- Dragula Classes
+*/
+
+/* Is added to the mirror image. It handles fixed positioning and z-index (and removes any prior margins on the element). Note
+that the mirror image is appended to the mirrorContainer, not to its initial container. Keep that in mind when styling your
+elements with nested rules, like .list .item { padding: 10px; }.*/
+.gu-mirror {
+  position: fixed !important;
+  z-index: 9999 !important;
+  max-width: 560px;
+  margin: 0 !important;
+  font-family: Arial, Helvetica, sans-serif;
+  cursor: move;
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  filter: alpha(opacity=80);
+  opacity: .8;
+}
+
+/* Is a helper class to apply display: none to an element. */
+.gu-hide {
+  display: none !important;
+}
+
+/* Is added to the mirrorContainer element when dragging. You can use it to style the mirrorContainer while something is being dragged. */
+.gu-unselectable {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Is added to the source element when its mirror image is dragged. It just adds opacity to it.*/
+.gu-transit {
+  box-sizing: border-box;
+  display: block;
+  float: none !important; /* added to override the float from the component */
+
+  width: 100% !important;
+  height: 100%;
+  // margin: 0 !important;
+  background: repeating-linear-gradient(-55deg,rgba(35, 79, 65, .1), rgba(35, 79, 65, .1) 3px, rgba(35, 79, 65, 0) 3px, rgba(35, 79, 65, 0) 6px) !important;
+  border-radius: 0 !important;
+  opacity: 1 !important;
+}
+
+/* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
+.gu-transit .container {
+  display: none;
+}

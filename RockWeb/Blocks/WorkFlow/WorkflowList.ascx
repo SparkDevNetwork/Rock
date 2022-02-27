@@ -14,8 +14,8 @@
 
                 <div class="grid grid-panel">
             	    <Rock:GridFilter ID="gfWorkflows" runat="server">
-                	    <Rock:RockTextBox ID="tbName" runat="server" Label="Name"></Rock:RockTextBox>
-                	    <Rock:PersonPicker ID="ppInitiator" runat="server" Label="Initiator" />
+                	    <Rock:RockTextBox ID="tbName" CssClass="hidden" runat="server" Label="Name"></Rock:RockTextBox>
+                	    <Rock:PersonPicker ID="ppInitiator" CssClass="hidden" runat="server" Label="Initiator" />
                 	    <Rock:RockTextBox ID="tbStatus" runat="server" Label="Status Text"></Rock:RockTextBox>
                 	    <Rock:DateRangePicker ID="drpActivated" runat="server" Label="Activated" />
 	                    <Rock:DateRangePicker ID="drpCompleted" runat="server" Label="Completed" />
@@ -29,9 +29,9 @@
 	                    <Columns>
                             <Rock:SelectField />
 	                        <Rock:RockBoundField DataField="WorkflowId" HeaderText="Id" SortExpression="WorkflowId" />
-	                        <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-	                        <Rock:PersonField DataField="Initiator" HeaderText="Initiated By" SortExpression="Initiator" />
-                            <Rock:ListDelimitedField DataField="Activities" HeaderText="Activities" HtmlEncode="false" Delimiter="," />
+	                        <Rock:RockBoundField DataField="Name" ControlStyle-CssClass="hidden" HeaderText="Name" SortExpression="Name" />
+	                        <Rock:PersonField DataField="Initiator" ControlStyle-CssClass="hidden" HeaderText="Initiated By" SortExpression="Initiator" />
+                            <Rock:ListDelimitedField DataField="Activities" ControlStyle-CssClass="hidden" HeaderText="Activities" HtmlEncode="false" Delimiter="," />
 	                    </Columns>
     	            </Rock:Grid>
                 </div>

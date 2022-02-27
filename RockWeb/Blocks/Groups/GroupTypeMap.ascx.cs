@@ -254,6 +254,7 @@ namespace RockWeb.Blocks.Groups
                             Group = g,
                             GroupId = g.Id,
                             GroupName = g.Name,
+                            GroupCapacity = g.GroupCapacity,
                             GroupGuid = g.Guid,
                             GroupMemberTerm = g.GroupType.GroupMemberTerm,
                             GroupCampus = g.Campus.Name,
@@ -288,6 +289,7 @@ namespace RockWeb.Blocks.Groups
                         dynamic dynGroup = new ExpandoObject();
                         dynGroup.GroupId = group.GroupId;
                         dynGroup.GroupName = group.GroupName;
+                        dynGroup.SpotsLeft = group.GroupCapacity - group.GroupMembers.Count;
 
                         // create group detail link for use in map's info window
                         if ( groupPageRef.PageId > 0 )
@@ -356,7 +358,6 @@ namespace RockWeb.Blocks.Groups
                         }
 
                         dynGroup.GroupMembers = groupMembers;
-
                         dynamicGroups.Add( dynGroup );
                     }
 

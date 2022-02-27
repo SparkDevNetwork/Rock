@@ -1,0 +1,37 @@
+{% assign level = level | Plus: 1 %}
+{% for partition in Tree %}
+	{% assign levelDepth = depth | Minus:level | Plus: 1 %}
+	{% assign leftColWidth = 100 | DividedBy:levelDepth,0 %}
+	{% assign rightColWidth = 100 | Minus: leftColWidth %}
+	{%- if partition.Limit > 0 or partition.Limit == null %}
+		<div class="grid-{{leftColWidth}}">
+			<b>{{partition.Entity.Name}}{{partition.Entity.Value}}</b>
+			{% unless partition.Entity.Description == empty or partition.Entity.Description == null %}
+				<p>{{ partition.Entity.Description }}</p>
+			{% endunless %}
+		{% assign partitionSize = partition.Partitions | Size %}
+		{% if partitionSize > 0 %}
+		</div>
+		<div class="grid-{{rightColWidth}}">
+			{% assign Tree = partition.Partitions %}
+			<div class="flex-container">
+				{% include '~/Plugins/org_secc/Connection/VolunteerGenius/Partition.lava' %}
+			</div>
+		{% else %}
+			{%- assign spotsLeft = partition.Limit | Minus: partition.Filled -%}
+			{% assign url = partition.Url %}
+			{% unless url contains "GroupId" or partition.GroupId == empty or partition.GroupId == null %}
+				{% assign url = url | Append: "&GroupId=" | Append : partition.GroupId %}
+			{% endunless %}
+			{% unless url contains "RoleGuid" or partition.RoleGuid == empty or partition.RoleGuid == null %}
+				{% assign url = url | Append: "&RoleGuid=" | Append : partition.RoleGuid %}
+			{% endunless %}
+			<a {% if partition.Limit == null or spotsLeft > 0 %}href="{{url}}"{% else %}disabled{% endif %} class="btn btn-primary pull-right">Sign Up!</a>
+			{%- if partition.Limit > 0 %}
+				<br /><span class="label label-default">{% if partition.Limit == null %}Unlimited{% else %}{% if spotsLeft <= 0 %}Full{% else %}{{spotsLeft}} {{ 'Spot' | PluralizeForQuantity:spotsLeft }} Remaining{% endif %}{% endif %}</span>
+			{%- endif -%}
+		{% endif %}
+		</div>
+	{% endif %}
+{% endfor %}
+{% assign level = level | Minus: 1 %} 

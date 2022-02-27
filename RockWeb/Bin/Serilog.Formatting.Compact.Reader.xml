@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Serilog.Formatting.Compact.Reader</name>
+    </assembly>
+    <members>
+        <member name="T:Serilog.Formatting.Compact.Reader.LogEventReader">
+            <summary>
+            Reads files produced by <em>Serilog.Formatting.Compact.CompactJsonFormatter</em>. Events
+            are expected to be encoded as newline-separated JSON documents.
+            </summary>
+        </member>
+        <member name="M:Serilog.Formatting.Compact.Reader.LogEventReader.#ctor(System.IO.TextReader,Newtonsoft.Json.JsonSerializer)">
+            <summary>
+            Construct a <see cref="T:Serilog.Formatting.Compact.Reader.LogEventReader"/>.
+            </summary>
+            <param name="text">Text to read from.</param>
+            <param name="serializer">If specified, a JSON serializer used when converting event documents.</param>
+        </member>
+        <member name="M:Serilog.Formatting.Compact.Reader.LogEventReader.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.Formatting.Compact.Reader.LogEventReader.TryRead(Serilog.Events.LogEvent@)">
+            <summary>
+            Read a line from the input. Blank lines are skipped.
+            </summary>
+            <param name="evt"></param>
+            <returns>True if an event could be read; false if the end-of-file was encountered.</returns>
+            <exception cref="T:System.IO.InvalidDataException">The data format is invalid.</exception>
+        </member>
+        <member name="M:Serilog.Formatting.Compact.Reader.LogEventReader.ReadFromString(System.String,Newtonsoft.Json.JsonSerializer)">
+            <summary>
+            Read a single log event from a JSON-encoded document.
+            </summary>
+            <param name="document">The event in compact-JSON.</param>
+            <param name="serializer">If specified, a JSON serializer used when converting event documents.</param>
+            <returns>The log event.</returns>
+        </member>
+        <member name="M:Serilog.Formatting.Compact.Reader.LogEventReader.ReadFromJObject(Newtonsoft.Json.Linq.JObject)">
+            <summary>
+            Read a single log event from an already-deserialized JSON object.
+            </summary>
+            <param name="jObject">The deserialized compact-JSON event.</param>
+            <returns>The log event.</returns>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,346 @@
+<div class="container-fluid container-team">
+  <div class="row">
+    <div class="dept-title">{{ blockGroupName }}</div>
+  </div>
+  <!--Show Team by Group ID-->
+  {% groupmember where:'GroupId == "{{ blockGroupId }}"' %}
+  {% assign sortedPeople = groupmemberItems | Map:'Person' | Sort:'LastName' %}
+
+  <div class="row">
+    <!--Loop through Group for Groupmembers-->
+    {% for person in sortedPeople %}
+    {% assign spouse = person | Spouse %}
+    {% assign children = person | Children | Sort:'BirthDate desc' %}
+    {% assign cellnum = person | PhoneNumber:'Mobile' %}
+    {% assign spouseCell = spouse | PhoneNumber:'Mobile' %}
+    {% capture passionStartDate %}{{ person | Attribute:'Arena-163-791' }}{% endcapture %}
+
+    <!--Profile Card Display-->
+    <div class="column-pcc-dir">
+      <div class="card">
+        <div class="person-photo form-group" style="background-image: url('{{ person.PhotoUrl }}'); background-size: cover; background-position: 50% 50%;">
+
+        </div>
+
+        <div id="person-name-id" class="col-xs-12 person-name">{{ person.NickName | Capitalize }} {{ person.LastName | Capitalize }}</div>
+        <div class="col-xs-12 person-position">{{ person | Attribute:'Arena-157-757' | Capitalize }}</div>
+
+        <!--Button to open Modal Section-->
+        <div class="col-xs-12 modal-pcc-dir-button">
+          <button type="button" class="btn btn-sm btn-pcc-sm-modal btn-primary" data-toggle="modal" data-target="#moreInfo{{ person.PrimaryAliasId }}">more info</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal container fade" id="moreInfo{{ person.PrimaryAliasId }}" tabindex="-1" role="dialog" aria-labelledby="Team Member Detail" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+          <div class="modal-body">
+
+            <div class="row">
+
+              <!--Personal Info Modal Section-->
+              <div class="col-xs-12 col-sm-12 col-md-4">
+                <div style="height: 300px; width: 300px; background-image: url('{{ person.PhotoUrl }}'); background-size: cover; background-position: 50% 50%; border-radius: 50%"></div>
+              </div>
+
+              <div class="modal-section-title col-xs-12 col-sm-12 col-md-8 clearfix">
+                {{ person.NickName | Capitalize}} {{ person.LastName | Capitalize}}
+                <!--<div style="padding-left: 5px;" class="person-info-section form-group">{{ person.Position }}</div>-->
+              </div>
+
+                <!--Passion Employement Details Modal Section-->
+
+              <div class="col-xs-12 col-sm-12 col-md-4">
+                <div class="form-group">
+
+                  <!--<div style="border: 0; border-top: 1px solid #999;"></div>-->
+                  <div class="person-info">
+                    <b>Passion Start Date:</b> {{ passionStartDate }}
+
+                        {% assign now = 'Now' | Date %}
+                        {% capture DateDifference %}{{ passionStartDate | AsDateTime | DateDiff:now,"M" }}{% endcapture %}
+                        {% assign LengthMonths = DateDifference | AsInteger %}
+                        {% if LengthMonths >= 12 and LengthMonths < 24 %}
+                        {% capture PassionTimeString %}{{ DateDifference | DividedBy:12,1 | AsString }}{% endcapture %}
+                        {% assign PassionTime = PassionTimeString | Split:'.' %}
+                        {% assign PassionTimeSize = PassionTime | Size %}
+                        ({{ PassionTime[0] }} year{% if PassionTimeSize > 1 %}, {{ PassionTime[1] }} months{% endif %})
+                        {% elseif LengthMonths > 12 and LengthMonths > 24 %}
+                        {% capture PassionTimeString %}{{ DateDifference | DividedBy:12,1 | AsString }}{% endcapture %}
+                        {% assign PassionTime = PassionTimeString | Split:'.' %}
+                        {% assign PassionTimeSize = PassionTime | Size %}
+                        ({{ PassionTime[0] }} years{% if PassionTimeSize > 1 %}, {{ PassionTime[1] }} months{% endif %})
+                        {% elseif LengthMonths < 12 %}
+                        ({{ LengthMonths }} Months)
+                        {% endif %}
+
+
+                        </div>
+                  <div class="person-info">
+                    <b>Schedule:</b> {{ person | Attribute:'Arena-157-764' }}</div>
+                  <div class="person-info">
+                    <b>Email:</b> <a href="mailto:{{ person.Email}}" target="_blank">{{ person.Email }}</a>
+                  </div>
+                  <div class="person-info">
+                    <b>Ext:</b> {{ person | Attribute:'PassionExtension' }}</div>
+                  <div class="person-info">
+                    <b>Cell:</b> <a href="tel:{{ cellnum }}" target="_blank">{{ cellnum }}</a>
+                  </div>
+                  <!--
+                  <div class="person-info">
+                  <b>Twitter:</b> {{ person.Twitter }}
+                  </div>
+                  <div class="person-info">
+                    <b>Instagram:</b> {{ person.Instagram }}
+                    </div>
+                    -->
+                </div>
+              <h4>Personal Info</h4>
+                <div class="person-info">
+                  <b>Birthday:</b> {{ person.BirthDate | Date:'M/d' }}</div>
+            {% if spouse.FirstName != null %}
+                <div class="person-info">
+                  <b>Wedding Anniversary:</b> {{ person | Attribute:'Arena-157-761' }}</div>
+            {% endif %}
+
+                <!--Personality/Strengths Modal Section-->
+                <h4>Personality</h4>
+                <!--<div style="border: 0; border-top: 1px solid #999;"></div>-->
+                <div class="person-info">
+                  <b>Enneagram Type:</b> {{ person | Attribute:'Arena-157-766' }}</div>
+                <div class="person-info">
+                  <b>StrengthsFinder:</b> {{ person | Attribute:'Arena-157-767' }}</div>
+                </div>
+
+              <div class="col-xs-12 col-sm-12 col-md-4">
+
+                <!--Favorite Things Modal Section-->
+                <div class="form-group">
+
+                  <h4>Favorite Things</h4>
+                  <!--<div style="border: 0; border-top: 1px solid #999;"></div>-->
+                  <div class="person-info">
+                    <b>Favorite Color:</b> {{ person | Attribute:'Arena-158-768' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Candy+Cake:</b> {{ person | Attribute:'Arena-158-769' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Band+Singer:</b> {{ person | Attribute:'Arena-158-770'  }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Book+Magazine:</b> {{ person | Attribute:'Arena-158-771' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Drink+Food:</b> {{ person | Attribute:'Arena-158-772' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Starbucks Drink:</b> {{ person | Attribute:'Arena-158-773' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Gum:</b> {{ person | Attribute:'Arena-158-774' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Movies:</b> {{ person | Attribute:'Arena-158-775' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Holiday:</b> {{ person | Attribute:'Arena-158-776' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Scent:</b> {{ person | Attribute:'Arena-158-777' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Flower:</b> {{ person | Attribute:'Arena-158-778' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Interests/Hobbies:</b> {{ person | Attribute:'Arena-158-779' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Ideal Vacation</b>: {{ person | Attribute:'Arena-158-780' }}
+                  </div>
+
+                </div>
+
+
+
+              </div>
+
+
+              <!--Spouse Modal Section-->
+
+              {% if spouse.FirstName != null || children != empty %}
+                <div class="col-xs-12">
+                  <hr />
+                </div>
+
+                <!--<div class="person-info-section">Family</div>-->
+                {% if spouse.FirstName != null %}
+                <!--<div class="person-info-section">Spouse:</div>-->
+
+                <div class="col-md-4 col-sm-12 col-xs-12">
+                  <div style="height: 300px; width: 300px; background-image: url('{{ spouse.PhotoUrl }}'); background-size: cover; background-position: 50% 50%; border-radius: 50%"></div>
+                </div>
+
+                <div class="modal-section-title col-md-8 col-sm-12 col-xs-12 clearfix">
+                  {{ spouse.FullName | Capitalize }} (Spouse)
+                </div>
+
+              <!--Passion Employement Details Modal Section-->
+              <div class="col-md-4 col-sm-12 col-xs-12">
+                <div class="form-group">
+
+                  <!--<div style="border: 0; border-top: 1px solid #999;"></div>-->
+                  <div class="person-info">
+                    <b>Email:</b>
+                    <a href="mailto:{{ spouse.Email}}" target="_blank">{{ spouse.Email }}</a>
+                  </div>
+                  <div class="person-info">
+                    <b>Cell:</b>
+                    <a href="tel:{{ spouseCell }}" target="_blank">{{ spouseCell }}</a>
+                  </div>
+                  <!--
+                  <div class="person-info">
+                    <b>Twitter:</b> {{ spouse.Twitter }}
+                  </div>
+                  <div class="person-info">
+                    <b>Instagram:</b> {{ spouse.Instagram }}
+                  </div>
+                  -->
+
+                </div>
+
+                <h4>Personal Info</h4>
+                <div class="person-info">
+                  <b>Birthday:</b> {{ spouse.BirthDate | Date:'M/d' }}</div>
+
+                <!--Personality/Strengths Modal Section-->
+                <h4>Personality</h4>
+                <div class="person-info">
+                  <b>Enneagram Type:</b> {{ spouse | Attribute:'Arena-157-766' }}
+                </div>
+                <!--
+                <div class="person-info">
+                  <b>StrengthsFinder:</b> {{ spouse | Attribute:'Arena-157-767' }}
+                </div>
+                -->
+
+              </div>
+
+              <div class="col-md-4 col-sm-12 col-xs-12">
+
+                <!--Favorite Things Modal Section-->
+                <!--
+                <div class="form-group">
+
+                  <h4>Favorite Things</h4>
+                  <div class="person-info">
+                    <b>Favorite Color:</b> {{ spouse | Attribute:'Arena-158-768' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Candy+Cake:</b> {{ spouse | Attribute:'Arena-158-769' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Band+Singer:</b> {{ spouse | Attribute:'Arena-158-770'  }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Book+Magazine:</b> {{ spouse | Attribute:'Arena-158-771' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Drink+Food:</b> {{ spouse | Attribute:'Arena-158-772' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Starbucks Drink:</b> {{ spouse | Attribute:'Arena-158-773' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Gum:</b> {{ spouse | Attribute:'Arena-158-774' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Movies:</b> {{ spouse | Attribute:'Arena-158-775' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Holiday:</b> {{ spouse | Attribute:'Arena-158-776' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Scent:</b> {{ spouse | Attribute:'Arena-158-777' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Flower:</b> {{ spouse | Attribute:'Arena-158-778' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Favorite Interests/Hobbies:</b> {{ spouse | Attribute:'Arena-158-779' }}
+                  </div>
+                  <div class="person-info">
+                    <b>Ideal Vacation</b>: {{ spouse | Attribute:'Arena-158-780' }}
+                  </div>
+
+                </div>
+                -->
+
+
+
+              </div>
+
+                {% endif %}
+                <div style="clear:both"></div>
+
+
+
+                <!--Family/Children Modal Section-->
+
+                {% if children != empty %}
+
+                <div class="col-xs-12">
+                  <hr />
+                </div>
+                <div class="col-md-4"></div>
+                <div class="modal-section-title text-left col-md-8">Children</div>
+                <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-8">
+                  {% for child in children %}
+
+                  <div class="child-block">
+                    <!--
+                    <div class="family-photo"><img src="{{ child.PhotoUrl }}" class="family-photo" /></div>
+                    -->
+
+                    <div class="child-info-strong">{{ child.FullName }}</div>
+                    <div class="child-info-normal">Age {{ child.Age }}</div>
+                    <div class="child-info-normal">Birthday: {{child.BirthDate | Date: 'M/d/yyyy'}}</div>
+
+                  </div>
+                  {% endfor %}
+                </div>
+                </div>
+                {% endif %}
+
+                {% endif %}
+              <div style="clear:both"></div>
+
+
+
+
+
+
+
+          </div>
+
+        </div>
+      </div>
+      </div>
+      </div>
+
+
+
+    {% endfor %}
+
+
+  </div>
+
+
+
+  {% endgroupmember %}
+</div>

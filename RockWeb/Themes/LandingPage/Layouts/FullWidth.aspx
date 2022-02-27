@@ -17,10 +17,10 @@
     </Rock:Lava>
         <div class="container d-flex flex-column" style="min-height: 80vh;">
             <div class="row my-auto">
-                <div class="col-lg-5 col-md-10 col-sm-12 py-5 text-white my-auto text-center text-lg-left mx-auto ml-lg-0 mr-lg-auto">
+                <div class="col-lg-2 col-md-10 col-sm-12 py-5 text-white my-auto text-center text-lg-left mx-auto ml-lg-0 mr-lg-auto">
                     <Rock:Zone Name="Headline" CssClass="zone-headline" runat="server" />
                 </div>
-                <div class="col-lg-5 col-md-8 col-sm-12 py-5 mx-auto ml-lg-auto mr-lg-0">
+                <div class="col-lg-10 col-md-8 col-sm-12 py-5 mx-auto ml-lg-auto mr-lg-0">
                     <Rock:Zone Name="Workflow" CssClass="zone-workflow" runat="server" />
                 </div>
             </div>
@@ -32,7 +32,8 @@
          <div class="bg-gradient"></div>
     </div>
 
-    <div class="section-3col">
+    <div class="hidden">
+        <div class="section-3col">
         <div class="container">
             <div class="row">
                 <Rock:Zone Name="Section B" CssClass="col-md-4 py-sm-5 py-2 pt-5" runat="server" />
@@ -52,7 +53,7 @@
         </div>
     </div>
 
-    <Rock:Lava ID="SecondaryImage" runat="server">
+    <Rock:Lava ID="SecondaryImage" Visible="false" runat="server">
         {%- assign secondaryImageId = CurrentPage | Attribute:'SecondaryImage','Id' -%}
         {%- if secondaryImageId != '' -%}
         <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ secondaryImageId }}&maxWidth=2500') center center; background-size: cover;">
@@ -65,6 +66,9 @@
                 <Rock:Zone Name="Secondary Hero" CssClass="col-lg-4 col-md-8 col-sm-12 py-5 mr-auto text-left" runat="server" />
             </div>
         </div>
+    </div>
+
+    
     </div>
 
     <footer class="container">

@@ -1,0 +1,150 @@
+﻿.wm-list-as-blocks {
+  h3 {
+    margin: 6px 0;
+    margin-top: 0;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  ul {
+    padding: 0;
+    margin-top: 16px;
+    list-style: none;
+
+    li {
+      position: relative;
+      float: left;
+      width: 47.5%;
+      margin: 0 1.25% @spacing-md-px;
+      overflow: hidden;
+      overflow: visible;
+      text-align: center;
+      border-radius: @border-radius-base;
+
+      > * {
+        display: block;
+        height: 90px;
+        padding: @spacing-md-px;
+        border-radius: @border-radius-base;
+
+        i {
+          margin-top: 6px;
+          font-size: 26px;
+        }
+
+        &:focus {
+          text-decoration: none;
+        }
+
+        div.notification {
+          position: absolute;
+          top: -10px;
+          right: -6px;
+
+          .label {
+            padding: 2px 6px;
+            border-radius: 36px;
+          }
+        }
+      }
+    }
+  }
+
+  &.has-count {
+
+    * {
+      position: relative;
+    }
+
+    *::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      content: "";
+      border-right: 45px solid transparent;
+      border-bottom: 45px solid transparent;
+    }
+
+    .item-count {
+      position: absolute;
+      top: 5px;
+      right: 1px;
+      display: block;
+      width: 25px;
+      font-size: 12px;
+      color: #fff;
+    }
+  }
+
+  .block-status a {
+    height: 105px;
+    padding: 8px 15px;
+
+    .status-list {
+      position: absolute;
+      right: 0;
+      bottom: 5px;
+      left: 0;
+    }
+  }
+}
+
+@media @sm-only {
+  // tablet portrait and larger
+  .wm-list-as-blocks {
+    ul {
+      li {
+        width: 32%;
+        margin: 0 1% @spacing-md-px;
+
+        &:nth-child(3n) {
+          margin-right: 0;
+        }
+
+        &:nth-child(3n+1) {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}
+
+@media @md-only {
+  // desktop and larger
+  .wm-list-as-blocks {
+    ul {
+      li {
+        width: 23.5%;
+        margin: 0 1% @spacing-md-px;
+
+        &:nth-child(4n) {
+          margin-right: 0;
+        }
+
+        &:nth-child(4n+1) {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}
+
+@media @lg {
+  // desktop and larger
+  .wm-list-as-blocks {
+    ul {
+      li {
+        width: 18.4%;
+        margin: 0 1% @spacing-md-px;
+
+        &:nth-child(5n) {
+          margin-right: 0;
+        }
+
+        &:nth-child(5n+1) {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}

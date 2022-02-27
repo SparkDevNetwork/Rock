@@ -1,0 +1,54 @@
+﻿.pulsing-background(@state1, @state2) {
+  .wm-bg-@{state1}-@{state2} {
+    background-color: ~"@{bg-@{state1}}";
+    animation-name: ~"wm-@{state1}-@{state2}";
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  @keyframes ~"wm-@{state1}-@{state2}" {
+    0% {
+      background-color: ~"@{bg-@{state1}}";
+      color: ~"@{text-@{state1}}";
+    }
+
+    85% {
+      background-color: ~"@{bg-@{state1}}";
+      color: ~"@{text-@{state1}}";
+    }
+
+    100% {
+      background-color: ~"@{bg-@{state2}}";
+      color: ~"@{text-@{state2}}";
+    }
+  }
+}
+
+.pulsing-state(@state1, @state2) {
+  .wm-state-@{state1}-@{state2} {
+    background-color: ~"@{bg-@{state1}}";
+    color: ~"@{text-@{state1}}";
+    animation-name: ~"wm-state-@{state1}-@{state2}";
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  @keyframes ~"wm-state-@{state1}-@{state2}" {
+    0% {
+      background-color: ~"@{bg-@{state1}}";
+      color: ~"@{text-@{state1}}";
+    }
+
+    85% {
+      background-color: ~"@{bg-@{state1}}";
+      color: ~"@{text-@{state1}}";
+    }
+
+    100% {
+      background-color: ~"@{bg-@{state2}}";
+      color: ~"@{text-@{state2}}";
+    }
+  }
+}

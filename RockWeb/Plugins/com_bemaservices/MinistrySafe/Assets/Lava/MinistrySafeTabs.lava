@@ -1,0 +1,14 @@
+{% assign currentPageId = 'Global' | 'Global' | Page:'Id' %}
+  <ul class="nav nav-tabs">
+    {% page where:'Guid == "5C7EA1BE-FC79-4821-8FA3-759F8C65C87B"' %}
+      <li {% if page.Id == currentPageId %}class='active'{% endif %}>
+            <a href="/page/{{page.Id}}">Trainings</a>
+        </li>
+    {% endpage %}
+    {% page where:'Guid == "05ECBD26-FE1E-4070-B6AA-B37850D4A65E"' %}
+      <li {% if page.Id == currentPageId %}class='active'{% endif %}>
+            <a href="/page/{{page.Id}}">Background Checks</a>
+        </li>
+    {% endpage %}
+</ul>
+</br>

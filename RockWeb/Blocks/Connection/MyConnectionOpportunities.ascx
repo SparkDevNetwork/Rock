@@ -97,6 +97,7 @@
                                     <%# FormatGroupName( Eval("Group"), Eval("GroupRole"), Eval("GroupStatus") )  %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="CreatedDate" HeaderText="Date Created" />
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="ConnectorPersonAlias.Person.LastName,ConnectorPersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" SortExpression="LastActivity" />
                             <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />

@@ -1,0 +1,50 @@
+  {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+
+  {% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+  {% endif %}
+
+<section class="section-agency" id="portfolio">
+	<div class="container">
+		<div class="row">
+			{% for eventItemOccurrence in EventItemOccurrences %}
+				<div class="col-md-4 col-sm-6 portfolio-item">
+				 {% if eventItemOccurrence.DetailPage != null %}	
+					<a class="portfolio-link" data-toggle="modal" href="{{ eventItemOccurrence.DetailPage }}">
+				 {% else %}
+					<a class="portfolio-link" data-toggle="modal" href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
+				 {% endif %}
+					  <div class="portfolio-hover">
+						<div class="portfolio-hover-content">
+						  <i class="fa fa-plus fa-3x"></i>
+						</div>
+					  </div>
+					  <img class="img-fluid" src="/GetImage.ashx?guid={{ eventItemOccurrence.EventItemOccurrence.EventItem.Photo.Guid }}" alt="">
+					</a>
+					<div class="portfolio-caption">
+					  <h4>{{ eventItemOccurrence.Name }}</h4>
+					  <p class="text-muted">
+						{% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+							{{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}
+						  {% else %}
+							{{ eventItemOccurrence.Date | Date: 'MMM d' }}
+						{% endif %}
+						&nbsp; {{ eventItemOccurrence.Time }}<br/>
+						{{ eventItemOccurrence.Location }}
+					  </p>
+					</div>
+				  </div>
+			{% endfor %}
+		</div>
+	</div>
+</section>
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>

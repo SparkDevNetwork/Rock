@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CacheManager.SystemRuntimeCaching</name>
+    </assembly>
+    <members>
+        <member name="T:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1">
+            <summary>
+            Simple implementation for the <see cref="T:System.Runtime.Caching.MemoryCache"/>.
+            </summary>
+            <typeparam name="TCacheValue">The type of the cache value.</typeparam>
+            <remarks>
+            Although the MemoryCache doesn't support regions nor a RemoveAll/Clear method, we will
+            implement it via cache dependencies.
+            </remarks>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.#ctor(CacheManager.Core.ICacheManagerConfiguration,CacheManager.Core.CacheHandleConfiguration,CacheManager.Core.Logging.ILoggerFactory)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1"/> class.
+            </summary>
+            <param name="managerConfiguration">The manager configuration.</param>
+            <param name="configuration">The cache handle configuration.</param>
+            <param name="loggerFactory">The logger factory.</param>
+        </member>
+        <member name="P:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.CacheSettings">
+            <summary>
+            Gets the cache settings.
+            </summary>
+            <value>The cache settings.</value>
+        </member>
+        <member name="P:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.Count">
+            <summary>
+            Gets the number of items the cache handle currently maintains.
+            </summary>
+            <value>The count.</value>
+        </member>
+        <member name="P:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.Logger">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.Clear">
+            <summary>
+            Clears this cache, removing all items in the base cache and all regions.
+            </summary>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.ClearRegion(System.String)">
+            <summary>
+            Clears the cache region, removing all items from the specified <paramref name="region"/> only.
+            </summary>
+            <param name="region">The cache region.</param>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.Exists(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.Exists(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.AddInternalPrepared(CacheManager.Core.CacheItem{`0})">
+            <summary>
+            Adds a value to the cache.
+            </summary>
+            <param name="item">The <c>CacheItem</c> to be added to the cache.</param>
+            <returns>
+            <c>true</c> if the key was not already added to the cache, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.GetCacheItemInternal(System.String)">
+            <summary>
+            Gets a <c>CacheItem</c> for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <returns>The <c>CacheItem</c>.</returns>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.GetCacheItemInternal(System.String,System.String)">
+            <summary>
+            Gets a <c>CacheItem</c> for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <param name="region">The cache region.</param>
+            <returns>The <c>CacheItem</c>.</returns>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.PutInternalPrepared(CacheManager.Core.CacheItem{`0})">
+            <summary>
+            Puts the <paramref name="item"/> into the cache. If the item exists it will get updated
+            with the new value. If the item doesn't exist, the item will be added to the cache.
+            </summary>
+            <param name="item">The <c>CacheItem</c> to be added to the cache.</param>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.RemoveInternal(System.String)">
+            <summary>
+            Removes a value from the cache for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <returns>
+            <c>true</c> if the key was found and removed from the cache, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1.RemoveInternal(System.String,System.String)">
+            <summary>
+            Removes a value from the cache for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <param name="region">The cache region.</param>
+            <returns>
+            <c>true</c> if the key was found and removed from the cache, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="T:CacheManager.Core.RuntimeCachingBuilderExtensions">
+            <summary>
+            Extensions for the configuration builder specific to System.Runtime.Caching cache handle.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Core.RuntimeCachingBuilderExtensions.WithSystemRuntimeCacheHandle(CacheManager.Core.ConfigurationBuilderCachePart,System.Boolean)">
+            <summary>
+            Adds a <see cref="T:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1" /> using a <see cref="T:System.Runtime.Caching.MemoryCache"/>.
+            The name of the cache instance will be 'default'.
+            </summary>
+            <param name="part">The builder part.</param>
+            <param name="isBackplaneSource">Set this to true if this cache handle should be the source of the backplane.
+            This setting will be ignored if no backplane is configured.</param>
+            <returns>
+            The builder part.
+            </returns>
+            <returns>The builder part.</returns>
+        </member>
+        <member name="M:CacheManager.Core.RuntimeCachingBuilderExtensions.WithSystemRuntimeCacheHandle(CacheManager.Core.ConfigurationBuilderCachePart,System.String,System.Boolean)">
+            <summary>
+            Adds a <see cref="T:CacheManager.SystemRuntimeCaching.MemoryCacheHandle`1" /> using a <see cref="T:System.Runtime.Caching.MemoryCache"/> instance with the given <paramref name="instanceName"/>.
+            The named cache instance can be configured via <c>app/web.config</c> <c>system.runtime.caching</c> section.
+            </summary>
+            <param name="part">The builder part.</param>
+            <param name="instanceName">The name to be used for the cache instance.</param>
+            <param name="isBackplaneSource">Set this to true if this cache handle should be the source of the backplane.
+            This setting will be ignored if no backplane is configured.</param>
+            <returns>
+            The builder part.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">If part is null.</exception>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="instanceName"/> is null.</exception>
+        </member>
+    </members>
+</doc>

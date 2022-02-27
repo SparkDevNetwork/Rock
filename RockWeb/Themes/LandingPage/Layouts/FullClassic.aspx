@@ -27,7 +27,7 @@
 
     <div class="container d-flex flex-column py-5">
         <div class="row my-auto my-5 pb-2">
-            <Rock:Zone Name="Main" CssClass="col-lg-7 col-md-10 col-sm-12 mr-lg-auto" runat="server" />
+            <Rock:Zone Name="Main" CssClass="col-lg-12 col-md-10 col-sm-12 mr-lg-auto" runat="server" />
             <Rock:Zone Name="Workflow" CssClass="zone-workflow no-pad col-lg-4 col-md-10 col-sm-12" runat="server" />
         </div>
 

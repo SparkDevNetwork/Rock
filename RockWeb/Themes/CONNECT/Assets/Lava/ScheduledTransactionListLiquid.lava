@@ -1,0 +1,14 @@
+<div class="scheduledtransaction-summary">
+  <strong>{{ ScheduledTransaction.PersonName }}</strong><br/>
+  {{ ScheduledTransaction.ScheduledAmount | FormatAsCurrency }} on
+  {% if ScheduledTransaction.CurrencyType != "Credit Card" %}
+  {{ ScheduledTransaction.CurrencyType }}
+  {% else %}
+  {{ ScheduledTransaction.CreditCardType }} {{ ScheduledTransaction.AccountNumberMasked }}
+  {% endif %}<br>
+  {{ ScheduledTransaction.FrequencyDescription | downcase }}.
+
+  {% if ScheduledTransaction.NextPaymentDate != null %}
+  Next gift will be on {{ ScheduledTransaction.NextPaymentDate | Date:"MMMM d, yyyy" }}.
+  {% endif %}
+</div>

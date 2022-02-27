@@ -1,0 +1,12 @@
+<div class="collapse navbar-collapse" id="navbarResponsive">
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+     <ul class="navbar-nav text-uppercase ml-auto">
+
+		{% for childPage in Page.Pages %}
+            <li class="nav-item">
+				<a class="nav-link{% if childPage.Current == 'true' %} active{% endif%} js-scroll-trigger" href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+</div>

@@ -1,0 +1,504 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Owin.Security.OpenIdConnect.Extensions</name>
+    </assembly>
+    <members>
+        <member name="T:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions">
+            <summary>
+            Provides extension methods to make <see cref="T:Microsoft.Owin.Security.AuthenticationTicket"/> easier to use.
+            </summary>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetDestinations(System.Security.Claims.Claim)">
+            <summary>
+            Gets the destinations associated with a claim.
+            </summary>
+            <param name="claim">The <see cref="T:System.Security.Claims.Claim"/> instance.</param>
+            <returns>The destinations associated with the claim.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasDestination(System.Security.Claims.Claim,System.String)">
+            <summary>
+            Determines whether the given claim
+            contains the required destination.
+            </summary>
+            <param name="claim">The <see cref="T:System.Security.Claims.Claim"/> instance.</param>
+            <param name="destination">The required destination.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetDestinations(System.Security.Claims.Claim,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Adds specific destinations to a claim.
+            </summary>
+            <param name="claim">The <see cref="T:System.Security.Claims.Claim"/> instance.</param>
+            <param name="destinations">The destinations.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetDestinations(System.Security.Claims.Claim,System.String[])">
+            <summary>
+            Adds specific destinations to a claim.
+            </summary>
+            <param name="claim">The <see cref="T:System.Security.Claims.Claim"/> instance.</param>
+            <param name="destinations">The destinations.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.Clone(System.Security.Claims.ClaimsIdentity,System.Func{System.Security.Claims.Claim,System.Boolean})">
+            <summary>
+            Clones an identity by filtering its claims and the claims of its actor, recursively.
+            </summary>
+            <param name="identity">The <see cref="T:System.Security.Claims.ClaimsIdentity"/> instance to filter.</param>
+            <param name="filter">
+            The delegate filtering the claims: return <c>true</c>
+            to accept the claim, <c>false</c> to remove it.
+            </param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.Clone(System.Security.Claims.ClaimsPrincipal,System.Func{System.Security.Claims.Claim,System.Boolean})">
+            <summary>
+            Clones a principal by filtering its identities.
+            </summary>
+            <param name="principal">The <see cref="T:System.Security.Claims.ClaimsPrincipal"/> instance to filter.</param>
+            <param name="filter">
+            The delegate filtering the claims: return <c>true</c>
+            to accept the claim, <c>false</c> to remove it.
+            </param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.AddClaim(System.Security.Claims.ClaimsIdentity,System.String,System.String)">
+            <summary>
+            Adds a claim to a given identity.
+            </summary>
+            <param name="identity">The identity.</param>
+            <param name="type">The type associated with the claim.</param>
+            <param name="value">The value associated with the claim.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.AddClaim(System.Security.Claims.ClaimsIdentity,System.String,System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Adds a claim to a given identity and specify one or more destinations.
+            </summary>
+            <param name="identity">The identity.</param>
+            <param name="type">The type associated with the claim.</param>
+            <param name="value">The value associated with the claim.</param>
+            <param name="destinations">The destinations associated with the claim.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.AddClaim(System.Security.Claims.ClaimsIdentity,System.String,System.String,System.String[])">
+            <summary>
+            Adds a claim to a given identity and specify one or more destinations.
+            </summary>
+            <param name="identity">The identity.</param>
+            <param name="type">The type associated with the claim.</param>
+            <param name="value">The value associated with the claim.</param>
+            <param name="destinations">The destinations associated with the claim.</param>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetClaim(System.Security.Claims.ClaimsIdentity,System.String)">
+            <summary>
+            Gets the claim value corresponding to the given type.
+            </summary>
+            <param name="identity">The identity.</param>
+            <param name="type">The type associated with the claim.</param>
+            <returns>The claim value.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetClaim(System.Security.Claims.ClaimsPrincipal,System.String)">
+            <summary>
+            Gets the claim value corresponding to the given type.
+            </summary>
+            <param name="principal">The principal.</param>
+            <param name="type">The type associated with the claim.</param>
+            <returns>The claim value.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.AddProperty(Microsoft.Owin.Security.AuthenticationProperties,System.String,System.String)">
+            <summary>
+            Adds a given property in the authentication properties.
+            </summary>
+            <param name="properties">The authentication properties.</param>
+            <param name="property">The specific property to add.</param>
+            <param name="value">The value associated with the property.</param>
+            <returns>The authentication properties.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.AddProperty(Microsoft.Owin.Security.AuthenticationTicket,System.String,System.String)">
+            <summary>
+            Adds a given property in the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="property">The specific property to add.</param>
+            <param name="value">The value associated with the property.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.Copy(Microsoft.Owin.Security.AuthenticationProperties)">
+            <summary>
+            Copies the authentication properties in a new instance.
+            </summary>
+            <param name="properties">The authentication properties to copy.</param>
+            <returns>A new instance containing the copied properties.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.Copy(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Copies the authentication ticket in a new instance.
+            </summary>
+            <param name="ticket">The authentication ticket to copy.</param>
+            <returns>A new instance containing the copied ticket</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetProperty(Microsoft.Owin.Security.AuthenticationProperties,System.String)">
+            <summary>
+            Gets a given property from the authentication properties.
+            </summary>
+            <param name="properties">The authentication properties.</param>
+            <param name="property">The specific property to look for.</param>
+            <returns>The value corresponding to the property, or <c>null</c> if the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetProperty(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Gets a given property from the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="property">The specific property to look for.</param>
+            <returns>The value corresponding to the property, or <c>null</c> if the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetAudiences(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the audiences list stored in the authentication ticket.
+            Note: this method automatically excludes duplicate audiences.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The audiences list or <c>Enumerable.Empty</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetPresenters(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the presenters list stored in the authentication ticket.
+            Note: this method automatically excludes duplicate presenters.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The presenters list or <c>Enumerable.Empty</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetResources(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the resources list stored in the authentication ticket.
+            Note: this method automatically excludes duplicate resources.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The resources list or <c>Enumerable.Empty</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetScopes(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the scopes list stored in the authentication ticket.
+            Note: this method automatically excludes duplicate scopes.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The scopes list or <c>Enumerable.Empty</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetAccessTokenLifetime(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the access token lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The access token lifetime or <c>null</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetAuthorizationCodeLifetime(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the authorization code lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The authorization code lifetime or <c>null</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetIdentityTokenLifetime(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the identity token lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The identity token lifetime or <c>null</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetRefreshTokenLifetime(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the refresh token lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The refresh token lifetime or <c>null</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetTokenId(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the unique identifier associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The unique identifier or <c>null</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.GetTokenUsage(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets the usage of the token stored in the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns>The usage of the token or <c>null</c> is the property cannot be found.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasProperty(Microsoft.Owin.Security.AuthenticationProperties,System.String)">
+            <summary>
+            Determines whether a given exists in the authentication properties.
+            </summary>
+            <param name="properties">The authentication properties.</param>
+            <param name="property">The specific property to look for.</param>
+            <returns><c>true</c> if the property was found, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasProperty(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Determines whether a given exists in the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="property">The specific property to look for.</param>
+            <returns><c>true</c> if the property was found, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasAudience(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Determines whether the authentication ticket contains at least one audience.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket contains at least one audience.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasAudience(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Determines whether the authentication ticket contains the given audience.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="audience">The audience.</param>
+            <returns><c>true</c> if the ticket contains the given audience.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasPresenter(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Determines whether the authentication ticket contains at least one presenter.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket contains at least one presenter.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasPresenter(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Determines whether the authentication ticket contains the given presenter.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="presenter">The presenter.</param>
+            <returns><c>true</c> if the ticket contains the given presenter.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasResource(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Determines whether the authentication ticket contains at least one resource.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket contains at least one resource.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasResource(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Determines whether the authentication ticket contains the given resource.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="resource">The resource.</param>
+            <returns><c>true</c> if the ticket contains the given resource.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasScope(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Determines whether the authentication ticket contains at least one scope.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket contains at least one scope.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.HasScope(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Determines whether the authentication ticket contains the given scope.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="scope">The scope.</param>
+            <returns><c>true</c> if the ticket contains the given scope.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.IsConfidential(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets a boolean value indicating whether
+            the ticket is marked as confidential.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket is confidential, or <c>false</c> if it's not.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.IsAccessToken(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets a boolean value indicating whether the
+            authentication ticket corresponds to an access token.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket corresponds to an access token.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.IsAuthorizationCode(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets a boolean value indicating whether the
+            authentication ticket corresponds to an access token.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket corresponds to an authorization code.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.IsIdentityToken(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets a boolean value indicating whether the
+            authentication ticket corresponds to an identity token.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket corresponds to an identity token.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.IsRefreshToken(Microsoft.Owin.Security.AuthenticationTicket)">
+            <summary>
+            Gets a boolean value indicating whether the
+            authentication ticket corresponds to a refresh token.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <returns><c>true</c> if the ticket corresponds to a refresh token.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.RemoveProperty(Microsoft.Owin.Security.AuthenticationProperties,System.String)">
+            <summary>
+            Removes a given property in the authentication properties.
+            </summary>
+            <param name="properties">The authentication properties.</param>
+            <param name="property">The specific property to remove.</param>
+            <returns>The authentication properties.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.RemoveProperty(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Removes a given property in the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="property">The specific property to remove.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetProperty(Microsoft.Owin.Security.AuthenticationProperties,System.String,System.String)">
+            <summary>
+            Adds, updates or removes a given property in the authentication properties.
+            </summary>
+            <param name="properties">The authentication properties.</param>
+            <param name="property">The specific property to add, update or remove.</param>
+            <param name="value">The value associated with the property.</param>
+            <returns>The authentication properties.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetProperty(Microsoft.Owin.Security.AuthenticationTicket,System.String,System.String)">
+            <summary>
+            Adds, updates or removes a given property in the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="property">The specific property to add, update or remove.</param>
+            <param name="value">The value associated with the property.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetAudiences(Microsoft.Owin.Security.AuthenticationTicket,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Sets the audiences list in the authentication ticket.
+            Note: this method automatically excludes duplicate audiences.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="audiences">The audiences to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetAudiences(Microsoft.Owin.Security.AuthenticationTicket,System.String[])">
+            <summary>
+            Sets the audiences list in the authentication ticket.
+            Note: this method automatically excludes duplicate audiences.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="audiences">The audiences to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetPresenters(Microsoft.Owin.Security.AuthenticationTicket,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Sets the presenters list in the authentication ticket.
+            Note: this method automatically excludes duplicate presenters.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="presenters">The presenters to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetPresenters(Microsoft.Owin.Security.AuthenticationTicket,System.String[])">
+            <summary>
+            Sets the presenters list in the authentication ticket.
+            Note: this method automatically excludes duplicate presenters.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="presenters">The presenters to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetResources(Microsoft.Owin.Security.AuthenticationTicket,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Sets the resources list in the authentication ticket.
+            Note: this method automatically excludes duplicate resources.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="resources">The resources to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetResources(Microsoft.Owin.Security.AuthenticationTicket,System.String[])">
+            <summary>
+            Sets the resources list in the authentication ticket.
+            Note: this method automatically excludes duplicate resources.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="resources">The resources to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetScopes(Microsoft.Owin.Security.AuthenticationTicket,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Sets the scopes list in the authentication ticket.
+            Note: this method automatically excludes duplicate scopes.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="scopes">The scopes to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetScopes(Microsoft.Owin.Security.AuthenticationTicket,System.String[])">
+            <summary>
+            Sets the scopes list in the authentication ticket.
+            Note: this method automatically excludes duplicate scopes.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="scopes">The scopes to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetConfidentialityLevel(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Sets the confidentiality level associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="level">The confidentiality level of the token.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetAccessTokenLifetime(Microsoft.Owin.Security.AuthenticationTicket,System.Nullable{System.TimeSpan})">
+            <summary>
+            Sets the access token lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="lifetime">The access token lifetime to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetAuthorizationCodeLifetime(Microsoft.Owin.Security.AuthenticationTicket,System.Nullable{System.TimeSpan})">
+            <summary>
+            Sets the authorization code lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="lifetime">The authorization code lifetime to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetIdentityTokenLifetime(Microsoft.Owin.Security.AuthenticationTicket,System.Nullable{System.TimeSpan})">
+            <summary>
+            Sets the identity token lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="lifetime">The identity token lifetime to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetRefreshTokenLifetime(Microsoft.Owin.Security.AuthenticationTicket,System.Nullable{System.TimeSpan})">
+            <summary>
+            Sets the refresh token lifetime associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="lifetime">The refresh token lifetime to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetTokenId(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Sets the unique identifier associated with the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="identifier">The unique identifier to store.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+        <member name="M:Owin.Security.OpenIdConnect.Extensions.OpenIdConnectExtensions.SetTokenUsage(Microsoft.Owin.Security.AuthenticationTicket,System.String)">
+            <summary>
+            Sets the usage of the token in the authentication ticket.
+            </summary>
+            <param name="ticket">The authentication ticket.</param>
+            <param name="usage">The usage of the token.</param>
+            <returns>The authentication ticket.</returns>
+        </member>
+    </members>
+</doc>

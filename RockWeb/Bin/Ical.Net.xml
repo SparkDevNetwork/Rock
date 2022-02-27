@@ -1,0 +1,1675 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Ical.Net</name>
+    </assembly>
+    <members>
+        <member name="T:Ical.Net.Alarm">
+            <summary>
+            A class that represents an RFC 2445 VALARM component.
+            FIXME: move GetOccurrences() logic into an AlarmEvaluator.
+            </summary>    
+        </member>
+        <member name="M:Ical.Net.Alarm.GetOccurrences(Ical.Net.Interfaces.Components.IRecurringComponent,Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Gets a list of alarm occurrences for the given recurring component, <paramref name="rc"/>
+            that occur between <paramref name="fromDate"/> and <paramref name="toDate"/>.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Alarm.Poll(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Polls the <see cref="T:Ical.Net.Alarm"/> component for alarms that have been triggered
+            since the provided <paramref name="start"/> date/time.  If <paramref name="start"/>
+            is null, all triggered alarms will be returned.
+            </summary>
+            <param name="start">The earliest date/time to poll trigered alarms for.</param>
+            <returns>A list of <see cref="T:Ical.Net.DataTypes.AlarmOccurrence"/> objects, each containing a triggered alarm.</returns>
+        </member>
+        <member name="M:Ical.Net.Alarm.AddRepeatedItems">
+            <summary>
+            Handles the repetitions that occur from the <c>REPEAT</c> and
+            <c>DURATION</c> properties.  Each recurrence of the alarm will
+            have its own set of generated repetitions.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.VTimeZone">
+            <summary>
+            Represents an RFC 5545 VTIMEZONE component.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.Journal">
+            <summary>
+            A class that represents an RFC 5545 VJOURNAL component.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Journal.#ctor">
+            <summary>
+            Constructs an Journal object, with an iCalObject
+            (usually an iCalendar object) as its parent.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.VTimeZoneInfo.TimeZoneName">
+            <summary>
+            Returns the name of the current Time Zone.
+            <example>
+                The following are examples:
+                <list type="bullet">
+                    <item>EST</item>
+                    <item>EDT</item>
+                    <item>MST</item>
+                    <item>MDT</item>
+                </list>
+            </example>
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.Attachment">
+            <summary>
+            Attachments represent the ATTACH element that can be associated with Alarms, Journals, Todos, and Events. There are two kinds of attachments:
+            1) A string representing a URI which is typically human-readable, OR
+            2) A base64-encoded string that can represent anything
+            </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.SentBy">
+            <summary> SENT-BY, to indicate who is acting on behalf of the ATTENDEE </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.CommonName">
+            <summary> CN: to show the common or displayable name associated with the calendar address </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.DirectoryEntry">
+            <summary> DIR, to indicate the URI that points to the directory information corresponding to the attendee </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.Type">
+            <summary> CUTYPE: the type of calendar user </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.Members">
+            <summary> MEMBER: the groups the user belongs to </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.Role">
+            <summary> ROLE: the intended role the attendee will have </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.Rsvp">
+            <summary> RSVP, to indicate whether a reply is requested </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.DelegatedTo">
+            <summary> DELEGATED-TO, to indicate the calendar users that the original request was delegated to </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.DelegatedFrom">
+            <summary> DELEGATED-FROM, to indicate whom the request was delegated from </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.Attendee.Value">
+            <summary> Uri associated with the attendee, typically an email address </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.CalendarDataType">
+            <summary>
+            An abstract class from which all iCalendar data types inherit.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.DataTypes.CalendarDataType.CopyFrom(Ical.Net.Interfaces.General.ICopyable)">
+            <summary>
+            Copies values from the target object to the
+            current object.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.DataTypes.CalendarDataType.Copy``1">
+            <summary>
+            Creates a copy of the object.
+            </summary>
+            <returns>The copy of the object.</returns>
+        </member>
+        <member name="T:Ical.Net.DataTypes.Organizer">
+            <summary>
+            A class that represents the organizer of an event/todo/journal.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.RequestStatus">
+            <summary>
+            A class that represents the return status of an iCalendar request.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.StatusCode">
+            <summary>
+            An iCalendar status code.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.Trigger">
+            <summary>
+            A class that is used to specify exactly when an <see cref="F:Ical.Net.Components.Alarm"/> component will trigger.
+            Usually this date/time is relative to the component to which the Alarm is associated.
+            </summary>    
+        </member>
+        <member name="T:Ical.Net.DataTypes.WeekDay">
+            <summary>
+            Represents an RFC 5545 "BYDAY" value.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.EncodableDataType">
+            <summary>
+            An abstract class from which all iCalendar data types inherit.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.GeographicLocation">
+            <summary>
+            A class that represents the geographical location of an
+            <see cref="F:Ical.Net.Components.Event"/> or <see cref="F:Ical.Net.Components.Todo"/> item.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.PeriodList">
+            <summary>
+            An iCalendar list of recurring dates (or date exclusions)
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.RecurrencePattern">
+            <summary>
+            An iCalendar representation of the <c>RRULE</c> property.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.UtcOffset">
+            <summary>
+            Represents a time offset from UTC (Coordinated Universal Time).
+            </summary>
+        </member>
+        <member name="T:Ical.Net.DataTypes.AlarmOccurrence">
+            <summary>
+            A class that represents a specific occurrence of an <see cref="P:Ical.Net.DataTypes.AlarmOccurrence.Alarm"/>.        
+            </summary>
+            <remarks>
+            The <see cref="T:Ical.Net.DataTypes.AlarmOccurrence"/> contains the <see cref="P:Ical.Net.DataTypes.AlarmOccurrence.Period"/> when
+            the alarm occurs, the <see cref="P:Ical.Net.DataTypes.AlarmOccurrence.Alarm"/> that fired, and the 
+            component on which the alarm fired.
+            </remarks>
+        </member>
+        <member name="T:Ical.Net.DataTypes.Period">
+            <summary> Represents an iCalendar period of time. </summary>    
+        </member>
+        <member name="T:Ical.Net.DataTypes.CalDateTime">
+            <summary>
+            The iCalendar equivalent of the .NET <see cref="T:System.DateTime"/> class.
+            <remarks>
+            In addition to the features of the <see cref="T:System.DateTime"/> class, the <see cref="T:Ical.Net.DataTypes.CalDateTime"/>
+            class handles time zone differences, and integrates seamlessly into the iCalendar framework.
+            </remarks>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.CalDateTime.AsSystemLocal">
+            <summary>
+            Converts the date/time to this computer's local date/time.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.DataTypes.CalDateTime.AsUtc">
+            <summary>
+            Converts the date/time to UTC (Coordinated Universal Time)
+            </summary>
+        </member>
+        <member name="T:Ical.Net.CalendarComponent">
+            <summary>
+            This class is used by the parsing framework for iCalendar components.
+            Generally, you should not need to use this class directly.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.CalendarComponent.LoadFromStream(System.IO.Stream)">
+            <summary>
+            Loads an iCalendar component (Event, Todo, Journal, etc.) from an open stream.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.CalendarComponent.Properties">
+            <summary>
+            Returns a list of properties that are associated with the iCalendar object.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.CalendarComponent.AddProperty(System.String,System.String)">
+            <summary>
+            Adds a property to this component.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.CalendarComponent.AddProperty(Ical.Net.Interfaces.General.ICalendarProperty)">
+            <summary>
+            Adds a property to this component.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.Event">
+            <summary>
+            A class that represents an RFC 5545 VEVENT component.
+            </summary>
+            <note>
+                TODO: Add support for the following properties:
+                <list type="bullet">
+                    <item>Add support for the Organizer and Attendee properties</item>
+                    <item>Add support for the Class property</item>
+                    <item>Add support for the Geo property</item>
+                    <item>Add support for the Priority property</item>
+                    <item>Add support for the Related property</item>
+                    <item>Create a TextCollection DataType for 'text' items separated by commas</item>
+                </list>
+            </note>
+        </member>
+        <member name="P:Ical.Net.Event.DtStart">
+            <summary>
+            The start date/time of the event.
+            <note>
+            If the duration has not been set, but
+            the start/end time of the event is available,
+            the duration is automatically determined.
+            Likewise, if the end date/time has not been
+            set, but a start and duration are available,
+            the end date/time will be extrapolated.
+            </note>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.DtEnd">
+            <summary>
+            The end date/time of the event.
+            <note>
+            If the duration has not been set, but
+            the start/end time of the event is available,
+            the duration is automatically determined.
+            Likewise, if an end time and duration are available,
+            but a start time has not been set, the start time
+            will be extrapolated.
+            </note>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.Duration">
+            <summary>
+            The duration of the event.
+            <note>
+            If a start time and duration is available,
+            the end time is automatically determined.
+            Likewise, if the end time and duration is
+            available, but a start time is not determined,
+            the start time will be extrapolated from
+            available information.
+            </note>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.End">
+            <summary>
+            An alias to the DtEnd field (i.e. end date/time).
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.IsAllDay">
+            <summary>
+            Returns true if the event is an all-day event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.GeographicLocation">
+            <summary>
+            The geographic location (lat/long) of the event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.Location">
+            <summary>
+            The location of the event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.Resources">
+            <summary>
+            Resources that will be used during the event.
+            <example>Conference room #2</example>
+            <example>Projector</example>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.Status">
+            <summary>
+            The status of the event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Event.Transparency">
+            <summary>
+            The transparency of the event.  In other words,
+            whether or not the period of time this event
+            occupies can contain other events (transparent),
+            or if the time cannot be scheduled for anything
+            else (opaque).
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Event.#ctor">
+            <summary>
+            Constructs an Event object, with an iCalObject
+            (usually an iCalendar object) as its parent.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Event.OccursOn(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Use this method to determine if an event occurs on a given date.
+            <note type="caution">
+                This event should be called only after the Evaluate
+                method has calculated the dates for which this event occurs.
+            </note>
+            </summary>
+            <param name="dateTime">The date to test.</param>
+            <returns>True if the event occurs on the <paramref name="dateTime"/> provided, False otherwise.</returns>
+        </member>
+        <member name="M:Ical.Net.Event.OccursAt(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Use this method to determine if an event begins at a given date and time.
+            </summary>
+            <param name="dateTime">The date and time to test.</param>
+            <returns>True if the event begins at the given date and time</returns>
+        </member>
+        <member name="M:Ical.Net.Event.IsActive">
+            <summary>
+            Determines whether or not the <see cref="T:Ical.Net.Event"/> is actively displayed
+            as an upcoming or occurred event.
+            </summary>
+            <returns>True if the event has not been cancelled, False otherwise.</returns>
+        </member>
+        <member name="T:Ical.Net.RecurringComponent">
+            <summary>
+            An iCalendar component that recurs.
+            </summary>
+            <remarks>
+            This component automatically handles
+            RRULEs, RDATE, EXRULEs, and EXDATEs, as well as the DTSTART
+            for the recurring item (all recurring items must have a DTSTART).
+            </remarks>
+        </member>
+        <member name="P:Ical.Net.RecurringComponent.DtStart">
+            <summary>
+            The start date/time of the component.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.RecurringComponent.Start">
+            <summary>
+            An alias to the DTStart field (i.e. start date/time).
+            </summary>
+        </member>
+        <member name="P:Ical.Net.RecurringComponent.Alarms">
+            <summary>
+            A list of <see cref="T:Ical.Net.Alarm"/>s for this recurring component.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.Todo">
+            <summary>
+            A class that represents an RFC 5545 VTODO component.
+            </summary> 
+        </member>
+        <member name="P:Ical.Net.Todo.Completed">
+            <summary>
+            The date/time the todo was completed.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Todo.DtStart">
+            <summary>
+            The start date/time of the todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Todo.Due">
+            <summary>
+            The due date of the todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Todo.Duration">
+            <summary>
+            The duration of the todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Todo.Status">
+            <summary>
+            The status of the todo item.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Todo.IsCompleted(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Use this method to determine if a todo item has been completed.
+            This takes into account recurrence items and the previous date
+            of completion, if any.        
+            <note>
+            This method evaluates the recurrence pattern for this TODO
+            as necessary to ensure all relevant information is taken
+            into account to give the most accurate result possible.
+            </note>
+            </summary>
+            <returns>True if the todo item has been completed</returns>
+        </member>
+        <member name="M:Ical.Net.Todo.IsActive(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns 'True' if the todo item is Active as of <paramref name="currDt"/>.
+            An item is Active if it requires action of some sort.
+            </summary>
+            <param name="currDt">The date and time to test.</param>
+            <returns>True if the item is Active as of <paramref name="currDt"/>, False otherwise.</returns>
+        </member>
+        <member name="M:Ical.Net.Todo.IsCancelled">
+            <summary>
+            Returns True if the todo item was cancelled.
+            </summary>
+            <returns>True if the todo was cancelled, False otherwise.</returns>
+        </member>
+        <member name="T:Ical.Net.UniqueComponent">
+            <summary>
+            Represents a unique component, a component with a unique UID,
+            which can be used to uniquely identify the component.    
+            </summary>
+        </member>
+        <member name="F:Ical.Net.EventParticipationStatus.NeedsAction">
+            <summary> Event needs action </summary>
+        </member>
+        <member name="F:Ical.Net.EventParticipationStatus.Accepted">
+            <summary> Event accepted </summary>
+        </member>
+        <member name="F:Ical.Net.EventParticipationStatus.Declined">
+            <summary> Event declined </summary>
+        </member>
+        <member name="F:Ical.Net.EventParticipationStatus.Tentative">
+            <summary> Event tentatively accepted </summary>
+        </member>
+        <member name="F:Ical.Net.EventParticipationStatus.Delegated">
+            <summary> Event delegated </summary>
+        </member>
+        <member name="F:Ical.Net.ToDoParticipationStatus.NeedsAction">
+            <summary> To-do needs action </summary>
+        </member>
+        <member name="F:Ical.Net.ToDoParticipationStatus.Accepted">
+            <summary> To-do accepted </summary>
+        </member>
+        <member name="F:Ical.Net.ToDoParticipationStatus.Declined">
+            <summary> To-do declined </summary>
+        </member>
+        <member name="F:Ical.Net.ToDoParticipationStatus.Tentative">
+            <summary> To-do tentatively accepted </summary>
+        </member>
+        <member name="F:Ical.Net.ToDoParticipationStatus.Delegated">
+            <summary> To-do delegated </summary>
+        </member>
+        <member name="F:Ical.Net.ToDoParticipationStatus.Completed">
+            <summary> To-do completed </summary>
+        </member>
+        <member name="F:Ical.Net.ToDoParticipationStatus.InProcess">
+            <summary> To-do in process </summary>
+        </member>
+        <member name="F:Ical.Net.JournalParticipationStatus.NeedsAction">
+            <summary> Event needs action </summary>
+        </member>
+        <member name="F:Ical.Net.JournalParticipationStatus.Accepted">
+            <summary> Event accepted </summary>
+        </member>
+        <member name="F:Ical.Net.JournalParticipationStatus.Declined">
+            <summary> Event declined </summary>
+        </member>
+        <member name="F:Ical.Net.ParticipationRole.Chair">
+            <summary> Indicates the chair of the calendar entity </summary>
+        </member>
+        <member name="F:Ical.Net.ParticipationRole.RequiredParticipant">
+            <summary> Indicates a participant whose participation is required </summary>
+        </member>
+        <member name="F:Ical.Net.ParticipationRole.OptionalParticipant">
+            <summary> Indicates a participant whose participation is optional </summary>
+        </member>
+        <member name="F:Ical.Net.ParticipationRole.NonParticipant">
+            <summary> Indicates a participant who is copied for information purposes only </summary>
+        </member>
+        <member name="T:Ical.Net.EventStatus">
+            <summary>
+            Status codes available to an <see cref="F:Ical.Net.Components.Event"/> item
+            </summary>
+        </member>
+        <member name="T:Ical.Net.TodoStatus">
+            <summary>
+            Status codes available to a <see cref="F:Ical.Net.Components.Todo"/> item.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.JournalStatus">
+            <summary>
+            Status codes available to a <see cref="F:Ical.Net.Components.Journal"/> entry.
+            </summary>    
+        </member>
+        <member name="T:Ical.Net.FrequencyOccurrence">
+            <summary>
+            Indicates the occurrence of the specific day within a
+            MONTHLY or YEARLY recurrence frequency. For example, within
+            a MONTHLY frequency, consider the following:
+            
+            RecurrencePattern r = new RecurrencePattern();
+            r.Frequency = FrequencyType.Monthly;
+            r.ByDay.Add(new WeekDay(DayOfWeek.Monday, FrequencyOccurrence.First));
+            
+            The above example represents the first Monday within the month,
+            whereas if FrequencyOccurrence.Last were specified, it would 
+            represent the last Monday of the month.
+            
+            For a YEARLY frequency, consider the following:
+            
+            Recur r = new Recur();
+            r.Frequency = FrequencyType.Yearly;
+            r.ByDay.Add(new WeekDay(DayOfWeek.Monday, FrequencyOccurrence.Second));
+            
+            The above example represents the second Monday of the year.  This can
+            also be represented with the following code:
+            
+            r.ByDay.Add(new WeekDay(DayOfWeek.Monday, 2));
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceRestrictionType.Default">
+            <summary>
+            Same as RestrictSecondly.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceRestrictionType.NoRestriction">
+            <summary>
+            Does not restrict recurrence evaluation - WARNING: this may cause very slow performance!
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceRestrictionType.RestrictSecondly">
+            <summary>
+            Disallows use of the SECONDLY frequency for recurrence evaluation
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceRestrictionType.RestrictMinutely">
+            <summary>
+            Disallows use of the MINUTELY and SECONDLY frequencies for recurrence evaluation
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceRestrictionType.RestrictHourly">
+            <summary>
+            Disallows use of the HOURLY, MINUTELY, and SECONDLY frequencies for recurrence evaluation
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceEvaluationModeType.Default">
+            <summary>
+            Same as ThrowException.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceEvaluationModeType.AdjustAutomatically">
+            <summary>
+            Automatically adjusts the evaluation to the next-best frequency based on the restriction type.
+            For example, if the restriction were IgnoreSeconds, and the frequency were SECONDLY, then
+            this would cause the frequency to be adjusted to MINUTELY, the next closest thing.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.RecurrenceEvaluationModeType.ThrowException">
+            <summary>
+            This will throw an exception if a recurrence rule is evaluated that does not meet the minimum
+            restrictions.  For example, if the restriction were IgnoreSeconds, and a SECONDLY frequency
+            were evaluated, an exception would be thrown.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.Publish">
+            <summary>
+            Used to publish an iCalendar object to one or
+            more "Calendar Users".  There is no interactivity
+            between the publisher and any other "Calendar User".
+            An example might include a baseball team publishing
+            its schedule to the public.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.Request">
+            <summary>
+            Used to schedule an iCalendar object with other
+            "Calendar Users".  Requests are interactive in
+            that they require the receiver to respond using
+            the reply methods.  Meeting requests, busy-time
+            requests, and the assignment of tasks to other
+            "Calendar Users" are all examples.  Requests are
+            also used by the Organizer to update the status
+            of an iCalendar object. 
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.Reply">
+            <summary>
+            A reply is used in response to a request to
+            convey Attendee status to the Organizer.
+            Replies are commonly used to respond to meeting
+            and task requests.     
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.Add">
+            <summary>
+            Add one or more new instances to an existing
+            recurring iCalendar object. 
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.Cancel">
+            <summary>
+            Cancel one or more instances of an existing
+            iCalendar object.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.Refresh">
+            <summary>
+            Used by an Attendee to request the latest
+            version of an iCalendar object.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.Counter">
+            <summary>
+            Used by an Attendee to negotiate a change in an
+            iCalendar object.  Examples include the request
+            to change a proposed event time or change the
+            due date for a task.
+            </summary>
+        </member>
+        <member name="F:Ical.Net.CalendarMethods.DeclineCounter">
+            <summary>
+            Used by the Organizer to decline the proposed
+            counter-proposal.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.Evaluation.RecurrencePatternEvaluator">
+            <summary>
+            Much of this code comes from iCal4j, as Ben Fortuna has done an
+            excellent job with the recurrence pattern evaluation there.
+            
+            Here's the iCal4j license:
+            ==================
+             iCal4j - License
+             ==================
+             
+            Copyright (c) 2009, Ben Fortuna
+            All rights reserved.
+            
+            Redistribution and use in source and binary forms, with or without
+            modification, are permitted provided that the following conditions
+            are met:
+            
+            o Redistributions of source code must retain the above copyright
+            notice, this list of conditions and the following disclaimer.
+            
+            o Redistributions in binary form must reproduce the above copyright
+            notice, this list of conditions and the following disclaimer in the
+            documentation and/or other materials provided with the distribution.
+            
+            o Neither the name of Ben Fortuna nor the names of any other contributors
+            may be used to endorse or promote products derived from this software
+            without specific prior written permission.
+            
+            THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+            "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+            LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+            A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+            CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+            EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+            PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+            PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+            LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+            NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+            SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetDates(Ical.Net.Interfaces.DataTypes.IDateTime,System.DateTime,System.DateTime,System.Int32,Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Boolean)">
+            Returns a list of start dates in the specified period represented by this recur. This method includes a base date
+            argument, which indicates the start of the fist occurrence of this recurrence. The base date is used to inject
+            default values to return a set of dates in the correct format. For example, if the search start date (start) is
+            Wed, Mar 23, 12:19PM, but the recurrence is Mon - Fri, 9:00AM - 5:00PM, the start dates returned should all be at
+            9:00AM, and not 12:19PM.
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetCandidates(System.DateTime,Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean}[])">
+            Returns a list of possible dates generated from the applicable BY* rules, using the specified date as a seed.
+            @param date the seed date
+            @param value the type of date list to return
+            @return a DateList
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.ApplySetPosRules(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern)">
+            Applies BYSETPOS rules to <code>dates</code>. Valid positions are from 1 to the size of the date list. Invalid
+            positions are ignored.
+            @param dates
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetMonthVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYMONTH rules specified in this Recur instance to the specified date list. If no BYMONTH rules are
+            specified the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetWeekNoVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYWEEKNO rules specified in this Recur instance to the specified date list. If no BYWEEKNO rules are
+            specified the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetYearDayVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYYEARDAY rules specified in this Recur instance to the specified date list. If no BYYEARDAY rules are
+            specified the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetMonthDayVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYMONTHDAY rules specified in this Recur instance to the specified date list. If no BYMONTHDAY rules are
+            specified the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetDayVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYDAY rules specified in this Recur instance to the specified date list. If no BYDAY rules are specified
+            the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetAbsWeekDays(System.DateTime,Ical.Net.Interfaces.DataTypes.IWeekDay,Ical.Net.Interfaces.DataTypes.IRecurrencePattern)">
+            Returns a list of applicable dates corresponding to the specified week day in accordance with the frequency
+            specified by this recurrence rule.
+            @param date
+            @param weekDay
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetOffsetDates(System.Collections.Generic.List{System.DateTime},System.Int32)">
+            Returns a single-element sublist containing the element of <code>list</code> at <code>offset</code>. Valid
+            offsets are from 1 to the size of the list. If an invalid offset is supplied, all elements from <code>list</code>
+            are added to <code>sublist</code>.
+            @param list
+            @param offset
+            @param sublist
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetHourVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYHOUR rules specified in this Recur instance to the specified date list. If no BYHOUR rules are
+            specified the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetMinuteVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYMINUTE rules specified in this Recur instance to the specified date list. If no BYMINUTE rules are
+            specified the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurrencePatternEvaluator.GetSecondVariants(System.Collections.Generic.List{System.DateTime},Ical.Net.Interfaces.DataTypes.IRecurrencePattern,System.Nullable{System.Boolean})">
+            Applies BYSECOND rules specified in this Recur instance to the specified date list. If no BYSECOND rules are
+            specified the date list is returned unmodified.
+            @param dates
+            @return
+        </member>
+        <member name="M:Ical.Net.Evaluation.EventEvaluator.Evaluate(Ical.Net.Interfaces.DataTypes.IDateTime,System.DateTime,System.DateTime,System.Boolean)">
+            <summary>
+            Evaluates this event to determine the dates and times for which the event occurs.
+            This method only evaluates events which occur between <paramref name="periodStart"/>
+            and <paramref name="periodEnd"/>; therefore, if you require a list of events which
+            occur outside of this range, you must specify a <paramref name="periodStart"/> and
+            <paramref name="periodEnd"/> which encapsulate the date(s) of interest.
+            <note type="caution">
+                For events with very complex recurrence rules, this method may be a bottleneck
+                during processing time, especially when this method in called for a large number
+                of events, in sequence, or for a very large time span.
+            </note>
+            </summary>
+            <param name="referenceTime"></param>
+            <param name="periodStart">The beginning date of the range to evaluate.</param>
+            <param name="periodEnd">The end date of the range to evaluate.</param>
+            <param name="includeReferenceDateInResults"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurringEvaluator.EvaluateRRule(Ical.Net.Interfaces.DataTypes.IDateTime,System.DateTime,System.DateTime,System.Boolean)">
+            <summary>
+            Evaulates the RRule component, and adds each specified Period to the Periods collection.
+            </summary>
+            <param name="referenceDate"></param>
+            <param name="periodStart">The beginning date of the range to evaluate.</param>
+            <param name="periodEnd">The end date of the range to evaluate.</param>
+            <param name="includeReferenceDateInResults"></param>
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurringEvaluator.EvaluateRDate(Ical.Net.Interfaces.DataTypes.IDateTime,System.DateTime,System.DateTime)">
+            <summary> Evalates the RDate component, and adds each specified DateTime or Period to the Periods collection. </summary>
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurringEvaluator.EvaluateExRule(Ical.Net.Interfaces.DataTypes.IDateTime,System.DateTime,System.DateTime)">
+            <summary>
+            Evaulates the ExRule component, and excludes each specified DateTime from the Periods collection.
+            </summary>
+            <param name="referenceDate"></param>
+            <param name="periodStart">The beginning date of the range to evaluate.</param>
+            <param name="periodEnd">The end date of the range to evaluate.</param>
+        </member>
+        <member name="M:Ical.Net.Evaluation.RecurringEvaluator.EvaluateExDate(Ical.Net.Interfaces.DataTypes.IDateTime,System.DateTime,System.DateTime)">
+            <summary>
+            Evalates the ExDate component, and excludes each specified DateTime or Period from the Periods collection.
+            </summary>
+            <param name="referenceDate"></param>
+            <param name="periodStart">The beginning date of the range to evaluate.</param>
+            <param name="periodEnd">The end date of the range to evaluate.</param>
+        </member>
+        <member name="T:Ical.Net.General.CalendarObjectList">
+            <summary>
+            A collection of calendar objects.
+            </summary>
+        </member>
+        <member name="T:Ical.Net.General.CalendarObject">
+            <summary>
+            The base class for all iCalendar objects and components.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.General.CalendarObject.Parent">
+            <summary>
+            Returns the parent iCalObject that owns this one.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.General.CalendarObject.Children">
+            <summary>
+            A collection of iCalObjects that are children of the current object.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.General.CalendarObject.Name">
+            <summary>
+            Gets or sets the name of the iCalObject.  For iCalendar components, this is the RFC 5545 name of the component.
+            <example>
+                <list type="bullet">
+                    <item>Event - "VEVENT"</item>
+                    <item>Todo - "VTODO"</item>
+                    <item>TimeZone - "VTIMEZONE"</item>
+                    <item>etc.</item>
+                </list>
+            </example>
+            </summary>        
+        </member>
+        <member name="P:Ical.Net.General.CalendarObject.Calendar">
+            <summary>
+            Returns the <see cref="P:Ical.Net.General.CalendarObject.ICalendar"/> that this DDayiCalObject belongs to.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.General.CalendarObjectBase.CopyFrom(Ical.Net.Interfaces.General.ICopyable)">
+            <summary>
+            Copies values from the target object to the
+            current object.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.General.CalendarObjectBase.Copy``1">
+            <summary>
+            Creates a copy of the object.
+            </summary>
+            <returns>The copy of the object.</returns>
+        </member>
+        <member name="T:Ical.Net.General.CalendarProperty">
+            <summary>
+            A class that represents a property of the <see cref="T:Ical.Net.Calendar"/>
+            itself or one of its components.  It can also represent non-standard
+            (X-) properties of an iCalendar component, as seen with many
+            applications, such as with Apple's iCal.
+            X-WR-CALNAME:US Holidays
+            </summary>
+            <remarks>
+            Currently, the "known" properties for an iCalendar are as
+            follows:
+            <list type="bullet">
+                <item>ProdID</item>
+                <item>Version</item>
+                <item>CalScale</item>
+                <item>Method</item>
+            </list>
+            There may be other, custom X-properties applied to the calendar,
+            and X-properties may be applied to calendar components.
+            </remarks>
+        </member>
+        <member name="P:Ical.Net.General.CalendarProperty.Parameters">
+            <summary>
+            Returns a list of parameters that are associated with the iCalendar object.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.General.CalendarProperty.AddParameter(System.String,System.String)">
+            <summary>
+            Adds a parameter to the iCalendar object.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.General.CalendarProperty.AddParameter(Ical.Net.General.CalendarParameter)">
+            <summary>
+            Adds a parameter to the iCalendar object.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IAlarmContainer.Alarms">
+            <summary>
+            A list of <see cref="!:Components.Alarm"/>s for this recurring component.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Components.IAlarmContainer.PollAlarms(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+             <summary>
+             Polls <see cref="T:Ical.Net.Alarm"/>s for occurrences within the <see cref="!:Evaluate"/>d
+             time frame of this <see cref="T:Ical.Net.RecurringComponent"/>.  For each evaluated
+             occurrence if this component, each <see cref="T:Ical.Net.Alarm"/> is polled for its
+             corresponding alarm occurrences.
+             <para>
+             <example>
+             The following is an example of polling alarms for an event.
+             <code>
+             IICalendar iCal = iCalendar.LoadFromUri(new Uri("http://somesite.com/calendar.ics"));
+             IEvent evt = iCal.Events.First();
+            
+             // Poll the alarms on the event
+             List<AlarmOccurrence> alarms = evt.PollAlarms();
+             
+             // Here, you would eliminate alarms that the user has already dismissed.
+             // This information should be stored somewhere outside of the .ics file.
+             // You can use the component's UID, and the AlarmOccurence date/time 
+             // as the primary key for each alarm occurrence.
+             
+             foreach(AlarmOccurrence alarm in alarms)
+                 MessageBox.Show(alarm.Component.Summary + "\n" + alarm.DateTime);</AlarmOccurrence>
+             </code>
+             </example>
+             </para>
+             </summary>
+            <param name="startTime">The earliest allowable alarm occurrence to poll, or <c>null</c>.</param>
+            <param name="endTime"></param>
+            <returns>A List of <see cref="T:Ical.Net.DataTypes.AlarmOccurrence"/> objects, one for each occurrence of the <see cref="T:Ical.Net.Alarm"/>.</returns>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Components.IAlarm.GetOccurrences(Ical.Net.Interfaces.Components.IRecurringComponent,Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Gets a list of alarm occurrences for the given recurring component, <paramref name="rc"/>
+            that occur between <paramref name="fromDate"/> and <paramref name="toDate"/>.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Components.IAlarm.Poll(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Polls the <see cref="!:Components.Alarm"/> component for alarms that have been triggered
+            since the provided <paramref name="fromDate"/> date/time.  If <paramref name="fromDate"/>
+            is null, all triggered alarms will be returned.
+            </summary>
+            <param name="fromDate">The earliest date/time to poll trigerred alarms for.</param>
+            <param name="toDate">The latest date/time to poll trigerred alarms for.</param>
+            <returns>A list of <see cref="T:Ical.Net.DataTypes.AlarmOccurrence"/> objects, each containing a triggered alarm.</returns>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.DtEnd">
+            <summary>
+            The end date/time of the event.
+            <note>
+            If the duration has not been set, but
+            the start/end time of the event is available,
+            the duration is automatically determined.
+            Likewise, if an end time and duration are available,
+            but a start time has not been set, the start time
+            will be extrapolated.
+            </note>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.Duration">
+            <summary>
+            The duration of the event.
+            <note>
+            If a start time and duration is available,
+            the end time is automatically determined.
+            Likewise, if the end time and duration is
+            available, but a start time is not determined,
+            the start time will be extrapolated from
+            available information.
+            </note>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.End">
+            <summary>
+            An alias to the DTEnd field (i.e. end date/time).
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.IsAllDay">
+            <summary>
+            Returns true if the event is an all-day event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.GeographicLocation">
+            <summary>
+            The geographic location (lat/long) of the event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.Location">
+            <summary>
+            The location of the event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.Resources">
+            <summary>
+            Resources that will be used during the event.
+            <example>Conference room #2</example>
+            <example>Projector</example>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.Status">
+            <summary>
+            The status of the event.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.IEvent.Transparency">
+            <summary>
+            The transparency of the event.  In other words,
+            whether or not the period of time this event
+            occupies can contain other events (transparent),
+            or if the time cannot be scheduled for anything
+            else (opaque).
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.Completed">
+            <summary>
+            The date/time the todo was completed.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.Due">
+            <summary>
+            The due date of the todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.Duration">
+            <summary>
+            The duration of the todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.GeographicLocation">
+            <summary>
+            The geographic location (lat/long) of the todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.Location">
+            <summary>
+            The location of the todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.PercentComplete">
+            <summary>
+            A number between 0 and 100 that represents
+            the percentage of completion of this item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.Resources">
+            <summary>
+            A list of resources associated with this todo item.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Components.ITodo.Status">
+            <summary>
+            The current status of the todo item.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Components.ITodo.IsCompleted(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Use this method to determine if a todo item has been completed.
+            This takes into account recurrence items and the previous date
+            of completion, if any.        
+            <note>
+            This method evaluates the recurrence pattern for this TODO
+            as necessary to ensure all relevant information is taken
+            into account to give the most accurate result possible.
+            </note>
+            </summary>
+            <param name="currDt">The date and time to test.</param>
+            <returns>True if the todo item has been completed</returns>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Components.ITodo.IsActive(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns 'True' if the todo item is Active as of <paramref name="currDt"/>.
+            An item is Active if it requires action of some sort.
+            </summary>
+            <param name="currDt">The date and time to test.</param>
+            <returns>True if the item is Active as of <paramref name="currDt"/>, False otherwise.</returns>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Components.ITodo.IsCancelled">
+            <summary>
+            Returns True if the todo item was cancelled.
+            </summary>
+            <returns>True if the todo was cancelled, False otherwise.</returns>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.AsSystemLocal">
+            <summary>
+            Converts the date/time to this computer's local date/time.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.AsUtc">
+            <summary>
+            Converts the date/time to UTC (Coordinated Universal Time)
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.IsUniversalTime">
+            <summary>
+            Gets/sets whether the Value of this date/time represents
+            a universal time.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.TimeZoneName">
+            <summary>
+            Gets the time zone name this time is in, if it references a time zone.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Value">
+            <summary>
+            Gets/sets the underlying DateTime value stored.  This should always
+            use DateTimeKind.Utc, regardless of its actual representation.
+            Use IsUniversalTime along with the TZID to control how this
+            date/time is handled.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.HasDate">
+            <summary>
+            Gets/sets whether or not this date/time value contains a 'date' part.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.HasTime">
+            <summary>
+            Gets/sets whether or not this date/time value contains a 'time' part.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.TzId">
+            <summary>
+            Gets/sets the time zone ID for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Year">
+            <summary>
+            Gets the year for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Month">
+            <summary>
+            Gets the month for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Day">
+            <summary>
+            Gets the day for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Hour">
+            <summary>
+            Gets the hour for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Minute">
+            <summary>
+            Gets the minute for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Second">
+            <summary>
+            Gets the second for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Millisecond">
+            <summary>
+            Gets the millisecond for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Ticks">
+            <summary>
+            Gets the ticks for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.DayOfWeek">
+            <summary>
+            Gets the DayOfWeek for this date/time value.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IDateTime.Date">
+            <summary>
+            Gets the date portion of the date/time value.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.DataTypes.IDateTime.ToTimeZone(System.String)">
+            <summary>
+            Converts the date/time value to a local time
+            within the specified time zone.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IAttachment.Uri">
+            <summary>
+            The URI where the attachment information can be located.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IAttachment.Data">
+            <summary>
+            A binary representation of the data that was loaded.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IAttachment.FormatType">
+            <summary>
+            To specify the content type of a referenced object.
+            This optional value should be an IANA-registered
+            MIME type, if specified.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.DataTypes.IAttachment.ValueEncoding">
+            <summary>
+            Gets/sets the encoding used to store the value.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Evaluation.IGetOccurrences.ClearEvaluation">
+            <summary>
+            Clears a previous evaluation, usually because one of the 
+            key elements used for evaluation has changed 
+            (Start, End, Duration, recurrence rules, exceptions, etc.).
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Evaluation.IGetOccurrences.GetOccurrences(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns all occurrences of this component that start on the date provided.
+            All components starting between 12:00:00AM and 11:59:59 PM will be
+            returned.
+            <note>
+            This will first Evaluate() the date range required in order to
+            determine the occurrences for the date provided, and then return
+            the occurrences.
+            </note>
+            </summary>
+            <param name="dt">The date for which to return occurrences.</param>
+            <returns>A list of Periods representing the occurrences of this object.</returns>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Evaluation.IGetOccurrences.GetOccurrences(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns all occurrences of this component that overlap with the date range provided.
+            All components that overlap with the time range between <paramref name="startTime"/> and <paramref name="endTime"/> will be returned.
+            </summary>
+            <param name="startTime">The starting date range</param>
+            <param name="endTime">The ending date range</param>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Evaluation.IGetOccurrencesTyped.GetOccurrences``1(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns all occurrences of components of type T that start on the date provided.
+            All components starting between 12:00:00AM and 11:59:59 PM will be
+            returned.
+            <note>
+            This will first Evaluate() the date range required in order to
+            determine the occurrences for the date provided, and then return
+            the occurrences.
+            </note>
+            </summary>
+            <param name="dt">The date for which to return occurrences.</param>
+            <returns>A list of Periods representing the occurrences of this object.</returns>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Evaluation.IGetOccurrencesTyped.GetOccurrences``1(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns all occurrences of components of type T that start within the date range provided.
+            All components occurring between <paramref name="startTime"/> and <paramref name="endTime"/>
+            will be returned.
+            </summary>
+            <param name="startTime">The starting date range</param>
+            <param name="endTime">The ending date range</param>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Evaluation.IEvaluator.Calendar">
+            <summary>
+            The system calendar that governs the evaluation rules.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Evaluation.IEvaluator.EvaluationStartBounds">
+            <summary>
+            The start bounds of the evaluation.  This gives
+            the first date/time that is covered by the evaluation.
+            This together with EvaluationEndBounds determines
+            what time frames have already been evaluated, so
+            duplicate evaluation doesn't occur.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Evaluation.IEvaluator.EvaluationEndBounds">
+            <summary>
+            The end bounds of the evaluation.
+            See <see cref="P:Ical.Net.Interfaces.Evaluation.IEvaluator.EvaluationStartBounds"/> for more info.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Evaluation.IEvaluator.Periods">
+            <summary>
+            Gets a list of periods collected so far during
+            the evaluation process.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Evaluation.IEvaluator.AssociatedObject">
+            <summary>
+            Gets the object associated with this evaluator.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Evaluation.IEvaluator.Clear">
+            <summary>
+            Clears the evaluation, eliminating all data that has
+            been collected up to this point.  Since this data is cached
+            as needed, this method can be useful to gather information
+            that is guaranteed to not be out-of-date.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.Evaluation.IEvaluator.Evaluate(Ical.Net.Interfaces.DataTypes.IDateTime,System.DateTime,System.DateTime,System.Boolean)">
+            <summary>
+            Evaluates this item to determine the dates and times for which it occurs/recurs.
+            This method only evaluates items which occur/recur between <paramref name="periodStart"/>
+            and <paramref name="periodEnd"/>; therefore, if you require a list of items which
+            occur outside of this range, you must specify a <paramref name="periodStart"/> and
+            <paramref name="periodEnd"/> which encapsulate the date(s) of interest.
+            This method evaluates using the <paramref name="periodStart" /> as the beginning
+            point.  For example, for a WEEKLY occurrence, the <paramref name="periodStart"/>
+            determines the day of week that this item will recur on.
+            <note type="caution">
+                For events with very complex recurrence rules, this method may be a bottleneck
+                during processing time, especially when this method is called for a large number
+                of items, in sequence, or for a very large time span.
+            </note>
+            </summary>
+            <param name="referenceDate"></param>
+            <param name="periodStart"></param>
+            <param name="periodEnd"></param>
+            <param name="includeReferenceDateInResults"></param>
+            <returns>
+                A list of <see cref="T:System.DateTime"/> objects for
+                each date/time when this item occurs/recurs.
+            </returns>
+        </member>
+        <member name="P:Ical.Net.Interfaces.Evaluation.IRecurrable.Start">
+            <summary>
+            Gets/sets the start date/time of the component.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.General.ICalendarObject.Name">
+            <summary>
+            The name of the calendar object.
+            Every calendar object can be assigned
+            a name.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.General.ICalendarObject.Parent">
+            <summary>
+            Returns the parent of this object.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.General.ICalendarObject.Children">
+            <summary>
+            Returns a collection of children of this object.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.General.ICalendarObject.Calendar">
+            <summary>
+            Returns the iCalendar that this object
+            is associated with.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.General.ICalendarObject.Line">
+            <summary>
+            Returns the line number where this calendar
+            object was found during parsing.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.General.ICalendarObject.Column">
+            <summary>
+            Returns the column number where this calendar
+            object was found during parsing.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.General.ICopyable.CopyFrom(Ical.Net.Interfaces.General.ICopyable)">
+            <summary>
+            Copies all relevant fields/properties from
+            the target object to the current one.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.General.ICopyable.Copy``1">
+            <summary>
+            Returns a deep copy of the current object. For the most part, this is only necessary when working with mutable reference types,
+            (i.e. iCalDateTime). For most other types, it's unnecessary overhead. The pattern that identifies whether it's necessary to copy
+            or not is whether arithmetic operations mutate fields or properties. iCalDateTime is a good example where + and - would otherwise
+            change the Value of the underlying DateTime.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.General.ILoadable.IsLoaded">
+            <summary>
+            Gets whether or not the object has been loaded.
+            </summary>
+        </member>
+        <member name="E:Ical.Net.Interfaces.General.ILoadable.Loaded">
+            <summary>
+            An event that fires when the object has been loaded.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.General.ILoadable.OnLoaded">
+            <summary>
+            Fires the Loaded event.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.General.IMergeable.MergeWith(Ical.Net.Interfaces.General.IMergeable)">
+            <summary>
+            Merges this object with another.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.Version">
+            <summary>
+            Gets/sets the calendar version.  Defaults to "2.0".
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.ProductId">
+            <summary>
+            Gets/sets the product ID for the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.Scale">
+            <summary>
+            Gets/sets the scale of the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.Method">
+            <summary>
+            Gets/sets the calendar method.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.RecurrenceRestriction">
+            <summary>
+            Gets/sets the restriction on how evaluation of 
+            recurrence patterns occurs within this calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.RecurrenceEvaluationMode">
+            <summary>
+            Gets/sets the evaluation mode during recurrence
+            evaluation.  Default is ThrowException.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Interfaces.ICalendar.Create``1">
+            <summary>
+            Creates a new component, and adds it
+            to the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.UniqueComponents">
+            <summary>
+            Gets a list of unique components contained in the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.Events">
+            <summary>
+            Gets a list of Events contained in the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.FreeBusy">
+            <summary>
+            Gets a list of Free/Busy components contained in the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.Journals">
+            <summary>
+            Gets a list of Journal entries contained in the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.TimeZones">
+            <summary>
+            Gets a list of time zones contained in the calendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Interfaces.ICalendar.Todos">
+            <summary>
+            Gets a list of To-do items contained in the calendar.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Serialization.iCalendar.Factory.DataTypeSerializerFactory.Build(System.Type,Ical.Net.Interfaces.Serialization.ISerializationContext)">
+            <summary>
+            Returns a serializer that can be used to serialize and object
+            of type <paramref name="objectType"/>.
+            <note>
+                TODO: Add support for caching.
+            </note>
+            </summary>
+            <param name="objectType">The type of object to be serialized.</param>
+            <param name="ctx">The serialization context.</param>
+        </member>
+        <member name="M:Ical.Net.Serialization.iCalendar.Factory.SerializerFactory.Build(System.Type,Ical.Net.Interfaces.Serialization.ISerializationContext)">
+            <summary>
+            Returns a serializer that can be used to serialize and object
+            of type <paramref name="objectType"/>.
+            <note>
+                TODO: Add support for caching.
+            </note>
+            </summary>
+            <param name="objectType">The type of object to be serialized.</param>
+            <param name="ctx">The serialization context.</param>
+        </member>
+        <member name="P:Ical.Net.Serialization.SerializationContext.Default">
+            <summary>
+            Gets the Singleton instance of the SerializationContext class.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Calendar.LoadFromFile(System.String)">
+            <summary>
+            Loads an <see cref="T:Ical.Net.Calendar"/> from the file system.
+            </summary>
+            <param name="filepath">The path to the file to load.</param>
+            <returns>An <see cref="T:Ical.Net.Calendar"/> object</returns>        
+        </member>
+        <member name="M:Ical.Net.Calendar.LoadFromStream(System.IO.Stream)">
+            <summary>
+            Loads an <see cref="T:Ical.Net.Calendar"/> from an open stream.
+            </summary>
+            <param name="s">The stream from which to load the <see cref="T:Ical.Net.Calendar"/> object</param>
+            <returns>An <see cref="T:Ical.Net.Calendar"/> object</returns>
+        </member>
+        <member name="M:Ical.Net.Calendar.#ctor">
+            <summary>
+            To load an existing an iCalendar object, use one of the provided LoadFromXXX methods.
+            <example>
+            For example, use the following code to load an iCalendar object from a URL:
+            <code>
+                IICalendar iCal = iCalendar.LoadFromUri(new Uri("http://somesite.com/calendar.ics"));
+            </code>
+            </example>
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Calendar.Events">
+            <summary>
+            A collection of <see cref="F:Ical.Net.Components.Event"/> components in the iCalendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Calendar.FreeBusy">
+            <summary>
+            A collection of <see cref="T:Ical.Net.FreeBusy"/> components in the iCalendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Calendar.Journals">
+            <summary>
+            A collection of <see cref="F:Ical.Net.Components.Journal"/> components in the iCalendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Calendar.TimeZones">
+            <summary>
+            A collection of TimeZone components in the iCalendar.
+            </summary>
+        </member>
+        <member name="P:Ical.Net.Calendar.Todos">
+            <summary>
+            A collection of <see cref="F:Ical.Net.Components.Todo"/> components in the iCalendar.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Calendar.AddTimeZone(System.TimeZoneInfo)">
+            <summary>
+            Adds a system time zone to the iCalendar.  This time zone may
+            then be used in date/time objects contained in the 
+            calendar.
+            </summary>
+            <param name="tzi">A System.TimeZoneInfo object to add to the calendar.</param>
+            <returns>The time zone added to the calendar.</returns>
+        </member>
+        <member name="M:Ical.Net.Calendar.AddTimeZone(Ical.Net.Interfaces.Components.ITimeZone)">
+            <summary>
+            Adds a time zone to the iCalendar.  This time zone may
+            then be used in date/time objects contained in the 
+            calendar.
+            </summary>        
+            <returns>The time zone added to the calendar.</returns>
+        </member>
+        <member name="M:Ical.Net.Calendar.Evaluate(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Evaluates component recurrences for the given range of time.
+            <example>
+                For example, if you are displaying a month-view for January 2007,
+                you would want to evaluate recurrences for Jan. 1, 2007 to Jan. 31, 2007
+                to display relevant information for those dates.
+            </example>
+            </summary>
+            <param name="fromDate">The beginning date/time of the range to test.</param>
+            <param name="toDate">The end date/time of the range to test.</param>
+        </member>
+        <member name="M:Ical.Net.Calendar.Evaluate``1(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Evaluates component recurrences for the given range of time, for
+            the type of recurring component specified.
+            </summary>
+            <typeparam name="T">The type of component to be evaluated for recurrences.</typeparam>
+            <param name="fromDate">The beginning date/time of the range to test.</param>
+            <param name="toDate">The end date/time of the range to test.</param>
+        </member>
+        <member name="M:Ical.Net.Calendar.ClearEvaluation">
+            <summary>
+            Clears recurrence evaluations for recurring components.        
+            </summary>        
+        </member>
+        <member name="M:Ical.Net.Calendar.GetOccurrences(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns a list of occurrences of each recurring component
+            for the date provided (<paramref name="dt"/>).
+            </summary>
+            <param name="dt">The date for which to return occurrences. Time is ignored on this parameter.</param>
+            <returns>A list of occurrences that occur on the given date (<paramref name="dt"/>).</returns>
+        </member>
+        <member name="M:Ical.Net.Calendar.GetOccurrences(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns a list of occurrences of each recurring component
+            that occur between <paramref name="startTime"/> and <paramref name="endTime"/>.
+            </summary>
+            <param name="startTime">The beginning date/time of the range.</param>
+            <param name="endTime">The end date/time of the range.</param>
+            <returns>A list of occurrences that fall between the dates provided.</returns>
+        </member>
+        <member name="M:Ical.Net.Calendar.GetOccurrences``1(Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns all occurrences of components of type T that start on the date provided.
+            All components starting between 12:00:00AM and 11:59:59 PM will be
+            returned.
+            <note>
+            This will first Evaluate() the date range required in order to
+            determine the occurrences for the date provided, and then return
+            the occurrences.
+            </note>
+            </summary>
+            <param name="dt">The date for which to return occurrences.</param>
+            <returns>A list of Periods representing the occurrences of this object.</returns>
+        </member>
+        <member name="M:Ical.Net.Calendar.GetOccurrences``1(Ical.Net.Interfaces.DataTypes.IDateTime,Ical.Net.Interfaces.DataTypes.IDateTime)">
+            <summary>
+            Returns all occurrences of components of type T that start within the date range provided.
+            All components occurring between <paramref name="startTime"/> and <paramref name="endTime"/>
+            will be returned.
+            </summary>
+            <param name="startTime">The starting date range</param>
+            <param name="endTime">The ending date range</param>
+        </member>
+        <member name="M:Ical.Net.Calendar.Create``1">
+            <summary>
+            Creates a typed object that is a direct child of the iCalendar itself.  Generally,
+            you would invoke this method to create an Event, Todo, Journal, TimeZone, FreeBusy,
+            or other base component type.
+            </summary>
+            <example>
+            To create an event, use the following:
+            <code>
+            IICalendar iCal = new iCalendar();
+            
+            Event evt = iCal.Create&lt;Event&gt;();
+            </code>
+            
+            This creates the event, and adds it to the Events list of the iCalendar.
+            </example>
+            <typeparam name="T">The type of object to create</typeparam>
+            <returns>An object of the type specified</returns>
+        </member>
+        <member name="T:Ical.Net.CalendarCollection">
+            <summary>
+            A list of iCalendars.
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Utility.CollectionHelpers.GetHashCode``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary> Commutative, stable, order-independent hashing for collections of collections. </summary>
+        </member>
+        <member name="M:Ical.Net.Utility.CollectionHelpers.GetHashCodeForNestedCollection``1(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{``0}})">
+            <summary> Commutative, stable, order-independent hashing for collections of collections. </summary>
+        </member>
+        <member name="M:Ical.Net.Utility.TextUtil.FoldLines(System.String)">
+            <summary> Folds lines at 75 characters, and prepends the next line with a space per RFC https://tools.ietf.org/html/rfc5545#section-3.1 </summary>
+        </member>
+        <member name="M:Ical.Net.Utility.TextUtil.RemoveEmptyLines(System.String)">
+            <summary> Removes blank lines from a string with normalized (\r\n) line endings </summary>
+        </member>
+        <member name="M:Ical.Net.Utility.TextUtil.Normalize(System.String,Ical.Net.Interfaces.Serialization.ISerializationContext)">
+            <summary>
+            Normalizes line endings, converting "\r" into "\r\n" and "\n" into "\r\n".        
+            </summary>
+        </member>
+        <member name="M:Ical.Net.Utility.TextUtil.UnwrapLines(System.String)">
+            <summary> Unwraps lines from the RFC 5545 "line folding" technique. </summary>
+        </member>
+    </members>
+</doc>

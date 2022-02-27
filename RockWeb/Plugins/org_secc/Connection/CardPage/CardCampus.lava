@@ -1,0 +1,21 @@
+			{%- assign campus = partition -%}
+			{%- if campus.Limit > 0 or campus.Limit == null %}
+				{%- assign spotsLeft = campus.Limit | Minus: campus.Filled -%}
+				<div class="col-sm-6 col-md-4" style="margin-bottom: 20px;">
+					<div class="serve-card" style="height: 180px">
+					{% if campus.Limit == null or spotsLeft > 0 %}
+					<a href="{{partition.Url}}" title="Sign Up">
+					{% endif %}
+                        <div class="box text-center">
+							<div class="clearfix">
+								<span class="label label-default pull-right" style="margin: 10px 10px 0px 0px;">{% if campus.Limit == null %}Unlimited{% else %}{% if spotsLeft <= 0 %}Full{% else %}{{spotsLeft}} {{ 'Spot' | PluralizeForQuantity:spotsLeft }} Remaining{% endif %}{% endif %}</span>
+							</div>
+                            <span class="campus-circle">{{ campus.Entity.ShortCode }}</span>
+                            <h4>{{ campus.Entity.Name }}</h4>
+                        </div>
+					{%- if campus.Limit == null or spotsLeft > 0 -%}
+                    </a>
+					{%- endif -%}
+					</div>
+                </div>
+			{%- endif -%}

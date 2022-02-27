@@ -1,0 +1,890 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CacheManager.StackExchange.Redis</name>
+    </assembly>
+    <members>
+        <member name="T:CacheManager.Redis.RedisCacheBackplane">
+            <summary>
+            Implementation of the cache backplane using a Redis Pub/Sub channel.
+            <para>
+            Redis Pub/Sub is used to send messages to the redis server on any key change, cache clear, region
+            clear or key remove operation.
+            Every cache manager with the same configuration subscribes to the
+            same channel and can react on those messages to keep other cache handles in sync with the 'master'.
+            </para>
+            </summary>
+            <remarks>
+            The cache manager must have at least one cache handle configured with <see cref="P:CacheManager.Core.CacheHandleConfiguration.IsBackplaneSource"/> set to <c>true</c>.
+            Usually this is the redis cache handle, if configured. It should be the distributed and bottom most cache handle.
+            </remarks>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.#ctor(CacheManager.Core.ICacheManagerConfiguration,CacheManager.Core.Logging.ILoggerFactory)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.RedisCacheBackplane"/> class.
+            </summary>
+            <param name="configuration">The cache manager configuration.</param>
+            <param name="loggerFactory">The logger factory</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.NotifyChange(System.String,CacheManager.Core.Internal.CacheItemChangedEventAction)">
+            <summary>
+            Notifies other cache clients about a changed cache key.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="action">The cache action.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.NotifyChange(System.String,System.String,CacheManager.Core.Internal.CacheItemChangedEventAction)">
+            <summary>
+            Notifies other cache clients about a changed cache key.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="region">The region.</param>
+            <param name="action">The cache action.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.NotifyClear">
+            <summary>
+            Notifies other cache clients about a cache clear.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.NotifyClearRegion(System.String)">
+            <summary>
+            Notifies other cache clients about a cache clear region call.
+            </summary>
+            <param name="region">The region.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.NotifyRemove(System.String)">
+            <summary>
+            Notifies other cache clients about a removed cache key.
+            </summary>
+            <param name="key">The key.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.NotifyRemove(System.String,System.String)">
+            <summary>
+            Notifies other cache clients about a removed cache key.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="region">The region.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheBackplane.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and - optionally - managed resources.
+            </summary>
+            <param name="managed">
+            <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release
+            only unmanaged resources.
+            </param>
+        </member>
+        <member name="T:CacheManager.Redis.RedisCacheHandle`1">
+            <summary>
+            Cache handle implementation for Redis.
+            </summary>
+            <typeparam name="TCacheValue">The type of the cache value.</typeparam>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.#ctor(CacheManager.Core.ICacheManagerConfiguration,CacheManager.Core.CacheHandleConfiguration,CacheManager.Core.Logging.ILoggerFactory,CacheManager.Core.Internal.ICacheSerializer)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.RedisCacheHandle`1"/> class.
+            </summary>
+            <param name="managerConfiguration">The manager configuration.</param>
+            <param name="configuration">The cache handle configuration.</param>
+            <param name="loggerFactory">The logger factory.</param>
+            <param name="serializer">The serializer.</param>
+        </member>
+        <member name="P:CacheManager.Redis.RedisCacheHandle`1.IsDistributedCache">
+            <inheritdoc />
+        </member>
+        <member name="P:CacheManager.Redis.RedisCacheHandle`1.Count">
+            <summary>
+            Gets the number of items the cache handle currently maintains.
+            </summary>
+            <value>The count.</value>
+            <exception cref="T:System.InvalidOperationException">No active master found.</exception>
+        </member>
+        <member name="P:CacheManager.Redis.RedisCacheHandle`1.Servers">
+            <summary>
+            Gets the servers.
+            </summary>
+            <value>The list of servers.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisCacheHandle`1.Features">
+            <summary>
+            Gets the features the redis server supports.
+            </summary>
+            <value>The server features.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisCacheHandle`1.IsLuaAllowed">
+            <summary>
+            Gets a value indicating whether we can use the lua implementation instead of manual.
+            This flag will be set automatically via feature detection based on the Redis server version
+            or via <see cref="P:CacheManager.Redis.RedisConfiguration.StrictCompatibilityModeVersion"/> if set to a version which does not support lua scripting.
+            </summary>
+        </member>
+        <member name="P:CacheManager.Redis.RedisCacheHandle`1.Logger">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.Clear">
+            <summary>
+            Clears this cache, removing all items in the base cache and all regions.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.ClearRegion(System.String)">
+            <summary>
+            Clears the cache region, removing all items from the specified <paramref name="region"/> only.
+            </summary>
+            <param name="region">The cache region.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.Exists(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.Exists(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.Update(System.String,System.Func{`0,`0},System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.Update(System.String,System.String,System.Func{`0,`0},System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.AddInternalPrepared(CacheManager.Core.CacheItem{`0})">
+            <summary>
+            Adds a value to the cache.
+            <para>
+            Add call is synced, so might be slower than put which is fire and forget but we want to
+            return true|false if the operation was successfully or not. And always returning true
+            could be misleading if the item already exists
+            </para>
+            </summary>
+            <param name="item">The <c>CacheItem</c> to be added to the cache.</param>
+            <returns>
+            <c>true</c> if the key was not already added to the cache, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.Dispose(System.Boolean)">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting
+            unmanaged resources.
+            </summary>
+            <param name="disposeManaged">Indicator if managed resources should be released.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.GetCacheItemInternal(System.String)">
+            <summary>
+            Gets a <c>CacheItem</c> for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <returns>The <c>CacheItem</c>.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.GetCacheItemInternal(System.String,System.String)">
+            <summary>
+            Gets a <c>CacheItem</c> for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <param name="region">The cache region.</param>
+            <returns>The <c>CacheItem</c>.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.PutInternal(CacheManager.Core.CacheItem{`0})">
+            <summary>
+            Puts the <paramref name="item"/> into the cache. If the item exists it will get updated
+            with the new value. If the item doesn't exist, the item will be added to the cache.
+            </summary>
+            <param name="item">The <c>CacheItem</c> to be added to the cache.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.PutInternalPrepared(CacheManager.Core.CacheItem{`0})">
+            <summary>
+            Puts the <paramref name="item"/> into the cache. If the item exists it will get updated
+            with the new value. If the item doesn't exist, the item will be added to the cache.
+            </summary>
+            <param name="item">The <c>CacheItem</c> to be added to the cache.</param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.RemoveInternal(System.String)">
+            <summary>
+            Removes a value from the cache for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <returns>
+            <c>true</c> if the key was found and removed from the cache, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisCacheHandle`1.RemoveInternal(System.String,System.String)">
+            <summary>
+            Removes a value from the cache for the specified key.
+            </summary>
+            <param name="key">The key being used to identify the item within the cache.</param>
+            <param name="region">The cache region.</param>
+            <returns>
+            <c>true</c> if the key was found and removed from the cache, <c>false</c> otherwise.
+            </returns>
+        </member>
+        <member name="T:CacheManager.Redis.RedisConfiguration">
+            <summary>
+            <see cref="T:CacheManager.Redis.RedisConfiguration"/> will be used for configuring e.g. StackExchange.Redis by
+            code or configuration file.
+            <para>
+            The element was added only because StackExchange.Redis doesn't support configuration via web/app.config
+            </para>
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfiguration.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.RedisConfiguration"/> class.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfiguration.#ctor(System.String,System.Collections.Generic.IList{CacheManager.Redis.ServerEndPoint},System.Int32,System.String,System.Boolean,System.String,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.RedisConfiguration"/> class.
+            </summary>
+            <param name="key">
+            The configuration key which will be used by the cache handle to find a configuration for
+            the cache handle's name.
+            </param>
+            <param name="endpoints">
+            The list of <see cref="T:CacheManager.Redis.ServerEndPoint"/> s to be used to connect to Redis server.
+            </param>
+            <param name="database">The Redis database index.</param>
+            <param name="password">The password of the Redis server.</param>
+            <param name="isSsl">If <c>true</c> instructs the cache to use SSL encryption.</param>
+            <param name="sslHost">If specified, the connection will set the SSL host.</param>
+            <param name="connectionTimeout">Sets the timeout used for connect operations.</param>
+            <param name="allowAdmin">
+            If set to <c>True</c> it enables the cache to use features which might be risky.
+            <c>Clear</c> for example.
+            </param>
+            <param name="keyspaceNotificationsEnabled">Enables keyspace notifications to react on eviction/expiration of items.</param>
+            <param name="twemproxyEnabled">Enables Twemproxy mode.</param>
+            <param name="strictCompatibilityModeVersion">
+            Gets or sets a version number to eventually reduce the avaible features accessible by cachemanager.
+            </param>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfiguration.#ctor(System.String,System.String,System.Int32,System.Boolean,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.RedisConfiguration"/> class.
+            </summary>
+            <param name="key">
+            The configuration key which will be used by the cache handle to find a configuration for
+            the cache handle's name.
+            </param>
+            <param name="connectionString">
+            Instead of specifying all the properties, this can also be done via one connection string.
+            </param>
+            <param name="database">The redis database to use.</param>
+            <param name="keyspaceNotificationsEnabled">Enables keyspace notifications to react on eviction/expiration of items.</param>
+            <param name="strictCompatibilityModeVersion">
+            Gets or sets a version number to eventually reduce the avaible features accessible by cachemanager.
+            </param>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.ConfigurationOptions">
+            <summary>
+            Gets the <see cref="T:StackExchange.Redis.ConfigurationOptions"/> defined by this configuration.
+            </summary>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.StrictCompatibilityModeVersion">
+            <summary>
+            Gets or sets a version number to eventually reduce the avaible features accessible by cachemanager.
+            E.g. set this to <c>"2.4"</c> to disable LUA support.
+            </summary>
+            <remarks>
+            This can also be used when automatic feature detection is not possible. Which is the
+            case for example if TwemProxy is used, because the servers collection. to query the features, is not available/supported.
+            CacheManager per default falls back to a version which supports LUA. If you are using a Redis server behind TwemPoxy which
+            does not allow LUA, use this property!
+            </remarks>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.Key">
+            <summary>
+            Gets or sets the identifier for the redis configuration.
+            <para>
+            This might have to match with the cache handle's name to make the cache handle use this configuration.
+            </para>
+            </summary>
+            <value>
+            The key.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.ConnectionString">
+            <summary>
+            Gets or sets the connection string.
+            </summary>
+            <value>
+            The connection string.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.Password">
+            <summary>
+            Gets or sets the password to be used to connect to the Redis server.
+            </summary>
+            <value>
+            The password.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.IsSsl">
+            <summary>
+            Gets or sets a value indicating whether to use SSL encryption.
+            </summary>
+            <value>
+              <c>true</c> if this instance is SSL; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.SslHost">
+            <summary>
+            Gets or sets the SSL Host.
+            If set, it will enforce this particular host on the server's certificate.
+            </summary>
+            <value>
+            The SSL host.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.ConnectionTimeout">
+            <summary>
+            Gets or sets the timeout for any connect operations.
+            </summary>
+            <value>
+            The connection timeout.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.Endpoints">
+            <summary>
+            Gets the list of endpoints to be used to connect to the Redis server.
+            </summary>
+            <value>
+            The endpoints.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.AllowAdmin">
+            <summary>
+            Gets or sets a value indicating whether to allow the connection to run certain 'risky' commands, or not.
+            <para><c>cache.Clear</c> requires this to be set to true because we will flush the Redis database.
+            </para>
+            </summary>
+            <value>
+              <c>true</c> if 'risky' commands are allowed; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.Database">
+            <summary>
+            Gets or sets the Redis database index the cache will use.
+            </summary>
+            <value>
+            The database.
+            </value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.KeyspaceNotificationsEnabled">
+            <summary>
+            Gets or sets a value indicating whether the redis cache handle should use keyspace notifications to react on
+            evictions or expired events from redis and then forward those events to the cache manager.
+            See <see href="https://redis.io/topics/notifications"/> for technical details.
+            <para>
+            To use this feature, you might have to enable this feature on your redis server(s).
+            </para>
+            </summary>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfiguration.TwemproxyEnabled">
+            <summary>
+            Gets or sets a value to indicate if Termproxy is being used.
+            </summary>
+        </member>
+        <member name="T:CacheManager.Redis.ServerEndPoint">
+            <summary>
+            Defines an endpoint.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.ServerEndPoint.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.ServerEndPoint"/> class.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.ServerEndPoint.#ctor(System.String,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.ServerEndPoint"/> class.
+            </summary>
+            <param name="host">The host.</param>
+            <param name="port">The port.</param>
+            <exception cref="T:System.ArgumentNullException">If host is null.</exception>
+        </member>
+        <member name="P:CacheManager.Redis.ServerEndPoint.Port">
+            <summary>
+            Gets or sets the port.
+            </summary>
+            <value>The port.</value>
+        </member>
+        <member name="P:CacheManager.Redis.ServerEndPoint.Host">
+            <summary>
+            Gets or sets the host.
+            </summary>
+            <value>The host.</value>
+        </member>
+        <member name="T:CacheManager.Redis.RedisConfigurationBuilder">
+            <summary>
+            <see cref="T:CacheManager.Redis.RedisConfigurationBuilder"/> helps creating the <see cref="T:CacheManager.Redis.RedisConfiguration"/>
+            object via code.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.RedisConfigurationBuilder"/> class.
+            </summary>
+            <param name="configurationKey">The configuration key.</param>
+            <exception cref="T:System.ArgumentNullException">If configurationKey is null.</exception>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.Build">
+            <summary>
+            Creates the <see cref="T:CacheManager.Redis.RedisConfiguration"/> out of the currently specified properties,
+            if possible.
+            </summary>
+            <returns>The <c>RedisConfiguration</c></returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.EnableKeyspaceEvents">
+            <summary>
+            Enable the flag to have CacheManager react on keyspace notifications from redis.
+            CacheManager will listen only for eviction and expiration events (not all events).
+            Use this feature only if you also have configured Redis correctly: notify-keyspace-events must be set to AT LEAST Exe.
+            <see href="https://redis.io/topics/notifications#configuration"/>
+            </summary>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.UseCompatibilityMode(System.String)">
+            <summary>
+            Can be used to control the available Redis features CacheManager can use. E.g. if set to <c>"2.4"</c>, this would disable all LUA support and would
+            force CacheManager to use other APIs
+            </summary>
+            <param name="version"></param>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.UseTwemproxy">
+            <summary>
+            Enable this in case you are using Redis behind Twemproxy.
+            </summary>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.WithAllowAdmin">
+            <summary>
+            If set to true, commands which might be risky are enabled, like Clear which will delete
+            all entries in the redis database.
+            </summary>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.WithConnectionTimeout(System.Int32)">
+            <summary>
+            Sets the timeout in milliseconds for connect operations.
+            </summary>
+            <param name="timeout">The timeout in milliseconds.</param>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.WithDatabase(System.Int32)">
+            <summary>
+            Sets the database.
+            <para>Maximum number of database depends on the redis server configuration.</para>Default
+            is <c>0</c>.
+            </summary>
+            <param name="databaseIndex">The database index.</param>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.WithEndpoint(System.String,System.Int32)">
+            <summary>
+            Adds an endpoint to the connection configuration.
+            <para>Call this multiple times to add multiple endpoints.</para>
+            </summary>
+            <param name="host">The host or IP of the redis server.</param>
+            <param name="port">The port of the redis server.</param>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.WithPassword(System.String)">
+            <summary>
+            Sets the password for the redis server.
+            </summary>
+            <param name="serverPassword">The redis server password.</param>
+            <returns>The builder.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurationBuilder.WithSsl(System.String)">
+            <summary>
+            Enables SSL encryption.
+            <para>
+            If host is specified it will enforce a particular SSL host identity on the server's certificate.
+            </para>
+            </summary>
+            <param name="host">The SSL host.</param>
+            <returns>The builder.</returns>
+        </member>
+        <member name="T:CacheManager.Redis.RedisConfigurations">
+            <summary>
+            Manages redis client configurations for the cache handle.
+            <para>
+            Configurations will be added by the cache configuration builder/factory or the configuration
+            loader. The cache handle will pick up the configuration matching the handle's name.
+            </para>
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurations.AddConfiguration(CacheManager.Redis.RedisConfiguration)">
+            <summary>
+            Adds the configuration.
+            </summary>
+            <param name="configuration">The configuration.</param>
+            <exception cref="T:System.ArgumentNullException">If configuration is null.</exception>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurations.GetConfiguration(System.String)">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <param name="configurationName">The identifier.</param>
+            <returns>The <c>RedisConfiguration</c>.</returns>
+            <exception cref="T:System.ArgumentNullException">If id is null.</exception>
+            <exception cref="T:System.InvalidOperationException">
+            If no configuration was added for the id.
+            </exception>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurations.LoadConfiguration(System.String,System.String)">
+            <summary>
+            Loads the configuration.
+            </summary>
+            <param name="configFileName">Name of the configuration file.</param>
+            <param name="sectionName">Name of the section.</param>
+            <exception cref="T:System.ArgumentNullException">
+            If configFileName or sectionName are null.
+            </exception>
+            <exception cref="T:System.InvalidOperationException">
+            If the configuration file could not be found.
+            </exception>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurations.LoadConfiguration(CacheManager.Redis.RedisConfigurationSection)">
+            <summary>
+            Loads the configuration.
+            </summary>
+            <param name="section">The section.</param>
+            <exception cref="T:System.ArgumentNullException">If section is null.</exception>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurations.LoadConfiguration(System.String)">
+            <summary>
+            Loads the configuration.
+            </summary>
+            <param name="sectionName">Name of the section.</param>
+            <exception cref="T:System.ArgumentNullException">If sectionName is null.</exception>
+        </member>
+        <member name="M:CacheManager.Redis.RedisConfigurations.LoadConfiguration">
+            <summary>
+            Loads the configuration from the default section name 'cacheManager.Redis'.
+            </summary>
+        </member>
+        <member name="T:CacheManager.Redis.Endpoint">
+            <summary>
+            Configuration section for the CacheManager.
+            </summary>
+            <example>
+            <code>
+            <![CDATA[
+            <cacheManager.redis>
+              <connections>
+               <connection id="redis1"
+                               database="0"
+                               database="113"
+                               strictCompatibilityModeVersion="the redis version, e.g. 2.6, or leave null"
+                               
+                               { connectionString="redis0:6379,redis1:6380,keepAlive=180,allowAdmin=true" }
+                               OR
+                               {
+                                  allowAdmin="true|false"
+                                  password=""
+                                  ssl="true|false"
+                                  sslHost="string"
+                                  connectionTimeout="ms"
+                                  twemproxyEnabled="true|false"
+                               }
+                       >
+                   <endpoints>
+                       <endpoint host="127.0.0.1" port="6379" />
+                       <endpoint host="127.0.0.1" port="6380"/>
+                   </endpoints>
+               </connection>
+               <connection id="redisN">...</connection>
+             <connections/>
+            </cacheManager.redis>
+            ]]>
+            </code>
+            </example>
+        </member>
+        <member name="P:CacheManager.Redis.Endpoint.Host">
+            <summary>
+            Gets or sets the host.
+            </summary>
+            <value>The host.</value>
+        </member>
+        <member name="P:CacheManager.Redis.Endpoint.Port">
+            <summary>
+            Gets or sets the port.
+            </summary>
+            <value>The port.</value>
+        </member>
+        <member name="T:CacheManager.Redis.EndpointCollection">
+            <summary>
+            Collection of end point configurations.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.EndpointCollection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.EndpointCollection"/> class.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.EndpointCollection.GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through the collection.
+            </summary>
+            <returns>
+            A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate
+            through the collection.
+            </returns>
+        </member>
+        <member name="M:CacheManager.Redis.EndpointCollection.CreateNewElement">
+            <summary>
+            When overridden in a derived class, creates a new <see cref="T:System.Configuration.ConfigurationElement"/>.
+            </summary>
+            <returns>A new <see cref="T:System.Configuration.ConfigurationElement"/>.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.EndpointCollection.GetElementKey(System.Configuration.ConfigurationElement)">
+            <summary>
+            Gets the element key for a specified configuration element when overridden in a derived class.
+            </summary>
+            <param name="element">
+            The <see cref="T:System.Configuration.ConfigurationElement"/> to return the key for.
+            </param>
+            <returns>
+            An <see cref="T:System.Object"/> that acts as the key for the specified <see cref="T:System.Configuration.ConfigurationElement"/>.
+            </returns>
+        </member>
+        <member name="T:CacheManager.Redis.RedisConfigurationSection">
+            <summary>
+            The main section for redis configurations.
+            </summary>
+        </member>
+        <member name="F:CacheManager.Redis.RedisConfigurationSection.DefaultSectionName">
+            <summary>
+            The default section name.
+            </summary>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfigurationSection.Connections">
+            <summary>
+            Gets the connections.
+            </summary>
+            <value>The connections.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisConfigurationSection.Xmlns">
+            <summary>
+            Gets or sets the XMLNS.
+            </summary>
+            <value>The XMLNS.</value>
+        </member>
+        <member name="T:CacheManager.Redis.RedisOptionCollection">
+            <summary>
+            Collection of redis configurations.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisOptionCollection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:CacheManager.Redis.RedisOptionCollection"/> class.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Redis.RedisOptionCollection.GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through the collection.
+            </summary>
+            <returns>
+            A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate
+            through the collection.
+            </returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisOptionCollection.CreateNewElement">
+            <summary>
+            When overridden in a derived class, creates a new <see cref="T:System.Configuration.ConfigurationElement"/>.
+            </summary>
+            <returns>A new <see cref="T:System.Configuration.ConfigurationElement"/>.</returns>
+        </member>
+        <member name="M:CacheManager.Redis.RedisOptionCollection.GetElementKey(System.Configuration.ConfigurationElement)">
+            <summary>
+            Gets the element key for a specified configuration element when overridden in a derived class.
+            </summary>
+            <param name="element">
+            The <see cref="T:System.Configuration.ConfigurationElement"/> to return the key for.
+            </param>
+            <returns>
+            An <see cref="T:System.Object"/> that acts as the key for the specified <see cref="T:System.Configuration.ConfigurationElement"/>.
+            </returns>
+        </member>
+        <member name="T:CacheManager.Redis.RedisOptions">
+            <summary>
+            The redis configuration element.
+            </summary>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.AllowAdmin">
+            <summary>
+            Gets or sets a value indicating whether advanced commands are allowed.
+            </summary>
+            <value><c>true</c> if admin commands should be allowed; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.EnableKeyspaceNotifications">
+            <summary>
+            Gets or sets a value indicating whether keyspace events should be enabled and the redis cache handle should listen for them.
+            </summary>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.ConnectionString">
+            <summary>
+            Gets or sets the connection string.
+            </summary>
+            <value>The connection string.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.ConnectionTimeout">
+            <summary>
+            Gets or sets the connection timeout.
+            </summary>
+            <value>The connection timeout.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.Database">
+            <summary>
+            Gets or sets the database.
+            </summary>
+            <value>The database.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.Endpoints">
+            <summary>
+            Gets the endpoints.
+            </summary>
+            <value>The endpoints.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.Id">
+            <summary>
+            Gets or sets the identifier.
+            </summary>
+            <value>The identifier.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.Password">
+            <summary>
+            Gets or sets the password.
+            </summary>
+            <value>The password.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.Ssl">
+            <summary>
+            Gets or sets a value indicating whether SSL should be enabled or not.
+            </summary>
+            <value><c>true</c> if SSL should be enabled; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.SslHost">
+            <summary>
+            Gets or sets the SSL host.
+            </summary>
+            <value>The SSL host.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.TwemproxyEnabled">
+            <summary>
+            Gets or sets a value indicating whether Twemproxy is used or not.
+            </summary>
+            <value><c>true</c> if Twemproxy is used; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:CacheManager.Redis.RedisOptions.StrictCompatibilityModeVersion">
+            <summary>
+            Gets or sets a value setting an explicit version compatibility mode.
+            </summary>
+            <value>The Redis version to use.</value>
+        </member>
+        <member name="T:CacheManager.Core.RedisConfigurationBuilderExtensions">
+            <summary>
+            Extensions for the configuration builder specific to the redis cache handle.
+            </summary>
+        </member>
+        <member name="M:CacheManager.Core.RedisConfigurationBuilderExtensions.WithRedisConfiguration(CacheManager.Core.ConfigurationBuilderCachePart,System.String,System.Action{CacheManager.Redis.RedisConfigurationBuilder})">
+            <summary>
+            Adds a redis configuration with the given <paramref name="configurationKey"/>.
+            </summary>
+            <param name="part">The builder instance.</param>
+            <param name="configurationKey">
+            The configuration key which can be used to refernce this configuration by a redis cache handle or backplane.
+            </param>
+            <param name="configuration">The redis configuration object.</param>
+            <returns>The configuration builder.</returns>
+            <exception cref="T:System.ArgumentNullException">If <paramref name="configuration"/> or <paramref name="configurationKey"/> are null.</exception>
+        </member>
+        <member name="M:CacheManager.Core.RedisConfigurationBuilderExtensions.WithRedisConfiguration(CacheManager.Core.ConfigurationBuilderCachePart,System.String,System.String,System.Int32,System.Boolean)">
+            <summary>
+            Adds a redis configuration with the given <paramref name="configurationKey"/>.
+            </summary>
+            <param name="part">The builder instance.</param>
+            <param name="configurationKey">
+            The configuration key which can be used to refernce this configuration by a redis cache handle or backplane.
+            </param>
+            <param name="connectionString">The redis connection string.</param>
+            <param name="database">The redis database to be used.</param>
+            <param name="enableKeyspaceNotifications">
+            Enables keyspace notifications to react on eviction/expiration of items.
+            Make sure that all servers are configured correctly and 'notify-keyspace-events' is at least set to 'Exe', otherwise CacheManager will not retrieve any events.
+            See <see href="https://redis.io/topics/notifications#configuration"/> for configuration details.
+            </param>
+            <returns>The configuration builder.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            If <paramref name="configurationKey"/> or <paramref name="connectionString"/> are null.
+            </exception>
+        </member>
+        <member name="M:CacheManager.Core.RedisConfigurationBuilderExtensions.WithRedisConfiguration(CacheManager.Core.ConfigurationBuilderCachePart,System.String,StackExchange.Redis.IConnectionMultiplexer,System.Int32,System.Boolean)">
+            <summary>
+            Adds an existing <see cref="T:StackExchange.Redis.IConnectionMultiplexer"/> to the cache manager configuration which can be referenced by redis cache handle and/or backplane.
+            </summary>
+            <param name="part">The builder instance.</param>
+            <param name="configurationKey">
+            The configuration key which can be used to refernce this configuration by a redis cache handle or backplane.
+            </param>
+            <param name="redisClient">The connection multiplexer instance.</param>
+            <param name="database">The redis database to use for caching.</param>
+            <param name="enableKeyspaceNotifications">
+            Enables keyspace notifications to react on eviction/expiration of items.
+            Make sure that all servers are configured correctly and 'notify-keyspace-events' is at least set to 'Exe', otherwise CacheManager will not retrieve any events.
+            See <see href="https://redis.io/topics/notifications#configuration"/> for configuration details.
+            </param>
+            <returns>The configuration builder.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            If <paramref name="configurationKey"/> or <paramref name="redisClient"/> are null.
+            </exception>
+        </member>
+        <member name="M:CacheManager.Core.RedisConfigurationBuilderExtensions.WithRedisBackplane(CacheManager.Core.ConfigurationBuilderCachePart,System.String)">
+            <summary>
+            Configures a cache backplane for the cache manager.
+            The <paramref name="redisConfigurationKey"/> is used to find a matching redis configuration.
+            <para>
+            If a backplane is defined, at least one cache handle must be marked as backplane
+            source. The cache manager then will try to synchronize multiple instances of the same configuration.
+            </para>
+            </summary>
+            <param name="part">The builder instance.</param>
+            <param name="redisConfigurationKey">
+            The redis configuration key will be used to find a matching redis connection configuration.
+            </param>
+            <returns>The builder instance.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="redisConfigurationKey"/> is null.</exception>
+        </member>
+        <member name="M:CacheManager.Core.RedisConfigurationBuilderExtensions.WithRedisBackplane(CacheManager.Core.ConfigurationBuilderCachePart,System.String,System.String)">
+            <summary>
+            Configures a cache backplane for the cache manager.
+            The <paramref name="redisConfigurationKey"/> is used to find a matching redis configuration.
+            <para>
+            If a backplane is defined, at least one cache handle must be marked as backplane
+            source. The cache manager then will try to synchronize multiple instances of the same configuration.
+            </para>
+            </summary>
+            <param name="part">The builder instance.</param>
+            <param name="redisConfigurationKey">
+            The redis configuration key will be used to find a matching redis connection configuration.
+            </param>
+            <param name="channelName">The pub sub channel name the backplane should use.</param>
+            <returns>The builder instance.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="redisConfigurationKey"/> is null.</exception>
+        </member>
+        <member name="M:CacheManager.Core.RedisConfigurationBuilderExtensions.WithRedisCacheHandle(CacheManager.Core.ConfigurationBuilderCachePart,System.String,System.Boolean)">
+            <summary>
+            Adds a <see cref="T:CacheManager.Redis.RedisCacheHandle`1"/>.
+            This handle requires a redis configuration to be defined with the given <paramref name="redisConfigurationKey"/>.
+            </summary>
+            <param name="part">The builder instance.</param>
+            <param name="redisConfigurationKey">
+            The redis configuration key will be used to find a matching redis connection configuration.
+            </param>
+            <param name="isBackplaneSource">
+            Set this to true if this cache handle should be the source of the backplane.
+            This setting will be ignored if no backplane is configured.
+            </param>
+            <returns>The builder instance.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="redisConfigurationKey"/> is null.</exception>
+        </member>
+    </members>
+</doc>
