@@ -222,7 +222,7 @@ namespace Rock.Jobs
                                         {
                                             var resultValue = new ResultValue();
 
-                                            resultValue.Value = Convert.ToDecimal( row[0] );
+                                            resultValue.Value = Convert.ToDecimal( row[0] == DBNull.Value ? 0 : row[0] );
                                             if ( getMetricValueDateTimeFromResultSet )
                                             {
                                                 resultValue.MetricValueDateTime = Convert.ToDateTime( row[1] );

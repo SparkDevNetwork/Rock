@@ -64,14 +64,15 @@ export default defineComponent({
             internalValue: this.modelValue
         };
     },
+
     computed: {
-        isTextarea (): boolean {
+        isTextarea(): boolean {
             return this.textMode?.toLowerCase() === "multiline";
         },
-        charsRemaining (): number {
-            return this.maxLength - this.modelValue.length;
+        charsRemaining(): number {
+            return this.maxLength - this.internalValue.length;
         },
-        countdownClass (): string {
+        countdownClass(): string {
             if (this.charsRemaining >= 10) {
                 return "badge-default";
             }
@@ -84,10 +85,10 @@ export default defineComponent({
         }
     },
     watch: {
-        internalValue () {
+        internalValue() {
             this.$emit("update:modelValue", this.internalValue);
         },
-        modelValue () {
+        modelValue() {
             this.internalValue = this.modelValue;
         }
     },
@@ -101,10 +102,10 @@ export default defineComponent({
             {{charsRemaining}}
         </em>
     </template>
-    <template #default="{uniqueId, field, errors, disabled, tabIndex}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
-            <textarea v-if="isTextarea" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
-            <input v-else :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" :tabindex="tabIndex" />
+            <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
+            <input v-else v-model="internalValue" :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
         </div>
     </template>
 </RockFormField>`

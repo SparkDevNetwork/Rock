@@ -117,6 +117,11 @@ namespace Rock.Utility.Settings.DataAutomation
         /// The ignore campus changes.
         /// </value>
         public List<IgnoreCampusChangeItem> IgnoreCampusChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedules to exclude from the attendance criteria
+        /// </summary>
+        public List<int> ExcludeSchedules { get; set; }
     }
 
     /// <summary>

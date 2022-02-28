@@ -17,6 +17,8 @@
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -103,6 +105,21 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual WorkflowType WorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowActionType">WorkflowActionTypes</see> that are 
+        /// performed by this WorkflowActivityType.
+        /// </summary>
+        /// <value>
+        /// The action types.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<WorkflowActionType> ActionTypes
+        {
+            get { return _actionTypes ?? ( _actionTypes = new Collection<WorkflowActionType>() ); }
+            set { _actionTypes = value; }
+        }
+        private ICollection<WorkflowActionType> _actionTypes;
 
         #endregion Navigation Properties
     }

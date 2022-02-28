@@ -15,9 +15,10 @@
 // </copyright>
 //
 import { defineComponent } from "vue";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
 import ColorPicker from "../Elements/colorPicker";
 import { getFieldEditorProps } from "./utils";
+import { ListItem } from "../ViewModels";
 
 enum ColorControlType {
     ColorPicker,
@@ -74,7 +75,7 @@ export const EditComponent = defineComponent({
             internalBooleanValue: false,
             internalValue: "",
             dropDownListOptions: namedColors.map(v => {
-                return { text: v, value: v } as DropDownListOption;
+                return { text: v, value: v } as ListItem;
             })
         };
     },

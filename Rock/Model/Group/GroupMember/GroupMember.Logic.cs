@@ -54,6 +54,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
+        /// authority, but parent group is an additional parent authority )
+        /// </summary>
+        public override ISecured ParentAuthorityPre
+        {
+            get
+            {
+                if ( this.Group != null && this.Group.GroupTypeId > 0 )
+                {
+                    GroupTypeCache groupType = GroupTypeCache.Get( this.Group.GroupTypeId );
+                    return groupType;
+                }
+                else
+                {
+                    return base.ParentAuthorityPre;
+                }
+            }
+        }
+
+        /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -85,7 +105,7 @@ namespace Rock.Model
              this has been implemented as allowing EDIT on GroupMember, regardless of the ManageMembers setting.
                - See https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberDetail.ascx.cs#L303
                   and https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberList.ascx.cs#L213
-            
+
              */
 
             if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )

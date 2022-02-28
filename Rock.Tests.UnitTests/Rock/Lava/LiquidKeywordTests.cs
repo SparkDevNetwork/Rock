@@ -302,6 +302,24 @@ FAILED
             TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
         }
 
+        /// <summary>
+        /// A variable name that includes a Liquid keyword should be parsed correctly as a variable name.
+        /// </summary>
+        [TestMethod]
+        public void Keyword_IncludedInVariableName_IsParsedCorrectly()
+        {
+            var template = @"
+{% assign emptyString = 'Empty String' %}{{ emptyString }}
+{% assign trueString = 'True String' %}{{ trueString }}
+";
+            var expectedOutput = @"
+Empty String
+True String
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace:true );
+        }
+
         #endregion
     }
 }

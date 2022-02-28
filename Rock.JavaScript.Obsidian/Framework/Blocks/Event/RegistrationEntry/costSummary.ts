@@ -20,7 +20,7 @@ import Loading from "../../../Controls/loading";
 import { InvokeBlockActionFunc } from "../../../Util/block";
 import CurrencyBox from "../../../Elements/currencyBox";
 import HelpBlock from "../../../Elements/helpBlock";
-import { ruleArrayToString } from "../../../Rules/index";
+import { ValidationRule } from "../../../Rules/index";
 import { asFormattedString } from "../../../Services/number";
 import { RegistrationEntryState } from "../registrationEntry";
 import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
@@ -198,8 +198,8 @@ export default defineComponent({
         },
 
         /** The vee-validate rules for the amount to pay today */
-        amountToPayTodayRules(): string {
-            const rules: string[] = ["required"];
+        amountToPayTodayRules(): ValidationRule[] {
+            const rules: ValidationRule[] = ["required"];
             let min = this.amountDueToday;
             const max = this.maxAmountCanBePaid;
 
@@ -209,7 +209,8 @@ export default defineComponent({
 
             rules.push(`gte:${min}`);
             rules.push(`lte:${max}`);
-            return ruleArrayToString(rules);
+
+            return rules;
         },
     },
     methods: {
@@ -316,7 +317,7 @@ export default defineComponent({
                         </div>
                     </div>
                 </div>
-                <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" class="form-right" inputGroupClasses="input-width-md amount-to-pay" />
+                <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" formGroupClasses="form-right" inputGroupClasses="input-width-md amount-to-pay" />
                 <div class="form-group static-control">
                     <label class="control-label">Amount Remaining After Payment</label>
                     <div class="control-wrapper">

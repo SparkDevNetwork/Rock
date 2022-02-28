@@ -14,14 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
+using System.Linq.Dynamic.Core;
 
 namespace Rock
 {
     /// <summary>
-    ///
+    /// Extension methods for DataTable objects.
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -46,6 +49,47 @@ namespace Rock
             }
             return dynamicDt;
         }
-        
+
+        /// <summary>
+        /// Returns the content of a DataTable as a collection of strongly-typed objects having a System.Type created at runtime.
+        /// </summary>
+        /// <param name="dt">The DataTable.</param>
+        /// <returns>A collection of objects having a runtime System.Type matching the types specified by the table columns.</returns>
+        public static IList ToDynamicTypeCollection( this DataTable dt )
+        {
+            // Create a new System.Type representing the DataRow, and a collection of items of that type.
+            var properties = new List<DynamicProperty>();
+            var columnNames = new List<string>();
+
+            foreach ( DataColumn col in dt.Columns )
+            {
+                columnNames.Add( col.ColumnName );
+                properties.Add( new DynamicProperty( col.ColumnName, col.DataType ) );
+            }
+
+            var rowType = DynamicClassFactory.CreateType( properties );
+            var listType = typeof( List<> ).MakeGenericType( rowType );
+            var list = ( IList ) Activator.CreateInstance( listType );
+
+            // Create a collection of objects representing the rows in the table.
+            foreach ( DataRow row in dt.Rows )
+            {
+                var listObject = Activator.CreateInstance( rowType ) as DynamicClass;
+                foreach ( var columnName in columnNames )
+                {
+                    var value = row[columnName];
+                    // Ensure DBNull value is propagated correctly.
+                    if ( value == DBNull.Value )
+                    {
+                        value = null;
+                    }
+                    listObject.SetDynamicPropertyValue( columnName, value );
+                }
+
+                list.Add( listObject );
+            }
+
+            return list;
+        }
     }
 }

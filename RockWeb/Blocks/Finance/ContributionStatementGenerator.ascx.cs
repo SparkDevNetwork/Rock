@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.Finance
         private static class PageParameterKey
         {
             public const string StatementYear = "StatementYear";
+            public const string PersonActionIdentifier = "rckid";
             public const string PersonGuid = "PersonGuid";
         }
 
@@ -113,19 +114,28 @@ namespace RockWeb.Blocks.Finance
         {
             RockContext rockContext = new RockContext();
 
-            var statementYear = PageParameter( PageParameterKey.StatementYear ).AsIntegerOrNull() ?? RockDateTime.Now.Year;
-
-            FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
-
             Person targetPerson = CurrentPerson;
-
+            
+            var statementYear = PageParameter( PageParameterKey.StatementYear ).AsIntegerOrNull() ?? RockDateTime.Now.Year;
+            var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
+            var allowPersonQueryString = GetAttributeValue( AttributeKey.AllowPersonQueryString ).AsBoolean();
 
-            if ( personGuid.HasValue )
+            if ( personActionId.IsNotNullOrWhiteSpace() )
+            {
+                var person = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "contribution-statement" );
+                var isCurrentPersonsBusiness = targetPerson != null && targetPerson.GetBusinesses().Any( b => b.Guid == person.Guid );
+                if ( person != null && ( allowPersonQueryString || isCurrentPersonsBusiness ) )
+                {
+                    targetPerson = person;
+                }
+            }
+            else if ( personGuid.HasValue )
             {
                 // if "AllowPersonQueryString is False", only use the PersonGuid if it is a Guid of one of the current person's businesses
                 var isCurrentPersonsBusiness = targetPerson != null && targetPerson.GetBusinesses().Any( b => b.Guid == personGuid.Value );
-                if ( GetAttributeValue( AttributeKey.AllowPersonQueryString ).AsBoolean() || isCurrentPersonsBusiness )
+
+                if ( allowPersonQueryString || isCurrentPersonsBusiness )
                 {
                     var person = new PersonService( rockContext ).Get( personGuid.Value );
                     if ( person != null )

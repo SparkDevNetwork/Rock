@@ -184,6 +184,15 @@
                     </TextBlock>
                 </CheckBox>
 
+                <Label Content="Save Settings" Style="{StaticResource labelStyleBold}" />
+                <CheckBox
+                    Name="cbSaveSettings"
+                    Margin="4,10,0,0"
+                    IsChecked="False"
+                    Content="Save the configured settings to be used for future runs."
+                    Style="{StaticResource checkboxStyle}">
+                </CheckBox>
+
             </StackPanel>
             <Button
                 x:Name="btnPrev"

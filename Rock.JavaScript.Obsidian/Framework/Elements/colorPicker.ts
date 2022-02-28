@@ -68,10 +68,10 @@ export default defineComponent({
     v-model="internalValue"
     formGroupClasses="rock-color-picker"
     name="colorpicker">
-    <template #default="{uniqueId, field, errors, disabled, tabIndex}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div ref="colorPicker" class="input-group input-width-lg">
-                <input :id="uniqueId" type="text" class="form-control" v-bind="field" :disabled="disabled" :placeholder="placeholder" :tabindex="tabIndex" />
+                <input v-model="internalValue" :id="uniqueId" type="text" class="form-control" v-bind="field" :placeholder="placeholder" />
                 <span class="input-group-addon">
                     <i></i>
                 </span>

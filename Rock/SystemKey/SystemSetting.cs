@@ -239,5 +239,10 @@ namespace Rock.SystemKey
         /// Lava Engine Type.
         /// </summary>
         public const string LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
+
+        /// <summary>
+        /// The statement generator configuration
+        /// </summary>
+        public const string STATEMENT_GENERATOR_CONFIG = "core_StatementGeneratorConfig";
     }
 }

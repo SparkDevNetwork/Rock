@@ -83,3 +83,9 @@ export const EditComponent = defineComponent({
 <DatePartsPicker v-model="internalValue" :showYear="false" />
 `
 });
+
+export const ConfigurationComponent = defineComponent({
+    name: "MonthDayField.Configuration",
+
+    template: ``
+});

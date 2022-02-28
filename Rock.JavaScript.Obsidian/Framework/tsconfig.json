@@ -2,8 +2,6 @@
   "compilerOptions": {
     "outDir": "../dist/Framework",
     "rootDir": ".",
-    "composite": true,
-    "declaration": true,
     "incremental": true,
     "noImplicitAny": true,
     "noImplicitOverride": true,

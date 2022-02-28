@@ -140,7 +140,7 @@ export default defineComponent({
     :modelValue="internalValue"
     formGroupClasses="number-up-down"
     name="numberupdown">
-    <template #default="{uniqueId, field, errors, disabled, fieldLabel}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <NumberUpDownInternal v-model="internalValue" :min="min" :max="max" :class="additionalClasses(fieldLabel)" />
         </div>

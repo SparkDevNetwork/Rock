@@ -4,7 +4,6 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" CssClass="panel panel-block" runat="server">
 
-
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-folder-open"></i> Category List</h1>
             </div>
@@ -33,11 +32,10 @@
             </div>
         </asp:Panel>
 
-        <Rock:ModalDialog ID="mdDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">
+        <Rock:ModalDialog ID="mdDetails" runat="server" Title="Category" ValidationGroup="BlockValidationGroup">
             <Content>
-
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="BlockValidationGroup" />
                 <asp:Panel ID="pnlEntityInfo" runat="server" CssClass="well">
                     <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Label="Entity Type" Required="true" />
 
@@ -53,7 +51,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" Required="true" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" Required="true" RequiredErrorMessage="Name is required." ValidationGroup="BlockValidationGroup" />
                     </div>
                     <div class="col-md-6">
                     </div>

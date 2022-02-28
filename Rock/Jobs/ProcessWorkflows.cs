@@ -27,7 +27,6 @@ using Rock.Model;
 
 namespace Rock.Jobs
 {
-
     /// <summary>
     /// Job to process the persisted active workflows
     /// </summary>
@@ -71,6 +70,7 @@ namespace Rock.Jobs
 
             foreach ( var workflowId in new WorkflowService( new RockContext() )
                 .GetActive()
+                .Where( wf => (wf.WorkflowType.IsActive == true || !wf.WorkflowType.IsActive.HasValue ) )
                 .Select( w => w.Id )
                 .ToList() )
             {
@@ -113,7 +113,6 @@ namespace Rock.Jobs
                         }
                     }
                 }
-
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex, null );
@@ -127,10 +126,12 @@ namespace Rock.Jobs
             {
                 resultMsg.AppendFormat( ", {0} workflows reported an error", workflowErrors );
             }
+
             if ( workflowExceptions > 0 )
             {
                 resultMsg.AppendFormat( ", {0} workflows caused an exception", workflowExceptions );
             }
+
             if ( processingErrors.Any() )
             {
                 resultMsg.Append( Environment.NewLine + processingErrors.AsDelimited( Environment.NewLine ) );

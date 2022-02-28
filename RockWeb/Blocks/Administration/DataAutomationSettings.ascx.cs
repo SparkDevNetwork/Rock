@@ -624,6 +624,8 @@ namespace RockWeb.Blocks.Administration
                     } )
                     .ToList();
 
+            _campusSettings.ExcludeSchedules = spExcludeSchedules.SelectedIds.ToList();
+
             // Adult Children
             _adultChildrenSettings.IsEnabled = cbAdultChildren.Checked;
             _adultChildrenSettings.IsOnlyMoveGraduated = cbisMoveGraduated.Checked;

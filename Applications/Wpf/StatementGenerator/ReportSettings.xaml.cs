@@ -21,7 +21,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-
+using Newtonsoft.Json;
+using RestSharp;
 using Rock.Client;
 
 namespace Rock.Apps.StatementGenerator
@@ -144,10 +145,79 @@ namespace Rock.Apps.StatementGenerator
         {
             var rockConfig = RockConfig.Load();
             rockConfig.EnablePageCountPredetermination = cbEnablePageCountPredetermination.IsChecked == true;
+            rockConfig.LastReportOptions = ReportOptions.Current;
             rockConfig.Save();
             ReportOptions.Current.EnablePageCountPredetermination = rockConfig.EnablePageCountPredetermination;
 
+            if ( cbSaveSettings.IsChecked == true )
+            {
+                this.SaveConfigurationAsSystemSetting( rockConfig );
+            }
+
             return true;
+        }
+
+        private void SaveConfigurationAsSystemSetting( RockConfig rockConfig )
+        {
+            // Login and setup options for REST calls
+            var restClient = new RestClient( rockConfig.RockBaseUrl );
+            restClient.LoginToRock( rockConfig.Username, rockConfig.Password );
+
+            // Get the previous record and set up the one to be stored
+            var isPost = true;
+            var getStatementGeneratorConfig = new RestRequest( $"api/Attributes?$filter=Guid eq guid'{Rock.Client.SystemGuid.Attribute.STATEMENT_GENERATOR_CONFIG}'" );
+            var storedSetting = restClient.Execute<List<Rock.Client.Attribute>>( getStatementGeneratorConfig ).Data.FirstOrDefault();
+            var systemSetting = new AttributeEntity()
+            {
+                IsSystem = false,
+                FieldTypeId = 1,
+                EntityTypeId = null,
+                EntityTypeQualifierColumn = "SystemSetting",
+                EntityTypeQualifierValue = string.Empty,
+                Key = "core_StatementGeneratorConfig",
+                Name = "core _ Statement Generator Config",
+                AbbreviatedName = "core _ Statement Generator Config",
+                Description = "Used to store common configuration settings for the Statement Generator application",
+                Order = 0,
+                IsGridColumn = false,
+                IsMultiValue = false,
+                IsRequired = false,
+                Guid = Rock.Client.SystemGuid.Attribute.STATEMENT_GENERATOR_CONFIG.AsGuid()
+            };
+
+            if ( null != storedSetting )
+            {
+                isPost = false;
+                systemSetting.CopyPropertiesFrom( storedSetting );
+            }
+
+            // Write the Config JSON
+            systemSetting.DefaultValue = JsonConvert.SerializeObject( rockConfig, Formatting.None );
+
+            // Post the data back to Rock
+            var saveAttributeRequest = new RestRequest()
+                .AddHeader("Accept", "application/json");
+
+            if ( isPost )
+            {
+                saveAttributeRequest.Resource = "api/Attributes";
+                saveAttributeRequest.Method = Method.POST;
+            }
+            else
+            {   // If not nulled, this doesn't update
+                systemSetting.ModifiedByPersonAliasId = null;
+                systemSetting.ModifiedDateTime = null;
+
+                saveAttributeRequest.Resource = $"api/Attributes/{systemSetting.Id}";
+                saveAttributeRequest.Method = Method.PUT;
+            }
+            saveAttributeRequest.AddJsonBody( systemSetting );
+
+            var saveAttributeResponse = restClient.Execute( saveAttributeRequest );
+            if ( saveAttributeResponse.ErrorException != null )
+            {
+                throw saveAttributeResponse.ErrorException;
+            }
         }
 
         /// <summary>

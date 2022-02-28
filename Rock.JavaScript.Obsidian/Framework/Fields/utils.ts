@@ -28,12 +28,27 @@ export type ConfigurationValues = Record<string, string>;
 type FieldEditorBaseProps = {
     modelValue: {
         type: PropType<string>,
-        required: boolean
+        required: true
     };
 
     configurationValues: {
         type: PropType<ConfigurationValues>;
         default: () => ConfigurationValues;
+    };
+};
+
+/**
+ * The basic properties that all field configuration components must support.
+ */
+type FieldConfigurationBaseProps = {
+    modelValue: {
+        type: PropType<Record<string, string>>,
+        required: true
+    };
+
+    configurationProperties: {
+        type: PropType<Record<string, string>>,
+        required: true
     };
 };
 
@@ -50,6 +65,23 @@ export function getFieldEditorProps(): FieldEditorBaseProps {
         configurationValues: {
             type: Object as PropType<ConfigurationValues>,
             default: () => ({})
+        }
+    };
+}
+
+/**
+ * Gets the standard field configuration properties that all field configuration
+ * components must support.
+ */
+export function getFieldConfigurationProps(): FieldConfigurationBaseProps {
+    return {
+        modelValue: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+        configurationProperties: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
         }
     };
 }
@@ -92,6 +124,6 @@ export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {
         }
     }
 
-    console.error(`Field type "${fieldTypeGuid}" was not found`);
+    console.warn(`Field type "${fieldTypeGuid}" was not found`);
     return null;
 }

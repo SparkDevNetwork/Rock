@@ -304,8 +304,9 @@ html {
   }
 }
 
+@photo-container-max: @screen-xs-min + 1;
 .photo-container {
-  @media (max-width: @screen-xs-min + 1) {
+  @media (max-width: @photo-container-max) {
     flex-shrink: 1;
     width: auto;
     margin-right: 10px;

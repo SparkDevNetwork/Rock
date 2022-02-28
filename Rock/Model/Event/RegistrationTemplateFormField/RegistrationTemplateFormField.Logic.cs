@@ -14,55 +14,13 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Runtime.Serialization;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class RegistrationTemplateFormField
     {
-        #region Entity Properties
-
-        /// <summary>
-        /// JSON Serialized <see cref="FieldVisibilityRules"/>
-        /// </summary>
-        /// <value>
-        /// The field visibility rules json.
-        /// </value>
-        [DataMember]
-        public string FieldVisibilityRulesJSON
-        {
-            get
-            {
-                return FieldVisibilityRules?.ToJson();
-            }
-
-            set
-            {
-                Field.FieldVisibilityRules rules = null;
-                if ( value.IsNotNullOrWhiteSpace() )
-                {
-                    rules = value.FromJsonOrNull<Rock.Field.FieldVisibilityRules>();
-                    if ( rules == null )
-                    {
-                        // if can't be deserialized as FieldVisibilityRules, it might have been serialized as an array from an earlier version
-                        var rulesList = value.FromJsonOrNull<List<Field.FieldVisibilityRule>>();
-                        if ( rulesList != null )
-                        {
-                            rules = new Field.FieldVisibilityRules();
-                            rules.RuleList.AddRange( rulesList );
-                        }
-                    }
-                }
-
-                this.FieldVisibilityRules = rules ?? new Field.FieldVisibilityRules();
-            }
-        }
-
-        #endregion Entity Properties
-
         #region ICacheable
 
         /// <summary>

@@ -28,6 +28,8 @@ import ListBox from "../../Elements/listBox";
 import BirthdayPicker from "../../Elements/birthdayPicker";
 import NumberUpDown from "../../Elements/numberUpDown";
 import AddressControl, { getDefaultAddressControlModel } from "../../Controls/addressControl";
+import InlineSwitch from "../../Elements/inlineSwitch";
+import Switch from "../../Elements/switch";
 import Toggle from "../../Elements/toggle";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "../../Elements/itemsWithPreAndPostHtml";
 import StaticFormControl from "../../Elements/staticFormControl";
@@ -35,8 +37,9 @@ import ProgressTracker, { ProgressTrackerItem } from "../../Elements/progressTra
 import RockForm from "../../Controls/rockForm";
 import RockButton from "../../Elements/rockButton";
 import RadioButtonList from "../../Elements/radioButtonList";
-import DropDownList, { DropDownListOption } from "../../Elements/dropDownList";
+import DropDownList from "../../Elements/dropDownList";
 import Dialog from "../../Controls/dialog";
+import InlineCheckBox from "../../Elements/inlineCheckBox";
 import CheckBox from "../../Elements/checkBox";
 import PhoneNumberBox from "../../Elements/phoneNumberBox";
 import HelpBlock from "../../Elements/helpBlock";
@@ -49,6 +52,9 @@ import SocialSecurityNumberBox from "../../Elements/socialSecurityNumberBox";
 import TimePicker from "../../Elements/timePicker";
 import CheckBoxList from "../../Elements/checkBoxList";
 import Rating from "../../Elements/rating";
+import Fullscreen from "../../Elements/fullscreen";
+import Panel from "../../Controls/panel";
+import PersonPicker from "../../Controls/personPicker";
 import { toNumber } from "../../Services/number";
 import { ListItem } from "../../ViewModels";
 
@@ -58,7 +64,7 @@ import { ListItem } from "../../ViewModels";
 const GalleryAndResult = defineComponent({
     name: "GalleryAndResult",
     components: {
-        PanelWidget
+        Panel
     },
     props: {
         splitWidth: {
@@ -67,8 +73,8 @@ const GalleryAndResult = defineComponent({
         }
     },
     template: `
-<PanelWidget>
-    <template #header><slot name="header" /></template>
+<Panel :hasCollapse="true">
+    <template #title><slot name="header" /></template>
     <div v-if="splitWidth" class="row">
         <div class="col-md-6">
             <slot name="gallery" />
@@ -85,7 +91,7 @@ const GalleryAndResult = defineComponent({
             <slot name="result" />
         </div>
     </template>
-</PanelWidget>`
+</Panel>`
 });
 
 /** Demonstrates a phone number box */
@@ -97,7 +103,7 @@ const phoneNumberBoxGallery = defineComponent({
     },
     data () {
         return {
-            phoneNumber: ""
+            phoneNumber: "8005551234"
         };
     },
     template: `
@@ -148,7 +154,7 @@ const dropDownListGallery = defineComponent({
                 { text: "B Text", value: "b" },
                 { text: "C Text", value: "c" },
                 { text: "D Text", value: "d" }
-            ] as DropDownListOption[]
+            ] as ListItem[]
         };
     },
     template: `
@@ -190,7 +196,7 @@ const radioButtonListGallery = defineComponent({
                 { text: "E Text", value: "e" },
                 { text: "F Text", value: "f" },
                 { text: "G Text", value: "g" }
-            ] as DropDownListOption[]
+            ] as ListItem[]
         };
     },
     template: `
@@ -230,9 +236,36 @@ const checkBoxGallery = defineComponent({
         CheckBox
     </template>
     <template #gallery>
-        <Toggle label="Inline" v-model="inline" />
-        <CheckBox label="Check 1" v-model="isChecked" :inline="inline" />
-        <CheckBox label="Check 2" v-model="isChecked" :inline="inline" />
+        <CheckBox label="Check 1" v-model="isChecked" />
+        <CheckBox label="Check 2" v-model="isChecked" />
+    </template>
+    <template #result>
+        {{isChecked}}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates an inline checkbox */
+const inlineCheckBoxGallery = defineComponent({
+    name: "InlineCheckBoxGallery",
+    components: {
+        GalleryAndResult,
+        InlineCheckBox
+    },
+    data() {
+        return {
+            isChecked: false,
+            inline: true
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        InlineCheckBox
+    </template>
+    <template #gallery>
+        <InlineCheckBox label="Check 1" v-model="isChecked" />
+        <InlineCheckBox label="Check 2" v-model="isChecked" />
     </template>
     <template #result>
         {{isChecked}}
@@ -313,7 +346,7 @@ const formRulesGallery = defineComponent({
     template: `
 <GalleryAndResult :splitWidth="false">
     <template #header>
-        Rules
+        Form Rules
     </template>
     <template #gallery>
         <TextBox label="Rules" v-model="rules" help="Try 'required', 'gte:1', 'lt:2', and others. Combine rules like this: 'required|lt:7|gt:6'" />
@@ -773,6 +806,68 @@ const ratingGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates an switch */
+const switchGallery = defineComponent({
+    name: "SwitchGallery",
+    components: {
+        GalleryAndResult,
+        TextBox,
+        Switch
+    },
+    data() {
+        return {
+            text: "",
+            isChecked: false
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        Switch
+    </template>
+    <template #gallery>
+        <TextBox label="Text" v-model="text" />
+
+        <Switch label="Switch 1" v-model="isChecked" :text="text" />
+        <Switch label="Switch 2" v-model="isChecked" :text="text" />
+    </template>
+    <template #result>
+        {{isChecked}}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates an inline switch */
+const inlineSwitchGallery = defineComponent({
+    name: "InlineSwitchGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        InlineSwitch
+    },
+    data() {
+        return {
+            isBold: false,
+            isChecked: false
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        InlineSwitch
+    </template>
+    <template #gallery>
+        <CheckBox label="Is Bold" v-model="isBold" />
+
+        <InlineSwitch label="Inline Switch 1" v-model="isChecked" :isBold="isBold" />
+        <InlineSwitch label="Inline Switch 2" v-model="isChecked" :isBold="isBold" />
+    </template>
+    <template #result>
+        {{isChecked}}
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates a currency box */
 const currencyBoxGallery = defineComponent({
     name: "CurrencyBoxGallery",
@@ -913,10 +1008,21 @@ const toggleGallery = defineComponent({
     name: "ToggleGallery",
     components: {
         GalleryAndResult,
+        TextBox,
+        DropDownList,
         Toggle
     },
     data() {
         return {
+            trueText: "On",
+            falseText: "Off",
+            btnSize: "",
+            sizeOptions: [
+                { value: "lg", text: "Large" },
+                { value: "md", text: "Medium" },
+                { value: "sm", text: "Small" },
+                { value: "xs", text: "Extra Small" },
+            ],
             value: false
         };
     },
@@ -926,8 +1032,12 @@ const toggleGallery = defineComponent({
         Toggle
     </template>
     <template #gallery>
-       <Toggle label="Toggle 1" v-model="value" />
-       <Toggle label="Toggle 2" v-model="value" />
+        <TextBox label="True Text" v-model="trueText" />
+        <TextBox label="False Text" v-model="falseText" />
+        <DropDownList label="Button Size" v-model="btnSize" :options="sizeOptions" />
+
+       <Toggle label="Toggle 1" v-model="value" :trueText="trueText" :falseText="falseText" :btnSize="btnSize" />
+       <Toggle label="Toggle 2" v-model="value" :trueText="trueText" :falseText="falseText" :btnSize="btnSize" />
     </template>
     <template #result>
         {{value}}
@@ -1014,6 +1124,124 @@ const itemsWithPreAndPostHtmlGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates the fullscreen component. */
+const fullscreenGallery = defineComponent({
+    name: "FullscreenGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        Fullscreen
+    },
+    data() {
+        return {
+            colors: Array.apply(0, Array(256)).map((_: unknown, index: number) => `rgb(${index}, ${index}, ${index})`),
+            pageOnly: true,
+            value: false
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        Fullscreen
+    </template>
+    <template #gallery>
+        <CheckBox v-model="pageOnly" label="Is Page Only" />
+
+        <Fullscreen v-model="value" :isPageOnly="pageOnly">
+            <CheckBox v-model="value" label="Fullscreen" />
+            <div v-for="c in colors" :style="{ background: c, height: '5px' }"></div>
+        </Fullscreen>
+    </template>
+    <template #result>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates the panel component. */
+const panelGallery = defineComponent({
+    name: "PanelGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        Panel
+    },
+    data() {
+        return {
+            colors: Array.apply(0, Array(256)).map((_: unknown, index: number) => `rgb(${index}, ${index}, ${index})`),
+            collapsableValue: true,
+            drawerValue: false,
+            hasAside: false,
+            hasDrawer: true,
+            hasFullscreen: false,
+            isFullscreenPageOnly: true,
+            value: true
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        Panel
+    </template>
+    <template #gallery>
+        <CheckBox v-model="collapsableValue" label="Collapsable" />
+        <CheckBox v-model="value" label="Panel Open" />
+        <CheckBox v-model="hasDrawer" label="Has Drawer" />
+        <CheckBox v-model="hasAside" label="Has Aside" />
+        <CheckBox v-model="hasFullscreen" label="Has Fullscreen" />
+        <CheckBox v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
+
+        <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsableValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title">
+            <template v-if="hasDrawer" #drawer>
+                <div style="text-align: center;">Drawer Content</div>
+            </template>
+
+            <template v-if="hasAside" #titleAside>
+                <span class="label label-warning">Warning</span>
+            </template>
+
+            <template v-if="hasAside" #actionAside>
+                <span class="panel-action">
+                    <i class="fa fa-star-o"></i>
+                </span>
+            </template>
+
+            <div v-for="c in colors" :style="{ background: c, height: '5px' }"></div>
+        </Panel>
+    </template>
+    <template #result>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a person picker */
+const personPickerGallery = defineComponent({
+    name: "PersonPickerGallery",
+    components: {
+        GalleryAndResult,
+        PersonPicker
+    },
+    data() {
+        return {
+            value: undefined
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        PersonPicker
+    </template>
+    <template #gallery>
+        <PersonPicker v-model="value" label="Person" />
+    </template>
+    <template #result>
+        <span v-if="value">{{ JSON.stringify(value) }}</span>
+    </template>
+</GalleryAndResult>`
+});
+
+
+
+
 
 const galleryComponents: Record<string, Component> = {
     textBoxGallery,
@@ -1024,6 +1252,9 @@ const galleryComponents: Record<string, Component> = {
     radioButtonListGallery,
     dialogGallery,
     checkBoxGallery,
+    inlineCheckBoxGallery,
+    switchGallery,
+    inlineSwitchGallery,
     checkBoxListGallery,
     listBoxGallery,
     phoneNumberBoxGallery,
@@ -1044,7 +1275,10 @@ const galleryComponents: Record<string, Component> = {
     addressControlGallery,
     toggleGallery,
     progressTrackerGallery,
-    itemsWithPreAndPostHtmlGallery
+    itemsWithPreAndPostHtmlGallery,
+    fullscreenGallery,
+    panelGallery,
+    personPickerGallery
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");
@@ -1052,12 +1286,12 @@ const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />
 export default defineComponent({
     name: "Example.ControlGallery",
     components: {
-        PaneledBlockTemplate,
+        Panel,
         ...galleryComponents
     },
 
     template: `
-<PaneledBlockTemplate>
+<Panel type="block" hasFullscreen>
     <template v-slot:title>
         <i class="fa fa-flask"></i>
         Obsidian Control Gallery
@@ -1065,5 +1299,5 @@ export default defineComponent({
     <template v-slot:default>
         ${galleryTemplate}
     </template>
-</PaneledBlockTemplate>`
+</Panel>`
 });

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Web.Security.AntiXss;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -295,6 +296,7 @@ namespace RockWeb.Blocks.Connection
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
                 var pageReference = new PageReference( GetAttributeValue( AttributeKey.DetailPage ), null );
+                // Not using the BuildUrlEncoded due to the additional method here that handles the encoding
                 mergeFields.Add( "DetailPage", BuildDetailPageUrl( pageReference.BuildUrl() ) );
 
                 // iterate through the opportunities and lava merge the summaries and descriptions
@@ -342,7 +344,8 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            return detailPage + sbUrlParms.ToString();
+            // This is going on the page, make sure it is encoded properly
+            return AntiXssEncoder.HtmlEncode( detailPage + sbUrlParms.ToString(), false );
         }
 
         /// <summary>
@@ -400,7 +403,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( GetAttributeValue( AttributeKey.DisplayAttributeFilters ).AsBoolean() )
                 {
-                    // Parse the attribute filters 
+                    // Parse the attribute filters
                     AvailableAttributes = new List<AttributeCache>();
                     if ( connectionType != null )
                     {

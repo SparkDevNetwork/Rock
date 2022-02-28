@@ -25,6 +25,7 @@ namespace Rock.Field.Types
     /// Field Type used to for specifying a Month and Day portion of a Date
     /// Stored as "M/d" (regardless of culture), but formatted value will be culture specific
     /// </summary>
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class MonthDayFieldType : FieldType
     {
         #region Edit Control

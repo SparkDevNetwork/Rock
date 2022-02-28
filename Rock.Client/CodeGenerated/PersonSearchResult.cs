@@ -41,6 +41,9 @@ namespace Rock.Client
         public int Age { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.AgeClassification AgeClassification { get; set; }
+
+        /// <summary />
         public string ConnectionStatus { get; set; }
 
         /// <summary />
@@ -56,13 +59,22 @@ namespace Rock.Client
         public string ImageHtmlTag { get; set; }
 
         /// <summary />
+        public string ImageUrl { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsBusiness { get; set; }
 
         /// <summary />
         public bool IsDeceased { get; set; }
 
         /// <summary />
         public string Name { get; set; }
+
+        /// <summary />
+        public List<PersonSearchPhoneNumber> PhoneNumbers { get; set; }
 
         /// <summary />
         public string PickerItemDetailsHtml { get; set; }
@@ -85,6 +97,9 @@ namespace Rock.Client
         /// <summary />
         public string SpouseNickName { get; set; }
 
+        /// <summary />
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// Copies the base properties from a source PersonSearchResult object
         /// </summary>
@@ -94,14 +109,18 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Address = source.Address;
             this.Age = source.Age;
+            this.AgeClassification = source.AgeClassification;
             this.ConnectionStatus = source.ConnectionStatus;
             this.Email = source.Email;
             this.FormattedAge = source.FormattedAge;
             this.Gender = source.Gender;
             this.ImageHtmlTag = source.ImageHtmlTag;
+            this.ImageUrl = source.ImageUrl;
             this.IsActive = source.IsActive;
+            this.IsBusiness = source.IsBusiness;
             this.IsDeceased = source.IsDeceased;
             this.Name = source.Name;
+            this.PhoneNumbers = source.PhoneNumbers;
             this.PickerItemDetailsHtml = source.PickerItemDetailsHtml;
             this.PickerItemDetailsImageHtml = source.PickerItemDetailsImageHtml;
             this.PickerItemDetailsPersonInfoHtml = source.PickerItemDetailsPersonInfoHtml;
@@ -109,6 +128,7 @@ namespace Rock.Client
             this.SearchDetailsHtml = source.SearchDetailsHtml;
             this.SpouseName = source.SpouseName;
             this.SpouseNickName = source.SpouseNickName;
+            this.Guid = source.Guid;
 
         }
     }

@@ -100,13 +100,15 @@ namespace RockWeb.Blocks.Finance
         #region Properties
 
         /// <summary>
-        /// Gets the target person
+        /// Gets the target person.
         /// </summary>
-        /// <value>
-        /// The target person.
-        /// </value>
+        /// <value>The target person.</value>
         protected Person TargetPerson { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the available attributes.
+        /// </summary>
+        /// <value>The available attributes.</value>
         public List<AttributeCache> AvailableAttributes { get; set; }
 
         /// <summary>
@@ -217,14 +219,15 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             BindFilter();
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
         private void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
             rFilter.DeleteUserPreferences();
@@ -235,8 +238,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Start Date", "Start Date", drpDate.LowerValue.HasValue ? drpDate.LowerValue.Value.ToString( "o" ) : string.Empty );
@@ -276,8 +277,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the filter display for each saved user value
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
@@ -364,8 +363,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the RowDataBound event of the gGroupMembers control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
         public void gList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
             if ( e.Row.RowType != DataControlRowType.DataRow )
@@ -442,9 +439,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the AddClick event of the gList control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void gList_AddClick( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
@@ -460,8 +454,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the DeleteClick event of the gGrid control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         private void gGrid_DeleteClick( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
@@ -489,8 +481,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the View event of the gList control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gList_View( object sender, RowEventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
@@ -506,8 +496,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the Delete event of the gList control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void dfBenevolenceRequest_Click( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
@@ -532,8 +520,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the Click event of the lbBenevolenceTypes control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBenevolenceTypes_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( AttributeKey.ConfigurationPage );
@@ -542,8 +528,6 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Handles the GridRebind event of the gPledges control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
@@ -555,6 +539,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Binds the filter.
         /// </summary>
+        /// <param name="clearFilter">if set to <c>true</c> [clear filter].</param>
         private void BindFilter( bool clearFilter = false )
         {
             drpDate.LowerValue = rFilter.GetUserPreference( "Start Date" ).AsDateTime();
@@ -600,6 +585,9 @@ namespace RockWeb.Blocks.Finance
             cblBenevolenceType.SetValues( rFilter.GetUserPreference( "Benevolence Types" ).SplitDelimitedValues() );
         }
 
+        /// <summary>
+        /// Adds the dynamic controls.
+        /// </summary>
         private void AddDynamicControls()
         {
             if ( AvailableAttributes != null )
@@ -799,7 +787,6 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Filter query by any configured attribute filters
-
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
                 foreach ( var attribute in AvailableAttributes )

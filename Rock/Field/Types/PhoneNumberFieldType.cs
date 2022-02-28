@@ -21,6 +21,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a phone number
     /// </summary>
+    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class PhoneNumberFieldType : FieldType
     {
 

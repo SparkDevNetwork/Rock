@@ -31,6 +31,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./booleanFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./booleanFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Boolean field.
  */
@@ -65,5 +70,9 @@ export class BooleanFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

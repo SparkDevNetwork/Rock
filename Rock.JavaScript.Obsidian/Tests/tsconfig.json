@@ -7,9 +7,6 @@
     "module": "CommonJS",
     "baseUrl": ".."
   },
-  "references": [
-    { "path": "../Framework"}
-  ],
   "include": ["**/*.ts"],
   "exclude": ["**/*.ignored.ts"]
 }

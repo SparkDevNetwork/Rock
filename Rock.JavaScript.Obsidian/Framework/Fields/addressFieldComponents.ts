@@ -53,3 +53,10 @@ export const EditComponent = defineComponent({
 <AddressControl v-model="internalValue" />
 `
 });
+
+
+export const ConfigurationComponent = defineComponent({
+    name: "AddressField.Configuration",
+
+    template: ``
+});

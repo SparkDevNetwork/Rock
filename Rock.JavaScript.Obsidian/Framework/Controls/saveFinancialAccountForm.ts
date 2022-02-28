@@ -17,7 +17,7 @@
 
 import { defineComponent, inject, PropType } from "vue";
 import Alert from "../Elements/alert";
-import CheckBox from "../Elements/checkBox";
+import InlineCheckBox from "../Elements/inlineCheckBox";
 import RockButton from "../Elements/rockButton";
 import TextBox from "../Elements/textBox";
 import { Guid } from "../Util/guid";
@@ -38,7 +38,7 @@ type SaveFinancialAccountFormResult = {
 const SaveFinancialAccountForm = defineComponent({
     name: "SaveFinancialAccountForm",
     components: {
-        CheckBox,
+        InlineCheckBox,
         TextBox,
         Alert,
         RockButton,
@@ -147,7 +147,7 @@ const SaveFinancialAccountForm = defineComponent({
             <strong v-if="errorTitle">{{errorTitle}}:</strong>
             {{errorMessage}}
         </Alert>
-        <CheckBox label="Save account information for future gifts" v-model="doSave" />
+        <InlineCheckBox label="Save account information for future gifts" v-model="doSave" />
         <RockForm v-if="doSave" @submit="onSubmit">
             <TextBox label="Name for the account" rules="required" v-model="savedAccountName" />
             <template v-if="isLoginCreationNeeded">

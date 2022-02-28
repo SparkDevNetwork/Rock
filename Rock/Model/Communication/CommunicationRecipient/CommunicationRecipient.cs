@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
+using Newtonsoft.Json.Linq;
 using Rock.Data;
 using Rock.Lava;
 
@@ -163,6 +165,38 @@ namespace Rock.Model
         /// The personal device identifier.
         /// </value>
         public int? PersonalDeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AdditionalMergeValues as a Json string.
+        /// </summary>
+        /// <value>
+        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient. 
+        /// </value>
+        [DataMember]
+        public string AdditionalMergeValuesJson
+        {
+            get
+            {
+                return AdditionalMergeValues.ToJson();
+            }
+
+            set
+            {
+                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+
+                // Convert any objects to a dictionary so that they can be used by Lava
+                var objectKeys = AdditionalMergeValues
+                    .Where( m => m.Value != null && m.Value.GetType() == typeof( JObject ) )
+                    .Select( m => m.Key ).ToList();
+                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JObject ) AdditionalMergeValues[k] ).ToDictionary() );
+
+                // Convert any arrays to a list, and also check to see if it contains objects that need to be converted to a dictionary for Lava
+                var arrayKeys = AdditionalMergeValues
+                    .Where( m => m.Value != null && m.Value.GetType() == typeof( JArray ) )
+                    .Select( m => m.Key ).ToList();
+                arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JArray ) AdditionalMergeValues[k] ).ToObjectArray() );
+            }
+        }
 
         #endregion
 

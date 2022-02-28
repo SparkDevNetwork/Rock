@@ -152,6 +152,11 @@ namespace Rock.Security
         /// </summary>
         public const string MANAGE_STEPS = "ManageSteps";
 
+        /// <summary>
+        /// Authorization to delete check-in attendance
+        /// </summary>
+        public const string DELETE_ATTENDANCE = "DeleteAttendance";
+
         #endregion
 
         #region Public Methods
