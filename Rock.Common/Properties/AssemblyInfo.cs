@@ -38,5 +38,6 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock" )]
 [assembly: InternalsVisibleTo( "Rock.NG" )]
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks.NG" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.Lava.Tests" )]

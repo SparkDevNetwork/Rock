@@ -29,6 +29,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockWebCore", "RockWebCore\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.ViewModel.NG", "Rock.ViewModel\Rock.ViewModel.NG.csproj", "{00CE405B-1293-43C1-9E5C-CDAD62885FE9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Blocks.NG", "Rock.Blocks\Rock.Blocks.NG.csproj", "{B7A6E43B-B027-49EA-BE75-B477AB924C43}"
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian", "Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj", "{A4FB4B9B-3564-4C25-938C-4350A9515B24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Web2", "Rock.Web2\Rock.Web2.csproj", "{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Fluid.NG", "Rock.Lava.Fluid\Rock.Lava.Fluid.NG.csproj", "{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		TestApp.Shared\TestApp.Shared.projitems*{01911862-ecb1-4f51-af69-cee52a11bbee}*SharedItemsImports = 13
@@ -84,6 +92,22 @@ Global
 		{00CE405B-1293-43C1-9E5C-CDAD62885FE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00CE405B-1293-43C1-9E5C-CDAD62885FE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00CE405B-1293-43C1-9E5C-CDAD62885FE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

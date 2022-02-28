@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Karambolo.AspNetCore.Bundling" Version="3.5.1" />
+    <PackageReference Include="Karambolo.AspNetCore.Bundling.Less" Version="3.5.1" />
+    <PackageReference Include="Karambolo.AspNetCore.Bundling.NUglify" Version="3.5.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock\Rock.NG.csproj" />
+  </ItemGroup>
+
+</Project>

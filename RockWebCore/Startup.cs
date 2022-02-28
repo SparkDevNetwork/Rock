@@ -9,13 +9,17 @@ using HotChocolate.Types.Descriptors;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
 using Rock.Data;
+using Rock.Net;
 using Rock.Rest;
+using Rock.Web2.Routing;
 
 namespace RockWebCore
 {
@@ -40,12 +44,15 @@ namespace RockWebCore
 
     public class Startup
     {
-        public Startup( IConfiguration configuration )
+        public IConfiguration Configuration { get; }
+
+        public IWebHostEnvironment Environment { get; }
+
+        public Startup( IConfiguration configuration, IWebHostEnvironment environment )
         {
             Configuration = configuration;
+            Environment = environment;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices( IServiceCollection services )
@@ -86,6 +93,14 @@ namespace RockWebCore
                 } );
 
             services.AddSingleton<Rock.Rest.IEntityServiceFactory, EntityServiceFactory>();
+
+            services.AddHttpContextAccessor();
+
+            services.AddBundling()
+                            .UseDefaults( Environment )
+                            .UseNUglify()
+                            .AddLess()
+                            .UseTimestampVersioning();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -126,6 +141,20 @@ namespace RockWebCore
             {
                 GraphQLEndPoint = "/graphql"
             }, "/graphql-voyager" );
+
+            app.UseMiddleware<RockRouterMiddleware>( app );
+
+            var cwd = Directory.GetCurrentDirectory();
+
+            app.UseStaticFiles( new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider( System.IO.Path.Join( cwd, "..", "RockWeb" ) )
+            } );
+
+            app.UseRockBundles();
+
+            Rock.Lava.LavaService.SetCurrentEngine( new Rock.Lava.Fluid.FluidEngine() );
+            Rock.Lava.LavaService.RockLiquidIsEnabled = false;
         }
     }
 }

@@ -1,0 +1,167 @@
+﻿<!DOCTYPE html>
+
+<!--
+  _______       _____           _   ____         _______ _             _____ _
+ |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |
+    | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _
+    | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | |
+    | | (_) | | |__| | (_) | (_| | | |_) |  __/    | |  | | | |  __/ | |__| | | (_) | |  | |_| |
+    |_|\___/   \_____|\___/ \__,_| |____/ \___|    |_|  |_| |_|\___|  \_____|_|\___/|_|   \__, |
+                                                                                           __/ |
+                                                                                          |___/
+-->
+
+<html class="no-js">
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="/Scripts/Bundles/RockJQueryLatest.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+
+    <script>
+        Sys = {};
+        Sys.Application = {};
+        Sys.Application.add_load = function(fn) {
+            $(document).ready(fn());
+        };
+    </script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="/Themes/Rock/Styles/bootstrap.css"/>
+	<link rel="stylesheet" href="/Themes/Rock/Styles/theme.css"/>
+	<link rel="stylesheet" href="/Styles/developer.css"/>
+
+    <script src="/Scripts/modernizr.js"></script>
+    <script src="/Themes/Rock/Assets/Scripts/theme.js"></script>
+
+</head>
+<body runat="server" id="body">
+    <form id="form1" runat="server">
+
+        <div class="page-wrapper">
+
+            <nav class="navbar navbar-fixed-top rock-top-header">
+                <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
+                    <i class="fa fa-bars"></i>
+                </div>
+                    {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
+                        <a href="/" title="Rock RMS" class="navbar-brand-corner has-logo">
+                            <img src="/GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}&w=42&h=42" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+                        </a>
+                    {%- else -%}
+                        <a href="/" title="Rock RMS" class="navbar-brand-corner no-logo"></a>
+                    {%- endif -%}
+
+                <div id="fixed-header" class="header-content" role="navigation">
+                    <div class="clearfix">
+                        <!-- bookmark markup goes here -->
+                        <div class="navbar-zone-login"><rock:zone name="Login" /></div>
+                        <div class="navbar-zone-header"><rock:zone name="Header" /></div>
+                    </div>
+                </div>
+            </nav>
+
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <rock:zone name="Navigation" />
+            </nav>
+
+            <div id="content-wrapper">
+                <div class="main-content">
+        <!-- Start Content Area -->
+
+        <!-- Page Title -->
+		{% if CurrentPage.PageCache.PageDisplayTitle == true and CurrentPage.PageCache.PageTitle != '' %}
+		<section id="secPageTitle" class="page-title" runat="server">
+			<h1 class="title">
+				{% if CurrentPage.PageCache.PageDisplayIcon == true %}
+					<i class="{{ CurrentPage.PageCache.PageIcon }}"></i>
+				{% endif %}
+				{{ CurrentPage.PageCache.PageTitle }}
+			</h1>
+			{{ CurrentPage.BreadCrumbContent }}
+			{{ CurrentPage.PageDescriptionContent }}
+		</section>
+		{% endif %}
+
+        <section id="page-content">
+
+            <!-- Ajax Error -->
+            <div class="alert alert-danger ajax-error no-index" style="display:none">
+                <p><strong>Error</strong></p>
+                <span class="ajax-error-message"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <rock:zone name="Feature" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <rock:zone name="Main" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <rock:zone name="Section A" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <rock:zone name="Section B" />
+                </div>
+                <div class="col-md-4">
+                    <rock:zone name="Section C" />
+                </div>
+                <div class="col-md-4">
+                    <rock:zone name="Section D" />
+                </div>
+            </div>
+        </section>
+
+        <!-- End Content Area -->
+
+                    <div class="main-footer">
+                        <rock:zone name="Footer" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="updateProgress" style="display: none">
+            <div class="updateprogress-status">
+                <div class="spinner">
+                    <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                </div>
+            </div>
+            <div class="updateprogress-bg modal-backdrop"></div>
+        </div>
+
+		<div id="modal-popup" class="modal container modal-content rock-modal rock-modal-frame">
+			<div id="modal-popup_contentPanel" class="iframe">
+				<iframe id="modal-popup_iframe" scrolling="no" style="height:auto;"></iframe>
+			</div>
+		</div>
+    </form>
+
+    <script>
+        Sys.Application.add_load(BindNavEvents);
+        Sys.Application.add_load(PreventNumberScroll);
+    </script>
+
+</body>
+</html>

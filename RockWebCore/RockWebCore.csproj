@@ -24,7 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rock.Blocks\Rock.Blocks.NG.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.NG.csproj" />
     <ProjectReference Include="..\Rock.Rest.NG\Rock.Rest.NG.csproj" />
+    <ProjectReference Include="..\Rock.Web2\Rock.Web2.csproj" />
   </ItemGroup>
 
 </Project>

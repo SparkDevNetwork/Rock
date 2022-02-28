@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RootNamespace>Rock.Blocks</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Crm\AttributeValues.cs" />
+    <Compile Remove="Example\LargeDatasetGrid.cs" />
+    <Compile Remove="Example\PersonDetail.cs" />
+    <Compile Remove="Example\PersonSecondary.cs" />
+    <Compile Remove="Finance\TransactionEntry.cs" />
+    <Compile Remove="Groups\GroupMemberList.cs" />
+    <Compile Remove="Security\Login.cs" />
+    <Compile Remove="Utility\StarkDetail.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".gitignore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.NG.csproj" />
+    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.NG.csproj" />
+    <ProjectReference Include="..\Rock\Rock.NG.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Crm\" />
+    <Folder Include="Finance\" />
+    <Folder Include="Groups\" />
+    <Folder Include="Security\" />
+    <Folder Include="Utility\" />
+  </ItemGroup>
+
+</Project>

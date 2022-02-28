@@ -69,7 +69,7 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         protected override ILavaRenderContext OnCreateRenderContext()
         {
-            var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
+            var fluidContext = new global::Fluid.TemplateContext( GetTemplateOptions() );
             var context = new FluidRenderContext( fluidContext );
 
             return context;

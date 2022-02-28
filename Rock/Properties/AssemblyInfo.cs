@@ -32,12 +32,14 @@ using System.Runtime.InteropServices;
 [assembly: Guid( "a2b98b90-6dcb-4049-ad04-353c9b46a113" )]
 
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks.NG" )]
 [assembly: InternalsVisibleTo( "Rock.CodeGeneration" )]
 [assembly: InternalsVisibleTo( "Rock.Migrations" )]
 [assembly: InternalsVisibleTo( "Rock.Rest" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
+[assembly: InternalsVisibleTo( "Rock.Web2" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 
 // The following type forwardings were setup in Rock 1.13.0
