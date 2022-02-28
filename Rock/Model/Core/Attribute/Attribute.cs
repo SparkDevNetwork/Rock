@@ -381,12 +381,12 @@ namespace Rock.Model
 #if NET5_0_OR_GREATER
             Builder.HasMany( a => a.Categories )
                 .WithMany( c => c.AttributeItems )
-                .UsingEntity( j =>
-                {
-                    j.ToTable( "AttributeCategory" );
-                    j.HasOne( typeof( Category ) ).WithMany().HasForeignKey( "CategoryId" );
-                    j.HasOne( typeof( Attribute ) ).WithMany().HasForeignKey( "AttributeId" );
-                } );
+                .UsingEntity<Dictionary<string, object>>(
+                    "AttributeCategory",
+                    j => j.HasOne<Category>().WithMany().HasForeignKey( "CategoryId" ),
+                    j => j.HasOne<Attribute>().WithMany().HasForeignKey( "AttributeId" )
+                );
+
 #else
             this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "AttributeId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "AttributeCategory" ); } );
 #endif
