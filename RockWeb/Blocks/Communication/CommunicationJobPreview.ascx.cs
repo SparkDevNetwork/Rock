@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Communication
         #endregion Page Events
 
         #region Control Events
-        
+
         /// <summary>
         /// Handles the Click event of the lbUpdate control.
         /// </summary>
@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected void ppTargetPerson_SelectPerson( object sender, EventArgs e )
         {
-            var person = new PersonService( new RockContext() ).Get( ppTargetPerson.ID.AsInteger() );
+            var person = new PersonService( new RockContext() ).Get( ppTargetPerson.SelectedValue.Value );
             Variables.TargetPerson = person;
         }
 
@@ -342,7 +342,7 @@ namespace RockWeb.Blocks.Communication
         #endregion Control Events
 
         #region Methods
-        
+
         /// <summary>
         /// Loads the system communication.
         /// </summary>
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Communication
                 lSubject.Text = $"<small class='text-semibold'>{Variables.SystemCommunicationRecord.Title} | {Variables.SystemCommunicationRecord.Subject}</small>";
                 lDate.Text = $"<small class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</small>";
 
-                string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields ,null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
+                string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
 
                 lContent.Text = Variables.EmailContainerHtml.Replace( Variables.SystemCommunicationSourceReplacementKey, source );
             }
@@ -543,7 +543,15 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                Variables.TargetPerson = CurrentPerson;
+                if( ppTargetPerson.SelectedValue.GetValueOrDefault( 0 ) >0 )
+                {
+                    var person = new PersonService( new RockContext() ).Get( ppTargetPerson.SelectedValue.Value );
+                    Variables.TargetPerson = person;
+                }
+                else
+                {
+                    Variables.TargetPerson = CurrentPerson;
+                }
             }
 
             if ( Variables.HasTargetPerson )
