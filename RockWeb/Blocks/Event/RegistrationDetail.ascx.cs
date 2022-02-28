@@ -1220,7 +1220,7 @@ namespace RockWeb.Blocks.Event
                             }
 
                             var sendErrorMessages = new List<string>();
-                            if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                            if ( new SignatureDocumentTemplateService( rockContext ).SendLegacyProviderDocument(
                                 signatureDocumentTemplateService.Get( Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value ),
                                 appliesTo,
                                 assignedTo,

@@ -122,7 +122,7 @@
                                 <div class="btn-group">
                                     <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
                                         <i class="fa fa-list-ul"></i>
-                                        <asp:HiddenField ID="hfSchedulerResourceListSourceType" runat="server" />
+                                        <%--<asp:HiddenField ID="hfSchedulerResourceListSourceType" runat="server" />--%>
                                         List: <asp:Literal ID="lSelectedResourceTypeDropDownText" runat="server" Text="Group Members" />
                                     </div>
 
@@ -179,7 +179,7 @@
                                     <asp:Panel ID="pnlLocationFilter" CssClass="btn-group" runat="server">
 
                                             <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                                <asp:HiddenField ID="hfPickedLocationIds" runat="server" />
+                                                <%--<Rock:HiddenFieldWithClass ID="hfPickedLocationIds" runat="server" CssClass="js-attendance-occurrence-location-ids"/>--%>
                                                 <asp:Literal ID="lSelectedLocationFilterText" runat="server" Text="Locations...." />
                                             </div>
 
@@ -259,8 +259,10 @@
                                             <Rock:HiddenFieldWithClass ID="hfOccurrenceScheduleIds" CssClass="js-occurrence-schedule-ids" runat="server" />
                                             <Rock:HiddenFieldWithClass ID="hfResourceGroupId" CssClass="js-resource-group-id" runat="server" />
                                             <Rock:HiddenFieldWithClass ID="hfResourceGroupMemberFilterType" CssClass="js-resource-groupmemberfiltertype" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfSchedulerResourceListSourceType" CssClass="js-resource-scheduler-resource-list-source-type" runat="server" />
                                             <Rock:HiddenFieldWithClass ID="hfResourceDataViewId" CssClass="js-resource-dataview-id" runat="server" />
                                             <Rock:HiddenFieldWithClass ID="hfResourceAdditionalPersonIds" CssClass="js-resource-additional-person-ids" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfPickedLocationIds" runat="server" CssClass="js-attendance-occurrence-location-ids"/>
                                             </div>
                                             <div class="js-unscheduled-resource-template" style="display: none">
                                                 <%-- template that groupScheduler.js uses to populate unscheduled resources, data-status will always be "unscheduled" when it is in the list of unscheduled resources --%>
@@ -269,7 +271,7 @@
                                                     <div class="flex">
                                                         <span class="resource-name js-resource-name flex-grow-1"></span>
                                                         <div class="js-resource-name-meta">
-                                                        <span class="resource-member-role js-resource-member-role"></span>
+                                                            <span class="resource-member-role js-resource-member-role"></span>
                                                         </div>
                                                         <div class="dropdown js-resource-actions hide-transit">
                                                             <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>

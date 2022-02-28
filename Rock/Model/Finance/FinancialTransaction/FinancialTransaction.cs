@@ -334,6 +334,7 @@ namespace Rock.Model
             get => ( TransactionDateTime == null || TransactionDateTime.Value == default ) ?
                         ( int? ) null :
                         TransactionDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+
             private set { }
         }
 
@@ -350,6 +351,7 @@ namespace Rock.Model
             get => ( SettledDate == null || SettledDate.Value == default ) ?
                         ( int? ) null :
                         SettledDate.Value.ToString( "yyyyMMdd" ).AsInteger();
+
             private set { }
         }
 
@@ -452,6 +454,7 @@ namespace Rock.Model
             get { return _transactionDetails ?? ( _transactionDetails = new Collection<FinancialTransactionDetail>() ); }
             set { _transactionDetails = value; }
         }
+
         private ICollection<FinancialTransactionDetail> _transactionDetails;
 
         /// <summary>
@@ -467,6 +470,7 @@ namespace Rock.Model
             get { return _images ?? ( _images = new Collection<FinancialTransactionImage>() ); }
             set { _images = value; }
         }
+
         private ICollection<FinancialTransactionImage> _images;
 
         /// <summary>
@@ -481,6 +485,7 @@ namespace Rock.Model
             get { return _refunds ?? ( _refunds = new Collection<FinancialTransactionRefund>() ); }
             set { _refunds = value; }
         }
+
         private ICollection<FinancialTransactionRefund> _refunds;
 
         /// <summary>
@@ -531,6 +536,19 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate SettledSourceDate { get; set; }
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "Refund", "The roles and/or users that have access to refund a transaction." );
+                return supportedActions;
+            }
+        }
 
         #endregion Navigation Properties
     }

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -23,11 +24,11 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Represents an implementation of a <see cref="Rock.Model.BlockType"/> in Rock. A block can be implemented on a Site's <see cref="Rock.Model.Layout"/> and appear on 
     /// all pages on the site that uses that template or on an individual <see cref="Rock.Model.Page"/>.  
@@ -236,6 +237,27 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Site Site { get; set; }
 
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view the block." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit content on the block." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the block.  This includes setting properties of the block, setting security for the block, moving the block, and deleting block from the zone." );
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
+
         #endregion Navigation Properties
 
         #region Public Methods
@@ -275,5 +297,5 @@ namespace Rock.Model
         }
     }
 
-#endregion
+    #endregion
 }

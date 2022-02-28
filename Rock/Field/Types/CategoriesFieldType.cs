@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as comma-delimited list of Category.Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class CategoriesFieldType : CategoryFieldType
     {
 

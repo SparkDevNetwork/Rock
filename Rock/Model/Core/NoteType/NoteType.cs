@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -33,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class NoteType : Model<NoteType>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -252,6 +252,19 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFileType BinaryFileType { get; set; }
 
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve notes." );
+                return supportedActions;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -268,7 +281,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration    
@@ -289,5 +301,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

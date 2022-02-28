@@ -22,9 +22,11 @@ using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using Rock.Attribute;
 
 namespace Rock.Field.Types
 {
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     class AssetStorageProviderFieldType : FieldType, IEntityFieldType
     {
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )

@@ -101,6 +101,15 @@ namespace Rock.Web.Cache
         public bool IsActive { get; private set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if the Defined Values associated with this Defined Type can be grouped into categories.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this DefinedType supports values that can be grouped into categories; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? CategorizedValuesEnabled { get; set; }
+
+        /// <summary>
         /// Gets the category.
         /// </summary>
         /// <value>
@@ -240,6 +249,7 @@ namespace Rock.Web.Cache
             Name = definedType.Name;
             Description = definedType.Description;
             IsActive = definedType.IsActive;
+            CategorizedValuesEnabled = definedType.CategorizedValuesEnabled;
 
             // set definedValueIds to null so it load them all at once on demand
             _definedValueIds = null;

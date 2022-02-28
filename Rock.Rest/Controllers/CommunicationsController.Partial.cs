@@ -46,7 +46,10 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Sets a communication sent status for the <see cref="Model.Communication"/> record and the <see cref="Model.CommunicationRecipient"/> record.
+        /// Imports a communication record <see cref="Model.Communication"/> (with a sent status) for a list of given recipient <see cref="Model.CommunicationRecipient"/> data.
+        /// This is useful for recording emails that have already been sent (via some external system) into Rock as communications.
+        /// These communications won't receive any interactions for opens or clicks, but will record the fact that the communication was sent so they can be seen in Rock by staff.
+        /// The payload data needs to use correct Rock Ids when provided (for things like MediumEntityTypeId, SenderPersonAliasId, etc.) but other items such as ForeignId/Guid are optional.
         /// </summary>
         /// <param name="importCommunications">The communication payload.</param>
         [Authenticate, Secured]

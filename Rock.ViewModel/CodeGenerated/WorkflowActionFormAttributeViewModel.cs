@@ -32,12 +32,28 @@ namespace Rock.ViewModel
     public partial class WorkflowActionFormAttributeViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the ActionFormSectionId.
+        /// </summary>
+        /// <value>
+        /// The ActionFormSectionId.
+        /// </value>
+        public int? ActionFormSectionId { get; set; }
+
+        /// <summary>
         /// Gets or sets the AttributeId.
         /// </summary>
         /// <value>
         /// The AttributeId.
         /// </value>
         public int AttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ColumnSize.
+        /// </summary>
+        /// <value>
+        /// The ColumnSize.
+        /// </value>
+        public int? ColumnSize { get; set; }
 
         /// <summary>
         /// Gets or sets the FieldVisibilityRulesJSON.

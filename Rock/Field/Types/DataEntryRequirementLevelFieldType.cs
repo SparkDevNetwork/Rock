@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Attribute;
+
 namespace Rock.Field.Types
 {
     /// <summary>
@@ -49,6 +51,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of RequirementLevels
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class DataEntryRequirementLevelFieldType : EnumFieldType<DataEntryRequirementLevelSpecifier>
     {
         /// <summary>

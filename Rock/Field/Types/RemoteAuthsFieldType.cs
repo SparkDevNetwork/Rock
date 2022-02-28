@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a checkbox list of MEF Components of a specific type
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class RemoteAuthsFieldType : FieldType
     {
 

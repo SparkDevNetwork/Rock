@@ -82,7 +82,9 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                ActionFormSectionId = model.ActionFormSectionId,
                 AttributeId = model.AttributeId,
+                ColumnSize = model.ColumnSize,
                 FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON,
                 HideLabel = model.HideLabel,
                 IsReadOnly = model.IsReadOnly,
@@ -161,7 +163,9 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this WorkflowActionFormAttribute target, WorkflowActionFormAttribute source )
         {
             target.Id = source.Id;
+            target.ActionFormSectionId = source.ActionFormSectionId;
             target.AttributeId = source.AttributeId;
+            target.ColumnSize = source.ColumnSize;
             target.FieldVisibilityRulesJSON = source.FieldVisibilityRulesJSON;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool? CategorizedValuesEnabled { get; set; }
+
+        /// <summary />
         public int? CategoryId { get; set; }
 
         /// <summary />
@@ -105,6 +108,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( DefinedType source )
         {
             this.Id = source.Id;
+            this.CategorizedValuesEnabled = source.CategorizedValuesEnabled;
             this.CategoryId = source.CategoryId;
             this.Description = source.Description;
             this.EnableSecurityOnValues = source.EnableSecurityOnValues;

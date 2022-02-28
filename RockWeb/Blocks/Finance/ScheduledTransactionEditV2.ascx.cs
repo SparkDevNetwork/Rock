@@ -310,8 +310,7 @@ mission. We are so grateful for your commitment.</p>
 
         public static class PageParameterKey
         {
-            public const string ScheduledTransactionId = "ScheduledTransactionId";
-            public const string Person = "Person";
+            public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
         }
 
         #endregion PageParameterKeys
@@ -329,7 +328,7 @@ mission. We are so grateful for your commitment.</p>
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            hfScheduledTransactionId.Value = this.PageParameter( PageParameterKey.ScheduledTransactionId );
+            hfScheduledTransactionGuid.Value = this.PageParameter( PageParameterKey.ScheduledTransactionGuid );
 
             var scheduledTransaction = this.GetFinancialScheduledTransaction( new RockContext() );
 
@@ -422,58 +421,32 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private FinancialScheduledTransaction GetFinancialScheduledTransaction( RockContext rockContext )
         {
-            int? scheduledTransactionId = hfScheduledTransactionId.Value.AsIntegerOrNull();
-
-            if ( !scheduledTransactionId.HasValue )
+            Guid? scheduledTransactionGuid = hfScheduledTransactionGuid.Value.AsGuidOrNull();
+            if ( !scheduledTransactionGuid.HasValue )
             {
                 return null;
             }
 
-            Person targetPerson = null;
-
-            // If impersonation is allowed, and a valid person key was used, set the target to that person
-            if ( GetAttributeValue( AttributeKey.AllowImpersonation ).AsBoolean() )
-            {
-                string personKey = PageParameter( PageParameterKey.Person );
-                if ( !string.IsNullOrWhiteSpace( personKey ) )
-                {
-                    targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
-                }
-            }
-
-            if ( targetPerson == null )
-            {
-                targetPerson = CurrentPerson;
-            }
-
-            if ( targetPerson == null )
-            {
-                return null;
-            }
-
-            var personService = new PersonService( rockContext );
-
-            // get the giving ids for the target person, as well as giving ids associated with any businesses associated with the target person
-            var validGivingIds = new List<string> { targetPerson.GivingId };
-            validGivingIds.AddRange( personService.GetBusinesses( targetPerson.Id ).Select( b => b.GivingId ) );
-
-            // Get scheduledTransaction by scheduledTransactionId, but also check to see if is valid
-            // for the target person's giving Ids
-            FinancialScheduledTransaction scheduledTransaction = new FinancialScheduledTransactionService( rockContext )
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            var scheduledTransactionQuery = financialScheduledTransactionService
                 .Queryable().Include( i => i.AuthorizedPersonAlias.Person )
-                .Where( t =>
-                     t.Id == scheduledTransactionId &&
+                .Where( t => t.Guid == scheduledTransactionGuid );
+
+            // If the block allows impersonation then just get the scheduled transaction, otherwise use the code below to filter by the current person
+            if ( !GetAttributeValue( AttributeKey.AllowImpersonation ).AsBoolean() )
+            {
+                var personService = new PersonService( rockContext );
+                var validGivingIds = new List<string> { CurrentPerson.GivingId };
+                validGivingIds.AddRange( personService.GetBusinesses( CurrentPerson.Id ).Select( b => b.GivingId ) );
+
+                scheduledTransactionQuery.Where( t =>
                      t.AuthorizedPersonAlias != null &&
                      t.AuthorizedPersonAlias.Person != null &&
-                     validGivingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) )
-                .FirstOrDefault();
-
-            if ( scheduledTransaction != null )
-            {
-                return scheduledTransaction;
+                     validGivingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) );
             }
 
-            return null;
+            var scheduledTransaction = scheduledTransactionQuery.FirstOrDefault();
+            return scheduledTransaction;
         }
 
         /// <summary>
@@ -499,7 +472,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            hfScheduledTransactionId.Value = scheduledTransaction.Id.ToString();
+            hfScheduledTransactionGuid.Value = scheduledTransaction.Guid.ToString();
 
             List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
 
@@ -790,8 +763,8 @@ mission. We are so grateful for your commitment.</p>
 
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             var financialScheduledTransactionDetailService = new FinancialScheduledTransactionDetailService( rockContext );
-            int scheduledTransactionId = hfScheduledTransactionId.Value.AsInteger();
-            var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
+            Guid scheduledTransactionGuid = hfScheduledTransactionGuid.Value.AsGuid();
+            var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
 
             financialScheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
             financialScheduledTransaction.TransactionFrequencyValueId = ddlFrequency.SelectedValue.AsInteger();
@@ -924,7 +897,7 @@ mission. We are so grateful for your commitment.</p>
                     SaveNewFinancialPersonSavedAccount( financialScheduledTransaction );
                 }
 
-                financialScheduledTransaction = new FinancialScheduledTransactionService( rockContextForSummary ).Get( scheduledTransactionId );
+                financialScheduledTransaction = new FinancialScheduledTransactionService( rockContextForSummary ).Get( scheduledTransactionGuid );
 
                 mergeFields.Add( "Transaction", financialScheduledTransaction );
                 mergeFields.Add( "Person", financialScheduledTransaction.AuthorizedPersonAlias.Person );

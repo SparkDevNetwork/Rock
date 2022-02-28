@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// Field Type used to show a captcha and validate the user is not a robot.
     /// Stores value of "1" if user is verified as not a robot.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class CaptchaFieldType : FieldType
     {
         #region Configuration

@@ -69,6 +69,10 @@ namespace Rock.Model
                         };
                     }
                 }
+                else
+                {
+                    return null;
+                }
             }
 
             var person = new PersonService( this.Context as Data.RockContext ).Get( personToken.PersonAlias.PersonId );

@@ -15,7 +15,7 @@
             </div>
 
             <div class="panel-body">
-                <asp:Panel ID="pnlToolbox" CssClass="schedule-toolbox" runat="server">
+                <asp:Panel ID="pnlToolbox" CssClass="schedule-toolbox js-navigation-panel" runat="server">
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                             data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
                             class="btn btn-info btn-xs btn-copy-to-clipboard mb-4"
@@ -58,19 +58,19 @@
                     </div>
                     <div class="schedule-actions">
                         <asp:Literal ID="lActionHeader" runat="server" />
-                        <asp:LinkButton ID="btnScheduleUnavailablilty" runat="server" CssClass="btn btn-lg btn-default btn-block" Text="Schedule Unavailablilty" OnClick="btnScheduleUnavailablilty_Click" />
+                        <asp:LinkButton ID="btnScheduleUnavailability" runat="server" CssClass="btn btn-lg btn-default btn-block" Text="Schedule Unavailability" OnClick="btnScheduleUnavailability_Click" />
                         <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-lg btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" />
                         <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-lg btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" />
                     </div>
                 </asp:Panel>
 
                 <%-- Sign-up --%>
-                <asp:Panel ID="pnlSignup" CssClass="schedule-toolbox-signup" runat="server">
+                <asp:Panel ID="pnlSignup" CssClass="schedule-toolbox-signup js-navigation-panel" runat="server">
                     <asp:Literal ID="lSignupMsg" runat="server" />
                     <Rock:DynamicPlaceholder ID="phSignUpSchedules" runat="server" />
                 </asp:Panel>
                 <%-- Preferences --%>
-                <asp:Panel ID="pnlPreferences" CssClass="schedule-toolbox-preferences" runat="server">
+                <asp:Panel ID="pnlPreferences" CssClass="schedule-toolbox-preferences js-navigation-panel" runat="server">
                     <Rock:NotificationBox ID="nbNoScheduledGroups" runat="server" Visible="false" Text="You are currently not in any scheduled groups." NotificationBoxType="Info" />
 
                     <%-- Per Group Preferences --%>
@@ -140,16 +140,16 @@
                         </ItemTemplate>
                     </asp:Repeater>
                 </asp:Panel>
-                <%-- Unavailablity Schedule --%>
-                <asp:Panel ID="pnlUnavailablitySchedule" CssClass="schedule-toolbox-unavailability" runat="server">
-                    <asp:ValidationSummary ID="valSummaryAddBlackoutDates" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="UnavailablitySchedule" />
-                    <Rock:DateRangePicker ID="drpUnavailabilityDateRange" runat="server" Label="Date Range" ValidationGroup="UnavailablitySchedule" Required="true" RequiredErrorMessage="Date Range is required" />
-                    <Rock:RockTextBox ID="tbUnavailabilityDateDescription" runat="server" Label="Description" MaxLength="100" Help="A short description of why you'll be unavailable" ValidationGroup="UnavailablitySchedule" />
-                    <Rock:RockDropDownList ID="ddlUnavailabilityGroups" runat="server" Label="Group" ValidationGroup="UnavailablitySchedule" />
-                    <Rock:RockCheckBoxList ID="cblUnavailabilityPersons" runat="server" RepeatDirection="Vertical" RepeatColumns="1" Label="Individual" ValidationGroup="UnavailablitySchedule" Required="true" RequiredErrorMessage="At least one person must be selected" />
+                <%-- Unavailability Schedule --%>
+                <asp:Panel ID="pnlUnavailabilitySchedule" CssClass="schedule-toolbox-unavailability js-navigation-panel" runat="server">
+                    <asp:ValidationSummary ID="valSummaryAddBlackoutDates" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="UnavailabilitySchedule" />
+                    <Rock:DateRangePicker ID="drpUnavailabilityDateRange" runat="server" Label="Date Range" ValidationGroup="UnavailabilitySchedule" Required="true" RequiredErrorMessage="Date Range is required" />
+                    <Rock:RockTextBox ID="tbUnavailabilityDateDescription" runat="server" Label="Description" MaxLength="100" Help="A short description of why you'll be unavailable" ValidationGroup="UnavailabilitySchedule" />
+                    <Rock:RockDropDownList ID="ddlUnavailabilityGroups" runat="server" Label="Group" ValidationGroup="UnavailabilitySchedule" />
+                    <Rock:RockCheckBoxList ID="cblUnavailabilityPersons" runat="server" RepeatDirection="Vertical" RepeatColumns="1" Label="Individual" ValidationGroup="UnavailabilitySchedule" Required="true" RequiredErrorMessage="At least one person must be selected" />
                     <div class="actions">
-                        <asp:LinkButton ID="btnUnavailablityScheduleSave" runat="server" AccessKey="s" ToolTip="Alt+s"  Text="Save" CssClass="btn btn-primary" ValidationGroup="UnavailablitySchedule" OnClick="btnUnavailablityScheduleSave_Click" />
-                        <asp:LinkButton ID="btnUnavailablityScheduleCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnUnavailablityScheduleCancel_Click" />
+                        <asp:LinkButton ID="btnUnavailabilityScheduleSave" runat="server" AccessKey="s" ToolTip="Alt+s"  Text="Save" CssClass="btn btn-primary" ValidationGroup="UnavailabilitySchedule" OnClick="btnUnavailabilityScheduleSave_Click" />
+                        <asp:LinkButton ID="btnUnavailabilityScheduleCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnUnavailabilityScheduleCancel_Click" />
                     </div>
                 </asp:Panel>
                 <%-- Preferences Add/Edit GroupScheduleAssignment modal --%>

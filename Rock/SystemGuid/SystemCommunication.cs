@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -105,7 +107,14 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the template guid for digital signature invite
         /// </summary>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "No longer used" )]
         public const string DIGITAL_SIGNATURE_INVITE = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
+
+        /// <summary>
+        /// Gets the template guid for the system Electronic Signature Receipt
+        /// </summary>
+        public const string SYSTEM_ELECTRONIC_SIGNATURE_RECEIPT = "224A0E80-069B-463C-8187-E13682F8A550";
 
         /// <summary>
         /// Gets the template guid for a notewatch notification
@@ -215,4 +224,3 @@ namespace Rock.SystemGuid
 
     }
 }
- 

@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Reporting;
 
 namespace Rock.Field.Types
@@ -25,6 +26,7 @@ namespace Rock.Field.Types
     /// Audio Url field type
     /// Stored as URL
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class AudioUrlFieldType : FieldType
     {
 

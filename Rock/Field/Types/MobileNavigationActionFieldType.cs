@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Mobile;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -32,6 +33,8 @@ namespace Rock.Field.Types
     /// settings.
     /// </remarks>
     /// <seealso cref="Rock.Field.FieldType" />
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public sealed class MobileNavigationActionFieldType : FieldType
     {
         #region Formatting

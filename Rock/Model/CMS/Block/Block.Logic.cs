@@ -14,12 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Runtime.Serialization;
-
-using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -33,33 +30,6 @@ namespace Rock.Model
         private int? _originalPageId;
 
         #endregion Private Properties
-
-        #region Properties
-        
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view the block." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit content on the block." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the block.  This includes setting properties of the block, setting security for the block, moving the block, and deleting block from the zone." );
-                }
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
-
-        #endregion Properties
 
         #region Navigation Properties
 
@@ -123,7 +93,6 @@ namespace Rock.Model
                 }
             }
         }
-
 
         #endregion Methods
 

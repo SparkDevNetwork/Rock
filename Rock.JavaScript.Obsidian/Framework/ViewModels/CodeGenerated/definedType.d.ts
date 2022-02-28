@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type DefinedType = IEntity & {
+    categorizedValuesEnabled?: boolean | null;
     categoryId?: number | null;
     description?: string | null;
     enableSecurityOnValues?: boolean;

@@ -23,6 +23,7 @@ import Toggle from "../Elements/toggle";
 import CheckBox from "../Elements/checkBox";
 import TextBox from "../Elements/textBox";
 import { ListItem } from "../ViewModels";
+import { toNumberOrNull } from "../Services/number";
 
 enum BooleanControlType {
     DropDown,
@@ -204,7 +205,7 @@ export const ConfigurationComponent = defineComponent({
         watch(() => [props.modelValue, props.configurationProperties], () => {
             trueText.value = props.modelValue[ConfigurationValueKey.TrueText] ?? "Yes";
             falseText.value = props.modelValue[ConfigurationValueKey.FalseText] ?? "No";
-            controlType.value = parseInt(props.modelValue[ConfigurationValueKey.BooleanControlType], 10) || 0;
+            controlType.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.BooleanControlType]) ?? 0;
         }, {
             immediate: true
         });
@@ -221,9 +222,6 @@ export const ConfigurationComponent = defineComponent({
         watch(trueText, () => maybeUpdateConfiguration(ConfigurationValueKey.TrueText, trueText.value ?? "Yes"));
         watch(falseText, () => maybeUpdateConfiguration(ConfigurationValueKey.FalseText, falseText.value ?? "No"));
         watch(controlType, () => maybeUpdateConfiguration(ConfigurationValueKey.BooleanControlType, controlType.value?.toString() ?? "0"));
-
-
-
 
         const controlTypeOptions = [
             { text: "Drop Down", value: BooleanControlType.DropDown },

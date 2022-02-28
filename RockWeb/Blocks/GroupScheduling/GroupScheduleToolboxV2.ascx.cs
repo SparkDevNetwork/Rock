@@ -205,6 +205,13 @@ $('#{0}').tooltip();
             ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
 
             this.SetSelectedPerson();
+
+            // wire up page navigate
+            RockPage page = Page as RockPage;
+            if ( page != null )
+            {
+                page.PageNavigate += page_PageNavigate;
+            }
         }
 
         /// <summary>
@@ -462,17 +469,17 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnScheduleUnavailablilty control.
+        /// Handles the Click event of the btnScheduleUnavailability control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnScheduleUnavailablilty_Click( object sender, EventArgs e )
+        protected void btnScheduleUnavailability_Click( object sender, EventArgs e )
         {
             pnlToolbox.Visible = false;
             pnlSignup.Visible = false;
             pnlPreferences.Visible = false;
-            pnlUnavailablitySchedule.Visible = true;
-
+            pnlUnavailabilitySchedule.Visible = true;
+            SetNavigationHistory( pnlUnavailabilitySchedule );
             drpUnavailabilityDateRange.DelimitedValues = string.Empty;
             tbUnavailabilityDateDescription.Text = string.Empty;
             BindUnavailabilityGroups();
@@ -517,8 +524,8 @@ $('#{0}').tooltip();
             pnlToolbox.Visible = false;
             pnlSignup.Visible = false;
             pnlPreferences.Visible = true;
-            pnlUnavailablitySchedule.Visible = false;
-
+            pnlUnavailabilitySchedule.Visible = false;
+            SetNavigationHistory( pnlPreferences );
             BindGroupPreferencesRepeater();
         }
 
@@ -532,8 +539,8 @@ $('#{0}').tooltip();
             pnlToolbox.Visible = false;
             pnlSignup.Visible = true;
             pnlPreferences.Visible = false;
-            pnlUnavailablitySchedule.Visible = false;
-
+            pnlUnavailabilitySchedule.Visible = false;
+            SetNavigationHistory( pnlSignup );
             List<PersonScheduleSignup> availableGroupLocationSchedules = GetScheduleData();
             this.ViewState[ViewStateKey.AvailableGroupLocationSchedulesJSON] = availableGroupLocationSchedules.ToJson();
             phSignUpSchedules.Controls.Clear();
@@ -893,6 +900,51 @@ $('#{0}').tooltip();
         #region Private Methods
 
         /// <summary>
+        /// Handles the PageNavigate event of the page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
+        void page_PageNavigate( object sender, HistoryEventArgs e )
+        {
+            var navigationPanelId = e.State["navigationPanelId"];
+            Panel navigationPanel = null;
+
+            if ( navigationPanelId == null )
+            {
+                navigationPanelId = pnlToolbox.ID;
+            }
+
+            if ( navigationPanelId != null )
+            {
+                navigationPanel = this.FindControl( navigationPanelId ) as Panel;
+            }
+
+            if ( navigationPanel != null )
+            {
+                var navigationPanels = this.ControlsOfTypeRecursive<Panel>().Where( a => a.CssClass.Contains( "js-navigation-panel" ) );
+                foreach ( var pnl in navigationPanels )
+                {
+                    pnl.Visible = false;
+                }
+
+                navigationPanel.Visible = true;
+                if ( navigationPanel == pnlToolbox )
+                {
+                    BindScheduleRepeater();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the navigation history.
+        /// </summary>
+        /// <param name="currentPanel">The panel that should be navigated to when this history point is loaded
+        private void SetNavigationHistory( Panel navigateToPanel )
+        {
+            this.AddHistory( "navigationPanelId", navigateToPanel.ID );
+        }
+
+        /// <summary>
         /// Gets the occurrence details (Group Name, Location)
         /// </summary>
         /// <param name="groupScheduleRowInfo">The groupScheduleRowInfo.</param>
@@ -954,7 +1006,7 @@ $('#{0}').tooltip();
             pnlToolbox.Visible = true;
             pnlSignup.Visible = false;
             pnlPreferences.Visible = false;
-            pnlUnavailablitySchedule.Visible = false;
+            pnlUnavailabilitySchedule.Visible = false;
             var rockContext = new RockContext();
             var scheduleList = new AttendanceService( rockContext )
                 .GetPendingScheduledConfirmations()
@@ -1037,7 +1089,7 @@ $('#{0}').tooltip();
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
             lActionHeader.Text = GetAttributeValue( AttributeKey.ActionHeaderLavaTemplate ).ResolveMergeFields( mergeFields );
             btnSignUp.Visible = enableAdditionalTimeSignUp;
-            btnScheduleUnavailablilty.Visible = enableScheduleUnavailability;
+            btnScheduleUnavailability.Visible = enableScheduleUnavailability;
             btnUpdateSchedulePreferences.Visible = enableUpdateSchedulePreferences;
             lActionHeader.Visible = enableAdditionalTimeSignUp || enableScheduleUnavailability || enableUpdateSchedulePreferences;
         }
@@ -1688,11 +1740,11 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Handles the SaveClick event of the btnUnavailablityScheduleSave control.
+        /// Handles the SaveClick event of the btnUnavailabilityScheduleSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnUnavailablityScheduleSave_Click( object sender, EventArgs e )
+        protected void btnUnavailabilityScheduleSave_Click( object sender, EventArgs e )
         {
             // parse the date range and add to query
             if ( drpUnavailabilityDateRange.DelimitedValues.IsNullOrWhiteSpace() )
@@ -1743,11 +1795,11 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnUnavailablityScheduleCancel control.
+        /// Handles the Click event of the btnUnavailabilityScheduleCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnUnavailablityScheduleCancel_Click( object sender, EventArgs e )
+        protected void btnUnavailabilityScheduleCancel_Click( object sender, EventArgs e )
         {
             BindScheduleRepeater();
         }

@@ -60,9 +60,15 @@ namespace Rock.Field
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues )
+        public virtual Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
         {
-            return configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+            return privateConfigurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+        }
+
+        /// <inheritdoc/>
+        public virtual Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetPublicConfigurationValues( privateConfigurationValues );
         }
 
         /// <summary>
@@ -94,7 +100,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetClientEditConfigurationProperties( Dictionary<string, string> configurationValues )
+        public virtual Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
             return new Dictionary<string, string>();
         }
@@ -129,30 +135,30 @@ namespace Rock.Field
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public virtual string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return value;
+            return privateValue;
         }
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual string GetHtmlValue( string value, Dictionary<string, string> configurationValues )
+        public virtual string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( value, configurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        public virtual string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( value, configurationValues ).Truncate( 100 );
+            return GetTextValue( privateValue, privateConfigurationValues ).Truncate( 100 );
         }
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual string GetCondensedHtmlValue( string value, Dictionary<string, string> configurationValues )
+        public virtual string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetCondensedTextValue( value, configurationValues );
+            return GetCondensedTextValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
@@ -279,23 +285,23 @@ namespace Rock.Field
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual string GetClientValue( string value, Dictionary<string, string> configurationValues )
+        public virtual string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return value;
+            return privateValue;
         }
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual string GetClientEditValue( string value, Dictionary<string, string> configurationValues )
+        public virtual string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetClientValue( value, configurationValues );
+            return GetPublicValue( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual string GetValueFromClient( string clientValue, Dictionary<string, string> configurationValues )
+        public virtual string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return clientValue;
+            return publicValue;
         }
 
         /// <summary>
@@ -437,6 +443,51 @@ namespace Rock.Field
         #endregion
 
         #region Filter Control
+
+        /// <inheritdoc/>
+        public virtual ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue.FromJsonOrNull<List<string>>();
+
+            if ( values == null || values.Count == 0 )
+            {
+                return new ComparisonValue
+                {
+                    Value = string.Empty
+                };
+            }
+            else if ( values.Count == 1 )
+            {
+                return new ComparisonValue
+                {
+                    Value = GetPublicEditValue( values[0], privateConfigurationValues )
+                };
+            }
+            else
+            {
+                return new ComparisonValue
+                {
+                    ComparisonType = values[0].ConvertToEnumOrNull<ComparisonType>(),
+                    Value = GetPublicEditValue( values[1], privateConfigurationValues )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = new List<string>();
+
+            if ( publicValue.ComparisonType.HasValue )
+            {
+                values.Add( publicValue.ComparisonType.ConvertToInt().ToString() );
+            }
+
+            values.Add( publicValue.Value != null ? GetPrivateEditValue( publicValue.Value, privateConfigurationValues ) : string.Empty );
+
+            return values.ToJson();
+        }
+
 
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.

@@ -19,13 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -211,7 +210,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                qry = qry.OrderByDescending( d => d.LastInviteDate );
+                qry = qry.OrderByDescending( d => d.LastInviteDate ).ThenByDescending( a => a.SignedDateTime ).ThenByDescending( a => a.CreatedDateTime );
             }
 
             gSignatureDocuments.DataSource = qry.Select( d => new
@@ -224,10 +223,12 @@ namespace RockWeb.Blocks.Core
                 d.SignedByPersonAlias,
                 d.Status,
                 d.LastInviteDate,
+                d.SignedDateTime,
                 d.SignatureDocumentTemplate,
                 FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-text-o fa-lg'></i>" : "",
                 FileId = d.BinaryFileId ?? 0
             } ).ToList();
+
             gSignatureDocuments.DataBind();
         }
 

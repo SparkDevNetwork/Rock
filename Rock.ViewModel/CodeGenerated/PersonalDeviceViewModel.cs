@@ -64,6 +64,22 @@ namespace Rock.ViewModel
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets the LastSeenDateTime.
+        /// </summary>
+        /// <value>
+        /// The LastSeenDateTime.
+        /// </value>
+        public DateTime? LastSeenDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the LastVerifiedDateTime.
+        /// </summary>
+        /// <value>
+        /// The LastVerifiedDateTime.
+        /// </value>
+        public DateTime? LastVerifiedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the MACAddress.
         /// </summary>
         /// <value>

@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -32,6 +33,7 @@ namespace Rock.Field.Types
     /// 
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ConditionalScaleFieldType : DecimalFieldType
     {
         #region ConfigurationKeys

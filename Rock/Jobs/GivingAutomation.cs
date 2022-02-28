@@ -1092,10 +1092,16 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                         t.AuthorizedPersonAlias.Person.GivingId != null &&
                         t.AuthorizedPersonAlias.Person.GivingId.Length > 0 )
                     .GroupBy( t => t.AuthorizedPersonAlias.Person.GivingId )
-                    .Select( g => new
+                    .Select( g => new GiverBinTotal
                     {
                         GivingId = g.Key,
-                        Last12MonthsTotalGift = g.Sum( t => t.TransactionDetails.Sum( d => d.Amount ) )
+
+                        // get the sum of each transaction for the last 12 months
+                        Last12MonthsTotalGiftBeforeRefund = g.Sum( t => t.TransactionDetails.Sum( d => d.Amount ) ),
+                        Last12MonthsTotalGiftRefunds = g.Sum( t =>
+                            ( decimal? ) t.Refunds.Sum( rr =>
+                                  rr.FinancialTransaction.TransactionDetails.Sum( rd => ( decimal? ) rd.Amount ) ?? 0.00M ) )
+
                     } )
                     .ToList();
 
@@ -1169,7 +1175,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                         AuthorizedPersonCampusId = t.AuthorizedPersonAlias.Person.PrimaryCampusId,
                         AuthorizedPersonGivingId = givingId,
                         TransactionDateTime = t.TransactionDateTime.Value,
-                        TransactionViewDetails = t.TransactionDetails.Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
+                        TransactionViewDetailsBeforeRefunds = t.TransactionDetails.Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
+                        RefundDetails = t.Refunds.SelectMany( r => r.FinancialTransaction.TransactionDetails ).Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
                         CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
                         SourceTypeValueId = t.SourceTypeValueId,
                         IsScheduled = t.ScheduledTransactionId.HasValue
@@ -1545,20 +1552,20 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
             if ( alertAccountIds != null )
             {
-                if ( !transaction.TransactionViewDetails.Where( a => alertAccountIds.Contains( a.AccountId ) ).Any() )
+                if ( !transaction.GetTransactionViewDetails().Where( a => alertAccountIds.Contains( a.AccountId ) ).Any() )
                 {
                     // transaction doesn't meet criteria for this alerts Accounts
                     return null;
                 }
 
-                transactionDateTimesForAlert = last12MonthsTransactionsAll.Where( a => a.TransactionViewDetails.Any( d => alertAccountIds.Contains( d.AccountId ) ) ).Select( a => a.TransactionDateTime ).ToList();
-                transactionAmountsForAlert = last12MonthsTransactionsAll.SelectMany( m => m.TransactionViewDetails ).Where( a => alertAccountIds.Contains( a.AccountId ) ).Select( a => a.Amount ).ToList();
-                transactionAmount = transaction.TransactionViewDetails.Where( a => alertAccountIds.Contains( a.AccountId ) ).Sum( a => a.Amount );
+                transactionDateTimesForAlert = last12MonthsTransactionsAll.Where( a => a.GetTransactionViewDetails().Any( d => alertAccountIds.Contains( d.AccountId ) ) ).Select( a => a.TransactionDateTime ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsAll.SelectMany( m => m.GetTransactionViewDetails() ).Where( a => alertAccountIds.Contains( a.AccountId ) ).Select( a => a.Amount ).ToList();
+                transactionAmount = transaction.GetTransactionViewDetails().Where( a => alertAccountIds.Contains( a.AccountId ) ).Sum( a => a.Amount );
             }
             else
             {
                 transactionDateTimesForAlert = last12MonthsTransactionsAll.Select( a => a.TransactionDateTime ).ToList();
-                transactionAmountsForAlert = last12MonthsTransactionsAll.SelectMany( m => m.TransactionViewDetails ).Select( a => a.Amount ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsAll.SelectMany( m => m.GetTransactionViewDetails() ).Select( a => a.Amount ).ToList();
                 transactionAmount = transaction.TotalTransactionAmount;
             }
 
@@ -2167,7 +2174,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                         AuthorizedPersonGivingId = a.Key,
                         AuthorizedPersonCampusId = t.AuthorizedPersonAlias.Person.PrimaryCampusId,
                         TransactionDateTime = t.TransactionDateTime.Value,
-                        TransactionViewDetails = t.TransactionDetails.Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
+                        TransactionViewDetailsBeforeRefunds = t.TransactionDetails.Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
+                        RefundDetails = t.Refunds.SelectMany( r => r.FinancialTransaction.TransactionDetails ).Select( x => new TransactionViewDetail { AccountId = x.AccountId, Amount = x.Amount } ).ToList(),
                         CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
                         SourceTypeValueId = t.SourceTypeValueId,
                         IsScheduled = t.ScheduledTransactionId.HasValue
@@ -2286,14 +2294,14 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // last12MonthsTransactionsForAlertType should have been filtered by account ids already, but just in case (and for integration) testing
             if ( alertTypeAccountIds != null )
             {
-                transactionDateTimesForAlert = last12MonthsTransactionsForAlertType.Where( a => a.TransactionViewDetails.Any( d => alertTypeAccountIds.Contains( d.AccountId ) ) ).Select( a => a.TransactionDateTime ).ToList();
-                transactionAmountsForAlert = last12MonthsTransactionsForAlertType.SelectMany( m => m.TransactionViewDetails ).Where( a => alertTypeAccountIds.Contains( a.AccountId ) ).Select( a => a.Amount ).ToList();
-                mostRecentTransaction = last12MonthsTransactionsForAlertType.Where( a => a.TransactionViewDetails.Any( d => alertTypeAccountIds.Contains( d.AccountId ) ) ).OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault();
+                transactionDateTimesForAlert = last12MonthsTransactionsForAlertType.Where( a => a.GetTransactionViewDetails().Any( d => alertTypeAccountIds.Contains( d.AccountId ) ) ).Select( a => a.TransactionDateTime ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsForAlertType.SelectMany( m => m.GetTransactionViewDetails() ).Where( a => alertTypeAccountIds.Contains( a.AccountId ) ).Select( a => a.Amount ).ToList();
+                mostRecentTransaction = last12MonthsTransactionsForAlertType.Where( a => a.GetTransactionViewDetails().Any( d => alertTypeAccountIds.Contains( d.AccountId ) ) ).OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault();
             }
             else
             {
                 transactionDateTimesForAlert = last12MonthsTransactionsForAlertType.Select( a => a.TransactionDateTime ).ToList();
-                transactionAmountsForAlert = last12MonthsTransactionsForAlertType.SelectMany( m => m.TransactionViewDetails ).Select( a => a.Amount ).ToList();
+                transactionAmountsForAlert = last12MonthsTransactionsForAlertType.SelectMany( m => m.GetTransactionViewDetails() ).Select( a => a.Amount ).ToList();
                 mostRecentTransaction = last12MonthsTransactionsForAlertType?.OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault();
             }
 
@@ -2712,7 +2720,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             {
                 get
                 {
-                    return TransactionViewDetails?.Sum( x => x.Amount ) ?? 0.0M;
+                    return GetTransactionViewDetails()?.Sum( x => x.Amount ) ?? 0.0M;
                 }
             }
 
@@ -2772,7 +2780,75 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// Gets or sets the transaction view details.
             /// </summary>
             /// <value>The transaction view details.</value>
-            public List<TransactionViewDetail> TransactionViewDetails { get; set; }
+            public List<TransactionViewDetail> TransactionViewDetailsBeforeRefunds { get; set; }
+
+            /// <summary>
+            /// Gets the refund details.
+            /// </summary>
+            /// <value>The refund details.</value>
+            public List<TransactionViewDetail> RefundDetails { get; internal set; }
+
+            /// <summary>
+            /// Gets the transaction view details factoring in refunds
+            /// </summary>
+            /// <returns>List&lt;TransactionViewDetail&gt;.</returns>
+            public List<TransactionViewDetail> GetTransactionViewDetails()
+            {
+                if ( RefundDetails == null || !RefundDetails.Any() )
+                {
+                    return this.TransactionViewDetailsBeforeRefunds;
+                }
+
+                // make sure it is unique by AccountId since we'll have to adjust amount per account id
+                var transactionViewDetailsBeforeRefundsByAccountId = this.TransactionViewDetailsBeforeRefunds
+                    .GroupBy( a => a.AccountId ).Select( a => new TransactionViewDetail()
+                    {
+                        AccountId = a.Key,
+                        Amount = a.Sum( x => x.Amount ),
+                    } ).ToDictionary( k => k.AccountId, v => v );
+
+
+                var refundDetailsByAccountId = this.RefundDetails
+                    .GroupBy( a => a.AccountId ).Select( a => new TransactionViewDetail()
+                    {
+                        AccountId = a.Key,
+                        Amount = a.Sum( x => x.Amount ),
+                    } ).ToDictionary( k => k.AccountId, v => v );
+
+                var transactionViewDetails = new List<TransactionViewDetail>();
+
+                var accountIds = transactionViewDetailsBeforeRefundsByAccountId.Select( a => a.Value.AccountId ).ToList();
+
+                foreach ( var accountId in accountIds )
+                {
+                    var beforeRefundForAccount = transactionViewDetailsBeforeRefundsByAccountId.GetValueOrNull( accountId );
+                    var refundForAccount = refundDetailsByAccountId.GetValueOrNull( accountId );
+                    var transactionViewDetail = new TransactionViewDetail
+                    {
+                        AccountId = accountId,
+                        Amount = 0.00M
+                    };
+
+                    if ( beforeRefundForAccount != null )
+                    {
+                        transactionViewDetail.Amount += beforeRefundForAccount.Amount;
+                    }
+
+                    if ( refundForAccount != null )
+                    {
+                        // refund amounts are negative so we'll add to get adjusted amount
+                        transactionViewDetail.Amount += refundForAccount.Amount;
+                    }
+
+                    if ( transactionViewDetail.Amount != 0.00M )
+                    {
+
+                        transactionViewDetails.Add( transactionViewDetail );
+                    }
+                }
+
+                return transactionViewDetails;
+            }
 
             /// <summary>
             /// Converts to string.
@@ -2780,7 +2856,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// <returns>string.</returns>
             public override string ToString()
             {
-                return $"{TransactionDateTime}, GivingId: {AuthorizedPersonGivingId}, TotalAmount: {TotalTransactionAmount}";
+                return $"{TransactionDateTime}, GivingId: {AuthorizedPersonGivingId}, TotalAmount: {GetTransactionViewDetails().Sum( a => a.Amount )}";
             }
         }
 
@@ -2850,6 +2926,27 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             public readonly DateTime? MostRecentOldTransactionDateTime;
+        }
+
+        private class GiverBinTotal
+        {
+            public string GivingId { get; set; }
+            public decimal Last12MonthsTotalGiftBeforeRefund { get; set; }
+            public decimal? Last12MonthsTotalGiftRefunds { get; set; }
+            public decimal Last12MonthsTotalGift
+            {
+                get
+                {
+                    if ( Last12MonthsTotalGiftRefunds.HasValue )
+                    {
+                        return Last12MonthsTotalGiftBeforeRefund + Last12MonthsTotalGiftRefunds.Value;
+                    }
+                    else
+                    {
+                        return Last12MonthsTotalGiftBeforeRefund;
+                    }
+                }
+            }
         }
     }
 }

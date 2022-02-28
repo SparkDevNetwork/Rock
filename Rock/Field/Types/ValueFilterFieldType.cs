@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -27,6 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save and display value filter
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ValueFilterFieldType : FieldType
     {
         #region Configuration
