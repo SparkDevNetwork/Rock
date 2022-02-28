@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -191,6 +192,32 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                configurationValues[IS_PASSWORD_KEY].AsBoolean() )
+            {
+                return "********";
+            }
+
+            return value;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                configurationValues[IS_PASSWORD_KEY].AsBoolean() )
+            {
+                return "********";
+            }
+
+            return base.GetCondensedTextValue( value, configurationValues );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -201,19 +228,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( configurationValues != null &&
-                configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
-                configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
-            {
-                return "********";
-            }
-
-            if ( condensed )
-            {
-                return value.Truncate( 100 );
-            }
-
-            return value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         /// <summary>

@@ -27,8 +27,10 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Field;
+using Rock.Model;
+using Rock.Lava;
 using Rock.Security;
-
+using Rock.ViewModel;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Web.Cache
@@ -178,6 +180,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool AllowSearch { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Attribute.AttributeColor"/>
+        [DataMember]
+        public string AttributeColor { get; private set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
         /// </summary>
@@ -296,7 +302,9 @@ namespace Rock.Web.Cache
                 var categories = new List<CategoryCache>();
 
                 if ( CategoryIds == null )
+                {
                     return categories;
+                }
 
                 foreach ( var id in CategoryIds.ToList() )
                 {
@@ -306,6 +314,13 @@ namespace Rock.Web.Cache
                 return categories;
             }
         }
+
+        /// <summary>
+        /// Gets the configuration values that define the behavior of the attribute.
+        /// </summary>
+        /// <value>The configuration values.</value>
+        [DataMember]
+        public Dictionary<string, string> ConfigurationValues { get; private set; }
 
         /// <summary>
         /// Gets the qualifier values.
@@ -343,17 +358,6 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Public Methods
-
-        /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead", true )]
-        public override void CopyFromModel( Data.IEntity model )
-        {
-            this.SetFromEntity( model );
-        }
 
         /// <summary>
         /// WARNING: This will contain all the Attribute records that in the database.
@@ -420,7 +424,9 @@ namespace Rock.Web.Cache
 
             var attribute = entity as Model.Attribute;
             if ( attribute == null )
+            {
                 return;
+            }
 
             var qualifiers = new Dictionary<string, string>();
             if ( attribute.AttributeQualifiers != null )
@@ -432,18 +438,6 @@ namespace Rock.Web.Cache
             }
 
             SetFromEntity( attribute, qualifiers );
-        }
-
-        /// <summary>
-        /// Copies from model.
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="qualifiers">The qualifiers.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead", true )]
-        public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
-        {
-            this.SetFromEntity( attribute, qualifiers );
         }
 
         /// <summary>
@@ -470,6 +464,7 @@ namespace Rock.Web.Cache
             IsMultiValue = attribute.IsMultiValue;
             IsRequired = attribute.IsRequired;
             AllowSearch = attribute.AllowSearch;
+            AttributeColor = attribute.AttributeColor;
             IsIndexEnabled = attribute.IsIndexEnabled;
             IsAnalytic = attribute.IsAnalytic;
             IsAnalyticHistory = attribute.IsAnalyticHistory;
@@ -481,6 +476,7 @@ namespace Rock.Web.Cache
             ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
 
+            ConfigurationValues = new Dictionary<string, string>( qualifiers );
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
             {
@@ -488,6 +484,19 @@ namespace Rock.Web.Cache
             }
 
             CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
+        }
+
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public AttributeViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new AttributeCacheViewModelHelper();
+            var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
+            return viewModel;
         }
 
         /// <summary>
@@ -575,7 +584,15 @@ namespace Rock.Web.Cache
 
             var attributeControl = FieldType.Field.EditControl( QualifierValues, options.SetId ? options.AttributeControlId : string.Empty );
             if ( attributeControl == null )
+            {
                 return null;
+            }
+
+            var hasAttributeIdControl = attributeControl as IHasAttributeId;
+            if ( hasAttributeIdControl != null )
+            {
+                hasAttributeIdControl.AttributeId = this.Id;
+            }
 
             if ( options.SetId )
             {
@@ -742,19 +759,6 @@ namespace Rock.Web.Cache
             return value;
         }
 
-        /// <summary>
-        /// Reads the specified attribute model.
-        /// </summary>
-        /// <param name="attributeModel">The attribute model.</param>
-        /// <param name="qualifiers">The qualifiers.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead", true )]
-        public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
-        {
-            return Get( attributeModel, qualifiers );
-        }
-
         #endregion
 
         #region ILiquidizable Implementation
@@ -767,14 +771,16 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaIgnore]
+        [LavaHidden]
         public override object this[object key]
         {
             get
             {
                 var propInfo = GetType().GetProperty( key.ToStringSafe() );
-                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() )
+                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any() )
+                {
                     return null;
+                }
 
                 var propValue = propInfo.GetValue( this, null );
 
@@ -791,8 +797,24 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public override bool ContainsKey( object key )
         {
-            var propInfo = GetType().GetProperty( key.ToStringSafe() );
-            return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any();
+            return ContainsKey( key.ToStringSafe() );
+        }
+
+        #endregion
+
+        #region ILavaDataDictionary
+
+        /// <summary>
+        /// Determines whether the specified Attribute key exists.
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override bool ContainsKey( string key )
+        {
+            var propInfo = GetType().GetProperty( key );
+            return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any();
         }
 
         #endregion
@@ -809,27 +831,6 @@ namespace Rock.Web.Cache
             EntityAttributesCache.Remove();
         }
 
-        /// <summary>
-        /// Loads the entity attributes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed", true )]
-        public static void LoadEntityAttributes( RockContext rockContext )
-        {
-            //
-        }
-
-        /// <summary>
-        /// Flushes the entity attributes.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveEntityAttributes instead", true )]
-        public static void FlushEntityAttributes()
-        {
-            EntityAttributesCache.Remove();
-        }
-
         #endregion
     }
 
@@ -838,7 +839,6 @@ namespace Rock.Web.Cache
     /// </summary>
     public class AttributeControlOptions
     {
-
         /// <summary>
         /// The value that should be set to the control after it is created.
         /// </summary>
@@ -919,6 +919,83 @@ namespace Rock.Web.Cache
         /// </value>
         public bool ShowPrePostHtml { get; set; }
     }
+
+    /// <summary>
+    /// AttributeValueCache View Model Helper
+    /// </summary>
+    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override AttributeViewModel CreateViewModel( AttributeCache model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new AttributeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AbbreviatedName = model.AbbreviatedName,
+                AllowSearch = model.AllowSearch,
+                ConfigurationValues = model.ConfigurationValues,
+                DefaultValue = model.DefaultValue,
+                Description = model.Description,
+                EnableHistory = model.EnableHistory,
+                EntityTypeId = model.EntityTypeId,
+                EntityTypeQualifierColumn = model.EntityTypeQualifierColumn,
+                EntityTypeQualifierValue = model.EntityTypeQualifierValue,
+                FieldTypeId = model.FieldTypeId,
+                IconCssClass = model.IconCssClass,
+                AttributeColor = model.AttributeColor,
+                IsActive = model.IsActive,
+                IsAnalytic = model.IsAnalytic,
+                IsAnalyticHistory = model.IsAnalyticHistory,
+                IsGridColumn = model.IsGridColumn,
+                IsIndexEnabled = model.IsIndexEnabled,
+                IsMultiValue = model.IsMultiValue,
+                IsPublic = model.IsPublic,
+                IsRequired = model.IsRequired,
+                IsSystem = model.IsSystem,
+                Key = model.Key,
+                Name = model.Name,
+                Order = model.Order,
+                PostHtml = model.PostHtml,
+                PreHtml = model.PreHtml,
+                ShowOnBulk = model.ShowOnBulk
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
+        /// <summary>
+        /// Applies the additional properties and security to view model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="viewModel">The view model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        {
+            viewModel.FieldTypeGuid = FieldTypeCache.Get( model.FieldTypeId ).Guid;
+            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToArray();
+            viewModel.QualifierValues = model.QualifierValues.ToDictionary(
+                kvp => kvp.Key,
+                kvp => new ViewModel.NonEntities.AttributeConfigurationValue
+                {
+                    Name = kvp.Value.Name,
+                    Value = kvp.Value.Value,
+                    Description = kvp.Value.Description
+                } );
+        }
+    }
 }
-
-

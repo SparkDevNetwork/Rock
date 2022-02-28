@@ -664,7 +664,7 @@ namespace RockWeb.Blocks.Communication
                         CurrentPageReference.Parameters.Add( PageParameterKey.CommunicationId, newCommunication.Id.ToString() );
                     }
 
-                    Response.Redirect( CurrentPageReference.BuildUrl() );
+                    Response.Redirect( CurrentPageReference.BuildUrl(), false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }
@@ -1786,6 +1786,15 @@ namespace RockWeb.Blocks.Communication
                         break;
                     }
             }
+
+            if ( communication != null && communication.IsBulkCommunication )
+            {
+                hlBulk.Visible = true;
+            }
+            else
+            {
+                hlBulk.Visible = false;
+            }
         }
 
         /// <summary>
@@ -1929,14 +1938,14 @@ namespace RockWeb.Blocks.Communication
                 sb.AppendLine( "<a href='#pushTabContent' role='tab' id='push-tab' data-toggle='tab' aria-controls='push'>Push</a></li>" );
             }
 
-            sb.AppendLine( "</ul><hr/>" );
+            sb.AppendLine( "</ul><div><hr/></div>" );
 
 
             sb.AppendLine( "<div class='tab-content flex-fill'>" );
 
             if ( showEmailTab )
             {
-                sb.AppendLine( "<div id='emailTabContent' class='tab-pane active'>" );
+                sb.AppendLine( "<div id='emailTabContent' class='tab-pane h-100 d-flex flex-column active'>" );
                 sb.AppendLine( "<div class='row'>" );
 
                 AppendStaticControlMediumData( sb, "From",
@@ -1964,9 +1973,9 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 sb.AppendLine( string.Format( @"
-            <div class='bg-gray-100 flex-fill position-relative mb-3 mb-sm-0 styled-scroll' style='min-height:400px'>
+            <div class='bg-gray-100 flex-fill position-relative mb-3 mb-sm-0 styled-scroll border border-panel' style='min-height:400px'>
             <div class='position-absolute w-100 h-100 inset-0 overflow-auto'>
-            <iframe id='js-email-body-iframe' class='w-100' scrolling='yes' onload='resizeIframe(this)'></iframe>
+            <iframe id='js-email-body-iframe' class='w-100 bg-white' scrolling='yes' onload='resizeIframe(this)'></iframe>
             </div>
             </div>
             <script id='email-body' type='text/template'>{0}</script>
@@ -2149,15 +2158,22 @@ namespace RockWeb.Blocks.Communication
             if ( communicationId != null )
             {
                 var recipientService = new CommunicationRecipientService( dataContext );
-
                 var sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
 
-                var recipientQuery = recipientService.Queryable().Where( a => a.CommunicationId == communicationId ).ToList();
+                var recipientSummary = recipientService.Queryable()
+                    .Where( a => a.CommunicationId == communicationId )
+                    .GroupBy( a => a.Status )
+                    .Select( g => new
+                    {
+                        Status = g.Key,
+                        Count = g.Count()
+                    } )
+                    .ToList();
 
-                pendingRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Pending );
-                deliveredRecipientCount = recipientQuery.Count( a => sentStatus.Contains( a.Status ) );
-                failedRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Failed );
-                cancelledRecipientCount = recipientQuery.Count( a => a.Status == CommunicationRecipientStatus.Cancelled );
+                pendingRecipientCount = recipientSummary.Where( a => a.Status == CommunicationRecipientStatus.Pending ).Sum( a => a.Count );
+                deliveredRecipientCount = recipientSummary.Where( a => sentStatus.Contains( a.Status ) ).Sum( a => a.Count );
+                failedRecipientCount = recipientSummary.Where( a => a.Status == CommunicationRecipientStatus.Failed ).Sum( a => a.Count );
+                cancelledRecipientCount = recipientSummary.Where( a => a.Status == CommunicationRecipientStatus.Cancelled ).Sum( a => a.Count );
             }
 
             string actionsStatFormatNumber = "<div>{0:#,##0}</div>";

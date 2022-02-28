@@ -18,9 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 using Rock.Utility.ExtensionMethods;
+
 using Serilog.Events;
 using Serilog.Formatting.Compact.Reader;
 
@@ -109,20 +112,28 @@ namespace Rock.Logging
             }
 
             var currentFileIndex = 0;
-            var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
-
-            while ( ( startIndex >= logs.Length || startIndex + count >= logs.Length ) && currentFileIndex < ( rockLogFiles.Count - 1 ) )
+            try
             {
-                currentFileIndex++;
-                var additionalLogs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
-                var temp = new string[additionalLogs.Length + logs.Length];
-                additionalLogs.CopyTo( temp, 0 );
-                logs.CopyTo( temp, additionalLogs.Length );
+                var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
 
-                logs = temp;
+                while ( ( startIndex >= logs.Length || startIndex + count >= logs.Length ) && currentFileIndex < ( rockLogFiles.Count - 1 ) )
+                {
+                    currentFileIndex++;
+                    var additionalLogs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
+                    var temp = new string[additionalLogs.Length + logs.Length];
+                    additionalLogs.CopyTo( temp, 0 );
+                    logs.CopyTo( temp, additionalLogs.Length );
+
+                    logs = temp;
+                }
+
+                return logs;
             }
-
-            return logs;
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return new string[] { };
+            }
         }
 
         private int GetRockLogRecordCount()
@@ -134,19 +145,39 @@ namespace Rock.Logging
             }
 
             long lines = 0;
-            foreach ( var filePath in rockLogFiles )
+
+            try
             {
-                _rockLogger.Close();
-                using ( var file = System.IO.File.OpenRead( filePath ) )
+                foreach ( var filePath in rockLogFiles )
                 {
-                    lines += file.CountLines();
+                    _rockLogger.Close();
+                    var logFileInfo = new System.IO.FileInfo( filePath );
+
+                    // if the logFile is zero-length, we'll get an i/o error when reading it, so skip it
+                    if ( logFileInfo.Exists && logFileInfo.Length > 0 )
+                    {
+
+                        using ( var file = logFileInfo.OpenRead() )
+                        {
+                            lines += file.CountLines();
+                        }
+
+                    }
                 }
+            }
+            catch ( Exception ex )
+            {
+                // If you get an exception it is probably because a file is in use
+                // and we can't read it. So just move on.
+                ExceptionLogService.LogException( ex );
+                return 0;
             }
 
             if ( lines >= int.MaxValue )
             {
                 return int.MaxValue;
             }
+
             return Convert.ToInt32( lines );
         }
 

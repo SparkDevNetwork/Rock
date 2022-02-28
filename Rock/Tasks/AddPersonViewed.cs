@@ -22,7 +22,7 @@ using Rock.Model;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Tracks when a person is viewed.
+    /// Adds a <see cref="PersonViewed"/> record for when a person is viewed. 
     /// </summary>
     public sealed class AddPersonViewed : BusStartedTask<AddPersonViewed.Message>
     {

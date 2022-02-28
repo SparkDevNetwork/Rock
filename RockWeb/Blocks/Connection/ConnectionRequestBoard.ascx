@@ -1,5 +1,11 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestBoard.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestBoard" %>
 
+<style>
+    .can-edit-false,.can-connect-false {
+        display: none;
+    }
+</style>
+
 <script type="text/javascript">
     // This is the source for the "dragscroll" library. It has a modification in the
     // mousedown handler. The modification is to prevent dragscroll from acting
@@ -113,6 +119,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
+        Rock.controls.fullScreen.initialize();
         // Transfer mode: when user selects "Select Connector" show the connector picker
         var syncTransferConnectorControls = function () {
             var selectedOptionIsSelectConnector = $(this).is('#<%= rbRequestModalViewModeTransferModeSelectConnector.ClientID %>');
@@ -128,7 +135,7 @@
     };
 </script>
 
-<asp:UpdatePanel ID="upnlRoot" runat="server" UpdateMode="Conditional">
+<asp:UpdatePanel ID="upnlRoot" runat="server" UpdateMode="Conditional" class="styled-scroll">
     <ContentTemplate>
 
         <asp:UpdatePanel ID="upnlBlockLevelControls" runat="server">
@@ -138,9 +145,9 @@
               </ContentTemplate>
         </asp:UpdatePanel>
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow d-flex flex-wrap flex-sm-nowrap justify-content-between">
+            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow-fullscreen">
                 <ContentTemplate>
                     <h2 class="panel-title">
                         <asp:Literal ID="lTitle" runat="server" />
@@ -149,30 +156,33 @@
                         <asp:LinkButton ID="btnAddCampaignRequests" runat="server" OnClick="btnAddCampaignRequests_Click" CssClass="btn btn-default btn-xs">
                                 <i class="fa fa-plus"></i>
                                 Campaign Requests
-                        </asp:LinkButton>
-                    </div>
-                    <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
+                            </asp:LinkButton>
+                        </div>
+                        <div class="panel-follow-full-container">
+                            <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" title="Click to Follow"></asp:Panel>
+                            <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
+                        </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
-            <div class="panel-collapsable">
-                <div class="panel-toolbar d-flex flex-wrap flex-sm-nowrap justify-content-between">
-                    <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server">
-                        <ContentTemplate>
-                            <div class="d-inline-block btn-group-mega js-btn-group-mega">
-                                <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fa fa-plug"></i>
-                                    Opportunities
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-mega js-dropdown-menu-mega">
-                                    <li runat="server" id="liFavoritesHeader" class="dropdown-header">
-                                        <i class="far fa-star"></i>
-                                        Favorites
-                                    </li>
-                                    <asp:Repeater ID="rptFavoriteConnectionOpportunities" runat="server" OnItemCommand="rptFavoriteConnectionOpportunities_ItemCommand">
-                                        <ItemTemplate>
-                                            <li>
-                                                <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
+                    <div class="panel-collapsible">
+                        <div class="panel-toolbar">
+                            <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server" class="toolbar-group">
+                                <ContentTemplate>
+                                    <div class="d-inline-block btn-group-mega js-btn-group-mega">
+                                        <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fa fa-plug"></i>
+                                            Opportunities
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-mega js-dropdown-menu-mega">
+                                            <li runat="server" id="liFavoritesHeader" class="dropdown-header">
+                                                <i class="far fa-star"></i>
+                                                Favorites
+                                            </li>
+                                            <asp:Repeater ID="rptFavoriteConnectionOpportunities" runat="server" OnItemCommand="rptFavoriteConnectionOpportunities_ItemCommand">
+                                                <ItemTemplate>
+                                                    <li>
+                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
                                                             <i class="<%# Eval("IconCssClass") %>"></i>
                                                             <%# Eval("PublicName") %>
                                                             <span class="pull-right text-muted small"><%# Eval("ConnectionTypeName") %></span>
@@ -190,7 +200,8 @@
                                             <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                                 <ItemTemplate>
                                                     <li>
-                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
+                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'
+                                                            OnClick='<%# UpdateConnectionQuerystring(Eval("Id").ToString()) %>'>
                                                                     <i class="<%# Eval("IconCssClass") %>"></i>
                                                                     <%# Eval("PublicName") %>
                                                         </asp:LinkButton>
@@ -204,18 +215,18 @@
                             <asp:LinkButton ID="lbAddRequest" runat="server" CssClass="btn btn-xs btn-tool" OnClick="lbAddRequest_Click" CausesValidation="false">
                                         <i class="fa fa-plus"></i>
                                         Add Request
-                            </asp:LinkButton>
-                        </ContentTemplate>
-                    </asp:UpdatePanel>
-                    <div class="d-block">
-                        <div class="btn-group">
-                            <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-user"></i>
-                                <asp:Literal runat="server" ID="lConnectorText" />
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <asp:LinkButton runat="server" ID="lbAllConnectors" OnClick="lbAllConnectors_Click">
+                                    </asp:LinkButton>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                            <div class="toolbar-group">
+                                <div class="btn-group">
+                                    <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-user"></i>
+                                        <asp:Literal runat="server" ID="lConnectorText" />
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <asp:LinkButton runat="server" ID="lbAllConnectors" OnClick="lbAllConnectors_Click">
                                                 All Connectors
                                     </asp:LinkButton>
                                 </li>
@@ -230,24 +241,24 @@
                                         <li>
                                             <asp:LinkButton runat="server" CommandArgument='<%# Eval("PersonAliasId") %>'>
                                                         <%# Eval("FullName") %>
-                                            </asp:LinkButton>
-                                        </li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="d-block">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-sort"></i>
-                                <asp:Literal runat="server" ID="lSortText" />
-                            </button>
-                            <ul class="dropdown-menu">
-                                <asp:Repeater ID="rptSort" runat="server" OnItemCommand="rptSort_ItemCommand">
-                                    <ItemTemplate>
-                                        <li>
-                                            <asp:LinkButton runat="server" CommandArgument='<%# Eval("SortBy") %>'>
+                                                    </asp:LinkButton>
+                                                </li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="toolbar-group">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-sort"></i>
+                                        <asp:Literal runat="server" ID="lSortText" />
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <asp:Repeater ID="rptSort" runat="server" OnItemCommand="rptSort_ItemCommand">
+                                            <ItemTemplate>
+                                                <li>
+                                                    <asp:LinkButton runat="server" CommandArgument='<%# Eval("SortBy") %>'>
                                                         <%# Eval("Title") %>
                                                         &nbsp;
                                                         <small class="text-muted"><%# Eval("SubTitle") %></small>
@@ -285,33 +296,33 @@
                     </div>
                 </div>
 
-                <div runat="server" id="divFilterDrawer" class="panel-drawer" style="display: none;">
-                    <div class="container-fluid padding-t-md padding-b-md">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <Rock:SlidingDateRangePicker ID="sdrpLastActivityDateRangeFilter" runat="server" Label="Last Activity Date Range" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
-                            </div>
-                            <div class="col-md-4">
-                                <Rock:PersonPicker ID="ppRequesterFilter" runat="server" Label="Requester" />
-                            </div>
-                            <div class="col-md-4">
-                                <Rock:RockCheckBoxList ID="cblStatusFilter" runat="server" Label="Status" DataValueField="Value" DataTextField="Text" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <Rock:RockCheckBoxList ID="cblStateFilter" runat="server" Label="State" DataValueField="Value" DataTextField="Text" />
-                            </div>
-                            <div class="col-md-4">
-                                <Rock:RockCheckBox ID="rcbPastDueOnly" runat="server" Label="Only Past Due" Help="Only show future follow-up requests that are past due." />
-                            </div>
-                            <div class="col-md-4">
-                                <Rock:RockCheckBoxList ID="cblLastActivityFilter" runat="server" Label="Last Activity" DataValueField="Value" DataTextField="Text" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <asp:LinkButton runat="server" ID="lbApplyFilter" CssClass="btn btn-primary btn-xs" OnClick="lbApplyFilter_Click">
+                        <div runat="server" id="divFilterDrawer" class="panel-drawer" style="display: none;">
+                            <div class="container-fluid py-3">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:SlidingDateRangePicker ID="sdrpLastActivityDateRangeFilter" runat="server" Label="Last Activity Date Range" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:PersonPicker ID="ppRequesterFilter" runat="server" Label="Requester" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBoxList ID="cblStatusFilter" runat="server" Label="Status" DataValueField="Value" DataTextField="Text" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBoxList ID="cblStateFilter" runat="server" Label="State" DataValueField="Value" DataTextField="Text" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBox ID="rcbPastDueOnly" runat="server" Label="Only Past Due" Help="Only show future follow-up requests that are past due." />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBoxList ID="cblLastActivityFilter" runat="server" Label="Last Activity" DataValueField="Value" DataTextField="Text" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <asp:LinkButton runat="server" ID="lbApplyFilter" CssClass="btn btn-primary btn-xs" OnClick="lbApplyFilter_Click">
                                             Apply
                                 </asp:LinkButton>
                                 <asp:LinkButton runat="server" ID="lbClearFilter" CssClass="btn btn-link btn-xs" OnClick="lbClearFilter_Click">
@@ -323,36 +334,36 @@
                 </div>
             </div>
 
-            <asp:UpdatePanel ID="upnlGridView" runat="server">
+            <asp:UpdatePanel ID="upnlGridView" runat="server" class="grid-view-container">
                 <ContentTemplate>
-                    <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
-                        <Columns>
-                            <Rock:SelectField></Rock:SelectField>
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
-                            <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
-                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
-                            <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
-                            <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
-                            <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
-                            <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                            <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                            <Rock:SecurityField />
-                            <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
-                            <Rock:DeleteField OnClick="gRequests_Delete" />
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="panel-body p-0">
+                        <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
+                            <Columns>
+                                <Rock:SelectField></Rock:SelectField>
+                                <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
+                                <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
+                                <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
+                                <Rock:RockBoundField DataField="GroupNameWithRoleAndStatus" HeaderText="Group" />
+                                <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
+                                <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
+                                <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                                <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                                <Rock:SecurityField />
+                                <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                                <Rock:DeleteField OnClick="gRequests_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="upnlBoardView" runat="server" UpdateMode="Conditional">
+            <asp:UpdatePanel ID="upnlBoardView" runat="server" UpdateMode="Conditional" Class="drag-scroll-zone-container">
                 <ContentTemplate>
-                    <div class="drag-scroll-zone-container position-relative">
-                        <div class="panel-body p-0 overflow-scroll board-column-container dragscroll js-dragscroll">
-                            <div class="d-flex flex-row w-100 h-100 js-column-container"></div>
+                        <div class="panel-body p-0 overflow-scroll dragscroll js-dragscroll">
+                            <div class="board-column-container js-column-container"></div>
                             <div class="js-drag-scroll-zone js-drag-scroll-zone-left drag-scroll-zone drag-scroll-zone-left"></div>
                             <div class="js-drag-scroll-zone js-drag-scroll-zone-right drag-scroll-zone drag-scroll-zone-right"></div>
                         </div>
-                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
@@ -380,7 +391,7 @@
                             <asp:Literal ID="lRequestModalViewModeHeading" runat="server" />
                             <div class="row">
                                 <div class="col-sm-2">
-                                    <div id="divRequestModalViewModePhoto" runat="server" class="request-modal-photo mx-auto mb-3"></div>
+                                    <div id="divRequestModalViewModePhoto" runat="server" class="request-modal-photo"></div>
                                 </div>
                                 <div class="col-sm-10">
                                     <asp:Literal runat="server" ID="lRequestModalViewModeStatusIcons" />
@@ -441,7 +452,7 @@
 
                                     </div>
 
-                                    <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlRequestModalViewModeBadges">
+                                    <asp:Panel runat="server" CssClass="badge-bar mb-2" ID="pnlRequestModalViewModeBadges">
                                         <Rock:BadgeListControl ID="blRequestModalViewModeBadges" runat="server" />
                                     </asp:Panel>
                                 </div>
@@ -460,7 +471,7 @@
                                 <div id="divRequestModalViewModeWorkflows" runat="server" class="col-md-6">
                                     <Rock:ModalAlert ID="mdWorkflowLaunched" runat="server" />
                                     <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
-                                    <div class="margin-b-lg">
+                                    <div class="mb-4">
                                         <asp:Repeater ID="rptRequestWorkflows" runat="server" OnItemCommand="rptRequestWorkflows_ItemCommand">
                                             <ItemTemplate>
                                                 <asp:LinkButton ID="lbRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
@@ -550,7 +561,7 @@
                                         <Rock:NotificationBox
                                             runat="server"
                                             ID="nbTranferFailed"
-                                            Text="You must select a new opportunity to transfer this request."
+                                            Text="You must select a new opportunity or connector to transfer this request."
                                             NotificationBoxType="Warning"
                                             Visible="false"></Rock:NotificationBox>
                                     </div>
@@ -577,7 +588,7 @@
                                             </div>
                                             <div>
                                                 <Rock:RockRadioButton ID="rbRequestModalViewModeTransferModeSelectConnector" runat="server" CssClass="js-transfer-connector" Text="Select Connector" GroupName="TransferOpportunityConnector" />
-                                                <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeOpportunityConnector" CssClass="margin-l-lg" runat="server" Style="display: none" />
+                                                <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeOpportunityConnector" CssClass="ml-4" runat="server" Style="display: none" />
                                             </div>
                                             <div>
                                                 <Rock:RockRadioButton ID="rbRequestModalViewModeTransferModeNoConnector" runat="server" CssClass="js-transfer-connector" Text="No Connector" GroupName="TransferOpportunityConnector" />
@@ -744,23 +755,19 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a href="javascript:void(0);" class="js-view">View Details
-                                </a>
+                                <a href="javascript:void(0);" class="js-view">View Details</a>
                             </li>
                             <li class="can-connect-{{CanConnect}}">
-                                <a href="javascript:void(0);" class="js-connect">Connect
-                                </a>
+                                <a href="javascript:void(0);" class="js-connect">Connect</a>
                             </li>
                             <% if ( ShowSecurityButton ) { %>
                             <li>
-                                <a href="javascript:Rock.controls.modal.show($(this), '/Secure/<%= ConnectionRequestEntityTypeId %>/{{Id}}?t=Security&pb=&sb=Done')">Security
-                                </a>
+                                <a href="javascript:Rock.controls.modal.show($(this), '/Secure/<%= ConnectionRequestEntityTypeId %>/{{Id}}?t=Security&pb=&sb=Done')">Security</a>
                             </li>
                             <% } %>
-                            <li role="separator" class="divider can-connect-{{CanCurrentUserEdit}}"></li>
-                            <li class="can-connect-{{CanCurrentUserEdit}}">
-                                <a href="javascript:void(0);" class="dropdown-item-danger js-delete">Delete
-                                </a>
+                            <li role="separator" class="divider can-edit-{{CanCurrentUserEdit}}"></li>
+                            <li class="can-edit-{{CanCurrentUserEdit}}">
+                                <a href="javascript:void(0);" class="dropdown-item-danger js-delete">Delete</a>
                             </li>
                         </ul>
                     </div>

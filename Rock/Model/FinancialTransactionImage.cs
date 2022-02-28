@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -76,7 +77,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransaction"/> that this image belongs to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -85,19 +86,8 @@ namespace Rock.Model
         /// <value>
         /// The image's <see cref="Rock.Model.BinaryFile"/>
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile BinaryFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.8" )]
-        [Obsolete("Use HistoryChangeList instead", true )]
-        public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
         /// Gets or sets the history change list.

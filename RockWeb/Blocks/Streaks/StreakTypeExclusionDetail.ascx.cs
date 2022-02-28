@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Streaks" )]
     [Description( "Displays the details of the given Exclusion for editing." )]
 
-    public partial class StreakTypeExclusionDetail : RockBlock, IDetailBlock
+    public partial class StreakTypeExclusionDetail : RockBlock
     {
         #region Keys
 
@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )

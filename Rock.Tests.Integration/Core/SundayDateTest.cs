@@ -47,7 +47,7 @@ namespace Rock.Tests.Integration.Core
             var sundayDate20190922 = new DateTime( 2019, 9, 22 );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK, DayOfWeek.Monday.ConvertToInt().ToString() );
-            RockDateTime.UpdateSundayDateData();
+            RockDateTimeHelper.UpdateSundayDateData();
 
             Assert.That.IsTrue( new DateTime( 2019, 8, 23 ).SundayDate() == sundayDate20190825, "Incorrect Sunday Date" );
             Assert.That.IsTrue( new DateTime( 2019, 8, 24 ).SundayDate() == sundayDate20190825, "Incorrect Sunday Date" );
@@ -91,7 +91,7 @@ namespace Rock.Tests.Integration.Core
             var sundayDate20191027 = new DateTime( 2019, 10, 27 );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK, DayOfWeek.Tuesday.ConvertToInt().ToString() );
-            RockDateTime.UpdateSundayDateData();
+            RockDateTimeHelper.UpdateSundayDateData();
 
             Assert.That.IsTrue( new DateTime( 2019, 10, 1 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
             Assert.That.IsTrue( new DateTime( 2019, 10, 5 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
@@ -128,7 +128,7 @@ namespace Rock.Tests.Integration.Core
             var sundayDate20191027 = new DateTime( 2019, 10, 27 );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK, DayOfWeek.Sunday.ConvertToInt().ToString() );
-            RockDateTime.UpdateSundayDateData();
+            RockDateTimeHelper.UpdateSundayDateData();
 
 
             Assert.That.IsTrue( new DateTime( 2019, 10, 6 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );

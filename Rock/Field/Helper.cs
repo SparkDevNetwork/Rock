@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace Rock.Field
 {
@@ -47,6 +48,16 @@ namespace Rock.Field
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
+        public static Dictionary<string, string> GetConfiguredValues( Dictionary<string, string> configurationValues )
+        {
+            return GetConfiguredValues( configurationValues, "values" );
+        }
+
+        /// <summary>
+        /// Gets the configured values.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
         public static Dictionary<string, string> GetConfiguredValues( Dictionary<string, ConfigurationValue> configurationValues )
         {
             return GetConfiguredValues( configurationValues, "values" );
@@ -60,11 +71,22 @@ namespace Rock.Field
         /// <returns></returns>
         public static Dictionary<string, string> GetConfiguredValues( Dictionary<string, ConfigurationValue> configurationValues, string propertyName )
         {
+            return GetConfiguredValues( configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ), propertyName );
+        }
+
+        /// <summary>
+        /// Gets the configured values.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public static Dictionary<string, string> GetConfiguredValues( Dictionary<string, string> configurationValues, string propertyName )
+        {
             var items = new Dictionary<string, string>();
 
             if ( configurationValues.ContainsKey( propertyName ) )
             {
-                string listSource = configurationValues[ propertyName ].Value;
+                string listSource = configurationValues[ propertyName ];
 
                 var options = new Lava.CommonMergeFieldsOptions();
                 options.GetLegacyGlobalMergeFields = false;

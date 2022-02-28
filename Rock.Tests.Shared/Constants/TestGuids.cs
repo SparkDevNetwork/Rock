@@ -18,6 +18,11 @@ using System;
 
 namespace Rock.Tests.Shared
 {
+    /// <summary>
+    /// Well-known Guids that can be used to identify specific test records.
+    /// Values should be declared as string types where possible.
+    /// Some Guid entries have been imported from previous code.
+    /// </summary>
     public static class TestGuids
     {
         public static class Category
@@ -64,9 +69,7 @@ namespace Rock.Tests.Shared
         public static class TestPeople
         {
             public static string TedDecker = "8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4";
-
             public static string BillMarble = "1EA811BB-3118-42D1-B020-32A82BC8081A";
-
             public static string AlishaMarble = "69DC0FDC-B451-4303-BD91-EF17C0015D23";
 
             public static string SarahSimmons = "FC6B9819-EF2E-44C9-93DB-05571B39E58F";
@@ -77,6 +80,8 @@ namespace Rock.Tests.Shared
 
             public static string MariahJackson = "9C2A020B-CF34-403E-A948-3E91FDFB958B";
             public static string MaddieLowe = "C398A8E3-C9BC-4017-A3F6-7C2BFF654056";
+
+            public static string SamHanks = "1E6E66C7-A487-48E6-B064-7F9F4DDE6680";
         }
 
         public static class PrayerRequestGuid
@@ -106,6 +111,13 @@ namespace Rock.Tests.Shared
 
             public const string BenJonesComment1 = "7C5173DF-B11B-4EF2-8CCB-30DC53A4522B";
             public const string BenJonesComment2 = "4619DEFF-DA42-4A75-AA24-77A7F3292EBA";
+        }
+
+        public static class Schedules
+        {
+
+            public const string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
+            public const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
         }
 
         public static class Steps
@@ -178,5 +190,22 @@ namespace Rock.Tests.Shared
         {
             public const string PrayerCommentsNotification = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
         }
+
+        public static class Shortcodes
+        {
+            public const string ShortcodeTest1 = "B60A5547-FA5C-49C3-AC14-D631E54208AE";
+        }
+
+        /// <summary>
+        /// Well-known Guids to identify specific Lava Engine framework implementations.
+        /// </summary>
+        public static class LavaEngines
+        {
+            public const string RockLiquid = "7CE5A54A-54DC-464A-83EE-659658134239";
+            public const string DotLiquid = "165E5E74-4923-4E25-B330-A27DB3A59CE7";
+            public const string Fluid = "605445FE-6ECC-4E67-9A95-98F7173F7389";
+
+        }
+
     }
 }

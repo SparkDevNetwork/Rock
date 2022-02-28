@@ -115,13 +115,6 @@ namespace Rock.SystemKey
         public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
 
         /// <summary>
-        /// The redis connection string
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.", true )]
-        public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
-
-        /// <summary>
         /// Comma separated list of Redis endpoints (e.g. server.com:6379)
         /// </summary>
         public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
@@ -169,21 +162,21 @@ namespace Rock.SystemKey
         /// <summary>
         /// Settings for Do Not Disturb Start
         /// </summary>
-        [Obsolete( "This functionality is no longer used." )]
+        [Obsolete( "This functionality is no longer used.", true )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_START = "core_DoNotDisturbStart";
 
         /// <summary>
         /// Settings for Do Not Disturb End
         /// </summary>
-        [Obsolete( "This functionality is no longer used." )]
+        [Obsolete( "This functionality is no longer used.", true )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_END = "core_DoNotDisturbEnd";
 
         /// <summary>
         /// Settings for Do Not Disturb Active
         /// </summary>
-        [Obsolete( "This functionality is no longer used." )]
+        [Obsolete( "This functionality is no longer used.", true )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
 
@@ -233,13 +226,18 @@ namespace Rock.SystemKey
         public const string ROCK_CLEANUP_LAST_RUN_DATETIME = "core_RockCleanup_LastRunDateTime";
 
         /// <summary>
-        /// Settings for Giving Analytics
+        /// Settings for Giving Automation
         /// </summary>
-        public const string GIVING_ANALYTICS_CONFIGURATION = "core_GivingAnalyticsConfiguration";
+        public const string GIVING_AUTOMATION_CONFIGURATION = "core_GivingAutomationConfiguration";
 
         /// <summary>
         /// The organization currency code
         /// </summary>
         public const string ORGANIZATION_CURRENCY_CODE = "OrganizationStandardCurrencyCode";
+
+        /// <summary>
+        /// Lava Engine Type.
+        /// </summary>
+        public const string LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
     }
 }

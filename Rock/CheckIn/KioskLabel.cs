@@ -152,18 +152,6 @@ namespace Rock.CheckIn
         #region Static Methods
 
         /// <summary>
-        /// Reads the specified label by guid.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( Guid guid ) instead.", true )]
-        public static KioskLabel Read( Guid guid )
-        {
-            return Get( guid );
-        }
-
-        /// <summary>
         /// Gets the specified label by guid.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -220,17 +208,6 @@ namespace Rock.CheckIn
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Flushes the specified guid.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( Guid guid ) instead.", true )]
-        public static void Flush( Guid guid )
-        {
-            Remove( guid );
         }
 
         /// <summary>

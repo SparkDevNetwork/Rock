@@ -27,6 +27,7 @@ using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -37,7 +38,6 @@ namespace Rock.Security
     /// </summary>
     public static class Authorization
     {
-
         /// <summary>
         /// Available settings for SameSiteCookie
         /// </summary>
@@ -147,20 +147,14 @@ namespace Rock.Security
         /// </summary>
         public const string COOKIE_UNSECURED_PERSON_IDENTIFIER = ".ROCK-UnauthenticatedPersonIdentifier";
 
+        /// <summary>
+        /// Authorization to manage the steps
+        /// </summary>
+        public const string MANAGE_STEPS = "ManageSteps";
+
         #endregion
 
         #region Public Methods
-
-        /// <summary>
-        /// Load the static Authorizations object
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get() Instead.", true )]
-        public static bool Load()
-        {
-            Get();
-            return false;
-        }
 
         #endregion
 
@@ -258,19 +252,6 @@ namespace Rock.Security
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="rockContext">The rock context.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use RefreshEntity() instead.", true )]
-        public static void ReloadEntity( int entityTypeId, int entityId, RockContext rockContext = null )
-        {
-            RefreshEntity( entityTypeId, entityId, rockContext );
-        }
-
-        /// <summary>
-        /// Reloads the entity.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
         internal static void RefreshEntity( int entityTypeId, int entityId, RockContext rockContext = null )
         {
             // Clear the current entity type's auths
@@ -284,7 +265,6 @@ namespace Rock.Security
                     AddOrUpdate( authorizations );
                 }
             }
-
 
             // Query database for the authorizations related to this entitytype, entity, and action
             List<Auth> auths;
@@ -311,7 +291,6 @@ namespace Rock.Security
 
                 ResetAction( entityTypeId, entityId, action, newAuthRules );
             }
-
         }
 
         /// <summary>
@@ -335,19 +314,6 @@ namespace Rock.Security
                 )
                 .OrderBy( a => a.Order ).ThenBy( a => a.Id )
                 .ToList();
-        }
-
-        /// <summary>
-        /// Reloads the action.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="action">The action.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use RefreshAction() instead.", true )]
-        public static void ReloadAction( int entityTypeId, int entityId, string action )
-        {
-            RefreshAction( entityTypeId, entityId, action );
         }
 
         /// <summary>
@@ -379,20 +345,6 @@ namespace Rock.Security
             }
 
             ResetAction( entityTypeId, entityId, action, newAuthRules );
-        }
-
-        /// <summary>
-        /// Reloads the action.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="rockContext">The rock context.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use RefreshAction() instead.", true )]
-        public static void ReloadAction( int entityTypeId, int entityId, string action, RockContext rockContext )
-        {
-            RefreshAction( entityTypeId, entityId, action, rockContext );
         }
 
         /// <summary>
@@ -677,6 +629,7 @@ namespace Rock.Security
                     authService.Delete( auth );
                 }
             }
+
             rockContext.SaveChanges();
 
             // Copy target auths to source auths
@@ -717,16 +670,6 @@ namespace Rock.Security
             return ( from action in securableObject.SupportedActions
                      from rule in AuthRules( securableObject.TypeId, securableObject.Id, action.Key )
                      select rule ).AsQueryable();
-        }
-
-        /// <summary>
-        /// Clear the static Authorizations object
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Clear() instead.", true )]
-        public static void Flush()
-        {
-            Clear();
         }
 
         /// <summary>
@@ -774,24 +717,61 @@ namespace Rock.Security
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
-        /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
-        public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
             var ticket = new FormsAuthenticationTicket(
                 1,
                 userName,
-                RockDateTime.Now,
-                RockDateTime.Now.Add( FormsAuthentication.Timeout ),
+                RockInstanceConfig.SystemDateTime,
+                RockInstanceConfig.SystemDateTime.Add( FormsAuthentication.Timeout ),
                 isPersisted,
-                IsImpersonated.ToString(),
+                isImpersonated.ToString(),
                 FormsAuthentication.FormsCookiePath );
 
             var authCookie = GetAuthCookie( GetCookieDomain(), FormsAuthentication.Encrypt( ticket ) );
+
             if ( ticket.IsPersistent )
             {
                 authCookie.Expires = ticket.Expiration;
             }
 
+            return authCookie;
+        }
+
+        /// <summary>
+        /// Gets the simple authentication cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        /// <returns></returns>
+        public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool isImpersonated )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated );
+
+            if ( authCookie == null )
+            {
+                return null;
+            }
+
+            return new SimpleCookie
+            {
+                Expires = authCookie.Expires,
+                Name = authCookie.Name,
+                Value = authCookie.Value
+            };
+        }
+
+        /// <summary>
+        /// Sets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated );
             RockPage.AddOrUpdateCookie( authCookie );
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
@@ -827,7 +807,7 @@ namespace Rock.Security
             if ( domainCookie != null )
             {
                 var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = DateTime.Now.AddDays( -1d );
+                authCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d );
                 RockPage.AddOrUpdateCookie( authCookie );
 
                 domainCookie = new HttpCookie( domainCookieName )
@@ -836,11 +816,10 @@ namespace Rock.Security
                     Domain = authCookie.Domain,
                     Path = FormsAuthentication.FormsCookiePath,
                     Secure = FormsAuthentication.RequireSSL,
-                    Expires = DateTime.Now.AddDays( -1d )
+                    Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d )
                 };
 
                 RockPage.AddOrUpdateCookie( domainCookie );
-
             }
             else
             {
@@ -856,7 +835,7 @@ namespace Rock.Security
         {
             if ( HttpContext.Current.Request.Cookies.AllKeys.Contains( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) )
             {
-                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockDateTime.Now.AddDays( -1d ) );
+                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockInstanceConfig.SystemDateTime.AddDays( -1d ) );
             }
         }
 
@@ -873,7 +852,7 @@ namespace Rock.Security
 
             // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
             // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
-            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.Url.Scheme == "https" ? ";Secure" : string.Empty;
+            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlProxySafe().Scheme == "https" ? ";Secure" : string.Empty;
 
             // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
             string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";
@@ -888,7 +867,6 @@ namespace Rock.Security
 
             return httpCookie;
         }
-
 
         /// <summary>
         /// Gets the domain for the forms authentication cookie. This is based on whether the current host name has an entry in the 'Domains Sharing Logins' defined type.
@@ -913,7 +891,6 @@ namespace Rock.Security
 
             // Make sure there now at least two '.' characters (this is required for browser to store cookie).
             return domain.Count( c => c == '.' ) >= 2 ? domain : string.Empty;
-
         }
 
         /// <summary>
@@ -949,7 +926,7 @@ namespace Rock.Security
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = DateTime.Now.AddYears( 1 );
+            httpcookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
             RockPage.AddOrUpdateCookie( httpcookie );
         }
 
@@ -995,7 +972,6 @@ namespace Rock.Security
                     break;
                 }
             }
-
 
             if ( matchFound )
             {
@@ -1383,11 +1359,11 @@ namespace Rock.Security
                 // Update authorization dictionary with the new rules
                 actionPermissions.AddRange( authRules );
             }
+
             AddOrUpdate( authorizations );
         }
 
         #endregion
-
     }
 
     #region Helper Class/Struct
@@ -1456,17 +1432,14 @@ namespace Rock.Security
     /// <summary>
     /// Lightweight struct to store if a particular user or role is allowed or denied access
     /// </summary>
-	[Serializable]
+    [Serializable]
     [DataContract]
     public struct AuthRule
     {
-
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets or sets the identifier.
         /// </summary>
-        /// <value>
-        /// The id.
-        /// </value>
+        /// <value>The identifier.</value>
         [DataMember]
         public int Id { get; set; }
 
@@ -1643,5 +1616,4 @@ namespace Rock.Security
     }
 
     #endregion
-
 }

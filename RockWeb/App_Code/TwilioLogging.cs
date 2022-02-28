@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Web;
 using Rock;
@@ -25,11 +26,14 @@ namespace RockWeb
     /// </summary>
     internal static class TwilioLogging
     {
+        [Obsolete]
         private static bool ShouldLogRequest( HttpContext context )
         {
             return ( !string.IsNullOrWhiteSpace( context.Request.QueryString["Log"] ) && context.Request.QueryString["Log"] == "true" );
         }
 
+        [Obsolete("Twilio logging now uses the RockLogger.", true )]
+        [RockObsolete("1.13")]
         public static void HandleRequestLogging( HttpContext context, bool alwaysLog )
         {
             // determine if we should log
@@ -39,11 +43,12 @@ namespace RockWeb
             }
         }
 
+        [Obsolete]
         private static void LogRequest( HttpContext context )
         {
             var request = context.Request;
             var formValues = new List<string>();
-            formValues.Add( string.Format( "{0}: '{1}'", "End Point URL", request.Url ) );
+            formValues.Add( string.Format( "{0}: '{1}'", "End Point URL", request.UrlProxySafe() ) );
             foreach ( string name in request.Form.AllKeys )
             {
                 formValues.Add( string.Format( "{0}: '{1}'", name, request.Form[name] ) );
@@ -52,6 +57,8 @@ namespace RockWeb
             WriteRequestToTwilioLog( context, formValues.AsDelimited( ", " ) );
         }
 
+        [Obsolete("Twilio logging now uses the RockLogger.", true )]
+        [RockObsolete("1.13")]
         public static void WriteRequestToTwilioLog( HttpContext context, string message )
         {
             string logFile = context.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );

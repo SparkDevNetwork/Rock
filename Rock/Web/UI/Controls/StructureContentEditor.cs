@@ -15,16 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
-using Rock.Data;
+
+using Rock.Cms.StructuredContent;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -229,13 +226,18 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The html content.
         /// </value>
+        [Obsolete( "Use Rock.Cms.StructuredContent.StructuredContentHelper instead." )]
+        [RockObsolete( "1.13" )]
         public string HtmlContent
         {
             get
             {
-                return GetHtmlContent( HttpUtility.UrlDecode( this.StructuredContent ) );
+                var helper = new StructuredContentHelper( HttpUtility.UrlDecode( this.StructuredContent ) );
+
+                return helper.Render();
             }
         }
+
         /// <summary>
         /// Gets or sets the structured content.
         /// </summary>
@@ -329,7 +331,8 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                RockPage.AddScriptLink( Page, "~/Scripts/Bundles/StructureContentEditorPlugins", false );
+                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontenteditor/editor.js" );
+                RockPage.AddScriptLink( Page, "~/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js" );
             }
 
             EnsureChildControls();
@@ -380,9 +383,11 @@ namespace Rock.Web.UI.Controls
             // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( ( RockPage ) this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true ) );
-                var bundleUrl = System.Web.Optimization.BundleResolver.Current.GetBundleUrl( "~/Scripts/Bundles/StructureContentEditorPlugins" );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "editorjs-plugins", bundleUrl );
+                var editorUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor.js" );
+                var toolsUrl = Page.ResolveUrl( "~/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js" );
+
+                ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs", editorUrl );
+                ScriptManager.RegisterClientScriptInclude( Page, Page.GetType(), "rock-editorjs-tools", toolsUrl );
             }
 
             RegisterJavascript();
@@ -413,20 +418,25 @@ namespace Rock.Web.UI.Controls
             }
 
             var script = string.Format( @"
+;(function() {{
 var fieldContent = $('#{1}').val();
-var editor = new EditorJS({{
-holder: '{0}',
-tools: {2},
-initialBlock: 'paragraph',
-data: JSON.parse(decodeURIComponent(fieldContent)),
-onChange: function() {{
-    editor.save().then( function(savedData) {{
-        $('#{1}').val(encodeURIComponent(JSON.stringify(savedData)));
-    }}).catch((e) => {{
-        console.log('Saving failed: ', e)
-    }});
-}}
+var editor = new Rock.UI.StructuredContentEditor.EditorJS({{
+    holder: '{0}',
+    tools: {2},
+    defaultBlock: 'paragraph',
+    data: JSON.parse(decodeURIComponent(fieldContent)),
+    onReady: function() {{
+        new Rock.UI.StructuredContentEditor.EditorDragDrop(editor);
+    }},
+    onChange: function() {{
+        editor.save().then( function(savedData) {{
+            $('#{1}').val(encodeURIComponent(JSON.stringify(savedData)));
+        }}).catch((e) => {{
+            console.log('Saving failed: ', e)
+        }});
+    }}
 }});
+}})();
 ", this.ClientID, _hfValue.ClientID, structuredContentToolConfiguration );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "structure-content-script" + this.ClientID, script, true );
         }
@@ -452,110 +462,6 @@ onChange: function() {{
             }
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Gets or sets the Html Content.
-        /// </summary>
-        private string GetHtmlContent( string structureContentJson )
-        {
-            var structureContent = JsonConvert.DeserializeObject<Root>( structureContentJson );
-            StringBuilder html = new StringBuilder();
-
-            if ( structureContent == null || structureContent.blocks == null )
-            {
-                return html.ToString();
-            }
-
-            foreach ( var item in structureContent.blocks )
-            {
-                switch ( item.type )
-                {
-                    case "header":
-                        {
-                            html.Append( $"<h{ item.data.level }>{ item.data.text }</h{ item.data.level }>" );
-                        }
-                        break;
-                    case "paragraph":
-                        {
-                            html.Append( $"{ item.data.text }" );
-                        }
-                        break;
-                    case "list":
-                        {
-                            string listTag = "ol";
-                            if ( item.data.style == "unordered" )
-                            {
-                                listTag = "ul";
-                            }
-
-                            html.Append( $"<{listTag}>" );
-                            if ( item.data.items != null )
-                            {
-                                foreach ( var li in item.data.items )
-                                {
-                                    html.Append( $"<li>{li}</li>" );
-                                }
-                            }
-                            html.Append( $"</{listTag}>" );
-                        }
-                        break;
-                    case "image":
-                        {
-                            html.Append( $"<img src='{item.data.url}' class='img-responsive'>" );
-                        }
-                        break;
-                    case "delimiter":
-                        {
-                            html.Append( $"<hr/>" );
-                        }
-                        break;
-                    case "table":
-                        {
-                            html.Append( $"<table>" );
-                            if ( item.data.content != null )
-                            {
-                                foreach ( var tr in item.data.content )
-                                {
-                                    html.Append( $"<tr>" );
-                                    foreach ( var td in tr )
-                                    {
-                                        html.Append( $"<td>{td}</td>" );
-                                    }
-                                    html.Append( $"</tr>" );
-                                }
-
-                            }
-                            html.Append( $"</table>" );
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            return html.ToString();
-        }
-
-        private class Root
-        {
-            public List<Block> blocks { get; set; }
-        }
-
-        private class Data
-        {
-            public string level { get; set; }
-            public string text { get; set; }
-            public string style { get; set; }
-            public List<string> items { get; set; }
-            public List<List<string>> content { get; set; }
-            public string url { get; set; }
-        }
-
-        private class Block
-        {
-            public string type { get; set; }
-            public Data data { get; set; }
         }
     }
 }

@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -128,6 +129,7 @@ namespace Rock.Jobs
                 var transaction = new LaunchEntityWorkflowTransaction( workflowTypeGuid.Value, string.Empty, entityTypeId, entityId );
 
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
 
                 workflowsLaunched++;
             }

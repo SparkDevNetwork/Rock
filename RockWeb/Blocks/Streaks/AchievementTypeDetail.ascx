@@ -32,18 +32,14 @@
                 <asp:CustomValidator ID="cvCustomValidator" runat="server" Display="None" />
 
                 <div id="pnlViewDetails" runat="server">
-                    <div class="row margin-b-lg">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lDescription" runat="server" />
-                        </div>
-                    </div>
+                    <p class="description"><asp:Literal ID="lDescription" runat="server" /></p>
 
                     <div id="pnlActivitySummary" runat="server" class="row">
                         <div class="col-sm-6">
                             <h5>Successful Attempts</h5>
                         </div>
                         <div class="col-sm-6">
-                            <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click">
+                            <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-square pull-right" ToolTip="Refresh Chart" OnClick="btnRefreshChart_Click">
                                 <i class="fa fa-refresh"></i>
                             </asp:LinkButton>
                             <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" CssClass="pull-right" runat="server" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
@@ -70,8 +66,11 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="IsActive" Label="Active" Checked="true" Text="Yes" />
+                        <div class="col-md-3">
+                            <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Checked="true" Text="Yes" />
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Public" Checked="true" Text="Yes" />
                         </div>
                     </div>
 
@@ -153,6 +152,14 @@
                             </div>
                             <div class="col-sm-12">
                                 <Rock:CodeEditor ID="ceResultsLava" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Results Lava Template" Help="The template to use when displaying the results of this achievement." />
+                            </div>
+                            <div class="col-sm-6">
+                                <Rock:ImageUploader ID="imgupImageBinaryFile" runat="server" IsBinaryFile="true" Label="Image" Help="The image that will be used in the summary. For example, a trophy icon." />
+                            </div>
+                            <div class="col-sm-6">
+                            </div>
+                            <div class="col-sm-12">
+                                <Rock:CodeEditor ID="ceCustomSummaryLavaTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Custom Summary Lava Template" Help="The lava template used to render the status summary of the achievement. If this is blank, a default will be used." />
                             </div>
                         </div>
                     </Rock:PanelWidget>

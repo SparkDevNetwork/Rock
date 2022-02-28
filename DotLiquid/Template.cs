@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,7 +49,12 @@ namespace DotLiquid
 			Tags[name] = typeof(T);
 		}
 
-		public static Type GetTagType(string name)
+        public static void RegisterTag( Type tagType, string name )
+        {
+            Tags[name] = tagType;
+        }
+
+        public static Type GetTagType(string name)
 		{
 			Type result;
 			Tags.TryGetValue(name, out result);

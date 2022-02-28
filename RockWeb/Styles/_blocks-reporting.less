@@ -12,7 +12,9 @@
 
 /* data views */
 .filter-toggle {
-  margin-top: 5px;
+  align-self: flex-start;
+  padding-right: 8px;
+  //margin-top: 5px;
 
   & > span {
     float: left;
@@ -97,8 +99,9 @@ span.data-view-filter-label {
 
 .list-panel {
   > .grid-filter {
-    padding: 6px 12px;
-    margin: -15px -15px 15px;
+    padding: 6px 0;
+    margin: -@panel-body-padding -@panel-body-padding @panel-body-padding;
+    border-bottom: 1px solid @panel-border;
 
     > header {
       position: relative;
@@ -106,6 +109,7 @@ span.data-view-filter-label {
 
     .grid-filter-entry {
       padding-top: inherit;
+      border: 0;
     }
 
     .btn-link {

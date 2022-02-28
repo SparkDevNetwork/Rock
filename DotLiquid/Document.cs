@@ -62,12 +62,10 @@ namespace DotLiquid
 			{
 				base.Render(context, result);
 			}
-			catch (BreakInterrupt)
-			{
-			}
-			catch (ContinueInterrupt)
-			{
-			}
+            catch (InterruptException)
+            {
+                // Ignore all interrupts.
+            }
 		}
 	}
 }

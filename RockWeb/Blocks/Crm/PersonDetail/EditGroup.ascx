@@ -45,7 +45,7 @@
                 <div class="panel panel-widget editgroup-list">
                     <div class="panel-heading clearfix">
                         <h3 class="panel-title pull-left"><%=GroupTypeName %> Members</h3>
-                        <div class="pull-right">
+                        <div class="panel-labels">
                             <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false">Add Person<i class="btn-icon fa fa-user"></i></asp:LinkButton>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
 
                                             </div>
                                         </div>
-                                        <div class="actions">
+                                        <div class="control-actions">
                                             <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-square btn-move btn-sm" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
                                             <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-square btn-sm" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
                                         </div>
@@ -77,7 +77,7 @@
                 <div class="panel panel-widget">
                     <div class="panel-heading clearfix">
                         <h4 class="panel-title pull-left">Addresses</h4>
-                        <div class="pull-right">
+                        <div class="panel-labels">
                             <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="fa fa-truck fa-flip-horizontal"></i> <%=GroupTypeName %> Moved</asp:LinkButton>
                         </div>
                     </div>
@@ -149,7 +149,7 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link pull-right" OnClick="btnDelete_Click" CausesValidation="false" />
                 </div>
 
             </div>

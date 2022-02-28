@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// </summary>
     [DisplayName( "Add Group" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Allows for adding a new group and the people in the group (e.g. New Families." )]
+    [Description( "Allows for adding a new group and the people in the group (e.g. New Families)." )]
 
     #region Block Attributes
 
@@ -990,7 +990,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string groupMembersHtml = string.Empty;
                 foreach ( var groupMember in sortedGroupMembers )
                 {
-                    string maritalStatusValue = "Unknown Martial Status";
+                    string maritalStatusValue = "Unknown Marital Status";
                     if ( groupMember.Person.MaritalStatusValue != null )
                     {
                         maritalStatusValue = groupMember.Person.MaritalStatusValue.Value;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -250,19 +250,19 @@ namespace DotLiquid
 				return Range.Inclusive(Convert.ToInt32(Resolve(match.Groups[1].Value)),
 					Convert.ToInt32(Resolve(match.Groups[2].Value)));
 
-            // Floats.
+            // Decimals.
             match = FloatsRegex.Match( key );
 			if (match.Success)
 			{
 				// For cultures with "," as the decimal separator, allow
 				// both "," and "." to be used as the separator.
 				// First try to parse using current culture.
-				float result;
-				if (float.TryParse(match.Groups[1].Value, out result))
+				decimal result;
+				if (decimal.TryParse(match.Groups[1].Value, out result))
 					return result;
 
 				// If that fails, try to parse using invariant culture.
-				return float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+				return decimal.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
 			}
 
 			return Variable(key);

@@ -101,6 +101,17 @@ namespace RockWeb.Blocks.Mobile
             GroupTypeLocations = attributeEntity.GetAttributeValue( AttributeKey.GroupTypesLocationType ).FromJsonOrNull<Dictionary<int, int>>() ?? new Dictionary<int, int>();
 
             BindGroupTypeLocationGrid();
+            UpdateAttributeFilterOptions();
+
+            // Set the value for the Attribute Filters control.
+            var attributeGuids = attributeEntity.GetAttributeValue( AttributeKey.AttributeFilters )
+                .SplitDelimitedValues()
+                .AsGuidList();
+
+            foreach ( ListItem li in cblAttributeFilters.Items )
+            {
+                li.Selected = attributeGuids.Contains( li.Value.AsGuid() );
+            }
         }
 
         /// <inheritdoc/>
@@ -108,6 +119,7 @@ namespace RockWeb.Blocks.Mobile
         {
             attributeEntity.SetAttributeValue( AttributeKey.GroupTypes, rlbGroupTypes.SelectedValues.AsDelimited( "," ) );
             attributeEntity.SetAttributeValue( AttributeKey.GroupTypesLocationType, GroupTypeLocations.ToJson() );
+            attributeEntity.SetAttributeValue( AttributeKey.AttributeFilters, cblAttributeFilters.SelectedValues.AsDelimited( "," ) );
         }
 
         /// <summary>
@@ -126,6 +138,55 @@ namespace RockWeb.Blocks.Mobile
             rcwGroupTypesLocationType.Visible = source.Any();
         }
 
+        /// <summary>
+        /// Updates the attribute filter options. These are dynamic based on
+        /// what Group Types are currently selected.
+        /// </summary>
+        private void UpdateAttributeFilterOptions()
+        {
+            var currentValues = cblAttributeFilters.SelectedValues.AsGuidList();
+
+            cblAttributeFilters.Items.Clear();
+
+            foreach ( var groupTypeGuid in rlbGroupTypes.SelectedValues.AsGuidList() )
+            {
+                var groupType = GroupTypeCache.Get( groupTypeGuid );
+
+                if ( groupType == null )
+                {
+                    continue;
+                }
+
+                // Create a fake Group in memory and then load the attributes
+                // so we can see all the options that need to be added.
+                var group = new Group
+                {
+                    GroupTypeId = groupType.Id
+                };
+
+                group.LoadAttributes();
+
+                // Add a new ListItem for the attribute. If it was previously
+                // selected then select it again.
+                foreach ( var attribute in group.Attributes )
+                {
+                    if ( attribute.Value.FieldType.Field.HasFilterControl() )
+                    {
+                        var listItem = new ListItem( $"{attribute.Value.Name} ({groupType.Name })", attribute.Value.Guid.ToString() )
+                        {
+                            Selected = currentValues.Contains( attribute.Value.Guid )
+                        };
+
+                        cblAttributeFilters.Items.Add( listItem );
+                    }
+                }
+            }
+
+            // If we don't have any items to choose from then hide the
+            // entire input field.
+            cblAttributeFilters.Visible = cblAttributeFilters.Items.Count > 0;
+        }
+
         #endregion
 
         #region Event Handlers
@@ -138,6 +199,9 @@ namespace RockWeb.Blocks.Mobile
         protected void GroupTypes_SelectedIndexChanged( object sender, System.EventArgs e )
         {
             BindGroupTypeLocationGrid();
+
+            // Update the available attributes to pick from.
+            UpdateAttributeFilterOptions();
         }
 
         /// <summary>

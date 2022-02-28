@@ -88,7 +88,7 @@ namespace Rock.Web.Cache
         public bool IsActive { get; private set; }
 
         /// <summary>
-        /// Gets the DefinedType of this DefinedVlaue
+        /// Gets the DefinedType of this DefinedValue
         /// </summary>
         /// <value>
         /// The DefinedType
@@ -135,18 +135,6 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return Value;
-        }
-
-        /// <summary>
-        /// Reads the specified unique identifier.
-        /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Use Get Instead", true)]
-        public static DefinedValueCache Read( string guid )
-        {
-            return Get( guid.AsGuid() );
         }
 
         #endregion

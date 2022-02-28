@@ -516,7 +516,7 @@ namespace Rock.Web.UI.Controls
         /// <returns>A string of HTML text.</returns>
         private string GetRefreshButtonHtml()
         {
-            return $"<a href=\"#\" class=\"btn btn-default js-media-element-picker-refresh\"><i class=\"fa fa-refresh\"></i></a>";
+            return $"<a href=\"#\" class=\"btn btn-default btn-square js-media-element-picker-refresh\"><i class=\"fa fa-refresh\"></i></a>";
         }
 
         /// <summary>

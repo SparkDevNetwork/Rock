@@ -19,42 +19,62 @@ using System.ComponentModel;
 namespace Rock.Financial
 {
     /// <summary>
-    /// 
+    /// Frequency Labels:
+    /// <list>
+    /// <item>
+    ///      Weekly = Avg days between 4.5 - 8.5; Std Dev &lt; 7;
+    /// </item>
+    /// <item>
+    ///      Bi-Weekly = Avg days between 9 - 17; Std Dev &lt; 10;
+    /// </item>
+    /// <item>   
+    ///      Monthly = Avg days between 25 - 35; Std Dev &lt; 10;
+    /// </item>
+    /// <item>
+    ///      Quarterly = Avg days between 80 - 110; Std Dev &lt; 15;
+    /// </item>
+    /// <item>
+    ///      Erratic = Freq Avg / 2 &lt; Std Dev
+    /// </item>
+    /// <item>
+    ///      Undetermined = Everything else
+    ///      </item>
+    /// </list>
     /// </summary>
     public enum FinancialGivingAnalyticsFrequencyLabel
     {
         /// <summary>
-        /// Weekly
+        /// Weekly Avg days between 4.5 - 8.5; Std Dev &lt; 7;
         /// </summary>
         [Description( "Weekly" )]
         Weekly = 1,
 
         /// <summary>
-        /// Bi-Weekly
+        /// Bi-Weekly: Avg days between 9 - 17; Std Dev &lt; 10;
         /// </summary>
         [Description( "Bi-Weekly" )]
         BiWeekly = 2,
 
         /// <summary>
-        /// Monthly
+        /// Monthly: Avg days between 25 - 35; Std Dev &lt; 10;
         /// </summary>
         [Description( "Monthly" )]
         Monthly = 3,
 
         /// <summary>
-        /// Quarterly
+        /// Quarterly - Avg days between 80 - 110; Std Dev &lt; 15;
         /// </summary>
         [Description( "Quarterly" )]
         Quarterly = 4,
 
         /// <summary>
-        /// Erratic
+        /// Erratic: Freq Avg / 2 &lt; Std Dev
         /// </summary>
         [Description( "Erratic" )]
         Erratic = 5,
 
         /// <summary>
-        ///  Undetermined
+        ///  Undetermined: Everything else
         /// </summary>
         [Description( "Undetermined" )]
         Undetermined = 6

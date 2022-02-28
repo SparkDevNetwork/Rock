@@ -36,43 +36,50 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-5">
-                            <Rock:DataTextBox
-                                ID="tbClientId"
-                                Label="Client Id"
-                                runat="server"
-                                Help="The OIDC ClientId. This the public identifier that the client apps will need to use."
-                                CssClass="form-group"
-                                SourceTypeName="Rock.Model.AuthClient, Rock"
-                                PropertyName="ClientId" />
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-end">
+                                <div class="flex-fill">
+                                    <Rock:DataTextBox
+                                        ID="tbClientId"
+                                        Label="Client Id"
+                                        runat="server"
+                                        CssClass="form-group"
+                                        SourceTypeName="Rock.Model.AuthClient, Rock"
+                                        PropertyName="ClientId" />
+                                </div>
+                                <div class="form-group">
+                                    <asp:Button
+                                        ID="lbGenerateClientId"
+                                        runat="server"
+                                        CausesValidation="false"
+                                        ValidationGroup=""
+                                        Text="Generate Id"
+                                        CssClass="btn btn-primary ml-2"
+                                        OnClick="lbGenerateClientId_Click" />
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-1 mt-1">
-                            <asp:Button
-                                ID="lbGenerateClientId"
-                                runat="server"
-                                CausesValidation="false"
-                                ValidationGroup=""
-                                Text="Generate Id"
-                                CssClass="btn btn-primary btn-controlaligned pull-right"
-                                OnClick="lbGenerateClientId_Click" />
-                        </div>
-                        <div class="col-md-5">
-                            <Rock:RockTextBox
-                                ID="tbClientSecret"
-                                Required="true"
-                                Help="For security purposes, we don't allow the secret to be displayed once created. Note that you only get one chance to see the Client Secret when you first generate it, so if you lose track of it you’ll need to generate a new one."
-                                Label="Client Secret"
-                                runat="server"
-                                CssClass="form-group" />
-                        </div>
-                        <div class="col-md-1 mt-1">
-                            <asp:Button
-                                ID="lbGenerateClientSecret"
-                                runat="server"
-                                CausesValidation="false"
-                                Text="Generate Secret"
-                                CssClass="btn btn-primary btn-controlaligned pull-right"
-                                OnClick="lbGenerateClientSecret_Click" />
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-end">
+                                <div class="flex-fill">
+                                    <Rock:RockTextBox
+                                        ID="tbClientSecret"
+                                        Required="true"
+                                        Help="For security purposes, we don't allow the secret to be displayed once created."
+                                        Label="Client Secret"
+                                        runat="server"
+                                        CssClass="form-group" />
+                                </div>
+                                <div class="form-group">
+                                    <asp:Button
+                                        ID="lbGenerateClientSecret"
+                                        runat="server"
+                                        CausesValidation="false"
+                                        Text="Generate Secret"
+                                        CssClass="btn btn-primary ml-2"
+                                        OnClick="lbGenerateClientSecret_Click" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row">

@@ -86,7 +86,7 @@ namespace Rock.Migrations
         /// <summary>
         /// Logs the completed migration.
         /// </summary>
-        private void LogCompletedMigration()
+        public void LogCompletedMigration()
         {
             if ( lastMigrationName != null && stopwatch != null )
             {

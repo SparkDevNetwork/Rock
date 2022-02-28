@@ -9,7 +9,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-map-marker"></i> Step Types</h1>
+                    <h1 class="panel-title"><i class="fa fa-map-marker"></i>Step Types</h1>
                 </div>
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbBlockStatus" runat="server" NotificationBoxType="Info" />
@@ -26,6 +26,11 @@
                                     <asp:ListItem></asp:ListItem>
                                     <asp:ListItem Text="Yes" Value="Yes"></asp:ListItem>
                                     <asp:ListItem Text="No" Value="No"></asp:ListItem>
+                                </Rock:RockDropDownList>
+                                <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status">
+                                    <asp:ListItem></asp:ListItem>
+                                    <asp:ListItem Text="Active" Value="Active"></asp:ListItem>
+                                    <asp:ListItem Text="Inactive" Value="Inactive"></asp:ListItem>
                                 </Rock:RockDropDownList>
                             </Rock:GridFilter>
                             <Rock:Grid ID="gStepType" runat="server" AllowSorting="false" ShowConfirmDeleteDialog="true">

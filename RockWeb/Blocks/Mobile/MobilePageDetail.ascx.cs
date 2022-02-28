@@ -925,7 +925,7 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="pnlLayoutItem">The PNL layout item.</param>
         private void AddAdminControls( BlockCache block, PlaceHolder pnlLayoutItem )
         {
-            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right actions" };
+            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right block-config-buttons" };
 
             // Block Properties
             var btnBlockProperties = new Literal

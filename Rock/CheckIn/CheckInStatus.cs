@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -27,7 +28,7 @@ namespace Rock.CheckIn
     /// and the values selected for check-in
     /// </summary>
     [DataContract]
-    public class CheckInStatus 
+    public class CheckInStatus
     {
         /// <summary>
         /// Gets or sets a value indicating whether the search value was entered by a user (vs. scanned)
@@ -56,8 +57,20 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the search.
         /// </value>
+        public DefinedValueCache SearchType
+        {
+            get
+            {
+                return searchTypeId.HasValue ? DefinedValueCache.Get( searchTypeId.Value ) : null;
+            }
+            set
+            {
+                searchTypeId = value?.Id;
+            }
+        }
+
         [DataMember]
-        public DefinedValueCache SearchType { get; set; }
+        private int? searchTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the search value that was scanned or entered by user
@@ -144,5 +157,58 @@ namespace Rock.CheckIn
             }
         }
 
+        /// <summary>
+        /// Gets the successfully completed achievements prior to checkin.
+        /// </summary>
+        /// <value>
+        /// The successfully completed achievements prior to checkin.
+        /// </value>
+        public AchievementAttemptService.AchievementAttemptWithPersonAlias[] SuccessfullyCompletedAchievementsPriorToCheckin { get; internal set; }
+
+        /// <summary>
+        /// Gets the achievements state after checkin.
+        /// </summary>
+        /// <value>
+        /// The achievements state after checkin.
+        /// </value>
+        public AchievementAttemptService.AchievementAttemptWithPersonAlias[] AchievementsStateAfterCheckin { get; internal set; }
+
+        /// <summary>
+        /// Gets the 'Just Completed' achievement attempts.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns>CompletedAchievement[].</returns>
+        public CompletedAchievement[] GetJustCompletedAchievementAttempts( int personId )
+        {
+            if ( AchievementsStateAfterCheckin == null )
+            {
+                return null;
+            }
+
+            var checkinResult = this;
+            var achievementsStateAfterCheckinForPerson = AchievementsStateAfterCheckin.Where( a => a.AchieverPersonAlias.PersonId == personId ).ToArray();
+
+            var completedAchievementAttempts = achievementsStateAfterCheckinForPerson
+                .Where( a => a.AchievementAttempt.IsSuccessful && a.AchievementAttempt.IsClosed )
+
+                .Select( a => a.AchievementAttempt )
+                .ToArray();
+
+            var successfullyCompletedAchievementIdsPriorToCheckin = SuccessfullyCompletedAchievementsPriorToCheckin?.Select( a => a.AchievementAttempt.Id ).ToArray() ?? new int[0];
+
+            AchievementAttempt[] justCompletedAchievementAttempts = completedAchievementAttempts
+                .Where( a => !successfullyCompletedAchievementIdsPriorToCheckin.Contains( a.Id ) )
+                .ToArray();
+
+            var completedAchievements = justCompletedAchievementAttempts.Select( a => new CompletedAchievement
+            {
+                AchievementTypeId = a.AchievementTypeId,
+                AttemptStartDateTime = a.AchievementAttemptStartDateTime,
+                AttemptEndDateTime = a.AchievementAttemptEndDateTime,
+                PersonId = personId
+            } ).ToArray();
+
+            return completedAchievements;
+        }
     }
 }

@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -165,7 +166,7 @@ namespace RockWeb.Blocks.Crm
             nbPeople.Visible = false;
             nbError.Visible = false;
 
-            bool canEdit = this.IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            bool canEdit = this.IsUserAuthorized( Authorization.EDIT );
 
             pnlEdit.Visible = canEdit;
             pnlView.Visible = !canEdit;
@@ -260,6 +261,11 @@ namespace RockWeb.Blocks.Crm
                 // Load the set of people specified by query string parameters.
                 if ( selectedPersonIds != null )
                 {
+                    foreach ( var personId in selectedPersonIds )
+                    {
+                        PersonService.UpdateAccountProtectionProfileForPerson( personId, new RockContext() );
+                    }
+
                     if ( selectedPersonIds.Count == 0 )
                     {
                         ScriptManager.RegisterStartupScript( this, this.GetType(), "goBack", "history.go(-1);", true );
@@ -341,6 +347,8 @@ namespace RockWeb.Blocks.Crm
             {
                 var selectedPersonIds = MergeData != null ? MergeData.People.Select( p => p.Id ).ToList() : new List<int>();
                 selectedPersonIds.Add( personId.Value );
+
+                PersonService.UpdateAccountProtectionProfileForPerson( personId.Value, new RockContext() );
 
                 // Get the people selected
                 var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
@@ -437,10 +445,6 @@ namespace RockWeb.Blocks.Crm
                     e.Row.Cells[1].AddCssClass( "grid-row-header" );
                 }
             }
-            else if ( e.Row.RowType == DataControlRowType.Header )
-            {
-                e.Row.AddCssClass( "grid-header-bold" );
-            }
         }
 
         /// <summary>
@@ -450,6 +454,14 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMerge_Click( object sender, EventArgs e )
         {
+            if ( !CanMerge().IsAllowedToMerge )
+            {
+                nbError.Heading = "Merge Error";
+                nbError.Text = string.Format( "<p>You do not have the necessary permissions to merge this user.</p>" );
+                nbError.Visible = true;
+                return;
+            }
+
             /*
             01/02/2020 - SK
             Similar code is used in ExpungePerson in PersonService class
@@ -523,6 +535,7 @@ namespace RockWeb.Blocks.Crm
                             primaryPerson.MiddleName = GetNewStringValue( "MiddleName" );
                             primaryPerson.SuffixValueId = GetNewIntValue( "Suffix" );
                         }
+
                         primaryPerson.LastName = GetNewStringValue( "LastName" );
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
@@ -780,12 +793,11 @@ namespace RockWeb.Blocks.Crm
                         }
 
                         // If merging records into the Anonymous Giver record, remove any UserLogins.
-                        bool mergingWithAnonymousGiver = ( primaryPerson.Guid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+                        bool mergingWithAnonymousGiver = primaryPerson.Guid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid();
                         if ( mergingWithAnonymousGiver )
                         {
                             RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
                         }
-
 
                         // now that the Merge is complete, the EntitySet can be marked to be deleted by the RockCleanup job
                         var entitySetService = new EntitySetService( rockContext );
@@ -922,7 +934,7 @@ namespace RockWeb.Blocks.Crm
                                  && sourceLocation.Country.ToStringSafe() == targetLocation.Country.ToStringSafe() )
                             {
                                 isUpdated = false;
-                            };
+                            }
                         }
                     }
 
@@ -1195,6 +1207,51 @@ namespace RockWeb.Blocks.Crm
             return sbHeaderData.ToString();
         }
 
+        private class CanMergeResult
+        {
+            public bool IsAllowedToMerge { get; set; }
+
+            public AccountProtectionProfile MaxAccountProtectionProfile { get; set; }
+
+            public RoleCache RequiredSecurityRole { get; set; }
+
+            public ElevatedSecurityLevel MaxElevatedSecurityLevel { get; internal set; }
+        }
+
+        private CanMergeResult CanMerge()
+        {
+            var maxAccountProtectionProfile = MergeData.People.Max( p => p.AccountProtectionProfile );
+            var securitySettingService = new SecuritySettingsService();
+            RoleCache requiredSecurityRole = null;
+            securitySettingService.SecuritySettings.AccountProtectionProfileSecurityGroup.TryGetValue( maxAccountProtectionProfile, out requiredSecurityRole );
+
+            var personIds = MergeData.People.Select( a => a.Id ).ToArray();
+
+            var maxElevatedSecurityLevel = new GroupMemberService( new RockContext() )
+                .Queryable()
+                .IsInSecurityRoleGroupOrSecurityRoleGroupType()
+                .Where( a => a.Group.IsActive && personIds.Contains( a.PersonId ) && a.GroupMemberStatus == GroupMemberStatus.Active )
+                .Max( a => ( ElevatedSecurityLevel? ) a.Group.ElevatedSecurityLevel ) ?? ElevatedSecurityLevel.None;
+
+            var canMergeResult = new CanMergeResult
+            {
+                MaxAccountProtectionProfile = maxAccountProtectionProfile,
+                MaxElevatedSecurityLevel = maxElevatedSecurityLevel,
+                RequiredSecurityRole = requiredSecurityRole,
+                IsAllowedToMerge = true,
+            };
+
+            if ( requiredSecurityRole != null )
+            {
+                if ( !requiredSecurityRole.IsPersonInRole( RockPage.CurrentPerson.Guid ) )
+                {
+                    canMergeResult.IsAllowedToMerge = false;
+                }
+            }
+
+            return canMergeResult;
+        }
+
         /// <summary>
         /// Binds the values.
         /// </summary>
@@ -1202,12 +1259,17 @@ namespace RockWeb.Blocks.Crm
         {
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
-                // If the people have different email addresses and any logins, display security alert box
-                bool showAlert =
-                    MergeData.People.Select( p => p.Email ).Where( e => e != null && e != string.Empty ).Distinct( StringComparer.CurrentCultureIgnoreCase ).Count() > 1 &&
-                    MergeData.People.Where( p => p.HasLogins ).Any();
+                var canMergeResult = CanMerge();
+                lbMerge.Visible = canMergeResult.IsAllowedToMerge;
 
-                nbSecurityNotice.Visible = showAlert;
+                if ( !canMergeResult.IsAllowedToMerge )
+                {
+                    nbAccountProtectProfile.Text = $"A record on this merge request has an Account Protection Profile of '{canMergeResult.MaxAccountProtectionProfile}'. This will require an individual in the '{canMergeResult.RequiredSecurityRole}' role to perform the merge.";
+                    nbAccountProtectProfile.Visible = true;
+                }
+
+                // If the people have different email addresses and any logins, display security alert box
+                ShowMessages( canMergeResult );
 
                 // If the values of any hidden Attributes differ, display warning message.
                 SetAttributesSecurityNoticeState();
@@ -1224,6 +1286,194 @@ namespace RockWeb.Blocks.Crm
                 List<ValuesRow> valuesRowList = MergeData.GetValuesRowList( headingKeys );
                 gValues.DataSource = valuesRowList;
                 gValues.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Shows the messages.
+        /// </summary>
+        /// <param name="canMergeResult">The can merge result.</param>
+        private void ShowMessages( CanMergeResult canMergeResult )
+        {
+            if ( !canMergeResult.IsAllowedToMerge )
+            {
+                return;
+            }
+
+            if ( canMergeResult.MaxAccountProtectionProfile == AccountProtectionProfile.Low )
+            {
+                // no security messages, regardless of existence of Login, email address differences or phone differences
+                nbSecurityNotice.Visible = false;
+                return;
+            }
+
+            var hasLogins = MergeData.People.Where( p => p.HasLogins ).Any();
+
+            var hasDifferentEmailAddresses = MergeData
+                .People
+                .Select( p => p.Email )
+                .Where( e => e != null && e != string.Empty )
+                .Distinct( StringComparer.CurrentCultureIgnoreCase )
+                .Count() > 1;
+
+            var hasDifferentMobilePhoneNumbers = MergeData
+                .People
+                .Select( p => p.MobilePhoneNumber )
+                .Where( e => e != null && e != string.Empty )
+                .Distinct( StringComparer.CurrentCultureIgnoreCase )
+                .Count() > 1;
+
+            var hasMobilePhoneNumbers = MergeData.People.Any( a => a.MobilePhoneNumber.IsNotNullOrWhiteSpace() );
+            var hasEmailsAddresses = MergeData.People.Any( a => a.Email.IsNotNullOrWhiteSpace() );
+
+            var maxAccountProtectionProfile = canMergeResult.MaxAccountProtectionProfile;
+            var maxElevatedSecurityLevel = canMergeResult.MaxElevatedSecurityLevel;
+
+            if ( maxAccountProtectionProfile == AccountProtectionProfile.Medium && !hasDifferentEmailAddresses && !hasDifferentEmailAddresses )
+            {
+                // Medium AccountProtectionProfile, but not email or phone issues, so just a friendly warning
+                nbSecurityNotice.Heading = null;
+                nbSecurityNotice.Visible = true;
+                nbSecurityNotice.NotificationBoxType = NotificationBoxType.Warning;
+
+                if ( hasLogins )
+                {
+                    nbSecurityNotice.Text = "This merge is considered of moderate risk as one of the records has a login. Please be sure to carefully consider the changed information to ensure this is not an attempt to hijack the account.";
+                    return;
+                }
+                else
+                {
+                    nbSecurityNotice.Text = "This merge is considered of moderate risk. Please be sure to carefully consider the changed information.";
+                    return;
+                }
+            }
+
+            /* Set message wording based on
+               - MaxAccountProtectionProfile
+                    - Determines if a message will be displayed.
+                    - Note: message will always be displayed unless the AccountProtectionLevel is Low
+               - Has Logins
+               - Has different emails
+               - Has different mobile phone numbers
+             **/
+
+            var warningMessageBuilder = new StringBuilder();
+
+            var warningMessageIssues = new List<string>();
+            var cautionMessageIssues = new List<string>();
+
+            if ( hasDifferentEmailAddresses )
+            {
+                warningMessageIssues.Add( "emails" );
+                cautionMessageIssues.Add( "email" );
+            }
+
+            if ( hasDifferentMobilePhoneNumbers )
+            {
+                warningMessageIssues.Add( "mobile phone numbers" );
+                cautionMessageIssues.Add( "mobile phone" );
+            }
+
+            string warningMessage = string.Empty;
+
+            if ( hasLogins )
+            {
+                if ( warningMessageIssues.Any() )
+                {
+                    warningMessage = "One or more of the records has a login and different " + warningMessageIssues.AsDelimited( " and " ) + " associated with this merge.";
+                }
+                else
+                {
+                    warningMessage = "One or more of the records has a login.";
+                }
+
+                warningMessage += " This could be an attempt to hijack the account.";
+            }
+            else if ( warningMessageIssues.Any() )
+            {
+                warningMessage = "Different " + warningMessageIssues.AsDelimited( " and " ) + " are associated with this merge.";
+                if ( hasMobilePhoneNumbers || hasEmailsAddresses )
+                {
+
+                    // Even nobody person has a login, if any person has a phone number or email address, it might be possible to hijack the account;
+                    warningMessage += " This could be an attempt to hijack the account.";
+                }
+            }
+
+            if ( cautionMessageIssues.Any() )
+            {
+                warningMessage += " You should apply considerable caution in selecting the appropriate " + cautionMessageIssues.AsDelimited( " and " ) + " for this merge.";
+            }
+
+            if ( hasLogins )
+            {
+                warningMessage += " Additionally, this person will be prompted to reconfirm before they can login.";
+            }
+
+            nbSecurityNotice.Heading = null;
+            nbSecurityNotice.NotificationBoxType = NotificationBoxType.Danger;
+            nbSecurityNotice.Visible = true;
+
+            string securityAlertHeading;
+
+            if ( maxAccountProtectionProfile == AccountProtectionProfile.Extreme )
+            {
+                securityAlertHeading = "Critical Security Alert";
+            }
+            else if ( maxAccountProtectionProfile == AccountProtectionProfile.High )
+            {
+                securityAlertHeading = "Important Security Alert";
+            }
+            else
+            {
+                securityAlertHeading = "Security Alert";
+            }
+
+            string memberOfSecurityRoleMessage;
+
+            if ( maxElevatedSecurityLevel > ElevatedSecurityLevel.None )
+            {
+                if ( warningMessage.IsNotNullOrWhiteSpace() )
+                {
+                    memberOfSecurityRoleMessage = "Additionally, one or more of these records is a member of a security role with elevated privileges.";
+                }
+                else
+                {
+                    memberOfSecurityRoleMessage = "One or more of these records is a member of a security role with elevated privileges.";
+                }
+
+                if ( maxAccountProtectionProfile == AccountProtectionProfile.Extreme )
+                {
+                    memberOfSecurityRoleMessage = $"<b class='text-uppercase'>{memberOfSecurityRoleMessage}</b>";
+                }
+                else
+                {
+                    memberOfSecurityRoleMessage = $"<b>{memberOfSecurityRoleMessage}</b>";
+                }
+            }
+            else
+            {
+                memberOfSecurityRoleMessage = null;
+            }
+
+            if ( memberOfSecurityRoleMessage.IsNullOrWhiteSpace() && warningMessage.IsNullOrWhiteSpace() )
+            {
+                // if there is no message to show since there are only some other issues (like Financial Data), show a generic message;
+                warningMessage = "This merge is considered a high risk due to financial or other sensitive data. Please be sure to carefully consider the changed information.";
+            }
+
+            if ( warningMessage.IsNotNullOrWhiteSpace() )
+            {
+                nbSecurityNotice.Text = $"<b class='text-uppercase'>{securityAlertHeading}:</b> {warningMessage}";
+            }
+            else
+            {
+                nbSecurityNotice.Text = $"<b class='text-uppercase'>{securityAlertHeading}</b>";
+            }
+
+            if ( memberOfSecurityRoleMessage.IsNotNullOrWhiteSpace() )
+            {
+                nbSecurityNotice.Text += $"<br><br>{memberOfSecurityRoleMessage}";
             }
         }
 
@@ -1487,6 +1737,7 @@ namespace RockWeb.Blocks.Crm
                         {
                             iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='fa fa-phone-slash'></i></span>";
                         }
+
                         if ( phoneNumber.IsMessagingEnabled )
                         {
                             iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='fa fa-sms'></i></span>";
@@ -1535,6 +1786,7 @@ namespace RockWeb.Blocks.Crm
                             {
                                 iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='fa fa-envelope'></i></span>";
                             }
+
                             if ( address.IsMappedLocation )
                             {
                                 iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='fa fa-map-marker'></i></span>";
@@ -1567,6 +1819,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     AddProperty( "PersonAttributes", "Person Attributes", 0, string.Empty );
                 }
+
                 person.LoadAttributes();
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
@@ -1812,6 +2065,7 @@ namespace RockWeb.Blocks.Crm
             {
                 AddProperty( "LastName", "Business Name", person.Id, person.LastName );
             }
+
             AddProperty( "RecordType", person.Id, person.RecordTypeValue );
             AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
             AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
@@ -1969,6 +2223,10 @@ namespace RockWeb.Blocks.Crm
 
         public Guid Guid { get; set; }
 
+        public AccountProtectionProfile AccountProtectionProfile { get; set; }
+
+        public string MobilePhoneNumber { get; set; }
+
         public MergePerson( Person person )
         {
             Id = person.Id;
@@ -1980,11 +2238,13 @@ namespace RockWeb.Blocks.Crm
             Guid = person.Guid;
             IsBusiness = person.IsBusiness();
             IsNameless = person.IsNameless();
-            if ( person.ModifiedByPersonAlias != null &&
-                person.ModifiedByPersonAlias.Person != null )
+            if ( person.ModifiedByPersonAlias != null && person.ModifiedByPersonAlias.Person != null )
             {
                 ModifiedBy = person.ModifiedByPersonAlias.Person.FullName;
             }
+
+            AccountProtectionProfile = person.AccountProtectionProfile;
+            MobilePhoneNumber = person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault()?.FullNumber;
         }
     }
 

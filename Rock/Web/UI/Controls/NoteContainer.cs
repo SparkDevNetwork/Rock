@@ -48,54 +48,11 @@ namespace Rock.Web.UI.Controls
         private HiddenFieldWithClass _hfExpandedNoteIds;
         private ModalAlert _mdDeleteWarning;
         private LinkButton _lbDeleteNote;
+        private LinkButton _lbAddNoteHidden;
+        private LinkButton _lbEditNoteHidden;
+        private LinkButton _lbReplyToNoteHidden;
 
         #endregion
-
-        #region Obsolete Properties
-
-        /// <summary>
-        /// Gets or sets the note types.
-        /// </summary>
-        /// <value>
-        /// The note types.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetNoteTypes instead", true )]
-        public List<Rock.Web.Cache.NoteTypeCache> NoteTypes
-        {
-            get
-            {
-                return NoteOptions?.NoteTypes.Select( a => Rock.Web.Cache.NoteTypeCache.Read( a.Id ) ).ToList();
-            }
-
-            set
-            {
-                NoteOptions.SetNoteTypes( value?.Select( a => NoteTypeCache.Get( a.Id ) ).ToList() );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the term.
-        /// </summary>
-        /// <value>
-        /// The term.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use NoteLabel instead", true )]
-        public string Term
-        {
-            get
-            {
-                return this.NoteOptions.NoteLabel;
-            }
-
-            set
-            {
-                this.NoteOptions.NoteLabel = value;
-            }
-        }
-
-        #endregion Obsolete Properties
 
         #region Note Options
 
@@ -530,62 +487,54 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Page.IsPostBack )
             {
-                RouteAction();
+                // RouteCustomAction handles ApproveNote, DenyApproveNote, WatchNote or UnwatchNote actions.
+                // but Add, Edit, Delete and ReplyTo are handled with regular postback events
+                RouteCustomAction();
             }
         }
 
         /// <summary>
-        /// Routes the action.
+        /// Routes any ApproveNote, DenyApproveNote, WatchNote or UnwatchNote action
         /// </summary>
-        private void RouteAction()
+        private void RouteCustomAction()
         {
-            if ( this.Page.Request.Form["__EVENTARGUMENT"] != null )
+            if ( this.Page.Request.Form["__EVENTARGUMENT"] == null )
             {
-                string[] eventArgs = this.Page.Request.Form["__EVENTARGUMENT"].Split( '^' );
+                return;
+            }
 
-                if ( eventArgs.Length == 2 )
-                {
-                    string action = eventArgs[0];
-                    string parameters = eventArgs[1];
-                    int? noteId;
+            string[] eventArgs = this.Page.Request.Form["__EVENTARGUMENT"].Split( '^' );
 
-                    switch ( action )
-                    {
-                        case "ApproveNote":
-                            noteId = parameters.AsIntegerOrNull();
-                            ApproveNote( noteId, true );
-                            break;
+            if ( eventArgs.Length != 2 )
+            {
+                return;
+            }
 
-                        case "DenyApproveNote":
-                            noteId = parameters.AsIntegerOrNull();
-                            ApproveNote( noteId, false );
-                            break;
+            string action = eventArgs[0];
+            string parameters = eventArgs[1];
+            int? noteId;
 
-                        case "WatchNote":
-                            noteId = parameters.AsIntegerOrNull();
-                            WatchNote( noteId, true );
-                            break;
+            switch ( action )
+            {
+                case "ApproveNote":
+                    noteId = parameters.AsIntegerOrNull();
+                    ApproveNote( noteId, true );
+                    break;
 
-                        case "UnwatchNote":
-                            noteId = parameters.AsIntegerOrNull();
-                            WatchNote( noteId, false );
-                            break;
+                case "DenyApproveNote":
+                    noteId = parameters.AsIntegerOrNull();
+                    ApproveNote( noteId, false );
+                    break;
 
-                        case "EditNote":
-                            noteId = parameters.AsIntegerOrNull();
-                            EditNote( noteId );
-                            break;
+                case "WatchNote":
+                    noteId = parameters.AsIntegerOrNull();
+                    WatchNote( noteId, true );
+                    break;
 
-                        case "ReplyToNote":
-                            var parentNoteId = parameters.AsIntegerOrNull();
-                            ReplyToNote( parentNoteId );
-                            break;
-
-                        case "AddNote":
-                            AddNote();
-                            break;
-                    }
-                }
+                case "UnwatchNote":
+                    noteId = parameters.AsIntegerOrNull();
+                    WatchNote( noteId, false );
+                    break;
             }
         }
 
@@ -617,11 +566,40 @@ namespace Rock.Web.UI.Controls
             _hfExpandedNoteIds.CssClass = "js-expandednoteids";
             Controls.Add( _hfExpandedNoteIds );
 
-            // Create a hidden DeleteNote linkbutton that will hookup to the Lava'd Delete button
+            //
+            // Create a hidden AddNote,ReplyTo, EditNote and DeleteNote linkbuttons that will hookup to lava'd and rendered buttons
+            //
+
+            _lbAddNoteHidden = new LinkButton();
+            _lbAddNoteHidden.ID = this.ID + "_lbAddNoteHidden";
+            _lbAddNoteHidden.CssClass = "js-add-postback";
+            _lbAddNoteHidden.Click += _lbAddNoteHidden_Click;
+            _lbAddNoteHidden.Style[HtmlTextWriterStyle.Display] = "none";
+            _lbAddNoteHidden.CausesValidation = false;
+            Controls.Add( _lbAddNoteHidden );
+
+            _lbEditNoteHidden = new LinkButton();
+            _lbEditNoteHidden.ID = this.ID + "_lbEditNoteHidden";
+            _lbEditNoteHidden.CssClass = "js-edit-postback";
+            _lbEditNoteHidden.Click += _lbEditNoteHidden_Click;
+            _lbEditNoteHidden.Style[HtmlTextWriterStyle.Display] = "none";
+            _lbEditNoteHidden.CausesValidation = false;
+            Controls.Add( _lbEditNoteHidden );
+
+            _lbReplyToNoteHidden = new LinkButton();
+            _lbReplyToNoteHidden.ID = this.ID + "_lbReplyToNoteHidden";
+            _lbReplyToNoteHidden.CssClass = "js-reply-to-postback";
+            _lbReplyToNoteHidden.Click += _lbReplyToNoteHidden_Click;
+            _lbReplyToNoteHidden.Style[HtmlTextWriterStyle.Display] = "none";
+            _lbReplyToNoteHidden.CausesValidation = false;
+            Controls.Add( _lbReplyToNoteHidden );
+
+            
             _lbDeleteNote = new LinkButton();
             _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
             _lbDeleteNote.CssClass = "js-delete-postback";
             _lbDeleteNote.Click += _lbDeleteNote_Click;
+            _lbDeleteNote.CausesValidation = false;
             _lbDeleteNote.Style[HtmlTextWriterStyle.Display] = "none";
             Controls.Add( _lbDeleteNote );
 
@@ -633,6 +611,7 @@ namespace Rock.Web.UI.Controls
             _lbShowMore.ID = "lbShowMore";
             _lbShowMore.Click += _lbShowMore_Click;
             _lbShowMore.AddCssClass( "load-more btn btn-xs btn-action" );
+            _lbShowMore.CausesValidation = false;
             Controls.Add( _lbShowMore );
 
             var iDownPre = new HtmlGenericControl( "i" );
@@ -646,6 +625,36 @@ namespace Rock.Web.UI.Controls
             var iDownPost = new HtmlGenericControl( "i" );
             iDownPost.Attributes.Add( "class", "fa fa-angle-down" );
             _lbShowMore.Controls.Add( iDownPost );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbReplyToNoteHidden control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _lbReplyToNoteHidden_Click( object sender, EventArgs e )
+        {
+            ReplyToNote( _hfCurrentNoteId.Value.AsIntegerOrNull() );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbEditNoteHidden control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _lbEditNoteHidden_Click( object sender, EventArgs e )
+        {
+            EditNote( _hfCurrentNoteId.Value.AsIntegerOrNull() );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbAddNoteHidden control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _lbAddNoteHidden_Click( object sender, EventArgs e )
+        {
+            AddNote();
         }
 
         /// <summary>
@@ -739,6 +748,7 @@ namespace Rock.Web.UI.Controls
         private void AddNote()
         {
             var note = new Note();
+            note.CreatedByPersonAlias = this.RockBlock()?.CurrentPersonAlias;
 
             _noteEditor.IsEditing = true;
             _noteEditor.SetNote( note );
@@ -886,6 +896,9 @@ namespace Rock.Web.UI.Controls
                 _hfCurrentNoteId.RenderControl( writer );
                 _hfExpandedNoteIds.RenderControl( writer );
                 _lbDeleteNote.RenderControl( writer );
+                _lbEditNoteHidden.RenderControl( writer );
+                _lbReplyToNoteHidden.RenderControl( writer );
+
                 _mdDeleteWarning.RenderControl( writer );
                 using ( var rockContext = new RockContext() )
                 {
@@ -939,10 +952,10 @@ namespace Rock.Web.UI.Controls
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the lbAddFamilyMember control.
+        /// Handles the SaveButtonClick event of the note control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="NoteEventArgs"/> instance containing the event data.</param>
         protected void note_SaveButtonClick( object sender, NoteEventArgs e )
         {
             EnsureChildControls();
@@ -989,43 +1002,24 @@ namespace Rock.Web.UI.Controls
         #region Methods
 
         /// <summary>
-        /// Clears the rows.
-        /// </summary>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Not Needed. Notes will be cleared and rebuilt automatically", true )]
-        public void ClearNotes()
-        {
-            //
-        }
-
-        /// <summary>
-        /// Rebuilds the notes.
-        /// </summary>
-        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Not Needed. Notes will be rebuilt automatically", true )]
-        public void RebuildNotes( bool setSelection )
-        {
-            //
-        }
-
-        /// <summary>
         /// Gets the List of root notes that the currentPerson is authorized to view for this EntityId and NoteTypes
         /// </summary>
         private List<Note> GetViewableNoteList( RockContext rockContext, Person currentPerson )
         {
-            var viewableNoteTypes = this.NoteOptions?.GetViewableNoteTypes( currentPerson );
+            var configuredNoteTypes = this.NoteOptions?.NoteTypes.ToList();
             var entityId = this.NoteOptions?.EntityId;
 
             ShowMoreOption = false;
-            if ( viewableNoteTypes != null && viewableNoteTypes.Any() && entityId.HasValue )
+            if ( configuredNoteTypes != null && configuredNoteTypes.Any() && entityId.HasValue )
             {
-                var viewableNoteTypeIds = viewableNoteTypes.Select( t => t.Id ).ToList();
+                var configuredNoteTypeIds = configuredNoteTypes.Select( t => t.Id ).ToList();
 
                 // only show Viewable Note Types for this Entity and only show the Root Notes (the NoteControl will take care of child notes)
-                var qry = new NoteService( rockContext ).Queryable().Include( a => a.ChildNotes ).Include( a => a.CreatedByPersonAlias.Person )
+                var qry = new NoteService( rockContext ).Queryable()
+                    .Include( a => a.ChildNotes )
+                    .Include( a => a.CreatedByPersonAlias.Person )
                     .Where( n =>
-                        viewableNoteTypeIds.Contains( n.NoteTypeId )
+                        configuredNoteTypeIds.Contains( n.NoteTypeId )
                         && n.EntityId == entityId.Value
                         && n.ParentNoteId == null );
 
@@ -1042,10 +1036,18 @@ namespace Rock.Web.UI.Controls
 
                 var noteList = qry.ToList();
 
-                NoteCount = noteList.Count();
-
+                /*
+                 * 3-DEC-2021 DMV
+                 * 
+                 * Moved the viewable note types here because granting
+                 * an individual rights to view an specific note gets lost
+                 * if the viewable types are in the query above.
+                 * 
+                 */
                 // only get notes they have auth to VIEW
                 var viewableNoteList = noteList.Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
+
+                NoteCount = viewableNoteList.Count();
 
                 return viewableNoteList;
             }
@@ -1059,6 +1061,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         private void RenderAddButton( HtmlTextWriter writer )
         {
+            // NOTE that _lbAddNoteHidden is rendered as display:none, but noteEditor.js will use it to figure the correct postback js for adding a note
+            _lbAddNoteHidden.RenderControl( writer );
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "add-note js-addnote " + AddAnchorCSSClass );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
 

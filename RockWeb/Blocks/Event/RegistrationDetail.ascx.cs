@@ -32,6 +32,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -50,7 +51,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Audit Page", "Page used to display the history of changes to a registration.", true, "", "", 5 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 6 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 7 )]
-    public partial class RegistrationDetail : RockBlock, IDetailBlock
+    public partial class RegistrationDetail : RockBlock
     {
 
         #region Fields
@@ -840,11 +841,13 @@ namespace RockWeb.Blocks.Event
                 string appRoot = ResolveRockUrlIncludeRoot( "~/" );
                 string themeRoot = ResolveRockUrlIncludeRoot( "~~/" );
 
-                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                confirmation.RegistrationId = RegistrationId.Value;
-                confirmation.AppRoot = appRoot;
-                confirmation.ThemeRoot = themeRoot;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+                var processSendRegistrationConfirmationMsg = new ProcessSendRegistrationConfirmation.Message
+                {
+                    RegistrationId = RegistrationId.Value,
+                    AppRoot = appRoot,
+                    ThemeRoot = themeRoot
+                };
+                processSendRegistrationConfirmationMsg.Send();
 
                 var changes = new History.HistoryChangeList();
                 changes.AddChange( History.HistoryVerb.Sent, History.HistoryChangeType.Record, "Confirmation" ).SetRelatedData( "Resent", null, null );
@@ -2005,7 +2008,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( transaction != null )
             {
-                transaction.Summary = tbSummary.Text;
+                transaction.Summary = tbComments.Text;
                 transaction.AuthorizedPersonAliasId = personAliasId;
                 transaction.TransactionDateTime = RockDateTime.Now;
 

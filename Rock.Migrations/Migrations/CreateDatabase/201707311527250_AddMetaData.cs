@@ -38,7 +38,7 @@ namespace Rock.Migrations
                 "INSERT INTO [MetaFirstNameGenderLookup] ([FirstName],[MaleCount],[FemaleCount],[Country],[Language],[TotalCount],[FemalePercent],[MalePercent],[Guid])",
                 MigrationSQL._201707311527250_FirstNameGender );
 
-            // use BulkInsert for LastName since there are 150,000+ rowsa
+            // use BulkInsert for LastName since there are 150,000+ rows
             List<Rock.Model.MetaLastNameLookup> metaLastNameLookupsToInsert = new List<Model.MetaLastNameLookup>();
             List<string> lastNameLines;
             using ( var lastNameZip = new System.IO.Compression.GZipStream( new MemoryStream( MigrationSQL._201707311527250_LastName ), System.IO.Compression.CompressionMode.Decompress, false ) )
@@ -47,7 +47,7 @@ namespace Rock.Migrations
                 lastNameLines = lastNameText.Split( new[] { "\n" }, StringSplitOptions.None ).ToList();
             }
 
-            foreach(var lastNameLine in lastNameLines)
+            foreach ( var lastNameLine in lastNameLines )
             {
                 var lastNameColValues = lastNameLine.Split( new[] { ',' }, StringSplitOptions.None ).ToList();
                 if ( lastNameColValues.Count == 4 )
@@ -73,18 +73,8 @@ namespace Rock.Migrations
             ExecuteSqlInsert(
                 "INSERT INTO [MetaNickNameLookup] ([FirstName],[NickName],[Gender],[Count],[Guid])",
                 MigrationSQL._201707311527250_NickName );
-
-            Sql( "DELETE [MetaPersonicxLifestageGroup]" );
-            ExecuteSqlInsert(
-                "INSERT INTO [MetaPersonicxLifestageGroup] ([LifestyleGroupCode],[LifestyleGroupName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[DetailsUrl],[Guid])",
-                MigrationSQL._201707311527250_PersonicxGroup );
-
-            Sql( "DELETE [MetaPersonicxLifestageCluster]" );
-            ExecuteSqlInsert(
-                "INSERT INTO [MetaPersonicxLifestageCluster] ([LifestyleClusterCode],[LifestyleClusterName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[MetaPersonicxLifestyleGroupId],[DetailsUrl],[Guid])",
-                MigrationSQL._201707311527250_PersonicxCluster );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

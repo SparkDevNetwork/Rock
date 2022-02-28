@@ -25,6 +25,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Deletes a binary file
     /// </summary>
+    [Obsolete( "Use DeleteBinaryFileAttribute Task instead." )]
+    [RockObsolete( "1.13" )]
     public class DeleteAttributeBinaryFile : ITransaction
     {
 

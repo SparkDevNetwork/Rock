@@ -113,7 +113,7 @@ namespace Rock.WebFarm
         /// <summary>
         /// Do debug logging
         /// </summary>
-        private const bool DEBUG = true;
+        private const bool DEBUG = false;
 
         /// <summary>
         /// The bytes per megabyte
@@ -247,7 +247,9 @@ namespace Rock.WebFarm
                     if ( _hasDetectedOverlappedRecycling )
                     {
                         Debug( "Detected that this process may be overlapped for recycling" );
-                        AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Availability, "Detected that this process may be overlapped for recycling" );
+
+                        // JME 8/26/2021 remove writing this message to the cluster log as it is noise
+                        // AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Availability, "Detected that this process may be overlapped for recycling" );
                     }
 
                     rockContext.SaveChanges();
@@ -367,7 +369,7 @@ namespace Rock.WebFarm
                 webFarmNode.IsActive = false;
 
                 // Write to ClusterNodeLog -Startup Message
-                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Startup );
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Startup, $"Process ID: {ProcessId}" );
 
                 rockContext.SaveChanges();
             }
@@ -476,12 +478,42 @@ namespace Rock.WebFarm
         #region Event Handlers
 
         /// <summary>
+        /// Called when someone requests a Rock restart.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        public static void OnRestartRequested( Person currentPerson )
+        {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
+            var personName = currentPerson == null ?
+                "Unknown" :
+                $"{currentPerson.FullName} (Person Id: {currentPerson.Id})";
+            var payload = $"{personName} requested Rock restart";
+
+            using ( var rockContext = new RockContext() )
+            {
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, payload );
+                rockContext.SaveChanges();
+            }
+
+            PublishEvent( EventType.Shutdown, payload: payload );
+        }
+
+        /// <summary>
         /// Called when [ping].
         /// </summary>
         /// <param name="senderNodeName">Name of the node that pinged.</param>
         /// <param name="pingPongKey">The ping pong key.</param>
         internal static void OnReceivedPing( string senderNodeName, Guid? pingPongKey )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == NodeName )
             {
                 // Don't talk to myself
@@ -509,6 +541,11 @@ namespace Rock.WebFarm
         /// <param name="pingPongKey">The ping pong key.</param>
         internal static void OnReceivedPong( string senderNodeName, string recipientNodeName, Guid? pingPongKey )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == NodeName )
             {
                 // Don't talk to myself

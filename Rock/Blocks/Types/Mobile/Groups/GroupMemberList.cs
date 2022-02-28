@@ -60,7 +60,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "The template to use when rendering the content.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST,
         IsRequired = true,
-        DefaultValue = "",
+        DefaultValue = "674CF1E3-561C-430D-B4A8-39957AC1BCF1",
         Key = AttributeKeys.Template,
         Order = 2 )]
 

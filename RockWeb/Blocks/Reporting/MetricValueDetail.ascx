@@ -25,7 +25,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlMetricValueType" runat="server" Label="Type" />
-                            <Rock:DatePicker ID="dpMetricValueDateTime" runat="server" Label="Value Date" />
+                            <Rock:DatePicker ID="dpMetricValueDateTime" runat="server" Label="Value Date" Required="true" />
 
                         </div>
                         <div class="col-md-6">

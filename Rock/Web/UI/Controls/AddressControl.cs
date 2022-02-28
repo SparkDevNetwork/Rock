@@ -936,7 +936,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // Address Fields
-            writer.AddAttribute( "class", "js-addressControl " + this.CssClass );
+            writer.AddAttribute( "class", "address-control js-addressControl " + this.CssClass );
             writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-itemlabel", this.Label != string.Empty ? this.Label : "Address" );
             writer.AddAttribute( "id", this.ClientID );
@@ -1338,9 +1338,17 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void SetCountryAndState( string selectedCountry = null, string selectedState = null )
         {
+            // After this method has been called, do not overwrite the specified values with default settings.
+            this.SetDefaultValues = false;
+
             if ( selectedCountry == null )
             {
                 selectedCountry = _ddlCountry.SelectedValue;
+            }
+
+            if ( selectedState == null )
+            {
+                selectedState = _ddlState.SelectedValue;
             }
 
             LoadCountryConfiguration( selectedCountry );

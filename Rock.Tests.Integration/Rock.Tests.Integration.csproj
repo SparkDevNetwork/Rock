@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Tests.Integration</RootNamespace>
     <AssemblyName>Rock.Tests.Integration</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
@@ -42,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.Core.3.3.25.1\lib\net45\AWSSDK.Core.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.Core.3.3.25.4\lib\net45\AWSSDK.Core.dll</HintPath>
     </Reference>
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
@@ -66,9 +66,14 @@
       <HintPath>..\packages\HttpSimulator.2.3.0\lib\net40\HttpSimulator.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\IdentityModel.3.0.0\lib\net452\IdentityModel.dll</HintPath>
+      <HintPath>..\packages\IdentityModel.3.0.0\lib\net461\IdentityModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" />
     <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.1.5\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
@@ -88,7 +93,7 @@
       <HintPath>..\packages\MSTest.TestFramework.2.1.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="MimeKit, Version=2.6.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
-      <HintPath>..\packages\MimeKit.2.6.0\lib\net45\MimeKit.dll</HintPath>
+      <HintPath>..\packages\MimeKit.2.6.0\lib\net47\MimeKit.dll</HintPath>
     </Reference>
     <Reference Include="Moq, Version=4.14.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\packages\Moq.4.14.1\lib\net45\Moq.dll</HintPath>
@@ -101,7 +106,7 @@
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="SmtpServer, Version=5.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SmtpServer.5.3.0\lib\net45\SmtpServer.dll</HintPath>
@@ -116,18 +121,19 @@
     </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.1\lib\portable-net45+win8+wp8+wpa81\System.Threading.Tasks.Extensions.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Achievement\GivingToAccountAchievementTest.cs" />
     <Compile Include="Achievement\StepProgramAchievementTests.cs" />
     <Compile Include="Achievement\InteractionAchievementTests.cs" />
     <Compile Include="Achievement\AccumulativeAchievementTests.cs" />
@@ -139,21 +145,46 @@
     <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
-    <Compile Include="Jobs\GivingAnalyticsJobTests.cs" />
+    <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />
+    <Compile Include="Jobs\GivingJourneyHelperTests.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
-    <Compile Include="Lava\CachingTests.cs" />
-    <Compile Include="Lava\LavaFilterTests.cs" />
-    <Compile Include="Lava\MiscellaneousFilterTests.cs" />
+    <Compile Include="Jobs\RockCleanupJobTests.cs" />
+    <Compile Include="Lava\Commands\RockEntityTests.cs" />
+    <Compile Include="Lava\DotLiquid\RockLiquidTests.cs" />
+    <Compile Include="Lava\Engine\EntityPropertyAccessTests.cs" />
+    <Compile Include="Lava\Engine\ConfigurationTests.cs" />
+    <Compile Include="Lava\Engine\PerformanceTests.cs" />
+    <Compile Include="Lava\Engine\ParsingTests.cs" />
+    <Compile Include="Lava\Engine\ExceptionHandlingTests.cs" />
+    <Compile Include="Lava\Engine\ScopeTests.cs" />
+    <Compile Include="Lava\Engine\ParallelExecutionTests.cs" />
+    <Compile Include="Lava\Filters\EncodingFilterTests.cs" />
+    <Compile Include="Lava\Filters\AttributeFilterTests.cs" />
+    <Compile Include="Lava\Filters\PersonFilterTests.cs" />
+    <Compile Include="Lava\Filters\WebFilterTests.cs" />
+    <Compile Include="Lava\Filters\MiscellaneousFilterTests.cs" />
     <Compile Include="Lava\EventScheduledInstanceCommandTests.cs" />
     <Compile Include="Lava\CalendarEventsCommandTests.cs" />
+    <Compile Include="Lava\Engine\LavaCommentsTests.cs" />
+    <Compile Include="Lava\Filters\DateFilterTests.cs" />
+    <Compile Include="Lava\Filters\NumericFilterTests.cs" />
+    <Compile Include="Lava\FileSystem\LavaFileSystemTests.cs" />
+    <Compile Include="Lava\LavaIntegrationTestHelper.cs" />
+    <Compile Include="Lava\LavaIntegrationTestBase.cs" />
+    <Compile Include="Lava\FileSystem\MockFileInfo.cs" />
+    <Compile Include="Lava\FileSystem\MockFileProvider.cs" />
+    <Compile Include="Lava\Commands\ShortcodeCodeTests.cs" />
+    <Compile Include="Lava\Commands\CommandTests.cs" />
+    <Compile Include="Lava\Commands\ShortcodeTemplateTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />
     <Compile Include="Jobs\TestJobDetail.cs" />
     <Compile Include="Jobs\TestJobContext.cs" />
-    <Compile Include="Lava\RockEntityTests.cs" />
+    <Compile Include="Lava\Engine\MockTemplateCacheService.cs" />
     <Compile Include="Model\EventTests.cs" />
+    <Compile Include="Model\BinaryFileTests.cs" />
     <Compile Include="Model\LocationTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
@@ -161,6 +192,8 @@
     <Compile Include="Model\CommunicationServiceTests.cs" />
     <Compile Include="Model\PersonServiceTests.cs" />
     <Compile Include="Model\StepProgramServiceTests.cs" />
+    <Compile Include="Model\GroupMemberTests.cs" />
+    <Compile Include="Model\UserLoginTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rest\ControllersTests\AuthControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
@@ -208,7 +241,7 @@
     <Compile Include="Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
     <Compile Include="Reporting\ReportBuilder\ReportBuilderTests.cs" />
-    <Compile Include="TestInitializer.cs" />
+    <Compile Include="IntegrationTestInitializer.cs" />
     <Compile Include="StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="test.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -225,9 +258,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="app.ConnectionStrings.config" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
+    <None Include="settings\lava-dotliquid-engine.runsettings" />
+    <None Include="settings\lava-fluid-engine.runsettings" />
     <None Include="test.runsettings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>test.Designer.cs</LastGenOutput>
@@ -239,6 +272,26 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
+      <Project>{79AA470A-DC63-4CB4-B0B6-77285F60C69B}</Project>
+      <Name>Rock.Lava.DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
+      <Project>{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}</Project>
+      <Name>Rock.Lava.Fluid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj">
+      <Project>{37e293dd-f282-4a34-91fa-5fb8503d5672}</Project>
+      <Name>Rock.Lava</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj">
       <Project>{d6b19c0d-da5e-4f75-8001-04ded86b741f}</Project>

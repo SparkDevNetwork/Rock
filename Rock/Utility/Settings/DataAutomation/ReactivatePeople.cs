@@ -34,6 +34,9 @@ namespace Rock.Utility.Settings.DataAutomation
             IsAttendanceInServiceGroupEnabled = true;
             AttendanceInServiceGroupPeriod = 90;
 
+            IsRegisteredInAnyEventEnabled = true;
+            RegisteredInAnyEventPeriod = 90;
+
             IsAttendanceInGroupTypeEnabled = true;
             AttendanceInGroupTypeDays = 90;
 
@@ -88,6 +91,22 @@ namespace Rock.Utility.Settings.DataAutomation
         /// The attendance in service group period.
         /// </value>
         public int AttendanceInServiceGroupPeriod { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is registered in any event is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is registered in any event is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRegisteredInAnyEventEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the period under which registeration for any event.
+        /// </summary>
+        /// <value>
+        /// The period under which registered for any event.
+        /// </value>
+        public int RegisteredInAnyEventPeriod { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is attendance in group type enabled.

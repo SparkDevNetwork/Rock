@@ -131,13 +131,13 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // action animation
 $('.workflow-action > header').on('click', function () {
+    $(this).parent('.workflow-action').toggleClass('collapsed');
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('i.workflow-action-state', this).toggleClass('fa-chevron-down');
-    $('i.workflow-action-state', this).toggleClass('fa-chevron-up');
+    $('i.workflow-action-state', this).toggleClass('fa-chevron-down fa-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
@@ -420,10 +420,12 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _rlEntityTypeOverview.Label = "Action Type Overview";
 
             _cbIsActionCompletedOnSuccess = new RockCheckBox { Text = "Action is Completed on Success" };
+            _cbIsActionCompletedOnSuccess.DisplayInline = true;
             Controls.Add( _cbIsActionCompletedOnSuccess );
             _cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
             _cbIsActivityCompletedOnSuccess = new RockCheckBox { Text = "Activity is Completed on Success" };
+            _cbIsActivityCompletedOnSuccess.DisplayInline = true;
             Controls.Add( _cbIsActivityCompletedOnSuccess );
             _cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
@@ -457,17 +459,17 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget workflow-action" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "panel panel-widget workflow-action" : "panel panel-widget workflow-action collapsed" );
             writer.AddAttribute( "data-key", _hfActionTypeGuid.Value );
             writer.RenderBeginTag( "article" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable panel-heading" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clickable clearfix" );
             writer.RenderBeginTag( "header" );
 
             // Hidden Field to track expansion
             _hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left workflow-action-name" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-action-name pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblActionTypeName.Text = _tbActionTypeName.Text;
             _lblActionTypeName.RenderControl( writer );
@@ -554,7 +556,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbActionTypeName.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6 control-label-offset" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbIsActionCompletedOnSuccess.ValidationGroup = ValidationGroup;
             _cbIsActionCompletedOnSuccess.RenderControl( writer );

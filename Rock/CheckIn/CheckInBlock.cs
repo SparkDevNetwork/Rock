@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.UI.HtmlControls;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -183,6 +185,14 @@ namespace Rock.CheckIn
             get => LocalDeviceConfig.CurrentTheme;
             set => LocalDeviceConfig.CurrentTheme = value;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [load unencrypted cookie].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [load unencrypted cookie]; otherwise, <c>false</c>.
+        /// </value>
+        protected virtual bool LoadUnencryptedLocalDeviceConfig { get => false; }
 
         /// <summary>
         /// The current kiosk id
@@ -915,6 +925,18 @@ namespace Rock.CheckIn
             return null;
         }
 
+        /// <summary>
+        /// Returns true if the current check-in theme supports HTML5 Camera.
+        /// This is determined by themes that have a 'js-camera-supported' class on the 'body' tag.
+        /// </summary>
+        /// <returns><c>true</c> if CurrentThemeSupportsHTML5Camera, <c>false</c> otherwise.</returns>
+        public bool CurrentThemeSupportsHTML5Camera()
+        {
+            var body = this.RockPage.Master.FindControl( "body" ) as HtmlGenericControl;
+            var themeSupportsHTML5Camera = body?.HasCssClass( "js-camera-supported" ) == true;
+            return themeSupportsHTML5Camera;
+        }
+
         private static class SessionKey
         {
             public const string CheckInState = "CheckInState";
@@ -926,8 +948,7 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
-            var localDeviceConfigValue = this.LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None );
-            RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, localDeviceConfigValue, RockDateTime.Now.AddYears( 1 ) );
+            LocalDeviceConfig.SaveToCookie();
 
             Session[SessionKey.CheckInWorkflow] = CurrentWorkflow;
 
@@ -946,7 +967,7 @@ namespace Rock.CheckIn
         /// </summary>
         private void GetState()
         {
-            this.LocalDeviceConfig = LocalDeviceConfig.GetFromCookie( this.Page );
+            this.LocalDeviceConfig = LocalDeviceConfig.GetFromCookie( Page, LoadUnencryptedLocalDeviceConfig );
 
             if ( this.LocalDeviceConfig == null )
             {

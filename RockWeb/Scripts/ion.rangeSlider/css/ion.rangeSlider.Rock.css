@@ -90,7 +90,7 @@
 
 .irs-slider {
   position: absolute;
-  top: 25px;
+  top: var(--slider-handle-offset, 25px);
   z-index: 1;
   display: block;
   width: 27px;

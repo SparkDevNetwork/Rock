@@ -107,15 +107,18 @@ namespace Rock.Web.UI.Controls
                 _ddlDefinedValues.Items.Add( new ListItem() );
 
                 var definedTypeCache = DefinedTypeCache.Get( DefinedTypeId.Value );
-                var definedValuesList = definedTypeCache?.DefinedValues
-                    .Where( a => a.IsActive || IncludeInactive || a.Id == SelectedDefinedValueId )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .ToList();
+                var definedValuesList = definedTypeCache?.DefinedValues.Where( a => a.IsActive || IncludeInactive || a.Id == SelectedDefinedValueId );
 
-                if ( definedValuesList != null && definedValuesList.Any() )
+                if ( SelectableDefinedValuesId != null && SelectableDefinedValuesId.Any() )
                 {
-                    foreach ( var definedValue in definedValuesList )
+                    definedValuesList = definedValuesList.Where( a => SelectableDefinedValuesId.Contains( a.Id ) );
+                }
+
+                var filteredList = definedValuesList.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+
+                if ( filteredList != null && filteredList.Any() )
+                {
+                    foreach ( var definedValue in filteredList )
                     {
                         _ddlDefinedValues.Items.Add(
                             new ListItem
@@ -208,6 +211,18 @@ namespace Rock.Web.UI.Controls
             LinkButtonAddDefinedValue.OnClientClick = linkButtonClickJs;
             LinkButtonAddDefinedValue.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='fa fa-plus'></i>" } );
             Controls.Add( LinkButtonAddDefinedValue );
+
+            if ( this.Required )
+            {
+                this.RequiredFieldValidator = new RequiredFieldValidator();
+                this.RequiredFieldValidator.ID = this.ID + "_rfv";
+                this.RequiredFieldValidator.ControlToValidate = _ddlDefinedValues.ID;
+                this.RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+                this.RequiredFieldValidator.CssClass = "validation-error help-inline";
+                this.RequiredFieldValidator.Enabled = true;
+                this.RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
+                Controls.Add( this.RequiredFieldValidator );
+            }
 
             LoadDefinedValues();
         }

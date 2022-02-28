@@ -31,6 +31,7 @@ namespace Rock.Transactions
 {
     /// <summary>
     /// Transaction that will insert <seealso cref="Rock.Model.Interaction">Interactions</seealso>. For example, Page Views.
+    /// Ít will remain using the ITransaction interface and not be converted to a bus event yet
     /// </summary>
     public class InteractionTransaction : ITransaction
     {

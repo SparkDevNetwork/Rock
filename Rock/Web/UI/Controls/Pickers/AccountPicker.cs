@@ -88,6 +88,33 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected account id.
+        /// </summary>
+        /// <value>
+        /// The account id.
+        /// </value>
+        public int? AccountId
+        {
+            get
+            {
+                int selectedId = this.SelectedValue.AsInteger();
+                if ( selectedId > 0 )
+                {
+                    return selectedId;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            set
+            {
+                SetValue( value );
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -226,7 +253,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentIds = new List<int>();
+                var parentAccountIds = new List<int>();
 
                 foreach ( var account in accounts )
                 {
@@ -238,16 +265,16 @@ namespace Rock.Web.UI.Controls
                         var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccount );
                         foreach ( var accountParentId in accountParentIds )
                         {
-                            if ( !parentIds.Contains( accountParentId ) )
+                            if ( !parentAccountIds.Contains( accountParentId ) )
                             {
-                                parentIds.Add( accountParentId );
+                                parentAccountIds.Add( accountParentId );
                             }
                         }
                     }
                 }
 
                 // NOTE: Order is important (parents before children)
-                InitialItemParentIds = parentIds.AsDelimited( "," );
+                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }

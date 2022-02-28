@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Scheduled Job Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given scheduled job." )]
-    public partial class ScheduledJobDetail : RockBlock, IDetailBlock
+    public partial class ScheduledJobDetail : RockBlock
     {
         #region Control Methods
 

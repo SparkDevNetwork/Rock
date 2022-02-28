@@ -89,12 +89,7 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         #endregion
 
@@ -108,18 +103,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialGateway"/> class.
-        /// </summary>
-        public FinancialGateway()
-        {
-            IsActive = true;
-        }
 
         #endregion
 

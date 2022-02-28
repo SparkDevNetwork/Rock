@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
@@ -27,28 +28,38 @@ using Rock.Model;
 namespace Rock.Data
 {
     /// <summary>
-    /// Helper class to set view cache
-    /// </summary>
-    [RockObsolete( "1.8" )]
-    [Obsolete( "Does nothing. No longer needed,", true )]
-    public static class RockInteractiveViews
-    {
-        /// <summary>
-        /// Sets the view factory.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Does nothing. No longer needed,", true )]
-        public static void SetViewFactory( string path )
-        {
-        }
-    }
-
-    /// <summary>
     /// Entity Framework Context
     /// </summary>
     public class RockContext : Rock.Data.DbContext
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether timing metrics should be captured.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [metrics enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public QueryMetricDetailLevel QueryMetricDetailLevel { get; set; } = QueryMetricDetailLevel.Off;
+
+        /// <summary>
+        /// Gets or sets the metric query count.
+        /// </summary>
+        /// <value>
+        /// The query count.
+        /// </value>
+        public int QueryCount { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the metric details.
+        /// </summary>
+        /// <value>
+        /// The metric details.
+        /// </value>
+        public List<QueryMetricDetail> QueryMetricDetails { get; private set; } = new List<QueryMetricDetail>();
+
+        #endregion
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// Use this if you need to specify a connection string other than the default
@@ -56,6 +67,18 @@ namespace Rock.Data
         /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
         public RockContext( string nameOrConnectionString )
             : base( nameOrConnectionString )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of a <see cref="RockContext"/> sub-class using the same <see cref="ObjectContext"/> as regular RockContext.
+        /// This is for internal use by <see cref="RockContextReadOnly"/> and <see cref="RockContextAnalytics"/>. 
+        /// </summary>
+        /// <param name="objectContext">The object context.</param>
+        /// <param name="dbContextOwnsObjectContext">if set to <c>true</c> [database context owns object context].</param>
+        /// <inheritdoc />
+        internal protected RockContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
+            base( objectContext, dbContextOwnsObjectContext )
         {
         }
 
@@ -374,6 +397,14 @@ namespace Rock.Data
         public DbSet<AuditDetail> AuditDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the authentication audit log.
+        /// </summary>
+        /// <value>
+        /// The authentication audit log.
+        /// </value>
+        public DbSet<AuthAuditLog> AuthAuditLog { get; set; }
+
+        /// <summary>
         /// Gets or sets the Auth Clients.
         /// </summary>
         /// <value>
@@ -388,7 +419,7 @@ namespace Rock.Data
         /// The Auth Claim.
         /// </value>
         public DbSet<AuthClaim> AuthClaims { get; set; }
-                
+
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
@@ -436,6 +467,18 @@ namespace Rock.Data
         /// the Benevolence Results.
         /// </value>
         public DbSet<BenevolenceResult> BenevolenceResults { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence types.
+        /// </summary>
+        /// <value>The benevolence types.</value>
+        public DbSet<BenevolenceType> BenevolenceTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence workflows.
+        /// </summary>
+        /// <value>The benevolence workflows.</value>
+        public DbSet<BenevolenceWorkflow> BenevolenceWorkflows { get; set; }
 
         /// <summary>
         /// Gets or sets the Files.
@@ -636,6 +679,14 @@ namespace Rock.Data
         /// The connection statuses.
         /// </value>
         public DbSet<ConnectionStatus> ConnectionStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection status automations.
+        /// </summary>
+        /// <value>
+        /// The connection automations.
+        /// </value>
+        public DbSet<ConnectionStatusAutomation> ConnectionStatusAutomations { get; set; }
 
         /// <summary>
         /// Gets or sets the connection types.
@@ -2194,6 +2245,65 @@ namespace Rock.Data
                 ExceptionLogService.LogException( new Exception( "Exception occurred when adding Plugin Entities to RockContext", ex ), null );
             }
         }
+    }
+
+    /// <summary>
+    /// Enum for determining the level of query metrics to capture.
+    /// </summary>
+    public enum QueryMetricDetailLevel
+    {
+        /// <summary>
+        /// No metrics will be captured (default)
+        /// </summary>
+        Off = 0,
+
+        /// <summary>
+        /// Just the number of queries will be captured.
+        /// </summary>
+        Count = 1,
+
+        /// <summary>
+        /// All metrics will the captured (count and a copy of the SQL)
+        /// </summary>
+        Full = 2
+    }
+
+    /// <summary>
+    /// POCO for storing metrics about the context
+    /// </summary>
+    public class QueryMetricDetail
+    {
+        /// <summary>
+        /// Gets or sets the SQL.
+        /// </summary>
+        /// <value>
+        /// The SQL.
+        /// </value>
+        public string Sql { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration in ticks (not fleas).
+        /// </summary>
+        /// <value>
+        /// The duration.
+        /// </value>
+        public long Duration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server.
+        /// </summary>
+        /// <value>
+        /// The server.
+        /// </value>
+        public string Server { get; set; }
+
+        /// <summary>
+        /// Gets or sets the database.
+        /// </summary>
+        /// <value>
+        /// The database.
+        /// </value>
+        public string Database { get; set; }
     }
 
     /// <summary>

@@ -200,7 +200,7 @@ namespace Rock.CheckIn
                 if ( locationId > 0 )
                 {
                     // double check the locationId in the cookie is valid for the Campus (just in case it was altered or is no longer valid for the campus)
-                    var locationCampusId = NamedLocationCache.Get( locationId ).CampusId;
+                    var locationCampusId = NamedLocationCache.Get( locationId )?.CampusId;
                     if ( locationCampusId != campus.Id )
                     {
                         locationId = 0;
@@ -300,7 +300,7 @@ namespace Rock.CheckIn
         /// <param name="checkinManagerConfiguration">The checkin manager configuration.</param>
         private static void SaveCheckinManagerConfigurationToCookie( CheckinManagerConfiguration checkinManagerConfiguration )
         {
-            var checkinManagerConfigurationJson = checkinManagerConfiguration.ToJson( Newtonsoft.Json.Formatting.None );
+            var checkinManagerConfigurationJson = checkinManagerConfiguration.ToJson( indentOutput: false );
             Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInManagerCookieKey.CheckinManagerConfiguration, checkinManagerConfigurationJson, RockDateTime.Now.AddYears( 1 ) );
 
             // Also save the Configuration in the Request.Items so that we can grab the configuration from there instead
@@ -362,7 +362,7 @@ namespace Rock.CheckIn
         /// <param name="currentDateTime">The current date time.</param>
         /// <param name="attendanceList">The attendance list.</param>
         /// <returns></returns>
-        [RockObsolete( "12.4" )]
+        [RockObsolete( "1.12.4" )]
         [Obsolete( "No longer supported. Use FilterByActiveCheckins RosterAttendeeAttendance instead", error: true )]
         public static List<Attendance> FilterByActiveCheckins( DateTime currentDateTime, List<Attendance> attendanceList )
         {

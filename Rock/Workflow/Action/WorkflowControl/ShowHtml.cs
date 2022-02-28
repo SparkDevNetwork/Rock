@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
                     {
                         workflowEntryBlock.PreRender += ( sender, args ) =>
                         {
-                            var notificationBox = workflowEntryBlock.ControlsOfTypeRecursive<Rock.Web.UI.Controls.NotificationBox>().FirstOrDefault();
+                            var notificationBox = workflowEntryBlock.ControlsOfTypeRecursive<Rock.Web.UI.Controls.NotificationBox>().Where( a => a.CssClass?.Contains( "js-workflow-entry-message-notification-box" ) == true ).FirstOrDefault();
                             if ( notificationBox != null )
                             {
                                 notificationBox.Visible = notificationBox.Visible && !GetAttributeValue( action, "HideStatusMessage" ).AsBoolean();

@@ -306,7 +306,7 @@ namespace Rock.Reporting.DataSelect.Group
             groupTypePicker.ID = parentControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
             groupTypePicker.CssClass = "js-grouptype-picker";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             parentControl.Controls.Add( groupTypePicker );

@@ -1008,8 +1008,7 @@ namespace Rock.Web.UI.Controls
 
         <p>A date range can either be a specific date range, or a sliding date range based on the current date and time.</p>
         <p>For a sliding date range, you can choose either <strong>current, previous, last, next, upcoming</strong> with a time period of <strong>hour, day, week, month, or year</strong>. Note that a week is Monday thru Sunday.</p>
-        <br />
-        <ul class=''>
+        <ul>
             <li><strong>Current</strong> - the time period that the current date/time is in</li>
             <li><strong>Previous</strong> - the time period(s) prior to the current period (does not include the current time period). For example, to see the most recent weekend, select 'Previous 1 Week'</li>
             <li><strong>Last</strong> - the last X time period(s) including the current until today. For example, to see so far this current week and prior week, select 'Last 2 weeks'</li>

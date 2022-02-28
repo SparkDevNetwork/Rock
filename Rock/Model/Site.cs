@@ -30,6 +30,7 @@ using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -72,12 +73,7 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the configuration mobile phone binary file identifier.
@@ -397,7 +393,6 @@ namespace Rock.Model
         [DataMember]
         public string IndexStartingLocation { get; set; }
 
-
         /// <summary>
         /// Gets or sets a value indicating whether [requires encryption].
         /// </summary>
@@ -500,18 +495,6 @@ namespace Rock.Model
             private set { }
         }
 
-
-        /// <summary>
-        /// Gets or sets the FontAwesome icon CSS weight that will be used for the Site
-        /// </summary>
-        /// <value>
-        /// The icon CSS weight.
-        /// </value>
-        [DataMember]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme", true )]
-        public IconCssWeight IconCssWeight { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -542,16 +525,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<SiteDomain> SiteDomains { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon extensions.
-        /// </summary>
-        /// <value>
-        /// The icon extensions.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme" )]
-        public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
         /// <summary>
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
@@ -595,7 +568,7 @@ namespace Rock.Model
         /// <value>
         /// The change password page.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Page ChangePasswordPage { get; set; }
 
         /// <summary>
@@ -676,7 +649,7 @@ namespace Rock.Model
         /// <value>
         /// The fav icon binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile FavIconBinaryFile { get; set; }
 
         /// <summary>
@@ -685,7 +658,7 @@ namespace Rock.Model
         /// <value>
         /// The site logo binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile SiteLogoBinaryFile { get; set; }
 
         /// <summary>
@@ -694,7 +667,7 @@ namespace Rock.Model
         /// <value>
         /// The thumbnail binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ThumbnailBinaryFile { get; set; }
 
         /// <summary>
@@ -703,7 +676,7 @@ namespace Rock.Model
         /// <value>
         /// The configuration mobile phone binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ConfigurationMobilePhoneBinaryFile { get; set; }
 
         /// <summary>
@@ -712,7 +685,7 @@ namespace Rock.Model
         /// <value>
         /// The configuration mobile tablet binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ConfigurationMobileTabletBinaryFile { get; set; }
 
         /// <summary>
@@ -721,7 +694,7 @@ namespace Rock.Model
         /// <value>
         /// The default domain URI.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Uri DefaultDomainUri
         {
             get
@@ -935,7 +908,6 @@ namespace Rock.Model
 
     #region enums
 
-
     /// <summary>
     /// Types Web, Mobile
     /// </summary>
@@ -955,35 +927,6 @@ namespace Rock.Model
         /// TV Apps
         /// </summary>
         Tv
-    }
-
-    /// <summary>
-    /// Font Awesome Icon CSS Weight
-    /// </summary>
-    [RockObsolete( "1.8" )]
-    [Obsolete( "Moved to Theme", true )]
-    public enum IconCssWeight
-    {
-
-        /// <summary>
-        /// regular
-        /// </summary>
-        Regular,
-
-        /// <summary>
-        /// solid
-        /// </summary>
-        Solid,
-
-        /// <summary>
-        /// light
-        /// </summary>
-        Light,
-
-        /// <summary>
-        /// thin
-        /// </summary>
-        Thin
     }
 
     #endregion
@@ -1018,16 +961,6 @@ namespace Rock.Model
             this.HasOptional( p => p.ThumbnailBinaryFile ).WithMany().HasForeignKey( p => p.ThumbnailBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConfigurationMobilePhoneBinaryFile ).WithMany().HasForeignKey( p => p.ConfigurationMobilePhoneBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConfigurationMobileTabletBinaryFile ).WithMany().HasForeignKey( p => p.ConfigurationMobileTabletBinaryFileId ).WillCascadeOnDelete( false );
-
-#pragma warning disable 0618
-            // Need Associative table for IconExtensions (which are Defined Values)
-            this.HasMany( p => p.IconExtensions ).WithMany().Map( p =>
-            {
-                p.MapLeftKey( "SiteId" );
-                p.MapRightKey( "DefinedValueId" );
-                p.ToTable( "SiteIconExtensions" );
-            } );
-#pragma warning restore 0618
         }
     }
 

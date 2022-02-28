@@ -192,7 +192,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                Uri uri = new Uri( HttpContext.Current.Request.Url.ToString() );
+                Uri uri = new Uri( HttpContext.Current.Request.UrlProxySafe().ToString() );
                 return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + Page.ResolveUrl( "~" );
             }
         }
@@ -404,19 +404,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds an object with a <see cref="System.Runtime.Caching.CacheItemPolicy"/> to the default <see cref="System.Runtime.Caching.MemoryCache"/>
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
-        /// <param name="value">The <see cref="System.Object"/> to cache.</param>
-        /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.", true )]
-        protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
-        {
-            AddCacheItem( key, value, TimeSpan.MaxValue );
-        }
-
-        /// <summary>
         /// Returns an object from the default <see cref="System.Runtime.Caching.MemoryCache"/> .
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the object's key. Defaults to an empty string.</param>
@@ -445,30 +432,6 @@ namespace Rock.Web.UI
         protected virtual void RemoveCacheItem( string key )
         {
             RockCache.Remove( ItemCacheKey( key ) );
-        }
-
-        /// <summary>
-        /// Flushes an object from the cache.
-        /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
-        /// defaults to an empty string.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveCacheItem( string key ) instead.", true )]
-        protected virtual void FlushCacheItem( string key = "" )
-        {
-            RemoveCacheItem( key );
-        }
-
-        /// <summary>
-        /// Flushes a block from all places in the cache (layouts, pages, etc.).
-        /// NOTE: Retrieving an enumerator for a MemoryCache instance is a resource-intensive and blocking operation.
-        /// Therefore, it should not be used in production applications (if possible).
-        /// </summary>
-        /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Method is no longer supported.", true )]
-        protected virtual void FlushSharedBlock( int blockId )
-        {
         }
 
         /// <summary>
@@ -566,24 +529,9 @@ namespace Rock.Web.UI
         {
             try
             {
-                if ( this.PageParameter( "ShowDebugTimings" ).AsBoolean() )
+                if ( PageParameter( "ShowDebugTimings" ).AsBoolean() )
                 {
-                    TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                    var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
-                    if ( lblShowDebugTimings != null )
-                    {
-                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["data-PointInTimeMS"]?.AsDoubleOrNull();
-                        if ( previousPointInTimeMS.HasValue )
-                        {
-                            var lastDurationMS = Math.Round( tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 2 );
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "<span data-duration-replace/>", $"{lastDurationMS} ms" );
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "data-duration=''", $"data-duration='{lastDurationMS}'" );
-                        }
-
-                        lblShowDebugTimings.Text += string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='padding-left: 24px;'>{0} <small><span style='color:#A4A4A4'>({2})</span></small></td><td class='debug-timestamp'><span data-duration-replace/></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration=''> </td></tr>", this.BlockName, Math.Round( tsDuration.TotalMilliseconds, 2 ), BlockCache?.BlockType );
-
-                        lblShowDebugTimings.Attributes["data-PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
-                    }
+                    RockPage.ReportOnLoadDebugTiming( BlockName, BlockCache?.BlockType?.ToString() );
                 }
             }
             catch

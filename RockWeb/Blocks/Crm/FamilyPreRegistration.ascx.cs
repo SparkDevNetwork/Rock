@@ -134,6 +134,22 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         Order = 10 )]
 
+    [WorkflowTypeField(
+        "Parent Workflow",
+        Key = AttributeKey.ParentWorkflow,
+        Description = BlockAttributeDescription.ParentWorkflow,
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 11 )]
+
+    [WorkflowTypeField(
+        "Child Workflow",
+        Key = AttributeKey.ChildWorkflow,
+        Description = BlockAttributeDescription.ChildWorkflow,
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 12 )]
+
     [CodeEditorField(
         "Redirect URL",
         Key = AttributeKey.RedirectURL,
@@ -142,14 +158,23 @@ namespace RockWeb.Blocks.Crm
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
-        Order = 11 )]
+        Order = 13 )]
 
     [BooleanField(
         "Require Campus",
         Key = AttributeKey.RequireCampus,
         Description = "Require that a campus be selected",
         DefaultBooleanValue = true,
-        Order = 12 )]
+        Order = 14 )]
+
+    [CustomDropdownListField(
+        "Number of Columns",
+        Key = AttributeKey.Columns,
+        Description = "How many columns should be used to display the form.",
+        ListSource = ListSource.COLUMNS,
+        IsRequired = false,
+        DefaultValue = "4",
+        Order = 15 )]
 
     #region Adult Category
 
@@ -222,6 +247,26 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         Category = CategoryKey.AdultFields,
         Order = 6 )]
+
+    [CustomDropdownListField(
+        "Display Communication Preference",
+        Key = AttributeKey.AdultDisplayCommunicationPreference,
+        Description = "How should Communication Preference be displayed for adults?",
+        ListSource = "Hide,Required",
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.AdultFields,
+        Order = 7 )]
+
+    [CustomDropdownListField(
+        "Address",
+        Key = AttributeKey.AdultAddress,
+        Description = "How should Address be displayed for adults?",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Optional",
+        Category = CategoryKey.AdultFields,
+        Order = 8 )]
 
     #endregion
 
@@ -296,6 +341,15 @@ namespace RockWeb.Blocks.Crm
         Category = CategoryKey.ChildFields,
         Order = 6 )]
 
+    [CustomDropdownListField(
+        "Display Communication Preference",
+        Key = AttributeKey.ChildDisplayCommunicationPreference,
+        Description = "How should Communication Preference be displayed for children?",
+        ListSource = "Hide,Required",
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.ChildFields,
+        Order = 7 )]
     #endregion
 
     #region Child Relationship Category
@@ -349,8 +403,11 @@ namespace RockWeb.Blocks.Crm
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
             public const string WorkflowTypes = "WorkflowTypes";
+            public const string ParentWorkflow = "ParentWorkflow";
+            public const string ChildWorkflow = "ChildWorkflow";
             public const string RedirectURL = "RedirectURL";
             public const string RequireCampus = "RequireCampus";
+            public const string Columns = "Columns";
 
             public const string AdultSuffix = "AdultSuffix";
             public const string AdultGender = "AdultGender";
@@ -359,6 +416,8 @@ namespace RockWeb.Blocks.Crm
             public const string AdultEmail = "AdultEmail";
             public const string AdultMobilePhone = "AdultMobilePhone";
             public const string AdultAttributeCategories = "AdultAttributeCategories";
+            public const string AdultDisplayCommunicationPreference = "AdultDisplayCommunicationPreference";
+            public const string AdultAddress = "AdultAddress";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -367,6 +426,7 @@ namespace RockWeb.Blocks.Crm
             public const string ChildMobilePhone = "ChildMobilePhone";
             public const string ChildEmail = "ChildEmail";
             public const string ChildAttributeCategories = "ChildAttributeCategories";
+            public const string ChildDisplayCommunicationPreference = "ChildDisplayCommunicationPreference";
 
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
@@ -383,11 +443,14 @@ namespace RockWeb.Blocks.Crm
         private static class BlockAttributeDescription
         {
             public const string WorkflowTypes = @"The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: ParentIds, ChildIds, PlannedVisitDate.";
+            public const string ParentWorkflow = @"If set, this workflow type will launch for each parent provided. The parent will be passed to the workflow as the Entity.";
+            public const string ChildWorkflow = @"If set, this workflow type will launch for each child provided. The child will be passed to the workflow as the Entity.";
             public const string RedirectURL = @"The URL to redirect user to when they have completed the registration. The merge fields that are available includes 'Family', which is an object for the primary family that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is the value entered for the Planned Visit Date field if it was displayed.";
         }
 
         private static class ListSource
         {
+            public const string COLUMNS = "2,4";
             public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
             public const string HIDE_OPTIONAL = "Hide,Optional";
             public const string SQL_RELATIONSHIP_TYPES = @"
@@ -427,6 +490,12 @@ namespace RockWeb.Blocks.Crm
                 ORDER BY [Text]";
         }
 
+        private static class PageParameterKey
+        {
+            public static string CampusGuid = "CampusGuid";
+            public static string CampusId = "CampusId";
+        }
+
         #endregion Attribute Keys, Categories and Values
 
         #region Fields
@@ -446,7 +515,23 @@ namespace RockWeb.Blocks.Crm
         /// </value>
         protected List<PreRegistrationChild> Children { get; set; }
 
+        protected string GetColumnStyle( int columns )
+        {
+            if ( ( columns != 3 && columns != 6 ) || GetAttributeValue( AttributeKey.Columns ) == "4" )
+            {
+                return "col-sm-" + columns.ToString();
+            }
+
+            if ( columns == 6 )
+            {
+                return "col-sm-" + columns.ToString();
+            }
+
+            return "col-sm-" + ( columns * 2 ).ToString();
+        }
+
         private List<OccurrenceSchedule> OccurrenceSchedules { get; set; }
+
 
         #endregion
 
@@ -506,6 +591,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnLoad( e );
 
+            SetPanelStyles();
             nbError.Visible = false;
 
             if ( !Page.IsPostBack )
@@ -517,6 +603,25 @@ namespace RockWeb.Blocks.Crm
                 GetChildrenData();
             }
 
+        }
+
+        private void SetPanelStyles()
+        {
+            pnlSuffix1.CssClass = GetColumnStyle( 3 );
+            pnlGender1.CssClass = GetColumnStyle( 3 );
+            pnlBirthDate1.CssClass = GetColumnStyle( 6 );
+            pnlMaritalStatus1.CssClass = GetColumnStyle( 3 );
+            pnlMobilePhone1.CssClass = GetColumnStyle( 3 );
+            pnlEmail1.CssClass = GetColumnStyle( 6 );
+            pnlCommunicationPreference1.CssClass = GetColumnStyle( 6 );
+
+            pnlSuffix2.CssClass = GetColumnStyle( 3 ) + " js-Adult2Required";
+            pnlGender2.CssClass = GetColumnStyle( 3 ) + " js-Adult2Required";
+            pnlBirthDate2.CssClass = GetColumnStyle( 6 ) + " js-Adult2Required";
+            pnlMaritalStatus2.CssClass = GetColumnStyle( 3 ) + " js-Adult2Required";
+            pnlMobilePhone2.CssClass = GetColumnStyle( 3 ) + " js-Adult2Required";
+            pnlEmail2.CssClass = GetColumnStyle( 6 ) + " js-Adult2Required";
+            pnlCommunicationPreference2.CssClass = GetColumnStyle( 6 ) + " js-Adult2Required";
         }
 
         /// <summary>
@@ -617,7 +722,7 @@ namespace RockWeb.Blocks.Crm
                 ddlGender2.ClientID,
 
                 hfBirthDateRequired.ClientID,
-                dpBirthDate2.ClientID,
+                bpBirthDate2.ClientID,
 
                 hfMaritalStatusRequired.ClientID,
                 dvpMaritalStatus2.ClientID,
@@ -705,6 +810,8 @@ namespace RockWeb.Blocks.Crm
                 var canCheckinRelationships = GetAttributeValue( AttributeKey.CanCheckinRelationships ).SplitDelimitedValues().AsIntegerList();
                 var showChildMobilePhone = GetAttributeValue( AttributeKey.ChildMobilePhone ) != "Hide";
                 var showChildEmailAddress = GetAttributeValue( AttributeKey.ChildEmail ) != "Hide";
+                var showChildCommunicationPreference = GetAttributeValue( AttributeKey.ChildDisplayCommunicationPreference ) != "Hide";
+                var showAdultAddress = GetAttributeValue( AttributeKey.AdultAddress ) != "Hide";
 
                 // ...and some service objects
                 var personService = new PersonService( _rockContext );
@@ -728,8 +835,8 @@ namespace RockWeb.Blocks.Crm
 
                 // Save the adults
                 var adults = new List<Person>();
-                SaveAdult( ref primaryFamily, adults, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dpBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
-                SaveAdult( ref primaryFamily, adults, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dpBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
+                SaveAdult( ref primaryFamily, adults, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, bpBirthDate1, dvpMaritalStatus1, tbEmail1, rblCommunicationPreference1, pnMobilePhone1, phAttributes1 );
+                SaveAdult( ref primaryFamily, adults, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, bpBirthDate2, dvpMaritalStatus2, tbEmail2, rblCommunicationPreference2, pnMobilePhone2, phAttributes2 );
 
                 bool isNewFamily = false;
 
@@ -798,43 +905,46 @@ namespace RockWeb.Blocks.Crm
                 }
 
                 // Save the family address
-                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                if ( homeLocationType != null )
+                if ( showAdultAddress )
                 {
-                    // Find a location record for the address that was entered
-                    var loc = new Location();
-                    acAddress.GetValues( loc );
-                    if ( acAddress.Street1.IsNotNullOrWhiteSpace() && loc.City.IsNotNullOrWhiteSpace() )
+                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    if ( homeLocationType != null )
                     {
-                        loc = new LocationService( _rockContext ).Get( loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, primaryFamily, true );
-                    }
-                    else
-                    {
-                        loc = null;
-                    }
-
-                    // Check to see if family has an existing home address
-                    var groupLocation = primaryFamily.GroupLocations.FirstOrDefault( l => l.GroupLocationTypeValueId.HasValue && l.GroupLocationTypeValueId.Value == homeLocationType.Id );
-
-                    if ( loc != null )
-                    {
-                        if ( groupLocation == null || groupLocation.LocationId != loc.Id )
+                        // Find a location record for the address that was entered
+                        var loc = new Location();
+                        acAddress.GetValues( loc );
+                        if ( acAddress.Street1.IsNotNullOrWhiteSpace() && loc.City.IsNotNullOrWhiteSpace() )
                         {
-                            // If family does not currently have a home address or it is different than the one entered, add a new address (move old address to prev)
-                            GroupService.AddNewGroupAddress( _rockContext, primaryFamily, homeLocationType.Guid.ToString(), loc, true, string.Empty, true, true );
+                            loc = new LocationService( _rockContext ).Get( loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, primaryFamily, true );
                         }
-                    }
-                    else
-                    {
-                        if ( groupLocation != null && saveEmptyValues )
+                        else
                         {
-                            // If an address was not entered, and family has one on record, update it to be a previous address
-                            var prevLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
-                            groupLocation.GroupLocationTypeValueId = prevLocationType != null ? prevLocationType.Id : groupLocation.GroupLocationTypeValueId;
+                            loc = null;
                         }
-                    }
 
-                    _rockContext.SaveChanges();
+                        // Check to see if family has an existing home address
+                        var groupLocation = primaryFamily.GroupLocations.FirstOrDefault( l => l.GroupLocationTypeValueId.HasValue && l.GroupLocationTypeValueId.Value == homeLocationType.Id );
+
+                        if ( loc != null )
+                        {
+                            if ( groupLocation == null || groupLocation.LocationId != loc.Id )
+                            {
+                                // If family does not currently have a home address or it is different than the one entered, add a new address (move old address to prev)
+                                GroupService.AddNewGroupAddress( _rockContext, primaryFamily, homeLocationType.Guid.ToString(), loc, true, string.Empty, true, true );
+                            }
+                        }
+                        else
+                        {
+                            if ( groupLocation != null && saveEmptyValues )
+                            {
+                                // If an address was not entered, and family has one on record, update it to be a previous address
+                                var prevLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                                groupLocation.GroupLocationTypeValueId = prevLocationType != null ? prevLocationType.Id : groupLocation.GroupLocationTypeValueId;
+                            }
+                        }
+
+                        _rockContext.SaveChanges();
+                    }
                 }
 
                 // Save any family attribute values
@@ -918,12 +1028,18 @@ namespace RockWeb.Blocks.Crm
                         person.Email = child.EmailAddress;
                     }
 
+                    if ( showChildCommunicationPreference )
+                    {
+                        person.CommunicationPreference = child.CommunicationPreference;
+                    }
+
                     _rockContext.SaveChanges();
 
                     // Save the mobile phone number
                     if ( showChildMobilePhone && child.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
                     {
-                        SavePhoneNumber( person.Id, child.MobilePhoneNumber, child.MobileCountryCode );
+                        var isSmsNumber = person.CommunicationPreference == CommunicationType.SMS;
+                        SavePhoneNumber( person.Id, child.MobilePhoneNumber, child.MobileCountryCode, isSmsNumber );
                     }
 
                     // Save the attributes for the child
@@ -1033,15 +1149,59 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
+                var parentWorkflowTypeGuid = GetAttributeValue( AttributeKey.ParentWorkflow ).AsGuidOrNull();
+                if ( parentWorkflowTypeGuid.HasValue )
+                {
+                    var workflowType = WorkflowTypeCache.Get( parentWorkflowTypeGuid.Value );
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                    {
+                        foreach ( var adult in adults )
+                        {
+                            try
+                            {
+                                var workflow = Workflow.Activate( workflowType, adult.FullName );
+                                List<string> workflowErrors;
+                                new WorkflowService( new RockContext() ).Process( workflow, adult, out workflowErrors );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex, this.Context );
+                            }
+                        }
+                    }
+                }
+
+                var childIds = new List<int>( newChildIds );
+                childIds.AddRange( newRelationships.Select( r => r.Key ).ToList() );
+                var childWorkflowTypeGuid = GetAttributeValue( AttributeKey.ChildWorkflow ).AsGuidOrNull();
+                if ( childWorkflowTypeGuid.HasValue && childIds.Any() )
+                {
+                    var workflowType = WorkflowTypeCache.Get( childWorkflowTypeGuid.Value );
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                    {
+                        var childs = personService.Queryable().Where( p => childIds.Contains( p.Id ) ).ToList();
+                        foreach ( var child in childs )
+                        {
+                            try
+                            {
+                                var workflow = Workflow.Activate( workflowType, child.FullName );
+                                List<string> workflowErrors;
+                                new WorkflowService( new RockContext() ).Process( workflow, child, out workflowErrors );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex, this.Context );
+                            }
+                        }
+                    }
+                }
+
                 List<Guid> workflows = GetAttributeValue( AttributeKey.WorkflowTypes ).SplitDelimitedValues().AsGuidList();
                 string redirectUrl = GetAttributeValue( AttributeKey.RedirectURL );
                 if ( workflows.Any() || redirectUrl.IsNotNullOrWhiteSpace() )
                 {
                     var family = groupService.Get( primaryFamily.Id );
                     var schedule = new ScheduleService( _rockContext ).Get( ddlScheduleTime.SelectedValue.AsGuid() );
-
-                    var childIds = new List<int>( newChildIds );
-                    childIds.AddRange( newRelationships.Select( r => r.Key ).ToList() );
 
                     // Create parameters
                     var parameters = new Dictionary<string, string>();
@@ -1071,7 +1231,7 @@ namespace RockWeb.Blocks.Crm
                         // Launch all the workflows
                         foreach ( var wfGuid in workflows )
                         {
-                            family.LaunchWorkflow( wfGuid, family.Name, parameters );
+                            family.LaunchWorkflow( wfGuid, family.Name, parameters, null );
                         }
                     }
 
@@ -1150,7 +1310,7 @@ namespace RockWeb.Blocks.Crm
 
             // Adult Birthdate
             isRequired = SetControl( AttributeKey.AdultBirthdate, pnlBirthDate1, pnlBirthDate2 );
-            dpBirthDate1.Required = isRequired;
+            bpBirthDate1.Required = isRequired;
             hfBirthDateRequired.Value = isRequired.ToStringSafe();
 
             // Adult Marital Status
@@ -1170,6 +1330,13 @@ namespace RockWeb.Blocks.Crm
             isRequired = SetControl( AttributeKey.AdultMobilePhone, pnlMobilePhone1, pnlMobilePhone2 );
             pnMobilePhone1.Required = isRequired;
             hfMobilePhoneRequired.Value = isRequired.ToStringSafe();
+
+            // Adult Communication Preference
+            SetControl( AttributeKey.AdultDisplayCommunicationPreference, pnlCommunicationPreference1, pnlCommunicationPreference2 );
+
+            // Adult Address
+            isRequired = SetControl( AttributeKey.AdultAddress, acAddress, null );
+            acAddress.Required = isRequired;
 
             // Check for Current Family
             SetCurrentFamilyValues();
@@ -1371,41 +1538,35 @@ namespace RockWeb.Blocks.Crm
             // Set First Adult's Values
             hfAdultGuid1.Value = adult1 != null ? adult1.Id.ToString() : string.Empty;
 
-            lFirstName1.Visible = adult1 != null;
             tbFirstName1.Visible = adult1 == null;
-            lFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
             tbFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
 
-            lLastName1.Visible = adult1 != null;
             tbLastName1.Visible = adult1 == null;
-            lLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
             tbLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
 
             dvpSuffix1.SetValue( adult1 != null ? adult1.SuffixValueId : ( int? ) null );
             ddlGender1.SetValue( adult1 != null ? adult1.Gender.ConvertToInt() : 0 );
-            dpBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : ( DateTime? ) null );
+            bpBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : ( DateTime? ) null );
             dvpMaritalStatus1.SetValue( adult1 != null ? adult1.MaritalStatusValueId : ( int? ) null );
             tbEmail1.Text = ( adult1 != null ? adult1.Email : string.Empty );
+            rblCommunicationPreference1.SelectedValue = ( adult1 != null ? adult1.CommunicationPreference : CommunicationType.Email ).ConvertToInt().ToString();
             SetPhoneNumber( adult1, pnMobilePhone1 );
 
             // Set Second Adult's Values
             hfAdultGuid2.Value = adult2 != null ? adult2.Guid.ToString() : string.Empty;
 
-            lFirstName2.Visible = adult2 != null;
             tbFirstName2.Visible = adult2 == null;
-            lFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
             tbFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
 
-            lLastName2.Visible = adult2 != null;
             tbLastName2.Visible = adult2 == null;
-            lLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
             tbLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
 
             dvpSuffix2.SetValue( adult2 != null ? adult2.SuffixValueId : ( int? ) null );
             ddlGender2.SetValue( adult2 != null ? adult2.Gender.ConvertToInt() : 0 );
-            dpBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : ( DateTime? ) null );
+            bpBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : ( DateTime? ) null );
             dvpMaritalStatus2.SetValue( adult2 != null ? adult2.MaritalStatusValueId : ( int? ) null );
             tbEmail2.Text = ( adult2 != null ? adult2.Email : string.Empty );
+            rblCommunicationPreference2.SelectedValue = ( adult2 != null ? adult2.CommunicationPreference : CommunicationType.Email ).ConvertToInt().ToString();
             SetPhoneNumber( adult2, pnMobilePhone2 );
 
             Children = new List<PreRegistrationChild>();
@@ -1474,15 +1635,33 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                // Set campus to the default
-                Guid? campusGuid = GetAttributeValue( AttributeKey.DefaultCampus ).AsGuidOrNull();
-                if ( campusGuid.HasValue )
+                // Set campus id from page parameter or from default if page parameter is null or invalid.
+                var campusGuid = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
+                var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+                CampusCache initialCampus = null;
+
+                if ( campusGuid != null )
                 {
-                    var defaultCampus = CampusCache.Get( campusGuid.Value );
-                    if ( defaultCampus != null )
+                    initialCampus = CampusCache.Get( campusGuid.Value );
+                }
+                else if ( campusId != null )
+                {
+                    initialCampus = CampusCache.Get( campusId.Value );
+                }
+
+                if ( initialCampus == null )
+                {
+                    campusGuid = GetAttributeValue( AttributeKey.DefaultCampus ).AsGuidOrNull();
+                    if ( campusGuid != null )
                     {
-                        cpCampus.SetValue( defaultCampus.Id );
+                        initialCampus = CampusCache.Get( campusGuid.Value );
                     }
+                }
+
+                if ( initialCampus != null )
+                {
+                    cpCampus.SetValue( initialCampus.Id );
                 }
 
                 // Clear the address
@@ -1639,6 +1818,8 @@ namespace RockWeb.Blocks.Crm
             var requireMobilePhone = GetAttributeValue( AttributeKey.ChildMobilePhone ) == "Required";
             var showEmailAddress = GetAttributeValue( AttributeKey.ChildEmail ) != "Hide";
             var requireEmailAddress = GetAttributeValue( AttributeKey.ChildEmail ) == "Required";
+            var showCommunicationPreference = GetAttributeValue( AttributeKey.ChildDisplayCommunicationPreference ) != "Hide";
+            var columns = GetAttributeValue( AttributeKey.Columns ).AsInteger();
 
             var attributeList = GetCategoryAttributeList( AttributeKey.ChildAttributeCategories );
 
@@ -1667,9 +1848,11 @@ namespace RockWeb.Blocks.Crm
                     childRow.ShowMobilePhone = showMobilePhone;
                     childRow.RequireMobilePhone = requireMobilePhone;
                     childRow.ShowEmailAddress = showEmailAddress;
+                    childRow.ShowCommunicationPreference = showCommunicationPreference;
                     childRow.RequireEmailAddress = requireEmailAddress;
                     childRow.RelationshipTypeList = _relationshipTypes;
                     childRow.AttributeList = attributeList;
+                    childRow.Columns = columns;
 
                     childRow.ValidationGroup = BlockValidationGroup;
 
@@ -1685,6 +1868,7 @@ namespace RockWeb.Blocks.Crm
                         childRow.MobilePhone = child.MobilePhoneNumber;
                         childRow.MobilePhoneCountryCode = child.MobileCountryCode;
                         childRow.EmailAddress = child.EmailAddress;
+                        childRow.CommunicationPreference = child.CommunicationPreference;
 
                         childRow.SetAttributeValues( child );
                     }
@@ -1699,9 +1883,10 @@ namespace RockWeb.Blocks.Crm
             RockTextBox tbLastName,
             DefinedValuePicker dvpSuffix,
             RockDropDownList ddlGender,
-            DatePicker dpBirthDate,
+            BirthdayPicker dpBirthDate,
             DefinedValuePicker dvpMaritalStatus,
             EmailBox tbEmail,
+            RockRadioButtonList rblCommunicationPreference,
             PhoneNumberBox pnMobilePhone,
             DynamicPlaceholder phAttributes )
         {
@@ -1717,6 +1902,7 @@ namespace RockWeb.Blocks.Crm
             var showMaritalStatus = GetAttributeValue( AttributeKey.AdultMaritalStatus ) != "Hide";
             var showEmail = GetAttributeValue( AttributeKey.AdultEmail ) != "Hide";
             var showMobilePhone = GetAttributeValue( AttributeKey.AdultMobilePhone ) != "Hide";
+            var showCommunicationPreference = GetAttributeValue( AttributeKey.AdultDisplayCommunicationPreference ) != "Hide";
             bool autoMatch = GetAttributeValue( AttributeKey.AutoMatch ).AsBoolean();
 
             var personService = new PersonService( _rockContext );
@@ -1814,13 +2000,22 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
+                if ( showCommunicationPreference )
+                {
+                    if ( rblCommunicationPreference.SelectedValue.IsNotNullOrWhiteSpace() )
+                    {
+                        adult.CommunicationPreference = ( CommunicationType ) rblCommunicationPreference.SelectedValue.AsInteger();
+                    }
+                }
+
                 // Save the person
                 _rockContext.SaveChanges();
 
                 // Save the mobile phone number
                 if ( showMobilePhone )
                 {
-                    SavePhoneNumber( adult.Id, pnMobilePhone );
+                    var isSmsNumber = adult.CommunicationPreference == CommunicationType.SMS;
+                    SavePhoneNumber( adult.Id, pnMobilePhone, isSmsNumber );
                 }
 
                 // Save any attribute values
@@ -1885,6 +2080,7 @@ namespace RockWeb.Blocks.Crm
                 child.MobilePhoneNumber = childRow.MobilePhone;
                 child.MobileCountryCode = childRow.MobilePhoneCountryCode;
                 child.EmailAddress = childRow.EmailAddress;
+                child.CommunicationPreference = childRow.CommunicationPreference;
 
                 child.RelationshipType = childRow.RelationshipType;
 
@@ -1951,6 +2147,20 @@ namespace RockWeb.Blocks.Crm
         /// <returns></returns>
         private bool ValidateInfo()
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return false;
+            }
+
             // First, verify that the page controls are valid using built-in validators.
             // If validation fails, exit and allow the controls to display the messages they have generated.
             Page.Validate();
@@ -1979,10 +2189,39 @@ namespace RockWeb.Blocks.Crm
             }
 
             ValidateRequiredField( AttributeKey.AdultGender, "Gender is required for each adult.", ddlGender1.SelectedValueAsEnumOrNull<Gender>() != null, ddlGender2.SelectedValueAsEnumOrNull<Gender>() != null, errorMessages );
-            ValidateRequiredField( AttributeKey.AdultBirthdate, "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
+            ValidateRequiredField( AttributeKey.AdultBirthdate, "Birthdate is required for each adult.", bpBirthDate1.SelectedDate != null, bpBirthDate2.SelectedDate != null, errorMessages );
             ValidateRequiredField( AttributeKey.AdultEmail, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhiteSpace(), tbEmail2.Text.IsNotNullOrWhiteSpace(), errorMessages );
             //ValidateRequiredField( AttributeKey.AdultMOBILE_KEY, "A valid Mobile Phone is required for each adult.", pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
             bool isPhoneValid = ValidateRequiredField( AttributeKey.AdultMobilePhone, string.Empty, pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
+
+            var smsCommunicationType = CommunicationType.SMS.ConvertToInt().ToString();
+            var communicationPreference1IsValid = rblCommunicationPreference1.SelectedValue != smsCommunicationType
+                || ( rblCommunicationPreference1.SelectedValue == smsCommunicationType
+                        && ( !pnMobilePhone1.Visible
+                        || pnMobilePhone1.Number.IsNotNullOrWhiteSpace() ) );
+
+            var communicationPreference2IsValid = rblCommunicationPreference2.SelectedValue != smsCommunicationType
+                || ( rblCommunicationPreference2.SelectedValue == smsCommunicationType
+                        && ( !pnMobilePhone2.Visible
+                        || pnMobilePhone2.Number.IsNotNullOrWhiteSpace() ) );
+
+            ValidateRequiredField( AttributeKey.AdultDisplayCommunicationPreference,
+                "SMS Number is required if SMS communication preference is selected.",
+                communicationPreference1IsValid,
+                communicationPreference2IsValid,
+                errorMessages );
+
+            foreach ( var childRow in prChildren.ChildRows )
+            {
+                if ( childRow.IsValid == false )
+                {
+                    if ( !childRow.ValidationErrors.Any() )
+                    {
+                        return false;
+                    }
+                    errorMessages.AddRange( childRow.ValidationErrors );
+                }
+            }
 
             if ( errorMessages.Any() )
             {
@@ -1991,15 +2230,6 @@ namespace RockWeb.Blocks.Crm
                 nbError.Visible = true;
 
                 return false;
-            }
-
-            foreach ( var childRow in prChildren.ChildRows )
-            {
-                if ( childRow.IsValid == false )
-                {
-                    // Don't need to add to the error messages here.
-                    return false;
-                }
             }
 
             if ( !isPhoneValid )
@@ -2178,9 +2408,9 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="pnb">The PNB.</param>
-        private void SavePhoneNumber( int personId, PhoneNumberBox pnb )
+        private void SavePhoneNumber( int personId, PhoneNumberBox pnb, bool isSmsNumber )
         {
-            SavePhoneNumber( personId, pnb.Number, pnb.CountryCode );
+            SavePhoneNumber( personId, pnb.Number, pnb.CountryCode, isSmsNumber );
         }
 
         /// <summary>
@@ -2189,7 +2419,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="personId">The person identifier.</param>
         /// <param name="number">The number.</param>
         /// <param name="countryCode">The country code.</param>
-        private void SavePhoneNumber( int personId, string number, string countryCode )
+        private void SavePhoneNumber( int personId, string number, string countryCode, bool isSmsNumber )
         {
 
             string phone = PhoneNumber.CleanNumber( number );
@@ -2215,6 +2445,11 @@ namespace RockWeb.Blocks.Crm
 
                         phoneNumber.PersonId = personId;
                         phoneNumber.NumberTypeValueId = phType.Id;
+
+                        if ( isSmsNumber )
+                        {
+                            phoneNumber.IsMessagingEnabled = true;
+                        }
                     }
 
                     phoneNumber.CountryCode = PhoneNumber.CleanNumber( countryCode );

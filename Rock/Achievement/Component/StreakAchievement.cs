@@ -107,7 +107,7 @@ namespace Rock.Achievement.Component
             public const string EndDateTime = "EndDateTime";
 
             /// <summary>
-            /// The streak type
+            /// The streak type Guid
             /// </summary>
             public const string StreakType = "StreakType";
         }

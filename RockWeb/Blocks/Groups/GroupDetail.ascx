@@ -29,6 +29,7 @@
                         <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivegroup-label" LabelType="Danger" Text="Inactive" />
                         <Rock:HighlightLabel ID="hlArchived" runat="server" CssClass="js-archivedgroup-label" LabelType="Danger" Text="Archived" />
                         <Rock:HighlightLabel ID="hlIsPrivate" runat="server" CssClass="js-privategroup-label" LabelType="Default" Text="Private" />
+                        <Rock:HighlightLabel ID="hlElevatedSecurityLevel" runat="server" LabelType="Warning" Visible="false" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
@@ -103,7 +104,7 @@
                                             <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
                                         </div>
                                         <div class="col-sm-6">
-                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" />
+                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsSecurityRole_CheckedChanged" />
                                         </div>
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
@@ -112,6 +113,16 @@
                                     <Rock:PersonPicker ID="ppAdministrator" runat="server" />
                                 </div>
                                 <div class="col-md-6">
+                                    <asp:Panel runat="server" ID="pnlElevatedSecurity">
+                                        <Rock:RockRadioButtonList
+                                            ID="rblElevatedSecurityLevel"
+                                            runat="server"
+                                            Label="Elevated Security Level"
+                                            Required="true"
+                                            Help="Determines the amount of extra security privileges this security role provides. This helps Rock protect accounts of individuals with high-level access."
+                                            RepeatDirection="Horizontal"
+                                        />
+                                    </asp:Panel>
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                                     <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document"
                                         Help="If members of this group need to have signed a document, select that document type here." />
@@ -606,6 +617,7 @@
                         }
                     });
                 });
+
             });
 
         </script>

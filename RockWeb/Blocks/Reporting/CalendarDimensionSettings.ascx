@@ -9,6 +9,7 @@
                 <h1 class="panel-title"><i class="fa fa-calendar"></i>&nbsp;Calendar Dimension Settings</h1>
             </div>
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbGenerate" runat="server" Text="This will populate the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it." />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -21,14 +22,11 @@
                     </div>
                 </div>
 
-                <Rock:HelpBlock ID="hbGenerate" runat="server" Text="This will populate the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it." />
+                <Rock:NotificationBox ID="nbGenerateSuccess" runat="server" NotificationBoxType="Success" Visible="true" Dismissable="true" />
+
                 <div class="actions">
                     <asp:LinkButton ID="btnGenerate" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Generate Dimension" CssClass="btn btn-primary" OnClick="btnGenerate_Click" />
                 </div>
-
-                <br />
-                <Rock:NotificationBox ID="nbGenerateSuccess" runat="server" NotificationBoxType="Success" Visible="true" Dismissable="true" />
-
             </div>
 
         </asp:Panel>

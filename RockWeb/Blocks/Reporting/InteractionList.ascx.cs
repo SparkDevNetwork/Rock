@@ -39,52 +39,51 @@ namespace RockWeb.Blocks.Reporting
 
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
+{% for interaction in Interactions %}
+    {% if InteractionDetailPage != null and InteractionDetailPage != '' %}
+        <a href = '{{ InteractionDetailPage }}?InteractionId={{ interaction.Id }}'>
+    {% endif %}
     
-
-	        {% for interaction in Interactions %}
-		        {% if InteractionDetailPage != null and InteractionDetailPage != '' %}
-                    <a href = '{{ InteractionDetailPage }}?InteractionId={{ interaction.Id }}'>
-                {% endif %}
-		        
-		         <div class='panel panel-widget'>
-                    <div class='panel-heading'>
+    <div class='panel panel-widget'>
+        <div class='panel-heading'>
+            <div class='w-100'>
+                <div class='row'>
+                    <div class='col-md-12'>
+                        <span class='label label-info pull-left margin-r-md'>{{ interaction.Operation }}</span>
+                    
+                        {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ interaction.InteractionDateTime }}</h1>{% endif %}
                         
-                        <div class='row'>
-                            <div class='col-md-12'>
-                                <span class='label label-info pull-left margin-r-md'>{{ interaction.Operation }}</span>
-                            
-                                {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ interaction.InteractionDateTime }}</h1>{% endif %}
-                                
-                                <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
-                            </div>
-                        </div>
-                        
-                        <div class='row margin-t-md'>
-                            {% if interaction.InteractionSummary && interaction.InteractionSummary != '' %}
-                            <div class='col-md-6'>
-                                <dl>
-                                    <dt>Interaction Summary</dt>
-                                    <dd>{{ interaction.InteractionSummary }}</dd>
-                                </dl>
-                            </div>
-                            {% endif %}
-                            
-                            {% if interaction.InteractionData && interaction.InteractionData != '' %}
-                            <div class='col-md-6'>
-                                <dl>
-                                    <dt>Interaction Data</dt>
-                                    <dd>{{ interaction.InteractionData }}</dd>
-                                </dl>
-                            </div>
-                            {% endif %}
-                        </div>
+                        <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
                     </div>
                 </div>
-		        
-		        {% if InteractionDetailPage != null and InteractionDetailPage != '' %}
-    		        </a>
-		        {% endif %}
-	        {% endfor %}	
+                
+                <div class='row margin-t-md'>
+                    {% if interaction.InteractionSummary and interaction.InteractionSummary != '' %}
+                    <div class='col-md-6'>
+                        <dl class='mb-0'>
+                            <dt>Interaction Summary</dt>
+                            <dd>{{ interaction.InteractionSummary }}</dd>
+                        </dl>
+                    </div>
+                    {% endif %}
+                    
+                    {% if interaction.InteractionData and interaction.InteractionData != '' %}
+                    <div class='col-md-6'>
+                        <dl class='mb-0'>
+                            <dt>Interaction Data</dt>
+                            <dd>{{ interaction.InteractionData }}</dd>
+                        </dl>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if InteractionDetailPage != null and InteractionDetailPage != '' %}
+        </a>
+    {% endif %}
+{% endfor %}
 	      " )]
     [IntegerField( "Page Size", "The number of interactions to show per page.", true, 20, "", 3 )]
     public partial class InteractionList : Rock.Web.UI.RockBlock

@@ -1,0 +1,128 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using Rock.Data;
+using Rock.Lava;
+using Rock.Web.Cache;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
+namespace Rock.Model
+{
+    /// <summary>
+    /// Represents a WorkflowActivityType or set of <see cref="Rock.Model.WorkflowActionType">ActionsTypes</see> that are executed/performed as part of a <see cref="Rock.Model.WorkflowType"/>
+    /// </summary>
+    [RockDomain( "Workflow" )]
+    [Table( "WorkflowActivityType" )]
+    [DataContract]
+    public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered, ICacheable
+    {
+        #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this WorkflowActivityType is active.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the WorkflowActivityType is active; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this WorkflowActivityType belongs to.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this WorkflowActivityType belongs to.
+        /// </value>
+        [DataMember]
+        public int WorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the friendly Name of this WorkflowActivityType. This property is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the friendly name of this WorkflowActivityType
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description or summary about this WorkflowActivityType.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> containing a description or summary about this WorkflowActivityType.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this WorkflowActivityType is activated with the workflow.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is activated with workflow; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActivatedWithWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order that this WorkflowActivityType will be executed in the WorkflowType's process. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> indicating the order that this Activity will be executed in the Workflow.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
+
+        #endregion Entity Properties
+
+        #region Navigation Properties
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> that runs this WorkflowActivityType.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.WorkflowType"/> that runs this WorkflowActivityType.
+        /// </value>
+        [LavaVisible]
+        public virtual WorkflowType WorkflowType { get; set; }
+
+        #endregion Navigation Properties
+    }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// ActivityType Configuration class.
+    /// </summary>
+    public partial class WorkflowActivityTypeConfiguration : EntityTypeConfiguration<WorkflowActivityType>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypeConfiguration"/> class.
+        /// </summary>
+        public WorkflowActivityTypeConfiguration()
+        {
+            this.HasRequired( m => m.WorkflowType ).WithMany( m => m.ActivityTypes ).HasForeignKey( m => m.WorkflowTypeId ).WillCascadeOnDelete( true );
+        }
+    }
+
+    #endregion Entity Configuration
+}
+

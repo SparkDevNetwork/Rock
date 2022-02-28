@@ -28,6 +28,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Tracks when a short link is used.
     /// </summary>
+    [Obsolete( "Use AddShortLinkInteraction Task instead." )]
+    [RockObsolete( "1.13" )]
     public class ShortLinkTransaction : ITransaction
     {
         /// <summary>

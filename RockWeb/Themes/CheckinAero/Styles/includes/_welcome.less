@@ -1,6 +1,6 @@
 .welcome {
-  .checkin-body .scroller,
-  .checkin-scroll-panel {
+  .checkin-active .checkin-body .scroller,
+  .checkin-active .checkin-scroll-panel {
     position: absolute;
     top: 0;
     right: 0;
@@ -10,11 +10,53 @@
     padding: 0;
   }
 
-  .kioskmanager-locations .checkin-scroll-panel {
-    right: 40px;
-    bottom: 90px;
-    left: 40px;
-    width: auto !important;
+  // Add offset when there is no checkin header present (Reprint Labels)
+  .checkin-body:first-child .checkin-scroll-panel:first-child {
+    top: 66px !important;
+    bottom: 0 !important;
+
+    @media (min-width: @screen-xs-min) {
+      top: 100px !important;
+    }
+  }
+
+  // Show on Reprint Labels
+  .checkbox-container {
+    display: block;
+  }
+
+  .kioskmanager-locations {
+    br {
+      display: none;
+    }
+
+    .checkin-scroll-panel {
+      right: 40px;
+      bottom: 90px;
+      left: 40px;
+      width: auto !important;
+    }
+  }
+
+  .kioskmanager-location {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 0 15px 20px 0;
+
+    @media (min-width: @screen-sm-min) {
+      margin: 0 40px 20px 0;
+    }
+
+    .kioskmanager-location-toggle {
+      margin: 0;
+    }
+
+    .kioskmanager-location-count {
+      position: relative;
+      right: 0;
+      margin: 0 0 0 auto;
+    }
   }
 
   .checkin-active {
@@ -138,19 +180,36 @@
 // Kiosk Manager and Scheduled Locations Blocks
 .scheduled-locations-actions,
 .kioskmanager-actions {
-  right: 85px !important;
-  bottom: 24px !important;
-  left: 25px !important;
+  right: 0 !important;
+  bottom: 12px !important;
+  left: 0 !important;
   display: flex;
   flex-direction: row-reverse;
 
+  @media (min-width: @screen-md-min) {
+    right: 70px !important;
+    bottom: 24px !important;
+    left: 25px !important;
+  }
+
   .btn,
-  .btn:active {
+  .btn:active,
+  .btn:active:hover {
     display: inline-flex;
     min-height: auto;
-    padding: 12px;
-    margin: 0 15px;
-    font-size: 26px;
+    padding: 6px;
+    margin: 0 5px;
+    font-size: @font-size-base;
+
+
+    @media (min-width: @screen-sm-min) {
+      padding: 12px;
+    }
+
+    @media (min-width: @screen-lg-min) {
+      margin: 0 10px;
+      font-size: 24px;
+    }
 
     + .btn {
       margin-top: 0;

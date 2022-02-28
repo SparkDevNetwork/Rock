@@ -39,6 +39,7 @@ using System.Web;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.IO;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -2469,7 +2470,7 @@ namespace RockWeb.Blocks.Crm
                         int? intValue = value.AsIntegerOrNull();
                         if ( intValue.HasValue )
                         {
-
+                            // Queue a transaction to launch workflow
                             var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                             var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
                             launchWorkflowsTxn.InitiatorPersonAliasId = _currentPersonAliasId;

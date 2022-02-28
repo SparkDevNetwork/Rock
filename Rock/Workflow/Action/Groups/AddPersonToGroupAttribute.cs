@@ -36,13 +36,50 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Add From Attribute" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to add to the group.",
+        Key = AttributeKey.PersonKey,
+        IsRequired = true,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" },
+        Order = 0 )]
 
-    [WorkflowAttribute( "Group", "Workflow Attribute that contains the group to add the person to.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowAttribute( "Group",
+        Description = "Workflow Attribute that contains the group to add the person to.",
+        Key = AttributeKey.GroupKey,
+        IsRequired = true,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" },
+        Order = 1 )]
+
+    [BooleanField( "Disable Security Groups",
+        Description = "When set to 'Yes', if the group given is a security type group the action will not be marked as a success and an error will be logged.",
+        Key = AttributeKey.DisableSecurityGroups,
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 2 )]
+
+    [GroupTypeField( "Limit To Groups Of Type",
+        Description = "When set, if the group given does not match this group type the action will not be marked as a success and an error will be logged.",
+        Key = AttributeKey.LimitToGroupsOfType,
+        IsRequired = false,
+        Order = 3 )]
+
+    [GroupField( "Limit To Groups Under Specific Parent Group",
+        Description = "When set, if the group given is not found under this parent group the action will not be marked as a success and an error will be logged.",
+        Key = AttributeKey.LimitToGroupsUnderSpecificParentGroup,
+        IsRequired = false,
+        Order = 4 )]
+
     public class AddPersonToGroupWFAttribute : ActionComponent
     {
+        private class AttributeKey
+        {
+            public const string PersonKey = "Person";
+            public const string GroupKey = "Group";
+            public const string DisableSecurityGroups = "DisableSecurityGroups";
+            public const string LimitToGroupsOfType = "LimitToGroupsOfType";
+            public const string LimitToGroupsUnderSpecificParentGroup = "LimitToGroupsUnderSpecificParentGroup";
+        }
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -51,7 +88,7 @@ namespace Rock.Workflow.Action
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -59,7 +96,7 @@ namespace Rock.Workflow.Action
             Group group = null;
             int? groupRoleId = null;
 
-            var guidGroupAttribute = GetAttributeValue( action, "Group" ).AsGuidOrNull();
+            var guidGroupAttribute = GetAttributeValue( action, AttributeKey.GroupKey ).AsGuidOrNull();
 
             if ( guidGroupAttribute.HasValue )
             {
@@ -85,6 +122,44 @@ namespace Rock.Workflow.Action
             {
                 errorMessages.Add( "No group was provided" );
             }
+            else
+            {
+                // Check if this is a security group and show an error if that functionality has been disabled.
+                var disableSecurityGroups = GetAttributeValue( action, AttributeKey.DisableSecurityGroups ).AsBooleanOrNull() ?? false;
+                if ( group.IsSecurityRoleOrSecurityGroupType() && disableSecurityGroups )
+                {
+                    errorMessages.Add( $"\"{group.Name}\" is a Security group. The settings for this workflow action do not allow it to add a person to a security group." );
+                }
+
+                // If LimitToGroupsOfType has any values check if this Group's GroupType is in that list
+                var limitToGroupsOfTypeGuid = GetAttributeValue( action, AttributeKey.LimitToGroupsOfType ).AsGuidOrNull();
+                if ( limitToGroupsOfTypeGuid.HasValue )
+                {
+                    var limitToGroupType = GroupTypeCache.Get( limitToGroupsOfTypeGuid.Value );
+                    var limitToGroupTypeIds = new GroupTypeService( rockContext ).GetChildGroupTypes( limitToGroupType.Id ).Select( a => a.Id ).ToList();
+                    limitToGroupTypeIds.Add( limitToGroupType.Id );
+
+                    if ( !limitToGroupTypeIds.Contains( group.GroupTypeId ) )
+                    {
+                        errorMessages.Add( $"The group type for group \"{group.Name} is \"{group.GroupType.Name}\". This action is configured to only add persons to groups of type \"{limitToGroupType.Name}\" and its child types." );
+                    }
+                }
+
+                // If LimitToGroupsUnderSpecificParentGroup has any values check if this Group is a child of that group
+                var limitToChildGroupsOfGroupGuid = GetAttributeValue( action, AttributeKey.LimitToGroupsUnderSpecificParentGroup ).AsGuidOrNull();
+                if ( limitToChildGroupsOfGroupGuid.HasValue )
+                {
+                    var groupService = new GroupService( rockContext );
+                    var limitToChildGroupsOfGroup = groupService.Get( limitToChildGroupsOfGroupGuid.Value );
+                    var limitToGroupIds = groupService.GetAllDescendentGroupIds( limitToChildGroupsOfGroup.Id, true );
+                    limitToGroupIds.Add( limitToChildGroupsOfGroup.Id );
+
+                    if ( !limitToGroupIds.Contains( group.Id ) )
+                    {
+                        errorMessages.Add( $"Cannot add the person to group \"{group.Name}\". This workflow action is configured to only add persons to groups that are a descendant of Group {limitToChildGroupsOfGroup.Name}." );
+                    }
+                }
+            }
 
             if ( !groupRoleId.HasValue )
             {
@@ -95,7 +170,7 @@ namespace Rock.Workflow.Action
             Person person = null;
 
             // get the Attribute.Guid for this workflow's Person Attribute so that we can lookup the value
-            var guidPersonAttribute = GetAttributeValue( action, "Person" ).AsGuidOrNull();
+            var guidPersonAttribute = GetAttributeValue( action, AttributeKey.PersonKey ).AsGuidOrNull();
 
             if ( guidPersonAttribute.HasValue )
             {
@@ -156,6 +231,7 @@ namespace Rock.Workflow.Action
                     {
                         groupMemberService.Add( groupMember );
                     }
+
                     rockContext.SaveChanges();
                 }
                 else
@@ -169,6 +245,5 @@ namespace Rock.Workflow.Action
 
             return true;
         }
-
     }
 }

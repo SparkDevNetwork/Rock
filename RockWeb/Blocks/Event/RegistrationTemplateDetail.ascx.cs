@@ -22,9 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -35,7 +33,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Event
@@ -190,7 +187,7 @@ namespace RockWeb.Blocks.Event
 {% endif %}
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 2 )]
@@ -318,7 +315,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 4 )]
@@ -355,7 +352,7 @@ namespace RockWeb.Blocks.Event
 {% endif %}
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 5 )]
@@ -815,15 +812,7 @@ The logged-in person's information will be used to complete the registrar inform
                 LoadStateDetails( registrationTemplate, rockContext );
 
                 // clone the registration template
-                var newRegistrationTemplate = registrationTemplate.Clone( false );
-                newRegistrationTemplate.CreatedByPersonAlias = null;
-                newRegistrationTemplate.CreatedByPersonAliasId = null;
-                newRegistrationTemplate.CreatedDateTime = RockDateTime.Now;
-                newRegistrationTemplate.ModifiedByPersonAlias = null;
-                newRegistrationTemplate.ModifiedByPersonAliasId = null;
-                newRegistrationTemplate.ModifiedDateTime = RockDateTime.Now;
-                newRegistrationTemplate.Id = 0;
-                newRegistrationTemplate.Guid = Guid.NewGuid();
+                var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
                 newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
 
                 // Create temporary state objects for the new registration template
@@ -832,6 +821,7 @@ The logged-in person's information will be used to complete the registrar inform
                 var newDiscountState = new List<RegistrationTemplateDiscount>();
                 var newFeeState = new List<RegistrationTemplateFee>();
                 var newAttributeState = new List<Attribute>();
+                var newRegistrationTemplatePlacementState = new List<RegistrationTemplatePlacement>();
 
                 foreach ( var form in FormState )
                 {
@@ -927,11 +917,32 @@ The logged-in person's information will be used to complete the registrar inform
                     newAttributeState.Add( newAttribute );
                 }
 
+                foreach ( var registrationTemplatePlacement in RegistrationTemplatePlacementState )
+                {
+                    var newRegistrationTemplatePlacement = registrationTemplatePlacement.Clone( false );
+                    newRegistrationTemplatePlacement.Id = 0;
+                    newRegistrationTemplatePlacement.Guid = Guid.NewGuid();
+                    newRegistrationTemplatePlacementState.Add( newRegistrationTemplatePlacement );
+
+                    // Find the existing Guid in the list of group ids and update it.
+                    if (RegistrationTemplatePlacementGuidGroupIdsState.ContainsKey(registrationTemplatePlacement.Guid))
+                    {
+                        // Remove the old Guid and then replace it with the new Guid in the GuidGroupIds State.
+                        var intList = new List<int>();
+                        if (RegistrationTemplatePlacementGuidGroupIdsState.TryGetValue( registrationTemplatePlacement.Guid, out intList ))
+                        {
+                            RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( newRegistrationTemplatePlacement.Guid, intList );
+                            RegistrationTemplatePlacementGuidGroupIdsState.Remove( registrationTemplatePlacement.Guid );
+                        }
+                    }
+                }
+
                 FormState = newFormState;
                 FormFieldsState = newFormFieldsState;
                 DiscountState = newDiscountState;
                 FeeState = newFeeState;
                 RegistrationAttributesState = newAttributeState;
+                RegistrationTemplatePlacementState = newRegistrationTemplatePlacementState;
 
                 hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
                 ShowEditDetails( newRegistrationTemplate, rockContext );
@@ -948,25 +959,6 @@ The logged-in person's information will be used to complete the registrar inform
             ParseControls( true );
 
             var rockContext = new RockContext();
-
-            int? gatewayId = fgpFinancialGateway.SelectedValueAsInt();
-
-            // validate gateway
-            if ( gatewayId.HasValue )
-            {
-                var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
-                if ( financialGateway != null )
-                {
-                    var hostedGatewayComponent = financialGateway.GetGatewayComponent() as Rock.Financial.IHostedGatewayComponent;
-                    if ( hostedGatewayComponent != null && !hostedGatewayComponent.GetSupportedHostedGatewayModes( financialGateway ).Contains( Rock.Financial.HostedGatewayMode.Unhosted ) )
-                    {
-                        nbValidationError.Text = "Unsupported Gateway. Registration currently only supports Gateways that have an un-hosted payment interface.";
-                        nbValidationError.Visible = true;
-                        return;
-                    }
-                }
-            }
-
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             RegistrationTemplate registrationTemplate = null;
@@ -1006,6 +998,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
             registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
+            registrationTemplate.RegistrantWorkflowTypeId = wtpRegistrantWorkflow.SelectedValueAsInt();
             registrationTemplate.Notify = notify;
             registrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             registrationTemplate.LoginRequired = cbLoginRequired.Checked;
@@ -1019,7 +1012,17 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Value;
             registrationTemplate.DefaultPayment = cbDefaultPaymentAmount.Value;
             registrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
-            registrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
+
+            if ( IsRedirectionGateway() )
+            {
+                registrationTemplate.BatchNamePrefix = null;
+            }
+            else
+            {
+                registrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
+            }
+
+            ShowHideBatchPrefixTextbox();
 
             registrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
             registrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
@@ -1471,20 +1474,20 @@ The logged-in person's information will be used to complete the registrar inform
                 int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
-                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page
+                    // Canceling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page.
                     var qryParams = new Dictionary<string, string>();
                     qryParams["CategoryId"] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {
-                    // Cancelling on Add.  Return to Grid
+                    // Canceling on Add.  Return to Grid.
                     NavigateToParentPage();
                 }
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
+                // Canceling on Edit.  Return to Details.
                 RegistrationTemplateService service = new RegistrationTemplateService( new RockContext() );
                 RegistrationTemplate item = service.Get( int.Parse( hfRegistrationTemplateId.Value ) );
                 ShowReadonlyDetails( item );
@@ -1649,7 +1652,7 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 /*
                   SK - 11 Oct 2020
-                  On Field Delete, we need to also remove all the exisiting reference of current field in filter rule list
+                  On Field Delete, we need to also remove all the existing references of current field in filter rule list.
                 */
                 var newFormFieldsWithRules = FormFieldsState[e.FormGuid]
                     .Where( a => a.FieldVisibilityRules.RuleList.Any()
@@ -1663,6 +1666,7 @@ The logged-in person's information will be used to complete the registrar inform
                         .RemoveAll( a => a.ComparedToFormFieldGuid.HasValue
                         && a.ComparedToFormFieldGuid.Value == e.FormFieldGuid );
                 }
+
                 FormFieldsState[e.FormGuid].RemoveEntity( e.FormFieldGuid );
             }
 
@@ -2534,6 +2538,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
+            wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
 
             foreach ( ListItem li in cblNotify.Items )
@@ -2556,8 +2561,18 @@ The logged-in person's information will be used to complete the registrar inform
             cbMinimumInitialPayment.Value = registrationTemplate.MinimumInitialPayment;
             cbDefaultPaymentAmount.Value = registrationTemplate.DefaultPayment;
             fgpFinancialGateway.SetValue( registrationTemplate.FinancialGatewayId );
-            txtBatchNamePrefix.Text = registrationTemplate.BatchNamePrefix;
+
+            if ( IsRedirectionGateway() )
+            {
+                txtBatchNamePrefix.Text = string.Empty;
+            }
+            else
+            {
+                txtBatchNamePrefix.Text = registrationTemplate.BatchNamePrefix;
+            }
+
             SetCostVisibility();
+            ShowHideBatchPrefixTextbox();
 
             tbConfirmationFromName.Text = registrationTemplate.ConfirmationFromName;
             tbConfirmationFromEmail.Text = registrationTemplate.ConfirmationFromEmail;
@@ -2760,11 +2775,18 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void LoadDropDowns( RockContext rockContext )
         {
+            /*
+                 11/16/2021 - SK
+
+                 Normally, we order by Order, but in this particular situation it was decided
+                 it would be better to order these by Name in the dropdown list.
+    
+                 Reason: To improve usability. 
+            */
             var groupTypeList = new GroupTypeService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( t => t.ShowInNavigation )
-                .OrderBy( t => t.Order )
-                .ThenBy( t => t.Name )
+                .OrderBy( t => t.Name )
                 .ToList();
 
             gtpGroupType.GroupTypes = groupTypeList;
@@ -2927,13 +2949,16 @@ The logged-in person's information will be used to complete the registrar inform
 
                 fvreFieldVisibilityRulesEditor.ValidationGroup = dlgFieldFilter.ValidationGroup;
                 fvreFieldVisibilityRulesEditor.FieldName = formField.ToString();
-                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => new FieldVisibilityRuleField
-                {
-                    Guid = rtff.Guid,
-                    Attribute = rtff.Attribute,
-                    PersonFieldType = rtff.PersonFieldType,
-                    FieldSource = rtff.FieldSource
-                } );
+
+                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary(
+                    rtff => rtff.Guid,
+                    rtff => new FieldVisibilityRuleField
+                    {
+                        Guid = rtff.Guid,
+                        Attribute = rtff.Attribute,
+                        PersonFieldType = rtff.PersonFieldType,
+                        FieldSource = rtff.FieldSource
+                    } );
                 fvreFieldVisibilityRulesEditor.SetFieldVisibilityRules( formField.FieldVisibilityRules );
             }
 
@@ -3932,7 +3957,6 @@ The logged-in person's information will be used to complete the registrar inform
             var selectedGroupId = gpPlacementConfigurationAddSharedGroup.GroupId;
             if ( selectedGroupId.HasValue )
             {
-
                 GroupTypeCache groupType = null;
                 if ( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.HasValue )
                 {
@@ -3955,7 +3979,6 @@ The logged-in person's information will be used to complete the registrar inform
                     return;
                 }
 
-
                 if ( !sharedGroupIds.Contains( selectedGroupId.Value ) )
                 {
                     sharedGroupIds.Add( selectedGroupId.Value );
@@ -3975,7 +3998,6 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPlacementConfigurationAddSharedGroupCancel_Click( object sender, EventArgs e )
         {
-
             pnlPlacementConfigurationAddSharedGroup.Visible = false;
         }
 
@@ -3991,6 +4013,30 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion
 
+        protected void fgpFinancialGateway_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowHideBatchPrefixTextbox();
+        }
 
+        private void ShowHideBatchPrefixTextbox()
+        {
+            txtBatchNamePrefix.Visible = !IsRedirectionGateway();
+        }
+
+        private bool IsRedirectionGateway()
+        {
+            var gatewayId = fgpFinancialGateway.SelectedValueAsInt();
+
+            // validate gateway
+            if ( gatewayId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    return new FinancialGatewayService( rockContext ).IsRedirectionGateway( gatewayId );
+                }
+            }
+
+            return false;
+        }
     }
 }

@@ -34,7 +34,6 @@ namespace RockWeb.Blocks.Finance
     /// Text to Give Settings
     /// </summary>
     /// <seealso cref="RockBlock" />
-    /// <seealso cref="IDetailBlock" />
 
     [DisplayName( "Text To Give Settings" )]
     [Category( "Finance" )]
@@ -54,7 +53,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Order = 1 )]
 
-    public partial class TextToGiveSettings : RockBlock, IDetailBlock
+    public partial class TextToGiveSettings : RockBlock
     {
         #region Keys
 
@@ -242,7 +241,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// This method satisfies the IDetailBlock requirement
+        /// Called by a related block to show the detail for a specific entity.
         /// </summary>
         /// <param name="unused"></param>
         public void ShowDetail( int unused )

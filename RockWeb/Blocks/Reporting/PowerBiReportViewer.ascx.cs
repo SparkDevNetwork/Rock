@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Reporting
         protected void btnLogin_Click( object sender, EventArgs e )
         {
             // Authenticate
-            PowerBiUtilities.AuthenticateAccount( GetAttributeValue( "PowerBiAccount" ).AsGuid(), Request.Url.AbsoluteUri );
+            PowerBiUtilities.AuthenticateAccount( GetAttributeValue( "PowerBiAccount" ).AsGuid(), Request.UrlProxySafe().AbsoluteUri );
         }
 
         /// <summary>

@@ -176,6 +176,15 @@ namespace RockWeb.Blocks.CheckIn
         order: 14,
         key: AttributeKeys.FilterColumnCount )]
 
+
+    [IntegerField(
+        "Database Timeout",
+        Key = AttributeKeys.DatabaseTimeoutSeconds,
+        Description = "The number of seconds to wait before reporting a database timeout.",
+        IsRequired = false,
+        DefaultIntegerValue = 180,
+        Order = 15 )]
+
     public partial class AttendanceAnalytics : RockBlock
     {
         private static class AttributeKeys
@@ -195,11 +204,11 @@ namespace RockWeb.Blocks.CheckIn
             public const string FilterColumnCount = "FilterColumnCount";
             public const string FilterColumnDirection = "FilterColumnDirection";
             public const string ChartStyle = "ChartStyle";
+            public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
         }
 
         #region Fields
 
-        private RockContext _rockContext = null;
         private bool FilterIncludedInURL = false;
         private bool _isGroupSpecific = false;
         private Group _specificGroup = null;
@@ -210,6 +219,8 @@ namespace RockWeb.Blocks.CheckIn
         private Dictionary<int, List<PhoneNumber>> _personPhoneNumbers = null;
 
         private bool _currentlyExporting = false;
+
+        private int databaseTimeoutSeconds;
 
         #endregion
 
@@ -223,7 +234,10 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            _rockContext = new RockContext();
+            databaseTimeoutSeconds = GetAttributeValue( AttributeKeys.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+
+            var rockContextAnalytics = new RockContextAnalytics();
+            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
 
             cbShowInactive.Checked = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
 
@@ -234,7 +248,7 @@ namespace RockWeb.Blocks.CheckIn
                 int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
                 if ( groupId.HasValue )
                 {
-                    _specificGroup = new GroupService( _rockContext ).Get( groupId.Value );
+                    _specificGroup = new GroupService( rockContextAnalytics ).Get( groupId.Value );
                     if ( _specificGroup != null )
                     {
                         lSpecificGroupName.Text = string.Format( ": {0}", _specificGroup.Name );
@@ -419,7 +433,7 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     // show the CheckinType control if there isn't a block setting for specific group types
                     ddlAttendanceArea.Visible = true;
-                    var groupTypeService = new GroupTypeService( _rockContext );
+                    var groupTypeService = new GroupTypeService( new RockContextAnalytics() );
                     Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
                     ddlAttendanceArea.GroupTypes = groupTypeService.Queryable()
                             .Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeGuid )
@@ -504,9 +518,9 @@ namespace RockWeb.Blocks.CheckIn
             var selectedGroupIds = GetSelectedGroupIds();
             bool showGroupAncestry = GetAttributeValue( AttributeKeys.ShowGroupAncestry ).AsBoolean( true );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContextAnalytics = new RockContextAnalytics() )
             {
-                var groupService = new GroupService( rockContext );
+                var groupService = new GroupService( rockContextAnalytics );
                 var groups = groupService.Queryable().AsNoTracking()
                     .Where( g => selectedGroupIds.Contains( g.Id ) )
                     .ToList();
@@ -537,7 +551,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( !_isGroupSpecific )
             {
                 var groupTypeGuids = this.GetAttributeValue( AttributeKeys.GroupTypes ).SplitDelimitedValues().AsGuidList();
-                var groupTypeService = new GroupTypeService( _rockContext );
+                var groupTypeService = new GroupTypeService( new RockContextAnalytics() );
                 if ( groupTypeGuids.Any() )
                 {
                     var groupTypes = groupTypeGuids.Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null )
@@ -785,7 +799,7 @@ function(item) {
                 pageReference.Parameters.AddOrReplace( key, setting.Value );
             }
 
-            Uri uri = new Uri( Request.Url.ToString() );
+            Uri uri = new Uri( Request.UrlProxySafe().ToString() );
             btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.GetLeftPart( UriPartial.Authority ) + pageReference.BuildUrl();
             btnCopyToClipboard.Disabled = false;
         }
@@ -902,7 +916,7 @@ function(item) {
                 var scheduleIdList = GetSetting( keyPrefix, "ScheduleIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
                 if ( scheduleIdList.Any() )
                 {
-                    var schedules = new ScheduleService( _rockContext )
+                    var schedules = new ScheduleService( new RockContextAnalytics() )
                         .Queryable().AsNoTracking()
                         .Where( s => scheduleIdList.Contains( s.Id ) )
                         .ToList();
@@ -1105,11 +1119,11 @@ function(item) {
             }
 
             // Adjust the start/end times to reflect the attendance dates who's SundayDate value would fall between the date range selected
-            DateTime start = dateRange.Start.HasValue ?
+            var start = dateRange.Start.HasValue ?
                 dateRange.Start.Value.Date.AddDays( 0 - ( dateRange.Start.Value.DayOfWeek == DayOfWeek.Sunday ? 6 : ( int ) dateRange.Start.Value.DayOfWeek - 1 ) ) :
                 new DateTime( 1900, 1, 1 );
 
-            DateTime end = dateRange.End.HasValue ?
+            var end = dateRange.End.HasValue ?
                 dateRange.End.Value.AddDays( 0 - ( int ) dateRange.End.Value.DayOfWeek ) :
                 new DateTime( 2100, 1, 1, 23, 59, 59 );
 
@@ -1123,7 +1137,10 @@ function(item) {
             var dataView = dvpDataView.SelectedValueAsInt();
             var scheduleIds = GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
 
-            var chartData = new AttendanceService( _rockContext ).GetChartData( groupBy, graphBy, start, end, groupIds, campusIds, dataView, scheduleIds );
+            var rockContextAnalytics = new RockContextAnalytics();
+            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+            var chartData = new AttendanceService( rockContextAnalytics ).GetChartData( groupBy, graphBy, start, end, groupIds, campusIds, dataView, scheduleIds );
 
             return chartData;
         }
@@ -1259,10 +1276,13 @@ function(item) {
                 // whith attendance that matches the selected criteria.
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Attendee Dates", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Attendee Dates", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
-                    DataTable dtAttendeeDates = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                    DataTable dtAttendeeDates = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeDatesDataSet(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
                     foreach ( DataRow row in dtAttendeeDates.Rows )
@@ -1272,7 +1292,7 @@ function(item) {
                         var result = allAttendeeVisits[personId];
                         result.PersonId = personId;
 
-                        DateTime summaryDate = DateTime.MinValue;
+                        var summaryDate = DateTime.MinValue;
                         switch ( groupBy )
                         {
                             case ChartGroupBy.Week:
@@ -1291,33 +1311,39 @@ function(item) {
                         }
                     }
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
 
                 // Call the stored procedure to get the last attendance
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Last Attendance", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Last Attendance", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
-                    dtAttendeeLastAttendance = AttendanceService.GetAttendanceAnalyticsAttendeeLastAttendance(
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                    dtAttendeeLastAttendance = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeLastAttendanceDataSet(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
 
                 // Call the stored procedure to get the names/demographic info for attendees
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Name/Demographic Data", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Name/Demographic Data", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
-                    dtAttendees = AttendanceService.GetAttendanceAnalyticsAttendees(
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                    dtAttendees = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeesDataSet(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren ).Tables[0];
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
 
@@ -1328,12 +1354,15 @@ function(item) {
                 {
                     qryTasks.Add( Task.Run( () =>
                     {
-                        var ti = new TaskInfo { name = "Get Missed Attendee Dates", start = DateTime.Now };
+                        var ti = new TaskInfo { name = "Get Missed Attendee Dates", start = RockDateTime.Now };
                         taskInfos.Add( ti );
 
                         personIdsWhoDidNotMiss = new List<int>();
 
-                        DataTable dtAttendeeDatesMissed = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
+                        var threadRockContextAnalytics = new RockContextAnalytics();
+                        threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                        DataTable dtAttendeeDatesMissed = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeDatesDataSet(
                             groupIdList, attendedMissedDateRange.Start.Value, attendedMissedDateRange.End.Value,
                             campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
@@ -1345,7 +1374,7 @@ function(item) {
                             var missedResult = missedResults[personId];
                             missedResult.PersonId = personId;
 
-                            DateTime summaryDate = DateTime.MinValue;
+                            var summaryDate = DateTime.MinValue;
                             switch ( groupBy )
                             {
                                 case ChartGroupBy.Week:
@@ -1373,7 +1402,7 @@ function(item) {
                             .Select( m => m.Key )
                             .ToList();
 
-                        ti.end = DateTime.Now;
+                        ti.end = RockDateTime.Now;
 
                     } ) );
                 }
@@ -1381,13 +1410,16 @@ function(item) {
                 // Call the stored procedure to get the first five dates that any person attended this group type
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get First Five Dates", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get First Five Dates", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
-                    dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                    dtAttendeeFirstDates = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeFirstDatesDataSet(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
             }
@@ -1395,10 +1427,13 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Non-Attendees", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Non-Attendees", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
-                    DataSet ds = AttendanceService.GetAttendanceAnalyticsNonAttendees(
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                    DataSet ds = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsNonAttendeesDataSet(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
 
                     DataTable dtNonAttenders = ds.Tables[0];
@@ -1458,7 +1493,7 @@ function(item) {
                         allResults.Add( result );
                     }
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
             }
@@ -1467,17 +1502,20 @@ function(item) {
             List<int> dataViewPersonIds = null;
             qryTasks.Add( Task.Run( () =>
             {
-                var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
+                var ti = new TaskInfo { name = "Get DataView People", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
                 var dataViewId = dvpDataView.SelectedValueAsInt();
                 if ( dataViewId.HasValue )
                 {
+                    var threadRockContextAnalytics = new RockContextAnalytics();
+                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
                     dataViewPersonIds = new List<int>();
-                    var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                    var dataView = new DataViewService( threadRockContextAnalytics ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
-                        var dvPersonService = new PersonService( _rockContext );
+                        var dvPersonService = new PersonService( threadRockContextAnalytics );
                         ParameterExpression paramExpression = dvPersonService.ParameterExpression;
                         Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression );
 
@@ -1490,7 +1528,7 @@ function(item) {
                     }
                 }
 
-                ti.end = DateTime.Now;
+                ti.end = RockDateTime.Now;
 
             } ) );
 
@@ -1809,8 +1847,11 @@ function(item) {
             // Calculate all the possible attendance summary dates
             UpdatePossibleAttendances( dateRange, groupBy );
 
+            var rockContextAnalytics = new RockContextAnalytics();
+            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
             // pre-load the schedule names since FriendlyScheduleText requires building the ICal object, etc
-            _scheduleNameLookup = new ScheduleService( _rockContext ).Queryable()
+            _scheduleNameLookup = new ScheduleService( rockContextAnalytics ).Queryable()
                 .ToList()
                 .ToDictionary( k => k.Id, v => v.FriendlyScheduleText );
 
@@ -1884,13 +1925,16 @@ function(item) {
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
 
+            var rockContextAnalytics = new RockContextAnalytics();
+            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
             if ( familyGroupType != null && homeAddressGuid.HasValue && personIds != null )
             {
                 var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
                 if ( homeAddressDv != null )
                 {
                     _personLocations = new Dictionary<int, Location>();
-                    foreach ( var item in new GroupMemberService( _rockContext )
+                    foreach ( var item in new GroupMemberService( rockContextAnalytics )
                         .Queryable().AsNoTracking()
                         .Where( m =>
                             personIds.Contains( m.PersonId ) &&
@@ -1913,7 +1957,7 @@ function(item) {
             }
 
             // Load the phone numbers
-            _personPhoneNumbers = new PhoneNumberService( _rockContext )
+            _personPhoneNumbers = new PhoneNumberService( rockContextAnalytics )
                 .Queryable().AsNoTracking()
                 .Where( n => personIds.Contains( n.PersonId ) )
                 .GroupBy( n => n.PersonId )
@@ -2289,7 +2333,10 @@ function(item) {
                 {
                     bool showGroupAncestry = GetAttributeValue( AttributeKeys.ShowGroupAncestry ).AsBoolean( true );
 
-                    var groupService = new GroupService( _rockContext );
+                    var rockContextAnalytics = new RockContextAnalytics();
+                    rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+
+                    var groupService = new GroupService( rockContextAnalytics );
 
                     var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id, FormGroupCssClass = "js-groups-container" };
 

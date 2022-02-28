@@ -15,19 +15,23 @@
 // </copyright>
 //
 
-using MassTransit;
-using Rock.Bus.Consumer;
-using Rock.Bus.Message;
-using Rock.Bus.Queue;
-using Rock.Bus.Statistics;
-using Rock.Bus.Transport;
-using Rock.Data;
-using Rock.Model;
 using System;
 using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using MassTransit;
+
+using Rock.Bus.Consumer;
+using Rock.Bus.Faults;
+using Rock.Bus.Message;
+using Rock.Bus.Queue;
+using Rock.Bus.Statistics;
+using Rock.Bus.Transport;
+using Rock.Data;
+using Rock.Logging;
+using Rock.Model;
 
 namespace Rock.Bus
 {
@@ -40,6 +44,11 @@ namespace Rock.Bus
         /// The stat observer
         /// </summary>
         private static StatObserver _statObserver = new StatObserver();
+
+        /// <summary>
+        /// The receive fault observer
+        /// </summary>
+        private static ReceiveFaultObserver _receiveFaultObserver = new ReceiveFaultObserver();
 
         /// <summary>
         /// Is the bus started?
@@ -60,6 +69,11 @@ namespace Rock.Bus
         /// Gets the stat log.
         /// </summary>
         public static StatLog StatLog { get; } = new StatLog();
+
+        /// <summary>
+        /// If <see cref="IsRockStarted"/> has been <c>false</c> for more than 20 minutes. An error should be logged if attempting a publish or consume.
+        /// </summary>
+        public const int MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR = 20 * 60;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is rock started.
@@ -97,7 +111,16 @@ namespace Rock.Bus
                 return _nodeName;
             }
         }
+
         private static string _nodeName;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is using the in memory transport.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is in memory transport; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsInMemoryTransport => _transportComponent is InMemory;
 
         /// <summary>
         /// Starts this bus.
@@ -142,7 +165,7 @@ namespace Rock.Bus
                 await ConfigureAndStartBusAsync();
 
                 // Log that the original transport did not work
-                ExceptionLogService.LogException( new Exception( $"Could not start the message bus transport: {originalTransport.GetType().Name}", e ) );
+                ExceptionLogService.LogException( new BusException( $"Could not start the message bus transport: {originalTransport.GetType().Name}", e ) );
             }
 
             if ( _transportComponent == inMemoryTransport && !inMemoryTransport.IsActive )
@@ -192,7 +215,7 @@ namespace Rock.Bus
         {
             if ( !IsReady() )
             {
-                ExceptionLogService.LogException( $"A message was published before the message bus was ready: {RockMessage.GetLogString( message )}" );
+                ExceptionLogService.LogException( new BusException( $"A message was published before the message bus was ready: {RockMessage.GetLogString( message )}" ) );
                 return;
             }
 
@@ -224,6 +247,8 @@ namespace Rock.Bus
         public static async Task SendAsync<TQueue>( ICommandMessage<TQueue> message, Type messageType )
             where TQueue : ISendCommandQueue, new()
         {
+            RockLogger.Log.Debug( RockLogDomains.Core, "Send Message Async: {@message} Message Type: {1}", message, messageType );
+
             if ( !IsReady() )
             {
                 ExceptionLogService.LogException( $"A message was sent before the message bus was ready: {RockMessage.GetLogString( message )}" );
@@ -253,6 +278,7 @@ namespace Rock.Bus
 
             _bus = _transportComponent.GetBusControl( RockConsumer.ConfigureRockConsumers );
             _bus.ConnectConsumeObserver( _statObserver );
+            _bus.ConnectReceiveObserver( _receiveFaultObserver );
 
             // Allow the bus to try to connect for some seconds at most
             var cancelToken = new CancellationTokenSource();

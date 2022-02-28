@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Lava;
 
 namespace Rock.Web.Cache
 {
@@ -85,7 +86,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The field.
         /// </value>
-		[LavaInclude]
+		[LavaVisible]
         public Field.IFieldType Field
         {
             get
@@ -98,35 +99,6 @@ namespace Rock.Web.Cache
             }
         }
         private Field.IFieldType _field = null;
-
-        #endregion
-
-        #region Obsolete Methods
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Use Get(Guid) instead", true )]
-        public static FieldTypeCache Read( string guid, RockContext rockContext = null )
-        {
-            return Get( new Guid( guid ), rockContext );
-        }
-
-        /// <summary>
-        /// Reads this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get<T>() instead", true )]
-        public static FieldTypeCache Read<T>() where T : Rock.Field.IFieldType
-        {
-            return Get<T>();
-        }
 
         #endregion
 

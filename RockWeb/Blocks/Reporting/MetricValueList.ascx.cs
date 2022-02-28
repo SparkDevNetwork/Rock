@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.Reporting
 
             var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
 
-            var entityTypeEntityFilters = new Dictionary<int, int?>();
+            var entityTypeEntityFilters = new List<string>();
             foreach ( var metricPartition in metric.MetricPartitions )
             {
                 var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
@@ -273,16 +273,11 @@ namespace RockWeb.Blocks.Reporting
                 {
                     entityId = ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
 
-                    entityTypeEntityFilters.AddOrIgnore( metricPartitionEntityType.Id, entityId );
+                    entityTypeEntityFilters.Add( $"{metricPartitionEntityType.Id}|{entityId}" );
                 }
             }
 
-            var entityTypeEntityUserPreferenceValue = entityTypeEntityFilters
-                .Select( a => new { EntityTypeId = a.Key, EntityId = a.Value } )
-                .Select( a => string.Format( "{0}|{1}", a.EntityTypeId, a.EntityId ) )
-                .ToList().AsDelimited( "," );
-
-            gfMetricValues.SaveUserPreference( this.EntityTypeEntityPreferenceKey, entityTypeEntityUserPreferenceValue );
+            gfMetricValues.SaveUserPreference( this.EntityTypeEntityPreferenceKey, entityTypeEntityFilters.AsDelimited( "," ) );
 
             BindGrid();
         }
@@ -352,7 +347,7 @@ namespace RockWeb.Blocks.Reporting
 
             }
 
-            BindGrid();
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -395,6 +390,11 @@ namespace RockWeb.Blocks.Reporting
                 List<string> seriesNames = new List<string>();
                 foreach ( var metricValuePartition in metricValuePartitions.Where( a => a.EntityId.HasValue && a.MetricPartition.EntityTypeId.HasValue ) )
                 {
+                    if ( !_entityTypeEntityNameLookup.ContainsKey( metricValuePartition.MetricPartition.EntityTypeId.Value ) )
+                    {
+                        continue;
+                    }
+
                     var entityNameLookup = _entityTypeEntityNameLookup[metricValuePartition.MetricPartition.EntityTypeId.Value];
                     if ( !entityNameLookup.ContainsKey( metricValuePartition.EntityId.Value ) )
                     {
@@ -475,6 +475,11 @@ namespace RockWeb.Blocks.Reporting
 
             foreach ( var entityTypeEntity in entityTypeEntityList )
             {
+                if ( !_entityTypeEntityNameLookup.ContainsKey( entityTypeEntity.EntityTypeId.Value ) )
+                {
+                    continue;
+                }
+
                 if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
                 {
                     qry = qry.Where( a => a.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeEntity.EntityTypeId && x.EntityId == entityTypeEntity.EntityId ) );

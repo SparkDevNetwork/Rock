@@ -136,7 +136,7 @@
 
                         <div class="well">
                             <div class="row">
-                                <div class="col-md-12">
+                                <div class="col-sm-6">
                                     <Rock:Toggle ID="tglSetCostOnTemplate" runat="server" Label="Set Cost On" OnText="Template" OffText="Instance"
                                         ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" ButtonSizeCssClass="btn-xs" />
                                 </div>
@@ -152,7 +152,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
-                                        Help="The financial gateway to use for processing registration payments." ShowAll="false" />
+                                        Help="The financial gateway to use for processing registration payments." ShowAll="true" AutoPostBack="true" OnSelectedIndexChanged="fgpFinancialGateway_SelectedIndexChanged" />
                                     <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
                                 </div>
                             </div>
@@ -164,6 +164,8 @@
                             <div class="col-md-6">
                                 <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
                                     Help="An optional workflow type to launch when a new registration is completed." />
+                                 <Rock:WorkflowTypePicker ID="wtpRegistrantWorkflow" runat="server" Label="Registrant Workflow"
+                                    Help="An optional workflow type to launch for each Registrant when a new registration is completed. Both the 'RegistrationRegistrantId' and the 'RegistrationId' will be passed to the workflow." />
                                 <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
                                     Help="Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will
                                             not be allowed to change any of the registrant information and attributes." />

@@ -18,7 +18,7 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbBlockStatus" runat="server" />
                 <asp:Panel ID="pnlList" runat="server">
-                    <h4>Recent Activity</h4>
+                    <h4 class="mt-0">Recent Activity</h4>
                     <p>
                         Shows the frequency and variety of recent exception activity.
                     </p>
@@ -34,14 +34,14 @@
                     <%-- Exceptions List --%>
                     <h4>Log Summary</h4>
                     <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
-                    <div class="row">
+                    <div class="row mb-4">
                         <div class="col-md-9">
                             <p>
                                 A summary of the system exception log, grouped by type and description with most recent events shown first.
                             </p>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-3 mt-3 mt-md-0">
                             <p class="clearfix">
                                 <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm pull-right" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
                             <i class="fa fa-repeat"></i> Clear All Exceptions
@@ -50,7 +50,7 @@
                         </div>
                     </div>
 
-                    <div class="grid margin-t-md">
+                    <div class="grid grid-panel border-top border-panel">
                         <Rock:GridFilter ID="fExceptionList" runat="server">
                             <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
                             <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />

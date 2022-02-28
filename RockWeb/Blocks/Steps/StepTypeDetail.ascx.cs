@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
-    public partial class StepTypeDetail : RockBlock, IDetailBlock
+    public partial class StepTypeDetail : RockBlock
     {
         #region Attribute Keys
 
@@ -177,12 +177,15 @@ namespace RockWeb.Blocks.Steps
         #region Properties
 
         private List<Attribute> AttributesState { get; set; }
+
         private List<StepWorkflowTriggerViewModel> WorkflowsState { get; set; }
 
         #endregion
 
         #region Private Variables
 
+        private StepType _stepType = null;
+        private StepProgram _program = null;
         private int _stepProgramId = 0;
         private int _stepTypeId = 0;
         private RockContext _dataContext = null;
@@ -219,7 +222,16 @@ namespace RockWeb.Blocks.Steps
             dvpAudience.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
             dvpAudience.CategoryGuids = GetAttributeValue( AttributeKey.DataViewCategories ).SplitDelimitedValues().AsGuidList();
 
-            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
+            bool editAllowed = false;
+            if ( _stepType != null )
+            {
+                editAllowed = _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
+            else if ( _program != null )
+            {
+                // Till this point, Step Type may not be initialized. That is the reason we are looking for authorization for Step Program.
+                editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
 
             InitializeAttributesGrid( editAllowed );
             InitializeWorkflowGrid( editAllowed );
@@ -262,7 +274,6 @@ namespace RockWeb.Blocks.Steps
             LoadAttributesViewState();
 
             var json = ViewState["WorkflowsState"] as string ?? string.Empty;
-
             this.WorkflowsState = JsonConvert.DeserializeObject<List<StepWorkflowTriggerViewModel>>( json ) ?? new List<StepWorkflowTriggerViewModel>();
         }
 
@@ -281,9 +292,7 @@ namespace RockWeb.Blocks.Steps
             };
 
             var json = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
-
             SaveAttributesViewState( jsonSetting );
-
             ViewState["WorkflowsState"] = json;
 
             return base.SaveViewState();
@@ -318,7 +327,7 @@ namespace RockWeb.Blocks.Steps
             }
             else
             {
-                // don't show a breadcrumb if we don't have a pageparam to work with
+                // don't show a breadcrumb if we don't have a Page Parameter to work with.
             }
 
             return breadCrumbs;
@@ -375,7 +384,6 @@ namespace RockWeb.Blocks.Steps
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var stepType = GetStepType();
-
             ShowEditDetails( stepType );
         }
 
@@ -419,7 +427,6 @@ namespace RockWeb.Blocks.Steps
             StepType stepType;
 
             var rockContext = GetDataContext();
-
             var stepTypeService = new StepTypeService( rockContext );
             var stepWorkflowService = new StepWorkflowService( rockContext );
             var stepWorkflowTriggerService = new StepWorkflowTriggerService( rockContext );
@@ -429,9 +436,7 @@ namespace RockWeb.Blocks.Steps
             if ( stepTypeId == 0 )
             {
                 stepType = new StepType();
-
                 stepType.StepProgramId = _stepProgramId;
-
                 stepTypeService.Add( stepType );
             }
             else
@@ -444,7 +449,6 @@ namespace RockWeb.Blocks.Steps
 
             // Workflow Triggers: Remove deleted triggers.
             var uiWorkflows = WorkflowsState.Select( l => l.Guid );
-
             var deletedTriggers = stepType.StepWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList();
 
             foreach ( var trigger in deletedTriggers )
@@ -459,7 +463,6 @@ namespace RockWeb.Blocks.Steps
 
                 // Remove the trigger.
                 stepType.StepWorkflowTriggers.Remove( trigger );
-
                 stepWorkflowTriggerService.Delete( trigger );
             }
 
@@ -471,9 +474,7 @@ namespace RockWeb.Blocks.Steps
                 if ( workflowTrigger == null )
                 {
                     workflowTrigger = new StepWorkflowTrigger();
-
                     workflowTrigger.StepProgramId = stepType.StepProgramId;
-
                     stepType.StepWorkflowTriggers.Add( workflowTrigger );
                 }
 
@@ -490,7 +491,6 @@ namespace RockWeb.Blocks.Steps
             stepType.IsActive = cbIsActive.Checked;
             stepType.Description = tbDescription.Text;
             stepType.IconCssClass = tbIconCssClass.Text;
-
             stepType.HighlightColor = cpHighlight.Value;
             stepType.ShowCountOnBadge = cbShowBadgeCount.Checked;
             stepType.HasEndDate = cbHasDuration.Checked;
@@ -499,22 +499,17 @@ namespace RockWeb.Blocks.Steps
 
             // Update Prerequisites
             var uiPrerequisiteStepTypeIds = cblPrerequsities.SelectedValuesAsInt;
-
-            var stepTypes = stepTypeService.Queryable().ToList();
-
+            var stepTypes = stepTypeService.Queryable().Where( x => x.StepProgramId == _stepProgramId && x.IsActive ).ToList();
             var removePrerequisiteStepTypes = stepType.StepTypePrerequisites.Where( x => !uiPrerequisiteStepTypeIds.Contains( x.PrerequisiteStepTypeId ) ).ToList();
-
             var prerequisiteService = new StepTypePrerequisiteService( rockContext );
 
             foreach ( var prerequisiteStepType in removePrerequisiteStepTypes )
             {
                 stepType.StepTypePrerequisites.Remove( prerequisiteStepType );
-
                 prerequisiteService.Delete( prerequisiteStepType );
             }
 
             var existingPrerequisiteStepTypeIds = stepType.StepTypePrerequisites.Select( x => x.PrerequisiteStepTypeId ).ToList();
-
             var addPrerequisiteStepTypeIds = stepTypes.Where( x => uiPrerequisiteStepTypeIds.Contains( x.Id )
                                                                  && !existingPrerequisiteStepTypeIds.Contains( x.Id ) )
                                                       .Select( x => x.Id )
@@ -523,10 +518,8 @@ namespace RockWeb.Blocks.Steps
             foreach ( var prerequisiteStepTypeId in addPrerequisiteStepTypeIds )
             {
                 var newPrerequisite = new StepTypePrerequisite();
-
                 newPrerequisite.StepTypeId = stepType.Id;
                 newPrerequisite.PrerequisiteStepTypeId = prerequisiteStepTypeId;
-
                 stepType.StepTypePrerequisites.Add( newPrerequisite );
             }
 
@@ -541,7 +534,6 @@ namespace RockWeb.Blocks.Steps
                     if ( !eligibleStepTypeIdList.Contains( prerequisite.PrerequisiteStepTypeId ) )
                     {
                         var prerequisiteStepType = stepTypeService.Get( prerequisite.PrerequisiteStepTypeId );
-
                         cvStepType.IsValid = false;
                         cvStepType.ErrorMessage = string.Format( "This Step Type cannot have prerequisite \"{0}\" because it is already a prerequisite of that Step Type.", prerequisiteStepType.Name );
                         return 0;
@@ -549,12 +541,15 @@ namespace RockWeb.Blocks.Steps
                 }
             }
 
+            // If there are any other step types, either:
+            // Find out the maximum Order value for the steps, and set this new Step's Order value one higher than that.
+            // If there are NOT any other step Types, set Order as 0.
+            stepType.Order = stepTypes.Any() ? stepTypes.Max( st => st.Order ) + 1 : 0;
+
             // Update Advanced Settings
             stepType.AutoCompleteDataViewId = dvpAutocomplete.SelectedValueAsId();
             stepType.AudienceDataViewId = dvpAudience.SelectedValueAsId();
-
             stepType.AllowManualEditing = cbAllowEdit.Checked;
-
             stepType.CardLavaTemplate = ceCardTemplate.Text;
 
             if ( !stepType.IsValid )
@@ -567,6 +562,9 @@ namespace RockWeb.Blocks.Steps
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
+
+                avcStepProgramAttributes.GetEditValues( stepType );
+                stepType.SaveAttributeValues( rockContext );
 
                 Helper.SaveAttributeEdits( AttributesState, new Step().TypeId, "StepTypeId", stepType.Id.ToString(), rockContext );
             } );
@@ -623,7 +621,6 @@ namespace RockWeb.Blocks.Steps
         protected void gWorkflows_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = ( Guid ) e.RowKeyValue;
-
             var workflowTypeStateObj = WorkflowsState.Where( g => g.Guid.Equals( rowGuid ) ).FirstOrDefault();
             if ( workflowTypeStateObj != null )
             {
@@ -727,9 +724,7 @@ namespace RockWeb.Blocks.Steps
             if ( workflowTrigger == null )
             {
                 workflowTrigger = new StepWorkflowTriggerViewModel();
-
                 workflowTrigger.Guid = Guid.NewGuid();
-
                 WorkflowsState.Add( workflowTrigger );
             }
 
@@ -745,13 +740,9 @@ namespace RockWeb.Blocks.Steps
             workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
 
             var dataContext = GetDataContext();
-
             var workflowTypeService = new WorkflowTypeService( dataContext );
-
             var workflowTypeId = wpWorkflowType.SelectedValueAsId().GetValueOrDefault( 0 );
-
             var workflowType = workflowTypeService.Queryable().AsNoTracking().FirstOrDefault( x => x.Id == workflowTypeId );
-
             workflowTrigger.WorkflowTypeName = ( workflowType == null ) ? "(Unknown)" : workflowType.Name;
 
             BindStepWorkflowsGrid();
@@ -811,12 +802,10 @@ namespace RockWeb.Blocks.Steps
                 if ( workflowTrigger.TriggerType == sStepWorkflowTriggerType )
                 {
                     var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings( workflowTrigger.TypeQualifier );
-
                     ddlPrimaryQualifier.SelectedValue = qualifierSettings.FromStatusId.ToStringSafe();
                     ddlSecondaryQualifier.SelectedValue = qualifierSettings.ToStatusId.ToStringSafe();
                 }
             }
-
         }
 
         /// <summary>
@@ -834,13 +823,11 @@ namespace RockWeb.Blocks.Steps
                 foreach ( var workflowTrigger in WorkflowsState )
                 {
                     var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings( workflowTrigger.TypeQualifier );
-
                     workflowTrigger.TriggerDescription = stepService.GetTriggerSettingsDescription( workflowTrigger.TriggerType, qualifierSettings );
                 }
 
                 gWorkflows.DataSource = WorkflowsState;
             }
-
 
             gWorkflows.DataBind();
         }
@@ -866,10 +853,8 @@ namespace RockWeb.Blocks.Steps
         private void InitializeWorkflowGrid( bool showAdd )
         {
             gWorkflows.DataKeyNames = new string[] { "Guid" };
-
             gWorkflows.Actions.ShowAdd = showAdd;
             gWorkflows.Actions.AddClick += gWorkflows_Add;
-
             gWorkflows.GridRebind += gWorkflows_GridRebind;
         }
 
@@ -1000,10 +985,8 @@ namespace RockWeb.Blocks.Steps
             gAttributes.DisplayType = GridDisplayType.Light;
             gAttributes.ShowConfirmDeleteDialog = false;
             gAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
-
             gAttributes.Actions.ShowAdd = showAdd;
             gAttributes.Actions.AddClick += gAttributes_Add;
-
             gAttributes.GridRebind += gAttributes_GridRebind;
             gAttributes.GridReorder += gAttributes_GridReorder;
         }
@@ -1178,6 +1161,22 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
+        /// Build the dynamic controls based on the attributes
+        /// </summary>
+        private void StepTypeAttributeValueContainer( bool editMode )
+        {
+            var stepProgramId = GetStepProgramId();
+            var stepType = GetStepType() ?? new StepType { StepProgramId = stepProgramId };
+
+            stepType.LoadAttributes();
+
+            if ( editMode )
+            {
+                avcStepProgramAttributes.AddEditControls( stepType );
+            }
+        }
+
+        /// <summary>
         /// Reorders the attribute list.
         /// </summary>
         /// <param name="itemList">The item list.</param>
@@ -1256,6 +1255,8 @@ namespace RockWeb.Blocks.Steps
         /// <returns>True, if the block context is valid.</returns>
         private bool InitializeBlockContext()
         {
+            _stepType = null;
+
             _stepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
             _stepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsInteger();
 
@@ -1265,6 +1266,18 @@ namespace RockWeb.Blocks.Steps
                 ShowNotification( "A new Step cannot be added because there is no Step Program available in this context.", NotificationBoxType.Danger, true );
 
                 return false;
+            }
+
+            var dataContext = this.GetDataContext();
+            if ( _stepTypeId != 0 )
+            {
+                var stepTypeService = new StepTypeService( dataContext );
+                _stepType = stepTypeService.Queryable().Where( g => g.Id == _stepTypeId ).FirstOrDefault();
+            }
+            else
+            {
+                var stepProgramService = new StepProgramService( dataContext );
+                _program = stepProgramService.Queryable().Where( g => g.Id == _stepProgramId ).FirstOrDefault();
             }
 
             return true;
@@ -1288,19 +1301,7 @@ namespace RockWeb.Blocks.Steps
             var dataContext = GetDataContext();
 
             // Load available Prerequisite Steps.
-            var stepType = GetStepType();
-
-            int programId = 0;
-
-            if ( stepType != null )
-            {
-                programId = stepType.StepProgramId;
-            }
-
-            if ( programId == 0 )
-            {
-                programId = _stepProgramId;
-            }
+            var programId = GetStepProgramId();
 
             var stepsService = new StepTypeService( dataContext );
 
@@ -1317,8 +1318,30 @@ namespace RockWeb.Blocks.Steps
 
             cblPrerequsities.DataSource = prerequisiteStepTypes;
             cblPrerequsities.DataBind();
-
             cblPrerequsities.Visible = prerequisiteStepTypes.Count > 0;
+        }
+
+        /// <summary>
+        /// Gets the step program identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetStepProgramId()
+        {
+            var stepType = GetStepType();
+
+            int programId = 0;
+
+            if ( stepType != null )
+            {
+                programId = stepType.StepProgramId;
+            }
+
+            if ( programId == 0 )
+            {
+                programId = _stepProgramId;
+            }
+
+            return programId;
         }
 
         /// <summary>
@@ -1344,15 +1367,18 @@ namespace RockWeb.Blocks.Steps
                 pdAuditDetails.Visible = false;
             }
 
-            // Admin rights are required to edit a Step Type. Edit rights only allow adding/removing items.
-            bool adminAllowed = UserCanAdministrate || stepType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            /*
+             SK - 10/28/2021
+             Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+             */
+            bool editAllowed = stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
             pnlDetails.Visible = true;
             hfStepTypeId.Value = stepType.Id.ToString();
             lIcon.Text = string.Format( "<i class='{0}'></i>", stepType.IconCssClass );
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !adminAllowed )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
@@ -1370,7 +1396,6 @@ namespace RockWeb.Blocks.Steps
                 btnEdit.Visible = true;
                 btnDelete.Visible = true;
                 btnSecurity.Visible = true;
-
                 btnSecurity.Title = "Secure " + stepType.Name;
                 btnSecurity.EntityId = stepType.Id;
 
@@ -1406,6 +1431,7 @@ namespace RockWeb.Blocks.Steps
                     IsDateRequired = true
                 };
             }
+
             if ( stepType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( StepType.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -1426,16 +1452,14 @@ namespace RockWeb.Blocks.Steps
             tbName.Text = stepType.Name;
             cbIsActive.Checked = stepType.IsActive;
             tbDescription.Text = stepType.Description;
-
             tbIconCssClass.Text = stepType.IconCssClass;
             cpHighlight.Text = stepType.HighlightColor;
-
             cbAllowMultiple.Checked = stepType.AllowMultiple;
             cbHasDuration.Checked = stepType.HasEndDate;
             cbShowBadgeCount.Checked = stepType.ShowCountOnBadge;
             cbRequireDate.Checked = stepType.IsDateRequired;
 
-            // Pre-requisites
+            // Set the values of any Step Type Prerequisites.
             if ( stepType.StepTypePrerequisites != null )
             {
                 cblPrerequsities.SetValues( stepType.StepTypePrerequisites.Select( x => x.PrerequisiteStepTypeId ) );
@@ -1444,9 +1468,7 @@ namespace RockWeb.Blocks.Steps
             // Advanced Settings
             dvpAutocomplete.SetValue( stepType.AutoCompleteDataViewId );
             dvpAudience.SetValue( stepType.AudienceDataViewId );
-
             cbAllowEdit.Checked = stepType.AllowManualEditing;
-
             ceCardTemplate.Text = stepType.CardLavaTemplate;
 
             // Workflow Triggers
@@ -1455,7 +1477,6 @@ namespace RockWeb.Blocks.Steps
             foreach ( var trigger in stepType.StepWorkflowTriggers )
             {
                 var newItem = new StepWorkflowTriggerViewModel( trigger );
-
                 WorkflowsState.Add( newItem );
             }
 
@@ -1543,7 +1564,8 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepType != null )
             {
-                if ( !stepType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                // Earlier only Person with admin rights were allowed edit the block.That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+                if ( !stepType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Information );
                     return;
@@ -1598,7 +1620,8 @@ namespace RockWeb.Blocks.Steps
                     stepType = new StepType
                     {
                         Id = 0,
-                        IsDateRequired = true
+                        IsDateRequired = true,
+                        StepProgramId = _stepProgramId
                     };
                 }
 
@@ -1628,6 +1651,7 @@ namespace RockWeb.Blocks.Steps
             pnlViewDetails.Visible = !editable;
 
             HideSecondaryBlocks( editable );
+            StepTypeAttributeValueContainer( editable );
         }
 
         /// <summary>
@@ -1717,12 +1741,9 @@ namespace RockWeb.Blocks.Steps
             {
                 // If the Step Type does not have any activity, hide the Activity Summary.
                 var dataContext = GetDataContext();
-
                 var stepService = new StepService( dataContext );
-
                 var stepsQuery = stepService.Queryable().AsNoTracking()
                                     .Where( x => x.StepTypeId == _stepTypeId );
-
                 showActivitySummary = stepsQuery.Any();
             }
 
@@ -1754,8 +1775,8 @@ namespace RockWeb.Blocks.Steps
                 LineTension = 0.4m
             } );
 
-            string script = string.Format( @"
-            var barCtx = $('#{0}')[0].getContext('2d');
+            string script = string.Format(
+            @"var barCtx = $('#{0}')[0].getContext('2d');
             var barChart = new Chart(barCtx, {1});",
                                             chartCanvas.ClientID,
                                             chartDataJson );
@@ -1876,12 +1897,12 @@ namespace RockWeb.Blocks.Steps
             if ( groupByDay )
             {
                 // Group Steps by Start Date.
-                groupKeySelector = ( x => x );
+                groupKeySelector = x => x;
             }
             else
             {
                 // Group Steps by Start Date rounded to beginning of the month.
-                groupKeySelector = ( x => x / 100 );
+                groupKeySelector = x => x / 100;
             }
 
             // Add data series for Steps started.
@@ -1892,7 +1913,7 @@ namespace RockWeb.Blocks.Steps
                 .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Started",
-                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( x.Key * 100 + 1 ).GetDateKeyDate(), // +1 to get first day of month
+                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
                     Value = x.Count(),
                     SortKey = "1"
                 } );
@@ -1905,25 +1926,22 @@ namespace RockWeb.Blocks.Steps
                 .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Completed",
-                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( x.Key * 100 + 1 ).GetDateKeyDate(), // +1 to get first day of month
+                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
                     Value = x.Count(),
                     SortKey = "2"
                 } );
 
             var allDataPoints = startedSeriesDataPoints.Union( completedSeriesDataPoints ).OrderBy( x => x.SortKey ).ThenBy( x => x.DateTime );
-
             var dataSetNames = allDataPoints.Select( x => x.DatasetName ).Distinct().ToList();
 
             // Add Dataset for Steps Started.
             var colorStarted = new RockColor( ChartJsConstants.Colors.Blue );
-
             var startedDataset = this.CreateDataSet( allDataPoints, "Started", colorStarted.ToHex() );
 
             factory.Datasets.Add( startedDataset );
 
             // Add Dataset for Steps Completed.
             var colorCompleted = new RockColor( ChartJsConstants.Colors.Green );
-
             var completedDataset = this.CreateDataSet( allDataPoints, "Completed", colorCompleted.ToHex() );
 
             factory.Datasets.Add( completedDataset );
@@ -1934,16 +1952,12 @@ namespace RockWeb.Blocks.Steps
         private ChartJsTimeSeriesDataset CreateDataSet( IOrderedEnumerable<ChartDatasetInfo> allDataPoints, string datasetName, string colorString )
         {
             var dataset = new ChartJsTimeSeriesDataset();
-
             dataset.Name = datasetName;
-
-
             dataset.DataPoints = allDataPoints
                                     .Where( x => x.DatasetName == datasetName )
                                     .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
                                     .Cast<IChartJsTimeSeriesDataPoint>()
                                     .ToList();
-
             dataset.BorderColor = colorString;
 
             return dataset;
@@ -1957,20 +1971,23 @@ namespace RockWeb.Blocks.Steps
         private class StepWorkflowTriggerViewModel
         {
             public int Id { get; set; }
+
             public Guid Guid { get; set; }
+
             public string WorkflowTypeName { get; set; }
 
             public int? StepTypeId { get; set; }
+
             public int WorkflowTypeId { get; set; }
 
             public StepWorkflowTrigger.WorkflowTriggerCondition TriggerType { get; set; }
+
             public string TypeQualifier { get; set; }
 
             public string TriggerDescription { get; set; }
 
             public StepWorkflowTriggerViewModel()
             {
-                //
             }
 
             public StepWorkflowTriggerViewModel( StepWorkflowTrigger trigger )
@@ -1995,8 +2012,11 @@ namespace RockWeb.Blocks.Steps
         private class ChartDatasetInfo
         {
             public string DatasetName { get; set; }
+
             public DateTime DateTime { get; set; }
+
             public int Value { get; set; }
+
             public string SortKey { get; set; }
         }
 
@@ -2038,7 +2058,6 @@ namespace RockWeb.Blocks.Steps
         {
             _notificationControl.Text = message;
             _notificationControl.NotificationBoxType = notificationType;
-
             _notificationControl.Visible = true;
             _detailContainerControl.Visible = !hideBlockContent;
         }

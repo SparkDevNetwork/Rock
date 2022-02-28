@@ -437,13 +437,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( CheckedChanged != null || ValueChanged != null )
-            {
-                EnsureChildControls();
-                _btnOn.ServerClick += btnOnOff_ServerClick;
-                _btnOff.ServerClick += btnOnOff_ServerClick;
-            }
-
             base.OnLoad( e );
         }
 
@@ -485,13 +478,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnOnOff_ServerClick( object sender, EventArgs e )
         {
-            if ( CheckedChanged != null )
+            if ( _checkedChanged != null )
             {
                 this.Checked = sender == _btnOn;
-                CheckedChanged( this, new EventArgs() );
+                _checkedChanged( this, new EventArgs() );
             }
 
-            ValueChanged?.Invoke( this, e );
+            _valueChanged?.Invoke( this, e );
         }
 
         /// <summary>
@@ -566,14 +559,83 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        #region Events wiring for Toggle on/off buttons
+
+        /* 8-20-2021 MDP
+          When the CheckedChanged and/or ValueChanged events are assigned,
+          the btnOff and btnOn buttons need to be wired up to trigger those events.
+          So, we'll take care of that with the logic in this section...
+
+          We do the same thing in the ItemPicker too
+          https://github.com/SparkDevNetwork/Rock/blob/cba153f23905412db3f8a851628f6847ac63bbc9/Rock/Web/UI/Controls/Pickers/ItemPicker.cs#L1035
+         */
+
+        /// <summary>
+        /// Private reference to CheckedChanged so that we can do wire special stuff in the add/remove accessors
+        /// </summary>
+        private event EventHandler _checkedChanged;
+
+        /// <summary>
+        /// Private reference to ValueChanged so that we can do wire special stuff in the add/remove accessors
+        /// </summary>
+        private event EventHandler _valueChanged;
+
+        /// <summary>
+        /// Registers the toggle events.
+        /// </summary>
+        private void RegisterToggleEvents()
+        {
+            EnsureChildControls();
+            _btnOn.ServerClick += btnOnOff_ServerClick;
+            _btnOff.ServerClick += btnOnOff_ServerClick;
+        }
+
+        /// <summary>
+        /// Un-registers toggle events.
+        /// </summary>
+        private void UnRegisterToggleEvents()
+        {
+            EnsureChildControls();
+            _btnOn.ServerClick -= btnOnOff_ServerClick;
+            _btnOff.ServerClick -= btnOnOff_ServerClick;
+        }
+
         /// <summary>
         /// Occurs when [checked changed].
         /// </summary>
-        public event EventHandler CheckedChanged;
+        public event EventHandler CheckedChanged
+        {
+            add
+            {
+                RegisterToggleEvents();
+                _checkedChanged += value;
+            }
+
+            remove
+            {
+                UnRegisterToggleEvents();
+                _checkedChanged -= value;
+            }
+        }
 
         /// <summary>
-        /// Occurs when the selected value has changed
+        /// Occurs when [checked changed].
         /// </summary>
-        public event EventHandler ValueChanged;
+        public event EventHandler ValueChanged
+        {
+            add
+            {
+                RegisterToggleEvents();
+                _valueChanged += value;
+            }
+
+            remove
+            {
+                UnRegisterToggleEvents();
+                _valueChanged -= value;
+            }
+        }
+
+        #endregion  Events wiring for Toggle on/off buttons
     }
 }

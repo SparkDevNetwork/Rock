@@ -25,8 +25,8 @@
                             <Rock:RockBoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
                             <Rock:BoolField DataField="IsCommon" HeaderText="Common" SortExpression="IsCommon" />
                             <Rock:RockTemplateFieldUnselected>
-                                <HeaderStyle CssClass="span1" />
-                                <ItemStyle HorizontalAlign="Center"/>
+                                <HeaderStyle CssClass="grid-columncommand" />
+                                <ItemStyle CssClass="grid-columncommand" HorizontalAlign="Center"/>
                                 <ItemTemplate>
                                     <a id="aSecure" runat="server" class="btn btn-sm btn-square btn-security"><i class="fa fa-lock"></i></a>
                                 </ItemTemplate>

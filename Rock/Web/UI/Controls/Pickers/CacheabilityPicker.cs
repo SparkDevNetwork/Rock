@@ -235,6 +235,7 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             var showAges = false;
+            var showShared = false;
 
             if ( CurrentCacheability == null )
             {
@@ -243,6 +244,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 showAges = CurrentCacheability.OptionSupportsAge( CurrentCacheability.RockCacheablityType );
+                showShared = CurrentCacheability.OptionSupportsShared( CurrentCacheability.RockCacheablityType );
             }
 
             _cacheabilityType.Enabled = Enabled;
@@ -271,15 +273,18 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _maxSharedAgeLabel.RenderControl( writer );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group d-flex" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _maxSharedAgeValue.RenderControl( writer );
-                _maxSharedAgeUnit.RenderControl( writer );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
+                if ( showShared )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _maxSharedAgeLabel.RenderControl( writer );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group d-flex" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _maxSharedAgeValue.RenderControl( writer );
+                    _maxSharedAgeUnit.RenderControl( writer );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
 
                 writer.RenderEndTag();
             }

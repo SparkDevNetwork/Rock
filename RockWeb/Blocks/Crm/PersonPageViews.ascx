@@ -2,12 +2,12 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        
+
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-desktop"></i> <asp:Literal ID="lPersonName" runat="server" /></h1>
-                    <div class="form-inline pull-right clearfix hidden-xs">
-                        <Rock:DateRangePicker ID="drpDateFilter" runat="server" Label="Date Filter"  /> 
+                    <div class="form-inline panel-labels hidden-xs">
+                        <Rock:DateRangePicker ID="drpDateFilter" runat="server" Label="Date Filter"  />
                         <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action btn-xs" OnClick="btnFilter_Click" />
                     </div>
                 </div>
@@ -25,7 +25,7 @@
                                             </small>
                                         </h4>
                                         <span class="label label-info"><%# Eval("Site") %></span>
-                                    </div> 
+                                    </div>
                                     <asp:Literal ID="lClientIcon" runat="server" />
                                 </header>
                                 <div class="panel-body">
@@ -47,7 +47,7 @@
                     </div>
 
                 </div>
-            </div>      
+            </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

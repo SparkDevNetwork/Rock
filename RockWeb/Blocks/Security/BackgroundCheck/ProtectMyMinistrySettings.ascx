@@ -13,7 +13,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-shield"></i> Protect My Ministry</h1>
-                <div class="pull-right">
+                <div class="panel-labels">
                     <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                     <div class="col-md-5">
                         <Rock:RockTextBox ID="tbUserNameNew" runat="server" Label="Username" Required="true" />
                         <Rock:RockTextBox ID="tbPasswordNew" runat="server" Label="Password" Required="true" TextMode="Password" />
-                        <div class="actions">
+                        <div class="panel-actions">
                             <asp:LinkButton ID="lbSaveNew" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSaveNew_Click" />
                         </div>
                     </div>

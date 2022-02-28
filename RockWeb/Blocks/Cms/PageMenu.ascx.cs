@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Web.Cache;
@@ -32,6 +30,9 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Model;
 using Rock.Web;
+using Rock.Lava;
+using DotLiquid;
+using Rock.Lava.DotLiquid;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -153,7 +154,18 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void PageMenu_BlockUpdated( object sender, EventArgs e )
         {
-            LavaTemplateCache.Remove( CacheKey() );
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                // Remove the template from the DotLiquid cache.
+#pragma warning disable CS0618 // Type or member is obsolete
+                LavaTemplateCache.Remove( CacheKey() );
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
+            // Remove the existing template from the cache.
+            var cacheKey = CacheKey();
+
+            LavaService.RemoveTemplateCacheEntry( cacheKey );
         }
 
         private void Render()
@@ -208,19 +220,45 @@ namespace RockWeb.Blocks.Cms
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-           
-                var lavaTemplate = GetTemplate();
 
-                // Apply Enabled Lava Commands
-                var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
-
-                content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
-
-                // Check for Lava rendering errors.
-                if ( lavaTemplate.Errors.Any() )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
-                    throw lavaTemplate.Errors.First();
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var lavaTemplate = GetTemplate();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                    // Apply Enabled Lava Commands
+                    var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                    lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands );
+
+                    content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
+
+                    // Check for Lava rendering errors.
+                    if ( lavaTemplate.Errors.Any() )
+                    {
+                        throw lavaTemplate.Errors.First();
+                    }
+                }
+                else
+                {
+                    var templateText = GetAttributeValue( AttributeKey.Template );
+
+                    // Apply Enabled Lava Commands
+                    var lavaContext = LavaService.NewRenderContext( pageProperties );
+
+                    var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+
+                    lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
+
+                    var result = LavaService.RenderTemplate( templateText,
+                        new LavaRenderParameters { Context = lavaContext, CacheKey = CacheKey() } );
+
+                    content = result.Text;
+
+                    if ( result.HasErrors )
+                    {
+                        throw result.GetLavaException("PageMenu Block Lava Error");
+                    }
                 }
 
                 phContent.Controls.Clear();
@@ -259,10 +297,15 @@ namespace RockWeb.Blocks.Cms
             return string.Format( "Rock:PageMenu:{0}", BlockId );
         }
 
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
         private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
-            return cacheTemplate != null ? cacheTemplate.Template : null;
+
+            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
+
+            return cacheTemplate != null ? cacheTemplate.Template as Template : null;
         }
 
         /// <summary>

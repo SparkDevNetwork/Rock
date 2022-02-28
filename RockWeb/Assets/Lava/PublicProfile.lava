@@ -1,4 +1,4 @@
-{%- comment -%}
+{% comment %}
     This is the default lava template for the PublicProfileEdit block
     Available Lava Fields:
 
@@ -22,7 +22,7 @@
     FamilyAttributes - (List of AttributeCache) - The family attributes that should be displayed
     PersonAttributesAdults - (List of AttributeCache) - The person attributes that should be displayed for Adults
     PersonAttributesChildren - (List of AttributeCache) - The person attributes that should be displayed for Children
-{%- endcomment -%}
+{% endcomment %}
 {%- assign childRoleGuid = 'c8b1814f-6aa7-4055-b2d7-48fe20429cb9' -%}
 {%- assign familyCount = Families | Size -%}
 
@@ -147,7 +147,7 @@
 
         {% if personAttributes %}
             <div class="row">
-            {%- comment -%}loop thru Attributes so we can get the attribute value without checking security{%- endcomment -%}
+            {% comment %}loop thru Attributes so we can get the attribute value without checking security{% endcomment %}
             {%- for personAttribute in personAttributes -%}
                 {%- for attribute in CurrentPerson.AttributeValues -%}
                     {%- if attribute.AttributeKey == personAttribute.Key -%}
@@ -165,7 +165,7 @@
             </div>
         {% endif %}
 
-        {%- comment -%}loop thru Attributes to see if there are any non-blank ones{%- endcomment%}
+        {% comment %}loop thru Attributes to see if there are any non-blank ones{% endcomment%}
         {% assign showFamilyAttributes = false %}
         {% for familyAttribute in FamilyAttributes %}
             {% for attribute in Family.AttributeValues %}
@@ -185,7 +185,7 @@
                 <h3 class="font-weight-bold">Family Information</h3>
             </div>
 
-            {%- comment -%}loop thru Attributes so we can get the attribute value without checking security{%- endcomment -%}
+            {% comment %}loop thru Attributes so we can get the attribute value without checking security{% endcomment %}
             {% for familyAttribute in FamilyAttributes %}
                 {% for attribute in Family.AttributeValues %}
                     {% if attribute.AttributeKey == familyAttribute.Key %}
@@ -297,7 +297,7 @@
 
         	            {% if personAttributes %}
         	                <div class="row">
-        	                {%- comment -%}loop thru Attributes so we can get the attribute value without checking security{%- endcomment -%}
+        	                {% comment %}loop thru Attributes so we can get the attribute value without checking security{% endcomment %}
         	                {%- for personAttribute in personAttributes -%}
         	                    {%- for attribute in familyMember.Person.AttributeValues -%}
         	                        {%- if attribute.AttributeKey == personAttribute.Key -%}

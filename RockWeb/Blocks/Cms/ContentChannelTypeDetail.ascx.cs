@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Content Channel Type Detail")]
     [Category("CMS")]
     [Description("Displays the details for a content channel type.")]
-    public partial class ContentChannelTypeDetail : RockBlock, IDetailBlock
+    public partial class ContentChannelTypeDetail : RockBlock
     {
         #region Properties
 

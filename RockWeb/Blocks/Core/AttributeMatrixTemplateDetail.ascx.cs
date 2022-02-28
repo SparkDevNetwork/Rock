@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Attribute Matrix Template Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of an attribute matrix template." )]
-    public partial class AttributeMatrixTemplateDetail : RockBlock, IDetailBlock
+    public partial class AttributeMatrixTemplateDetail : RockBlock
     {
         #region States
 

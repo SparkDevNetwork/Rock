@@ -16,6 +16,8 @@
 //
 using System;
 
+using Rock.Financial;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -64,6 +66,11 @@ namespace Rock.SystemGuid
         public const string GLOBAL_PUBLIC_APPLICATION_ROOT = "49AD7AD6-9BAC-4743-B1E8-B917F6271924";
 
         /// <summary>
+        /// The Liquid Framework used to parse and render Lava.
+        /// </summary>
+        public const string GLOBAL_LAVA_ENGINE_LIQUID_FRAMEWORK = "9CBDD352-A4F5-47D6-9EFE-6115774B2DFE";
+
+        /// <summary>
         /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
@@ -87,6 +94,11 @@ namespace Rock.SystemGuid
         /// The allergy attribute
         /// </summary>
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
+
+        /// <summary>
+        /// The Person legal note attribute
+        /// </summary>
+        public const string PERSON_LEGAL_NOTE = "F832AB6F-B684-4EEA-8DB4-C54B895C79ED";
 
         /// <summary>
         /// The person attribute for the person's giving envelope number
@@ -342,14 +354,6 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        /// <summary>
-        /// The family attribute for storing a family's checkin identifiers
-        /// </summary>
-        ///
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.", true )]
-        public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
-
         #region eRA Attributes
 
         /// <summary>
@@ -467,6 +471,15 @@ namespace Rock.SystemGuid
         /// The communication transport SMTP server Attribute Guid
         /// </summary>
         public const string COMMUNICATION_TRANSPORT_SMTP_SERVER = "6CFFDF99-E93A-49B8-B440-0EF93878A51F";
+
+        #endregion
+
+        #region Communication Medium Attributes
+
+        /// <summary>
+        /// The communication medium Email CSS Inlining Enabled Attribute Guid
+        /// </summary>
+        public const string COMMUNICATION_MEDIUM_EMAIL_CSS_INLINING_ENABLED = "1D5E06A4-79BD-4554-AB63-DD6F1F815594";
 
         #endregion
 
@@ -677,6 +690,15 @@ namespace Rock.SystemGuid
 
         #endregion Workflow Action Attributes
 
+        #region Workflow Entry Block Attributes
+
+        /// <summary>
+        /// The Workflow Entry Block Attribute that disables passing the WorkflowTypeID.
+        /// </summary>
+        public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWTYPEID = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB";
+
+        #endregion Workflow Entry Block Attributes
+
         /// <summary>
         /// The defined value logging domains to log
         /// </summary>
@@ -762,6 +784,7 @@ namespace Rock.SystemGuid
         /// The attendance type label
         /// </summary>
         public const string ATTENDANCE_TYPE_LABEL = "6916359C-C168-4DBA-A893-365526C9F4C4";
+
         /// <summary>
         /// The configured attendance types
         /// </summary>
@@ -795,12 +818,12 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_PREFERRED_SOURCE = "0567B279-1F4D-4573-9AA7-927A7278443E";
 
         /// <summary>
-        /// Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
+        /// Frequency Label. See <seealso cref="FinancialGivingAnalyticsFrequencyLabel"/>.
         /// </summary>
         public const string PERSON_GIVING_FREQUENCY_LABEL = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5";
 
         /// <summary>
-        /// Percent of Gifts Scheduled - Number
+        /// Percent of Gifts Scheduled - Integer
         /// </summary>
         public const string PERSON_GIVING_PERCENT_SCHEDULED = "98373264-0E65-4C79-B75B-4F8477AA647E";
 
@@ -811,26 +834,27 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gift Amount: IQR - Currency
+        /// IQR = Interquartile Range calculated from the past 12 months of giving
         /// </summary>
         public const string PERSON_GIVING_AMOUNT_IQR = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7";
 
         /// <summary>
-        /// Gift Frequency Days: Mean -  Number
+        /// Gift Frequency Days: Mean -  Decimal
         /// </summary>
         public const string PERSON_GIVING_FREQUENCY_MEAN_DAYS = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA";
 
         /// <summary>
-        /// Gift Frequency Days: Standard Deviation - Number
+        /// Gift Frequency Days: Standard Deviation - Decimal
         /// </summary>
         public const string PERSON_GIVING_FREQUENCY_STD_DEV_DAYS = "1D5E4356-DC66-4067-BEF1-3560E61150BD";
 
         /// <summary>
-        /// Giving Bin - Number
+        /// Giving Bin - Integer
         /// </summary>
         public const string PERSON_GIVING_BIN = "7FBB63CC-F4FC-4F7E-A8C5-44DC3D0F0720";
 
         /// <summary>
-        /// Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
+        /// Giving Percentile - Integer - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
         /// </summary>
         public const string PERSON_GIVING_PERCENTILE = "D03ACAB8-EB0C-4835-A04C-4C357014D935";
 
@@ -849,32 +873,59 @@ namespace Rock.SystemGuid
         /// Giving History JSON - Code - gets the JSON array of giving data by month objects.
         /// [{ Year: 2020, Month: 1, AccountId: 1, Amount: 550.67 }, ...]
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_HISTORY_JSON = "3BF34F25-4D50-4417-B436-37FEA3FA5473";
 
         /// <summary>
         /// Giving Total past 12 months - Currency
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_12_MONTHS = "ADD9BE86-49CA-46C4-B4EA-547F2F277294";
 
         /// <summary>
         /// Giving Total past 90 days - Currency
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_90_DAYS = "0DE95B77-D26E-4513-9A71-92A7FD5C4B7C";
 
         /// <summary>
         /// Giving Total prior 90 days (90-180 days ago) - Currency
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_PRIOR_90_DAYS = "0170A267-942A-480A-A9CF-E4EA60CAA529";
 
         /// <summary>
         /// Gift count 12 month - Integer
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_12_MONTHS_COUNT = "23B6A7BD-BBBB-4F2D-9695-2B1E03B3013A";
 
         /// <summary>
         /// Gift count 90 days - Integer
         /// </summary>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This is now calculated dynamically" )]
         public const string PERSON_GIVING_90_DAYS_COUNT = "356B8F0B-AA54-4F44-8513-F8A5FF592F18";
+
+        /// <summary>
+        /// Giving Journey - Current <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_CURRENT_GIVING_JOURNEY_STAGE = "13C55AEA-6D88-4470-B3AE-EE5138F044DF";
+
+        /// <summary>
+        /// Giving Journey - Previous <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_PREVIOUS_GIVING_JOURNEY_STAGE = "B35CE867-6017-484E-9EC7-AEB93CD4B2D8";
+
+        /// <summary>
+        /// Giving Journey - Change Date of <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_GIVING_JOURNEY_STAGE_CHANGE_DATE = "8FFE3554-43F2-40D8-8803-446559D2B1F7";
 
         #endregion Giving Analytics
 

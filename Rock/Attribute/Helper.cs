@@ -504,41 +504,7 @@ This can be due to multiple threads updating the same attribute at the same time
                             .Where( v => v.EntityId.HasValue && v.EntityId.Value == entity.Id );
                     }
 
-                    if ( attributeIds.Count != 1 )
-                    {
-                        if ( attributeIds.Count >= 1000 )
-                        {
-                            // the linq Expression.Or tree gets too big if there is more than 1000 attributes, so just do a contains instead
-                            attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
-                        }
-                        else
-                        {
-                            // a Linq query that uses 'Contains' can't be cached in the EF Plan Cache, so instead of doing a Contains, build a List of OR conditions. This can save 15-20ms per call (and still ends up with the exact same SQL)
-                            var parameterExpression = attributeValueService.ParameterExpression;
-                            MemberExpression propertyExpression = Expression.Property( parameterExpression, "AttributeId" );
-                            Expression expression = null;
-
-                            foreach ( var attributeId in attributeIds )
-                            {
-                                Expression attributeIdValue = Expression.Constant( attributeId );
-                                if ( expression != null )
-                                {
-                                    expression = Expression.Or( expression, Expression.Equal( propertyExpression, attributeIdValue ) );
-                                }
-                                else
-                                {
-                                    expression = Expression.Equal( propertyExpression, attributeIdValue );
-                                }
-                            }
-
-                            attributeValueQuery = attributeValueQuery.Where( parameterExpression, expression );
-                        }
-                    }
-                    else
-                    {
-                        int attributeId = attributeIds[0];
-                        attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
-                    }
+                    attributeValueQuery = attributeValueQuery.WhereAttributeIds( attributeIds );
 
                     /* 2020-07-29 MDP
                      Select just AttributeId, EntityId, and Value. That way the AttributeId_EntityId_Value index is the
@@ -875,7 +841,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 var attributeValueService = new Model.AttributeValueService( rockContext );
 
                 var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
-                var valueQuery = attributeValueService.Queryable().Where( x => attributeIds.Contains( x.AttributeId ) && x.EntityId == model.Id );
+                var valueQuery = attributeValueService.Queryable().WhereAttributeIds( attributeIds ).Where( x => x.EntityId == model.Id );
                 bool changesMade = false;
 
                 var attributeValues = valueQuery.ToDictionary( x => x.AttributeKey );

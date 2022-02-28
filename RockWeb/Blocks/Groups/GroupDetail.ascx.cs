@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -31,10 +32,12 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Enums;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Groups
@@ -167,11 +170,11 @@ namespace RockWeb.Blocks.Groups
         Key = AttributeKey.AddAdministrateSecurityToGroupCreator,
         Description = "If enabled, the person who creates a new group will be granted 'Administrate' security rights to the group.  This was the behavior in previous versions of Rock.  If disabled, the group creator will not be able to edit security or possibly perform other functions without the Rock administrator settings up a role that is allowed to perform such functions.",
         DefaultBooleanValue = false,
-        Order = 19)]
+        Order = 19 )]
 
     #endregion Block Attributes
 
-    public partial class GroupDetail : ContextEntityBlock, IDetailBlock
+    public partial class GroupDetail : ContextEntityBlock
     {
         #region Attribute Keys
 
@@ -945,7 +948,21 @@ namespace RockWeb.Blocks.Groups
             group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
+
             group.IsSecurityRole = cbIsSecurityRole.Checked;
+
+            // If this block's attribute limits group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
+            if ( GetAttributeValue( AttributeKey.LimittoSecurityRoleGroups ).AsBoolean() )
+            {
+                group.IsSecurityRole = true;
+            }
+
+            group.ElevatedSecurityLevel = rblElevatedSecurityLevel.SelectedValue.ConvertToEnum<ElevatedSecurityLevel>();
+            if ( !group.IsSecurityRole )
+            {
+                group.ElevatedSecurityLevel = ElevatedSecurityLevel.None;
+            }
+
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
 
@@ -1136,7 +1153,7 @@ namespace RockWeb.Blocks.Groups
                  * Do not assign the group creater Administrate security permisisons unless AddAdministrateSecurityToGroupCreator is true.
                  */
 
-                if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToGroupCreator).AsBoolean() )
+                if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToGroupCreator ).AsBoolean() )
                 {
                     // Add ADMINISTRATE to the person who added the group
                     Rock.Security.Authorization.AllowPerson( group, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
@@ -1296,15 +1313,7 @@ namespace RockWeb.Blocks.Groups
                 group.LoadAttributes( rockContext );
 
                 // Clone the group
-                var newGroup = group.Clone( false );
-                newGroup.CreatedByPersonAlias = null;
-                newGroup.CreatedByPersonAliasId = null;
-                newGroup.CreatedDateTime = RockDateTime.Now;
-                newGroup.ModifiedByPersonAlias = null;
-                newGroup.ModifiedByPersonAliasId = null;
-                newGroup.ModifiedDateTime = RockDateTime.Now;
-                newGroup.Id = 0;
-                newGroup.Guid = Guid.NewGuid();
+                var newGroup = group.CloneWithoutIdentity();
                 newGroup.IsSystem = false;
                 newGroup.Name = group.Name + " - Copy";
 
@@ -1364,16 +1373,8 @@ namespace RockWeb.Blocks.Groups
 
                     foreach ( var auth in auths )
                     {
-                        var newAuth = auth.Clone( false );
-                        newAuth.Id = 0;
-                        newAuth.Guid = Guid.NewGuid();
+                        var newAuth = auth.CloneWithoutIdentity();
                         newAuth.GroupId = newGroup.Id;
-                        newAuth.CreatedByPersonAlias = null;
-                        newAuth.CreatedByPersonAliasId = null;
-                        newAuth.CreatedDateTime = RockDateTime.Now;
-                        newAuth.ModifiedByPersonAlias = null;
-                        newAuth.ModifiedByPersonAliasId = null;
-                        newAuth.ModifiedDateTime = RockDateTime.Now;
                         authService.Add( newAuth );
                     }
 
@@ -1723,6 +1724,11 @@ namespace RockWeb.Blocks.Groups
             tbDescription.Text = group.Description;
             nbGroupCapacity.Text = group.GroupCapacity.ToString();
             cbIsSecurityRole.Checked = group.IsSecurityRole;
+
+            LoadElevatedSecurityRadioList();
+
+            rblElevatedSecurityLevel.SelectedValue = group.ElevatedSecurityLevel.ConvertToInt().ToString();
+
             cbIsActive.Checked = group.IsActive;
             cbIsPublic.Checked = group.IsPublic;
 
@@ -1879,6 +1885,15 @@ namespace RockWeb.Blocks.Groups
             BindMemberWorkflowTriggersGrid();
         }
 
+        private void LoadElevatedSecurityRadioList()
+        {
+            rblElevatedSecurityLevel.Items.Clear();
+            foreach ( ElevatedSecurityLevel value in Enum.GetValues( typeof( ElevatedSecurityLevel ) ) )
+            {
+                rblElevatedSecurityLevel.Items.Add( new ListItem( value.ToString(), value.ConvertToInt().ToString() ) );
+            }
+        }
+
         /// <summary>
         /// Bind the administrator person picker.
         /// </summary>
@@ -1931,6 +1946,20 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupType != null )
             {
+                if ( cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
+                {
+                    pnlElevatedSecurity.Visible = true;
+                }
+                else
+                {
+                    pnlElevatedSecurity.Visible = false;
+
+                    if ( setValues )
+                    {
+                        rblElevatedSecurityLevel.SelectedValue = ElevatedSecurityLevel.None.ConvertToInt().ToString();
+                    }
+                }
+
                 if ( setValues )
                 {
                     dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
@@ -2172,6 +2201,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     hlType.Text = groupType.Name;
                 }
+
                 hlType.ToolTip = groupType.Description;
             }
 
@@ -2189,6 +2219,24 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlCampus.Visible = false;
+            }
+
+            if ( group.IsSecurityRole && group.ElevatedSecurityLevel > ElevatedSecurityLevel.None )
+            {
+                hlElevatedSecurityLevel.Visible = true;
+                hlElevatedSecurityLevel.Text = $"Security Level: {group.ElevatedSecurityLevel.ConvertToString( true )}";
+                if ( group.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
+                {
+                    hlElevatedSecurityLevel.LabelType = LabelType.Danger;
+                }
+                else
+                {
+                    hlElevatedSecurityLevel.LabelType = LabelType.Warning;
+                };
+            }
+            else
+            {
+                hlElevatedSecurityLevel.Visible = true;
             }
 
             var pageParams = new Dictionary<string, string>();
@@ -2979,7 +3027,7 @@ namespace RockWeb.Blocks.Groups
                 ddlLocationType.SetValue( groupLocation.GroupLocationTypeValueId );
 
                 var activeSchedules = groupLocation.Schedules.Where( s => s.IsActive );
-                var inactiveScheduleIds = groupLocation.Schedules.Where( s=> !s.IsActive ).Select( s => s.Id ).ToList();
+                var inactiveScheduleIds = groupLocation.Schedules.Where( s => !s.IsActive ).Select( s => s.Id ).ToList();
                 spSchedules.SetValues( activeSchedules );
                 hfInactiveGroupLocationSchedules.Value = inactiveScheduleIds.AsDelimited( "," );
 
@@ -3629,7 +3677,7 @@ namespace RockWeb.Blocks.Groups
 
             // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
             if ( groupId > 0 )
-            { 
+            {
                 groupTypeId = new GroupService( rockContext ).Get( groupId ).GroupTypeId;
             }
 
@@ -4293,6 +4341,32 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbIsSecurityRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbIsSecurityRole_CheckedChanged( object sender, EventArgs e )
+        {
+            // Grouptype changed, so load up the new attributes and set controls to the default attribute values
+            if ( ddlGroupType.Visible )
+            {
+                CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+            }
+
+            if ( CurrentGroupTypeId > 0 )
+            {
+                var groupType = CurrentGroupTypeCache;
+
+                var group = new Group
+                {
+                    GroupTypeId = CurrentGroupTypeId,
+                    IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid()
+                };
+
+                ShowGroupTypeEditDetails( groupType, group, true );
+            }
+        }
     }
 
     class GroupSyncViewModel : GroupSync

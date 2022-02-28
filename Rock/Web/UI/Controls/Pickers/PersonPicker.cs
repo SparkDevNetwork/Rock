@@ -717,42 +717,30 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "picker-menu dropdown-menu js-personpicker-menu" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row no-gutters" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                // column1
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "picker-search-header" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "<h4>Search</h4>" );
-                writer.RenderEndTag();
-
-                // column2
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // actions div
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right ml-auto" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // Render Additional Search Fields toggler
                 writer.Write( @"
-                    <span class='js-toggle-additional-search-fields toggle-additional-search-fields' title='Advanced Search'>
-                        <i class='fa fa-search-plus clickable' ></i>
+                    <span class='js-toggle-additional-search-fields toggle-additional-search-fields picker-search-action clickable' title='Advanced Search'>
+                        <i class='fa fa-search-plus' ></i>
                     </span>" );
 
                 // Render Self Picker
                 if ( this.EnableSelfSelection )
                 {
                     writer.Write( @"
-                    <span class='js-select-self' title='Select self'>
-                        <i class='fa fa-user clickable' ></i>
+                    <span class='js-select-self picker-search-action clickable' title='Select self'>
+                        <i class='fa fa-user' ></i>
                     </span>" );
                 }
 
                 // end actions div
-                writer.RenderEndTag();
-
-                // end column2
                 writer.RenderEndTag();
 
 
