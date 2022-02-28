@@ -46,6 +46,11 @@ namespace RockWeb.Blocks.Communication
         Order = 4,
         Key = AttributeKey.FutureWeeksToShow )]
 
+    [LavaCommandsField( "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled.",
+        IsRequired = false,
+        Key = AttributeKey.EnabledLavaCommands,
+        Order = 5 )]
     #endregion Block Attributes
 
     public partial class CommunicationJobPreview : RockBlock
@@ -120,6 +125,7 @@ namespace RockWeb.Blocks.Communication
             public const string SendDaysOfTheWeek = "SendDaysOfTheWeek";
             public const string PreviousWeeksToShow = "PreviousWeeksToShow";
             public const string FutureWeeksToShow = "FutureWeeksToShow";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
         }
 
         #endregion Attribute Keys
@@ -164,7 +170,7 @@ namespace RockWeb.Blocks.Communication
         {
             var mergeFields = ProcessTemplateMergeFields();
 
-            var source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
+            var source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
             lContent.Text = Variables.EmailContainerHtml.Replace( Variables.SystemCommunicationSourceReplacementKey, source );
         }
 
@@ -373,7 +379,7 @@ namespace RockWeb.Blocks.Communication
                 lSubject.Text = $"<small class='text-semibold'>{Variables.SystemCommunicationRecord.Title} | {Variables.SystemCommunicationRecord.Subject}</small>";
                 lDate.Text = $"<small class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</small>";
 
-                string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
+                string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields ,null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
 
                 lContent.Text = Variables.EmailContainerHtml.Replace( Variables.SystemCommunicationSourceReplacementKey, source );
             }
@@ -548,8 +554,20 @@ namespace RockWeb.Blocks.Communication
 
         #endregion Methods
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the enabled lava commands.
+        /// </summary>
+        /// <value>
+        /// The enabled lava commands.
+        /// </value>
+        protected string EnabledLavaCommands => GetAttributeValue( AttributeKey.EnabledLavaCommands );
+
+        #endregion
+
         #region Classes
-        
+
         /// <summary>
         /// Class SystemCommunicationPreviewInfo.
         /// </summary>
