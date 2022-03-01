@@ -79,7 +79,7 @@ namespace Rock.Workflow.Action
                                     {
                                         var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid );
                                         List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
-                                            .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.NotificationsEnabled )
+                                            .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.IsActive && a.NotificationsEnabled )
                                             .Select( a => a.DeviceRegistrationId )
                                             .ToList();
 
@@ -134,7 +134,7 @@ namespace Rock.Workflow.Action
                                             .Select( m => m.Person ) )
                                         {
                                             List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
-                                                .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId == person.PrimaryAliasId && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
+                                                .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId == person.PrimaryAliasId && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                                 .Select( p => p.DeviceRegistrationId )
                                                 .ToList();
 
@@ -234,8 +234,6 @@ namespace Rock.Workflow.Action
                     }
                 }
             }
-            PushData pushData = new PushData();
-            pushData.Url = url;
 
             if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
             {
@@ -244,7 +242,37 @@ namespace Rock.Workflow.Action
                 pushMessage.Title = title;
                 pushMessage.Message = message;
                 pushMessage.Sound = sound;
-                pushMessage.Data = pushData;
+                pushMessage.OpenAction = url.IsNotNullOrWhiteSpace() ? Utility.PushOpenAction.LinkToUrl : Utility.PushOpenAction.NoAction;
+                pushMessage.Data = new PushData
+                {
+                    Url = url
+                };
+
+                // Check if the URL is a mobile app style URL, which is "<guid>[?key=value]".
+                if ( url.Length >= 36 && Guid.TryParse( url.Substring( 0, 36 ), out var pageGuid ) )
+                {
+                    var pageId = PageCache.Get( pageGuid )?.Id;
+
+                    if ( pageId.HasValue )
+                    {
+                        pushMessage.Data.MobilePageId = pageId.Value;
+
+                        // Check if there are any query string values.
+                        if ( url.Length >= 38 && url[36] == '?' )
+                        {
+                            var queryString = url.Substring( 37 ).ParseQueryString();
+
+                            pushMessage.Data.MobilePageQueryString = new Dictionary<string, string>();
+
+                            foreach ( string key in queryString.Keys )
+                            {
+                                pushMessage.Data.MobilePageQueryString.AddOrReplace( key, queryString[key].ToString() );
+                            }
+                        }
+
+                        pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
+                    }
+                }
 
                 pushMessage.Send( out errorMessages );
             }

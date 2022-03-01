@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -25,7 +26,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a currency amount
     /// </summary>
-    [Rock.Attribute.RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class CurrencyFieldType : DecimalFieldType
     {
         /// <summary>

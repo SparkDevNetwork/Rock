@@ -15,9 +15,8 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { toNumber } from "../Services/number";
+import { FieldTypeBase } from "./fieldType";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -33,12 +32,11 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the MonthDay field.
  */
 export class MonthDayFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        const components = (value.value || "").split("/");
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        const components = (value).split("/");
 
         if (components.length !== 2) {
-            value.textValue = "";
-            return;
+            return "";
         }
 
         const month = toNumber(components[0]);
@@ -47,14 +45,14 @@ export class MonthDayFieldType extends FieldTypeBase {
         if (month >= 1 && day >= 1 && month <= 12 && day <= 31) {
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-            value.textValue = `${months[month-1]} ${day}`;
+            return `${months[month-1]} ${day}`;
         }
         else {
-            value.textValue = "";
+            return "";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 

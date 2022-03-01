@@ -15,9 +15,8 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { List } from "../Util/linq";
+import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
     Values = "values",
@@ -47,10 +46,10 @@ const editComponent = defineAsyncComponent(async () => {
  * The field type handler for the Key Value List field.
  */
 export class KeyValueListFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
+    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
         try {
-            const clientValues = JSON.parse(value?.value ?? "[]") as ClientValue[];
-            const configuredValues = new List(JSON.parse(value.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);
+            const clientValues = JSON.parse(value ?? "[]") as ClientValue[];
+            const configuredValues = new List(JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);
             const values: string[] = [];
 
             for (const clientValue of clientValues) {
@@ -64,14 +63,14 @@ export class KeyValueListFieldType extends FieldTypeBase {
                 }
             }
 
-            value.textValue = values.join(", ");
+            return values.join(", ");
         }
         catch {
-            value.textValue = "";
+            return "";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 }

@@ -30,12 +30,11 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Transactions;
 using Rock.Utility;
-using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Transactions;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -143,6 +142,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The Financial Source Type to use when creating transactions",
         IsRequired = false,
         AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
         DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
         Category = AttributeCategory.None,
         Order = 19 )]
@@ -183,6 +183,14 @@ namespace RockWeb.Blocks.Finance
         Description = "Determines if checkbox for 'Cover the fee' defaults to checked.",
         Key = AttributeKey.FeeCoverageDefaultState,
         DefaultBooleanValue = false,
+        Order = 28 )]
+
+    [CodeEditorField(
+        "Fee Coverage Message",
+        Description = "The Lava template to use to provide the cover the fees prompt to the individual. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        Key = AttributeKey.FeeCoverageMessage,
+        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% (${{ CalculatedAmount }}) to help cover the electronic transaction fees.",
         Order = 28 )]
 
     #region Scheduled Transactions
@@ -756,6 +764,8 @@ mission. We are so grateful for your commitment.</p>
             public const string EnableFeeCoverage = "EnableFeeCoverage";
 
             public const string FeeCoverageDefaultState = "FeeCoverageDefaultState";
+
+            public const string FeeCoverageMessage = "FeeCoverageMessage";
         }
 
         #endregion Attribute Keys
@@ -774,6 +784,22 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #endregion Attribute Categories
+
+        #region MergeFieldKeys
+
+        private static class MergeFieldKey
+        {
+            public const string AmountHTML = "AmountHTML";
+            public const string Percentage = "Percentage";
+            public const string IsPercentage = "IsPercentage";
+            public const string FixedAmount = "FixedAmount";
+            public const string IsFixedAmount = "IsFixedAmount";
+            public const string CalculatedAmountJSHook = "CalculatedAmountJSHook";
+            public const string IsSavedAccount = "IsSavedAccount";
+            public const string CalculatedAmount = "CalculatedAmount";
+        }
+
+        #endregion MergeFieldKeys
 
         #region PageParameterKeys
 
@@ -802,6 +828,9 @@ mission. We are so grateful for your commitment.</p>
             /// For example, when creating a new person/family, setting the Account Picker's campus, etc
             /// </summary>
             public const string CampusId = "CampusId";
+
+            public const string ScheduledTransactionGuidToTransfer = "ScheduledTransactionGuid";
+            public const string Transfer = "Transfer";
         }
 
         #endregion
@@ -818,6 +847,7 @@ mission. We are so grateful for your commitment.</p>
             public const string TransactionCode = "TransactionCode";
             public const string CustomerTokenEncrypted = "CustomerTokenEncrypted";
             public const string TargetPersonGuid = "TargetPersonGuid";
+            public const string ScheduledTransactionIdToBeTransferred = "ScheduledTransactionIdToBeTransferred";
         }
 
         #endregion ViewState Keys
@@ -1198,21 +1228,37 @@ mission. We are so grateful for your commitment.</p>
             cbGetPaymentInfoCoverTheFeeACH.Checked = feeCoverageDefaultState;
             cbGetPaymentInfoCoverTheFeeCreditCard.Checked = feeCoverageDefaultState;
 
+            var feeCoverageMessageTemplate = this.GetAttributeValue( AttributeKey.FeeCoverageMessage );
+            var feeCoverageMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+
             var creditCardFeeCoveragePercentage = feeCoverageGatewayComponent.GetCreditCardFeeCoveragePercentage( FinancialGateway );
+            feeCoverageMergeFields.Add( MergeFieldKey.Percentage, creditCardFeeCoveragePercentage );
+            feeCoverageMergeFields.Add( MergeFieldKey.IsPercentage, creditCardFeeCoveragePercentage.HasValue );
+            var achFeeCoverageAmount = feeCoverageGatewayComponent.GetACHFeeCoverageAmount( FinancialGateway );
+            feeCoverageMergeFields.Add( MergeFieldKey.FixedAmount, achFeeCoverageAmount );
+            feeCoverageMergeFields.Add( MergeFieldKey.IsFixedAmount, achFeeCoverageAmount.HasValue );
+            var calculatedAmountJSHook = "js-coverthefee-checkbox-fee-amount-text";
+            feeCoverageMergeFields.Add( MergeFieldKey.CalculatedAmountJSHook, calculatedAmountJSHook );
+
             if ( creditCardFeeCoveragePercentage > 0 )
             {
                 pnlGetPaymentInfoCoverTheFeeCreditCard.Visible = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
 
                 var creditCardFeeCoverageAmount = decimal.Round( totalAmount * ( creditCardFeeCoveragePercentage.Value / 100.0M ), 2 );
-                cbGetPaymentInfoCoverTheFeeCreditCard.Text = string.Format( "Optionally add {0} to cover processing fee.", creditCardFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, creditCardFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, false );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, creditCardFeeCoverageAmount );
+                cbGetPaymentInfoCoverTheFeeCreditCard.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
                 hfAmountWithCoveredFeeCreditCard.Value = ( totalAmount + creditCardFeeCoverageAmount ).FormatAsCurrency();
             }
 
-            var achFeeCoverageAmount = feeCoverageGatewayComponent.GetACHFeeCoverageAmount( FinancialGateway );
             if ( achFeeCoverageAmount > 0 )
             {
                 pnlGetPaymentInfoCoverTheFeeACH.Visible = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
-                cbGetPaymentInfoCoverTheFeeACH.Text = string.Format( "Optionally add {0} to cover processing fee.", achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, false );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, achFeeCoverageAmount );
+                cbGetPaymentInfoCoverTheFeeACH.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
                 hfAmountWithCoveredFeeACH.Value = ( totalAmount + achFeeCoverageAmount ).FormatAsCurrency();
             }
 
@@ -1244,7 +1290,10 @@ mission. We are so grateful for your commitment.</p>
                     return;
                 }
 
-                cbGiveNowCoverTheFee.Text = string.Format( "Optionally add {0} to cover processing fee.", achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, achFeeCoverageAmount.FormatAsCurrency() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, true );
+                cbGiveNowCoverTheFee.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, achFeeCoverageAmount );
             }
             else
             {
@@ -1254,9 +1303,11 @@ mission. We are so grateful for your commitment.</p>
                     return;
                 }
 
-                cbGiveNowCoverTheFee.Text = string.Format(
-                    "Optionally add {0}<span class='js-coverthefee-checkbox-fee-amount-text' decimal-places='{1}'></span> to cover processing fee.",
-                    RockCurrencyCodeInfo.GetCurrencySymbol(), RockCurrencyCodeInfo.GetDecimalPlaces() );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, $"{RockCurrencyCodeInfo.GetCurrencySymbol()}<span class='{calculatedAmountJSHook}' decimal-places='{RockCurrencyCodeInfo.GetDecimalPlaces()}'></span>" );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, true );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, null );
+
+                cbGiveNowCoverTheFee.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
             }
 
             pnlGiveNowCoverTheFee.Visible = true;
@@ -1566,6 +1617,7 @@ mission. We are so grateful for your commitment.</p>
             else
             {
                 tbBusinessName.Text = personAsBusiness.LastName;
+                tbEmailBusiness.Text = personAsBusiness.Email;
 
                 Guid addressTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
                 var addressTypeId = DefinedValueCache.GetId( addressTypeGuid );
@@ -1594,7 +1646,15 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglIndividualOrBusiness_CheckedChanged( object sender, EventArgs e )
         {
-            bool givingAsBusiness = GivingAsBusiness();
+            UpdateGivingAsIndividualOrBusinessControls();
+        }
+
+        /// <summary>
+        /// Updates the giving as individual or business controls.
+        /// </summary>
+        private void UpdateGivingAsIndividualOrBusinessControls()
+        {
+            var givingAsBusiness = GivingAsBusiness();
             pnlPersonInformationAsIndividual.Visible = !givingAsBusiness;
             pnlPersonInformationAsBusiness.Visible = givingAsBusiness;
             UpdatePersonalInformationFromSelectedBusiness();
@@ -1830,10 +1890,6 @@ mission. We are so grateful for your commitment.</p>
             }
 
             caapPromptForAccountAmounts.SelectableAccountIds = selectableAccountIds.ToArray();
-            if ( accountAmounts != null )
-            {
-                caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
-            }
 
             // if Gateways are configured, show a warning if no Accounts are configured (we don't want to show an Accounts warning if they haven't configured a gateway yet)
             if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
@@ -1856,6 +1912,22 @@ mission. We are so grateful for your commitment.</p>
             if ( !SetInitialTargetPersonControls() )
             {
                 return;
+            }
+
+            // Check if this is a transfer and that the person is the authorized person on the transaction
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.Transfer ) ) && !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.ScheduledTransactionGuidToTransfer ) ) )
+            {
+                InitializeTransfer( PageParameter( PageParameterKey.ScheduledTransactionGuidToTransfer ).AsGuidOrNull() );
+
+                if ( _scheduledTransactionIdToBeTransferred.HasValue && selectableAccountIds.Any() )
+                {
+                    accountAmounts = GetAccountAmountsFromTransferredScheduledTransaction( rockContext, selectableAccountIds );
+                }
+            }
+
+            if ( accountAmounts != null )
+            {
+                caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
             }
 
             string introMessageTemplate = this.GetAttributeValue( AttributeKey.IntroMessageTemplate );
@@ -2001,7 +2073,7 @@ mission. We are so grateful for your commitment.</p>
         }
 
         /// <summary>
-        /// Initializes the UI based on the initial target person.
+        /// Sets the target person and Initializes the UI based on the initial target person.
         /// </summary>
         private bool SetInitialTargetPersonControls()
         {
@@ -2015,7 +2087,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 // If a person key was supplied then try to get that person
                 var rockContext = new RockContext();
-                targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "transaction");
+                targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "transaction" );
 
                 if ( allowImpersonation )
                 {
@@ -2582,9 +2654,19 @@ mission. We are so grateful for your commitment.</p>
             nbPromptForAmountsWarning.Visible = false;
             BindPersonSavedAccounts();
 
-            int selectedScheduleFrequencyId = ddlFrequency.SelectedValue.AsInteger();
-
+            bool allowScheduledTransactions = this.GetAttributeValue( AttributeKey.AllowScheduledTransactions ).AsBoolean();
             int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
+            int selectedScheduleFrequencyId;
+
+            if ( allowScheduledTransactions )
+            {
+                selectedScheduleFrequencyId = ddlFrequency.SelectedValue.AsInteger();
+            }
+            else
+            {
+                selectedScheduleFrequencyId = oneTimeFrequencyId;
+            }
+
             int firstAndFifteenthFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() ) ?? 0;
             bool oneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
@@ -2609,7 +2691,15 @@ mission. We are so grateful for your commitment.</p>
             {
                 btnGiveNow.Text = this.GetAttributeValue( AttributeKey.GiveButtonScheduledText );
                 dtpStartDate.Visible = true;
-                dtpStartDate.Label = "Start Giving On";
+
+                if ( _scheduledTransactionIdToBeTransferred.HasValue )
+                {
+                    dtpStartDate.Label = "Next Gift";
+                }
+                else
+                {
+                    dtpStartDate.Label = "Start Giving On";
+                }
             }
 
             if ( selectedScheduleFrequencyId == firstAndFifteenthFrequencyId )
@@ -2830,6 +2920,12 @@ mission. We are so grateful for your commitment.</p>
         /// </returns>
         private bool IsScheduledTransaction()
         {
+            bool allowScheduledTransactions = this.GetAttributeValue( AttributeKey.AllowScheduledTransactions ).AsBoolean();
+            if ( !allowScheduledTransactions )
+            {
+                return false;
+            }
+
             int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
             if ( ddlFrequency.SelectedValue.AsInteger() != oneTimeFrequencyId )
             {
@@ -3028,6 +3124,15 @@ mission. We are so grateful for your commitment.</p>
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
 
+            /* 02/17/2022 MDP
+
+            Note that after the transaction, the HostedGateway knows more about the FinancialPaymentDetail than Rock does
+            since it is the gateway that collects the payment info. But just in case paymentInfo has information the the gateway hasn't set,
+            we'll fill in any missing details.
+
+            But then we'll want to use FinancialPaymentDetail as the most accurate values for the payment info. 
+            */
+
             transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway as GatewayComponent, rockContext );
 
             Guid? sourceGuid = GetAttributeValue( AttributeKey.FinancialSourceType ).AsGuidOrNull();
@@ -3040,11 +3145,19 @@ mission. We are so grateful for your commitment.</p>
 
             var batchService = new FinancialBatchService( rockContext );
 
+            var currencyTypeValue = transaction.FinancialPaymentDetail?.CurrencyTypeValueId != null
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value )
+                : null;
+
+            var creditCardTypeValue = transaction.FinancialPaymentDetail?.CreditCardTypeValueId != null
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value )
+                : null;
+
             // Get the batch
             var batch = batchService.Get(
                 GetAttributeValue( AttributeKey.BatchNamePrefix ),
-                paymentInfo.CurrencyTypeValue,
-                paymentInfo.CreditCardTypeValue,
+                currencyTypeValue,
+                creditCardTypeValue,
                 transaction.TransactionDateTime.Value,
                 financialGateway.GetBatchTimeOffset() );
 
@@ -3250,6 +3363,12 @@ mission. We are so grateful for your commitment.</p>
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             financialScheduledTransactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
+
+            // If this is a transfer, now we can delete the old transaction
+            if ( _scheduledTransactionIdToBeTransferred.HasValue )
+            {
+                DeleteTransferredScheduledTransaction( _scheduledTransactionIdToBeTransferred.Value );
+            }
 
             Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
 
@@ -3466,5 +3585,149 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #endregion navigation
+
+        #region ScheduledTransaction Transfer
+
+        /// <summary>
+        /// The scheduled transaction to be transferred.  This will get set if the
+        /// page parameter "transfer" and the "ScheduledTransactionId" are passed in.
+        /// </summary>
+        private int? _scheduledTransactionIdToBeTransferred
+        {
+            get { return ViewState[ViewStateKey.ScheduledTransactionIdToBeTransferred] as int?; }
+            set { ViewState[ViewStateKey.ScheduledTransactionIdToBeTransferred] = value; }
+        }
+
+        /// <summary>
+        /// Fetches the old (to be transferred) scheduled transaction and verifies
+        /// that the target person is the same on the scheduled transaction.  Then
+        /// it puts it into the _scheduledTransactionToBeTransferred private field
+        /// for use throughout the entry process so that its values can be used on
+        /// the form for the new transaction.
+        /// </summary>
+        /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
+        private void InitializeTransfer( Guid? scheduledTransactionGuid )
+        {
+            if ( scheduledTransactionGuid == null )
+            {
+                return;
+            }
+
+            RockContext rockContext = new RockContext();
+            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetInclude( scheduledTransactionGuid.Value, s => s.AuthorizedPersonAlias.Person );
+            var personService = new PersonService( rockContext );
+
+            var targetPerson = GetTargetPerson( rockContext );
+
+            // get business giving id
+            var givingIds = personService.GetBusinesses( targetPerson.Id ).Select( g => g.GivingId ).ToList();
+
+            // add the person's regular giving id
+            givingIds.Add( targetPerson.GivingId );
+
+            // Make sure the current person is the authorized person or one of the authorized person's businesses, otherwise return
+            if ( scheduledTransaction == null || !givingIds.Contains( scheduledTransaction.AuthorizedPersonAlias.Person.GivingId ) )
+            {
+                return;
+            }
+
+            if ( scheduledTransaction.AuthorizedPersonAlias.Person.IsBusiness() )
+            {
+                tglIndividualOrBusiness.Checked = true;
+                cblSelectBusiness.SetValue( scheduledTransaction.AuthorizedPersonAlias.PersonId );
+                UpdateGivingAsIndividualOrBusinessControls();
+            }
+
+            _scheduledTransactionIdToBeTransferred = scheduledTransaction?.Id;
+
+            // Set the frequency to be the same on the initial page build
+            if ( !IsPostBack )
+            {
+                ddlFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
+                dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate.HasValue
+                    ? scheduledTransaction.NextPaymentDate
+                    : RockDateTime.Today.AddDays( 1 );
+            }
+        }
+
+        /// <summary>
+        /// Gets the account amounts from transferred scheduled transaction.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="selectableAccountIds">The selectable account ids.</param>
+        /// <returns>CampusAccountAmountPicker.AccountIdAmount[].</returns>
+        private CampusAccountAmountPicker.AccountIdAmount[] GetAccountAmountsFromTransferredScheduledTransaction( RockContext rockContext, List<int> selectableAccountIds )
+        {
+            CampusAccountAmountPicker.AccountIdAmount[] accountAmounts;
+            var scheduledTransactionIdToBeTransferredAccountAmounts = new FinancialScheduledTransactionDetailService( rockContext )
+.Queryable()
+.Where( a => a.ScheduledTransactionId == _scheduledTransactionIdToBeTransferred.Value )
+.Select( a => new
+{
+    a.AccountId,
+    a.Amount
+} ).ToList();
+
+            accountAmounts = selectableAccountIds.Select( a => new CampusAccountAmountPicker.AccountIdAmount( a, 0.00M ) ).ToArray();
+            var firstSelectableAccountAmount = accountAmounts[0];
+
+            foreach ( var scheduledTransactionIdToBeTransferredAccountAmount in scheduledTransactionIdToBeTransferredAccountAmounts )
+            {
+                var accountAmount = accountAmounts.Where( a => a.AccountId == scheduledTransactionIdToBeTransferredAccountAmount.AccountId ).FirstOrDefault();
+                if ( accountAmount == null )
+                {
+                    accountAmount = firstSelectableAccountAmount;
+                }
+
+                accountAmount.Amount += scheduledTransactionIdToBeTransferredAccountAmount.Amount;
+            }
+
+            accountAmounts = accountAmounts.Where( a => a.Amount != 0.00M ).ToArray();
+            return accountAmounts;
+        }
+
+        /// <summary>
+        /// Deletes the transferred scheduled transaction.
+        /// </summary>
+        /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
+        private void DeleteTransferredScheduledTransaction( int scheduledTransactionId )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
+                var currentTransaction = fstService.Get( scheduledTransactionId );
+                if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
+                {
+                    currentTransaction.FinancialGateway.LoadAttributes( rockContext );
+                }
+
+                string errorMessage = string.Empty;
+                if ( fstService.Cancel( currentTransaction, out errorMessage ) )
+                {
+                    try
+                    {
+                        fstService.GetStatus( currentTransaction, out errorMessage );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // if it was successfully cancelled, but we got an errorMessage or exception getting the status, that is OK.
+                        ExceptionLogService.LogException( ex );
+                    }
+
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    ExceptionLogService.LogException( new Exception( $"Transaction Entry V2 got an error when cancelling a transferred scheduled transaction: {errorMessage}" ) );
+                    nbConfigurationNotification.Dismissable = true;
+                    nbConfigurationNotification.NotificationBoxType = NotificationBoxType.Danger;
+                    nbConfigurationNotification.Text = string.Format( "An error occurred while remove the tranferred scheduled {0}", GetAttributeValue( AttributeKey.GiftTerm ).ToLower() );
+                    nbConfigurationNotification.Details = errorMessage;
+                    nbConfigurationNotification.Visible = true;
+                }
+            }
+        }
+
+        #endregion
     }
 }

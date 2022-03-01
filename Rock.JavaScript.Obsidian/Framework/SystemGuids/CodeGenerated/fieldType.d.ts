@@ -124,6 +124,8 @@ export const enum FieldType {
     DefinedType = "BC48720C-3610-4BCF-AE66-D255A17F1CDF",
     /** Defined Value field type */
     DefinedValue = "59D5A94C-94A0-4630-B80A-BB25697D74C7",
+    /** Categorized Defined Value field type */
+    DefinedValueCategorized = "3D986B5C-A706-4C69-B0F2-7C81286194CF",
     /** Defined Value Range field type */
     DefinedValueRange = "B5C07B16-844D-4620-82E3-4CCA8F5FC350",
     /** Email field type */

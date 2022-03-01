@@ -79,13 +79,13 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public string SignatureData { get; set; }
+        public string SignatureDataEncrypted { get; set; }
 
         /// <summary />
         public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary />
-        public string SignatureVerficationHash { get; set; }
+        public string SignatureVerificationHash { get; set; }
 
         /// <summary />
         public string SignedByEmail { get; set; }
@@ -158,9 +158,9 @@ namespace Rock.Client
             this.LastStatusDate = source.LastStatusDate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.SignatureData = source.SignatureData;
+            this.SignatureDataEncrypted = source.SignatureDataEncrypted;
             this.SignatureDocumentTemplateId = source.SignatureDocumentTemplateId;
-            this.SignatureVerficationHash = source.SignatureVerficationHash;
+            this.SignatureVerificationHash = source.SignatureVerificationHash;
             this.SignedByEmail = source.SignedByEmail;
             this.SignedByPersonAliasId = source.SignedByPersonAliasId;
             this.SignedClientIp = source.SignedClientIp;

@@ -15,12 +15,19 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
+import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue } from "../ViewModels";
+import { getStandardFilterComponent } from "./utils";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./emailFieldComponents")).EditComponent;
+});
+
+// The filter component can be quite large, so load it only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./emailFieldComponents")).FilterComponent;
 });
 
 // The configuration component can be quite large, so load it only as needed.
@@ -32,17 +39,25 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Email field.
  */
 export class EmailFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: ClientAttributeValue): string {
+    public override getHtmlValue(value: PublicAttributeValue): string {
         const textValue = this.getTextValue(value);
 
         return textValue ? `<a href="mailto:${textValue}">${textValue}</a>` : "";
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return stringComparisonTypes;
     }
 }

@@ -14,16 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import DropDownList from "../Elements/dropDownList";
 import ColorPicker from "../Elements/colorPicker";
-import { getFieldEditorProps } from "./utils";
+import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
+import { useVModelPassthrough } from "../Util/component";
 import { ListItem } from "../ViewModels";
-
-enum ColorControlType {
-    ColorPicker,
-    NamedColor
-}
 
 enum ConfigurationValueKey {
     ColorControlType = "selectiontype",
@@ -70,48 +66,123 @@ export const EditComponent = defineComponent({
         ColorPicker
     },
     props: getFieldEditorProps(),
-    data() {
+    emits: [
+        "update:modelValue"
+    ],
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        const dropDownListOptions = namedColors.map(v => {
+            return { text: v, value: v } as ListItem;
+        });
+
+        const isColorPicker = computed((): boolean => {
+            return props.configurationValues[ConfigurationValueKey.ColorControlType] === ConfigurationValueKey.ColorPicker;
+        });
+
+        const isNamedPicker = computed((): boolean => {
+            return props.configurationValues[ConfigurationValueKey.ColorControlType] !== ConfigurationValueKey.ColorPicker;
+        });
+
         return {
-            internalBooleanValue: false,
-            internalValue: "",
-            dropDownListOptions: namedColors.map(v => {
-                return { text: v, value: v } as ListItem;
-            })
+            internalValue,
+            dropDownListOptions,
+            isNamedPicker,
+            isColorPicker
         };
-    },
-    computed: {
-        colorControlType(): ColorControlType {
-            const controlType = this.configurationValues[ConfigurationValueKey.ColorControlType];
-
-            switch (controlType) {
-                case ConfigurationValueKey.ColorPicker:
-                    return ColorControlType.ColorPicker;
-
-                case ConfigurationValueKey.NamedColor:
-                default:
-                    return ColorControlType.NamedColor;
-            }
-        },
-        isColorPicker(): boolean {
-            return this.colorControlType === ColorControlType.ColorPicker;
-        },
-        isNamedPicker(): boolean {
-            return this.colorControlType === ColorControlType.NamedColor;
-        }
-    },
-    watch: {
-        internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue: {
-            immediate: true,
-            handler() {
-                this.internalValue = this.modelValue || "";
-            }
-        }
     },
     template: `
 <DropDownList v-if="isNamedPicker" v-model="internalValue" :options="dropDownListOptions" />
 <ColorPicker v-else v-model="internalValue" />
+`
+});
+
+export const ConfigurationComponent = defineComponent({
+    name: "ColorField.Configuration",
+
+    components: {
+        DropDownList
+    },
+
+    props: getFieldConfigurationProps(),
+
+    emits: ["update:modelValue", "updateConfiguration", "updateConfigurationValue"],
+
+    setup(props, { emit }) {
+        // Define the properties that will hold the current selections.
+        const colorControlType = ref("");
+        const typeList = [
+            { text: ConfigurationValueKey.NamedColor, value: ConfigurationValueKey.NamedColor },
+            { text: ConfigurationValueKey.ColorPicker, value: ConfigurationValueKey.ColorPicker }
+        ];
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {};
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.ColorControlType] = colorControlType.value ?? ConfigurationValueKey.NamedColor;
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.ColorControlType] !== (props.modelValue[ConfigurationValueKey.ColorControlType] ?? "False");
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         * 
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            colorControlType.value = props.modelValue[ConfigurationValueKey.ColorControlType] ?? ConfigurationValueKey.NamedColor;
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
+        // THIS FIELD DOES NOT NEED THIS
+        watch([], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(colorControlType, () => maybeUpdateConfiguration(ConfigurationValueKey.ColorControlType, colorControlType.value || ConfigurationValueKey.NamedColor));
+
+        return { colorControlType, typeList };
+    },
+
+    template: `
+<div>
+    <DropDownList v-model="colorControlType" :options="typeList" :show-blank-item="false" label="Selection Type" help="The type of control to select color" />
+</div>
 `
 });

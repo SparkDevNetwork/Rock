@@ -25,12 +25,14 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
+using Rock.Attribute;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) content channel item filtered by a selected content channel
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ContentChannelItemFieldType : FieldType, IEntityFieldType
     {
 

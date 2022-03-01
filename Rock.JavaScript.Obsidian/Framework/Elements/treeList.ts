@@ -20,8 +20,7 @@ import { ITreeItemProvider } from "../ViewModels/Controls/treeList";
 import { TreeItem } from "../ViewModels/treeItem";
 
 function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as any).then === "function";
+    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
 }
 
 /**
@@ -36,11 +35,21 @@ const treeItem = defineComponent({
             default: []
         },
 
+        allowMultiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         item: {
             type: Object as PropType<TreeItem>,
             default: {}
         }
     },
+
+    emits: [
+        "treeitem-expanded",
+        "update:modelValue"
+    ],
 
     setup(props, { emit }) {
         /** The list of child items to this item. */
@@ -92,7 +101,6 @@ const treeItem = defineComponent({
             showChildren.value = !showChildren.value;
 
             if (showChildren.value) {
-                console.log("emit primary expanded");
                 emit("treeitem-expanded", props.item);
             }
         };
@@ -110,11 +118,21 @@ const treeItem = defineComponent({
          * Event handler for when this item is selected or deselected.
          */
         const onSelect = (): void => {
-            if (props.item.value && !props.modelValue.includes(props.item.value)) {
-                emit("update:modelValue", [...props.modelValue, props.item.value]);
+            if (props.allowMultiple) {
+                if (props.item.value && !props.modelValue.includes(props.item.value)) {
+                    emit("update:modelValue", [...props.modelValue, props.item.value]);
+                }
+                else if (props.item.value && props.modelValue.includes(props.item.value)) {
+                    emit("update:modelValue", [...props.modelValue.filter(v => v !== props.item.value)]);
+                }
             }
-            else if (props.item.value && props.modelValue.includes(props.item.value)) {
-                emit("update:modelValue", [...props.modelValue.filter(v => v !== props.item.value)]);
+            else {
+                if (props.item.value && !props.modelValue.includes(props.item.value)) {
+                    emit("update:modelValue", [props.item.value]);
+                }
+                else if (props.item.value && props.modelValue.includes(props.item.value)) {
+                    emit("update:modelValue", []);
+                }
             }
         };
 
@@ -152,7 +170,7 @@ const treeItem = defineComponent({
         {{ itemName }}
     </span>
     <ul v-if="hasChildren" v-show="showChildren" class="rocktree-children" v-for="child in children">
-        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" />
+        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :allowMultiple="allowMultiple" />
     </ul>
 </li>
 `
@@ -171,6 +189,11 @@ export default defineComponent({
             default: []
         },
 
+        allowMultiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         items: {
             type: Array as PropType<TreeItem[]>,
             default: []
@@ -180,6 +203,12 @@ export default defineComponent({
             type: Object as PropType<ITreeItemProvider>
         }
     },
+
+    emits: [
+        "update:modelValue",
+        "update:items",
+        "treeitem-expanded"
+    ],
 
     setup(props, { emit }) {
         /** The list of items currently being displayed in the tree list. */
@@ -206,7 +235,12 @@ export default defineComponent({
          */
         const onUpdateSelectedValues = (values: string[]): void => {
             // Pass the event up to the parent so it knows about the new selection.
-            emit("update:modelValue", values);
+            if (props.allowMultiple) {
+                emit("update:modelValue", values);
+            }
+            else {
+                emit("update:modelValue", values.length > 0 ? [values[0]] : []);
+            }
         };
 
         /**
@@ -257,7 +291,7 @@ export default defineComponent({
     template: `
 <div>
     <ul class="rocktree">
-        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" />
+        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :allowMultiple="allowMultiple" />
     </ul>
 </div>
 `

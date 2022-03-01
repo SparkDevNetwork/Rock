@@ -32,6 +32,6 @@ namespace Rock.ViewModel
         /// <value>
         /// The attributes.
         /// </value>
-        Dictionary<string, ClientAttributeValueViewModel> Attributes { get; set; }
+        Dictionary<string, PublicAttributeValueViewModel> Attributes { get; set; }
     }
 }

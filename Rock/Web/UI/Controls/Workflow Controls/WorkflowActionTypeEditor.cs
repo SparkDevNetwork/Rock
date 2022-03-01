@@ -246,7 +246,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
 
             var entityType = EntityTypeCache.Get( result.EntityTypeId );
-            if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+            if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.FormBuilder ).FullName )
+            {
+                // Do nothing to the existing WorkflowForm property.
+            }
+            else if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
                 result.WorkflowForm = _formEditor.GetForm();
                 if ( result.WorkflowForm == null )
@@ -324,7 +328,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
 
             var entityType = EntityTypeCache.Get( value.EntityTypeId );
-            if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+            if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.FormBuilder ).FullName )
+            {
+                // Do nothing to the WorkflowForm property.
+            }
+            else if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
                 if ( value.WorkflowForm == null )
                 {

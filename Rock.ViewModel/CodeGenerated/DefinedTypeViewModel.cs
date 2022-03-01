@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class DefinedTypeViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the CategorizedValuesEnabled.
+        /// </summary>
+        /// <value>
+        /// The CategorizedValuesEnabled.
+        /// </value>
+        public bool? CategorizedValuesEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the CategoryId.
         /// </summary>
         /// <value>

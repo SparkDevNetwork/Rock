@@ -224,6 +224,9 @@ namespace Rock.Client
         public ICollection<WorkflowActionFormAttribute> FormAttributes { get; set; }
 
         /// <summary />
+        public ICollection<WorkflowActionFormSection> FormSections { get; set; }
+
+        /// <summary />
         public DefinedValue PersonEntryCampusStatusValue { get; set; }
 
         /// <summary />

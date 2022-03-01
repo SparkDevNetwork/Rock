@@ -17,7 +17,9 @@
 
 import { GatewayControlModel } from "../../../Controls/gatewayControl";
 import { Guid } from "../../../Util/guid";
-import { ClientEditableAttributeValue, ListItem, SavedFinancialAccountListItem } from "../../../ViewModels";
+import { PublicEditableAttributeValue, ListItem, SavedFinancialAccountListItem } from "../../../ViewModels";
+import { ComparisonType } from "../../../Reporting/comparisonType";
+import { FilterExpressionType } from "../../../Reporting/filterExpressionType";
 import { RegistrationEntryBlockSession } from "./registrationEntryBlockArgs";
 
 export const enum RegistrationPersonFieldType {
@@ -43,31 +45,6 @@ export const enum RegistrationFieldSource {
     PersonAttribute = 1,
     GroupMemberAttribute = 2,
     RegistrantAttribute = 4
-}
-
-export const enum FilterExpressionType {
-    Filter = 0,
-    GroupAll = 1,
-    GroupAny = 2,
-    GroupAllFalse = 3,
-    GroupAnyFalse = 4
-}
-
-export const enum ComparisonType {
-    EqualTo = 0x1,
-    NotEqualTo = 0x2,
-    StartsWith = 0x4,
-    Contains = 0x8,
-    DoesNotContain = 0x10,
-    IsBlank = 0x20,
-    IsNotBlank = 0x40,
-    GreaterThan = 0x80,
-    GreaterThanOrEqualTo = 0x100,
-    LessThan = 0x200,
-    LessThanOrEqualTo = 0x400,
-    EndsWith = 0x800,
-    Between = 0x1000,
-    RegularExpression = 0x2000
 }
 
 export const enum RegistrarOption {
@@ -103,8 +80,8 @@ export type RegistrationEntryBlockViewModel = {
     registrantForms: RegistrationEntryBlockFormViewModel[];
     fees: RegistrationEntryBlockFeeViewModel[];
     familyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
-    registrationAttributesStart: ClientEditableAttributeValue[];
-    registrationAttributesEnd: ClientEditableAttributeValue[];
+    registrationAttributesStart: PublicEditableAttributeValue[];
+    registrationAttributesEnd: PublicEditableAttributeValue[];
     forceEmailUpdate: boolean;
     registrarOption: RegistrarOption;
     cost: number;
@@ -164,7 +141,7 @@ export type RegistrationEntryBlockFormFieldViewModel = {
     personFieldType: RegistrationPersonFieldType;
     isRequired: boolean;
     isSharedValue: boolean;
-    attribute: ClientEditableAttributeValue | null;
+    attribute: PublicEditableAttributeValue | null;
     visibilityRuleType: FilterExpressionType;
     visibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
     preHtml: string;

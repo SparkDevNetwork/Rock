@@ -62,6 +62,11 @@ export default defineComponent({
             default: []
         },
 
+        allowMultiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         items: {
             type: Array as PropType<TreeItem[]>
         },
@@ -225,7 +230,7 @@ export default defineComponent({
     
                 <div v-show="showPopup" class="picker-menu dropdown-menu" style="display: block;">
                     <div class="scrollbar-thin" style="height: 200px; overflow-y: scroll; overflow-x: hidden;">
-                        <TreeList v-model="internalValues" :items="items" :provider="provider" @update:items="onUpdateItems" />
+                        <TreeList v-model="internalValues" :allowMultiple="allowMultiple" :items="items" :provider="provider" @update:items="onUpdateItems" />
                     </div>
     
                     <div class="picker-actions">

@@ -15,10 +15,9 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
-import { DateTimeFormat, RockDateTime } from "../Util/rockDateTime";
 import { toNumber } from "../Services/number";
+import { DateTimeFormat, RockDateTime } from "../Util/rockDateTime";
+import { FieldTypeBase } from "./fieldType";
 
 
 // The edit component can be quite large, so load it only as needed.
@@ -35,12 +34,11 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Date Range field.
  */
 export class DateRangeFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        const dateParts = (value.value ?? "").split(",");
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        const dateParts = (value ?? "").split(",");
 
         if (dateParts.length !== 2) {
-            value.textValue = "";
-            return;
+            return "";
         }
 
         const lowerDateParts = /^(\d+)-(\d+)-(\d+)/.exec(dateParts[0]);
@@ -50,24 +48,28 @@ export class DateRangeFieldType extends FieldTypeBase {
         const upperDate = upperDateParts !== null ? RockDateTime.fromParts(toNumber(upperDateParts[1]), toNumber(upperDateParts[2]), toNumber(upperDateParts[3])) : null;
 
         if (lowerDate !== null && upperDate !== null) {
-            value.textValue = `${lowerDate.toLocaleString(DateTimeFormat.DateShort)} to ${upperDate.toLocaleString(DateTimeFormat.DateShort)}`;
+            return `${lowerDate.toLocaleString(DateTimeFormat.DateShort)} to ${upperDate.toLocaleString(DateTimeFormat.DateShort)}`;
         }
         else if (lowerDate !== null) {
-            value.textValue = `from ${lowerDate.toLocaleString(DateTimeFormat.DateShort)}`;
+            return `from ${lowerDate.toLocaleString(DateTimeFormat.DateShort)}`;
         }
         else if (upperDate !== null) {
-            value.textValue = `through ${upperDate.toLocaleString(DateTimeFormat.DateShort)}`;
+            return `through ${upperDate.toLocaleString(DateTimeFormat.DateShort)}`;
         }
         else {
-            value.textValue = "";
+            return "";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override isFilterable(): boolean {
+        return false;
     }
 }

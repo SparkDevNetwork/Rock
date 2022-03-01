@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of Schedule Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class SchedulesFieldType : FieldType
     {
 

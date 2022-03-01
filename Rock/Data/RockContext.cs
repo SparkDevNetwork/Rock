@@ -537,6 +537,12 @@ namespace Rock.Data
         public DbSet<CampusSchedule> CampusSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus topics.
+        /// </summary>
+        /// <value>The campus topics.</value>
+        public DbSet<CampusTopic> CampusTopics { get; set; }
+
+        /// <summary>
         /// Gets or sets the categories.
         /// </summary>
         /// <value>
@@ -2137,6 +2143,22 @@ namespace Rock.Data
         /// The workflow activities.
         /// </value>
         public DbSet<WorkflowActivity> WorkflowActivities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow form builder templates.
+        /// </summary>
+        /// <value>
+        /// The workflow form builder templates.
+        /// </value>
+        public DbSet<WorkflowFormBuilderTemplate> WorkflowFormBuilderTemplates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow action form sections.
+        /// </summary>
+        /// <value>
+        /// The workflow action form sections.
+        /// </value>
+        public DbSet<WorkflowActionFormSection> WorkflowActionFormSections { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow activity types.

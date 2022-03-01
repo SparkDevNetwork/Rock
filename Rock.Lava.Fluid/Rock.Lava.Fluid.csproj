@@ -183,6 +183,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LavaEnumValue.cs" />
     <Compile Include="Parser\FluidLavaTagStatement.cs" />
     <Compile Include="Parser\FluidLavaBlockStatement.cs" />
     <Compile Include="FluidFileSystem.cs" />

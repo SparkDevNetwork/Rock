@@ -28,8 +28,8 @@ using Rock.Security;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
-using ClientAttributeValueViewModel = Rock.ViewModel.NonEntities.ClientAttributeValueViewModel;
-using ClientEditableAttributeValueViewModel = Rock.ViewModel.NonEntities.ClientEditableAttributeValueViewModel;
+using PublicAttributeValueViewModel = Rock.ViewModel.NonEntities.PublicAttributeValueViewModel;
+using PublicEditableAttributeValueViewModel = Rock.ViewModel.NonEntities.PublicEditableAttributeValueViewModel;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -320,7 +320,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var viewModel = new RequestViewModel
             {
                 ActivityContent = activityContent,
-                Attributes = request.GetClientAttributeValues( RequestContext.CurrentPerson ),
+                Attributes = request.GetPublicAttributeValues( RequestContext.CurrentPerson ),
                 CampusGuid = request.Campus?.Guid,
                 CampusName = request.Campus?.Name,
                 Comments = request.Comments,
@@ -372,7 +372,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             var viewModel = new RequestEditViewModel
             {
-                Attributes = request.GetClientEditableAttributeValues( RequestContext.CurrentPerson ),
+                Attributes = request.GetPublicEditableAttributeValues( RequestContext.CurrentPerson ),
                 CampusGuid = request.Campus?.Guid,
                 Comments = request.Comments,
                 ConnectorGuid = request.ConnectorPersonAlias?.Person.Guid,
@@ -1286,7 +1286,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                                 return ActionBadRequest( "Invalid data." );
                             }
 
-                            var value = ClientAttributeHelper.GetValueFromClient( attribute, memberValue.Value );
+                            var value = PublicAttributeHelper.GetPrivateValue( attribute, memberValue.Value );
 
                             memberAttributeValues.Add( memberValue.Key, value );
                         }
@@ -1309,7 +1309,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Set any custom request attribute values.
                 if ( requestDetails.AttributeValues != null )
                 {
-                    request.SetClientAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson );
+                    request.SetPublicAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson );
                 }
 
                 // Add an activity that the connector was assigned or changed.
@@ -1623,7 +1623,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     }
                 }
 
-                var attributes = groupMember.GetClientEditableAttributeValues( RequestContext.CurrentPerson );
+                var attributes = groupMember.GetPublicEditableAttributeValues( RequestContext.CurrentPerson );
 
                 return ActionOk( attributes );
             }
@@ -1886,7 +1886,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The attributes.
             /// </value>
-            public List<ClientAttributeValueViewModel> Attributes { get; set; }
+            public List<PublicAttributeValueViewModel> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the workflow types.
@@ -2043,7 +2043,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The attributes that can be edited.
             /// </value>
-            public List<ClientEditableAttributeValueViewModel> Attributes { get; set; }
+            public List<PublicEditableAttributeValueViewModel> Attributes { get; set; }
         }
 
         /// <summary>
