@@ -351,7 +351,7 @@
                                                             <button type="button" class="dropdown-item btn-link js-update-preference">Update Preference</button>
                                                         </li>
                                                         <li>
-                                                            <button type="button" class="dropdown-item btn-link js-remove">Remove</button>
+                                                            <button type="button" class="dropdown-item dropdown-item-danger btn-link js-remove">Remove</button>
                                                         </li>
                                                     </ul>
                                                 </div>

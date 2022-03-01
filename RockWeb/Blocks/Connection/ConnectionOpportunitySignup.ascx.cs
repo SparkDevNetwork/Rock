@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Connection
 
                 lTitle.Text = opportunity.Name;
 
-                pnHome.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean();
+                pnHome.Visible = dvHome.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean();
                 pnMobile.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean();
 
                 Person registrant = null;

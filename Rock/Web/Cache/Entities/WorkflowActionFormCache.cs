@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Workflow.FormBuilder;
 
 namespace Rock.Web.Cache
 {
@@ -219,6 +220,63 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the form person entry settings from either the WorkflowActionForm or WorkflowFormBuilderTemplate
+        /// </summary>
+        /// <param name="workflowFormBuilderTemplate">The workflow form builder template.</param>
+        /// <returns></returns>
+        public FormPersonEntrySettings GetFormPersonEntrySettings( WorkflowFormBuilderTemplateCache workflowFormBuilderTemplate )
+        {
+            var actionForm = this;
+
+            FormPersonEntrySettings formPersonEntrySettings;
+            if ( workflowFormBuilderTemplate != null )
+            {
+                formPersonEntrySettings = workflowFormBuilderTemplate.PersonEntrySettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormPersonEntrySettings>();
+            }
+            else
+            {
+                formPersonEntrySettings = new Rock.Workflow.FormBuilder.FormPersonEntrySettings
+                {
+                    Address = actionForm.PersonEntryAddressEntryOption,
+                    AddressTypeValueId = actionForm.PersonEntryGroupLocationTypeValueId,
+                    AutofillCurrentPerson = actionForm.PersonEntryAutofillCurrentPerson,
+                    Birthdate = actionForm.PersonEntryBirthdateEntryOption,
+                    CampusStatusValueId = actionForm.PersonEntryCampusStatusValueId,
+                    CampusTypeValueId = actionForm.PersonEntryCampusTypeValueId,
+                    ConnectionStatusValueId = actionForm.PersonEntryConnectionStatusValueId,
+                    Email = actionForm.PersonEntryEmailEntryOption,
+                    Gender = actionForm.PersonEntryGenderEntryOption,
+                    HideIfCurrentPersonKnown = actionForm.PersonEntryHideIfCurrentPersonKnown,
+                    MaritalStatus = actionForm.PersonEntryMaritalStatusEntryOption,
+                    MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption,
+                    RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
+                    ShowCampus = actionForm.PersonEntryCampusIsVisible,
+                    SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
+                    SpouseLabel = actionForm.PersonEntrySpouseLabel
+                };
+            }
+
+            return formPersonEntrySettings;
+        }
+
+        /// <summary>
+        /// Gets the AllowPersonEntry values form either the WorkflowActionForm or WorkflowFormBuilderTemplate
+        /// </summary>
+        /// <param name="workflowFormBuilderTemplate">The workflow form builder template.</param>
+        /// <returns></returns>
+        public bool GetAllowPersonEntry( WorkflowFormBuilderTemplateCache workflowFormBuilderTemplate )
+        {
+            if ( workflowFormBuilderTemplate != null )
+            {
+                return workflowFormBuilderTemplate.AllowPersonEntry;
+            }
+            else
+            {
+                return this.AllowPersonEntry;
+            }
+        }
 
         /// <summary>
         /// Copies from model.

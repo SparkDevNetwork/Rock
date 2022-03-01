@@ -58,7 +58,6 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
-        /** True if the section is enabled and the rest of the UI should be shown. */
         const enabled = ref(props.modelValue);
 
         /**

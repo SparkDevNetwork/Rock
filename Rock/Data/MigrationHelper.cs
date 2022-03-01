@@ -813,7 +813,7 @@ namespace Rock.Data
 
             if ( skipIfAlreadyExists )
             {
-                addPageSQL = $"if not exists (select * from [Page] where [Guid] = '{guid}') begin\n" + addPageSQL + "\nend";
+                addPageSQL = $@"if not exists (select * from [Page] where [Guid] = '{guid}') begin{Environment.NewLine}" + addPageSQL + $"{Environment.NewLine}end";
             }
 
             Migration.Sql( addPageSQL );
@@ -1159,7 +1159,7 @@ WHERE [Guid] = '{pageGuid}';";
 
             if ( skipIfAlreadyExists )
             {
-                addBlockSQL = $"if not exists (select * from [Block] where [Guid] = '{guid}') begin\n" + addBlockSQL + "\nend";
+                addBlockSQL = $"if not exists (select * from [Block] where [Guid] = '{guid}') begin{Environment.NewLine}" + addBlockSQL + $"{Environment.NewLine}end";
             }
 
             Migration.Sql( addBlockSQL );
@@ -3540,7 +3540,8 @@ END" );
 			AND a.[Guid] = '{attributeGuid}'
 		)
 BEGIN
-" + addBlockValueSQL + "\nEND";
+" + addBlockValueSQL + @"
+END";
             }
 
             Migration.Sql( addBlockValueSQL );

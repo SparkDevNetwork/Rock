@@ -596,7 +596,7 @@ namespace Rock.Web.UI.Controls
             var availableNodes = GetSelectableNodesFromParentNode( selectorNode );
 
             var emptyItem = new CategorizedValuePickerItem { Key = CategorizedValuePickerItem.EmptyValue };
-            availableNodes.Add( emptyItem );
+            availableNodes.Insert( 0, emptyItem );
 
             var info = new SelectionControlInfo
             {

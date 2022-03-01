@@ -71,5 +71,10 @@ namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
         /// The list of field types that are available to pick from.
         /// </summary>
         public List<FormFieldTypeViewModel> FieldTypes { get; set; }
+
+        /// <summary>
+        /// The form templates that are available to pick from.
+        /// </summary>
+        public List<FormTemplateListItemViewModel> FormTemplateOptions { get; set; }
     }
 }

@@ -126,8 +126,10 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// Raises the <see cref="System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="System.EventArgs" /> object that contains the event data.</param>
-        protected void Page_Load( object sender, EventArgs e )
+        protected override void OnLoad(EventArgs e)
         {
+            base.OnLoad(e);
+
             if ( !Page.IsPostBack )
             {
                 BindFilters();

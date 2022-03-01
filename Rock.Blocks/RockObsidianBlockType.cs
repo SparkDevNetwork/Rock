@@ -23,7 +23,7 @@ namespace Rock.Blocks
     /// Client Block Type
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
-    /// <seealso cref="IRockClientBlockType" />
+    /// <seealso cref="IRockObsidianBlockType" />
     public abstract class RockObsidianBlockType : RockBlockType, IRockObsidianBlockType
     {
         #region Properties

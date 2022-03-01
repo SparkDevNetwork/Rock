@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Connection
         private static class Lava
         {
             public const string ConnectionRequests = @"
-{% comment %}
+/-
    This is the default lava template for the ConnectionOpportunitySelect block
 
    Available Lava Fields:
@@ -92,55 +92,43 @@ namespace RockWeb.Blocks.Connection
        Context
        PageParameter
        Campuses
-{% endcomment %}
+-/
 <style>
     .card:hover {
       transform: scale(1.01);
       box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
     }
-
-    .person-image-small {
-        position: relative;
-        box-sizing: border-box;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        vertical-align: top;
-        background: center/cover #cbd4db;
-        border-radius: 50%;
-        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.07)
-    }
 </style>
-{% for connectionRequest in ConnectionRequests %}
-    <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionRequestId={{ connectionRequest.Id }}&ConnectionOpportunityId={{connectionRequest.ConnectionOpportunityId }}' stretched-link>
-        <div class='card mb-2'>
-            <div class='card-body'>
-                <div class='row pt-2' style='height:60px;'>
-                    <div class='col-xs-2 col-md-1 mx-auto'>
-                        <img class='person-image-small' src='{{ connectionRequest.ConnectorPersonAlias.Person.PhotoUrl | Default: '/Assets/Images/person-no-photo-unknown.svg'  }}' alt=''>
-                    </div>
-                    <div class='col-xs-6 col-md-9 pl-md-0 mx-auto'>
-                       <strong class='text-color'>{{ connectionRequest.ConnectorPersonAlias.Person.FullName | Default: 'Unassigned' }}</strong>
-                       <small class='pl-1 text-muted'>{{ connectionRequest.Campus.Name | Default: 'Main Campus' }}</small>
-                       </br>
-                       {% assign lastActivity = connectionRequest.ConnectionRequestActivities | Last %}
-                       <small class='text-muted'>Last Activity: {{ lastActivity.Note | Default: '' | Capitalize  }}
-                           {% if lastActivity.CreatedDateTime %}
-                               ({{ lastActivity.CreatedDateTime | DaysFromNow }})
-                           {% endif %}
-                       </small>
-                    </div>
-                    <div class='col-xs-4 col-md-2 mx-auto text-right'>
-                        <small class='text-muted'>{{ connectionRequest.CreatedDateTime | Date:'M/d/yyyy' }}</small>
-                    </div>
+{% if ConnectionRequests.size > 0 %}
+    {% for connectionRequest in ConnectionRequests %}
+        <div class=""card card-sm mb-2"">
+            {% if DetailPage != '' and DetailPage != null %}
+            {% capture pageRouteParams %}ConnectionRequestId={{ connectionRequest.Id }}^ConnectionOpportunityId={{connectionRequest.ConnectionOpportunityId }}{% endcapture %}
+            <a href=""{{ DetailPage | PageRoute:pageRouteParams }}"" class=""stretched-link""></a>
+            {% endif %}
+            <div class=""card-body d-flex flex-wrap align-items-center"" style=""min-height:60px;"">
+                <img class=""avatar avatar-lg"" src=""{{ connectionRequest.PersonAlias.Person.PhotoUrl }}"" alt="""">
+                <div class=""px-3 flex-fill"">
+                    <span class=""d-block"">
+                        <strong class=""text-color"">{{ connectionRequest.PersonAlias.Person.FullName }}</strong>
+                        {% if connectionRequest.Campus != null %}
+                        <span class=""pl-1 small text-muted"">{{ connectionRequest.Campus.Name }}</span>
+                        {% endif %}
+                    </span>
+                    {% assign lastActivity = connectionRequest.ConnectionRequestActivities | Last %}
+                    <span class=""text-muted small"">Last Activity: {{ lastActivity.ConnectionActivityType.Name | Default:'No Activity' }}
+                        {% if lastActivity.CreatedDateTime %}
+                            <span title=""{{ lastActivity.CreatedDateTime }}"">({{ lastActivity.CreatedDateTime | HumanizeDateTime }})</span>
+                        {% endif %}
+                    </span>
                 </div>
+                <span class=""small text-muted"" title=""Created {{ connectionRequest.CreatedDateTime }}"">{{ connectionRequest.CreatedDateTime | Date:'sd' }}</span>
             </div>
         </div>
-       </a>
-{% endfor %}
-";
+    {% endfor %}
+{% else %}
+    <div class=""alert alert-info"">No Connection Requests Currently Available</div>
+{% endif %}";
 
         }
         #endregion Default Lava

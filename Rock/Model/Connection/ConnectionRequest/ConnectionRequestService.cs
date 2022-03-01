@@ -351,6 +351,129 @@ namespace Rock.Model
             int connectionOpportunityId,
             ConnectionRequestViewModelQueryArgs args )
         {
+            var query = GetConnectionRequestViewModelSecurityQuery( currentPersonAliasId, connectionOpportunityId, args );
+
+            return query.Select( cr => new ConnectionRequestViewModel
+            {
+                Id = cr.Id,
+                ConnectionOpportunityId = cr.ConnectionOpportunityId,
+                ConnectionTypeId = cr.ConnectionTypeId,
+                PlacementGroupId = cr.PlacementGroupId,
+                PlacementGroupRoleId = cr.PlacementGroupRoleId,
+                PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                PlacementGroupRoleName = cr.PlacementGroupRoleName,
+                Comments = cr.Comments,
+                StatusId = cr.StatusId,
+                PersonId = cr.PersonId,
+                PersonAliasId = cr.PersonAliasId,
+                PersonEmail = cr.PersonEmail,
+                PersonNickName = cr.PersonNickName,
+                PersonLastName = cr.PersonLastName,
+                PersonPhotoId = cr.PersonPhotoId,
+                PersonPhones = cr.PersonPhones,
+                CampusId = cr.CampusId,
+                CampusName = cr.CampusName,
+                CampusCode = cr.CampusCode,
+                ConnectorPersonNickName = cr.ConnectorPersonNickName,
+                ConnectorPersonLastName = cr.ConnectorPersonLastName,
+                ConnectorPersonId = cr.ConnectorPersonId,
+                ConnectorPhotoId = cr.ConnectorPhotoId,
+                ConnectorPersonAliasId = cr.ConnectorPersonAliasId,
+                ActivityCount = cr.ActivityCount,
+                DateOpened = cr.DateOpened,
+                GroupName = cr.GroupName,
+                StatusName = cr.StatusName,
+                StatusHighlightColor = cr.StatusHighlightColor,
+                IsStatusCritical = cr.IsStatusCritical,
+                IsAssignedToYou = cr.IsAssignedToYou,
+                IsCritical = cr.IsCritical,
+                IsIdle = cr.IsIdle,
+                IsUnassigned = cr.IsUnassigned,
+                ConnectionState = cr.ConnectionState,
+                LastActivityTypeName = cr.LastActivityTypeName,
+                Order = cr.Order,
+                LastActivityTypeId = cr.LastActivityTypeId,
+                LastActivityDate = cr.LastActivityDate,
+                FollowupDate = cr.FollowupDate,
+                CanCurrentUserEdit = cr.CanCurrentUserEdit,
+            } );
+        }
+
+        /// <summary>
+        /// Gets the connection request view model with full model query.
+        /// </summary>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">An args object is required</exception>
+        public IQueryable<ConnectionRequestViewModelWithModel> GetConnectionRequestViewModelWithFullModelQuery(
+            int currentPersonAliasId,
+            int connectionOpportunityId,
+            ConnectionRequestViewModelQueryArgs args )
+        {
+            var query = GetConnectionRequestViewModelSecurityQuery( currentPersonAliasId, connectionOpportunityId, args );
+
+            return query.Select( cr => new ConnectionRequestViewModelWithModel
+            {
+                Id = cr.Id,
+                ConnectionRequest = cr.ConnectionRequest,
+                ConnectionOpportunityId = cr.ConnectionOpportunityId,
+                ConnectionTypeId = cr.ConnectionTypeId,
+                PlacementGroupId = cr.PlacementGroupId,
+                PlacementGroupRoleId = cr.PlacementGroupRoleId,
+                PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                PlacementGroupRoleName = cr.PlacementGroupRoleName,
+                Comments = cr.Comments,
+                StatusId = cr.StatusId,
+                PersonId = cr.PersonId,
+                PersonAliasId = cr.PersonAliasId,
+                PersonEmail = cr.PersonEmail,
+                PersonNickName = cr.PersonNickName,
+                PersonLastName = cr.PersonLastName,
+                PersonPhotoId = cr.PersonPhotoId,
+                PersonPhones = cr.PersonPhones,
+                CampusId = cr.CampusId,
+                CampusName = cr.CampusName,
+                CampusCode = cr.CampusCode,
+                ConnectorPersonNickName = cr.ConnectorPersonNickName,
+                ConnectorPersonLastName = cr.ConnectorPersonLastName,
+                ConnectorPersonId = cr.ConnectorPersonId,
+                ConnectorPhotoId = cr.ConnectorPhotoId,
+                ConnectorPersonAliasId = cr.ConnectorPersonAliasId,
+                ActivityCount = cr.ActivityCount,
+                DateOpened = cr.DateOpened,
+                GroupName = cr.GroupName,
+                StatusName = cr.StatusName,
+                StatusHighlightColor = cr.StatusHighlightColor,
+                IsStatusCritical = cr.IsStatusCritical,
+                IsAssignedToYou = cr.IsAssignedToYou,
+                IsCritical = cr.IsCritical,
+                IsIdle = cr.IsIdle,
+                IsUnassigned = cr.IsUnassigned,
+                ConnectionState = cr.ConnectionState,
+                LastActivityTypeName = cr.LastActivityTypeName,
+                Order = cr.Order,
+                LastActivityTypeId = cr.LastActivityTypeId,
+                LastActivityDate = cr.LastActivityDate,
+                FollowupDate = cr.FollowupDate,
+                CanCurrentUserEdit = cr.CanCurrentUserEdit,
+            } );
+        }
+
+        /// <summary>
+        /// Gets the connection request query.
+        /// </summary>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">An args object is required</exception>
+        private IQueryable<ConnectionRequestViewModelSecurity> GetConnectionRequestViewModelSecurityQuery(
+            int currentPersonAliasId,
+            int connectionOpportunityId,
+            ConnectionRequestViewModelQueryArgs args )
+        {
             ValidateArgs( args );
 
             var currentDateTime = RockDateTime.Now;
@@ -793,50 +916,7 @@ namespace Rock.Model
                     break;
             }
 
-            return connectionRequestsQuery.Select( cr => new ConnectionRequestViewModel
-            {
-                Id = cr.Id,
-                ConnectionOpportunityId = cr.ConnectionOpportunityId,
-                ConnectionTypeId = cr.ConnectionTypeId,
-                PlacementGroupId = cr.PlacementGroupId,
-                PlacementGroupRoleId = cr.PlacementGroupRoleId,
-                PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
-                PlacementGroupRoleName = cr.PlacementGroupRoleName,
-                Comments = cr.Comments,
-                StatusId = cr.StatusId,
-                PersonId = cr.PersonId,
-                PersonAliasId = cr.PersonAliasId,
-                PersonEmail = cr.PersonEmail,
-                PersonNickName = cr.PersonNickName,
-                PersonLastName = cr.PersonLastName,
-                PersonPhotoId = cr.PersonPhotoId,
-                PersonPhones = cr.PersonPhones,
-                CampusId = cr.CampusId,
-                CampusName = cr.CampusName,
-                CampusCode = cr.CampusCode,
-                ConnectorPersonNickName = cr.ConnectorPersonNickName,
-                ConnectorPersonLastName = cr.ConnectorPersonLastName,
-                ConnectorPersonId = cr.ConnectorPersonId,
-                ConnectorPhotoId = cr.ConnectorPhotoId,
-                ConnectorPersonAliasId = cr.ConnectorPersonAliasId,
-                ActivityCount = cr.ActivityCount,
-                DateOpened = cr.DateOpened,
-                GroupName = cr.GroupName,
-                StatusName = cr.StatusName,
-                StatusHighlightColor = cr.StatusHighlightColor,
-                IsStatusCritical = cr.IsStatusCritical,
-                IsAssignedToYou = cr.IsAssignedToYou,
-                IsCritical = cr.IsCritical,
-                IsIdle = cr.IsIdle,
-                IsUnassigned = cr.IsUnassigned,
-                ConnectionState = cr.ConnectionState,
-                LastActivityTypeName = cr.LastActivityTypeName,
-                Order = cr.Order,
-                LastActivityTypeId = cr.LastActivityTypeId,
-                LastActivityDate = cr.LastActivityDate,
-                FollowupDate = cr.FollowupDate,
-                CanCurrentUserEdit = cr.CanCurrentUserEdit,
-            } );
+            return connectionRequestsQuery;
         }
 
         /// <summary>

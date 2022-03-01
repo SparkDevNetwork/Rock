@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Connection
         private static class Lava
         {
             public const string ConnectionTypes = @"
-{% comment %}
+/-
    This is the default lava template for the ConnectionOpportunitySelect block
 
    Available Lava Fields:
@@ -85,41 +85,39 @@ namespace RockWeb.Blocks.Connection
        Context
        PageParameter
        Campuses
-{% endcomment %}
+-/
 <style>
     .card:hover {
       transform: scale(1.01);
       box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
     }
 </style>
-{% for connectionType in ConnectionTypes %}
-{% assign typeId = connectionType.Id | ToString %}
-{% assign count = ConnectionRequestCounts[typeId] | AsInteger %}
 
-{% if count >0 %}
-    <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionTypeGuid={{ connectionType.Guid }}' stretched-link>
-        <div class='card mb-2'>
-            <div class='card-body'>
-              <div class='row pt-2' style='height:60px;'>
-                    <div class='col-xs-2 col-md-1 mx-auto'>
-                        <i class='{{ connectionType.IconCssClass }} text-muted' style=';font-size:30px;'></i>
+{% if ConnectionRequestCounts.size > 0 %}
+    {% for connectionType in ConnectionTypes %}
+        {% assign typeId = connectionType.Id | ToString %}
+        {% assign count = ConnectionRequestCounts[typeId] | AsInteger %}
+
+        {% if count > 0 %}
+            <div class=""card card-sm mb-2"">
+                {% if DetailPage != '' and DetailPage != null %}
+                {% capture pageRouteParams %}ConnectionTypeGuid={{ connectionType.Guid }}{% endcapture %}
+                <a href=""{{ DetailPage | PageRoute:pageRouteParams }}"" class=""stretched-link""></a>
+                {% endif %}
+                <div class=""card-body d-flex flex-wrap align-items-center"" style=""min-height:60px;"">
+                    <i class=""{{ connectionType.IconCssClass }} text-muted fa-fw fa-2x""></i>
+                    <div class=""px-3 flex-fill"">
+                        <span class=""d-block text-color""><strong>{{ connectionType.Name }}</strong></span>
+                        <span class=""text-muted small"">{{ connectionType.Description }}</span>
                     </div>
-                    <div class='col-xs-8 col-md-10 pl-md-0 mx-auto'>
-                        <span class='text-color'><strong>{{ connectionType.Name }}</strong></span>
-                        </br>
-                        <span class='text-muted'><small>{{ connectionType.Description }}</small></span>
-                    </div>
-                    <div class='col-xs-1 col-md-1 mx-auto text-right'>
-                        <span class='badge badge-pill badge-primary bg-blue-500'><small>{{ count }}</small></span>
-                    </div>
+                    <span class=""badge badge-pill badge-info small"">{{ count }}</span>
                 </div>
             </div>
-        </div>
-       </a>
-{%endif %}
-{% endfor %}
-"
-;
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <div class=""alert alert-info"">No Connection Requests Currently Available</div>
+{% endif %}";
 
         }
         #endregion Lava
@@ -181,20 +179,27 @@ namespace RockWeb.Blocks.Connection
                 };
                 var connectionTypesQuery = connectionTypeService.GetConnectionTypesQuery();
 
-                var types = connectionTypeService.GetViewAuthorizedConnectionTypes( connectionTypesQuery, CurrentPerson );
+                var connectionTypes = connectionTypeService.GetViewAuthorizedConnectionTypes( connectionTypesQuery, CurrentPerson );
 
                 // Get the various counts to make available to the Lava template.
                 // The conversion of the value to a dictionary is a temporary work-around
                 // until we have a way to mark external types as lava safe.
-                var connectionTypeIds = types.Select( t => t.Id ).ToList();
+                var connectionTypeIds = connectionTypes.Select( t => t.Id ).ToList();
                 var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds );
                 var connectionRequestCounts = new Dictionary<string, string>();
                 foreach ( var typeId in connectionTypeIds )
                 {
-                    connectionRequestCounts.Add( typeId.ToString(), requestCounts[typeId].AssignedToYouCount.ToString() );
-                }
+                    var connectionTypesRequestCount = connectionTypes
+                        .FirstOrDefault( v => v.Id == typeId && v.ConnectionOpportunities.Count(c=>c.ConnectionRequests?.Count>0)>0)
+                        ?.ConnectionOpportunities
+                        ?.Select(v=>v.ConnectionRequests)
+                        ?.Count();
 
-                var connectionTypes = connectionTypeService.GetConnectionTypesQuery()?.ToList();
+                    if ( connectionTypesRequestCount!=null && connectionTypesRequestCount.HasValue && connectionTypesRequestCount.Value > 0 )
+                    {
+                        connectionRequestCounts.Add( typeId.ToString(), connectionTypesRequestCount.Value.ToString() );
+                    }
+                }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 

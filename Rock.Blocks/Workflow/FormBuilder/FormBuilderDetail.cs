@@ -24,10 +24,12 @@ using Rock.Attribute;
 using Rock.ClientService.Core.DefinedValue;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemKey;
 using Rock.ViewModel.Blocks.Workflow.FormBuilder;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
+using Rock.Workflow.FormBuilder;
 
 namespace Rock.Blocks.Workflow.FormBuilder
 {
@@ -37,7 +39,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Form Builder Detail" )]
-    [Category( "Obsidian > Workflow > Form Builder" )]
+    [Category( "Obsidian > Workflow > FormBuilder" )]
     [Description( "Edits the details of a workflow Form Builder action." )]
     [IconCssClass( "fa fa-hammer" )]
 
@@ -84,8 +86,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 // form.
                 var viewModel = new FormBuilderDetailViewModel
                 {
-                    SubmissionsPageUrl = LinkedPageUrl( AttributeKey.SubmissionsPage, RequestContext.GetPageParameters() ),
-                    AnalyticsPageUrl = LinkedPageUrl( AttributeKey.AnalyticsPage, RequestContext.GetPageParameters() ),
+                    SubmissionsPageUrl = this.GetLinkedPageUrl( AttributeKey.SubmissionsPage, RequestContext.GetPageParameters() ),
+                    AnalyticsPageUrl = this.GetLinkedPageUrl( AttributeKey.AnalyticsPage, RequestContext.GetPageParameters() ),
                     Sources = GetOptionSources( rockContext )
                 };
 
@@ -176,7 +178,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             settings.CompletionAction = formSettings.Completion.FromViewModel();
             settings.ConfirmationEmail = formSettings.ConfirmationEmail.FromViewModel( rockContext );
             settings.NotificationEmail = formSettings.NotificationEmail.FromViewModel( rockContext );
-            settings.CampusSetFrom = formSettings.CampusSetFrom;
+            settings.CampusSetFrom = formSettings.CampusSetFrom?.FromViewModel();
 
             workflowType.FormBuilderSettingsJson = settings.ToJson();
         }
@@ -372,6 +374,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             formField.Attribute.Key = field.Key;
             formField.Attribute.Name = field.Name;
             formField.ColumnSize = field.Size;
+            formField.IsVisible = true;
             formField.HideLabel = field.IsHideLabel;
 
             // Add or update the attribute qualifiers. Do not delete any old ones.
@@ -418,7 +421,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 ConfirmationEmail = settings?.ConfirmationEmail.ToViewModel( rockContext ),
                 NotificationEmail = settings?.NotificationEmail.ToViewModel( rockContext ),
                 Completion = settings?.CompletionAction.ToViewModel(),
-                CampusSetFrom = null // TODO
+                CampusSetFrom = settings?.CampusSetFrom?.ToViewModel()
             };
 
             // Build the person entry settings.
@@ -612,71 +615,48 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 AddressTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ),
                 ConnectionStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
                 RecordStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ),
-                EmailTemplateOptions = GetEmailTemplateOptions( rockContext ),
+                EmailTemplateOptions = Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
+                FormTemplateOptions = GetFormTemplateOptions( rockContext ),
 
-                SectionTypeOptions = new List<ListItemViewModel>()
-                {
-                    new ListItemViewModel
+                // This is a one-off because we need to get access to a custom
+                // attribute on the Defined Value.
+                SectionTypeOptions = DefinedTypeCache.Get( SystemGuid.DefinedType.SECTION_TYPE.AsGuid() )
+                    .DefinedValues
+                    .Where( v => v.IsActive )
+                    .Select( v => new ListItemViewModel
                     {
-                        Value = Guid.NewGuid().ToString(),
-                        Text = "Plain",
-                        Category = ""
-                    },
-                    new ListItemViewModel
-                    {
-                        Value = Guid.NewGuid().ToString(),
-                        Text = "Well",
-                        Category = "well"
-                    }
-                }
+                        Value = v.Guid.ToString(),
+                        Text = v.Value,
+                        Category = v.GetAttributeValue( "CSSClass" )
+                    } )
+                    .ToList()
             };
         }
 
         /// <summary>
-        /// Gets the e-mail template option choices available to the individual.
+        /// Get the form template list item options that can be selected in the
+        /// settings UI.
         /// </summary>
-        /// <param name="rockContext">The database context to use for data lookup.</param>
-        /// <returns>A collection of view models that represent the e-mail templates.</returns>
-        private List<ListItemViewModel> GetEmailTemplateOptions( RockContext rockContext )
+        /// <param name="rockContext">The database context used for data queries.</param>
+        /// <returns>A list of <see cref="FormTemplateListItemViewModel"/> objects that represent the available templates.</returns>
+        private List<FormTemplateListItemViewModel> GetFormTemplateOptions( RockContext rockContext )
         {
-            return new SystemCommunicationService( rockContext )
-                .Queryable()
-                .Where( c => c.IsActive == true )
+            return new WorkflowFormBuilderTemplateService( rockContext ).Queryable()
+                .Where( t => t.IsActive )
                 .ToList()
-                .Where( c => c.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
-                .OrderBy( c => c.Title )
-                .Select( c => new ListItemViewModel
+                .Where( t => t.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Select( t => new FormTemplateListItemViewModel
                 {
-                    Value = c.Guid.ToString(),
-                    Text = c.Title
+                    Value = t.Guid.ToString(),
+                    Text = t.Name,
+                    FormHeader = t.FormHeader,
+                    FormFooter = t.FormFooter,
+                    IsCompletionActionConfigured = t.CompletionSettingsJson != null,
+                    IsConfirmationEmailConfigured = t.ConfirmationEmailSettingsJson?.FromJsonOrNull<FormConfirmationEmailSettings>()?.Enabled ?? false,
+                    IsLoginRequiredConfigured = t.IsLoginRequired,
+                    IsPersonEntryConfigured = t.AllowPersonEntry
                 } )
                 .ToList();
-        }
-
-        #endregion
-
-        #region Move to Extension Methods
-
-        /// <summary>
-        /// Builds and returns the URL for a linked <see cref="Rock.Model.Page"/>
-        /// from a <see cref="Rock.Attribute.LinkedPageAttribute"/> and any necessary
-        /// query parameters.
-        /// </summary>
-        /// <param name="attributeKey">The attribute key that contains the linked page value.</param>
-        /// <param name="queryParams">Any query string parameters that should be included in the built URL.</param>
-        /// <returns>A string representing the URL to the linked <see cref="Rock.Model.Page"/>.</returns>
-        private string LinkedPageUrl( string attributeKey, IDictionary<string, string> queryParams = null )
-        {
-            var pageReference = new Rock.Web.PageReference( GetAttributeValue( attributeKey ), new Dictionary<string, string>( queryParams ) );
-
-            if ( pageReference.PageId > 0 )
-            {
-                return pageReference.BuildUrl();
-            }
-            else
-            {
-                return string.Empty;
-            }
         }
 
         #endregion

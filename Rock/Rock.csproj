@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -99,10 +100,10 @@
       <HintPath>..\packages\Elasticsearch.Net.2.5.8\lib\net46\Elasticsearch.Net.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.Utilities">
       <HintPath>..\libs\EFUtilities\EntityFramework.Utilities.dll</HintPath>
@@ -872,6 +873,7 @@
     <Compile Include="Model\Core\AuthAuditLog\ChangeType.cs" />
     <Compile Include="Model\Core\CampusSchedule\CampusSchedule.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.Logic.cs" />
+    <Compile Include="Model\Core\CampusTopic\CampusTopicService.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureType.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.SaveHook.cs" />
@@ -889,6 +891,7 @@
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelQueryArgs.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelSecurity.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelSortProperty.cs" />
+    <Compile Include="Model\Connection\ConnectionRequest\ConnectionRequestViewModelWithModel.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionStatusViewModel.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\Options\ConnectionRequestQueryOptions.cs" />
@@ -1255,6 +1258,7 @@
     <Compile Include="Model\WebFarm\WebFarmNodeMetric\WebFarmNodeMetric.Logic.cs" />
     <Compile Include="Model\WebFarm\WebFarmNode\WebFarmNode.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowActionFormSection\WorkflowActionFormSection.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormSection\WorkflowActionFormSection.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.LiquidButton.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.Logic.cs" />
@@ -1264,6 +1268,7 @@
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowAction.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivityType\WorkflowActivityType.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivity\WorkflowActivity.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowFormBuilderTemplate\WorkflowFormBuilderTemplate.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowFormBuilderTemplate\WorkflowFormBuilderTemplate.cs" />
     <Compile Include="Model\Workflow\WorkflowLog\WorkflowLog.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTrigger.Logic.cs" />
@@ -1371,6 +1376,7 @@
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -1550,7 +1556,7 @@
     <Compile Include="Utility\Settings\Giving\GivingAutomationSettings.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
-    <Compile Include="Model\CampaignConnectionItem.cs" />
+    <Compile Include="Utility\CampaignItem.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
@@ -1610,6 +1616,8 @@
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowFormBuilderTemplateCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowActionFormSectionCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />
@@ -3751,6 +3759,7 @@
     <Compile Include="Workflow\Action\Utility\WebRequest.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\WriteToLog.cs" />
     <Compile Include="SystemKey\WorkflowFormBuilderKey.cs" />
+    <Compile Include="Workflow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Workflow\FormBuilder\FormCompletionActionSettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormCompletionActionType.cs" />
     <Compile Include="Workflow\FormBuilder\FormConfirmationEmailSettings.cs" />
@@ -4019,6 +4028,14 @@ If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\dist" (
     "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj" -p:Configuration=$(ConfigurationName)
 )</PostBuildEvent>
   </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -39,7 +39,6 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
-        /** Internal value that tracks the currently selected item in the UI. */
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
         /**

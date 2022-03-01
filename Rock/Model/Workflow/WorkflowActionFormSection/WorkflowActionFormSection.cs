@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,7 +31,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionFormSection" )]
     [DataContract]
-    public partial class WorkflowActionFormSection : Model<WorkflowActionFormSection>, IOrdered
+    public partial class WorkflowActionFormSection : Model<WorkflowActionFormSection>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -125,6 +126,7 @@ namespace Rock.Model
         public virtual DefinedValue SectionType { get; set; }
 
         #endregion Navigation Properties
+
     }
 
     #region Entity Configuration

@@ -338,21 +338,21 @@ namespace Rock.Web.UI.Controls
 
             var lUseMouseOrFinger = new Literal()
             {
-                Text = "<small class='text-muted'>Use mouse or finger to sign below.</small>"
+                Text = "<span class='signature-entry-instructions text-muted small'>Use mouse or finger to sign below.</span>"
             };
 
             _pnlSignatureEntryDrawn.Controls.Add( lUseMouseOrFinger );
 
             var pnlSignSignatureDrawnRow = new Panel()
             {
-                CssClass = "row"
+                CssClass = "signature-entry-drawn-container position-relative d-flex align-items-end"
             };
 
             _pnlSignatureEntryDrawn.Controls.Add( pnlSignSignatureDrawnRow );
 
             var pnlSignSignatureCanvasCol = new Panel()
             {
-                CssClass = "col-md-10"
+                CssClass = "signature-entry-canvas-col"
             };
 
             pnlSignSignatureDrawnRow.Controls.Add( pnlSignSignatureCanvasCol );
@@ -369,14 +369,14 @@ namespace Rock.Web.UI.Controls
             // clear signature button
             var pnlSignSignatureClearButtonCol = new Panel()
             {
-                CssClass = "col-md-2"
+                CssClass = "signature-entry-clear-col"
             };
 
             pnlSignSignatureDrawnRow.Controls.Add( pnlSignSignatureClearButtonCol );
 
             _clearSignatureLink = new Literal();
             _clearSignatureLink.ID = "_clearSignatureLink";
-            _clearSignatureLink.Text = $@"<a class='btn btn-default js-clear-signature pull-right'><i class='fa fa-2x fa-undo'></i></a>";
+            _clearSignatureLink.Text = $@"<a class='btn btn-link p-1 p-md-2 text-color js-clear-signature' title='Clear Signature'><i class='fa fa-2x fa-undo'></i></a>";
             pnlSignSignatureClearButtonCol.Controls.Add( _clearSignatureLink );
 
             /* Controls for Typed Signature*/

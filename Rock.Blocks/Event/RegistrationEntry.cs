@@ -2424,15 +2424,25 @@ namespace Rock.Blocks.Event
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
 
-            DefinedValueCache currencyType = null;
-            DefinedValueCache creditCardType = null;
+            /* 02/17/2022 MDP
+            Note that after the transaction, the HostedGateway knows more about the FinancialPaymentDetail than Rock does
+            since it is the gateway that collects the payment info. But just in case paymentInfo has information the the gateway hasn't set,
+            we'll fill in any missing details.
+            But then we'll want to use FinancialPaymentDetail as the most accurate values for the payment info. 
+            */
 
             if ( paymentInfo != null )
             {
                 transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
-                currencyType = paymentInfo.CurrencyTypeValue;
-                creditCardType = paymentInfo.CreditCardTypeValue;
             }
+
+            var currencyTypeValue = transaction.FinancialPaymentDetail?.CurrencyTypeValueId != null
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value )
+                : null;
+
+            var creditCardTypeValue = transaction.FinancialPaymentDetail?.CreditCardTypeValueId != null
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value )
+                : null;
 
             Guid sourceGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( AttributeKey.Source ), out sourceGuid ) )
@@ -2467,8 +2477,8 @@ namespace Rock.Blocks.Event
                 // Get the batch
                 var batch = batchService.Get(
                 batchPrefix,
-                currencyType,
-                creditCardType,
+                currencyTypeValue,
+                creditCardTypeValue,
                 transaction.TransactionDateTime.Value,
                 financialGateway.GetBatchTimeOffset() );
 

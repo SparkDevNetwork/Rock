@@ -22,10 +22,10 @@ import EmailBox from "../../../../Elements/emailBox";
 import TextBox from "../../../../Elements/textBox";
 import { toNumberOrNull } from "../../../../Services/number";
 import { ListItem } from "../../../../ViewModels";
-import EmailSource from "./emailSource";
-import SegmentedPicker from "./segmentedPicker";
-import SettingsWell from "./settingsWell";
-import { FormNotificationEmail, FormNotificationEmailDestination } from "./types";
+import EmailSource from "../Shared/emailSource";
+import SegmentedPicker from "../Shared/segmentedPicker";
+import SettingsWell from "../Shared/settingsWell";
+import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types";
 
 const notificationDestinationOptions: ListItem[] = [
     {

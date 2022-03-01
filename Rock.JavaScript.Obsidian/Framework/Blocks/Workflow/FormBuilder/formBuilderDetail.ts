@@ -16,41 +16,28 @@
 //
 
 import { computed, defineComponent, ref, watch } from "vue";
-import { useConfigurationValues, useInvokeBlockAction } from "../../../Util/block";
-import DropDownList from "../../../Elements/dropDownList";
-import Modal from "../../../Controls/modal";
 import Panel from "../../../Controls/panel";
 import RockButton from "../../../Elements/rockButton";
-import RockLabel from "../../../Elements/rockLabel";
-import RockForm from "../../../Controls/rockForm";
-import Switch from "../../../Elements/switch";
-import TextBox from "../../../Elements/textBox";
-import ConfigurableZone from "./FormBuilderDetail/configurableZone";
-import FormBuilderTab from "./FormBuilderDetail/formBuilderTab";
-import CommunicationsTab from "./FormBuilderDetail/communicationsTab";
-import SettingsTab from "./FormBuilderDetail/settingsTab";
-import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormCompletionAction, FormGeneral } from "./FormBuilderDetail/types";
-import { provideFormSources } from "./FormBuilderDetail/utils";
-import { ListItem } from "../../../ViewModels";
-import { areEqual } from "../../../Util/guid";
 import { FieldType } from "../../../SystemGuids";
+import { useConfigurationValues, useInvokeBlockAction } from "../../../Util/block";
+import { areEqual } from "../../../Util/guid";
+import { ListItem } from "../../../ViewModels";
+import CommunicationsTab from "./FormBuilderDetail/communicationsTab";
+import FormBuilderTab from "./FormBuilderDetail/formBuilderTab";
+import SettingsTab from "./FormBuilderDetail/settingsTab";
+import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types";
+import { provideFormSources } from "./FormBuilderDetail/utils";
+import { FormCompletionAction, FormGeneral } from "./Shared/types";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail",
 
     components: {
-        ConfigurableZone,
         CommunicationsTab,
-        DropDownList,
         FormBuilderTab,
-        Modal,
         Panel,
         RockButton,
-        RockForm,
-        RockLabel,
-        SettingsTab,
-        Switch,
-        TextBox
+        SettingsTab
     },
 
     setup() {
@@ -76,6 +63,7 @@ export default defineComponent({
 
         const builderViewModel = ref<FormBuilderSettings>({
             allowPersonEntry: form.allowPersonEntry,
+            campusSetFrom: form.campusSetFrom,
             footerContent: form.footerContent,
             headerContent: form.headerContent,
             personEntry: form.personEntry,
@@ -102,6 +90,12 @@ export default defineComponent({
             return {
                 display: isSettingsTabSelected.value ? "flex" : "none"
             };
+        });
+
+        const selectedTemplate = computed((): FormTemplateListItem | null => {
+            const matches = config.sources?.formTemplateOptions?.filter(t => areEqual(t.value, form.general?.template));
+
+            return matches && matches.length > 0 ? matches[0] : null;
         });
 
         const onFormBuilderTabClick = (): void => {
@@ -183,8 +177,21 @@ export default defineComponent({
             recipientOptions.value = options;
         };
 
+        /**
+         * Event handler called before the page unloads. This handler is
+         * added whenever the form is dirty and needs to be saved.
+         * 
+         * @param event The event that was raised.
+         */
+        const onBeforeUnload = (event: BeforeUnloadEvent): void => {
+            event.preventDefault();
+            event.returnValue = "";
+        };
+
+        // Watch for changes to our internal values and update the modelValue.
         watch([builderViewModel, communicationsViewModel, generalViewModel, completionViewModel], () => {
             form.allowPersonEntry = builderViewModel.value.allowPersonEntry;
+            form.campusSetFrom = builderViewModel.value.campusSetFrom;
             form.footerContent = builderViewModel.value.footerContent;
             form.headerContent = builderViewModel.value.headerContent;
             form.personEntry = builderViewModel.value.personEntry;
@@ -198,6 +205,16 @@ export default defineComponent({
 
             updateRecipientOptions();
             isFormDirty.value = true;
+        });
+
+        // Watch for changes in the form dirty state and remove/install our
+        // handle to prevent accidentally navigating away from the page.
+        watch(isFormDirty, () => {
+            window.removeEventListener("beforeunload", onBeforeUnload);
+
+            if (isFormDirty.value) {
+                window.addEventListener("beforeunload", onBeforeUnload);
+            }
         });
 
         provideFormSources(config.sources ?? {});
@@ -221,7 +238,8 @@ export default defineComponent({
             onFormBuilderTabClick,
             onSaveClick,
             onSettingsTabClick,
-            recipientOptions
+            recipientOptions,
+            selectedTemplate
         };
     },
 
@@ -467,15 +485,15 @@ export default defineComponent({
             </div>
 
             <div style="flex-grow: 1; overflow-y: hidden;" :style="formBuilderContainerStyle">
-                <FormBuilderTab v-model="builderViewModel" />
+                <FormBuilderTab v-model="builderViewModel" :templateOverrides="selectedTemplate" />
             </div>
 
             <div style="flex-grow: 1; overflow-y: hidden;" :style="communicationsContainerStyle">
-                <CommunicationsTab v-model="communicationsViewModel" :recipientOptions="recipientOptions" />
+                <CommunicationsTab v-model="communicationsViewModel" :recipientOptions="recipientOptions" :templateOverrides="selectedTemplate" />
             </div>
 
             <div style="flex-grow: 1; overflow-y: hidden;" :style="settingsContainerStyle">
-                <SettingsTab v-model="generalViewModel" v-model:completion="completionViewModel" />
+                <SettingsTab v-model="generalViewModel" v-model:completion="completionViewModel" :templateOverrides="selectedTemplate" />
             </div>
         </div>
     </template>

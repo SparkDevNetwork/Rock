@@ -18,12 +18,23 @@
 import { inject, provide } from "vue";
 import { FormValueSources } from "./types";
 
+// Unique key used to track the sources for the FormTemplateDetail block.
 const sourcesKey = Symbol();
 
+/**
+ * Make the list of value sources available to child components.
+ *
+ * @param sources The value sources to make available.
+ */
 export function provideFormSources(options: FormValueSources): void {
     provide(sourcesKey, options);
 }
 
+/**
+ * Uses the value sources previously made available by the parent component.
+ *
+ * @returns The value sources that were provided by the parent component.
+ */
 export function useFormSources(): FormValueSources {
     return inject<FormValueSources>(sourcesKey) ?? {};
 }
