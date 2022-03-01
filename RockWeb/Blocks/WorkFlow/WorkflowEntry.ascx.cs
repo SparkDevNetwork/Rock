@@ -877,7 +877,7 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 var formSectionControl = new Panel
                 {
-                    ID = $"pnlFormSection_{formSection.Id}",
+                    ID = $"formSectionControl_{formSection.Id}",
                     CssClass = "form-section"
                 };
 
@@ -890,29 +890,37 @@ namespace RockWeb.Blocks.WorkFlow
                         formSectionControl.AddCssClass( sectionTypeCssClass );
                     }
                 }
-
-                HtmlGenericControl formSectionRow = new HtmlGenericControl( "div" );
-                formSectionRow.AddCssClass( "row" );
-                formSectionControl.Controls.Add( formSectionRow );
+                
                 if ( formSection.Title.IsNotNullOrWhiteSpace() )
                 {
                     var formSectionHeader = new HtmlGenericControl( "h1" );
                     formSectionHeader.InnerText = formSection.Title;
-                    phWorkflowFormAttributes.Controls.Add( formSectionHeader );
+                    formSectionControl.Controls.Add( formSectionHeader );
                 }
 
                 if ( formSection.Description.IsNotNullOrWhiteSpace() )
                 {
                     var formSectionDescription = new HtmlGenericControl( "p" );
                     formSectionDescription.InnerText = formSection.Description;
-                    phWorkflowFormAttributes.Controls.Add( formSectionDescription );
+                    formSectionControl.Controls.Add( formSectionDescription );
                 }
 
                 if ( formSection.ShowHeadingSeparator )
                 {
                     var formSectionSeparator = new Literal { Text = "<hr>" };
-                    phWorkflowFormAttributes.Controls.Add( formSectionSeparator );
+                    formSectionControl.Controls.Add( formSectionSeparator );
                 }
+
+                var formSectionFields = new Panel
+                {
+                    ID = $"formSectionFields_{formSection.Id}",
+                    CssClass = "form-section-fields"
+                };
+
+                HtmlGenericControl formSectionRow = new HtmlGenericControl( "div" );
+                formSectionRow.AddCssClass( "row" );
+                formSectionFields.Controls.Add( formSectionRow );
+                formSectionControl.Controls.Add( formSectionFields );
 
                 phWorkflowFormAttributes.Controls.Add( formSectionControl );
 
