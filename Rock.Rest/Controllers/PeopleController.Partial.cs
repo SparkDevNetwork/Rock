@@ -358,8 +358,6 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetInteractionStatistics/{personId?}" )]
         [RockGuid( "bc12a776-bfe9-487d-aeba-1099d2db5c6b" )]
-        public virtual PersonInteractionStatistics InteractionStatistics( int? personId = null, [FromUri] DateTime? date = null,
-            [FromUri] int? interactionChannelId = null, [FromUri] int? interactionComponentId = null, [FromUri] Guid? interactionChannelGuid = null,
         public virtual PersonInteractionStatistics InteractionStatistics(
             int? personId = null,
             [FromUri] DateTime? date = null,
