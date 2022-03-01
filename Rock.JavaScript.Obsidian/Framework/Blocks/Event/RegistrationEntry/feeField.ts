@@ -18,11 +18,12 @@
 import { defineComponent, PropType } from "vue";
 import Alert from "../../../Elements/alert";
 import CheckBox from "../../../Elements/checkBox";
-import DropDownList, { DropDownListOption } from "../../../Elements/dropDownList";
+import DropDownList from "../../../Elements/dropDownList";
 import NumberUpDown from "../../../Elements/numberUpDown";
 import NumberUpDownGroup, { NumberUpDownGroupOption } from "../../../Elements/numberUpDownGroup";
 import Number from "../../../Services/number";
 import GuidHelper, { Guid } from "../../../Util/guid";
+import { ListItem } from "../../../ViewModels";
 import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./registrationEntryBlockViewModel";
 
 export default defineComponent({
@@ -92,7 +93,7 @@ export default defineComponent({
         isDropDown(): boolean {
             return this.fee.items.length > 1 && !this.fee.allowMultiple;
         },
-        dropDownListOptions(): DropDownListOption[] {
+        dropDownListOptions(): ListItem[] {
             return this.fee.items.map(i => ({
                 text: this.getItemLabel(i),
                 value: i.guid
@@ -163,7 +164,7 @@ export default defineComponent({
     },
     template: `
 <template v-if="!isHidden">
-    <CheckBox v-if="isCheckbox" :label="label" v-model="checkboxValue" :inline="false" :rules="rules" />
+    <CheckBox v-if="isCheckbox" :label="label" v-model="checkboxValue" :rules="rules" />
     <NumberUpDown v-else-if="isNumberUpDown" :label="label" :min="0" :max="singleItem.countRemaining || 100" v-model="modelValue[singleItem.guid]" :rules="rules" />
     <DropDownList v-else-if="isDropDown" :label="label" :options="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
     <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="modelValue" :rules="rules" />

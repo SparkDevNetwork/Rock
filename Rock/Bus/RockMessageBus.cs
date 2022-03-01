@@ -283,9 +283,11 @@ namespace Rock.Bus
             // Allow the bus to try to connect for some seconds at most
             var cancelToken = new CancellationTokenSource();
             var task = _bus.StartAsync( cancelToken.Token );
-            var secondsToWait = 20;
 
-            if ( await Task.WhenAny( task, Task.Delay( TimeSpan.FromSeconds( secondsToWait ) ) ) == task )
+            const int delaySeconds = 45;
+            var delay = Task.Delay( TimeSpan.FromSeconds( delaySeconds ) );
+
+            if ( await Task.WhenAny( task, delay ) == task )
             {
                 // Task completed within timeout.
                 // Consider that the task may have faulted or been canceled.
@@ -297,7 +299,7 @@ namespace Rock.Bus
             {
                 // The bus did not connect after some seconds
                 cancelToken.Cancel();
-                throw new Exception( $"The bus failed to connect using {_transportComponent.GetType().Name} within {secondsToWait} seconds" );
+                throw new Exception( $"The bus failed to connect using {_transportComponent.GetType().Name} within {delaySeconds} seconds" );
             }
 
             _isBusStarted = true;

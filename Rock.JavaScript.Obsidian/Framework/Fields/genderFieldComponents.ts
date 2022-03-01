@@ -16,7 +16,8 @@
 //
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
-import DropDownList, { DropDownListOption } from "../Elements/dropDownList";
+import DropDownList from "../Elements/dropDownList";
+import { ListItem } from "../ViewModels";
 
 const enum ConfigurationValueKey {
     HideUnknownGender = "hideUnknownGender"
@@ -40,7 +41,7 @@ export const EditComponent = defineComponent({
     },
 
     computed: {
-        dropDownListOptions(): DropDownListOption[] {
+        dropDownListOptions(): ListItem[] {
             const hideUnknownGenderConfig = this.configurationValues[ConfigurationValueKey.HideUnknownGender];
             const hideUnknownGender = hideUnknownGenderConfig.toLowerCase() === "true";
 
@@ -49,13 +50,13 @@ export const EditComponent = defineComponent({
                     { text: "Unknown", value: "0" },
                     { text: "Male", value: "1" },
                     { text: "Female", value: "2" }
-                ] as DropDownListOption[];
+                ] as ListItem[];
                 }
             else {
                 return [
                     { text: "Male", value: "1" },
                     { text: "Female", value: "2" }
-                ] as DropDownListOption[];
+                ] as ListItem[];
             }
         }
     },

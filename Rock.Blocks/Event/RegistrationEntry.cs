@@ -2066,6 +2066,7 @@ namespace Rock.Blocks.Event
                 };
 
                 session.Registrants = new List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo>();
+                var isOnWaitList = context.SpotsRemaining.HasValue && context.SpotsRemaining.Value == 0;
 
                 if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
                 {
@@ -2074,7 +2075,7 @@ namespace Rock.Blocks.Event
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = currentPerson.PrimaryFamily.Guid,
-                        IsOnWaitList = false,
+                        IsOnWaitList = isOnWaitList,
                         PersonGuid = currentPerson.Guid,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
                         FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, formModels )
@@ -2088,10 +2089,10 @@ namespace Rock.Blocks.Event
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = Guid.NewGuid(),
-                        IsOnWaitList = false,
+                        IsOnWaitList = isOnWaitList,
                         PersonGuid = null,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, formModels )
+                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( rockContext, currentPerson, formModels ) : new Dictionary<Guid, object>()
                     } );
                 }
             }

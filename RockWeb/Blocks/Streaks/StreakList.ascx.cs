@@ -576,7 +576,7 @@ namespace RockWeb.Blocks.Streaks
             }
             else
             {
-                query = query.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
+                query = query.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.NickName );
             }
 
             var viewModelQuery = query.Select( se => new EnrollmentViewModel

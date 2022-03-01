@@ -42,6 +42,7 @@
                                     <Rock:DataTextBox
                                         ID="tbClientId"
                                         Label="Client Id"
+                                        Help="The OIDC ClientId. This the public identifier that the client apps will need to use."
                                         runat="server"
                                         CssClass="form-group"
                                         SourceTypeName="Rock.Model.AuthClient, Rock"
@@ -65,7 +66,7 @@
                                     <Rock:RockTextBox
                                         ID="tbClientSecret"
                                         Required="true"
-                                        Help="For security purposes, we don't allow the secret to be displayed once created."
+                                        Help="For security purposes, we don't allow the secret to be displayed once created. Note that you only get one chance to see the Client Secret when you first generate it, so if you lose track of it you’ll need to generate a new one."
                                         Label="Client Secret"
                                         runat="server"
                                         CssClass="form-group" />

@@ -26,6 +26,11 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./dateRangeFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./dateRangeFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Date Range field.
  */
@@ -60,5 +65,9 @@ export class DateRangeFieldType extends FieldTypeBase {
 
     public override getEditComponent(_value: ClientAttributeValue): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

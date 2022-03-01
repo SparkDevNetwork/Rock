@@ -130,9 +130,11 @@ namespace Rock.Lava.Fluid
         private void DefineLavaTrueFalseAsCaseInsensitive()
         {
             // To redefine the True and False parsers, we need to rebuild the Fluid Primary expression parser.
-            // Fluid defines a Primary expression as: primary => NUMBER | STRING | BOOLEAN | MEMBER
+            // Fluid defines a Primary expression as: primary => STRING | BOOLEAN | EMPTY | MEMBER | NUMBER.
 
             // Reproduce the standard Fluid parsers that are internally defined by the default parser.
+            var integer = Terms.Integer().Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) );
+
             var indexer = Between( LBracket, Primary, RBracket ).Then<MemberSegment>( x => new IndexerSegment( x ) );
 
             var member = Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ).And(
@@ -145,16 +147,36 @@ namespace Rock.Lava.Fluid
                     return new MemberExpression( x.Item2 );
                 } );
 
-            // Redefine the Fluid keywords "true" and "false" as case-insensitive.
-            var trueParser = Terms.Text( "true", caseInsensitive: true );
-            var falseParser = Terms.Text( "false", caseInsensitive: true );
+            var range = LParen
+                .SkipAnd( OneOf( integer, member.Then<Expression>( x => x ) ) )
+                .AndSkip( Terms.Text( ".." ) )
+                .And( OneOf( integer, member.Then<Expression>( x => x ) ) )
+                .AndSkip( RParen )
+                .Then<Expression>( x => new RangeExpression( x.Item1, x.Item2 ) );
 
-            // Replace the default definition of the Fluid Primary parser.
-            Primary.Parser = Number.Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) )
-                .Or( String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) ) )
-                .Or( trueParser.Then<Expression>( x => new LiteralExpression( BooleanValue.True ) ) )
-                .Or( falseParser.Then<Expression>( x => new LiteralExpression( BooleanValue.False ) ) )
-                .Or( member.Then<Expression>( x => x ) );
+            Primary.Parser =
+                String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) )
+                .Or( member.Then<Expression>( x => {
+                    if ( x.Segments.Count == 1 )
+                    {
+                        // Redefine these Liquid keywords as case-insensitive for compatibility with Lava.
+                        switch ( ( x.Segments[0] as IdentifierSegment ).Identifier.ToLower() )
+                        {
+                            case "empty":
+                                return EmptyKeyword;
+                            case "blank":
+                                return BlankKeyword;
+                            case "true":
+                                return TrueKeyword;
+                            case "false":
+                                return FalseKeyword;
+                        }
+                    }
+
+                    return x;
+                } ) )
+                .Or( Number.Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) ) )
+                .Or( range );
         }
 
         private void CreateLavaDocumentParsers()
@@ -428,7 +450,7 @@ namespace Rock.Lava.Fluid
 
             var context = new FluidParseContext( template );
 
-            var lavaTokens = LavaTokensListParser.Parse( template, context ).Select( x => x.ToString() ).ToList();
+            var lavaTokens = LavaTokensListParser.Parse( context ).Select( x => x.ToString() ).ToList();
 
             // If the template contains only literal text, add the entire content as a single text token.
             if ( !lavaTokens.Any()

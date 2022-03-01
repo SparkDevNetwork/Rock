@@ -19,7 +19,10 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
 using MassTransit.AzureServiceBusTransport;
+using Microsoft.ServiceBus;
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Logging;
 using Rock.Security;
 
 namespace Rock.Bus.Transport
@@ -42,8 +45,24 @@ namespace Rock.Bus.Transport
         "Primary Key",
         Description = "Enter the primary key for the Azure Service Bus server. Ex: 5q8vtDWu5ahWF2WjqwXXANLTRJ++VlRKTInSm75Tcwx=",
         IsRequired = true,
-        Order = 0,
+        Order = 1,
         Key = AttributeKey.AccessKey )]
+
+    [TextField(
+        "Message Expiration TimeSpan",
+        Description = "Enter an expiration in TimeSpan format 00:00:00:00 (i.e. day:hour:minute:second). If an invalid format is specified the default will be 7 days.",
+        IsRequired = true,
+        Order = 2,
+        DefaultValue = "07:00:00:00",
+        Key = AttributeKey.MessageExpiration)]
+
+    [BooleanField(
+        "Enable Dead Letter On Message Expiration",
+        Description = "Specify true or false to indicate if a message should to go to a dead letter queue if a message expires before it is consumed.",
+        IsRequired = true,
+        Order = 3,
+       DefaultBooleanValue = false,
+        Key = AttributeKey.DeadLetterOnMessageExpiration )]
 
     public class AzureServiceBus : TransportComponent
     {
@@ -56,6 +75,8 @@ namespace Rock.Bus.Transport
         {
             public const string AccessKey = "AccessKey";
             public const string Host = "Host";
+            public const string MessageExpiration = "MessageExpiration";
+            public const string DeadLetterOnMessageExpiration = "DeadLetterOnMessageExpiration";
         }
 
         #endregion Attribute Keys
@@ -68,12 +89,85 @@ namespace Rock.Bus.Transport
         /// <returns></returns>
         public override IBusControl GetBusControl( Action<IBusFactoryConfigurator> configureEndpoints )
         {
+            TimeSpan messageExpiration;
+            var messageExpirationString = GetAttributeValue( AttributeKey.MessageExpiration );
+            messageExpirationString = string.IsNullOrEmpty( messageExpirationString ) ? "07:00:00:00" : messageExpirationString;
+
+            // Catch bad data entries and default to 7 days if so and log it.
+            if ( !TimeSpan.TryParse( messageExpirationString, out messageExpiration ) )
+            {
+                RockLogger.Log.Warning( RockLogDomains.Bus, $"{nameof( AzureServiceBus )}: An invalid Message Expiration TimeSpan value of {messageExpirationString} was specified. Defaulting to 07:00:00:00 (7 days)." );
+                messageExpiration = TimeSpan.FromDays( 7 );
+
+                SetAttributeValue( AttributeKey.MessageExpiration, $"{messageExpiration.Days:D2}:{messageExpiration.Hours:D2}:{messageExpiration.Minutes:D2}:{messageExpiration.Seconds:D2}" );
+                this.SaveAttributeValue( AttributeKey.MessageExpiration, new RockContext() );
+            }
+                        
+            var enableDeadletterOnMessageExpiration = GetAttributeValue( AttributeKey.DeadLetterOnMessageExpiration ).AsBoolean();
+
             return MassTransit.Bus.Factory.CreateUsingAzureServiceBus( configurator =>
             {
                 var url = $"Endpoint=sb://{GetHost()};SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey={GetAccessKey()}";
+                configurator.DefaultMessageTimeToLive = messageExpiration;
+                configurator.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+
                 configurator.Host( url, host => { } );
+
                 configureEndpoints( configurator );
+
+                ConfigureBusResources( messageExpiration, enableDeadletterOnMessageExpiration, url );
+
             } );
+        }
+
+        /// <summary>
+        /// Configures the queue, topic, and subscription properties after the endpoints have been configured.
+        /// </summary>
+        /// <param name="messageExpiration"></param>
+        /// <param name="enableDeadletterOnMessageExpiration"></param>
+        /// <param name="url"></param>
+        private static void ConfigureBusResources( TimeSpan messageExpiration, bool enableDeadletterOnMessageExpiration, string url )
+        {
+            var namespaceManager = NamespaceManager.CreateFromConnectionString( url );
+
+            // Get all of the current queues
+            var queues = namespaceManager.GetQueues();
+            if ( queues != null )
+            {
+                foreach ( var queue in queues )
+                {
+                    queue.DefaultMessageTimeToLive = messageExpiration;
+                    queue.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+                    namespaceManager.UpdateQueue( queue );
+                }
+            }
+
+            // Get all of the current topics
+            var topics = namespaceManager.GetTopics();
+            if ( topics != null )
+            {
+                foreach ( var topic in topics )
+                {
+                    topic.DefaultMessageTimeToLive = messageExpiration;
+                    namespaceManager.UpdateTopic( topic );
+
+                    var subs = namespaceManager.GetSubscriptions( topic.Path );
+
+                    // Get all of the topic subscriptions 
+                    if ( subs != null )
+                    {
+                        foreach ( var sub in subs )
+                        {
+                            // If the topic specifies a smaller TTL than the subscription, the topic TTL is applied ⬆.
+
+                            sub.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+
+                            namespaceManager.UpdateSubscription( sub );
+
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

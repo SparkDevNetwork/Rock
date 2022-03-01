@@ -16,14 +16,13 @@
 //
 
 import { defineComponent, inject } from "vue";
-import CheckBox from "../../../Elements/checkBox";
-import { DropDownListOption } from "../../../Elements/dropDownList";
+import InlineCheckBox from "../../../Elements/inlineCheckBox";
 import EmailBox from "../../../Elements/emailBox";
 import RadioButtonList from "../../../Elements/radioButtonList";
 import StaticFormControl from "../../../Elements/staticFormControl";
 import TextBox from "../../../Elements/textBox";
 import { Guid } from "../../../Util/guid";
-import { Person } from "../../../ViewModels";
+import { ListItem, Person } from "../../../ViewModels";
 import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from "../registrationEntry";
 import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from "./registrationEntryBlockViewModel";
@@ -35,7 +34,7 @@ export default defineComponent({
     name: "Event.RegistrationEntry.Registrar",
     components: {
         TextBox,
-        CheckBox,
+        InlineCheckBox,
         EmailBox,
         StaticFormControl,
         RadioButtonList
@@ -100,8 +99,8 @@ export default defineComponent({
 
         /** The radio options that are displayed to allow the user to pick another person that this
          *  registrar is part of a family. */
-        familyOptions (): DropDownListOption[] {
-            const options: DropDownListOption[] = [];
+        familyOptions (): ListItem[] {
+            const options: ListItem[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
             if (this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask) {
@@ -198,7 +197,7 @@ export default defineComponent({
             <div class="col-md-6">
                 <TextBox label="First Name" rules="required" v-model="registrar.nickName" tabIndex="1" />
                 <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.email" tabIndex="3" />
-                <CheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.updateEmail" />
+                <InlineCheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.updateEmail" />
             </div>
             <div class="col-md-6">
                 <TextBox label="Last Name" rules="required" v-model="registrar.lastName" tabIndex="2" />

@@ -77,6 +77,17 @@ namespace Rock.Model
         [DataMember]
         public ViewMode DefaultListView { get; set; } = ViewMode.Cards;
 
+        /// <summary>
+        /// Gets or sets the term used for steps within this program. This property is required.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string StepTerm
+        {
+            get => _stepTerm.IsNullOrWhiteSpace() ? DefaultStepTerm : _stepTerm;
+            set => _stepTerm = value;
+        }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag

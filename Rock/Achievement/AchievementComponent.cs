@@ -314,12 +314,6 @@ $@"<div style=""color: #16c98d"">
                 maxDate = achievementTypeEndDate.Value;
             }
 
-            // If somehow the max became less than the min date, use the min date
-            if ( maxDate < minDate )
-            {
-                maxDate = minDate;
-            }
-
             return maxDate;
         }
 

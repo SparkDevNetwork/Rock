@@ -319,7 +319,15 @@ namespace Rock.Apps.StatementGenerator
             if ( _cancelRunning )
             {
                 this._cancelled = true;
-                return new ResultsSummary( recipientList );
+                return new ResultsSummary( recipientList,
+                    this.Options.StartDate,
+                    this.Options.EndDate,
+                    this.StartDateTime )
+                {
+                    // Set the end date/time and the directory
+                    EndDateTime = DateTime.Now,
+                    ReportOutputDirectories = new List<string> { _currentDayTemporaryDirectory }
+                };
             }
 
             SaveRecipientListStatus( recipientList, _currentDayTemporaryDirectory, false );
@@ -327,7 +335,13 @@ namespace Rock.Apps.StatementGenerator
             var reportCount = this.Options.ReportConfigurationList.Count();
             var reportNumber = 0;
 
-            var resultsSummary = new ResultsSummary( recipientList );
+            var resultsSummary = new ResultsSummary( recipientList,
+                    this.Options.StartDate,
+                    this.Options.EndDate,
+                    this.StartDateTime )
+            {
+                ReportOutputDirectories = new List<string> { _currentDayTemporaryDirectory }
+            };
 
             foreach ( var financialStatementReportConfiguration in this.Options.ReportConfigurationList )
             {
@@ -344,6 +358,7 @@ namespace Rock.Apps.StatementGenerator
 
                 var summary = WriteStatementPDFs( financialStatementReportConfiguration, recipientList );
                 resultsSummary.PaperStatementsSummaryList.Add( summary );
+                resultsSummary.ReportOutputDirectories.Add( financialStatementReportConfiguration.DestinationFolder );
             }
 
             SaveGeneratorConfig( _currentDayTemporaryDirectory, incrementRunAttempts: false, reportsCompleted: true );
@@ -376,6 +391,9 @@ namespace Rock.Apps.StatementGenerator
             {
                 Debug.WriteLine( $"{( _stopwatchAll.ElapsedMilliseconds / resultsSummary.StatementCount ):n0}ms per statement" );
             }
+
+            // Set the run ending date/time
+            resultsSummary.EndDateTime = DateTime.Now;
 
             return resultsSummary;
         }
@@ -418,7 +436,7 @@ namespace Rock.Apps.StatementGenerator
 
             browser = Puppeteer.LaunchAsync( launchOptions ).Result;
 
-            // 
+            //
             try
             {
                 // just in case the Statement Generator didn't close cleanly previously,
@@ -556,7 +574,7 @@ namespace Rock.Apps.StatementGenerator
                 recipient.RenderedPageCount = pdfDocument.PageCount;
                 generatePdfStopWatch.Stop();
 
-                // we don't need to do the 2nd pass if the 1st pass's rendered page count matches what we assumed it would be.l 
+                // we don't need to do the 2nd pass if the 1st pass's rendered page count matches what we assumed it would be.l
                 if ( enablePageCountPredetermination && AssumedRenderedPageCount != recipient.RenderedPageCount )
                 {
                     financialStatementGeneratorRecipientResult = GetFinancialStatementGeneratorRecipientResult( restClient, recipient );
@@ -571,7 +589,7 @@ namespace Rock.Apps.StatementGenerator
                 var recordsCompleted = Interlocked.Increment( ref _recordsCompleted );
 
                 // launch a task to save and upload the document
-                // This is thread safe, so we can spin these up as needed 
+                // This is thread safe, so we can spin these up as needed
                 var saveAndUploadTask = new Task( () =>
                 {
                     Stopwatch savePdfStopWatch = Stopwatch.StartNew();
@@ -741,7 +759,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 // each ToJson/write can take 100ms or more.
                 // To avoid too much overhead,we can safely just update the file every 2 seconds.
                 // So, if the process it interrupted it'll only be at most 2 seconds behind. I'll just
-                // end up re-doing 2 seconds worth of recipients. 
+                // end up re-doing 2 seconds worth of recipients.
                 var timeSinceLastUpdate = DateTime.Now - _lastSaveRecipientListStatus;
 
                 if ( timeSinceLastUpdate.TotalSeconds < LimitedUpdateSaveRecipientListStatusSeconds )
@@ -995,7 +1013,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
 
             if ( financialStatementReportConfiguration.IncludeInternationalAddresses == false )
             {
-            
+
                 recipientList = recipientList.Where( a => a.IsInternationalAddress == false ).ToList();
             }
 
@@ -1011,24 +1029,24 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
             Directory.CreateDirectory( financialStatementReportConfiguration.DestinationFolder );
 
             /* Splitting Logic
-             * 
+             *
              * Max/Chapter | Split On Primary  | PreventSplitting | Result (some cases end up with same output)
              * null        | false             | false            | Single PDF - no splitting or max chapters
              * null        | false             | true             | Single PDF - no splitting or max chapters (prevent splitting doesn't matter since we aren't splitting by anything)
              *
              * 1000        | false             | false            | 1000 per PDF, last doc might have less than 1000 - Simple
-             * 
+             *
              * null        | true              | false            | One per Sort (for example, each zip code has its own doc) - simple case (PreventSplitting doesn't matter since we are already splitting)
              * null        | true              | true             | One per Sort (for example, each zip code has its own doc) - simple case (PreventSplitting doesn't matter since we are already splitting)
              * 1000        | true              | true             | One per Sort (for example, each zip code has its own doc) - max is ignored since we are have to prevent splitting
-             *             
+             *
              * 1000        | true              | false            | 1000 or less per PDF. Examples per PDF
              *                                                             999 85083 = one doc
              *                                                             900 85083 + 100 85444 = two docs (we are splitting on primary)
              *                                                            1001 85083 = 2 docs. 85083 has two docs" 85083-chapter1 (1000 statements). 85083-chapter2 (1 statement)
-             * 
+             *
              * 1000        | false             | true             | Up to 1000 (don't go over if next has too many). For example:
-             *                                                             999 85083 = one doc, 
+             *                                                             999 85083 = one doc,
              *                                                             900 85123 + 100 85444 = one doc (they fit)
              *                                                             900 85123 + 101 85444 = 2 docs (2nd doc could hold additional zip codes)
              *                                                            1001 85083 = that doc has more than max since splitting is not allowed
@@ -1112,11 +1130,11 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
         {
             /*
              * Up to maxStatementsPerChapter (don't go over if next has too many). For example:
-             *  
-             *  999 85083 = one doc,                                                          
-             *  900 85123 + 100 85444 = one doc (they fit)                                                         
-             *  900 85123 + 101 85444 = 2 docs (2nd doc could hold additional zip codes)                                                         
-             * 1001 85083 = that doc has more than max since splitting is not allowed                                                         
+             *
+             *  999 85083 = one doc,
+             *  900 85123 + 100 85444 = one doc (they fit)
+             *  900 85123 + 101 85444 = 2 docs (2nd doc could hold additional zip codes)
+             * 1001 85083 = that doc has more than max since splitting is not allowed
              */
 
             List<FinancialStatementGeneratorRecipient> recipientsForChapter = new List<FinancialStatementGeneratorRecipient>();

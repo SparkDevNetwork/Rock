@@ -29,7 +29,7 @@
       },
       setProperties: function ($sectionComponent)
       {
-        Rock.controls.emailEditor.$currentSectionComponent = $sectionComponent.hasClass('component-section') ? $currentComponent : $(false);
+        Rock.controls.emailEditor.$currentSectionComponent = $sectionComponent.hasClass('component-section') ? $sectionComponent : $(false);
 
         $('#component-section-column2').hide();
         $('#component-section-column3').hide();
@@ -55,6 +55,9 @@
           $('#component-section-padding-right-' + columnNumber).val(parseFloat(columnEl.style['padding-right']) || '');
           $('#component-section-padding-bottom-' + columnNumber).val(parseFloat(columnEl.style['padding-bottom']) || '');
         });
+
+        // Return this to the previous function caller
+        return Rock.controls.emailEditor.$currentSectionComponent;
 
       },
       setPadding: function ()

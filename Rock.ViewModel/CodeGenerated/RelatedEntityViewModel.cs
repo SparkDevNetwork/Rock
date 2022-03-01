@@ -32,12 +32,28 @@ namespace Rock.ViewModel
     public partial class RelatedEntityViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the AdditionalSettingsJson.
+        /// </summary>
+        /// <value>
+        /// The AdditionalSettingsJson.
+        /// </value>
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the IsSystem.
         /// </summary>
         /// <value>
         /// The IsSystem.
         /// </value>
         public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Note.
+        /// </summary>
+        /// <value>
+        /// The Note.
+        /// </value>
+        public string Note { get; set; }
 
         /// <summary>
         /// Gets or sets the Order.
@@ -62,6 +78,14 @@ namespace Rock.ViewModel
         /// The QualifierValue.
         /// </value>
         public string QualifierValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Quantity.
+        /// </summary>
+        /// <value>
+        /// The Quantity.
+        /// </value>
+        public int? Quantity { get; set; }
 
         /// <summary>
         /// Gets or sets the SourceEntityId.

@@ -30,25 +30,6 @@ namespace Rock.Model
 {
     public partial class Registration
     {
-        #region Entity Properties
-        /// <summary>
-        /// Gets the created date key.
-        /// </summary>
-        /// <value>
-        /// The created date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? CreatedDateKey
-        {
-            get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?
-                        ( int? ) null :
-                        CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-
-            private set { }
-        }
-        #endregion Entity Properties
-
         #region Navigation Properties
 
         /// <summary>
@@ -62,21 +43,6 @@ namespace Rock.Model
         {
             get { return PersonAlias != null ? PersonAlias.PersonId : ( int? ) null; }
         }
-
-        /// <summary>
-        /// Gets or sets the registrants.
-        /// </summary>
-        /// <value>
-        /// The registrants.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<RegistrationRegistrant> Registrants
-        {
-            get { return _registrants ?? ( _registrants = new Collection<RegistrationRegistrant>() ); }
-            set { _registrants = value; }
-        }
-
-        private ICollection<RegistrationRegistrant> _registrants;
 
         /// <summary>
         /// Gets the total cost.

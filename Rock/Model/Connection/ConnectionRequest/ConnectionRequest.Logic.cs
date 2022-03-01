@@ -19,33 +19,12 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class ConnectionRequest
     {
-        #region Properties
-
-        /// <summary>
-        /// Gets the created date key.
-        /// </summary>
-        /// <value>
-        /// The created date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? CreatedDateKey
-        {
-            get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?
-                        ( int? ) null :
-                        CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        #endregion
-
         #region Methods
 
         /// <summary>

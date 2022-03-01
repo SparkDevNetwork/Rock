@@ -1,3 +1,27 @@
+/*!
+ * 
+ * Super simple WYSIWYG editor v0.8.20
+ * https://summernote.org
+ *
+ *
+ * Copyright 2013- Alan Hong and contributors
+ * Summernote may be freely distributed under the MIT license.
+ *
+ * Date: 2021-10-14T21:15Z
+ *
+ */
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
 (function ($) {
   $.extend($.summernote.lang, {
     'es-ES': {
@@ -5,13 +29,14 @@
         bold: 'Negrita',
         italic: 'Cursiva',
         underline: 'Subrayado',
-        clear: 'Quitar estilo de fuente',
+        clear: 'Eliminar estilo de letra',
         height: 'Altura de línea',
-        name: 'Fuente',
+        name: 'Tipo de letra',
         strikethrough: 'Tachado',
-        superscript: 'Superíndice',
         subscript: 'Subíndice',
-        size: 'Tamaño de la fuente'
+        superscript: 'Superíndice',
+        size: 'Tamaño de la fuente',
+        sizeunit: 'Unidad del tamaño de letra'
       },
       image: {
         image: 'Imagen',
@@ -19,46 +44,56 @@
         resizeFull: 'Redimensionar a tamaño completo',
         resizeHalf: 'Redimensionar a la mitad',
         resizeQuarter: 'Redimensionar a un cuarto',
+        resizeNone: 'Tamaño original',
         floatLeft: 'Flotar a la izquierda',
         floatRight: 'Flotar a la derecha',
         floatNone: 'No flotar',
         shapeRounded: 'Forma: Redondeado',
         shapeCircle: 'Forma: Círculo',
-        shapeThumbnail: 'Forma: Marco',
+        shapeThumbnail: 'Forma: Miniatura',
         shapeNone: 'Forma: Ninguna',
-        dragImageHere: 'Arrastrar una imagen o texto aquí',
-        dropImage: 'Suelta la imagen o texto',
-        selectFromFiles: 'Seleccionar desde los archivos',
-        maximumFileSize: 'Tamaño máximo del archivo',
-        maximumFileSizeError: 'Has superado el tamaño máximo del archivo.',
+        dragImageHere: 'Arrastre una imagen o texto aquí',
+        dropImage: 'Suelte una imagen o texto',
+        selectFromFiles: 'Seleccione un fichero',
+        maximumFileSize: 'Tamaño máximo del fichero',
+        maximumFileSizeError: 'Superado el tamaño máximo de fichero.',
         url: 'URL de la imagen',
-        remove: 'Eliminar imagen'
+        remove: 'Eliminar la imagen',
+        original: 'Original'
       },
       video: {
         video: 'Vídeo',
-        videoLink: 'Link del vídeo',
-        insert: 'Insertar vídeo',
-        url: '¿URL del vídeo?',
-        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion, o Youku)'
+        videoLink: 'Enlace del vídeo',
+        insert: 'Insertar un vídeo',
+        url: 'URL del vídeo',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion o Youku)'
       },
       link: {
-        link: 'Link',
-        insert: 'Insertar link',
-        unlink: 'Quitar link',
+        link: 'Enlace',
+        insert: 'Insertar un enlace',
+        unlink: 'Quitar el enlace',
         edit: 'Editar',
-        textToDisplay: 'Texto para mostrar',
-        url: '¿Hacia que URL lleva el link?',
-        openInNewWindow: 'Abrir en una nueva ventana'
+        textToDisplay: 'Texto a mostrar',
+        url: '¿A qué URL lleva este enlace?',
+        openInNewWindow: 'Abrir en una nueva ventana',
+        useProtocol: 'Usar el protocolo predefinido'
       },
       table: {
-        table: 'Tabla'
+        table: 'Tabla',
+        addRowAbove: 'Añadir una fila encima',
+        addRowBelow: 'Añadir una fila debajo',
+        addColLeft: 'Añadir una columna a la izquierda',
+        addColRight: 'Añadir una columna a la derecha',
+        delRow: 'Borrar la fila',
+        delCol: 'Borrar la columna',
+        delTable: 'Borrar la tabla'
       },
       hr: {
-        insert: 'Insertar línea horizontal'
+        insert: 'Insertar una línea horizontal'
       },
       style: {
         style: 'Estilo',
-        normal: 'Normal',
+        p: 'Normal',
         blockquote: 'Cita',
         pre: 'Código',
         h1: 'Título 1',
@@ -69,20 +104,20 @@
         h6: 'Título 6'
       },
       lists: {
-        unordered: 'Lista desordenada',
-        ordered: 'Lista ordenada'
+        unordered: 'Lista',
+        ordered: 'Lista numerada'
       },
       options: {
         help: 'Ayuda',
         fullscreen: 'Pantalla completa',
-        codeview: 'Ver código fuente'
+        codeview: 'Ver el código fuente'
       },
       paragraph: {
         paragraph: 'Párrafo',
-        outdent: 'Menos tabulación',
-        indent: 'Más tabulación',
+        outdent: 'Reducir la sangría',
+        indent: 'Aumentar la sangría',
         left: 'Alinear a la izquierda',
-        center: 'Alinear al centro',
+        center: 'Centrar',
         right: 'Alinear a la derecha',
         justify: 'Justificar'
       },
@@ -90,11 +125,12 @@
         recent: 'Último color',
         more: 'Más colores',
         background: 'Color de fondo',
-        foreground: 'Color de fuente',
+        foreground: 'Color del texto',
         transparent: 'Transparente',
         setTransparent: 'Establecer transparente',
-        reset: 'Restaurar',
-        resetToDefault: 'Restaurar por defecto'
+        reset: 'Restablecer',
+        resetToDefault: 'Restablecer a los valores predefinidos',
+        cpSelect: 'Seleccionar'
       },
       shortcut: {
         shortcuts: 'Atajos de teclado',
@@ -105,34 +141,34 @@
         documentStyle: 'Estilo de documento',
         extraKeys: 'Teclas adicionales'
       },
-      help : {
-        'insertParagraph': 'Insertar párrafo',
-        'undo': 'Deshacer última acción',
-        'redo': 'Rehacer última acción',
-        'tab': 'Tabular',
-        'untab': 'Eliminar tabulación',
-        'bold': 'Establecer estilo negrita',
-        'italic': 'Establecer estilo cursiva',
-        'underline': 'Establecer estilo subrayado',
-        'strikethrough': 'Establecer estilo tachado',
-        'removeFormat': 'Limpiar estilo',
-        'justifyLeft': 'Alinear a la izquierda',
-        'justifyCenter': 'Alinear al centro',
-        'justifyRight': 'Alinear a la derecha',
-        'justifyFull': 'Justificar',
-        'insertUnorderedList': 'Insertar lista desordenada',
-        'insertOrderedList': 'Insertar lista ordenada',
-        'outdent': 'Reducir tabulación del párrafo',
-        'indent': 'Aumentar tabulación del párrafo',
-        'formatPara': 'Cambiar estilo del bloque a párrafo (etiqueta P)',
-        'formatH1': 'Cambiar estilo del bloque a H1',
-        'formatH2': 'Cambiar estilo del bloque a H2',
-        'formatH3': 'Cambiar estilo del bloque a H3',
-        'formatH4': 'Cambiar estilo del bloque a H4',
-        'formatH5': 'Cambiar estilo del bloque a H5',
-        'formatH6': 'Cambiar estilo del bloque a H6',
-        'insertHorizontalRule': 'Insertar línea horizontal',
-        'linkDialog.show': 'Mostrar panel enlaces'
+      help: {
+        insertParagraph: 'Insertar un párrafo',
+        undo: 'Deshacer la última acción',
+        redo: 'Rehacer la última acción',
+        tab: 'Tabular',
+        untab: 'Eliminar tabulación',
+        bold: 'Establecer estilo negrita',
+        italic: 'Establecer estilo cursiva',
+        underline: 'Establecer estilo subrayado',
+        strikethrough: 'Establecer estilo tachado',
+        removeFormat: 'Limpiar estilo',
+        justifyLeft: 'Alinear a la izquierda',
+        justifyCenter: 'Alinear al centro',
+        justifyRight: 'Alinear a la derecha',
+        justifyFull: 'Justificar',
+        insertUnorderedList: 'Insertar lista',
+        insertOrderedList: 'Insertar lista numerada',
+        outdent: 'Reducir sangría del párrafo',
+        indent: 'Aumentar sangría del párrafo',
+        formatPara: 'Cambiar el formato del bloque actual a párrafo (etiqueta P)',
+        formatH1: 'Cambiar el formato del bloque actual a H1',
+        formatH2: 'Cambiar el formato del bloque actual a H2',
+        formatH3: 'Cambiar el formato del bloque actual a H3',
+        formatH4: 'Cambiar el formato del bloque actual a H4',
+        formatH5: 'Cambiar el formato del bloque actual a H5',
+        formatH6: 'Cambiar el formato del bloque actual a H6',
+        insertHorizontalRule: 'Insertar una línea horizontal',
+        'linkDialog.show': 'Mostrar el panel de enlaces'
       },
       history: {
         undo: 'Deshacer',
@@ -140,8 +176,16 @@
       },
       specialChar: {
         specialChar: 'CARACTERES ESPECIALES',
-        select: 'Selecciona Caracteres especiales'
+        select: 'Seleccionar caracteres especiales'
+      },
+      output: {
+        noSelection: '¡No ha seleccionado nada!'
       }
     }
   });
 })(jQuery);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});
+//# sourceMappingURL=summernote-es-ES.js.map

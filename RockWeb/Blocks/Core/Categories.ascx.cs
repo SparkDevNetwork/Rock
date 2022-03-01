@@ -398,6 +398,13 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void mdDetails_SaveClick( object sender, EventArgs e )
         {
+            Page.Validate( BlockValidationGroup );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             int categoryId = 0;
             if ( hfIdValue.Value != string.Empty && !int.TryParse( hfIdValue.Value, out categoryId ) )
             {
@@ -673,8 +680,11 @@ namespace RockWeb.Blocks.Core
                 tbEntityQualifierValue.Text = category.EntityTypeQualifierValue;
             }
 
+            entityTypePicker.RequiredFieldValidator.ErrorMessage = "Entity type is required.";
+            entityTypePicker.ValidationGroup = BlockValidationGroup;
 
             tbName.Text = category.Name;
+
             tbDescription.Text = category.Description;
             catpParentCategory.SetValue( category.ParentCategoryId );
             tbIconCssClass.Text = category.IconCssClass;

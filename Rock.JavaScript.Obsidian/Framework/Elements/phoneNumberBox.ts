@@ -29,6 +29,10 @@ export default defineComponent({
         modelValue: {
             type: String as PropType<string>,
             default: ""
+        },
+        inputGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
         }
     },
     emits: [
@@ -36,7 +40,6 @@ export default defineComponent({
     ],
     data: function () {
         return {
-            uniqueId: `rock-phonenumberbox-${newGuid()}`,
             internalValue: ""
         };
     },
@@ -76,13 +79,13 @@ export default defineComponent({
     @change="onChange"
     formGroupClasses="rock-phonenumber-box"
     name="phonenumberbox">
-    <template #default="{uniqueId, field, errors, disabled, inputGroupClasses}">
+    <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <div class="input-group phone-number-box" :class="inputGroupClasses">
                 <span class="input-group-addon">
                     <i class="fa fa-phone-square"></i>
                 </span>
-                <input :id="uniqueId" type="text" class="form-control" v-bind="field" :disabled="disabled" />
+                <input v-model="internalValue" :id="uniqueId" type="text" class="form-control" v-bind="field" />
             </div>
         </div>
     </template>

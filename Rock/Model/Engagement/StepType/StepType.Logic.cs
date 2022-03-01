@@ -16,7 +16,6 @@
 //
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Runtime.Serialization;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -81,24 +80,5 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
-
-        private string _cardLavaTemplate;
-
-        /// <summary>
-        /// Gets or sets the lava template used to render custom card details.
-        /// </summary>
-        [DataMember]
-        public string CardLavaTemplate
-        {
-            get
-            {
-                return _cardLavaTemplate.IsNullOrWhiteSpace() ? DefaultCardLavaTemplate : _cardLavaTemplate;
-            }
-
-            set
-            {
-                _cardLavaTemplate = value;
-            }
-        }
     }
 }

@@ -23,7 +23,7 @@
       },
       setProperties: function ($codeComponent)
       {
-        Rock.controls.emailEditor.$currentCodeComponent = $codeComponent.hasClass('component-code') ? $currentComponent : $(false);
+        Rock.controls.emailEditor.$currentCodeComponent = $codeComponent.hasClass('component-code') ? $codeComponent : $(false);
         var aceEditor = $('.js-component-code-codeEditor .ace_editor').data('aceEditor');
         aceEditor.setValue($codeComponent.html());
         var codeEl = $codeComponent[0];
@@ -32,6 +32,9 @@
         $('#component-code-margin-left').val(parseFloat(codeEl.style['margin-left']) || '');
         $('#component-code-margin-right').val(parseFloat(codeEl.style['margin-right']) || '');
         $('#component-code-margin-bottom').val(parseFloat(codeEl.style['margin-bottom']) || '');
+
+        // Return this to the previous function caller
+        return Rock.controls.emailEditor.$currentCodeComponent;
       },
       setMargins: function ()
       {

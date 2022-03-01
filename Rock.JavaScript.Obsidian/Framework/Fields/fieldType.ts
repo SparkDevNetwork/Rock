@@ -16,7 +16,7 @@
 //
 
 import { escapeHtml, truncate } from "../Services/string";
-import { compile, Component, defineComponent } from "vue";
+import { compile, Component, defineComponent, PropType } from "vue";
 import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { EditComponent as TextEditComponent } from "./textFieldComponents";
 
@@ -32,6 +32,7 @@ export interface IFieldType {
      * Get the plain text representation of the attribute value.
      * 
      * @param value The attribute value.
+     * 
      * @returns A string that contains a user-friendly text representation of the value.
      */
     getTextValue(value: ClientAttributeValue): string;
@@ -42,6 +43,7 @@ export interface IFieldType {
      * for HTML entities first.
      * 
      * @param value The attribute value.
+     * 
      * @returns A string that contains a user-friendly HTML representation of the value.
      */
     getHtmlValue(value: ClientAttributeValue): string;
@@ -60,6 +62,7 @@ export interface IFieldType {
      * can also alter the format entirely.
      * 
      * @param value The attribute value.
+     * 
      * @returns A string that contains a condensed version of {@link FieldType.getTextValue getTextValue()}.
      */
     getCondensedTextValue(value: ClientAttributeValue): string;
@@ -71,6 +74,7 @@ export interface IFieldType {
      * representation of the {@link FieldType.getHtmlValue getHtmlValue()}.
      * 
      * @param value The attribute value.
+     * 
      * @returns A string that contains a condensed version of {@link FieldType.getHtmlValue getHtmlValue()}.
      */
     getCondensedHtmlValue(value: ClientAttributeValue): string;
@@ -79,6 +83,7 @@ export interface IFieldType {
      * Get the component that will be used to display the formatted value.
      * 
      * @param value The attribute value.
+     * 
      * @returns A component that is already configured to show the value.
      */
     getFormattedComponent(value: ClientAttributeValue): Component;
@@ -87,6 +92,7 @@ export interface IFieldType {
      * Get the component that will be used to display the condensed formatted value.
      * 
      * @param value The attribute value.
+     * 
      * @returns A component that is already configured to show the condensed value.
      */
     getCondensedFormattedComponent(value: ClientAttributeValue): Component;
@@ -96,10 +102,59 @@ export interface IFieldType {
      * the modelValue property which contains the {@link ClientAttributeValueViewModel.value}.
      * 
      * @param value The attribute value.
+     * 
      * @returns A component that is already configured to edit the value.
      */
     getEditComponent(value: ClientAttributeValue): Component;
+
+    /**
+     * Get the component that will be used to configure the field. It will receive
+     * the modelValue property which contains a Record<string, string> object
+     * with the configuration values. It will also receive a configurationProperties
+     * value of type Record<string, string>.
+     * 
+     * @returns A component that is already configured to edit the value.
+     */
+    getConfigurationComponent(): Component;
+
+    /**
+     * Determines if this field type supports a default value component when
+     * editing the configuration. It is rare for a field type to not support
+     * this but there are some edge cases.
+     *
+     * @returns true if a default value component should be rendered when editing
+     * the field configuration; otherwise false.
+     */
+    hasDefaultComponent(): boolean;
 }
+
+/**
+ * Define a simple component that can be used when editing the configuration of
+ * a field type that isn't yet supported.
+ */
+const unsupportedFieldTypeConfigurationComponent = defineComponent({
+    props: {
+        modelValue: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+
+        configurationProperties: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    },
+
+    setup() {
+        return {};
+    },
+
+    template: `
+<div class="alert alert-warning">
+    Configuration of this field type is not supported.
+</div>
+`
+});
 
 /**
  * Basic field type implementation that is suitable for implementations to
@@ -142,5 +197,13 @@ export abstract class FieldTypeBase implements IFieldType {
 
     public getEditComponent(_value: ClientAttributeValue): Component {
         return TextEditComponent;
+    }
+
+    public getConfigurationComponent(): Component {
+        return unsupportedFieldTypeConfigurationComponent;
+    }
+
+    public hasDefaultComponent(): boolean {
+        return true;
     }
 }

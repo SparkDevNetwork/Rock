@@ -121,8 +121,21 @@ namespace Rock.Lava.Fluid
             {
                 if ( value is DateTime dt )
                 {
-                    // Assume that the DateTime is expressed in Rock time.
-                    return new LavaDateTimeValue( LavaDateTime.NewDateTimeOffset( dt.Ticks ) );
+                    // Convert the DateTime to a DateTimeOffset value.
+                    // MinValue/MaxValue are substituted directly because they are not timezone dependent.
+                    if ( dt == DateTime.MinValue )
+                    {
+                        return new LavaDateTimeValue( DateTimeOffset.MinValue );
+                    }
+                    else if ( dt == DateTime.MaxValue )
+                    {
+                        return new LavaDateTimeValue( DateTimeOffset.MaxValue );
+                    }
+                    else
+                    {
+                        // Assume that the DateTime is expressed in Rock time.
+                        return new LavaDateTimeValue( LavaDateTime.NewDateTimeOffset( dt.Ticks ) );
+                    }
                 }
                 else if ( value is DateTimeOffset dto )
                 {
@@ -152,7 +165,7 @@ namespace Rock.Lava.Fluid
                 // return the appropriate Fluid wrapper to short-circuit further conversion attempts.
                 if ( value is IDictionary<string, object> liquidDictionary )
                 {
-                    return new DictionaryValue( new ObjectDictionaryFluidIndexable( liquidDictionary, _templateOptions ) );
+                    return new DictionaryValue( new ObjectDictionaryFluidIndexable<object>( liquidDictionary, _templateOptions ) );
                 }
 
                 var valueType = value.GetType();
@@ -607,11 +620,22 @@ namespace Rock.Lava.Fluid
                 templateContext.FluidContext.Options.TimeZone = parameters.TimeZone;
             }
 
+            // Set the render options for encoding.
+            System.Text.Encodings.Web.TextEncoder encoder;
+            if ( parameters.ShouldEncodeStringsAsXml )
+            {
+                encoder = System.Text.Encodings.Web.HtmlEncoder.Default;
+            }
+            else
+            {
+                encoder = NullEncoder.Default;
+            }
+
             var writer = new StringWriter( sb );
 
             try
             {
-                template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
+                template.Render( templateContext.FluidContext, encoder, writer );
 
                 writer.Flush();
                 result.Text = sb.ToString();

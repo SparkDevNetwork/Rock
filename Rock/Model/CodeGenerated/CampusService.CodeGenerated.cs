@@ -120,6 +120,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, StepProgramCompletion.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<Workflow>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Workflow.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

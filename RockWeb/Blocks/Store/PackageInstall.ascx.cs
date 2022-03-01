@@ -229,12 +229,12 @@ namespace RockWeb.Blocks.Store
                         using ( ZipArchive packageZip = ZipFile.OpenRead( destinationFile ) )
                         {
                             // unzip content folder and process xdts
-                            foreach ( ZipArchiveEntry entry in packageZip.Entries.Where(e => e.FullName.StartsWith("content/", StringComparison.OrdinalIgnoreCase)) )
+                            foreach ( ZipArchiveEntry entry in packageZip.Entries.Where(e => e.FullName.StartsWith( "content/", StringComparison.OrdinalIgnoreCase ) ) )
                             {
                                if ( entry.FullName.EndsWith( _xdtExtension, StringComparison.OrdinalIgnoreCase ) )
                                 {
                                     // process xdt
-                                    string filename = entry.FullName.Replace( "content/", "" );
+                                    string filename = entry.FullName.ReplaceFirstOccurrence( "content/", string.Empty );
                                     string transformTargetFile = appRoot + filename.Substring( 0, filename.LastIndexOf( _xdtExtension ) );
 
                                     // process transform
@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Store
                                         document.PreserveWhitespace = true;
                                         document.Load( transformTargetFile );
 
-                                        using ( XmlTransformation transform = new XmlTransformation( entry.Open(), null))
+                                        using ( XmlTransformation transform = new XmlTransformation( entry.Open(), null ) )
                                         {
                                             if ( transform.Apply( document ) )
                                             {
@@ -255,8 +255,8 @@ namespace RockWeb.Blocks.Store
                                 else
                                 {
                                     // process all content files
-                                    string fullpath = Path.Combine( appRoot, entry.FullName.Replace("content/", "") );
-                                    string directory = Path.GetDirectoryName( fullpath ).Replace("content/", "");
+                                    string fullpath = Path.Combine( appRoot, entry.FullName.ReplaceFirstOccurrence( "content/", string.Empty ) );
+                                    string directory = Path.GetDirectoryName( fullpath ).ReplaceFirstOccurrence( "content/", string.Empty );
 
                                     // if entry is a directory ignore it
                                     if ( entry.Length != 0 )

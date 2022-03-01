@@ -56,6 +56,52 @@ namespace Rock.Field
         Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, string> configurationValues );
 
         /// <summary>
+        /// Get the edit configuration properties that the client can use when
+        /// editing a field type. This is custom data your field type can use
+        /// to provide, for example, a list of options to pick from. This method
+        /// may be called multiple times while editing a field type.
+        /// </summary>
+        /// <remarks>
+        ///     <para>This method is used during the editing of a field type's configuration.</para>
+        ///     <para>
+        ///         The return value should include all data required to display
+        ///         the current selections to the user, even if they wouldn't
+        ///         normally have access to make those selections. This ensures
+        ///         configuration is not accidentally wiped out by the person if
+        ///         they don't have access to something.
+        ///     </para>
+        /// </remarks>
+        /// <param name="configurationValues">The private configuration values that are currently selected.</param>
+        /// <returns>A <see cref="Dictionary{TKey, TValue}"/> of custom key and value pairs.</returns>
+        Dictionary<string, string> GetClientEditConfigurationProperties( Dictionary<string, string> configurationValues );
+
+        /// <summary>
+        /// Gets the public configuration options that will be used when editing
+        /// a field type. This should include all information required to show
+        /// the current selections when editing a field type, but made safe from
+        /// any potentially sensitive data.
+        /// </summary>
+        /// <remarks>This method is used during the editing of a field type's configuration.</remarks>
+        /// <param name="privateConfigurationValues">The private configuration values from the database.</param>
+        /// <returns>A <see cref="Dictionary{TKey, TValue}"/> of options that are safe to be made public.</returns>
+        Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues );
+
+        /// <summary>
+        /// Gets the private configuration options that will be saved to the
+        /// database.
+        /// </summary>
+        /// <remarks>
+        ///     <para>This method is used during the editing of a field type's configuration.</para>
+        ///     <para>
+        ///         Calling this method with the results from <see cref="GetPublicConfigurationOptions(Dictionary{string, string})"/>
+        ///         should return the same data that was originally passed to <see cref="GetPublicConfigurationOptions(Dictionary{string, string})"/>.
+        ///     </para>
+        /// </remarks>
+        /// <param name="publicConfigurationValues">The public configuration values.</param>
+        /// <returns>A <see cref="Dictionary{TKey, TValue}"/> of options that are safe to store to the database.</returns>
+        Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues );
+
+        /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
         /// <returns></returns>

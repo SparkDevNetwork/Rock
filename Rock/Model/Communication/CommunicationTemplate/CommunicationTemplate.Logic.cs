@@ -117,14 +117,23 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns true if this Communication Template has text for an SMS Template
+        /// Returns true if this Communication Template has an SMS Message or a From Number for an SMS Template.
         /// </summary>
         /// <returns>
         ///   <c>true</c> if [has SMS template]; otherwise, <c>false</c>.
         /// </returns>
         public bool HasSMSTemplate()
         {
-            return !string.IsNullOrWhiteSpace( this.SMSMessage );
+            return !string.IsNullOrWhiteSpace( this.SMSMessage ) || this.SMSFromDefinedValueId.HasValue;
+        }
+
+        /// <summary>
+        /// Returns true if this Communication Template has an Email Message or a From Email Address.
+        /// </summary>
+        /// <returns><c>true</c> if [has email template]; otherwise, <c>false</c>.</returns>
+        public bool HasEmailTemplate()
+        {
+            return !string.IsNullOrEmpty( this.Message ) || !string.IsNullOrEmpty( this.FromEmail );
         }
 
         /// <summary>
