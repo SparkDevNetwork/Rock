@@ -100,6 +100,10 @@
     <Compile Include="Migrations\202202162343093_rollup_20220216.Designer.cs">
       <DependentUpon>202202162343093_rollup_20220216.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202203012130384_CodeGenerated_20220301.cs" />
+    <Compile Include="Migrations\202203012130384_CodeGenerated_20220301.Designer.cs">
+      <DependentUpon>202203012130384_CodeGenerated_20220301.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.Designer.cs">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
@@ -1017,6 +1021,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202202162343093_rollup_20220216.resx">
       <DependentUpon>202202162343093_rollup_20220216.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203012130384_CodeGenerated_20220301.resx">
+      <DependentUpon>202203012130384_CodeGenerated_20220301.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.resx">
       <DependentUpon>202201142130057_GroupType_IsCapacityRequired.cs</DependentUpon>
