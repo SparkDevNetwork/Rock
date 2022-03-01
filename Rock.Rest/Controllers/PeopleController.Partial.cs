@@ -53,7 +53,7 @@ namespace Rock.Rest.Controllers
         public override Person GetById( int id )
         {
             // NOTE: We want PrimaryAliasId to be populated, so call this.Get( true ) which includes "Aliases"
-            var person = this.Get( true ).FirstOrDefault( a => a.Id == id );
+            var person = this.Get( true ).Include( a => a.PhoneNumbers ).FirstOrDefault( a => a.Id == id );
             if ( person == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
