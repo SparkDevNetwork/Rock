@@ -1258,6 +1258,7 @@
     <Compile Include="Model\WebFarm\WebFarmNodeMetric\WebFarmNodeMetric.Logic.cs" />
     <Compile Include="Model\WebFarm\WebFarmNode\WebFarmNode.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowActionFormSection\WorkflowActionFormSection.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormSection\WorkflowActionFormSection.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.LiquidButton.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.Logic.cs" />
@@ -1267,6 +1268,7 @@
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowAction.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivityType\WorkflowActivityType.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivity\WorkflowActivity.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowFormBuilderTemplate\WorkflowFormBuilderTemplate.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowFormBuilderTemplate\WorkflowFormBuilderTemplate.cs" />
     <Compile Include="Model\Workflow\WorkflowLog\WorkflowLog.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTrigger.Logic.cs" />
@@ -1614,6 +1616,8 @@
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowFormBuilderTemplateCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowActionFormSectionCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />

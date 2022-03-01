@@ -374,6 +374,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             formField.Attribute.Key = field.Key;
             formField.Attribute.Name = field.Name;
             formField.ColumnSize = field.Size;
+            formField.IsVisible = true;
             formField.HideLabel = field.IsHideLabel;
 
             // Add or update the attribute qualifiers. Do not delete any old ones.
