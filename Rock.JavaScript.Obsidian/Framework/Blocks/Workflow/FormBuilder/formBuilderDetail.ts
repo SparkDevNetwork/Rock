@@ -323,7 +323,7 @@ export default defineComponent({
     {{ blockError }}
 </Alert>
 
-<Panel v-else type="block" hasFullscreen :isFullscreenPageOnly="true" title="Workflow Form Builder" titleIconClass="fa fa-hammer">
+<Panel v-else type="block" hasFullscreen title="Workflow Form Builder" titleIconClass="fa fa-hammer">
     <template #default>
         <v-style>
             /*** Overrides for theme CSS ***/
@@ -559,7 +559,7 @@ export default defineComponent({
                 </ul>
 
                 <div>
-                    <RockButton v-if="isFormDirty" btnType="primary" @click="onSaveClick">Save</RockButton>
+                    <RockButton btnType="primary" :disabled="!isFormDirty" @click="onSaveClick">Save</RockButton>
                 </div>
             </div>
 
