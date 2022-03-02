@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent, ref, PropType, watch } from "vue";
 import RockForm from "../../../../Controls/rockForm";
 import Alert from "../../../../Elements/alert";
 import { useVModelPassthrough } from "../../../../Util/component";
@@ -23,6 +23,7 @@ import CompletionSettings from "../Shared/completionSettings";
 import GeneralSettings from "./generalSettings";
 import { FormCompletionAction, FormGeneral } from "../Shared/types";
 import { FormTemplateListItem } from "./types";
+import { FormError } from "../../../../Util/form";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.SettingsTab",
@@ -47,31 +48,57 @@ export default defineComponent({
 
         templateOverrides: {
             type: Object as PropType<FormTemplateListItem>
+        },
+
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
     emits: [
         "update:modelValue",
         "update:completion",
+        "validationChanged"
     ],
 
     setup(props, { emit }) {
         const generalSettings = useVModelPassthrough(props, "modelValue", emit);
         const completionSettings = useVModelPassthrough(props, "completion", emit);
+        const formSubmit = ref(false);
 
         const isConfirmationForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
 
+        /**
+         * Event handler for when the validation state of the form has changed.
+         * 
+         * @param errors Any errors that were detected on the form.
+         */
+        const onValidationChanged = (errors: FormError[]): void => {
+            emit("validationChanged", errors);
+        };
+
+        // Any time the parent component tells us it has attempted to submit
+        // then we trigger the submit on our form so it updates the validation.
+        watch(() => props.submit, () => {
+            if (props.submit) {
+                formSubmit.value = true;
+            }
+        });
+
         return {
             completionSettings,
+            formSubmit,
             generalSettings,
-            isConfirmationForced
+            isConfirmationForced,
+            onValidationChanged
         };
     },
 
     template: `
 <div class="d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
     <div class="panel-body">
-        <RockForm>
+        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
             <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />
 
             <CompletionSettings v-if="!isConfirmationForced" v-model="completionSettings" />

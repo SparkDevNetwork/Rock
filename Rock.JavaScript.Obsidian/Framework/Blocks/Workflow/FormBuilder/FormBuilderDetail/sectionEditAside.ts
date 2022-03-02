@@ -26,6 +26,7 @@ import TextBox from "../../../../Elements/textBox";
 import { SectionAsideSettings } from "./types";
 import { useFormSources } from "./utils";
 import { confirmDelete } from "../../../../Util/dialogs";
+import { FormError } from "../../../../Util/form";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.SectionEditAside",
@@ -49,7 +50,8 @@ export default defineComponent({
 
     emits: [
         "close",
-        "update:modelValue"
+        "update:modelValue",
+        "validationChanged"
     ],
 
     methods: {
@@ -60,7 +62,7 @@ export default defineComponent({
         isSafeToClose(): boolean {
             this.formSubmit = true;
 
-            return Object.keys(this.validationErrors).length === 0;
+            return this.validationErrors.length === 0;
         }
     },
 
@@ -78,7 +80,7 @@ export default defineComponent({
         const sectionType = ref(props.modelValue.type ?? "");
 
         /** The validation errors for the form. */
-        const validationErrors = ref<Record<string, string>>({});
+        const validationErrors = ref<FormError[]>([]);
 
         /** True if the form should start to submit. */
         const formSubmit = ref(false);
@@ -87,6 +89,16 @@ export default defineComponent({
         let autoSyncModelValue = true;
 
         const sectionTypeOptions = useFormSources().sectionTypeOptions ?? [];
+
+        /**
+         * Event handler for when the validation state of the form has changed.
+         * 
+         * @param errors Any errors that were detected on the form.
+         */
+        const onValidationChanged = (errors: FormError[]): void => {
+            validationErrors.value = errors;
+            emit("validationChanged", errors);
+        };
 
         /**
          * Event handler for when the back button is clicked.
@@ -125,6 +137,7 @@ export default defineComponent({
             formSubmit,
             onBackClick,
             title,
+            onValidationChanged,
             sectionType,
             sectionTypeOptions,
             showHeadingSeparator,

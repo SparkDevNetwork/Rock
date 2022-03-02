@@ -92,7 +92,13 @@ export default defineComponent({
         });
 
         watch(errors, () => {
-            emit("validationChanged", errors.value);
+            const errorValues: FormError[] = [];
+
+            for (const key in errors.value) {
+                errorValues.push(errors.value[key]);
+            }
+
+            emit("validationChanged", errorValues);
         });
 
         return {
