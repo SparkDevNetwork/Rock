@@ -112,15 +112,20 @@ export default defineComponent({
          * to be submitted to the server.
          */
         const onSubmit = async (): Promise<void> => {
-            const result = await invokeBlockAction<TemplateDetail>("SaveTemplate", {
+            const result = await invokeBlockAction<TemplateDetail | string>("SaveTemplate", {
                 guid: config.templateGuid ?? "",
                 template: templateEditDetail.value
             });
 
             if (result.isSuccess && result.data) {
-                templateDetail.value = result.data;
-                templateEditDetail.value = {};
-                isEditMode.value = false;
+                if (result.statusCode === 200 && typeof result.data === "object") {
+                    templateDetail.value = result.data;
+                    templateEditDetail.value = {};
+                    isEditMode.value = false;
+                }
+                else if (result.statusCode === 201 && typeof result.data === "string") {
+                    window.location.href = result.data;
+                }
             }
         };
 

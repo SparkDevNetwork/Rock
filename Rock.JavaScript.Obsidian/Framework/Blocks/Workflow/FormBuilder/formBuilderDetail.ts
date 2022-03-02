@@ -16,6 +16,7 @@
 //
 
 import { computed, defineComponent, ref, watch } from "vue";
+import Alert from "../../../Elements/alert";
 import Panel from "../../../Controls/panel";
 import RockButton from "../../../Elements/rockButton";
 import { FieldType } from "../../../SystemGuids";
@@ -33,6 +34,7 @@ export default defineComponent({
     name: "Workflow.FormBuilderDetail",
 
     components: {
+        Alert,
         CommunicationsTab,
         FormBuilderTab,
         Panel,
@@ -69,6 +71,8 @@ export default defineComponent({
             personEntry: form.personEntry,
             sections: form.sections
         });
+
+        const blockError = ref("");
 
         const isFormBuilderTabSelected = computed((): boolean => selectedTab.value === 0);
         const isCommunicationsTabSelected = computed((): boolean => selectedTab.value === 1);
@@ -220,8 +224,13 @@ export default defineComponent({
         provideFormSources(config.sources ?? {});
         updateRecipientOptions();
 
+        if (!config.formGuid || !config.form) {
+            blockError.value = "That form does not exist or it can't be edited.";
+        }
+
         return {
             analyticsPageUrl: config.analyticsPageUrl,
+            blockError,
             builderViewModel,
             communicationsContainerStyle,
             communicationsViewModel,
@@ -244,7 +253,11 @@ export default defineComponent({
     },
 
     template: `
-<Panel type="block" hasFullscreen :isFullscreenPageOnly="true" title="Workflow Form Builder" titleIconClass="fa fa-hammer">
+<Alert v-if="blockError" alertType="warning">
+    {{ blockError }}
+</Alert>
+
+<Panel v-else type="block" hasFullscreen :isFullscreenPageOnly="true" title="Workflow Form Builder" titleIconClass="fa fa-hammer">
     <template #default>
         <v-style>
             /*** Overrides for theme CSS ***/

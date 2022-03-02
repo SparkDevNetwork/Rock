@@ -74,5 +74,26 @@ namespace Rock
                 return string.Empty;
             }
         }
+
+        /// <summary>
+        /// Builds and returns the URL for the current <see cref="Rock.Model.Page"/>
+        /// and any necessary query parameters.
+        /// </summary>
+        /// <param name="block">The block to get instance data from.</param>
+        /// <param name="queryParams">Any query string parameters that should be included in the built URL.</param>
+        /// <returns>A string representing the URL to the current <see cref="Rock.Model.Page"/>.</returns>
+        public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null )
+        {
+            var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), queryParams != null ? new Dictionary<string, string>( queryParams ) : null );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return pageReference.BuildUrl();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

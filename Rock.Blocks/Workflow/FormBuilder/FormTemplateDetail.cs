@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -245,6 +246,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         {
             using ( var rockContext = new RockContext() )
             {
+                var isNew = false;
                 var templateService = new WorkflowFormBuilderTemplateService( rockContext );
                 WorkflowFormBuilderTemplate formTemplate;
 
@@ -254,6 +256,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 {
                     formTemplate = new WorkflowFormBuilderTemplate();
                     templateService.Add( formTemplate );
+                    isNew = true;
                 }
                 else
                 {
@@ -301,6 +304,14 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 formTemplate.ConfirmationEmailSettingsJson = confirmationEmail?.ToJson();
 
                 rockContext.SaveChanges();
+
+                if ( isNew )
+                {
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                    {
+                        ["FormTemplateId"] = formTemplate.Id.ToString()
+                    } ) );
+                }
 
                 // Ensure navigation properties will work now.
                 formTemplate = templateService.Get( formTemplate.Id );
