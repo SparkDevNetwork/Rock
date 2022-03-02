@@ -821,7 +821,6 @@ namespace RockWeb.Blocks.WorkFlow
 
             Dictionary<string, object> mergeFields = GetWorkflowEntryMergeFields();
 
-
             var workflowType = GetWorkflowType();
             string headerTemplate;
             string footerTemplate;
@@ -2125,9 +2124,28 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else if ( confirmationEmailSettings.Source.Type == FormEmailSourceType.Custom )
             {
+                string customBody;
+                if ( confirmationEmailSettings.Source.AppendOrgHeaderAndFooter )
+                {
+                    var globalEmailHeader = "{{ 'Global' | Attribute:'EmailHeader' }}";
+                    var globalEmailFooter = "{{ 'Global' | Attribute:'EmailFooter' }}";
+
+                    customBody = $@"
+{globalEmailHeader}
+{confirmationEmailSettings.Source.Body}
+{globalEmailFooter}
+";
+                }
+                else
+                {
+                    customBody = confirmationEmailSettings.Source.Body;
+                }
+
                 var emailMessage = new RockEmailMessage
                 {
-                    Message = confirmationEmailSettings.Source.Body?.ResolveMergeFields( workflowMergeFields )
+                    ReplyToEmail = confirmationEmailSettings.Source.ReplyTo,
+                    Subject = confirmationEmailSettings.Source.Subject,
+                    Message = customBody?.ResolveMergeFields( workflowMergeFields )
                 };
 
                 emailMessage.SetRecipients( recipients );
