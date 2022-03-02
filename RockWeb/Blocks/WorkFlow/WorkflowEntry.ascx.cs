@@ -2038,7 +2038,6 @@ namespace RockWeb.Blocks.WorkFlow
                 var confirmationEmailSettings = _workflowType?.FormBuilderTemplate?.ConfirmationEmailSettings;
                 if ( confirmationEmailSettings != null )
                 {
-
                     if ( confirmationEmailSettings.Enabled == true )
                     {
                         SendFormBuilderCompletionEmail();
@@ -2151,7 +2150,6 @@ namespace RockWeb.Blocks.WorkFlow
                 emailMessage.SetRecipients( recipients );
                 emailMessage.Send();
             }
-
         }
 
         /// <summary>
