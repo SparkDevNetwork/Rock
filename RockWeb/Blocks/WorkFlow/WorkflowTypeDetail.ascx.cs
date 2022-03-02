@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 
 using Newtonsoft.Json;
@@ -33,6 +34,7 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Workflow;
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.WorkFlow
@@ -1690,6 +1692,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 bool showInvalid = false )
         {
             var control = new WorkflowActionTypeEditor();
+            control.IsEditable = DetermineIfActionIsEditable( actionType );
             parentControl.Controls.Add( control );
             control.ID = actionType.Guid.ToString( "N" );
             control.ValidationGroup = btnSave.ValidationGroup;
@@ -1761,6 +1764,24 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             return control;
+        }
+
+        /// <summary>
+        /// Determines if action is editable.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        private bool DetermineIfActionIsEditable( WorkflowActionType action )
+        {
+            var actionType = action.WorkflowAction.GetType();
+            var attr = actionType.GetCustomAttribute<ActionCategoryAttribute>( false );
+
+            if ( attr.IsNotNull() && attr.CategoryName == "HideFromUser" )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
