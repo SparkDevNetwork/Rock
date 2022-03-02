@@ -44,11 +44,22 @@ namespace Rock.Workflow.FormBuilder
         public bool Enabled { get; set; }
 
         /// <summary>
+        /// Determines the destination for the confirmation e-mail. If set to the
+        /// value <see cref="FormConfirmationEmailDestination.Custom"/> then the
+        /// value of <see cref="RecipientAttributeGuid"/> should be used to find
+        /// the attribute that will be used as the destination.
+        /// </summary>
+        public FormConfirmationEmailDestination Destination { get; set; }
+
+        /// <summary>
         /// Specifies which workflow attribute will be used to determine the
         /// recipient of the confirmation e-mail.
         /// </summary>
         /// <remarks>
         ///     <para>The attribute must be a field type of Person or Email.</para>
+        ///     <para>
+        ///         This property is only populated if <see cref="Destination"/> is set
+        ///         to <see cref="FormConfirmationEmailDestination.Custom"/>.</para>
         ///     <para>
         ///         This property is a Guid instead of integer so that the
         ///         attribute can be referenced before it has been saved. The form
