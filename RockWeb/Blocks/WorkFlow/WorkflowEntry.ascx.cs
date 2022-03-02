@@ -2004,7 +2004,6 @@ namespace RockWeb.Blocks.WorkFlow
                 var confirmationEmailSettings = _workflowType?.FormBuilderTemplate?.ConfirmationEmailSettings;
                 if ( confirmationEmailSettings != null )
                 {
-
                     if ( confirmationEmailSettings.Enabled == true )
                     {
                         SendFormBuilderCompletionEmail();
@@ -2037,7 +2036,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             var recipientAttributeGuid = workflowType.FormBuilderTemplate.ConfirmationEmailSettings.RecipientAttributeGuid;
-            recipientAttributeGuid = new Guid( "c04f4c65-70b8-4901-90bd-8b580151142a" );
             Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
             if ( recipientAttributeGuid == null )
             {
@@ -2118,7 +2116,6 @@ namespace RockWeb.Blocks.WorkFlow
                 emailMessage.SetRecipients( recipients );
                 emailMessage.Send();
             }
-
         }
 
         /// <summary>
