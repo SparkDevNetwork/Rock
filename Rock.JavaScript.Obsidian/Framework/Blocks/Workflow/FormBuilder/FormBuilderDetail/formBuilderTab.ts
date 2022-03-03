@@ -41,6 +41,7 @@ import { PropType } from "vue";
 import { useFormSources } from "./utils";
 import { confirmDelete } from "../../../../Util/dialogs";
 import { ListItem } from "../../../../ViewModels";
+import { FormError } from "../../../../Util/form";
 
 /**
  * Get the drag source options for the section zones. This allows the user to
@@ -250,11 +251,17 @@ export default defineComponent({
 
         templateOverrides: {
             type: Object as PropType<FormTemplateListItem>
+        },
+
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
     emits: [
-        "update:modelValue"
+        "update:modelValue",
+        "validationChanged"
     ],
 
     setup(props, { emit }) {
@@ -474,6 +481,7 @@ export default defineComponent({
         const closeAside = (): void => {
             editField.value = null;
             activeZone.value = "";
+            emit("validationChanged", []);
         };
 
         // #endregion
@@ -581,12 +589,12 @@ export default defineComponent({
         };
 
         /**
-         * Event handler for when the edit field aside has updated the field
+         * Event handler for when the field edit aside has updated the field
          * values or configuration.
          * 
          * @param value The new form field details.
          */
-        const onEditFieldUpdate = (value: FormField): void => {
+        const onFieldEditUpdate = (value: FormField): void => {
             editField.value = value;
 
             // Find the original field that was just updated and replace it with
@@ -635,7 +643,7 @@ export default defineComponent({
          * 
          * @param value The new section settings.
          */
-        const onEditSectionUpdate = (value: SectionAsideSettings): void => {
+        const onSectionEditUpdate = (value: SectionAsideSettings): void => {
             sectionAsideSettings.value = value;
 
             // Find the original section that was just updated and update its
@@ -700,6 +708,39 @@ export default defineComponent({
             closeAside();
         };
 
+        /**
+         * Event handler for when the validation state of the field edit aside has changed.
+         *
+         * @param errors Any errors that were detected on the form.
+         */
+        const onFieldEditValidationChanged = (errors: FormError[]): void => {
+            if (showFieldAside.value) {
+                emit("validationChanged", errors);
+            }
+        };
+
+        /**
+         * Event handler for when the validation state of the section aside has changed.
+         *
+         * @param errors Any errors that were detected on the form.
+         */
+        const onSectionValidationChanged = (errors: FormError[]): void => {
+            if (showSectionAside.value) {
+                emit("validationChanged", errors);
+            }
+        };
+
+        /**
+         * Event handler for when the validation state of the person entry aside has changed.
+         *
+         * @param errors Any errors that were detected on the form.
+         */
+        const onPersonEntryValidationChanged = (errors: FormError[]): void => {
+            if (showPersonEntryAside.value) {
+                emit("validationChanged", errors);
+            }
+        };
+
         // #endregion
 
         // Wait for the body element to load and then update the drag options.
@@ -734,6 +775,15 @@ export default defineComponent({
             emit("update:modelValue", newValue);
         });
 
+        // Any time the parent component tells us it has attempted to submit
+        // then we trigger the submit on our form so it updates the validation.
+        watch(() => props.submit, () => {
+            if (props.submit) {
+                // Trigger validation to be shown in the aside.
+                canCloseAside();
+            }
+        });
+
         return {
             activeZone,
             availableFieldTypes,
@@ -761,13 +811,16 @@ export default defineComponent({
             onConfigureFormFooter,
             onConfigurePersonEntry,
             onConfigureSection,
-            onEditFieldUpdate,
+            onFieldEditUpdate,
             onEditPersonEntryUpdate,
-            onEditSectionUpdate,
+            onSectionEditUpdate,
             onFieldDelete,
+            onFieldEditValidationChanged,
             onFormFooterSave,
             onFormHeaderSave,
+            onPersonEntryValidationChanged,
             onSectionDelete,
+            onSectionValidationChanged,
             personEntryAsideSettings,
             personEntryEditAsideComponentInstance,
             personEntryZoneIconClass,
@@ -802,20 +855,23 @@ export default defineComponent({
             ref="fieldEditAsideComponentInstance"
             :fieldTypes="availableFieldTypes"
             :existingKeys="existingKeys"
-            @update:modelValue="onEditFieldUpdate"
-            @close="onAsideClose" />
+            @update:modelValue="onFieldEditUpdate"
+            @close="onAsideClose"
+            @validationChanged="onFieldEditValidationChanged" />
 
         <SectionEditAside v-else-if="showSectionAside"
             :modelValue="sectionAsideSettings"
             ref="sectionEditAsideComponentInstance"
-            @update:modelValue="onEditSectionUpdate"
-            @close="onAsideClose" />
+            @update:modelValue="onSectionEditUpdate"
+            @close="onAsideClose"
+            @validationChanged="onSectionValidationChanged" />
 
         <PersonEntryEditAside v-else-if="showPersonEntryAside"
             :modelValue="personEntryAsideSettings"
             ref="personEntryEditAsideComponentInstance"
             @update:modelValue="onEditPersonEntryUpdate"
-            @close="onAsideClose" />
+            @close="onAsideClose"
+            @validationChanged="onPersonEntryValidationChanged" />
     </div>
 
     <div class="p-3 d-flex flex-column" style="flex: 3 1; overflow-y: auto;">

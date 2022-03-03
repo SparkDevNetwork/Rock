@@ -19,6 +19,7 @@ import { computed } from "vue";
 import { defineComponent, PropType, ref, watch } from "vue";
 import RockForm from "../../../../Controls/rockForm";
 import Alert from "../../../../Elements/alert";
+import { FormError } from "../../../../Util/form";
 import { ListItem } from "../../../../ViewModels";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import NotificationEmail from "./notificationEmail";
@@ -48,11 +49,17 @@ export default defineComponent({
 
         templateOverrides: {
             type: Object as PropType<FormTemplateListItem>
+        },
+
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
     emits: [
-        "update:modelValue"
+        "update:modelValue",
+        "validationChanged"
     ],
 
     setup(props, { emit }) {
@@ -60,12 +67,23 @@ export default defineComponent({
 
         const notificationEmail = ref(props.modelValue.notificationEmail ?? {});
 
+        const formSubmit = ref(false);
+
         const sources = useFormSources();
 
         const sourceTemplateOptions = sources.emailTemplateOptions ?? [];
         const campusTopicOptions = sources.campusTopicOptions ?? [];
 
         const isConfirmationEmailForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
+
+        /**
+         * Event handler for when the validation state of the form has changed.
+         * 
+         * @param errors Any errors that were detected on the form.
+         */
+        const onValidationChanged = (errors: FormError[]): void => {
+            emit("validationChanged", errors);
+        };
 
         watch(() => props.modelValue, () => {
             confirmationEmail.value = props.modelValue.confirmationEmail ?? {};
@@ -82,11 +100,21 @@ export default defineComponent({
             emit("update:modelValue", newValue);
         });
 
+        // Any time the parent component tells us it has attempted to submit
+        // then we trigger the submit on our form so it updates the validation.
+        watch(() => props.submit, () => {
+            if (props.submit) {
+                formSubmit.value = true;
+            }
+        });
+
         return {
             campusTopicOptions,
             confirmationEmail,
+            formSubmit,
             isConfirmationEmailForced,
             notificationEmail,
+            onValidationChanged,
             sourceTemplateOptions,
         };
     },
@@ -94,7 +122,7 @@ export default defineComponent({
     template: `
 <div class="d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
     <div class="panel-body">
-        <RockForm>
+        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
             <ConfirmationEmail v-if="!isConfirmationEmailForced" v-model="confirmationEmail" :sourceTemplateOptions="sourceTemplateOptions" :recipientOptions="recipientOptions" />
             <Alert v-else alertType="info">
                 <h4 class="alert-heading">Confirmation Email</h4>

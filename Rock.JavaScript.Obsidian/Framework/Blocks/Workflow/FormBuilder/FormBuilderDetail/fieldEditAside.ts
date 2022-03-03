@@ -30,6 +30,7 @@ import { useFormSources } from "./utils";
 import { areEqual } from "../../../../Util/guid";
 import { ValidationResult, ValidationRule } from "../../../../Rules";
 import { ListItem } from "../../../../ViewModels";
+import { FormError } from "../../../../Util/form";
 
 /**
  * Check if the two records are equal. This makes sure all the key names match
@@ -90,7 +91,8 @@ export default defineComponent({
 
     emits: [
         "update:modelValue",
-        "close"
+        "close",
+        "validationChanged"
     ],
 
     methods: {
@@ -101,7 +103,7 @@ export default defineComponent({
         isSafeToClose(): boolean {
             this.formSubmit = true;
 
-            const result = Object.keys(this.validationErrors).length === 0;
+            const result = this.validationErrors.length === 0;
 
             // If there was an error, perform a smooth scroll to the top so
             // they can see the validation results.
@@ -149,7 +151,7 @@ export default defineComponent({
         const isShowOnGrid = ref(props.modelValue.isShowOnGrid ?? false);
 
         /** The validation errors for the form. */
-        const validationErrors = ref<Record<string, string>>({});
+        const validationErrors = ref<FormError[]>([]);
 
         /** True if the form should start to submit. */
         const formSubmit = ref(false);
@@ -201,8 +203,9 @@ export default defineComponent({
          * 
          * @param errors Any errors that were detected on the form.
          */
-        const onValidationChanged = (errors: Record<string, string>): void => {
+        const onValidationChanged = (errors: FormError[]): void => {
             validationErrors.value = errors;
+            emit("validationChanged", errors);
         };
 
         // Watch for changes to field name, and if the old value matches the

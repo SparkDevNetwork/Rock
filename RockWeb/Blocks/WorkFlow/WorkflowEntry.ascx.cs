@@ -399,8 +399,18 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
+            bool isLoginRequired;
+            if ( workflowType.FormBuilderTemplate != null )
+            {
+                isLoginRequired = workflowType.FormBuilderTemplate.IsLoginRequired;
+            }
+            else
+            {
+                isLoginRequired = workflowType.IsLoginRequired;
+            }
+
             // Check Login Requirement
-            if ( workflowType.IsLoginRequired == true && CurrentUser == null )
+            if ( isLoginRequired == true && CurrentUser == null )
             {
                 var site = RockPage.Site;
                 if ( site.LoginPageId.HasValue )
@@ -822,14 +832,24 @@ namespace RockWeb.Blocks.WorkFlow
             Dictionary<string, object> mergeFields = GetWorkflowEntryMergeFields();
 
             var workflowType = GetWorkflowType();
-            string headerTemplate;
-            string footerTemplate;
+            string headerTemplate = string.Empty;
+            string footerTemplate = string.Empty;
 
             if ( workflowType?.FormBuilderTemplateId != null )
             {
+                /* If a Template Is Defined, use both the Forms.Header/Footer and Template.HeaderFooter in case they defined both
+                So it looks like this
+
+                Header from Template
+                Header from FormDetail
+                <inner form content>
+                Footer from FormDetail
+                Footer from Template
+
+                */
                 var formBuilderTemplate = new WorkflowFormBuilderTemplateService( new RockContext() ).Get( workflowType.FormBuilderTemplateId.Value );
-                headerTemplate = formBuilderTemplate.FormHeader;
-                footerTemplate = formBuilderTemplate.FormFooter;
+                headerTemplate = formBuilderTemplate.FormHeader + form.Header;
+                footerTemplate = form.Footer + formBuilderTemplate.FormFooter;
             }
             else
             {
@@ -889,7 +909,7 @@ namespace RockWeb.Blocks.WorkFlow
                         formSectionControl.AddCssClass( sectionTypeCssClass );
                     }
                 }
-                
+
                 if ( formSection.Title.IsNotNullOrWhiteSpace() )
                 {
                     var formSectionHeader = new HtmlGenericControl( "h1" );
@@ -966,7 +986,7 @@ namespace RockWeb.Blocks.WorkFlow
                 Control sectionControl;
                 if ( formAttribute.ActionFormSectionId.HasValue )
                 {
-                    sectionControl = formSectionControlLookup.GetValueOrNull( formAttribute.ActionFormSectionId.Value );
+                    sectionControl = formSectionControlLookup.GetValueOrNull( formAttribute.ActionFormSectionId.Value ) ?? formSectionNone;
                 }
                 else
                 {
@@ -1074,7 +1094,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var formSectionControl = formSectionControlLookup.GetValueOrNull( formSection.Id );
                     if ( formSectionControl != null )
                     {
-                        // the conditions for a section's visibily should not include its own controls
+                        // the conditions for a section's visibility should not include its own controls
                         var otherSectionsFormEditValues = GetWorkflowFormEditAttributeValues( formSection.Id );
                         var showVisible = sectionVisibilityRules.Evaluate( otherSectionsFormEditValues, new Dictionary<RegistrationPersonFieldType, string>() );
                         formSectionControl.Visible = showVisible;
@@ -1547,9 +1567,14 @@ namespace RockWeb.Blocks.WorkFlow
             var form = _actionType.WorkflowForm;
             var personAliasService = new PersonAliasService( new RockContext() );
 
-            if ( form.PersonEntryPersonAttributeGuid.HasValue )
+            var workflowType = GetWorkflowType();
+
+           var personEntryPersonAttribute = form.GetPersonEntryPersonAttribute( _workflow );
+           var personEntryFamilyAttribute = form.GetPersonEntryFamilyAttribute( _workflow );
+           var personEntrySpouseAttribute = form.GetPersonEntrySpouseAttribute( _workflow );
+
+            if ( personEntryPersonAttribute != null )
             {
-                AttributeCache personEntryPersonAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntryPersonAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
                 var item = GetWorkflowAttributeEntity( personEntryPersonAttribute );
                 if ( item != null )
                 {
@@ -1558,9 +1583,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            if ( form.PersonEntryFamilyAttributeGuid.HasValue )
+            if ( personEntryFamilyAttribute != null)
             {
-                AttributeCache personEntryFamilyAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntryFamilyAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
                 var item = GetWorkflowAttributeEntity( personEntryFamilyAttribute );
                 if ( item != null )
                 {
@@ -1568,9 +1592,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            if ( form.PersonEntrySpouseAttributeGuid.HasValue && personEntryPersonSpouseId.HasValue )
+            if ( personEntrySpouseAttribute != null && personEntryPersonSpouseId.HasValue )
             {
-                AttributeCache personEntrySpouseAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntrySpouseAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
                 var item = GetWorkflowAttributeEntity( personEntrySpouseAttribute );
                 if ( item != null )
                 {
@@ -1901,7 +1924,21 @@ namespace RockWeb.Blocks.WorkFlow
 
             string responseTextTemplate;
 
-            var completionActionSettings = workflowType?.FormBuilderTemplate?.CompletionActionSettings;
+            FormCompletionActionSettings completionActionSettings;
+            if ( workflowType?.FormBuilderTemplate != null )
+            {
+                completionActionSettings = workflowType?.FormBuilderTemplate.CompletionActionSettings;
+            }
+            else if ( workflowType.FormBuilderSettings != null )
+            {
+                completionActionSettings = workflowType?.FormBuilderSettings.CompletionAction;
+            }
+            else
+            {
+                // not a formbuilder or formbuilder template, so use UserForm buttons
+                completionActionSettings = null;
+            }
+
             if ( completionActionSettings != null && completionActionSettings.Type == FormCompletionActionType.DisplayMessage )
             {
                 // if this is a FormBuilder and a completion action of DisplayMessage, set responseText from that
@@ -2035,16 +2072,44 @@ namespace RockWeb.Blocks.WorkFlow
                     pnlWorkflowActionElectronicSignature.Visible = false;
                 }
 
-                var confirmationEmailSettings = _workflowType?.FormBuilderTemplate?.ConfirmationEmailSettings;
+                // Confirmation email can come FormBuilderSettings or FormBuilderTemplate
+                FormConfirmationEmailSettings confirmationEmailSettings;
+                FormCompletionActionSettings completionActionSettings;
+                if ( _workflowType?.FormBuilderTemplate != null )
+                {
+                    // Use FormBuilderTemplate
+                    confirmationEmailSettings = _workflowType?.FormBuilderTemplate.ConfirmationEmailSettings;
+                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
+                }
+                else if ( _workflowType?.FormBuilderSettings?.ConfirmationEmail != null )
+                {
+                    // User FormBuilderSettings
+                    confirmationEmailSettings = _workflowType.FormBuilderSettings.ConfirmationEmail;
+                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
+                }
+                else
+                {
+                    // Not a FormBuilder
+                    confirmationEmailSettings = null;
+                    completionActionSettings = null;
+                }
+
                 if ( confirmationEmailSettings != null )
                 {
                     if ( confirmationEmailSettings.Enabled == true )
                     {
-                        SendFormBuilderCompletionEmail();
+                        SendFormBuilderConfirmationEmail( confirmationEmailSettings );
                     }
                 }
 
-                var completionActionSettings = _workflowType?.FormBuilderTemplate?.CompletionActionSettings;
+                // Notification Email is only defined on FormBuilder. FormBuilderTemplate doesn't have NotificationEmailSettings
+                FormNotificationEmailSettings notificationEmailSettings = _workflowType?.FormBuilderSettings?.NotificationEmail;
+
+                if ( notificationEmailSettings != null )
+                {
+                    SendFormBuilderNotificationEmail( notificationEmailSettings );
+                }
+
                 if ( completionActionSettings != null )
                 {
                     if ( completionActionSettings.Type == FormCompletionActionType.Redirect )
@@ -2058,27 +2123,43 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Sends the form builder completion email.
+        /// Sends the form builder confirmation email.
         /// </summary>
-        private void SendFormBuilderCompletionEmail()
+        /// <param name="confirmationEmailSettings">The confirmation email settings.</param>
+        private void SendFormBuilderConfirmationEmail( FormConfirmationEmailSettings confirmationEmailSettings )
         {
-            var workflowType = GetWorkflowType();
-            var confirmationEmailSettings = workflowType?.FormBuilderTemplate?.ConfirmationEmailSettings;
-            if ( confirmationEmailSettings == null && confirmationEmailSettings.Source == null )
+            if ( confirmationEmailSettings == null || confirmationEmailSettings.Enabled == false )
             {
                 return;
             }
 
-            var recipientAttributeGuid = workflowType.FormBuilderTemplate.ConfirmationEmailSettings.RecipientAttributeGuid;
+            var formConfirmationEmailDestination = confirmationEmailSettings.Destination;
+
             Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
-            if ( recipientAttributeGuid == null )
+
+            // If the RecipientType indicates that we should use the Person or Spouse key. We'll get the attribute from the Workflow.
+            // Note it will only be a Workflow Attribute, not a Action attribute.
+            AttributeCache recipientWorkflowAttribute;
+            if ( formConfirmationEmailDestination == FormConfirmationEmailDestination.Person )
             {
-                return;
+                recipientWorkflowAttribute = _workflow.Attributes.GetValueOrNull( "Person" );
+            }
+            else if ( formConfirmationEmailDestination == FormConfirmationEmailDestination.Spouse )
+            {
+                // If the RecipientType indicates that we should use the Spouse key. We'll get the attribute from the Workflow 
+                recipientWorkflowAttribute = _workflow.Attributes.GetValueOrNull( "Spouse" );
+            }
+            else
+            {
+                Guid? recipientAttributeGuid = confirmationEmailSettings.RecipientAttributeGuid;
+                recipientWorkflowAttribute = recipientAttributeGuid.HasValue
+                    ? AttributeCache.Get( recipientAttributeGuid.Value )
+                    : null;
             }
 
-            var recipientWorkflowAttribute = AttributeCache.Get( recipientAttributeGuid.Value );
             if ( recipientWorkflowAttribute == null )
             {
+                // Unable to to determine Recipient Attribute
                 return;
             }
 
@@ -2106,14 +2187,73 @@ namespace RockWeb.Blocks.WorkFlow
                 recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipientEmailAddress, workflowMergeFields ) );
             }
 
-            if ( !recipients.Any() )
+            SendFormBuilderCommunication( confirmationEmailSettings.Source, recipients );
+        }
+
+        /// <summary>
+        /// Sends the form builder notification email.
+        /// </summary>
+        /// <param name="notificationEmailSettings">The notification email settings.</param>
+        private void SendFormBuilderNotificationEmail( FormNotificationEmailSettings notificationEmailSettings )
+        {
+            if ( notificationEmailSettings == null || notificationEmailSettings.Enabled == false )
             {
                 return;
             }
 
-            if ( confirmationEmailSettings.Source.Type == FormEmailSourceType.UseTemplate && confirmationEmailSettings.Source.SystemCommunicationId.HasValue )
+            var rockContext = new RockContext();
+
+            var formNotificationEmailDestination = notificationEmailSettings.Destination;
+
+            Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
+            var recipients = new List<RockMessageRecipient>();
+
+            if ( formNotificationEmailDestination == FormNotificationEmailDestination.EmailAddress
+                && notificationEmailSettings.EmailAddress.IsNotNullOrWhiteSpace() )
             {
-                var systemCommunication = new SystemCommunicationService( rockContext ).Get( confirmationEmailSettings.Source.SystemCommunicationId.Value );
+                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( notificationEmailSettings.EmailAddress, workflowMergeFields ) );
+            }
+            else if ( formNotificationEmailDestination == FormNotificationEmailDestination.SpecificIndividual
+                && notificationEmailSettings.RecipientAliasId.HasValue )
+            {
+                var recipientPerson = new PersonAliasService( rockContext ).GetPerson( notificationEmailSettings.RecipientAliasId.Value );
+                if ( recipientPerson == null )
+                {
+                    return;
+                }
+
+                recipients.Add( new RockEmailMessageRecipient( recipientPerson, workflowMergeFields ) );
+            }
+            else if ( formNotificationEmailDestination == FormNotificationEmailDestination.CampusTopic
+                && notificationEmailSettings.CampusTopicValueId.HasValue )
+            {
+                var campusTopicEmail = new CampusTopicService( rockContext ).GetSelect( notificationEmailSettings.CampusTopicValueId.Value, s => s.Email );
+                if ( campusTopicEmail.IsNullOrWhiteSpace() )
+                {
+                    return;
+                }
+
+                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( campusTopicEmail, workflowMergeFields ) );
+
+            }
+            else
+            {
+                return;
+            }
+
+            SendFormBuilderCommunication( notificationEmailSettings.Source, recipients );
+        }
+
+        /// <summary>
+        /// Sends a form builder communication.
+        /// </summary>
+        /// <param name="formEmailSourceSettings">The form email source settings.</param>
+        /// <param name="recipients">The recipients.</param>
+        private void SendFormBuilderCommunication( FormEmailSourceSettings formEmailSourceSettings, List<RockMessageRecipient> recipients )
+        {
+            if ( formEmailSourceSettings.Type == FormEmailSourceType.UseTemplate && formEmailSourceSettings.SystemCommunicationId.HasValue )
+            {
+                var systemCommunication = new SystemCommunicationService( new RockContext() ).Get( formEmailSourceSettings.SystemCommunicationId.Value );
                 if ( systemCommunication != null )
                 {
                     var emailMessage = new RockEmailMessage( systemCommunication );
@@ -2121,29 +2261,31 @@ namespace RockWeb.Blocks.WorkFlow
                     emailMessage.Send();
                 }
             }
-            else if ( confirmationEmailSettings.Source.Type == FormEmailSourceType.Custom )
+            else if ( formEmailSourceSettings.Type == FormEmailSourceType.Custom )
             {
                 string customBody;
-                if ( confirmationEmailSettings.Source.AppendOrgHeaderAndFooter )
+                if ( formEmailSourceSettings.AppendOrgHeaderAndFooter )
                 {
                     var globalEmailHeader = "{{ 'Global' | Attribute:'EmailHeader' }}";
                     var globalEmailFooter = "{{ 'Global' | Attribute:'EmailFooter' }}";
 
                     customBody = $@"
 {globalEmailHeader}
-{confirmationEmailSettings.Source.Body}
+{formEmailSourceSettings.Body}
 {globalEmailFooter}
 ";
                 }
                 else
                 {
-                    customBody = confirmationEmailSettings.Source.Body;
+                    customBody = formEmailSourceSettings.Body;
                 }
+
+                Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
 
                 var emailMessage = new RockEmailMessage
                 {
-                    ReplyToEmail = confirmationEmailSettings.Source.ReplyTo,
-                    Subject = confirmationEmailSettings.Source.Subject,
+                    ReplyToEmail = formEmailSourceSettings.ReplyTo,
+                    Subject = formEmailSourceSettings.Subject,
                     Message = customBody?.ResolveMergeFields( workflowMergeFields )
                 };
 

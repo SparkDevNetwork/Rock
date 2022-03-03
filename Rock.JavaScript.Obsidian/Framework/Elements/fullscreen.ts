@@ -218,10 +218,10 @@ export default defineComponent({
         /**
          * Event handler when the window fullscreen mode changes.
          */
-        const onFullscreenChange = (): void => {
+        const onFullscreenChange = (ev: Event): void => {
             const fullscreenElement = document.fullscreenElement ?? document.mozFullScreenElement ?? document.webkitFullscreenElement;
 
-            if (fullscreenMode.value !== FullscreenMode.None && !fullscreenElement) {
+            if (ev.target === containerElement.value && fullscreenMode.value !== FullscreenMode.None && !fullscreenElement) {
                 exitFullscreen();
             }
         };
@@ -282,10 +282,8 @@ export default defineComponent({
     },
 
     template: `
-<teleport to="body" :disabled="teleportDisabled">
-    <div ref="containerElement" :style="containerStyle">
-        <slot />
-    </div>
-</teleport>
+<div ref="containerElement" :style="containerStyle">
+    <slot />
+</div>
 `
 });

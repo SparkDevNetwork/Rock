@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+import { nextTick } from "vue";
 import { computed, defineComponent, ref, watch } from "vue";
+import Alert from "../../../Elements/alert";
 import Panel from "../../../Controls/panel";
 import RockButton from "../../../Elements/rockButton";
 import { FieldType } from "../../../SystemGuids";
 import { useConfigurationValues, useInvokeBlockAction } from "../../../Util/block";
+import { FormError } from "../../../Util/form";
 import { areEqual } from "../../../Util/guid";
 import { ListItem } from "../../../ViewModels";
 import CommunicationsTab from "./FormBuilderDetail/communicationsTab";
@@ -33,6 +36,7 @@ export default defineComponent({
     name: "Workflow.FormBuilderDetail",
 
     components: {
+        Alert,
         CommunicationsTab,
         FormBuilderTab,
         Panel,
@@ -69,6 +73,13 @@ export default defineComponent({
             personEntry: form.personEntry,
             sections: form.sections
         });
+
+        const blockError = ref("");
+
+        const formSubmit = ref(false);
+        const communicationsValidationErrors = ref<FormError[]>([]);
+        const formBuilderValidationErrors = ref<FormError[]>([]);
+        const settingsValidationErrors = ref<FormError[]>([]);
 
         const isFormBuilderTabSelected = computed((): boolean => selectedTab.value === 0);
         const isCommunicationsTabSelected = computed((): boolean => selectedTab.value === 1);
@@ -111,6 +122,26 @@ export default defineComponent({
         };
 
         const onSaveClick = async (): Promise<void> => {
+            // Trigger the submit for validation purposes and then on the next
+            // UI pass turn it back off.
+            formSubmit.value = true;
+            nextTick(() => formSubmit.value = false);
+
+            if (formBuilderValidationErrors.value.length > 0) {
+                onFormBuilderTabClick();
+                return;
+            }
+
+            if (communicationsValidationErrors.value.length > 0) {
+                onCommunicationsTabClick();
+                return;
+            }
+
+            if (settingsValidationErrors.value.length > 0) {
+                onSettingsTabClick();
+                return;
+            }
+
             const result = await invokeBlockAction("SaveForm", {
                 formGuid: config.formGuid,
                 formSettings: form
@@ -124,9 +155,16 @@ export default defineComponent({
             }
         };
 
+        /**
+         * Updates the recipientOptions value with a new list of recipients.
+         * This should be called any time an attribute is changed so that
+         * the list can be updated in case that attribute is now one of the
+         * possible types.
+         */
         const updateRecipientOptions = (): void => {
             const options: ListItem[] = [];
 
+            // Include attributes from the main workflow.
             if (config.otherAttributes) {
                 for (const attribute of config.otherAttributes) {
                     if (!attribute.guid || !attribute.fieldTypeGuid || !attribute.name) {
@@ -142,26 +180,26 @@ export default defineComponent({
                 }
             }
 
-            if (!form.sections) {
-                recipientOptions.value = [];
-                return;
-            }
+            // If we have any sections defined, then include attributes from
+            // the sections that match our criteria.
+            if (form.sections) {
+                for (const section of form.sections) {
+                    if (!section.fields) {
+                        continue;
+                    }
 
-            for (const section of form.sections) {
-                if (!section.fields) {
-                    continue;
-                }
-
-                for (const field of section.fields) {
-                    if (areEqual(field.fieldTypeGuid, FieldType.Person) || areEqual(field.fieldTypeGuid, FieldType.Email)) {
-                        options.push({
-                            value: field.guid,
-                            text: field.name
-                        });
+                    for (const field of section.fields) {
+                        if (areEqual(field.fieldTypeGuid, FieldType.Person) || areEqual(field.fieldTypeGuid, FieldType.Email)) {
+                            options.push({
+                                value: field.guid,
+                                text: field.name
+                            });
+                        }
                     }
                 }
             }
 
+            // Sort everything to be alphabetical.
             options.sort((a, b) => {
                 if (a.text < b.text) {
                     return -1;
@@ -186,6 +224,33 @@ export default defineComponent({
         const onBeforeUnload = (event: BeforeUnloadEvent): void => {
             event.preventDefault();
             event.returnValue = "";
+        };
+
+        /**
+         * Event handler for when the validation state of the communications tab has changed.
+         * 
+         * @param errors Any errors that were detected on the form.
+         */
+        const onCommunicationsValidationChanged = (errors: FormError[]): void => {
+            communicationsValidationErrors.value = errors;
+        };
+
+        /**
+         * Event handler for when the validation state of the form builder tab has changed.
+         * 
+         * @param errors Any errors that were detected on the form.
+         */
+        const onFormBuilderValidationChanged = (errors: FormError[]): void => {
+            formBuilderValidationErrors.value = errors;
+        };
+
+        /**
+         * Event handler for when the validation state of the settings tab has changed.
+         * 
+         * @param errors Any errors that were detected on the form.
+         */
+        const onSettingsValidationChanged = (errors: FormError[]): void => {
+            settingsValidationErrors.value = errors;
         };
 
         // Watch for changes to our internal values and update the modelValue.
@@ -220,13 +285,20 @@ export default defineComponent({
         provideFormSources(config.sources ?? {});
         updateRecipientOptions();
 
+        if (!config.formGuid || !config.form) {
+            blockError.value = "That form does not exist or it can't be edited.";
+        }
+
         return {
             analyticsPageUrl: config.analyticsPageUrl,
+            blockError,
             builderViewModel,
             communicationsContainerStyle,
+            communicationsValidationErrors,
             communicationsViewModel,
             completionViewModel,
             formBuilderContainerStyle,
+            formSubmit,
             isCommunicationsTabSelected,
             isFormBuilderTabSelected,
             isFormDirty,
@@ -235,16 +307,23 @@ export default defineComponent({
             generalViewModel,
             submissionsPageUrl: config.submissionsPageUrl, 
             onCommunicationsTabClick,
+            onCommunicationsValidationChanged,
             onFormBuilderTabClick,
+            onFormBuilderValidationChanged,
             onSaveClick,
             onSettingsTabClick,
+            onSettingsValidationChanged,
             recipientOptions,
             selectedTemplate
         };
     },
 
     template: `
-<Panel type="block" hasFullscreen :isFullscreenPageOnly="true" title="Workflow Form Builder" titleIconClass="fa fa-hammer">
+<Alert v-if="blockError" alertType="warning">
+    {{ blockError }}
+</Alert>
+
+<Panel v-else type="block" hasFullscreen title="Workflow Form Builder" titleIconClass="fa fa-hammer">
     <template #default>
         <v-style>
             /*** Overrides for theme CSS ***/
@@ -480,20 +559,31 @@ export default defineComponent({
                 </ul>
 
                 <div>
-                    <RockButton v-if="isFormDirty" btnType="primary" @click="onSaveClick">Save</RockButton>
+                    <RockButton btnType="primary" :disabled="!isFormDirty" @click="onSaveClick">Save</RockButton>
                 </div>
             </div>
 
             <div style="flex-grow: 1; overflow-y: hidden;" :style="formBuilderContainerStyle">
-                <FormBuilderTab v-model="builderViewModel" :templateOverrides="selectedTemplate" />
+                <FormBuilderTab v-model="builderViewModel"
+                    :templateOverrides="selectedTemplate"
+                    :submit="formSubmit"
+                    @validationChanged="onFormBuilderValidationChanged" />
             </div>
 
             <div style="flex-grow: 1; overflow-y: hidden;" :style="communicationsContainerStyle">
-                <CommunicationsTab v-model="communicationsViewModel" :recipientOptions="recipientOptions" :templateOverrides="selectedTemplate" />
+                <CommunicationsTab v-model="communicationsViewModel"
+                    :recipientOptions="recipientOptions"
+                    :templateOverrides="selectedTemplate"
+                    :submit="formSubmit"
+                    @validationChanged="onCommunicationsValidationChanged" />
             </div>
 
             <div style="flex-grow: 1; overflow-y: hidden;" :style="settingsContainerStyle">
-                <SettingsTab v-model="generalViewModel" v-model:completion="completionViewModel" :templateOverrides="selectedTemplate" />
+                <SettingsTab v-model="generalViewModel"
+                    v-model:completion="completionViewModel"
+                    :templateOverrides="selectedTemplate"
+                    :submit="formSubmit"
+                    @validationChanged="onSettingsValidationChanged" />
             </div>
         </div>
     </template>

@@ -48,6 +48,7 @@ export default defineComponent({
         return {
             description,
             name,
+            usedByWorkflowTypes
         };
     },
 

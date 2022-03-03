@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -53,6 +54,20 @@ namespace Rock.Blocks.Workflow.FormBuilder
         private static class AttributeKey
         {
         }
+
+        /// <summary>
+        /// The unique identifier to identify the "Person" attribute for the
+        /// confirmation e-mail. This will be translated to an enum value on
+        /// save.
+        /// </summary>
+        private static Guid RecipientPersonGuid = new Guid( "00000000-0000-0000-0000-000000000001" );
+
+        /// <summary>
+        /// The unique identifier to identify the "Spouse" attribute for the
+        /// confirmation e-mail. This will be translated to an enum value on
+        /// save.
+        /// </summary>
+        private static Guid RecipientSpouseGuid = new Guid( "00000000-0000-0000-0000-000000000002" );
 
         #region Methods
 
@@ -161,6 +176,20 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <returns>A <see cref="TemplateEditDetailViewModel"/> view model that represents the form template.</returns>
         private TemplateEditDetailViewModel GetTemplateEditViewModel( WorkflowFormBuilderTemplate template, RockContext rockContext )
         {
+            var formConfirmationEmail = template.ConfirmationEmailSettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormConfirmationEmailSettings>();
+            var confirmationEmail = formConfirmationEmail?.ToViewModel( rockContext );
+
+            // Special logic to translate the enum values into values that can
+            // be used by the recipient picker.
+            if ( formConfirmationEmail.Destination == Rock.Workflow.FormBuilder.FormConfirmationEmailDestination.Person )
+            {
+                confirmationEmail.RecipientAttributeGuid = RecipientPersonGuid;
+            }
+            else if ( formConfirmationEmail.Destination == Rock.Workflow.FormBuilder.FormConfirmationEmailDestination.Spouse )
+            {
+                confirmationEmail.RecipientAttributeGuid = RecipientSpouseGuid;
+            }
+
             return new TemplateEditDetailViewModel
             {
                 Name = template.Name,
@@ -171,7 +200,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 FormFooter = template.FormFooter,
                 AllowPersonEntry = template.AllowPersonEntry,
                 PersonEntry = template.PersonEntrySettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormPersonEntrySettings>().ToViewModel(),
-                ConfirmationEmail = template.ConfirmationEmailSettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormConfirmationEmailSettings>().ToViewModel( rockContext ),
+                ConfirmationEmail = confirmationEmail,
                 CompletionAction = template.CompletionSettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormCompletionActionSettings>().ToViewModel()
             };
         }
@@ -217,6 +246,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         {
             using ( var rockContext = new RockContext() )
             {
+                var isNew = false;
                 var templateService = new WorkflowFormBuilderTemplateService( rockContext );
                 WorkflowFormBuilderTemplate formTemplate;
 
@@ -226,6 +256,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 {
                     formTemplate = new WorkflowFormBuilderTemplate();
                     templateService.Add( formTemplate );
+                    isNew = true;
                 }
                 else
                 {
@@ -248,10 +279,39 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 formTemplate.FormFooter = template.FormFooter?.Trim();
                 formTemplate.AllowPersonEntry = template.AllowPersonEntry;
                 formTemplate.PersonEntrySettingsJson = template.PersonEntry?.FromViewModel().ToJson();
-                formTemplate.ConfirmationEmailSettingsJson = template.ConfirmationEmail?.FromViewModel( rockContext ).ToJson();
                 formTemplate.CompletionSettingsJson = template.CompletionAction?.FromViewModel().ToJson();
 
+                var confirmationEmail = template.ConfirmationEmail?.FromViewModel( rockContext );
+
+                // Special check for template logic. We don't have attributes yet
+                // so check if the confirmation e-mail uses the special values to
+                // indicate which attribute to be used at runtime. If we find one
+                // of those special values then translate it to the enum.
+                if ( confirmationEmail != null )
+                {
+                    if ( confirmationEmail.RecipientAttributeGuid == RecipientPersonGuid )
+                    {
+                        confirmationEmail.Destination = Rock.Workflow.FormBuilder.FormConfirmationEmailDestination.Person;
+                        confirmationEmail.RecipientAttributeGuid = null;
+                    }
+                    else if ( confirmationEmail.RecipientAttributeGuid == RecipientSpouseGuid )
+                    {
+                        confirmationEmail.Destination = Rock.Workflow.FormBuilder.FormConfirmationEmailDestination.Spouse;
+                        confirmationEmail.RecipientAttributeGuid = null;
+                    }
+                }
+
+                formTemplate.ConfirmationEmailSettingsJson = confirmationEmail?.ToJson();
+
                 rockContext.SaveChanges();
+
+                if ( isNew )
+                {
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                    {
+                        ["FormTemplateId"] = formTemplate.Id.ToString()
+                    } ) );
+                }
 
                 // Ensure navigation properties will work now.
                 formTemplate = templateService.Get( formTemplate.Id );

@@ -66,7 +66,7 @@ export default defineComponent({
         /** True if the panel should use in-page full screen mode. */
         isFullscreenPageOnly: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: false
         },
 
         /** The type of panel to render. */

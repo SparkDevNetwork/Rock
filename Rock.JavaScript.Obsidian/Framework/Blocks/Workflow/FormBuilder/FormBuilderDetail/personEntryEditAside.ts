@@ -19,6 +19,7 @@ import { defineComponent, PropType, ref } from "vue";
 import Panel from "../../../../Controls/panel";
 import RockForm from "../../../../Controls/rockForm";
 import { useVModelPassthrough } from "../../../../Util/component";
+import { FormError } from "../../../../Util/form";
 import PersonEntrySettings from "../Shared/personEntrySettings";
 import { FormPersonEntry } from "../Shared/types";
 import { useFormSources } from "./utils";
@@ -40,7 +41,8 @@ export default defineComponent({
 
     emits: [
         "update:modelValue",
-        "close"
+        "close",
+        "validationChanged"
     ],
 
     methods: {
@@ -51,7 +53,7 @@ export default defineComponent({
         isSafeToClose(): boolean {
             this.formSubmit = true;
 
-            const result = Object.keys(this.validationErrors).length === 0;
+            const result = this.validationErrors.length === 0;
 
             // If there was an error, perform a smooth scroll to the top so
             // they can see the validation results.
@@ -69,7 +71,7 @@ export default defineComponent({
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-        const validationErrors = ref<Record<string, string>>({});
+        const validationErrors = ref<FormError[]>([]);
         const scrollableElement = ref<HTMLElement | null>(null);
 
         /** True if the form should start to submit. */
@@ -85,8 +87,9 @@ export default defineComponent({
          * 
          * @param errors Any errors that were detected on the form.
          */
-        const onValidationChanged = (errors: Record<string, string>): void => {
+        const onValidationChanged = (errors: FormError[]): void => {
             validationErrors.value = errors;
+            emit("validationChanged", errors);
         };
 
         const options = useFormSources();

@@ -162,6 +162,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             return new Rock.Workflow.FormBuilder.FormConfirmationEmailSettings
             {
                 Enabled = viewModel.Enabled,
+                Destination = Rock.Workflow.FormBuilder.FormConfirmationEmailDestination.Custom,
                 RecipientAttributeGuid = viewModel.RecipientAttributeGuid,
                 Source = FromViewModel( viewModel.Source, rockContext )
             };

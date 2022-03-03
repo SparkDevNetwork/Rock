@@ -3762,6 +3762,7 @@
     <Compile Include="Workflow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Workflow\FormBuilder\FormCompletionActionSettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormCompletionActionType.cs" />
+    <Compile Include="Workflow\FormBuilder\FormConfirmationEmailDestination.cs" />
     <Compile Include="Workflow\FormBuilder\FormConfirmationEmailSettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormEmailSourceSettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormEmailSourceType.cs" />

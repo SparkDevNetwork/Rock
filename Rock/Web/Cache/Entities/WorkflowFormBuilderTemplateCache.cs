@@ -119,6 +119,7 @@ namespace Rock.Web.Cache
             this.PersonEntrySettingsJson = workflowFormBuilderTemplate.PersonEntrySettingsJson;
             this.ConfirmationEmailSettingsJson = workflowFormBuilderTemplate.ConfirmationEmailSettingsJson;
             this.CompletionSettingsJson = workflowFormBuilderTemplate.CompletionSettingsJson;
+            this.IsLoginRequired = workflowFormBuilderTemplate.IsLoginRequired;
         }
     }
 }

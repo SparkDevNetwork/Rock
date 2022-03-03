@@ -18,6 +18,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System;
@@ -28,26 +29,19 @@ using System.Linq;
 namespace RockWeb.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// List block that shows a list forms submitted for a given FormBuilder form.
+    /// List block that shows a list of form templates.
     /// </summary>
     [DisplayName( "Form Template List" )]
     [Category( "WorkFlow > FormBuilder" )]
-    [Description( "Shows a list forms submitted for a given FormBuilder form." )]
+    [Description( "Shows a list form templates." )]
 
     #region Rock Attributes
 
     [LinkedPage(
         "Detail Page",
-        Description = "Page to display details about a workflow.",
+        Description = "Page to display details about a form template.",
         Order = 0,
-        Key = AttributeKeys.DetailPage,
-        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_DETAIL )]
-
-    [LinkedPage(
-        "FormBuilder Detail Page",
-        Description = "Page to edit using the form builder.",
-        Order = 1,
-        Key = AttributeKeys.FormBuilderDetailPage )]
+        Key = AttributeKeys.DetailPage )]
 
     #endregion Rock Attributes
 
@@ -60,7 +54,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private static class AttributeKeys
         {
-            public const string FormBuilderDetailPage = "FormBuilderDetailPage";
             public const string DetailPage = "DetailPage";
         }
 
@@ -113,6 +106,9 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             gfFormTemplates.ApplyFilterClick += gfFormTemplates_ApplyFilterClick;
 
             gFormTemplates.GridRebind += gFormTemplates_GridRebind;
+
+            var securityField = gFormTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Get<WorkflowFormBuilderTemplate>().Id;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
