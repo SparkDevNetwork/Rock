@@ -33,7 +33,7 @@ import { provideFormSources } from "./FormBuilderDetail/utils";
 import { FormCompletionAction, FormGeneral } from "./Shared/types";
 
 export default defineComponent({
-    name: "Workflow.FormBuilderDetail",
+    name: "WorkFlow.FormBuilderDetail",
 
     components: {
         Alert,

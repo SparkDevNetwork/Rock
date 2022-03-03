@@ -29,7 +29,7 @@ import { provideSources } from "./FormTemplateDetail/utils";
 import ViewPanel from "./FormTemplateDetail/viewPanel";
 
 export default defineComponent({
-    name: "Workflow.FormTemplateDetail",
+    name: "WorkFlow.FormTemplateDetail",
 
     components: {
         Alert,

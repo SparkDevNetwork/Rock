@@ -1118,5 +1118,45 @@ namespace Rock.Field
         public event EventHandler QualifierUpdated;
 
         #endregion
+
+        #region Utility Methods
+
+        /// <summary>
+        /// Utility method to convert a string of delimited unique identifiers
+        /// into their integer identifier equivalents.
+        /// </summary>
+        /// <param name="guidValues">The string that contains the delimited unique identifiers.</param>
+        /// <param name="converter">The function to handle the conversion, <c>null</c> return values are removed.</param>
+        /// <returns>A delimited string of integer identifiers.</returns>
+        internal static string ConvertDelimitedGuidsToIds( string guidValues, Func<Guid, int?> converter )
+        {
+            return guidValues
+                .SplitDelimitedValues()
+                .AsGuidList()
+                .Select( v => converter( v ) )
+                .Where( v => v.HasValue )
+                .Select( v => v.Value.ToString() )
+                .JoinStrings( "," );
+        }
+
+        /// <summary>
+        /// Utility method to convert a string of delimited integer identifiers
+        /// into their unique identifier equivalents.
+        /// </summary>
+        /// <param name="idValues">The string that contains the delimited integer identifiers.</param>
+        /// <param name="converter">The function to handle the conversion, <c>null</c> return values are removed.</param>
+        /// <returns>A delimited string of unique identifiers.</returns>
+        internal static string ConvertDelimitedIdsToGuids( string idValues, Func<int, Guid?> converter )
+        {
+            return idValues
+                .SplitDelimitedValues()
+                .AsIntegerList()
+                .Select( v => converter( v ) )
+                .Where( v => v.HasValue )
+                .Select( v => v.Value.ToString() )
+                .JoinStrings( "," );
+        }
+
+        #endregion
     }
 }
