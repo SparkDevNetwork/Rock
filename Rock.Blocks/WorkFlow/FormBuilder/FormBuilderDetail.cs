@@ -39,7 +39,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Form Builder Detail" )]
-    [Category( "Obsidian > Workflow > FormBuilder" )]
+    [Category( "WorkFlow > FormBuilder" )]
     [Description( "Edits the details of a workflow Form Builder action." )]
     [IconCssClass( "fa fa-hammer" )]
 
