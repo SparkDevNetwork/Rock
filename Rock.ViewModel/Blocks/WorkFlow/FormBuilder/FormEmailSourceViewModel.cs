@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Specifies how an e-mail used by the FormBuilder system will be generated.

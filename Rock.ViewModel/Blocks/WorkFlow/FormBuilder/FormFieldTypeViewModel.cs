@@ -17,30 +17,33 @@
 
 using System;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// Contains details about a confirmation e-mail for a Form Builder form.
-    /// This specifies if one should be sent, who receives it and the content
-    /// it will contain.
+    /// Identifies a single field type that can be used when designing the form.
     /// </summary>
-    public class FormConfirmationEmailViewModel
+    public class FormFieldTypeViewModel
     {
         /// <summary>
-        /// Specifies if the confirmation e-mail has been enabled and should be
-        /// sent.
+        /// The unique identifier of the field type.
         /// </summary>
-        public bool Enabled { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary>
-        /// Specifies which workflow attribute will be used to determine the
-        /// recipient of the confirmation e-mail.
+        /// The text that represents the display name of the field type.
         /// </summary>
-        public Guid? RecipientAttributeGuid { get; set; }
+        public string Text { get; set; }
 
         /// <summary>
-        /// Determines how the content of the e-mail will be generated.
+        /// The CSS classes that are used to provide an iconic representation
+        /// of this field type.
         /// </summary>
-        public FormEmailSourceViewModel Source { get; set; }
+        public string Icon { get; set; }
+
+        /// <summary>
+        /// Determines if this field type is considered common and should be
+        /// made readily accessible.
+        /// </summary>
+        public bool IsCommon { get; set; }
     }
 }

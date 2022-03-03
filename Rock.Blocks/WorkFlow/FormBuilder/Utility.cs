@@ -25,7 +25,7 @@ using Rock.Net;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Workflow.FormBuilder
+namespace Rock.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Collection of utility methods to help in Form Builder logic.

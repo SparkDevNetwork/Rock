@@ -18,9 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.ViewModel.NonEntities;
-
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// The primary view model that contains all the runtime information needed

@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// The settings that describe a single form.

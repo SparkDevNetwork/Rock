@@ -19,19 +19,14 @@ using System.Collections.Generic;
 
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail
 {
     /// <summary>
     /// Represents the sources of truth for various pickers and lists of entities
     /// that will be used by the JavaScript code.
     /// </summary>
-    public class FormValueSourcesViewModel
+    public class ValueSourcesViewModel
     {
-        /// <summary>
-        /// The list of campus topic options that are available to pick from.
-        /// </summary>
-        public List<ListItemViewModel> CampusTopicOptions { get; set; }
-
         /// <summary>
         /// The list of campus type options that are available to pick from.
         /// </summary>
@@ -61,20 +56,5 @@ namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
         /// The list of e-mail template options that are available to pick from.
         /// </summary>
         public List<ListItemViewModel> EmailTemplateOptions { get; set; }
-
-        /// <summary>
-        /// The list of section type options that are available to pick from.
-        /// </summary>
-        public List<ListItemViewModel> SectionTypeOptions { get; set; }
-
-        /// <summary>
-        /// The list of field types that are available to pick from.
-        /// </summary>
-        public List<FormFieldTypeViewModel> FieldTypes { get; set; }
-
-        /// <summary>
-        /// The form templates that are available to pick from.
-        /// </summary>
-        public List<FormTemplateListItemViewModel> FormTemplateOptions { get; set; }
     }
 }

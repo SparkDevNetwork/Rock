@@ -15,23 +15,21 @@
 // </copyright>
 //
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// The possible sources that can be used when generating an e-mail in
-    /// the FormBuilder system.
+    /// The possible actions that can be performed after the form has been submitted.
     /// </summary>
-    public enum FormEmailSourceType
+    public enum FormCompletionActionType
     {
         /// <summary>
-        /// A template will be used that contains all the information required
-        /// to generate the e-mail contents.
+        /// A message is displayed to the user after the form has been submitted.
         /// </summary>
-        UseTemplate = 0,
+        DisplayMessage = 0,
 
         /// <summary>
-        /// Custom properties will be used to generate the e-mail contents.
+        /// The individual will be redirected to a specific URL.
         /// </summary>
-        Custom = 1
+        Redirect = 1
     }
 }

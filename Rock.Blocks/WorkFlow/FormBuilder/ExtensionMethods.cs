@@ -19,10 +19,10 @@ using System;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Blocks.Workflow.FormBuilder;
+using Rock.ViewModel.Blocks.WorkFlow.FormBuilder;
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.Blocks.Workflow.FormBuilder
+namespace Rock.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Various extension methods helpful when working with FormBuilder. Primarily

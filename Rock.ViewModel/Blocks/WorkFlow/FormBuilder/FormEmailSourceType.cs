@@ -15,28 +15,23 @@
 // </copyright>
 //
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// The possible destination options for a form notification email.
+    /// The possible sources that can be used when generating an e-mail in
+    /// the FormBuilder system.
     /// </summary>
-    public enum FormNotificationEmailDestination
+    public enum FormEmailSourceType
     {
         /// <summary>
-        /// A specific individual in the database will be sent the notification
-        /// e-mail.
+        /// A template will be used that contains all the information required
+        /// to generate the e-mail contents.
         /// </summary>
-        SpecificIndividual = 0,
+        UseTemplate = 0,
 
         /// <summary>
-        /// One or more raw e-mail addresses will be sent the notification e-mail.
+        /// Custom properties will be used to generate the e-mail contents.
         /// </summary>
-        EmailAddress = 1,
-
-        /// <summary>
-        /// A secondary lookup will be performed using CampusTopic
-        /// to determine the final recipient of the notification e-mail.
-        /// </summary>
-        CampusTopic = 2
+        Custom = 1
     }
 }

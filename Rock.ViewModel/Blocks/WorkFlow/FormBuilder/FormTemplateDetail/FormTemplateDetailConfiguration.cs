@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder.FormTemplateDetail
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail
 {
     /// <summary>
     /// Configuration data for the Form Template Detail block.

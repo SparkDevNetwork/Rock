@@ -26,12 +26,12 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemKey;
-using Rock.ViewModel.Blocks.Workflow.FormBuilder;
+using Rock.ViewModel.Blocks.WorkFlow.FormBuilder;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Workflow.FormBuilder;
 
-namespace Rock.Blocks.Workflow.FormBuilder
+namespace Rock.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Edits the details of a workflow Form Builder action.

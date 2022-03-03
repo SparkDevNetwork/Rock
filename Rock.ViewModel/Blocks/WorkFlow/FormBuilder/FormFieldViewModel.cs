@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Identifies a single form field that has been placed on the form.

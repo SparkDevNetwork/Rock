@@ -25,10 +25,10 @@ using Rock.ClientService.Core.DefinedValue;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModel.Blocks.Workflow.FormBuilder.FormTemplateDetail;
+using Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail;
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.Blocks.Workflow.FormBuilder
+namespace Rock.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Shows the details of a FormBuilder template.

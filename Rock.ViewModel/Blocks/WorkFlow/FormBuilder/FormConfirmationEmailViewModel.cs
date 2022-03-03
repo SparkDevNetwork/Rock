@@ -17,31 +17,30 @@
 
 using System;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// Identifies a single attribute that was created outside the form and
-    /// is available for use by the form.
+    /// Contains details about a confirmation e-mail for a Form Builder form.
+    /// This specifies if one should be sent, who receives it and the content
+    /// it will contain.
     /// </summary>
-    public class FormOtherAttributeViewModel
+    public class FormConfirmationEmailViewModel
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the attribute.
+        /// Specifies if the confirmation e-mail has been enabled and should be
+        /// sent.
         /// </summary>
-        /// <value>The unique identifier of the attribute.</value>
-        public Guid Guid { get; set; }
+        public bool Enabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the field type used by the
-        /// attribute.
+        /// Specifies which workflow attribute will be used to determine the
+        /// recipient of the confirmation e-mail.
         /// </summary>
-        /// <value>The unique identifier of the field type.</value>
-        public Guid FieldTypeGuid { get; set; }
+        public Guid? RecipientAttributeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the attribute.
+        /// Determines how the content of the e-mail will be generated.
         /// </summary>
-        /// <value>The name of the attribute.</value>
-        public string Name { get; set; }
+        public FormEmailSourceViewModel Source { get; set; }
     }
 }

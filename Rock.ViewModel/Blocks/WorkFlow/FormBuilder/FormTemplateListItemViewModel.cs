@@ -17,7 +17,7 @@
 
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Custom <see cref="ListItemViewModel"/> that extends the item to include
