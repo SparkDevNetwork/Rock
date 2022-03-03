@@ -155,6 +155,8 @@
     <TypeScriptCompile Include="Framework\Controls\blockActionSourcedGrid.ts" />
     <TypeScriptCompile Include="Framework\Controls\componentFromUrl.ts" />
     <TypeScriptCompile Include="Framework\Controls\dialog.ts" />
+    <TypeScriptCompile Include="Framework\Controls\fieldVisibilityRuleEditor.ts" />
+    <TypeScriptCompile Include="Framework\Controls\fieldVisibilityRuleItem.ts" />
     <TypeScriptCompile Include="Framework\Controls\gatewayControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\grid.ts" />
     <TypeScriptCompile Include="Framework\Controls\gridColumn.ts" />

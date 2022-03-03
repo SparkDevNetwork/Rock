@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { ref, Ref, watch } from "vue";
+import { ref, Ref, watch, WatchOptions } from "vue";
 
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
@@ -30,11 +30,11 @@ type EmitFn<E extends `update:${string}`> = E extends Array<infer EE> ? (event: 
  * Ensure the related `props` and `emits` are specified to ensure there are
  * no type issues.
  */
-export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>): Ref<T[K]> {
+export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>, options?: WatchOptions): Ref<T[K]> {
     const internalValue = ref(props[modelName]) as Ref<T[K]>;
 
-    watch(() => props[modelName], val => internalValue.value = val);
-    watch(internalValue, val => emit(`update:${modelName}`, val));
+    watch(() => props[modelName], val => internalValue.value = val, options);
+    watch(internalValue, val => emit(`update:${modelName}`, val), options);
 
     return internalValue;
 }
