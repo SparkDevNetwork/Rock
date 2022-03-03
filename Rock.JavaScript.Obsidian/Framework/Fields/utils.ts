@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
+import { Component, computed, defineComponent, PropType, ref, watch, watchEffect } from "vue";
 import { binaryComparisonTypes, ComparisonType, containsComparisonTypes, isCompareVisibleForComparisonFilter, isSingleComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
 import { getFilteredComparisonTypeOptions } from "../Reporting/comparisonTypeOptions";
 import { ComparisonValue } from "../Reporting/comparisonValue";
@@ -24,6 +24,7 @@ import { IFieldType } from "./fieldType";
 import DropDownList from "../Elements/dropDownList";
 import FieldFilterContainer from "../Elements/fieldFilterContainer";
 import { toNumberOrNull } from "../Services/number";
+import { useVModelPassthrough } from "../Util/component";
 
 const fieldTypeTable: Record<Guid, IFieldType> = {};
 
@@ -186,6 +187,17 @@ export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {
     return null;
 }
 
+/**
+ * An alternative to `FieldFilterRule` that is used inside a Standard Filter
+ * Component. This is done to allow the comparison type to be a string value
+ * so that it can be selected via a `DropDownList` (they do not support
+ * numeric values).
+ */
+type EditableFieldFilterRule = {
+    comparisonType: string,
+    value: any
+}
+
 
 /**
  * Gets a standard filter component that uses a constant string in place of the
@@ -227,6 +239,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
     const compareLabel: string = typeof comparisonLabelOrTypes === "string" ? comparisonLabelOrTypes : "";
 
     const comparisonTypeOptions = comparisonTypes !== null ? getFilteredComparisonTypeOptions(comparisonTypes) : [];
+    
 
     return defineComponent({
         name: "StandardFilterComponent",
@@ -244,11 +257,36 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
         ],
 
         setup(props, { emit }) {
-            /** The comparison type currently selected in the UI. */
-            const internalComparisonType = ref(props.modelValue.comparisonType?.toString() ?? "");
+            const internalValue = useVModelPassthrough(props, 'modelValue', emit);
+            const comparisonType = ref<string | null>(`${internalValue.value.comparisonType}`);
 
-            /** The comparison value currently entered in the UI. */
-            const internalComparisonValue = ref(props.modelValue.value);
+            watchEffect(() => {
+                let type: string | null;
+                
+                // For Simple Filters, set the appropriate comparison type based on the 
+                // comparison types supported by the field type
+                if (props.filterMode === FilterMode.Simple) {
+                    if (comparisonTypes === binaryComparisonTypes) {
+                        type = ComparisonType.EqualTo.toString();
+                    }
+                    else if (comparisonTypes === stringComparisonTypes || comparisonTypes === containsComparisonTypes) {
+                        type = ComparisonType.Contains.toString();
+                    }
+                    else {
+                        type = null;
+                    }
+                }
+                // For non-simple filters, allow user to set the comparison type
+                else {
+                    type = internalValue.value.comparisonType?.toString() ?? null;
+                }
+
+                comparisonType.value = type;
+            });
+
+            watchEffect(() => {
+                internalValue.value.comparisonType = toNumberOrNull(comparisonType.value);
+            });
 
             /** True if the compare component should be visible. */
             const hasCompareComponent = computed(() => {
@@ -260,95 +298,31 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
 
             /** True if the value component should be visible. */
             const hasValueComponent = computed((): boolean => {
-                return internalComparisonType.value !== ComparisonType.IsBlank.toString()
-                    && internalComparisonType.value !== ComparisonType.IsNotBlank.toString();
+                return comparisonType.value !== ComparisonType.IsBlank.toString()
+                    && comparisonType.value !== ComparisonType.IsNotBlank.toString();
             });
 
             /** True if the comparison type is optional. */
             const isTypeOptional = computed(() => !props.required);
-
-            /**
-             * Constructs the new value and emits it if it has changed from
-             * the current modelValue.
-             */
-            const emitValueIfChanged = (): void => {
-                let type: ComparisonType | null | undefined;
-
-                // Determine the comparison type.
-                if (compareLabel || comparisonTypes === null) {
-                    // No comparison type to be selected.
-                    type = null;
-                }
-                else if (isSingleComparisonType(comparisonTypes)) {
-                    // Only a single comparison type, so it is forced.
-                    type = comparisonTypes;
-                }
-                else {
-                    // If the filter mode is simple, then the comparison type is
-                    // not shown so we come up with a sane default.
-                    if (props.filterMode === FilterMode.Simple) {
-                        if (comparisonTypes === binaryComparisonTypes) {
-                            type = ComparisonType.EqualTo;
-                        }
-                        else if (comparisonTypes === stringComparisonTypes || comparisonTypes === containsComparisonTypes) {
-                            type = ComparisonType.Contains;
-                        }
-                        else {
-                            type = null;
-                        }
-                    }
-                    else {
-                        // Get the comparison type selected by the user if we are
-                        // in advanced mode.
-                        type = toNumberOrNull(internalComparisonType.value);
-                    }
-                }
-
-                // Construct the new value to be emitted.
-                const newValue: ComparisonValue = {
-                    comparisonType: type,
-                    value: internalComparisonValue.value
-                };
-
-                // Check if it has changed from the original value.
-                if (newValue.comparisonType !== props.modelValue.comparisonType || newValue.value !== props.modelValue.value) {
-                    emit("update:modelValue", newValue);
-                }
-            };
-
-            // Watch for changes in our modelValue and update our internal
-            // values to match.
-            watch(() => props.modelValue, () => {
-                internalComparisonType.value = props.modelValue.comparisonType?.toString() ?? "";
-                internalComparisonValue.value = props.modelValue.value;
-            });
-
-            // Watch for changes in our internal values and update the modelValue.
-            watch([internalComparisonType, internalComparisonValue], () => {
-                emitValueIfChanged();
-            });
-
-            // This is primarily here to sync up state with default values.
-            emitValueIfChanged();
 
             return {
                 compareLabel,
                 comparisonTypeOptions,
                 hasCompareComponent,
                 hasValueComponent,
-                internalComparisonType,
-                internalComparisonValue,
-                isTypeOptional
+                isTypeOptional,
+                internalValue,
+                comparisonType
             };
         },
 
         template: `
 <FieldFilterContainer :compareLabel="compareLabel">
     <template v-if="hasCompareComponent" #compare>
-        <DropDownList v-model="internalComparisonType" :options="comparisonTypeOptions" :showBlankItem="isTypeOptional" />
+        <DropDownList v-model="comparisonType" :options="comparisonTypeOptions" :showBlankItem="!required" />
     </template>
 
-    <ValueComponent v-if="hasValueComponent" v-model="internalComparisonValue" :configurationValues="configurationValues" />
+    <ValueComponent v-if="hasValueComponent" v-model="internalValue.value" :configurationValues="configurationValues" />
 </FieldFilterContainer>
 `
     });
