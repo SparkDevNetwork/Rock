@@ -219,6 +219,13 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var qry = builderTemplateService.Queryable().AsNoTracking();
 
             var isActive = gfFormTemplates.GetUserPreference( UserPreferenceKeys.Active ).AsBooleanOrNull();
+
+            // A null is active defaults to showing only active
+            if ( !isActive.HasValue )
+            {
+                isActive = true;
+            }
+
             if ( isActive.HasValue )
             {
                 qry = qry.Where( w => w.IsActive == isActive.Value );
@@ -240,11 +247,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             {
                 var value = isActive.Value ? "Yes" : "No";
                 ddlIsActive.SetValue( value );
-            }
-            else
-            {
-                gfFormTemplates.SaveUserPreference( UserPreferenceKeys.Active, "Yes" );
-                ddlIsActive.SetValue( "Yes" );
             }
         }
 
