@@ -293,6 +293,8 @@ export abstract class FieldTypeBase implements IFieldType {
     }
 
     public getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
-        return this.getTextValueFromConfiguration(value.value, attribute.configurationValues ?? {}) ?? "";
+        const text = this.getTextValueFromConfiguration(value.value, attribute.configurationValues ?? {}) ?? "";
+
+        return text ? `'${text}'` : text;
     }
 }

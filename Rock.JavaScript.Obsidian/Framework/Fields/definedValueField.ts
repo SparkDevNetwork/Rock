@@ -15,8 +15,12 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType, containsComparisonTypes } from "../Reporting/comparisonType";
+import { ComparisonValue } from "../Reporting/comparisonValue";
 import { asBoolean } from "../Services/boolean";
+import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldTypeBase } from "./fieldType";
+import { getStandardFilterComponent } from "./utils";
 
 /**
  * The key names for the configuration properties available when editing the
@@ -93,6 +97,11 @@ const configurationComponent = defineAsyncComponent(async () => {
     return (await import("./definedValueFieldComponents")).ConfigurationComponent;
 });
 
+// Load the filter component only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./definedValueFieldComponents")).FilterComponent;
+});
+
 /**
  * The field type handler for the Defined Value field.
  */
@@ -125,5 +134,25 @@ export class DefinedValueFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return containsComparisonTypes;
+    }
+
+    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+        const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+        const useDescription = asBoolean(attribute.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
+        const rawValues = value.value.split(",");
+
+        const text = values.filter(v => rawValues.includes(v.value))
+            .map(v => useDescription ? v.description : v.text)
+            .join("' OR '");
+
+        return text ? `'${text}'` : "";
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
     }
 }
