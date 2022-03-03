@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder.FormTemplateDetail
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail
 {
     /// <summary>
     /// Representation of a form template that provides the required information

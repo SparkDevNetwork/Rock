@@ -15,21 +15,28 @@
 // </copyright>
 //
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// The possible actions that can be performed after the form has been submitted.
+    /// The possible destination options for a form notification email.
     /// </summary>
-    public enum FormCompletionActionType
+    public enum FormNotificationEmailDestination
     {
         /// <summary>
-        /// A message is displayed to the user after the form has been submitted.
+        /// A specific individual in the database will be sent the notification
+        /// e-mail.
         /// </summary>
-        DisplayMessage = 0,
+        SpecificIndividual = 0,
 
         /// <summary>
-        /// The individual will be redirected to a specific URL.
+        /// One or more raw e-mail addresses will be sent the notification e-mail.
         /// </summary>
-        Redirect = 1
+        EmailAddress = 1,
+
+        /// <summary>
+        /// A secondary lookup will be performed using CampusTopic
+        /// to determine the final recipient of the notification e-mail.
+        /// </summary>
+        CampusTopic = 2
     }
 }

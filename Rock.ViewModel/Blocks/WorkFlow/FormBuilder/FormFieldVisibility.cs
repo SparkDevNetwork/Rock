@@ -15,26 +15,27 @@
 // </copyright>
 //
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// Defines the way the campus context is set when a form is processed.
+    /// The state of a field being shown on the page and if it should
+    /// be required.
     /// </summary>
-    public enum CampusSetFrom
+    public enum FormFieldVisibility
     {
         /// <summary>
-        /// Use the campus of the current person who is logged in while filling out the form.
+        /// Don't show the field.
         /// </summary>
-        CurrentPerson = 0,
+        Hidden = 0,
 
         /// <summary>
-        /// Use the campus of the person in the Person attribute.
+        /// Field is visible, but a value is not required. */
         /// </summary>
-        WorkflowPerson = 1,
+        Optional = 1,
 
         /// <summary>
-        /// Use the Campus from the "Campus" query string which could be an Id or Guid.
+        /// Field is visible, and a value is required.
         /// </summary>
-        QueryString = 2
+        Required = 2
     }
 }

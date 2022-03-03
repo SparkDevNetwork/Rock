@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder.FormTemplateDetail
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail
 {
     /// <summary>
     /// Representation of the form template that provides the required information

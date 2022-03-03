@@ -19,7 +19,7 @@ using System;
 
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Contains the general settings about this form. These loosely correlate

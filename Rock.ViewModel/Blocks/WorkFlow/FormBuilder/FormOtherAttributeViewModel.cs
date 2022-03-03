@@ -17,33 +17,31 @@
 
 using System;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
-    /// Identifies a single field type that can be used when designing the form.
+    /// Identifies a single attribute that was created outside the form and
+    /// is available for use by the form.
     /// </summary>
-    public class FormFieldTypeViewModel
+    public class FormOtherAttributeViewModel
     {
         /// <summary>
-        /// The unique identifier of the field type.
+        /// Gets or sets the unique identifier of the attribute.
         /// </summary>
+        /// <value>The unique identifier of the attribute.</value>
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// The text that represents the display name of the field type.
+        /// Gets or sets the unique identifier of the field type used by the
+        /// attribute.
         /// </summary>
-        public string Text { get; set; }
+        /// <value>The unique identifier of the field type.</value>
+        public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
-        /// The CSS classes that are used to provide an iconic representation
-        /// of this field type.
+        /// Gets or sets the name of the attribute.
         /// </summary>
-        public string Icon { get; set; }
-
-        /// <summary>
-        /// Determines if this field type is considered common and should be
-        /// made readily accessible.
-        /// </summary>
-        public bool IsCommon { get; set; }
+        /// <value>The name of the attribute.</value>
+        public string Name { get; set; }
     }
 }

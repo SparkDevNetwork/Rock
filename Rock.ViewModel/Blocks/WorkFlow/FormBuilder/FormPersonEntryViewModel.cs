@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Rock.ViewModel.Blocks.Workflow.FormBuilder
+namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
 {
     /// <summary>
     /// Identifies all the settings related to configuring the Person Entry
