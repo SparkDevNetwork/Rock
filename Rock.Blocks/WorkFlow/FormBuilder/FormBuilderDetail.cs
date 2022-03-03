@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Blocks.WorkFlow.FormBuilder;
 using Rock.ClientService.Core.DefinedValue;
 using Rock.Data;
 using Rock.Model;
@@ -31,7 +32,7 @@ using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Workflow.FormBuilder;
 
-namespace Rock.Blocks.WorkFlow.FormBuilder
+namespace Rock.Blocks.Workflow.FormBuilder
 {
     /// <summary>
     /// Edits the details of a workflow Form Builder action.
@@ -134,18 +135,18 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             if ( formSettings.AllowPersonEntry )
             {
                 actionForm.PersonEntryAddressEntryOption = formSettings.PersonEntry.Address.ToPersonEntryOption();
-                actionForm.PersonEntryGroupLocationTypeValueId = Utility.GetDefinedValueId( formSettings.PersonEntry.AddressType );
+                actionForm.PersonEntryGroupLocationTypeValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.AddressType );
                 actionForm.PersonEntryAutofillCurrentPerson = formSettings.PersonEntry.AutofillCurrentPerson;
                 actionForm.PersonEntryBirthdateEntryOption = formSettings.PersonEntry.Birthdate.ToPersonEntryOption();
-                actionForm.PersonEntryCampusStatusValueId = Utility.GetDefinedValueId( formSettings.PersonEntry.CampusStatus );
-                actionForm.PersonEntryCampusTypeValueId = Utility.GetDefinedValueId( formSettings.PersonEntry.CampusType );
-                actionForm.PersonEntryConnectionStatusValueId = Utility.GetDefinedValueId( formSettings.PersonEntry.ConnectionStatus );
+                actionForm.PersonEntryCampusStatusValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.CampusStatus );
+                actionForm.PersonEntryCampusTypeValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.CampusType );
+                actionForm.PersonEntryConnectionStatusValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.ConnectionStatus );
                 actionForm.PersonEntryEmailEntryOption = formSettings.PersonEntry.Email.ToPersonEntryOption();
                 actionForm.PersonEntryGenderEntryOption = formSettings.PersonEntry.Gender.ToPersonEntryOption();
                 actionForm.PersonEntryHideIfCurrentPersonKnown = formSettings.PersonEntry.HideIfCurrentPersonKnown;
                 actionForm.PersonEntryMaritalStatusEntryOption = formSettings.PersonEntry.MaritalStatus.ToPersonEntryOption();
                 actionForm.PersonEntryMobilePhoneEntryOption = formSettings.PersonEntry.MobilePhone.ToPersonEntryOption();
-                actionForm.PersonEntryRecordStatusValueId = Utility.GetDefinedValueId( formSettings.PersonEntry.RecordStatus );
+                actionForm.PersonEntryRecordStatusValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.RecordStatus );
                 actionForm.PersonEntryCampusIsVisible = formSettings.PersonEntry.ShowCampus;
                 actionForm.PersonEntrySpouseEntryOption = formSettings.PersonEntry.SpouseEntry.ToPersonEntryOption();
                 actionForm.PersonEntrySpouseLabel = formSettings.PersonEntry.SpouseLabel;
@@ -296,7 +297,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             formSection.Description = section.Description;
             formSection.Title = section.Title;
             formSection.ShowHeadingSeparator = section.ShowHeadingSeparator;
-            formSection.SectionTypeValueId = Utility.GetDefinedValueId( section.Type );
+            formSection.SectionTypeValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( section.Type );
 
             // Loop through all fields that need to be either added or updated.
             for ( int fieldOrder = 0; fieldOrder < section.Fields.Count; fieldOrder++ )
@@ -431,18 +432,18 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 form.PersonEntry = new FormPersonEntryViewModel
                 {
                     Address = actionForm.PersonEntryAddressEntryOption.ToFormFieldVisibility(),
-                    AddressType = Utility.GetDefinedValueGuid( actionForm.PersonEntryGroupLocationTypeValueId ),
+                    AddressType = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryGroupLocationTypeValueId ),
                     AutofillCurrentPerson = actionForm.PersonEntryAutofillCurrentPerson,
                     Birthdate = actionForm.PersonEntryBirthdateEntryOption.ToFormFieldVisibility(),
-                    CampusStatus = Utility.GetDefinedValueGuid( actionForm.PersonEntryCampusStatusValueId ),
-                    CampusType = Utility.GetDefinedValueGuid( actionForm.PersonEntryCampusTypeValueId ),
-                    ConnectionStatus = Utility.GetDefinedValueGuid( actionForm.PersonEntryConnectionStatusValueId ),
+                    CampusStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryCampusStatusValueId ),
+                    CampusType = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryCampusTypeValueId ),
+                    ConnectionStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryConnectionStatusValueId ),
                     Email = actionForm.PersonEntryEmailEntryOption.ToFormFieldVisibility(),
                     Gender = actionForm.PersonEntryGenderEntryOption.ToFormFieldVisibility(),
                     HideIfCurrentPersonKnown = actionForm.PersonEntryHideIfCurrentPersonKnown,
                     MaritalStatus = actionForm.PersonEntryMaritalStatusEntryOption.ToFormFieldVisibility(),
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption.ToFormFieldVisibility(),
-                    RecordStatus = Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
+                    RecordStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption.ToFormFieldVisibility(),
                     SpouseLabel = actionForm.PersonEntrySpouseLabel
@@ -503,7 +504,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                     Fields = new List<FormFieldViewModel>(),
                     ShowHeadingSeparator = workflowFormSection.ShowHeadingSeparator,
                     Title = workflowFormSection.Title,
-                    Type = Utility.GetDefinedValueGuid( workflowFormSection.SectionTypeValueId )
+                    Type = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( workflowFormSection.SectionTypeValueId )
                 };
 
                 // Get all the form attributes for this section.
@@ -615,7 +616,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 AddressTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ),
                 ConnectionStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
                 RecordStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ),
-                EmailTemplateOptions = Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
+                EmailTemplateOptions = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
                 FormTemplateOptions = GetFormTemplateOptions( rockContext ),
 
                 // This is a one-off because we need to get access to a custom

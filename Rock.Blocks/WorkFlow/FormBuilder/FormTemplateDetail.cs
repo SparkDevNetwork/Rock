@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Blocks.WorkFlow.FormBuilder;
 using Rock.ClientService.Core.DefinedValue;
 using Rock.Data;
 using Rock.Model;
@@ -28,7 +29,7 @@ using Rock.Security;
 using Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail;
 using Rock.ViewModel.NonEntities;
 
-namespace Rock.Blocks.WorkFlow.FormBuilder
+namespace Rock.Blocks.Workflow.FormBuilder
 {
     /// <summary>
     /// Shows the details of a FormBuilder template.
@@ -132,7 +133,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 AddressTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ),
                 ConnectionStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
                 RecordStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ),
-                EmailTemplateOptions = Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
+                EmailTemplateOptions = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
             };
         }
 
