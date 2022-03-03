@@ -223,7 +223,13 @@ namespace Rock.Web.Cache
         [DataMember]
         public DateTime? WorkflowExpireDateTime { get; private set; }
 
-        /// <inheritdoc cref="WorkflowType.IsLoginRequired"/>
+        /// <summary>
+        /// NOTE: If this WorkflowType has a <see cref="FormBuilderTemplate"/>
+        /// the IsLoginRequired should come from that.  
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is login required; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool IsLoginRequired { get; private set; }
 
