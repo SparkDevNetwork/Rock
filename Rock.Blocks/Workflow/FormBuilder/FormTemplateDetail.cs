@@ -36,7 +36,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Form Template Detail" )]
-    [Category( "Workflow > FormBuilder" )]
+    [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows the details of a FormBuilder template." )]
     [IconCssClass( "fa fa-align-left" )]
 
