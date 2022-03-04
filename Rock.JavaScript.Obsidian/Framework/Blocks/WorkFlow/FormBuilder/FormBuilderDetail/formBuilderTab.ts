@@ -543,7 +543,8 @@ export default defineComponent({
                 title: section.title ?? "",
                 description: section.description ?? "",
                 showHeadingSeparator: section.showHeadingSeparator ?? false,
-                type: section.type ?? null
+                type: section.type ?? null,
+                visibilityRule: section.visibilityRule
             };
         };
 
@@ -650,6 +651,7 @@ export default defineComponent({
                     section.description = value.description;
                     section.showHeadingSeparator = value.showHeadingSeparator;
                     section.type = value.type;
+                    section.visibilityRule = value.visibilityRule;
 
                     return;
                 }
@@ -858,6 +860,7 @@ export default defineComponent({
         <SectionEditAside v-else-if="showSectionAside"
             :modelValue="sectionAsideSettings"
             ref="sectionEditAsideComponentInstance"
+            :formFields="existingFields"
             @update:modelValue="onSectionEditUpdate"
             @close="onAsideClose"
             @validationChanged="onSectionValidationChanged" />
