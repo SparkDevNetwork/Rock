@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
@@ -435,6 +436,70 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 default:
                     return WorkflowActionFormPersonEntryOption.Hidden;
             }
+        }
+
+        /// <summary>
+        /// Creates a view model representation of a <see cref="Rock.Field.FieldVisibilityRules"/> object.
+        /// </summary>
+        /// <param name="rules">The object to be represented as a view model.</param>
+        /// <returns>The view model representation.</returns>
+        internal static FieldFilterGroupViewModel ToViewModel( this Rock.Field.FieldVisibilityRules rules )
+        {
+            return new FieldFilterGroupViewModel
+            {
+                Guid = Guid.NewGuid(),
+                ExpressionType = ( int ) rules.FilterExpressionType,
+                Rules = rules.RuleList.Select( r => r.ToViewModel() ).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Rock.Field.FieldVisibilityRules"/>
+        /// object from its view model representation.
+        /// </summary>
+        /// <param name="viewModel">The view model that represents the object.</param>
+        /// <returns>The object created from the view model.</returns>
+        internal static Rock.Field.FieldVisibilityRules FromViewModel( this FieldFilterGroupViewModel viewModel )
+        {
+            return new Rock.Field.FieldVisibilityRules
+            {
+                FilterExpressionType = ( FilterExpressionType ) viewModel.ExpressionType,
+                RuleList = viewModel.Rules.Select( r => r.FromViewModel() ).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Creates a view model representation of a <see cref="Rock.Field.FieldVisibilityRule"/> object.
+        /// </summary>
+        /// <param name="rule">The object to be represented as a view model.</param>
+        /// <returns>The view model representation.</returns>
+        internal static FieldFilterRuleViewModel ToViewModel( this Rock.Field.FieldVisibilityRule rule )
+        {
+            return new FieldFilterRuleViewModel
+            {
+                Guid = rule.Guid,
+                ComparisonType = ( int ) rule.ComparisonType,
+                SourceType = 0,
+                AttributeGuid = rule.ComparedToFormFieldGuid,
+                Value = rule.ComparedToValue
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Rock.Field.FieldVisibilityRule"/>
+        /// object from its view model representation.
+        /// </summary>
+        /// <param name="viewModel">The view model that represents the object.</param>
+        /// <returns>The object created from the view model.</returns>
+        internal static Rock.Field.FieldVisibilityRule FromViewModel( this FieldFilterRuleViewModel viewModel )
+        {
+            return new Rock.Field.FieldVisibilityRule
+            {
+                Guid = viewModel.Guid,
+                ComparisonType = ( ComparisonType ) viewModel.ComparisonType,
+                ComparedToFormFieldGuid = viewModel.AttributeGuid,
+                ComparedToValue = viewModel.Value
+            };
         }
     }
 }

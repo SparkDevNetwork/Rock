@@ -81,6 +81,11 @@ namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
         public Dictionary<string, string> ConfigurationValues { get; set; }
 
         /// <summary>
+        /// The rule that controls when this field is visible.
+        /// </summary>
+        public FieldFilterGroupViewModel VisibilityRule { get; set; }
+
+        /// <summary>
         /// The default value that will be used when the field is initially
         /// displayed.
         /// </summary>

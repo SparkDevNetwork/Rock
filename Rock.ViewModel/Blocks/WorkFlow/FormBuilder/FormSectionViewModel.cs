@@ -54,6 +54,11 @@ namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
         public Guid? Type { get; set; }
 
         /// <summary>
+        /// The rule that controls when this section is visible.
+        /// </summary>
+        public FieldFilterGroupViewModel VisibilityRule { get; set; }
+
+        /// <summary>
         /// The list of fields that are contained within this section.
         /// </summary>
         public List<FormFieldViewModel> Fields { get; set; }

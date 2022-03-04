@@ -16,21 +16,37 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Panel from "../../../../Controls/panel";
+import FieldFilterEditor from "../../../../Controls/fieldFilterEditor";
 import FieldTypeEditor from "../../../../Controls/fieldTypeEditor";
-import InlineSwitch from "../../../../Elements/switch";
-import NumberBox from "../../../../Elements/numberBox";
-import TextBox from "../../../../Elements/textBox";
-import Slider from "../../../../Elements/slider";
+import Modal from "../../../../Controls/modal";
+import Panel from "../../../../Controls/panel";
 import RockForm from "../../../../Controls/rockForm";
-import { List } from "../../../../Util/linq";
-import { FormField, FormFieldType } from "../Shared/types";
-import { FieldTypeConfigurationViewModel } from "../../../../ViewModels/Controls/fieldTypeEditor";
-import { useFormSources } from "./utils";
-import { areEqual } from "../../../../Util/guid";
+import LoadingIndicator from "../../../../Elements/loadingIndicator";
+import NumberBox from "../../../../Elements/numberBox";
+import RockButton from "../../../../Elements/rockButton";
+import Slider from "../../../../Elements/slider";
+import InlineSwitch from "../../../../Elements/switch";
+import TextBox from "../../../../Elements/textBox";
+import { getFieldType } from "../../../../Fields/index";
+import { FilterExpressionType } from "../../../../Reporting/filterExpressionType";
 import { ValidationResult, ValidationRule } from "../../../../Rules";
-import { ListItem } from "../../../../ViewModels";
+import { useInvokeBlockAction } from "../../../../Util/block";
 import { FormError } from "../../../../Util/form";
+import { areEqual } from "../../../../Util/guid";
+import { List } from "../../../../Util/linq";
+import { ListItem } from "../../../../ViewModels";
+import { FieldTypeConfigurationViewModel } from "../../../../ViewModels/Controls/fieldTypeEditor";
+import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
+import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
+import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
+import { FormField, FormFieldType } from "../Shared/types";
+import { useFormSources } from "./utils";
+
+const timeoutAsync = (ms: number): Promise<void> => {
+    return new Promise<void>((_resolve, reject) => {
+        setTimeout(reject, ms);
+    });
+};
 
 /**
  * Check if the two records are equal. This makes sure all the key names match
@@ -65,13 +81,73 @@ function shallowStrictEqual(a: Record<string, string>, b: Record<string, string>
     return true;
 }
 
+/**
+ * Get the friendly formatted title of a filter group. This returns an HTML
+ * string.
+ * 
+ * @param group The group that contains the comparison type information.
+ *
+ * @returns An HTML formatted string with the comparison type text.
+ */
+function getFilterGroupTitle(group: FieldFilterGroup): string {
+    switch (group.expressionType) {
+        case FilterExpressionType.GroupAll:
+            return "<strong>Show</strong> when <strong>all</strong> of the following match:";
+
+        case FilterExpressionType.GroupAny:
+            return "<strong>Show</strong> when <strong>any</strong> of the following match:";
+
+        case FilterExpressionType.GroupAllFalse:
+            return "<strong>Hide</strong> when <strong>all</strong> of the following match:";
+
+        case FilterExpressionType.GroupAnyFalse:
+            return "<strong>Hide</strong> when <strong>any</strong> of the following match:";
+
+        default:
+            return "";
+    }
+}
+
+/**
+ * Get the description of the rule, including the name of the field it depends on.
+ * 
+ * @param rule The rule to be represented.
+ * @param sources The field filter sources to use when looking up the source field.
+ * @param fields The fields that contain the attribute information.
+ *
+ * @returns A plain text string that represents the rule in a human friendly format.
+ */
+function getFilterRuleDescription(rule: FieldFilterRule, sources: FieldFilterSource[], fields: FormField[]): string {
+    const ruleField = fields.filter(f => areEqual(f.guid, rule.attributeGuid));
+    const ruleSource = sources.filter(s => areEqual(s.guid, rule.attributeGuid));
+
+    if (ruleField.length === 1 && ruleSource.length === 1 && ruleSource[0].attribute) {
+        const fieldType = getFieldType(ruleField[0].fieldTypeGuid);
+
+        if (fieldType) {
+            const descr = fieldType.getFilterValueDescription({
+                comparisonType: rule.comparisonType,
+                value: rule.value
+            }, ruleSource[0].attribute);
+
+            return `${ruleSource[0].attribute.name} ${descr}`;
+        }
+    }
+
+    return "";
+}
+
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.FieldEditAside",
     components: {
         Panel,
+        FieldFilterEditor,
         FieldTypeEditor,
         InlineSwitch,
+        LoadingIndicator,
+        Modal,
         NumberBox,
+        RockButton,
         RockForm,
         Slider,
         TextBox
@@ -83,8 +159,8 @@ export default defineComponent({
             required: true
         },
 
-        existingKeys: {
-            type: Array as PropType<ListItem[]>,
+        formFields: {
+            type: Array as PropType<FormField[]>,
             required: true
         }
     },
@@ -119,6 +195,21 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
+        // #region Values
+
+        const invokeBlockAction = useInvokeBlockAction();
+        const fieldTypes = useFormSources().fieldTypes ?? [];
+        let conditionalSourcesLoadAttempted = false;
+
+        const fieldName = ref(props.modelValue.name);
+        const fieldDescription = ref(props.modelValue.description ?? "");
+        const fieldKey = ref(props.modelValue.key);
+        const fieldSize = ref(props.modelValue.size);
+        const isFieldRequired = ref(props.modelValue.isRequired ?? false);
+        const isFieldLabelHidden = ref(props.modelValue.isHideLabel ?? false);
+        const isShowOnGrid = ref(props.modelValue.isShowOnGrid ?? false);
+        const visibilityRule = ref(props.modelValue.visibilityRule ?? null);
+
         /** The value used by the FieldTypeEditor for editing the field configuration. */
         const fieldTypeValue = ref<FieldTypeConfigurationViewModel>({
             fieldTypeGuid: props.modelValue.fieldTypeGuid,
@@ -126,7 +217,37 @@ export default defineComponent({
             defaultValue: props.modelValue.defaultValue ?? ""
         });
 
-        const fieldTypes = useFormSources().fieldTypes ?? [];
+        /** The validation errors for the form. */
+        const validationErrors = ref<FormError[]>([]);
+
+        /** True if the form should start to submit. */
+        const formSubmit = ref(false);
+
+        /**
+         * A reference to the element that will be used for scrolling. This is used
+         * to scroll to the top when any validation errors pop up so the individual
+         * can see them.
+         */
+        const scrollableElement = ref<HTMLElement | null>(null);
+
+        /** Contains the model used when editing the field visibility rules. */
+        const conditionalModel = ref<FieldFilterGroup | null>(null);
+
+        /**
+         * Contains the field filter sources that are available when editing
+         * the visibility rules.
+         */
+        const conditionalSources = ref<FieldFilterSource[] | null>(null);
+
+        /** True if the conditional panel is expanded; otherwise false. */
+        const conditionalPanelOpen = ref(false);
+
+        /** True if the conditional modal should be open; otherwise false. */
+        const conditionalModalOpen = ref(false);
+
+        // #endregion
+
+        // #region Computed Values
 
         /**
          * The key which forces the field type editor to reload itself whenever the
@@ -142,29 +263,18 @@ export default defineComponent({
         /** The icon to display in the title area. */
         const asideIconClass = computed((): string => fieldType.value?.icon ?? "");
 
-        const fieldName = ref(props.modelValue.name);
-        const fieldDescription = ref(props.modelValue.description ?? "");
-        const fieldKey = ref(props.modelValue.key);
-        const fieldSize = ref(props.modelValue.size);
-        const isFieldRequired = ref(props.modelValue.isRequired ?? false);
-        const isFieldLabelHidden = ref(props.modelValue.isHideLabel ?? false);
-        const isShowOnGrid = ref(props.modelValue.isShowOnGrid ?? false);
-
-        /** The validation errors for the form. */
-        const validationErrors = ref<FormError[]>([]);
-
-        /** True if the form should start to submit. */
-        const formSubmit = ref(false);
-
-        const scrollableElement = ref<HTMLElement | null>(null);
-
         /**
          * The validation rules for the attribute key. This uses custom logic
          * to make sure the key entered doesn't already exist in the form.
          */
         const fieldKeyRules = computed((): ValidationRule[] => {
             const rules: ValidationRule[] = ["required"];
-            const keys: ListItem[] = props.existingKeys.filter(k => !areEqual(k.value, props.modelValue.guid));
+            const keys: ListItem[] = props.formFields
+                .filter(f => !areEqual(f.guid, props.modelValue.guid))
+                .map(f => ({
+                    value: f.guid,
+                    text: f.name
+                }));
 
             rules.push((value): ValidationResult => {
                 const valueString = value as string;
@@ -178,6 +288,66 @@ export default defineComponent({
 
             return rules;
         });
+
+        /** Determines if we have any active conditional rules. */
+        const hasConditions = computed((): boolean => {
+            return !!visibilityRule.value?.rules && visibilityRule.value.rules.length > 0;
+        });
+
+        /** Contains the "Show/Hide any/all" title of the field visibility rule. */
+        const conditionalTitle = computed((): string => {
+            return visibilityRule.value
+                ? getFilterGroupTitle(visibilityRule.value)
+                : "";
+        });
+
+        /** The individual rules that decide if this field will be visible. */
+        const conditionalRules = computed((): FieldFilterRule[] => {
+            return visibilityRule.value?.rules ?? [];
+        });
+
+        /** True if the conditionals panel content is still loading; otherwise false. */
+        const isConditionalsLoading = computed((): boolean => !conditionalSources.value);
+
+        // #endregion
+
+        // #region Functions
+
+        /**
+         * Gets the description of a single filter rule, including the source name.
+         * 
+         * @param rule The rule that needs to be translated into description text.
+         *
+         * @returns A string that contains a human friendly description about the rule.
+         */
+        const getRuleDescription = (rule: FieldFilterRule): string => {
+            return getFilterRuleDescription(rule, conditionalSources.value ?? [], props.formFields);
+        };
+
+        /**
+         * Loads all the conditional sources that will be used by this field during filtering.
+         */
+        const loadConditionalSources = async (): Promise<void> => {
+            // Get all fields except our own.
+            const fields = props.formFields.filter(f => !areEqual(f.guid, props.modelValue.guid));
+
+            const getFilterSources = invokeBlockAction<FieldFilterSource[]>("GetFilterSources", {
+                formFields: fields
+            });
+
+            // Wait at most 2 seconds.
+            const result = await Promise.race([getFilterSources, timeoutAsync(2000)]);
+
+            if (!result || !result.isSuccess || !result.data) {
+                return;
+            }
+
+            conditionalSources.value = result.data;
+        };
+
+        // #endregion
+
+        // #region Event Handlers
 
         /**
          * Event handler for when the back button is clicked.
@@ -208,6 +378,26 @@ export default defineComponent({
             emit("validationChanged", errors);
         };
 
+        /**
+         * Event handler for when the conditional edit button has been clicked.
+         * Prepare the edit modal and open it.
+         */
+        const onConditionalEditClick = async (): Promise<void> => {
+            conditionalModel.value = visibilityRule.value;
+            conditionalModalOpen.value = true;
+        };
+
+        /**
+         * Event handler for when the conditional model save button has been clicked.
+         * Store all the updates into our internal values.
+         */
+        const onConditionalSave = (): void => {
+            visibilityRule.value = conditionalModel.value;
+            conditionalModalOpen.value = false;
+        };
+
+        // #endregion
+
         // Watch for changes to field name, and if the old value matches the
         // attribute key then update the key to the new value.
         watch(fieldName, (newValue, oldValue) => {
@@ -218,9 +408,20 @@ export default defineComponent({
             }
         });
 
+        // Watch for the conditionals panel being opened and if it was the first
+        // time then start loading all the filter sources.
+        watch(conditionalPanelOpen, () => {
+            if (!conditionalPanelOpen.value || conditionalSources.value !== null || conditionalSourcesLoadAttempted) {
+                return;
+            }
+
+            conditionalSourcesLoadAttempted = true;
+            loadConditionalSources();
+        });
+
         // Watch for any changes in our simple field values and update the
         // modelValue.
-        watch([fieldName, fieldDescription, fieldKey, fieldSize, isFieldRequired, isFieldLabelHidden, isShowOnGrid], () => {
+        watch([fieldName, fieldDescription, fieldKey, fieldSize, isFieldRequired, isFieldLabelHidden, isShowOnGrid, visibilityRule], () => {
             const newValue: FormField = {
                 ...props.modelValue,
                 name: fieldName.value,
@@ -229,7 +430,8 @@ export default defineComponent({
                 size: fieldSize.value,
                 isRequired: isFieldRequired.value,
                 isHideLabel: isFieldLabelHidden.value,
-                isShowOnGrid: isShowOnGrid.value
+                isShowOnGrid: isShowOnGrid.value,
+                visibilityRule: visibilityRule.value
             };
 
             emit("update:modelValue", newValue);
@@ -245,6 +447,7 @@ export default defineComponent({
             isFieldRequired.value = props.modelValue.isRequired ?? false;
             isFieldLabelHidden.value = props.modelValue.isHideLabel ?? false;
             isShowOnGrid.value = props.modelValue.isShowOnGrid ?? false;
+            visibilityRule.value = props.modelValue.visibilityRule ?? null;
 
             const isConfigChanged = fieldTypeValue.value.fieldTypeGuid !== props.modelValue.fieldTypeGuid
                 || !shallowStrictEqual(fieldTypeValue.value.configurationOptions, props.modelValue.configurationValues ?? {})
@@ -262,6 +465,13 @@ export default defineComponent({
 
         return {
             asideIconClass,
+            conditionalTitle,
+            conditionalModalOpen,
+            conditionalModel,
+            conditionalPanelOpen,
+            conditionalRules,
+            conditionalSources,
+            onConditionalEditClick,
             fieldDescription,
             fieldKey,
             fieldKeyRules,
@@ -270,10 +480,14 @@ export default defineComponent({
             fieldTypeEditorKey,
             fieldTypeValue,
             formSubmit,
+            getRuleDescription,
+            hasConditions,
+            isConditionalsLoading,
             isFieldLabelHidden,
             isFieldRequired,
             isShowOnGrid,
             onBackClick,
+            onConditionalSave,
             onFieldTypeModelValueUpdate,
             onValidationChanged,
             scrollableElement,
@@ -306,8 +520,23 @@ export default defineComponent({
                 <FieldTypeEditor :modelValue="fieldTypeValue" :key="fieldTypeEditorKey" @update:modelValue="onFieldTypeModelValueUpdate" isFieldTypeReadOnly />
             </Panel>
 
-            <Panel title="Conditionals" :hasCollapse="true">
-                TODO: Need to build this.
+            <Panel title="Conditionals" v-model="conditionalPanelOpen" :hasCollapse="true">
+                <LoadingIndicator v-if="isConditionalsLoading" />
+
+                <div v-else>
+                    <div v-if="hasConditions">
+                        <div v-html="conditionalTitle"></div>
+                        <ul>
+                            <li v-for="rule in conditionalRules" :key="rule.guid">{{ getRuleDescription(rule) }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="clearfix">
+                        <div class="pull-right">
+                            <RockButton btnType="link" @click="onConditionalEditClick"><i class="fa fa-pencil"></i></RockButton>
+                        </div>
+                    </div>
+                </div>
             </Panel>
 
             <Panel title="Format" :hasCollapse="true">
@@ -324,6 +553,10 @@ export default defineComponent({
             </Panel>
         </RockForm>
     </div>
+
+    <Modal v-model="conditionalModalOpen" title="Conditional Settings" saveText="Save" @save="onConditionalSave">
+        <FieldFilterEditor v-model="conditionalModel" :title="fieldName" :sources="conditionalSources" />
+    </Modal>
 </div>
 `
 });
