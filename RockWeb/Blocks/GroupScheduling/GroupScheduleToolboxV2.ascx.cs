@@ -62,15 +62,15 @@ namespace RockWeb.Blocks.GroupScheduling
         IsRequired = true,
         DefaultValue =
     @"<div class=""alert alert-info"">
-    {%- if IsSchedulesAvailable -%}
-        {%- if CurrentPerson.Id == Person.Id -%}
+    {% if IsSchedulesAvailable %}
+        {% if CurrentPerson.Id == Person.Id %}
             Sign up to attend a group and location on the given date.
-        {%- else -%}
+        {% else %}
             Sign up {{ Person.FullName }} to attend a group and location on a given date.
-        {%- endif -%}
+        {% endif %}
      {%- else -%}
         No sign-ups available.
-     {%- endif -%}
+     {% endif %}
 </div>",
         Order = 1
          )]
@@ -1906,7 +1906,7 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum GroupScheduleType
         {
