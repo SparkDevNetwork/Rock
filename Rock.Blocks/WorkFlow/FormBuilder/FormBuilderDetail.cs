@@ -298,6 +298,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             formSection.Title = section.Title;
             formSection.ShowHeadingSeparator = section.ShowHeadingSeparator;
             formSection.SectionTypeValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( section.Type );
+            formSection.SectionVisibilityRulesJSON = section.VisibilityRule?.FromViewModel().ToCamelCaseJson( false, true );
 
             // Loop through all fields that need to be either added or updated.
             for ( int fieldOrder = 0; fieldOrder < section.Fields.Count; fieldOrder++ )
@@ -377,6 +378,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             formField.ColumnSize = field.Size;
             formField.IsVisible = true;
             formField.HideLabel = field.IsHideLabel;
+            formField.FieldVisibilityRules = field.VisibilityRule?.FromViewModel();
 
             // Add or update the attribute qualifiers. Do not delete any old ones.
             foreach ( var kvp in configurationValues )
@@ -504,7 +506,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     Fields = new List<FormFieldViewModel>(),
                     ShowHeadingSeparator = workflowFormSection.ShowHeadingSeparator,
                     Title = workflowFormSection.Title,
-                    Type = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( workflowFormSection.SectionTypeValueId )
+                    Type = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( workflowFormSection.SectionTypeValueId ),
+                    VisibilityRule = workflowFormSection.SectionVisibilityRulesJSON.FromJsonOrNull<Field.FieldVisibilityRules>()?.ToViewModel()
                 };
 
                 // Get all the form attributes for this section.
@@ -525,7 +528,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
                     sectionViewModel.Fields.Add( new FormFieldViewModel
                     {
-                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues ),
+                        ConfigurationValues = fieldType.Field.GetPublicConfigurationOptions( attribute.ConfigurationValues ),
                         DefaultValue = fieldType.Field.GetPublicEditValue( attribute.DefaultValue, attribute.ConfigurationValues ),
                         Description = attribute.Description,
                         FieldTypeGuid = fieldType.Guid,
@@ -535,7 +538,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                         IsShowOnGrid = attribute.IsGridColumn,
                         Key = attribute.Key,
                         Name = attribute.Name,
-                        Size = formAttribute.ColumnSize ?? 12
+                        Size = formAttribute.ColumnSize ?? 12,
+                        VisibilityRule = formAttribute.FieldVisibilityRules?.ToViewModel()
                     } );
                 }
 
@@ -707,6 +711,61 @@ namespace Rock.Blocks.Workflow.FormBuilder
             }
         }
 
+        /// <summary>
+        /// Gets the field filter sources that relate to the specified form fields.
+        /// </summary>
+        /// <param name="formFields">The form fields that need to be represented as filter sources.</param>
+        /// <returns>A response that contains the list of <see cref="FieldFilterSourceViewModel"/> objects.</returns>
+        [BlockAction]
+        public BlockActionResult GetFilterSources( List<FormFieldViewModel> formFields )
+        {
+            var fieldFilterSources = new List<FieldFilterSourceViewModel>();
+
+            foreach ( var field in formFields )
+            {
+                var fieldType = FieldTypeCache.Get( field.FieldTypeGuid );
+
+                // If the field type or its C# component could not be found then
+                // we abort with a hard error. We need it to convert data.
+                if ( fieldType == null || fieldType.Field == null )
+                {
+                    throw new Exception( $"Field type '{field.FieldTypeGuid}' not found." );
+                }
+
+                // Convert the attribute configuration into values that can be used
+                // for filtering a value.
+                var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
+                var filterConfigurationValues = fieldType.Field.GetPublicFilterConfigurationValues( privateConfigurationValues );
+
+                var source = new FieldFilterSourceViewModel
+                {
+                    Guid = field.Guid,
+                    Type = 0,
+                    Attribute = new PublicFilterableAttributeViewModel
+                    {
+                        AttributeGuid = field.Guid,
+                        ConfigurationValues = filterConfigurationValues,
+                        Description = field.Description,
+                        FieldTypeGuid = field.FieldTypeGuid,
+                        Name = field.Name
+                    }
+                };
+
+                fieldFilterSources.Add( source );
+            }
+
+            return ActionOk( fieldFilterSources );
+        }
+
         #endregion
+
+        private class FieldFilterSourceViewModel
+        {
+            public Guid Guid { get; set; }
+
+            public int Type { get; set; }
+
+            public PublicFilterableAttributeViewModel Attribute { get; set; }
+        }
     }
 }

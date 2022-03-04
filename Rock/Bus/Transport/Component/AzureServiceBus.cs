@@ -136,9 +136,12 @@ namespace Rock.Bus.Transport
             {
                 foreach ( var queue in queues )
                 {
-                    queue.DefaultMessageTimeToLive = messageExpiration;
-                    queue.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
-                    namespaceManager.UpdateQueue( queue );
+                    if ( queue.DefaultMessageTimeToLive != messageExpiration || queue.EnableDeadLetteringOnMessageExpiration != enableDeadletterOnMessageExpiration )
+                    {
+                        queue.DefaultMessageTimeToLive = messageExpiration;
+                        queue.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+                        namespaceManager.UpdateQueue( queue );
+                    }
                 }
             }
 
@@ -148,8 +151,11 @@ namespace Rock.Bus.Transport
             {
                 foreach ( var topic in topics )
                 {
-                    topic.DefaultMessageTimeToLive = messageExpiration;
-                    namespaceManager.UpdateTopic( topic );
+                    if ( topic.DefaultMessageTimeToLive != messageExpiration )
+                    {
+                        topic.DefaultMessageTimeToLive = messageExpiration;
+                        namespaceManager.UpdateTopic( topic );
+                    }
 
                     var subs = namespaceManager.GetSubscriptions( topic.Path );
 
@@ -160,9 +166,12 @@ namespace Rock.Bus.Transport
                         {
                             // If the topic specifies a smaller TTL than the subscription, the topic TTL is applied ⬆.
 
-                            sub.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+                            if ( sub.EnableDeadLetteringOnMessageExpiration != enableDeadletterOnMessageExpiration )
+                            {
+                                sub.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
 
-                            namespaceManager.UpdateSubscription( sub );
+                                namespaceManager.UpdateSubscription( sub );
+                            }
 
                         }
                     }

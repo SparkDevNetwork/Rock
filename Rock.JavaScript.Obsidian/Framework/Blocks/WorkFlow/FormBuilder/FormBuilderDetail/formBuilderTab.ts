@@ -40,7 +40,6 @@ import { FormField, FormFieldType, FormPersonEntry, FormSection } from "../Share
 import { PropType } from "vue";
 import { useFormSources } from "./utils";
 import { confirmDelete } from "../../../../Util/dialogs";
-import { ListItem } from "../../../../ViewModels";
 import { FormError } from "../../../../Util/form";
 
 /**
@@ -434,26 +433,23 @@ export default defineComponent({
         const templateFormFooterContent = computed((): string => props.templateOverrides?.formFooter ?? "");
 
         /**
-         * Contains all the existing attribute keys in an array of ListItems.
+         * Contains all the existing form fields in the entire form.
          * Each item has a value that is the attribute guid and text that is
          * the key string.
          */
-        const existingKeys = computed((): ListItem[] => {
-            const existingKeys: ListItem[] = [];
+        const existingFields = computed((): FormField[] => {
+            const fields: FormField[] = [];
 
             // Find all existing attribute keys.
             for (const sect of sections) {
                 if (sect.fields) {
                     for (const field of sect.fields) {
-                        existingKeys.push({
-                            value: field.guid,
-                            text: field.key
-                        });
+                        fields.push(field);
                     }
                 }
             }
 
-            return existingKeys;
+            return fields;
         });
 
         // #endregion
@@ -789,7 +785,7 @@ export default defineComponent({
             availableFieldTypes,
             bodyElement,
             editField,
-            existingKeys,
+            existingFields,
             fieldDragSourceOptions,
             fieldDragTargetId: fieldDragSourceOptions.id,
             fieldEditAsideComponentInstance,
@@ -854,7 +850,7 @@ export default defineComponent({
             :modelValue="editField"
             ref="fieldEditAsideComponentInstance"
             :fieldTypes="availableFieldTypes"
-            :existingKeys="existingKeys"
+            :formFields="existingFields"
             @update:modelValue="onFieldEditUpdate"
             @close="onAsideClose"
             @validationChanged="onFieldEditValidationChanged" />

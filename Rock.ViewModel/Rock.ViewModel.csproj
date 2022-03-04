@@ -47,6 +47,8 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FieldFilterGroupViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FieldFilterRuleViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionType.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionViewModel.cs" />

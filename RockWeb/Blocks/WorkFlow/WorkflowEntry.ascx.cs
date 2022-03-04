@@ -876,10 +876,11 @@ namespace RockWeb.Blocks.WorkFlow
 
             phWorkflowFormAttributes.Controls.Clear();
 
-            var formSectionNone = new Panel()
+            // Use PlaceHolder for non-folderbuilder sections.
+            // Real sections will render a div, but PlaceHolder will not.
+            var formSectionNone = new PlaceHolder()
             {
                 ID = $"pnlFormSection_none",
-                CssClass = "row",
                 Visible = form.FormAttributes.Any( x => !x.ActionFormSectionId.HasValue )
             };
 
@@ -993,8 +994,18 @@ namespace RockWeb.Blocks.WorkFlow
                     sectionControl = formSectionNone;
                 }
 
-                HtmlGenericControl fieldColumnContainer = new HtmlGenericControl( "div" );
-                fieldColumnContainer.AddCssClass( $"col-md-{formAttribute.ColumnSize ?? 12}" );
+                Control fieldColumnContainer;
+                if ( sectionControl == formSectionNone )
+                {
+                    // use PlaceHolder for non-formbuilder sections
+                    // Placeholder is only a container for other controls, it doesn't render any markup
+                    fieldColumnContainer = new PlaceHolder();
+                }
+                else
+                {
+                    fieldColumnContainer = new HtmlGenericControl( "div" );
+                    ( fieldColumnContainer as HtmlGenericControl ).AddCssClass( $"col-md-{formAttribute.ColumnSize ?? 12}" );
+                }
                 sectionControl.Controls.Add( fieldColumnContainer );
 
                 fieldColumnContainer.Controls.Add( fieldVisibilityWrapper );
@@ -1569,9 +1580,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             var workflowType = GetWorkflowType();
 
-           var personEntryPersonAttribute = form.GetPersonEntryPersonAttribute( _workflow );
-           var personEntryFamilyAttribute = form.GetPersonEntryFamilyAttribute( _workflow );
-           var personEntrySpouseAttribute = form.GetPersonEntrySpouseAttribute( _workflow );
+            var personEntryPersonAttribute = form.GetPersonEntryPersonAttribute( _workflow );
+            var personEntryFamilyAttribute = form.GetPersonEntryFamilyAttribute( _workflow );
+            var personEntrySpouseAttribute = form.GetPersonEntrySpouseAttribute( _workflow );
 
             if ( personEntryPersonAttribute != null )
             {
@@ -1583,7 +1594,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            if ( personEntryFamilyAttribute != null)
+            if ( personEntryFamilyAttribute != null )
             {
                 var item = GetWorkflowAttributeEntity( personEntryFamilyAttribute );
                 if ( item != null )

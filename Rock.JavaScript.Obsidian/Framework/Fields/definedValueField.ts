@@ -141,15 +141,22 @@ export class DefinedValueFieldType extends FieldTypeBase {
     }
 
     public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
-        const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
-        const useDescription = asBoolean(attribute.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
-        const rawValues = value.value.split(",");
+        try {
+            const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
-        const text = values.filter(v => rawValues.includes(v.value))
-            .map(v => useDescription ? v.description : v.text)
-            .join("' OR '");
+            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+            const useDescription = asBoolean(attribute.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
+            const rawValues = clientValue.value.split(",");
 
-        return text ? `'${text}'` : "";
+            const text = values.filter(v => rawValues.includes(v.value))
+                .map(v => useDescription ? v.description : v.text)
+                .join("' OR '");
+
+            return text ? `'${text}'` : "";
+        }
+        catch {
+            return "";
+        }
     }
 
     public override getFilterComponent(): Component {

@@ -15,17 +15,16 @@
 // </copyright>
 //
 
-import { defineComponent, PropType, ref, watch, computed, defineAsyncComponent } from "vue";
-import { useVModelPassthrough } from "../Util/component";
-import { areEqual, newGuid } from "../Util/guid";
+import { computed, defineComponent, PropType, watch } from "vue";
 import DropDownList from "../Elements/dropDownList";
 import TextBox from "../Elements/textBox";
-import RockAttributeFilter from "./rockAttributeFilter";
+import { useVModelPassthrough } from "../Util/component";
+import { areEqual } from "../Util/guid";
+import { ListItem } from "../ViewModels";
+import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldFilterRule } from "../ViewModels/Reporting/fieldFilterRule";
 import { FieldFilterSource } from "../ViewModels/Reporting/fieldFilterSource";
-import { ListItem } from "../ViewModels";
-import { getFieldType } from "../Fields";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
+import RockAttributeFilter from "./rockAttributeFilter";
 
 export const FieldFilterRuleRow = defineComponent({
     name: "FieldFilterRuleRow",
@@ -63,7 +62,7 @@ export const FieldFilterRuleRow = defineComponent({
         // Current Selected Attribute/Property
         const currentAttribute = computed<PublicFilterableAttribute>(() => {
             const source = props.sources.find(source => {
-                return areEqual(rule.value.attributeGuid ?? '', source.attribute?.attributeGuid ?? '')
+                return areEqual(rule.value.attributeGuid ?? "", source.attribute?.attributeGuid ?? "");
             }) || props.sources[0];
 
             return source.attribute as PublicFilterableAttribute;

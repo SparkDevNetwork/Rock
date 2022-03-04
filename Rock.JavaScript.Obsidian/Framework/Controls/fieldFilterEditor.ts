@@ -84,7 +84,7 @@ export default defineComponent({
         // We currently don't support nested groups, so fire a warning if anyone tries to use them
         watch(() => props.allowNestedGroups, () => {
             if (props.allowNestedGroups === true) {
-                console.warn('Nested Filter Groups are not supported yet. Please set `allowNestedGroups` to `false`.')
+                console.warn("Nested Filter Groups are not supported yet. Please set `allowNestedGroups` to `false`.");
             }
         });
 
@@ -111,7 +111,7 @@ export default defineComponent({
         watch(() => filterGroup.value.expressionType, () => {
             showHide.value = filterExpressionToShowHideMap[filterGroup.value.expressionType - 1];
             allAny.value = filterExpressionToAllAnyMap[filterGroup.value.expressionType - 1];
-        })
+        });
 
         function addRule():void {
             (filterGroup.value.rules as FieldFilterRule[]).push({ 

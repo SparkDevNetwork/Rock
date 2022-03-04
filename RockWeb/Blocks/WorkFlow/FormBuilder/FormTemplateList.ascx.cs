@@ -103,12 +103,14 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             base.OnInit( e );
 
             gFormTemplates.DataKeyNames = new string[] { "Id" };
-            gfFormTemplates.ApplyFilterClick += gfFormTemplates_ApplyFilterClick;
-
             gFormTemplates.GridRebind += gFormTemplates_GridRebind;
+            gFormTemplates.Actions.ShowAdd = true;
+            gFormTemplates.Actions.AddClick += Actions_AddClick;
 
             var securityField = gFormTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = EntityTypeCache.Get<WorkflowFormBuilderTemplate>().Id;
+
+            gfFormTemplates.ApplyFilterClick += gfFormTemplates_ApplyFilterClick;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -136,6 +138,17 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         #endregion Base Control Methods
 
         #region Events
+
+        /// <summary>
+        /// Handles the AddClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void Actions_AddClick( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKeys.DetailPage, PageParameterKeys.FormTemplateId, 0 );
+        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -219,6 +232,13 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var qry = builderTemplateService.Queryable().AsNoTracking();
 
             var isActive = gfFormTemplates.GetUserPreference( UserPreferenceKeys.Active ).AsBooleanOrNull();
+
+            // A null is active defaults to showing only active
+            if ( !isActive.HasValue )
+            {
+                isActive = true;
+            }
+
             if ( isActive.HasValue )
             {
                 qry = qry.Where( w => w.IsActive == isActive.Value );
@@ -240,11 +260,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             {
                 var value = isActive.Value ? "Yes" : "No";
                 ddlIsActive.SetValue( value );
-            }
-            else
-            {
-                gfFormTemplates.SaveUserPreference( UserPreferenceKeys.Active, "Yes" );
-                ddlIsActive.SetValue( "Yes" );
             }
         }
 
