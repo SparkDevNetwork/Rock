@@ -165,7 +165,7 @@ The DefinedValue.Description will just be any description, such as 'Rock Solid C
     RestApiAllowedDomains = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8",
     /** The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset. */
     SchoolGrades = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D",
-    /** The section types defined type, which has values that determine which section type the workflow action form section is based. */
+    /** The section types defined type, which has values that determine the CSS class to apply to the section div. */
     SectionType = "A72D940B-2A69-44B8-931C-7FE99824D84C",
     /** Used to manage the topic options for small groups. */
     SmallGroupTopic = "D4111631-6B42-1CBD-4019-427D6BC6F475",
