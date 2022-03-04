@@ -416,8 +416,13 @@ namespace RockWeb.Blocks.Connection
 
                 lTitle.Text = opportunity.Name;
 
-                pnHome.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean();
-                pnMobile.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean();
+                // Hide show home phone
+                pnlHomePhone.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean(); // hide column
+                pnHome.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean(); // hide control
+
+                // Hide show mobile phone
+                pnlMobilePhone.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean(); // hide column
+                pnMobile.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean(); // hide control
 
                 Person registrant = null;
 
