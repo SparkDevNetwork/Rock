@@ -32,7 +32,6 @@ namespace Rock.Web.Cache
     [DataContract]
     public class WorkflowActionFormCache : ModelCache<WorkflowActionFormCache, WorkflowActionForm>
     {
-
         #region Properties
 
         private readonly object _obj = new object();
@@ -159,6 +158,22 @@ namespace Rock.Web.Cache
         [DataMember]
         public Guid? PersonEntrySpouseAttributeGuid { get; private set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntrySectionTypeValueId"/>
+        [DataMember]
+        public int? PersonEntrySectionTypeValueId { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryTitle"/>
+        [DataMember]
+        public string PersonEntryTitle { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryDescription"/>
+        [DataMember]
+        public string PersonEntryDescription { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryShowHeadingSeparator"/>
+        [DataMember]
+        public bool PersonEntryShowHeadingSeparator { get; set; }
+
         #endregion Person entry related Entity Properties
 
         /// <summary>
@@ -271,6 +286,10 @@ namespace Rock.Web.Cache
             this.PersonEntrySpouseAttributeGuid = workflowActionForm.PersonEntrySpouseAttributeGuid;
             this.PersonEntrySpouseEntryOption = workflowActionForm.PersonEntrySpouseEntryOption;
             this.PersonEntrySpouseLabel = workflowActionForm.PersonEntrySpouseLabel;
+            this.PersonEntrySectionTypeValueId = workflowActionForm.PersonEntrySectionTypeValueId;
+            this.PersonEntryTitle = workflowActionForm.PersonEntryTitle;
+            this.PersonEntryDescription = workflowActionForm.PersonEntryDescription;
+            this.PersonEntryShowHeadingSeparator = workflowActionForm.PersonEntryShowHeadingSeparator;
             this.Guid = workflowActionForm.Guid;
             this.ForeignId = workflowActionForm.ForeignId;
 
