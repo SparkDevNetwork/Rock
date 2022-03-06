@@ -1,11 +1,8 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
-
 <script runat="server">
-
     // keep code below to call base class init method
-
     /// <summary>
     /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
     /// </summary>
@@ -14,39 +11,27 @@
     {
         base.OnInit( e );
     }
-
 </script>
-
 <html >
 <head runat="server">
-
     <meta charset="utf-8">
     <title></title>
-
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
-
     <!-- Set the viewport width to device width for mobile -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <asp:ContentPlaceHolder ID="css" runat="server" />
-
-	<!-- Included CSS Files -->
+    <!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
-
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
-
 </head>
 <body runat="server" id="body">
-
     <form id="form1" runat="server">
         <div class="site-container">
-
             <header class="menubar clearfix bg-white d-flex align-items-center">
                 <a class="menubar__item menubar__item--logo mr-auto" href="/">
                     <img src="https://storage.googleapis.com/lcbc-assets/images/logo.svg" alt="" width="85">
                 </a>
-
                 <Rock:Zone Name="Nav" runat="server" />
                 
                 <!--<a class="menubar__item menubar__item--profile" href="">
@@ -55,7 +40,6 @@
                     <path d="M0.090625 0.90099L0.146875 0.977593L4.39687 6.6863C4.54062 6.87962 4.75625 7 4.99687 7C5.2375 7 5.45313 6.87598 5.59688 6.6863L9.84375 0.988536L9.91562 0.893695C9.96875 0.802501 10 0.693069 10 0.576342C10 0.258989 9.76875 0 9.48125 0H0.51875C0.23125 0 0 0.258989 0 0.576342C0 0.696717 0.034375 0.809797 0.090625 0.90099Z" fill="black"/>
                     </svg>
                 </a>-->
-
                 <a class=" d-none d-md-flex menubar__item menubar__item--account" href="/myaccount">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor"
                         class="bi bi-person-circle" viewBox="0 0 16 16">
@@ -64,24 +48,17 @@
                             d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
                     </svg>
                 </a>
-
                 <a class=" menubar__item menubar__item--hamburger" href="">
                     <svg width="22" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill="#393939" d="M0 1h22v3H0zM0 9h22v3H0z"/>
                     </svg>
                 </a>
-
-
             </header>
-
             <div class="site-body">
-
             <Rock:Zone Name="Hero" runat="server" />
-
             <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
             <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
             </div>
-
             <div class="pre-footer py-4 bg-blue-600 font-avenir">
                 <div class="container">
                     <div class="row">
@@ -103,7 +80,6 @@
                     </div>
                 </div>
             </div>
-
             <footer class="footer py-5">
                 <div class="container footer__collapse visuallyhidden--palm">
                     <div class="row">
@@ -124,7 +100,7 @@
                                         href="https://lcbcchurch.com/music">Music</a></li>
                                 <li class="footer-nav__item"><a class="footer-nav__link"
                                         href="https://lcbcchurch.com/beliefs">Beliefs</a></li>
-                                <li class="footer-nav__item"><a class="footer-nav__link" href="/team">Our Team</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="https://lcbcchurch.com/team">Our Team</a></li>
                                 <li class="footer-nav__item"><a class="footer-nav__link"
                                         href="https://lcbcchurch.com/develup">DEVELUP</a></li>
                                 <li class="footer-nav__item"><a class="footer-nav__link"
@@ -164,15 +140,15 @@
                             <ul class="footer-nav mb-5 mb-md-0">
                                 <li class="footer-nav__item"><a class="footer-nav__link"
                                         href="https://lcbcchurch.com/sermons">Sermons</a></li>
-                                <li class="footer-nav__item"><a class="footer-nav__link" href="/articles">Articles</a>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="https://lcbcchurch.com/articles">Articles</a>
                                 </li>
-                                <li class="footer-nav__item"><a class="footer-nav__link" href="/stories">Stories</a>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="https://lcbcchurch.com/stories">Stories</a>
                                 </li>
-                                <li class="footer-nav__item"><a class="footer-nav__link" href="/studies">Studies</a>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="https://lcbcchurch.com/studies">Studies</a>
                                 </li>
-                                <li class="footer-nav__item"><a class="footer-nav__link" href="/bible-reading">Bible
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="https://lcbcchurch.com/bible-reading">Bible
                                         Reading</a></li>
-                                <li class="footer-nav__item"><a class="footer-nav__link" href="/news">News</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="https://lcbcchurch.com/news">News</a></li>
                             </ul>
                         </div>
                         <div class="col-md-3">
@@ -194,8 +170,6 @@
                     </div>
                 </div>
             </footer>
-
-
             <%-- controls for scriptmanager and update panel --%>
             <asp:ScriptManager ID="sManager" runat="server"/>
             <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
@@ -210,7 +184,5 @@
             </asp:UpdateProgress>
             </div><!-- Site Container -->
         </form>
-
     </body>
-
 </html>
