@@ -2586,6 +2586,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name" );
                 }
+
+                if ( !txtFirstName.IsValid )
+                {
+                    errorMessages.Add( txtFirstName.CustomValidator.ErrorMessage );
+                }
             }
 
             if ( givingAsBusiness && string.IsNullOrWhiteSpace( txtBusinessName.Text ) )

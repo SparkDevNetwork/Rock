@@ -2739,6 +2739,13 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         protected void ProcessTransaction()
         {
+            if ( !tbFirstName.IsValid )
+            {
+                nbProcessTransactionError.Text = tbFirstName.CustomValidator.ErrorMessage;
+                nbProcessTransactionError.Visible = true;
+                return;
+            }
+
             var transactionGuid = hfTransactionGuid.Value.AsGuid();
             var rockContext = new RockContext();
 

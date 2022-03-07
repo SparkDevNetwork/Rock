@@ -39,7 +39,7 @@ namespace Rock.Model
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
-                    var tbFirstName = new RockTextBox
+                    var tbFirstName = new FirstNameTextBox
                     {
                         ID = "tbFirstName",
                         Label = "First Name",
