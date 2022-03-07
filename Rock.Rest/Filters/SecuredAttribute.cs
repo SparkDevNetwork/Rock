@@ -22,7 +22,7 @@ using System.ServiceModel.Channels;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -38,13 +38,13 @@ namespace Rock.Rest.Filters
     /// <summary>
     /// Checks to see if the Logged-In person has authorization View (HttpMethod: GET) or Edit (all other HttpMethods) for the RestController and Controller's associated EntityType
     /// </summary>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public class SecuredAttribute : System.Attribute, IAsyncActionFilter
     {
         public async Task OnActionExecutionAsync( ActionExecutingContext actionContext, ActionExecutionDelegate next )
 #else
-        public class SecuredAttribute : ActionFilterAttribute
-        {
+    public class SecuredAttribute : ActionFilterAttribute
+    {
         /// <summary>
         /// Occurs before the action method is invoked.
         /// </summary>
@@ -52,7 +52,7 @@ namespace Rock.Rest.Filters
         public override void OnActionExecuting( HttpActionContext actionContext )
 #endif
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var principal = actionContext.HttpContext.User;
 #else
             var principal = actionContext.Request.GetUserPrincipal();
@@ -91,7 +91,7 @@ namespace Rock.Rest.Filters
                             var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
                             if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
                             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                                 actionContext.Result = new Microsoft.AspNetCore.Mvc.ChallengeResult();
 #else
                                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
@@ -103,7 +103,7 @@ namespace Rock.Rest.Filters
                 }
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var reflectedHttpActionDescriptor = ( ControllerActionDescriptor ) actionContext.ActionDescriptor;
 
             var controller = reflectedHttpActionDescriptor;
@@ -130,7 +130,7 @@ namespace Rock.Rest.Filters
                 }
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             if ( actionContext.HttpContext.Items.ContainsKey( "Person" ) )
             {
                 person = actionContext.HttpContext.Items["Person"] as Person;
@@ -181,7 +181,7 @@ namespace Rock.Rest.Filters
             {
                 authorized = true;
             }
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             else if ( actionContext.HttpContext.Request.Headers.ContainsKey( "X-Rock-App-Id" ) && actionContext.HttpContext.Request.Headers.ContainsKey( "X-Rock-Mobile-Api-Key" ) )
 #else
             else if ( actionContext.Request.Headers.Contains( "X-Rock-App-Id" ) && actionContext.Request.Headers.Contains( "X-Rock-Mobile-Api-Key" ) )
@@ -189,7 +189,7 @@ namespace Rock.Rest.Filters
             {
                 // Normal authorization failed, but this is a Mobile App request so check
                 // if the application itself has been given permission.
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var appId = actionContext.HttpContext.Request.Headers["X-Rock-App-Id"].First().AsIntegerOrNull();
                 var mobileApiKey = actionContext.HttpContext.Request.Headers["X-Rock-Mobile-Api-Key"].First();
 #else
@@ -211,7 +211,7 @@ namespace Rock.Rest.Filters
                 }
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             if ( !authorized )
             {
                 actionContext.Result = new Microsoft.AspNetCore.Mvc.ChallengeResult();

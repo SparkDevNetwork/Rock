@@ -24,7 +24,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.OData;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Mvc;
 #endif
@@ -47,7 +47,7 @@ namespace Rock.Rest
     /// </summary>
     /// <seealso cref="System.Web.Http.ApiController" />
     [ODataRouting]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public class ApiControllerBase : ControllerBase
 #else
     public class ApiControllerBase : ApiController
@@ -180,7 +180,7 @@ namespace Rock.Rest
             return currentPersonAlias == null ? ( int? ) null : currentPersonAlias.Id;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates a response with the NoContent status code.
         /// </summary>

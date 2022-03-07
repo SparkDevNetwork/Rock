@@ -24,14 +24,12 @@ using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.OData;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FromUriAttribute = Microsoft.AspNetCore.Mvc.FromQueryAttribute;
-#else
-using IActionResult = System.Web.Http.IHttpActionResult;
 #endif
 
 using Rock.Attribute;
@@ -42,8 +40,6 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace Rock.Rest
 {
@@ -100,8 +96,7 @@ namespace Rock.Rest
              */
 
             var result = Service.Queryable().AsNoTracking();
-
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
@@ -127,10 +122,10 @@ namespace Rock.Rest
             T model;
             if ( !Service.TryGet( id, out model ) )
             {
-                return NotFound();
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            return Ok( model );
+            return model;
         }
 
         /// <summary>
@@ -156,10 +151,10 @@ namespace Rock.Rest
             T model;
             if ( !Service.TryGet( key, out model ) )
             {
-                NotFound();
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            return Ok( model );
+            return model;
         }
 
         /// <summary>
@@ -221,7 +216,7 @@ namespace Rock.Rest
                     a => a.Attribute.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) && a.Value.Equals( value, valueComparison ) );
             }
 
-            return Ok( query );
+            return query;
         }
 
         /// <summary>
@@ -257,7 +252,7 @@ namespace Rock.Rest
                 .AsNoTracking()
                 .WhereCampus( rockContext, campusId );
 
-            return Ok( result );
+            return result;
         }
 
         /// <summary>
@@ -281,15 +276,12 @@ namespace Rock.Rest
 
             if ( value == null )
             {
-                return BadRequest();
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
             SetProxyCreation( true );
 
-            if ( !TryCheckCanEdit( value, out var checkResult ) )
-            {
-                return checkResult;
-            }
+            CheckCanEdit( value );
 
             Service.Add( value );
 
@@ -300,17 +292,15 @@ namespace Rock.Rest
                     string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            EnsureHttpContextHasCurrentPerson();
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             Service.Context.SaveChanges();
 
+            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created, value.Id );
+
             //// TODO set response.Headers.Location as per REST POST convention
             // response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
-#if NET5_0_OR_GREATER
-            return StatusCode( StatusCodes.Status201Created, value.Id );
-#else
-            return Content( HttpStatusCode.Created, value.Id );
-#endif
+            return response;
         }
 
         /// <summary>
@@ -335,7 +325,7 @@ namespace Rock.Rest
 
             if ( value == null )
             {
-                return BadRequest();
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
             SetProxyCreation( true );
@@ -343,23 +333,18 @@ namespace Rock.Rest
             T targetModel;
             if ( !Service.TryGet( id, out targetModel ) )
             {
-                return NotFound();
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( !TryCheckCanEdit( targetModel, out var checkResult ) )
-            {
-                return checkResult;
-            }
+            CheckCanEdit( targetModel );
 
             Service.SetValues( value, targetModel );
 
             if ( targetModel.IsValid )
             {
-                EnsureHttpContextHasCurrentPerson();
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
-
-                return NoContent();
             }
             else
             {
@@ -409,14 +394,10 @@ namespace Rock.Rest
             T targetModel;
             if ( !Service.TryGet( id, out targetModel ) )
             {
-                return NotFound();
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( !TryCheckCanEdit( targetModel, out var checkResult ) )
-            {
-                return checkResult;
-            }
-
+            CheckCanEdit( targetModel );
             var type = targetModel.GetType();
             var properties = type.GetProperties().ToList();
 
@@ -494,11 +475,9 @@ namespace Rock.Rest
             // Verify model is valid before saving
             if ( targetModel.IsValid )
             {
-                EnsureHttpContextHasCurrentPerson();
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
-
-                return NoContent();
             }
             else
             {
@@ -532,18 +511,13 @@ namespace Rock.Rest
             T model;
             if ( !Service.TryGet( id, out model ) )
             {
-                return NotFound();
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( !TryCheckCanEdit( model, out var checkResult ) )
-            {
-                return checkResult;
-            }
+            CheckCanEdit( model );
 
             Service.Delete( model );
             Service.Context.SaveChanges();
-
-            return Ok();
         }
 
         /// <summary>
@@ -569,15 +543,11 @@ namespace Rock.Rest
             var rockContext = new RockContext();
             var dataView = new DataViewService( rockContext ).Get( id );
 
-            if ( !TryValidateDataView( dataView, out var validateResult ) )
-            {
-                return validateResult;
-            }
+            ValidateDataView( dataView );
 
             var paramExpression = Service.ParameterExpression;
             var whereExpression = dataView.GetExpression( Service, paramExpression );
-
-            return Ok( Service.GetNoTracking( paramExpression, whereExpression ) );
+            return Service.GetNoTracking( paramExpression, whereExpression );
         }
 
         /// <summary>
@@ -606,10 +576,7 @@ namespace Rock.Rest
 
             var dataView = new DataViewService( rockContext ).Get( dataViewId );
 
-            if ( !TryValidateDataView( dataView, out var validateResult ) )
-            {
-                return validateResult;
-            }
+            ValidateDataView( dataView );
 
             var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
@@ -619,35 +586,31 @@ namespace Rock.Rest
             var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
             qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
 
-            return Ok( qryGroupsInDataView.Any() );
+            return qryGroupsInDataView.Any();
         }
 
         /// <summary>
         /// Checks to makes sure DataView exists, has the correct entityType, and person has View rights, etc
         /// </summary>
         /// <param name="dataView">The data view.</param>
-        /// <param name="result">On return contains the result that should be returned if the method returns false.</param>
         /// <exception cref="HttpResponseException">
         /// </exception>
         private void ValidateDataView( DataView dataView )
         {
             if ( dataView == null )
             {
-                result = NotFound();
-
-                return false;
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
             var controllerEntityType = EntityTypeCache.Get<T>();
             if ( dataView.EntityTypeId != controllerEntityType?.Id )
             {
-                result = BadRequest( $"{dataView.Name} is not a {controllerEntityType?.Name} dataview" );
-
-                return false;
+                HttpResponseMessage errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"{dataView.Name} is not a {controllerEntityType?.Name} dataview" );
+                throw new HttpResponseException( errorResponse );
             }
 
             // since DataViews can be secured at the DataView or Category level, specifically check for CanView
-            return TryCheckCanView( dataView, GetPerson(), out result );
+            CheckCanView( dataView, GetPerson() );
         }
 
         /// <summary>
@@ -771,7 +734,7 @@ namespace Rock.Rest
 
             if ( personId.HasValue )
             {
-                return Ok( Service.GetFollowed( personId.Value ) );
+                return Service.GetFollowed( personId.Value );
             }
 
             throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "either personId or personAliasId must be specified" } );
@@ -828,13 +791,10 @@ namespace Rock.Rest
             T model;
             if ( !Service.TryGet( id, out model ) )
             {
-                return NotFound();
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( !TryCheckCanEdit( model, out var checkResult ) )
-            {
-                return checkResult;
-            }
+            CheckCanEdit( model );
 
             IHasAttributes modelWithAttributes = model as IHasAttributes;
             if ( modelWithAttributes != null )
@@ -852,8 +812,8 @@ namespace Rock.Rest
                         }
 
                         Rock.Attribute.Helper.SaveAttributeValue( modelWithAttributes, attributeCache, attributeValue, rockContext );
-
-                        return Accepted( modelWithAttributes.Id );
+                        var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Accepted, modelWithAttributes.Id );
+                        return response;
                     }
                     else
                     {
@@ -892,7 +852,7 @@ namespace Rock.Rest
             Guid? guid = Service.GetGuid( id );
             if ( !guid.HasValue )
             {
-                return NotFound();
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
             string cookieName = "Rock_Context";
@@ -904,32 +864,21 @@ namespace Rock.Rest
                 guid.ToString();
             string contextValue = Rock.Security.Encryption.EncryptString( identifier );
 
-#if NET5_0_OR_GREATER
-            var httpContext = HttpContext;
-#else
             var httpContext = System.Web.HttpContext.Current;
-#endif
             if ( httpContext == null )
             {
-                return BadRequest();
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
-#if NET5_0_OR_GREATER
-            httpContext.Response.Cookies.Append( cookieName, contextValue, new Microsoft.AspNetCore.Http.CookieOptions
-            {
-                Expires = RockDateTime.Now.AddYears( 1 )
-            } );
-#else
             var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
             contextCookie.Values[typeName] = contextValue;
             contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
             Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
-#endif
 
-            return Ok();
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         /// <summary>
         /// Checks the can edit.
         /// </summary>
@@ -1034,7 +983,8 @@ namespace Rock.Rest
 
             return true;
         }
-#else
+#endif
+
         /// <summary>
         /// Checks the can edit.
         /// </summary>
@@ -1119,7 +1069,6 @@ namespace Rock.Rest
                 }
             }
         }
-#endif
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable proxy creation]. This is needed if lazy loading is needed or Editing/Deleting an entity, etc
@@ -1129,7 +1078,7 @@ namespace Rock.Rest
         /// </value>
         protected void SetProxyCreation( bool enabled )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             Service.Context.ChangeTracker.LazyLoadingEnabled = enabled;
 #else
             Service.Context.Configuration.ProxyCreationEnabled = enabled;
@@ -1143,7 +1092,7 @@ namespace Rock.Rest
         /// <returns></returns>
         protected bool IsProxy( object type )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return type.GetType().Namespace == "Castle.Proxies";
 #else
             return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType( type.GetType() ) != type.GetType();

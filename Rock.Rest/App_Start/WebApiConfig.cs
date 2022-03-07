@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Routing;
@@ -53,7 +53,7 @@ namespace Rock.Rest
         /// Maps ODataService Route and registers routes for any controller actions that use a [Route] attribute
         /// </summary>
         /// <param name="config">The configuration.</param>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public class HttpConfiguration
         {
             public Microsoft.AspNetCore.Routing.IRouteBuilder Routes { get; set; }
@@ -75,7 +75,8 @@ namespace Rock.Rest
 
         public static void Register( HttpConfiguration config )
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
+#else
             config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.RockCacheabilityAttribute() );
@@ -95,8 +96,8 @@ namespace Rock.Rest
             Rock.Rest.Swagger.SwaggerConfig.Register( config );
 #endif
 
-                // Add API route for dataviews
-                config.Routes.MapHttpRoute(
+            // Add API route for dataviews
+            config.Routes.MapHttpRoute(
                 name: "DataViewApi",
                 routeTemplate: "api/{controller}/DataView/{id}",
                 defaults: new
@@ -190,11 +191,11 @@ namespace Rock.Rest
                 }
             }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
+#else
             // finds all [Route] attributes on REST controllers and creates the routes
             config.MapHttpAttributeRoutes();
 #endif
-
 
             //// Add Default API Service routes
             //// Instead of being able to use one default route that gets action from http method, have to
@@ -337,7 +338,7 @@ namespace Rock.Rest
                 } );
 
             // build OData model and create service route (mainly for metadata)
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var builder = new ODataConventionModelBuilder();
 #else
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder( config );
@@ -349,7 +350,7 @@ namespace Rock.Rest
 
             foreach ( var entityType in entityTypeList )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var entityTypeConfig = builder.AddEntityType( entityType );
 #else
                 var entityTypeConfig = builder.AddEntity( entityType );
@@ -366,7 +367,7 @@ namespace Rock.Rest
                     name = entityType.Name.Pluralize();
                 }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 foreach ( var ignoredProperties in entityType.GetCustomAttributes<Rock.Data.IgnorePropertiesAttribute>( true ) )
                 {
                     foreach ( var propertyName in ignoredProperties.Properties )
@@ -383,7 +384,7 @@ namespace Rock.Rest
                 var entitySetConfig = builder.AddEntitySet( name, entityTypeConfig );
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             config.Routes.Count().Filter().OrderBy().Expand().Select().MaxTop( null );
 #endif
 

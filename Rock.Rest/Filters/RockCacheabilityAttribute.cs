@@ -23,14 +23,12 @@ using System.Text.RegularExpressions;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-#if !NET5_0_OR_GREATER
-using System.Web.Http.ModelBinding;
-#endif
-
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+#else
+using System.Web.Http.ModelBinding;
 #endif
 
 using Rock.Data;
@@ -43,7 +41,7 @@ namespace Rock.Rest.Filters
     /// Class RockCacheabilityAttribute.
     /// Implements the <see cref="System.Web.Http.Filters.ActionFilterAttribute" />
     /// </summary>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public class RockCacheabilityAttribute : System.Attribute, IAsyncActionFilter
     {
         public async Task OnActionExecutionAsync( ActionExecutingContext actionContext, ActionExecutionDelegate next )

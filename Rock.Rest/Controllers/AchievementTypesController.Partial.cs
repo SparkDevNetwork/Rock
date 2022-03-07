@@ -23,14 +23,10 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FromUriAttribute = Microsoft.AspNetCore.Mvc.FromQueryAttribute;
-#else
-using IActionResult = System.Web.Http.IHttpActionResult;
-using RouteAttribute = System.Web.Http.RouteAttribute;
-using ProducesResponseTypeAttribute = Swashbuckle.Swagger.Annotations.SwaggerResponseAttribute;
 #endif
 
 using Rock.Data;
@@ -58,9 +54,8 @@ namespace Rock.Rest.Controllers
         [RockObsolete( "1.12" )]
         [Obsolete( "Use api/AchievementTypes/Progress instead" )]
         [System.Web.Http.Route( "api/StreakTypeAchievementTypes/Progress" )]
-        [ProducesResponseType( 200, Type = typeof( List<ProgressStatement> ) )]
         [RockGuid( "828fa4ee-74b0-4d7f-ab32-92b48d28741a" )]
-        public virtual IActionResult GetProgressForPerson( [FromUri] int personId = default, [FromUri] bool includeOnlyEligible = default )
+        public virtual List<ProgressStatement> GetProgressForPerson( [FromUri] int personId = default, [FromUri] bool includeOnlyEligible = default )
         {
             var rockContext = Service.Context as RockContext;
             var personAliasId = default( int );
@@ -73,13 +68,13 @@ namespace Rock.Rest.Controllers
 
                 if ( personAliasId == default )
                 {
-                    return BadRequest( new RockApiError( $"The personAliasId for the person with id {personId} did not resolve" ) );
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"The personAliasId for the person with id {personId} did not resolve" );
+                    throw new HttpResponseException( errorResponse );
                 }
             }
 
             var personAliasEntityTypeId = EntityTypeCache.Get<PersonAlias>().Id;
-
-            return Ok( GetProgressForAchiever( personAliasEntityTypeId, personAliasId, includeOnlyEligible ) );
+            return GetProgressForAchiever( personAliasEntityTypeId, personAliasId, includeOnlyEligible );
         }
 
         /// <summary>
@@ -94,9 +89,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AchievementTypes/Progress" )]
-        [ProducesResponseType( 200, Type = typeof( List<ProgressStatement> ) )]
         [RockGuid( "c2e2eb7b-cfd9-450f-863b-bbbcfec9055d" )]
-        public virtual IActionResult GetProgressForAchiever( [FromUri]int achieverEntityTypeId, [FromUri]int achieverEntityId = default, [FromUri]bool includeOnlyEligible = default )
+        public virtual List<ProgressStatement> GetProgressForAchiever( [FromUri] int achieverEntityTypeId, [FromUri] int achieverEntityId = default, [FromUri] bool includeOnlyEligible = default )
         {
             var rockContext = Service.Context as RockContext;
             var isPerson = achieverEntityTypeId == EntityTypeCache.Get<Person>().Id;
@@ -109,7 +103,8 @@ namespace Rock.Rest.Controllers
 
                 if ( achieverEntityId == default )
                 {
-                    return BadRequest( new RockApiError( "The person Id for the current user did not resolve" ) );
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person Id for the current user did not resolve" );
+                    throw new HttpResponseException( errorResponse );
                 }
             }
 
@@ -119,13 +114,15 @@ namespace Rock.Rest.Controllers
 
                 if ( achieverEntityId == default )
                 {
-                    return BadRequest( new RockApiError( "The person alias Id for the current user did not resolve" ) );
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person alias Id for the current user did not resolve" );
+                    throw new HttpResponseException( errorResponse );
                 }
             }
 
             if ( achieverEntityId == default )
             {
-                return BadRequest( new RockApiError( "The achiever entity id could not be resolved" ) );
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The achiever entity id could not be resolved" );
+                throw new HttpResponseException( errorResponse );
             }
 
             var achievementTypeService = Service as AchievementTypeService;
@@ -136,7 +133,7 @@ namespace Rock.Rest.Controllers
                 progressStatements = progressStatements.Where( ps => !ps.UnmetPrerequisites.Any() ).ToList();
             }
 
-            return Ok( progressStatements );
+            return progressStatements;
         }
 
         /// <summary>
@@ -150,16 +147,16 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AchievementTypes/{achievementTypeId}/BadgeData" )]
-        [ProducesResponseType( 200, Type = typeof( BadgeData ) )]
         [RockGuid( "762278b4-807e-4dac-b4c5-5309fc2c2234" )]
-        public virtual IActionResult GetBadgeData( int achievementTypeId, [FromUri] int? achieverEntityId = null )
+        public virtual BadgeData GetBadgeData( int achievementTypeId, [FromUri] int? achieverEntityId = null )
         {
             var rockContext = Service.Context as RockContext;
             var achievementType = AchievementTypeCache.Get( achievementTypeId );
 
             if ( achievementType == null )
             {
-                return NotFound( new RockApiError( "The achievement type did not resolve" ) );
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "The achievement type did not resolve" );
+                throw new HttpResponseException( errorResponse );
             }
 
             var isPerson = achievementType.AchieverEntityTypeId == EntityTypeCache.Get<Person>().Id;
@@ -172,7 +169,8 @@ namespace Rock.Rest.Controllers
 
                 if ( !achieverEntityId.HasValue )
                 {
-                    return BadRequest( new RockApiError( "The person Id for the current user did not resolve" ) );
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person Id for the current user did not resolve" );
+                    throw new HttpResponseException( errorResponse );
                 }
             }
 
@@ -182,23 +180,25 @@ namespace Rock.Rest.Controllers
 
                 if ( !achieverEntityId.HasValue )
                 {
-                    return BadRequest( new RockApiError( "The person alias Id for the current user did not resolve" ) );
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person alias Id for the current user did not resolve" );
+                    throw new HttpResponseException( errorResponse );
                 }
             }
 
             if ( !achieverEntityId.HasValue )
             {
-                return BadRequest( new RockApiError( "The achiever entity id could not be resolved" ) );
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The achiever entity id could not be resolved" );
+                throw new HttpResponseException( errorResponse );
             }
 
             var achievementTypeService = Service as AchievementTypeService;
             var markup = achievementTypeService.GetBadgeMarkup( achievementType, achieverEntityId.Value );
 
-            return Ok( new BadgeData
+            return new BadgeData
             {
                 AchievementTypeName = achievementType.Name,
                 BadgeMarkup = markup
-            } );
+            };
         }
 
         /// <summary>

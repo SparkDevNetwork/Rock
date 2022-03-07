@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using System.Web.Cors;
 using System.Web.Http.Cors;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 #endif
@@ -46,13 +46,13 @@ namespace Rock.Rest
         /// <returns>
         /// The <see cref="T:System.Web.Cors.CorsPolicy" />.
         /// </returns>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public async Task<CorsPolicy> GetPolicyAsync( HttpContext context, string policyName )
 #else
         public async Task<CorsPolicy> GetCorsPolicyAsync( HttpRequestMessage request, CancellationToken cancellationToken )
 #endif
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var origin = context.Request.Headers[CorsConstants.Origin].ToString();
 #else
             var requestInfo = request.GetCorsRequestContext();
@@ -63,7 +63,7 @@ namespace Rock.Rest
             if ( await IsOriginValid(origin))
             {
                 // Valid request
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var policy = new CorsPolicyBuilder()
                     .AllowAnyHeader()
                     .AllowAnyMethod()

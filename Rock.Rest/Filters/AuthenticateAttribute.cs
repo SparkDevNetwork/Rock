@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 #endif
@@ -33,8 +33,8 @@ using Rock.Rest.Jwt;
 
 namespace Rock.Rest.Filters
 {
-#if NET5_0_OR_GREATER
-#warning This needs more work, it is not a complete solution for AspNetCore yet.
+#if REVIEW_NET5_0_OR_GREATER
+#warning EFTODO: This needs more work, it is not a complete solution for AspNetCore yet.
     public class AuthenticateAttribute : Microsoft.AspNetCore.Authorization.AuthorizeAttribute { }
 
     public class ApiKeyMiddleware
