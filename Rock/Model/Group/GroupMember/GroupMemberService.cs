@@ -602,7 +602,7 @@ namespace Rock.Model
 
             if ( !currentPersonAliasId.HasValue )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPersonAliasId = ( HttpContext.Current.Items["CurrentPerson"] as Person )?.PrimaryAliasId;

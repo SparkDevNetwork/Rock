@@ -169,7 +169,7 @@ namespace Rock.Model
         /// The alert date time.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index]
 #endif
         public DateTime AlertDateTime { get; set; }

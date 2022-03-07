@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity.SqlServer;
@@ -231,7 +231,7 @@ namespace Rock.Model
                 else if ( originalInactiveDateTime.HasValue )
                 {
                     // group was changed to from Inactive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( EF.Functions.DateDiffHour( a.InactiveDateTime.Value, originalInactiveDateTime.Value ) ) < 24 ).ToList() )
 #else
                     foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 ).ToList() )
@@ -276,7 +276,7 @@ namespace Rock.Model
                 else if ( originalArchivedDateTime.HasValue )
                 {
                     // group IsArchived was changed from true to false, so change all archived GroupMember's IsArchived if their ArchivedDateTime is within 24 hours of the Group's ArchivedDateTime
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == true && a.ArchivedDateTime.HasValue && Math.Abs( EF.Functions.DateDiffHour( a.ArchivedDateTime.Value, originalArchivedDateTime.Value ) ) < 24 ).ToList() )
 #else
                     foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == true && a.ArchivedDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.ArchivedDateTime.Value, originalArchivedDateTime.Value ).Value ) < 24 ).ToList() )

@@ -45,7 +45,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [HideFromReporting]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         public string AccessKey { get; set; }

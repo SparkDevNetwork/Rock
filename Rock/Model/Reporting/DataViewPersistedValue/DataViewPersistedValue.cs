@@ -41,7 +41,7 @@ namespace Rock.Model
         /// The data view identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Key]
 #endif
         [DatabaseGenerated( DatabaseGeneratedOption.None )]
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// The entity identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Key]
 #endif
         [DatabaseGenerated( DatabaseGeneratedOption.None )]

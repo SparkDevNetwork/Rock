@@ -195,7 +195,7 @@ namespace Rock.Reporting
             return comparisonExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets a DropDownList of the supported comparison types
         /// </summary>

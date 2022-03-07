@@ -211,7 +211,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_ChannelCustomIndexed1" )]
 #endif
         public string ChannelCustomIndexed1 { get; set; }

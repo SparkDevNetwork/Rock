@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 #else
@@ -41,7 +41,7 @@ namespace Rock.Model
         /// <value>
         /// A queryable collection of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         [NotMapped]
 #endif
         public virtual IQueryable<Group> GroupQuery

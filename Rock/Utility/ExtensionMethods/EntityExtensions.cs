@@ -29,7 +29,7 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list.
         /// </summary>
@@ -149,7 +149,7 @@ namespace Rock
         {
             if ( type != null )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return type.Namespace == "Castle.Proxies";
 #else
                 return type.Namespace == "System.Data.Entity.DynamicProxies";

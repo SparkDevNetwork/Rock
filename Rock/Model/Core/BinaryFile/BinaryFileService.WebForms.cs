@@ -27,7 +27,6 @@ namespace Rock.Model
     /// </summary>
     public partial class BinaryFileService
     {
-#if !NET5_0_OR_GREATER
         /// <summary>
         /// Initiates an asynchronous get of the binary file specified by fileGuid
         /// </summary>
@@ -154,6 +153,5 @@ namespace Rock.Model
                 return binaryFile;
             }
         }
-#endif
     }
 }

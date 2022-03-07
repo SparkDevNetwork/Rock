@@ -134,7 +134,7 @@ namespace Rock.Reporting.DataFilter
             return "Another Data View";
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -259,7 +259,7 @@ namespace Rock.Reporting.DataFilter
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the selection.
         /// </summary>
@@ -334,7 +334,7 @@ namespace Rock.Reporting.DataFilter
             return GetExpressionWithOverrides( entityType, serviceInstance, parameterExpression, null, selection );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the related data view identifier.
         /// </summary>

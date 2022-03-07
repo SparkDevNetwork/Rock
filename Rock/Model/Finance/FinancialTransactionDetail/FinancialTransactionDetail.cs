@@ -66,7 +66,7 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the total amount of the transaction detail.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
 #endif
         public decimal Amount { get; set; }
@@ -106,7 +106,7 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the fee amount of the transaction detail.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
 #endif
         [IncludeAsEntityProperty]
@@ -133,7 +133,7 @@ namespace Rock.Model
         /// This value will be in the currency specified by the Financial Transaction's Foreign Currency Code which defaults to USD.
         /// </remarks>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
 #endif
         [DecimalPrecision( 18, 2 )]

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbGeography = NetTopologySuite.Geometries.Geometry;
 #else
@@ -74,7 +74,7 @@ namespace Rock.Model
                 {
                     case "GeoPoint":
                         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                             if ( GeoPoint != null && Latitude.HasValue && Longitude.HasValue )
                             {
                                 return string.Format( "{0},{1}", Latitude.Value, Longitude.Value );
@@ -93,7 +93,7 @@ namespace Rock.Model
                         {
                             if ( GeoFence != null )
                             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                                 return GeoFenceCoordinates
                                     .Select( c => c[0].ToString() + "," + c[1].ToString() )
                                     .ToList()
@@ -160,7 +160,7 @@ namespace Rock.Model
             {
                 if ( GeoFence != null )
                 {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     // NET5: Not sure this is correct, need testing.
                     return GeoFence.Coordinates
                         .Select( c => new double[] { c.Y, c.X } )
@@ -188,7 +188,7 @@ namespace Rock.Model
         {
             get
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return GeoPoint?.Coordinate?.Y;
 #else
                 return GeoPoint != null ? GeoPoint.Latitude : null;
@@ -207,7 +207,7 @@ namespace Rock.Model
         {
             get
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return GeoPoint?.Coordinate?.X;
 #else
                 return GeoPoint != null ? GeoPoint.Longitude : null;
@@ -267,7 +267,7 @@ namespace Rock.Model
         {
             try
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 this.GeoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude );
 #else
                 this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
@@ -332,7 +332,7 @@ namespace Rock.Model
                 return this.Name;
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             if ( Latitude.HasValue && Longitude.HasValue )
             {
                 return string.Format( "A point at {0}, {1}", Latitude, Longitude );
@@ -386,7 +386,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static DbGeography GetGeoPoint( double latitude, double longitude )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return new NetTopologySuite.Geometries.Point( longitude, latitude );
 #else
             return DbGeography.FromText( $"POINT({longitude} {latitude})" );
@@ -469,7 +469,7 @@ namespace Rock.Model
                 int lastLat = 0;
                 int lastLng = 0;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 // NET5: Not sure this is correct, needs testing.
                 foreach ( var coordinate in this.GeoFence.Coordinates )
                 {

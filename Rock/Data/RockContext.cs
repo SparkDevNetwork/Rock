@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbModelBuilder = Microsoft.EntityFrameworkCore.ModelBuilder;
 #else
@@ -75,7 +75,7 @@ namespace Rock.Data
         {
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of a <see cref="RockContext"/> sub-class using the same <see cref="ObjectContext"/> as regular RockContext.
         /// This is for internal use by <see cref="RockContextReadOnly"/> and <see cref="RockContextAnalytics"/>. 
@@ -93,7 +93,7 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// </summary>
         public RockContext()
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             : base( "RockContext" )
 #else
             : base()
@@ -2214,7 +2214,7 @@ namespace Rock.Data
             }
             else
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 this.Configuration.ValidateOnSaveEnabled = false;
 #endif
                 this.Set<T>().AddRange( records );
@@ -2229,7 +2229,7 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             // Fix for datetime2 => datetime issues. Default all DateTime property
             // types to be datetime.
             var dtList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
@@ -2257,7 +2257,7 @@ namespace Rock.Data
                 //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
                 //// from http://romiller.com/2012/03/26/dynamically-building-a-model-with-code-first/, but using the new RegisterEntityType in 6.1.3
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 // look for IRockStoreModelConvention classes
                 var modelConventionList = Reflection.FindTypes( typeof( Rock.Data.IRockStoreModelConvention<System.Data.Entity.Core.Metadata.Edm.EdmModel> ) )
                     .Where( a => !a.Value.IsAbstract )
@@ -2279,7 +2279,7 @@ namespace Rock.Data
                 {
                     try
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         modelBuilder.Entity( entityType );
 #else
                         modelBuilder.RegisterEntityType( entityType );
@@ -2296,7 +2296,7 @@ namespace Rock.Data
                 {
                     try
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         ContextHelper.AddConfigurationsFromAssembly( modelBuilder, assembly );
 #else
                         modelBuilder.Configurations.AddFromAssembly( assembly );
@@ -2313,7 +2313,7 @@ namespace Rock.Data
                 ExceptionLogService.LogException( new Exception( "Exception occurred when adding Plugin Entities to RockContext", ex ), null );
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             ContextHelper.FinalizeConfigurations( modelBuilder );
             ContextHelper.ModelBuilder = null;
 #endif
@@ -2384,7 +2384,7 @@ namespace Rock.Data
     /// </summary>
     public static class ContextHelper
     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public static ModelBuilder ModelBuilder { get; set; }
 #endif
 
@@ -2394,7 +2394,7 @@ namespace Rock.Data
         /// <param name="modelBuilder">The model builder.</param>
         public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             AddConfigurationsFromAssembly( modelBuilder, typeof( RockContext ).Assembly );
 #else
             modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
@@ -2403,7 +2403,7 @@ namespace Rock.Data
 #endif
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public static void AddConfigurationsFromAssembly( ModelBuilder modelBuilder, Assembly assembly )
         {
             modelBuilder.ApplyConfigurationsFromAssembly( assembly );

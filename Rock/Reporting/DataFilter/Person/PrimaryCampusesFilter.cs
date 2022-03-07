@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -161,7 +161,7 @@ function() {{
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -287,7 +287,7 @@ function() {{
             return null;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Updates the selection from page parameters.
         /// </summary>

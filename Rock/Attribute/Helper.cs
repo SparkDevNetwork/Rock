@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -25,7 +25,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.UI;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.UI.HtmlControls;
 #endif
 using System.Web.UI.WebControls;
@@ -106,7 +106,7 @@ namespace Rock.Attribute
 
             rockContext = rockContext ?? new RockContext();
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
             if ( customGridColumnsBlock )
             {
@@ -122,7 +122,7 @@ namespace Rock.Attribute
             }
 #endif
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             bool dynamicAttributesBlock = false;
 #else
             bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
@@ -662,7 +662,7 @@ This can be due to multiple threads updating the same attribute at the same time
             attributeCategory.Attributes.Add( attribute );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Saves any attribute edits made using an Attribute Editor control
         /// </summary>
@@ -1211,7 +1211,7 @@ This can be due to multiple threads updating the same attribute at the same time
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>

@@ -66,7 +66,7 @@ namespace Rock.Data
         /// <value>
         /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of Rock.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         [DataMember]
@@ -470,7 +470,7 @@ namespace Rock.Data
         /// </value>
         //[LavaIgnore]
         [LavaHidden]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         [NotMapped]
 #endif
         public virtual Dictionary<string, object> AdditionalLavaFields { get; set; }

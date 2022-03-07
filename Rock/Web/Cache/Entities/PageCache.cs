@@ -815,7 +815,7 @@ namespace Rock.Web.Cache
             var iconUrl = string.Empty;
             if ( IconFileId.HasValue )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 iconUrl = $"{HttpContext.Current.Request.ApplicationPath}/GetImage.ashx?{IconFileId.Value}";
 #endif
             }
@@ -827,7 +827,7 @@ namespace Rock.Web.Cache
                 new XAttribute( "id", Id ),
                 new XAttribute( "title", string.IsNullOrWhiteSpace( PageTitle ) ? InternalName : PageTitle ),
                 new XAttribute( "current", isCurrentPage.ToString() ),
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 new XAttribute( "url", new PageReference( Id, 0, parameters, queryString ).BuildUrl() ),
 #endif
                 new XAttribute( "display-description", MenuDisplayDescription.ToString().ToLower() ),
@@ -893,7 +893,7 @@ namespace Rock.Web.Cache
             var iconUrl = string.Empty;
             if ( IconFileId.HasValue )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 iconUrl = $"{HttpContext.Current.Request.ApplicationPath}/GetImage.ashx?{IconFileId.Value}";
 #endif
             }
@@ -912,7 +912,7 @@ namespace Rock.Web.Cache
                 { "Title", string.IsNullOrWhiteSpace(PageTitle) ? InternalName : PageTitle },
                 { "Current", isCurrentPage },
                 { "IsParentOfCurrent", isParentOfCurrent },
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 { "Url", new PageReference(Id, 0, parameters, queryString).BuildUrl() },
 #endif
                 { "DisplayDescription", MenuDisplayDescription },

@@ -141,7 +141,7 @@ namespace Rock.Communication
             }
             catch ( Exception ex )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 ExceptionLogService.LogException( ex );
 #else
                 ExceptionLogService.LogException( ex, HttpContext.Current );

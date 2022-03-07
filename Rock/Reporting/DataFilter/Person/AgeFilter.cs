@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity.SqlServer;
@@ -150,7 +150,7 @@ function() {
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -265,7 +265,7 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             // NET5: Can be implemented, just too lazy at the moment.
             throw new NotImplementedException();
 #else

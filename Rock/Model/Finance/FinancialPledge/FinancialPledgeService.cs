@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -123,7 +123,7 @@ namespace Rock.Model
             bool includePledges, bool includeGifts )
         {
             var rockContext = new RockContext();
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             rockContext.Database.SetCommandTimeout( 180 );
 #else
             rockContext.Database.CommandTimeout = 180;

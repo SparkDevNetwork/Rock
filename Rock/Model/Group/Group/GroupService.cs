@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbGeography = NetTopologySuite.Geometries.Geometry;
 #else
@@ -173,7 +173,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="geofences">The geofences.</param>
         /// <returns></returns>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public IQueryable<Group> GetGeofencedFamilies( List<NetTopologySuite.Geometries.Polygon> geofences )
 #else
         public IQueryable<Group> GetGeofencedFamilies( List<DbGeography> geofences )

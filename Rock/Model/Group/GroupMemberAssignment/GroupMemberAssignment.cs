@@ -39,7 +39,7 @@ namespace Rock.Model
         /// The group member identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
 #endif
         [IgnoreCanDelete]
@@ -52,7 +52,7 @@ namespace Rock.Model
         /// The location identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 1 )]
 #endif
         public int? LocationId { get; set; }
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// The schedule identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 2 )]
 #endif
         public int? ScheduleId { get; set; }

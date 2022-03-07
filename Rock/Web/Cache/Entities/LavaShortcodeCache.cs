@@ -195,7 +195,7 @@ namespace Rock.Web.Cache
         {
             Remove( id.ToString() );
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             // some of the cached lavatemplates might have a reference to this shortcode, so flush them all just in case
 #pragma warning disable CS0618 // Type or member is obsolete
             // This obsolete code can be deleted when support for the DotLiquid Lava implementation is removed.

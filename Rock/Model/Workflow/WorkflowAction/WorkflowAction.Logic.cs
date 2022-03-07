@@ -559,7 +559,7 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding form attributes to liquid
         /// </summary>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
 #endif
         [LavaType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]

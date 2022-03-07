@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -78,7 +78,7 @@ namespace Rock.Model
         /// <param name="blockTypesIdToVerify">The block types identifier to verify.</param>
         public static void VerifyBlockTypeInstanceProperties( int[] blockTypesIdToVerify )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             VerifyBlockTypeInstanceProperties( blockTypesIdToVerify, CancellationToken.None );
 #else
             CancellationToken cancellationToken;
@@ -123,7 +123,7 @@ namespace Rock.Model
                                     var blockTypeCache = BlockTypeCache.Get( blockTypeId );
                                     Type blockCompiledType = blockTypeCache.GetCompiledType();
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                                     bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
 #endif
                                     BlockTypeCache.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
@@ -216,7 +216,7 @@ namespace Rock.Model
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Registers any block types that are not currently registered in Rock.
         /// </summary>

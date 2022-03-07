@@ -41,7 +41,7 @@ namespace Rock.Model
         /// The group identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 0 )]
 #endif
         [IgnoreCanDelete]
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// The group type identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
 #endif
         [IgnoreCanDelete]
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
 #endif
         public int GroupRequirementTypeId { get; set; }
@@ -80,7 +80,7 @@ namespace Rock.Model
         /// The group role identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 3 )]
 #endif
         public int? GroupRoleId { get; set; }

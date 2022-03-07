@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
@@ -89,7 +89,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="geofences">The geofences.</param>
         /// <returns></returns>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<NetTopologySuite.Geometries.Polygon> geofences )
 #else
         public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<DbGeography> geofences )

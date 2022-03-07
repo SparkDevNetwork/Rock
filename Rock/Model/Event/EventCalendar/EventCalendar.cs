@@ -96,7 +96,7 @@ namespace Rock.Model
         /// </value>
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             get { return _eventCalendarItems ?? ( _eventCalendarItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalendarItems = value; }
         }

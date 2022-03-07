@@ -19,13 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
 #endif
 using System.Linq;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Linq.Dynamic;
 #endif
 using Rock.Attribute;

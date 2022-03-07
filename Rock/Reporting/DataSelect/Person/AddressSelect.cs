@@ -132,7 +132,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             // NET5: Need to convert the UDF.
             throw new NotImplementedException();
 #else
@@ -159,7 +159,7 @@ namespace Rock.Reporting.DataSelect.Person
 #endif
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

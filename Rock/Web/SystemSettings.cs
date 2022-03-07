@@ -199,7 +199,7 @@ namespace Rock.Web
             return System.Configuration.ConfigurationManager.AppSettings[key] ?? string.Empty;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the value to web configuration.
         /// </summary>

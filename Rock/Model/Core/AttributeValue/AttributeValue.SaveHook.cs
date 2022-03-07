@@ -22,7 +22,7 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -116,7 +116,7 @@ namespace Rock.Model
                     int personId = Entity.EntityId.Value;
                     if ( Entity.ModifiedByPersonAliasId.HasValue )
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         rockContext.Database.ExecuteSqlRaw(
 #else
                         rockContext.Database.ExecuteSqlCommand(
@@ -128,7 +128,7 @@ namespace Rock.Model
                     }
                     else
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         rockContext.Database.ExecuteSqlRaw(
 #else
                         rockContext.Database.ExecuteSqlCommand(

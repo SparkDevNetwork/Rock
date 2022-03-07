@@ -20,7 +20,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -103,7 +103,7 @@ namespace Rock.Financial
             var givingAnalyticsSetting = GivingAutomationSettings.LoadGivingAutomationSettings();
 
             var rockContext = new RockContext();
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             rockContext.Database.SetCommandTimeout( this.SqlCommandTimeout );
 #else
             rockContext.Database.CommandTimeout = this.SqlCommandTimeout;
@@ -377,7 +377,7 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
                     {
                         using ( var rockContext = new RockContext() )
                         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                             rockContext.Database.SetCommandTimeout( this.SqlCommandTimeout );
 #else
                             rockContext.Database.CommandTimeout = this.SqlCommandTimeout;

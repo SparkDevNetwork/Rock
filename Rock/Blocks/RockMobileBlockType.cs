@@ -88,7 +88,7 @@ namespace Rock.Blocks
 
         #region Custom Settings
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Defines the control that will provide the Basic Settings tab content
         /// for all RockMobileBockType blocks.

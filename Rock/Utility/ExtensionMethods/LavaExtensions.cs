@@ -17,7 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -27,7 +27,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using DotLiquid;
 #endif
 using Rock.Attribute;
@@ -66,12 +66,12 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             System.Web.HttpContext taskContext = System.Web.HttpContext.Current;
 #endif
             var formatLavaTask = new Task( () =>
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 System.Web.HttpContext.Current = taskContext;
 #endif
                 lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
@@ -507,7 +507,7 @@ namespace Rock
         /// <returns></returns>
         private static Data.DbContext GetDbContextFromEntity( object entity )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             if ( !( entity is Microsoft.EntityFrameworkCore.Proxies.Internal.IProxyLazyLoader proxy ) )
             {
                 return null;
@@ -622,7 +622,7 @@ namespace Rock
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ) );
 #else
                         Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
@@ -668,7 +668,7 @@ namespace Rock
                             catch ( Exception ex )
                             {
                                 // Log the exception and continue, because the final render will be performed by RockLiquid.
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                                 ExceptionLogService.LogException( new LavaException( "Lava Verification Error: Parse template failed.", ex ) );
 #else
                                 ExceptionLogService.LogException( new LavaException( "Lava Verification Error: Parse template failed.", ex ), System.Web.HttpContext.Current );
@@ -699,7 +699,7 @@ namespace Rock
                             // Log the exception, with a simple top-level exception containing a warning message.
                             var renderException = new LavaRenderException( LavaService.CurrentEngineName, content, $"Lava engine render output is unexpected.\n[Expected={rockLiquidOutput},\nActual={lavaEngineOutput}]" );
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                             ExceptionLogService.LogException( new LavaException( "Lava Verification Warning: Render output mismatch.", renderException ) );
 #else
                             ExceptionLogService.LogException( new LavaException( "Lava Verification Warning: Render output mismatch.", renderException ), System.Web.HttpContext.Current );
@@ -729,7 +729,7 @@ namespace Rock
                 }
                 else
                 {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     ExceptionLogService.LogException( ex );
 #else
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
@@ -743,7 +743,7 @@ namespace Rock
         [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
         private static string ResolveMergeFieldsForRockLiquid( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new NotSupportedException();
 #else
             Template template = GetTemplate( content );
@@ -957,7 +957,7 @@ namespace Rock
 
         #region Lava Legacy code
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Create a parsed Lava template or retrieve it from the cache.
         /// </summary>

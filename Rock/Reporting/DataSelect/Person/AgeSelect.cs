@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity.SqlServer;
@@ -153,7 +153,7 @@ namespace Rock.Reporting.DataSelect.Person
             //// have SQL Server do the following math (DateDiff only returns the integers):
             //// If the person hasn't had their birthday this year, their age is the DateDiff in Years - 1, otherwise, it is DateDiff in Years (without adjustment)
             var personAgeQuery = new PersonService( context ).Queryable()
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 .Select( p => p.BirthDate > currentDate.AddYears( -EF.Functions.DateDiffYear( p.BirthDate, currentDate ) ?? 0 )
                     ? EF.Functions.DateDiffYear( p.BirthDate, currentDate ) - 1
                     : EF.Functions.DateDiffYear( p.BirthDate, currentDate ) );
@@ -168,7 +168,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectAgeExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

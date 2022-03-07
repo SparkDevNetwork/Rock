@@ -38,7 +38,7 @@ namespace Rock.Tv
         /// <returns></returns>
         public static SiteCache GetCurrentApplicationSite( bool validateApiKey = true, RockContext rockContext = null )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new System.NotImplementedException();
 #else
             var appId = HttpContext.Current?.Request?.Headers?["X-Rock-App-Id"];
@@ -167,7 +167,7 @@ namespace Rock.Tv
             // in case.
             if ( username.IsNotNullOrWhiteSpace() )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 throw new System.NotImplementedException();
 #else
                 var password = System.Web.Security.Membership.GeneratePassword( 12, 1 );
@@ -194,7 +194,7 @@ namespace Rock.Tv
         /// <returns></returns>
         public static string GetAuthenticationTokenFromUsername( string username )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new System.NotImplementedException();
 #else
             // Get the auth ticket from the username

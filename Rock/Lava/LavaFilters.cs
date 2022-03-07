@@ -18,7 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -35,14 +35,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.UI.HtmlControls;
 #endif
 using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using Ical.Net.DataTypes;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using ImageResizer;
 #endif
 using Rock;
@@ -1161,7 +1161,7 @@ namespace Rock.Lava
             var endDate = startDateTime.Value.AddYears( 1 );
 
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var calendarEvent = calendar.Events[0] as CalendarEvent;
 #else
             var calendarEvent = calendar.Events[0] as Event;
@@ -2869,7 +2869,7 @@ namespace Rock.Lava
                     else
                     {
                         var photoUrl = new StringBuilder();
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         photoUrl.Append( "/" );
 #else
                         photoUrl.Append( HttpContext.Current.Server.MapPath( "~/" ) );
@@ -3739,7 +3739,7 @@ namespace Rock.Lava
             return string.Format( "<![CDATA[{0}]]>", input );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Redirects the specified input.
         /// </summary>
@@ -3774,7 +3774,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ResolveRockUrl( string input )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var url = input.ToString();
 
             if ( url.StartsWith( "~~" ) )
@@ -4368,7 +4368,7 @@ namespace Rock.Lava
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// adds a meta tag to the head of the document
         /// </summary>
@@ -4667,7 +4667,7 @@ namespace Rock.Lava
             return starMarkup.ToString();
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Pages the specified input.
         /// </summary>
@@ -5152,7 +5152,7 @@ namespace Rock.Lava
         /// <param name="typeOrder">The type order.</param>
         public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             RockPage rockPage = HttpContext.Current.Handler as RockPage;
 
             if ( input.IsNotNullOrWhiteSpace() )
@@ -5962,7 +5962,7 @@ namespace Rock.Lava
 
             if ( currentPerson == null )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 var httpContext = System.Web.HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
@@ -6027,7 +6027,7 @@ namespace Rock.Lava
 
         private static Stream GetResized( string resizeSettings, Stream fileContent )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return fileContent;
 #else
             try
@@ -6279,7 +6279,7 @@ namespace Rock.Lava
 
         #endregion Color Filters
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Get the page route for the specified page Id or Guid.
         /// </summary>
@@ -6397,7 +6397,7 @@ namespace Rock.Lava
 #endif
 
         #region POCOs
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// POCO to translate an HTTP cookie in to a Liquidizable form
         /// </summary>

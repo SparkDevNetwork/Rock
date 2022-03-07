@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -166,7 +166,7 @@ namespace Rock.Model
 
                 var calEvent = GetICalEvent();
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 RecurrencePattern rrule = null;
 #else
                 Ical.Net.Interfaces.DataTypes.IRecurrencePattern rrule = null;
@@ -461,7 +461,7 @@ namespace Rock.Model
             return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date ) || ( EffectiveStartDate?.Date != originalEffectiveStartDate?.Date );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the Schedule's iCalender Event.
         /// </summary>
@@ -495,7 +495,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Ical.Net.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public virtual CalendarEvent GetICalEvent()
 #else
         public virtual Ical.Net.Event GetICalEvent()
@@ -509,13 +509,13 @@ namespace Rock.Model
             return _getICalEvent;
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         private CalendarEvent _getICalEvent = null;
 #else
         private Ical.Net.Event _getICalEvent = null;
 #endif
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the occurrences.
         /// </summary>

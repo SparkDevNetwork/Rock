@@ -28,7 +28,7 @@ namespace Rock.CheckIn
     /// </summary>
     public static class CheckinConfigurationHelper
     {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Determines if the device is "mobile" and if it is no longer valid.
         /// </summary>

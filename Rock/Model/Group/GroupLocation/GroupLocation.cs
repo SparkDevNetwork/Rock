@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -211,7 +211,7 @@ namespace Rock.Model
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.GroupLocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GroupMemberPersonAlias ).WithMany().HasForeignKey( t => t.GroupMemberPersonAliasId ).WillCascadeOnDelete( true );
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             Builder.HasMany( a => a.Schedules )
                 .WithMany( s => s.GroupLocations )
                 .UsingEntity( j =>

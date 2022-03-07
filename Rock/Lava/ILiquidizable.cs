@@ -24,7 +24,7 @@ namespace Rock.Lava
     /// This is a Rock-specific superset of the same-named DotLiquid interface.
     /// </summary>
     [RockObsolete( "1.13.0" )] // "Implement the Rock.Lava.ILavaDataDictionary interface instead."
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public interface ILiquidizable
 #else
     public interface ILiquidizable : global::DotLiquid.ILiquidizable, global::DotLiquid.IIndexable

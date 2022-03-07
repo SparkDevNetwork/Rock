@@ -74,7 +74,7 @@ namespace Rock.Model
         /// An example is that a person pledges $100.00 to be given monthly for the next year. This value will be $1,200.00 to indicate the total amount that is expected.
         /// </remarks>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
 #endif
         public decimal TotalAmount { get; set; }

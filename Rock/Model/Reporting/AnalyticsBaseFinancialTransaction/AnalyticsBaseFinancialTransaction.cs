@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using Rock.Web.UI.Controls;
 #endif
 using System;
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [MaxLength( 40 )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_TransactionKey", IsUnique = true )]
 #endif
         public string TransactionKey { get; set; }
@@ -333,7 +333,7 @@ namespace Rock.Model
         /// The amount.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
 #endif
         public decimal Amount { get; set; }

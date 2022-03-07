@@ -133,7 +133,7 @@ namespace Rock.Storage.Provider
                 return string.Empty;
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return relativePath;
 #else
             // allows a fallback for non-IIS environments

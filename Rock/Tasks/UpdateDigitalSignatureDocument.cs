@@ -42,7 +42,7 @@ namespace Rock.Tasks
                 {
                     var status = document.Status;
                     int? binaryFileId = document.BinaryFileId;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     string folderPath = "App_Data/Cache/SignNow";
 #else
                     string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );

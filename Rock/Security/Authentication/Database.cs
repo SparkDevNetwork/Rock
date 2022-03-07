@@ -138,7 +138,7 @@ namespace Rock.Security.Authentication
             return EncodeBcrypt( password );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
         /// </summary>

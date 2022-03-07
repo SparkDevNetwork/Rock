@@ -204,7 +204,7 @@ namespace Rock.Model
                 return;
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var wrappedException = new Exception( "An exception occurred in the SmsAction pipeline. See the inner exception.", exception );
             ExceptionLogService.LogException( wrappedException );
 #else
@@ -225,7 +225,7 @@ namespace Rock.Model
                 return;
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var exception = new Exception( string.Format( "An error occurred in the SmsAction pipeline: {0}", errorMessage ) );
             ExceptionLogService.LogException( exception );
 #else

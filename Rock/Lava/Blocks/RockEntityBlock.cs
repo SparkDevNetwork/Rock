@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -135,7 +135,7 @@ namespace Rock.Lava.Blocks
                         dbContext = LavaHelper.GetRockContextFromLavaContext( context );
                     }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                     // Disable change-tracking for this data context to improve performance - objects supplied to a Lava context are read-only.
                     dbContext.Configuration.AutoDetectChangesEnabled = false;
 #endif
@@ -207,7 +207,7 @@ namespace Rock.Lava.Blocks
 
                             foreach ( var dynamicFilter in dynamicFilters )
                             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                                 var dynamicFilterValue = HttpContext.Current.Request[dynamicFilter];
                                 var dynamicFilterExpression = GetDynamicFilterExpression( dynamicFilter, dynamicFilterValue, entityType, serviceInstance, paramExpression );
                                 if ( dynamicFilterExpression != null )
@@ -361,7 +361,7 @@ namespace Rock.Lava.Blocks
                         {
                             if ( !parms["lazyloadenabled"].AsBoolean() )
                             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                                 dbContext.Configuration.LazyLoadingEnabled = false;
 #endif
                             }
@@ -474,7 +474,7 @@ namespace Rock.Lava.Blocks
                                    Not sure why this exception is happening. It looks to be within the ZZZ Project System.Linq.Dynamic.Core
                                    package. The important part is that the data is coming back in a single query.
                                 */
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                                 dbContext.Configuration.LazyLoadingEnabled = true;
 #endif
 
@@ -665,7 +665,7 @@ namespace Rock.Lava.Blocks
 
             if ( currentPerson == null )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 var httpContext = System.Web.HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
@@ -747,7 +747,7 @@ namespace Rock.Lava.Blocks
 
                 foreach ( var dynamicParm in dynamicParmList )
                 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                     if ( HttpContext.Current.Request[dynamicParm] != null )
                     {
                         var dynamicParmValue = HttpContext.Current.Request[dynamicParm].ToString();

@@ -56,7 +56,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_PageId" )]
         [Index( "IX_PageIdEntityIdParameter", 0, IsUnique = true )]
 #endif
@@ -71,7 +71,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_PageIdEntityIdParameter", 1, IsUnique = true )]
 #endif
         public string Entity { get; set; }
@@ -85,7 +85,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_PageIdEntityIdParameter", 2, IsUnique = true )]
 #endif
         public string IdParameter { get; set; }

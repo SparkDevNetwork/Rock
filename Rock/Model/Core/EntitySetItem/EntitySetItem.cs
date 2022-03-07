@@ -96,7 +96,7 @@ namespace Rock.Model
         ///  A <see cref="System.Collections.Generic.Dictionary&lt;String,String&gt;"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.EntitySetItem"/>
         /// </value>
         [DataMember]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         [NotMapped]
 #endif
         public virtual Dictionary<string, object> AdditionalMergeValues

@@ -39,7 +39,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [MaxLength( 6 )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         public string Code { get; set; }

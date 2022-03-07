@@ -156,7 +156,7 @@ namespace Rock.Reporting
             List<EntityField> entityFields = null;
             _workflowTypeNameLookup = null;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current != null )
             {
                 entityFields = HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
@@ -385,7 +385,7 @@ namespace Rock.Reporting
                 sortedFields.Add( entityField );
             }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current != null )
             {
                 HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
@@ -778,7 +778,7 @@ namespace Rock.Reporting
         /// </value>
         public FieldTypeCache FieldType { get; set; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the type of the bound field.
         /// </summary>

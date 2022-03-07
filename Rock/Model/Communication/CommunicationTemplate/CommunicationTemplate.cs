@@ -328,7 +328,7 @@ namespace Rock.Model
         /// The merge fields.
         /// </value>
         [DataMember]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         [NotMapped]
 #endif
         public virtual Dictionary<string, string> LavaFields { get; set; } = new Dictionary<string, string>();

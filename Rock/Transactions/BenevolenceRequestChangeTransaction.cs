@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 #else
@@ -52,7 +52,7 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="BenevolenceRequestChangeTransaction"/> class.
         /// </summary>
         /// <param name="entry">The db entity entry.</param>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public BenevolenceRequestChangeTransaction( EntityEntry<BenevolenceRequest> entry )
 #else
         public BenevolenceRequestChangeTransaction( DbEntityEntry<BenevolenceRequest> entry )

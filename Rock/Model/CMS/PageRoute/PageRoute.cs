@@ -18,7 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.Routing;
 #endif
 
@@ -70,7 +70,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the format of the RoutePath.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Route]
 #endif
         [Required]

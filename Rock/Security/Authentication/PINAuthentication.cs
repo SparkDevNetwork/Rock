@@ -65,7 +65,7 @@ namespace Rock.Security.Authentication
             return true;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
         /// </summary>
@@ -92,7 +92,7 @@ namespace Rock.Security.Authentication
             throw new System.NotImplementedException();
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Generates the log in URL.
         /// </summary>

@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.Collections.ObjectModel;
 #endif
 using System.ComponentModel.DataAnnotations;
@@ -204,7 +204,7 @@ namespace Rock.Model
             }
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         // Added to support ManyToMany relationship.
 
         public virtual ICollection<Attribute> AttributeItems

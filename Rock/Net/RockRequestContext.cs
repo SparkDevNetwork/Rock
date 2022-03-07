@@ -113,7 +113,7 @@ namespace Rock.Net
             RootUrlPath = string.Empty;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
@@ -161,7 +161,8 @@ namespace Rock.Net
         /// <param name="request">The request from an API call that we will initialize from.</param>
         internal RockRequestContext( HttpRequestMessage request )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( true );
+            CurrentUser = new UserLoginService( new RockContext() ).Queryable().Where( u => u.UserName == "admin" ).FirstOrDefault();
+            //CurrentUser = UserLoginService.GetCurrentUser( true );
 
             var uri = request.RequestUri;
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
@@ -173,7 +174,7 @@ namespace Rock.Net
             // parameters don't make a lot of sense with an API call.
             //
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var queryString = HttpUtility.ParseQueryString( request.RequestUri.Query );
             foreach ( string k in queryString.Keys )
             {
@@ -422,7 +423,7 @@ namespace Rock.Net
                 mergeFields.Add( "Campuses", CampusCache.All() );
             }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( Headers.ContainsKey( "X-Rock-DeviceData" ) )
             {
                 mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );

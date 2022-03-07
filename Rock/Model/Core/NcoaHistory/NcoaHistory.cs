@@ -316,7 +316,7 @@ namespace Rock.Model
             // removed this to eliminate a hard link between the NCOA and the person alias, since this data leaves the system and comes
             // back at a later date it's best not to rely on the person alias being there
             // this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             Builder.Property( p => p.MoveDistance ).HasPrecision( 6, 2 );
 #else
             this.Property( p => p.MoveDistance ).HasPrecision( 6, 2 );

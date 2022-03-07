@@ -167,7 +167,7 @@ namespace Rock.Lava
 	            Reason: Update Persisted Datasets Job with Lava includes.
             */
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current != null )
             {
                 if ( templatePath.StartsWith( "~~" ) &&

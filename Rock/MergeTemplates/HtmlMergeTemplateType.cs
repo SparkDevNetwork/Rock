@@ -132,7 +132,7 @@ namespace Rock.MergeTemplates
         {
             get
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     return HttpContext.Current.Items[$"{this.GetType().FullName}:Exceptions"] as List<Exception>;
@@ -144,7 +144,7 @@ namespace Rock.MergeTemplates
 
             set
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     HttpContext.Current.Items[$"{this.GetType().FullName}:Exceptions"] = value;

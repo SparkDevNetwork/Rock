@@ -340,7 +340,7 @@ namespace Rock.Model
 
             // In the case of GroupMember as a property (not a collection), we DO want to fetch the groupMember record even if it is archived, so ensure that AllowPropertyFilter = false;
             // NOTE: This is not specific to GroupMember, it is for any Filtered Model (currently just Group and GroupMember)
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             // NET5: Cannot find any equivalent in ZZZ library for EF Core.
             Z.EntityFramework.Plus.QueryFilterManager.AllowPropertyFilter = false;
 #endif

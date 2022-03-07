@@ -186,7 +186,7 @@ namespace Rock.Reporting.DataSelect.Person
             return null;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         private const string _CtlNoteTypes = "cblNoteTypes";
         private const string _CtlSlidingDateRangePicker = "slidingDateRangePicker";
 

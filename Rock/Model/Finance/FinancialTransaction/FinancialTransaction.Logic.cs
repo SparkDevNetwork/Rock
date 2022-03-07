@@ -35,7 +35,7 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
 #endif
         public virtual decimal TotalAmount
@@ -50,7 +50,7 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
 #endif
         public virtual decimal? TotalFeeAmount
@@ -77,7 +77,7 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
 #endif
         public virtual decimal? TotalFeeCoverageAmount

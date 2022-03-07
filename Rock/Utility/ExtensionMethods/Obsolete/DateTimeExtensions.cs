@@ -521,11 +521,7 @@ namespace Rock
         [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
         public static string ToRfc822DateTime( DateTime dateTime )
         {
-#if NET5_0_OR_GREATER
-            int offset = TimeZoneInfo.Local.GetUtcOffset( DateTime.Now ).Hours;
-#else
             int offset = TimeZone.CurrentTimeZone.GetUtcOffset( DateTime.Now ).Hours;
-#endif
             string timeZone = "+" + offset.ToString().PadLeft( 2, '0' );
 
             if ( offset < 0 )

@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.Linq;
 #endif
 
@@ -96,7 +96,7 @@ namespace Rock.Model
                 LocationId = location.Id;
                 if ( location.GeoPoint != null )
                 {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     Point = new MapCoordinate( location.Latitude, location.Longitude );
 #else
                     Point = new MapCoordinate( location.GeoPoint.Latitude, location.GeoPoint.Longitude );
@@ -105,7 +105,7 @@ namespace Rock.Model
 
                 if ( location.GeoFence != null )
                 {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     PolygonPoints = location.GeoFence.Coordinates
                         .Select( c => new MapCoordinate( c.Y, c.X ) )
                         .ToList();

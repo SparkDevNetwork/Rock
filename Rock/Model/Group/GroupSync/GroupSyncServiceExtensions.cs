@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -59,7 +59,7 @@ namespace Rock.Model
         {
             return groupSync.Where( x => x.ScheduleIntervalMinutes == null
                                     || x.LastRefreshDateTime == null
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                                     || x.LastRefreshDateTime.Value.AddMinutes( x.ScheduleIntervalMinutes.Value ) < RockDateTime.Now );
 #else
                                     || DbFunctions.AddMinutes( x.LastRefreshDateTime, x.ScheduleIntervalMinutes ) < RockDateTime.Now );

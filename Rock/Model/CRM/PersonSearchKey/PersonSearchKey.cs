@@ -18,7 +18,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Infrastructure;
 #endif
 using System.Data.Entity.ModelConfiguration;
@@ -58,7 +58,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [DefinedValue( SystemGuid.DefinedType.PERSON_SEARCH_KEYS )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 1 )]
 #endif
         public int SearchTypeValueId { get; set; }
@@ -71,7 +71,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 255 )]
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
 #endif
         public string SearchValue { get; set; }

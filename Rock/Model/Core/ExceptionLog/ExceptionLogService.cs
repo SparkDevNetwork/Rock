@@ -146,7 +146,7 @@ namespace Rock.Model
             Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         /// <summary>
         /// EF Core shim until reliance on HttpContext is removed.
         /// </summary>
@@ -362,7 +362,7 @@ namespace Rock.Model
                     return exceptionLog;
                 }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 StringBuilder cookies = new StringBuilder();
                 var cookieList = request.Headers.GetCookies();
 

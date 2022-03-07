@@ -7,6 +7,14 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;REVIEW_NET5_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;REVIEW_NET5_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Badge\**" />
     <Compile Remove="bin\**" />

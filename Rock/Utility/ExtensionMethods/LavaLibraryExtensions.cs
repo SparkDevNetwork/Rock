@@ -17,7 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -61,7 +61,7 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var formatLavaTask = new Task( () =>
             {
                 lavaDebugPanel.Append( FormatLavaDataObjectInfo( lavaObject.GetLavaDataObjectChildInfo( 0, rockContext ) ) );
@@ -545,7 +545,7 @@ namespace Rock
             }
             catch ( Exception ex )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 ExceptionLogService.LogException( ex );
 #else
                 ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
@@ -609,7 +609,7 @@ namespace Rock
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ) );
 #else
                         Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
@@ -651,7 +651,7 @@ namespace Rock
                 }
                 else
                 {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     ExceptionLogService.LogException( ex );
 #else
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );

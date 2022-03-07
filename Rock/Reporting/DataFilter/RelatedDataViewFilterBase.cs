@@ -168,7 +168,7 @@ namespace Rock.Reporting.DataFilter
             return $"{ GetRelatedEntityName() } Data View";
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Override this method to customise the DataViewItemPicker displayed for this filter by setting the Label text, Help text and other properties as necessary.
         /// </summary>
@@ -240,7 +240,7 @@ function() {
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         private const string _CtlDataView = "ddlDataView";
 
         /// <summary>

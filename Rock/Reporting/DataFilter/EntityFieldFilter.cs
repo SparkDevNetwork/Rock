@@ -34,7 +34,7 @@ namespace Rock.Reporting.DataFilter
     /// </summary>
     public abstract class EntityFieldFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
     {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Renders the entity fields controls.
         /// </summary>
@@ -213,7 +213,7 @@ namespace Rock.Reporting.DataFilter
             return null;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Updates the selection from page parameters if there is a page parameter for the selection
         /// </summary>

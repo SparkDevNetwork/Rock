@@ -49,7 +49,7 @@ namespace Rock.Mobile
         /// <returns>A SiteCache object or null if the request was not valid.</returns>
         public static SiteCache GetCurrentApplicationSite( bool validateApiKey = true, Data.RockContext rockContext = null )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             // Not currently supported.
             return null;
 #else
@@ -210,7 +210,7 @@ namespace Rock.Mobile
         /// <returns>A string that represents the user's authentication token.</returns>
         public static string GetAuthenticationToken( string username )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new NotImplementedException();
 #else
             var ticket = new System.Web.Security.FormsAuthenticationTicket( 1,

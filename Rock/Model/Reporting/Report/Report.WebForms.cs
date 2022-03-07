@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -89,7 +89,7 @@ namespace Rock.Model
 
             if ( databaseTimeoutSeconds.HasValue )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 reportDbContext.Database.SetCommandTimeout( databaseTimeoutSeconds.Value );
 #else
                 reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
@@ -292,7 +292,7 @@ namespace Rock.Model
 
             var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var query = qry.Provider.CreateQuery( selectExpression );
 #else
             var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();

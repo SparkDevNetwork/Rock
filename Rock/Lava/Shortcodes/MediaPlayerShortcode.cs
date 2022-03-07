@@ -356,7 +356,7 @@ so you can customize this to be exactly what you want.</p>
             // Attempt to get the session guid
             try
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 sessionGuid = null;
 #else
                 sessionGuid = ( HttpContext.Current.Handler as RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
@@ -382,7 +382,7 @@ so you can customize this to be exactly what you want.</p>
 
             if ( currentPerson == null )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 var httpContext = HttpContext.Current;
 
                 if ( context != null && httpContext.Items.Contains( "CurrentPerson" ) )
@@ -453,7 +453,7 @@ so you can customize this to be exactly what you want.</p>
             result.WriteLine( $"<div id=\"{elementId}\" style=\"{style}\"></div>" );
             result.WriteLine( script );
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             // If we have a RockPage related to the current request then
             // register all the JS and CSS links we need.
             if ( HttpContext.Current != null && HttpContext.Current.Handler is System.Web.UI.Page page )

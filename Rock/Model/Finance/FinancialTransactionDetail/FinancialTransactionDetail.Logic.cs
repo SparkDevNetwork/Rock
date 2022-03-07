@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 #endif

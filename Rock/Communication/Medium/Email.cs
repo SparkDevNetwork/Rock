@@ -21,7 +21,7 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using Rock.Web.UI.Controls.Communication;
 #endif
 
@@ -81,7 +81,7 @@ You can view an online version of this email here:
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the control.
         /// </summary>

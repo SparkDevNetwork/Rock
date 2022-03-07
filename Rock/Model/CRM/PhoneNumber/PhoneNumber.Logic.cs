@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 #endif
@@ -45,7 +45,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 23 )]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_FullNumber" )]
 #endif
         public string FullNumber

@@ -45,7 +45,7 @@ namespace Rock.Model
         /// The authorized person identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 2 )]
 #endif
         public int? AuthorizedPersonAliasId { get; set; }
@@ -94,7 +94,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the time that the transaction occurred. This is the local server time.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 0 )]
 #endif
         public DateTime? TransactionDateTime { get; set; }
@@ -134,7 +134,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
 #endif
         public int TransactionTypeValueId { get; set; }
@@ -172,7 +172,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 128 )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index]
 #endif
         [HideFromReporting]
@@ -313,7 +313,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_SundayDate" )]
 #endif
         public DateTime? SundayDate
@@ -581,7 +581,7 @@ namespace Rock.Model
             this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             // EFCore: Moved to FinancialTransactionRefund
 #else
             this.HasOptional( t => t.RefundDetails ).WithRequired( r => r.FinancialTransaction ).WillCascadeOnDelete( true );

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using ImageResizer;
 #endif
 
@@ -82,7 +82,7 @@ namespace Rock.Model
                                     BinaryFileType.MaxWidth.HasValue &&
                                     BinaryFileType.MaxWidth != 0 )
                                 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                                     ResizeSettings settings = new ResizeSettings();
                                     MemoryStream resizedStream = new MemoryStream();
                                     if ( BinaryFileType.MaxWidth.Value < Entity.Width || BinaryFileType.MaxHeight < Entity.Height )

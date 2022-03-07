@@ -40,7 +40,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupIdGroupTypeRoleId", 0, IsUnique = true )]
 #endif
         public int GroupId { get; set; }
@@ -53,7 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupIdGroupTypeRoleId", 1, IsUnique = true )]
 #endif
         public int GroupTypeRoleId { get; set; }

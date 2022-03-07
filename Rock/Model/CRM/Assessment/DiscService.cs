@@ -488,7 +488,7 @@ namespace Rock.Model
         }
 
         #region DISC shared  UI stuff
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Plots the one DISC graph.
         /// </summary>

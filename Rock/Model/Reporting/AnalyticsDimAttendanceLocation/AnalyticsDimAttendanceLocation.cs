@@ -18,7 +18,7 @@ using Rock.Data;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using DbGeography = NetTopologySuite.Geometries.Geometry;
 #else
 using System.Data.Entity.Spatial;

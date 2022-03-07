@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using DotLiquid;
 #endif
 
@@ -233,7 +233,7 @@ namespace Rock.Lava
 
         #region RockLiquid Lava implementation
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Parse the attributes markup of a Lava element tag to produce a collection of settings.
         /// </summary>

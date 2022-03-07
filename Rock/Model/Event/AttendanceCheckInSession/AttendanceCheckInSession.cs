@@ -90,7 +90,7 @@ namespace Rock.Model
         {
             this.HasOptional( c => c.Device ).WithMany().HasForeignKey( c => c.DeviceId ).WillCascadeOnDelete( false );
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             // EFCORE: Moved to Attendance with reverse relationship setup.
 
             // the Migration will manually add a ON DELETE SET NULL for AttendanceCheckInSessionId

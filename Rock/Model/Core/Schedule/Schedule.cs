@@ -189,7 +189,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Category Category { get; set; }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public virtual ICollection<GroupLocation> GroupLocations { get; set; } = new System.Collections.ObjectModel.Collection<GroupLocation>();
 #endif
 

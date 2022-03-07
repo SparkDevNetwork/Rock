@@ -130,7 +130,7 @@ namespace Rock.Model
             return null;
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 
         /// <summary>
         /// Gets the photo URL.

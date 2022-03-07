@@ -26,7 +26,7 @@ using Rock.Data;
 using Rock.Utility.ExtensionMethods;
 using Rock.Web.Cache;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
@@ -471,7 +471,7 @@ namespace Rock
             }
 
             // Add executing assembly's directory
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             string codeBase = System.Reflection.Assembly.GetExecutingAssembly().Location;
 #else
             string codeBase = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
@@ -498,7 +498,7 @@ namespace Rock
                                         && !ignoredFileStart.Any( i => Path.GetFileName( a ).StartsWith( i, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
 
             // get a lookup of already loaded assemblies so that we don't have to load it unnecessarily
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !string.IsNullOrWhiteSpace( a.Location ) )
 #else
             var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache && !string.IsNullOrWhiteSpace( a.Location ) )

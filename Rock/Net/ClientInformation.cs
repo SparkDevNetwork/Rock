@@ -73,7 +73,7 @@ namespace Rock.Net
 
         #region Constructors
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientInformation"/> class.
         /// </summary>
@@ -128,7 +128,7 @@ namespace Rock.Net
             {
                 IpAddress = request.Headers.GetValues( "X-FORWARDED-FOR" ).First();
             }
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
             {
                 IpAddress = ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] )?.Request?.UserHostAddress ?? string.Empty;

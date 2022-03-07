@@ -176,7 +176,7 @@ namespace Rock.CheckIn
             Messages = new List<CheckInMessage>();
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInState"/> class.
         /// </summary>

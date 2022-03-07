@@ -42,7 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_PersonAliasId_DuplicatePersonAliasId", 0, IsUnique = true )]
 #endif
         public int PersonAliasId { get; set; }
@@ -55,7 +55,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_PersonAliasId_DuplicatePersonAliasId", 1, IsUnique = true )]
 #endif
         public int DuplicatePersonAliasId { get; set; }
@@ -125,7 +125,7 @@ namespace Rock.Model
         /// The match score.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index]
 #endif
         public double? ConfidenceScore { get; private set; }

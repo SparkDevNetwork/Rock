@@ -137,7 +137,7 @@ namespace Rock.Reporting.DataFilter.Step
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Updates the selection from page parameters if there is a page parameter for the selection
         /// </summary>

@@ -46,7 +46,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         [MaxLength(200)]
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         public int? AliasPersonId { get; set; }

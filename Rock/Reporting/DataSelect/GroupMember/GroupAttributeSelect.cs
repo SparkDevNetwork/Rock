@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -145,7 +145,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         private const string _CtlGroup = "pnlGroupAttributeFilterControls";
         private const string _CtlProperty = "ddlProperty";
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -241,7 +241,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
             return null;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>

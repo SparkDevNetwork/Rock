@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
@@ -122,7 +122,7 @@ function() {
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -229,7 +229,7 @@ function() {
 
             RockContext rockContext = ( RockContext ) serviceInstance.Context;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var geoFence = new LocationService( rockContext )
 #else
             DbGeography geoFence = new LocationService( rockContext )
@@ -240,7 +240,7 @@ function() {
             int familyGroupTypeId = new GroupTypeService( rockContext ).Get( familyGroupTypeGuid ).Id;
 
             var groupLocationQry = new GroupLocationService( rockContext )
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 .GetMappedLocationsByGeofences( new List<NetTopologySuite.Geometries.Polygon> { geoFence } )
 #else
                 .GetMappedLocationsByGeofences( new List<DbGeography> { geoFence } )

@@ -78,7 +78,7 @@ namespace Rock.Model
         /// <value>
         /// An enumerable collection containing the active <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> for this WorkflowActivity.
         /// </value>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         [NotMapped]
 #endif
         [LavaVisible]

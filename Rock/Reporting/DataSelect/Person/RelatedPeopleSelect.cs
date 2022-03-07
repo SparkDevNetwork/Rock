@@ -32,7 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
@@ -177,7 +177,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<RelatedPersonInfo> ); }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -428,7 +428,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </summary>
         public const string FamilyRelationshipSpouseGuid = "98AD882C-39C4-4FC6-B06D-EC474117BF42";
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

@@ -38,7 +38,7 @@ namespace Rock.Model
         /// The metric identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_MetricCategory", 0 )]
 #endif
         public int MetricId { get; set; }
@@ -50,7 +50,7 @@ namespace Rock.Model
         /// The category identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_MetricCategory", 1 )]
 #endif
         public int CategoryId { get; set; }

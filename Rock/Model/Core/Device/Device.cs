@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> representing the Name of the device.
         /// </value>
         [Required]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         [MaxLength( 50 )]
@@ -244,7 +244,7 @@ namespace Rock.Model
         public DeviceConfiguration()
         {
             this.HasOptional( d => d.Location ).WithMany().HasForeignKey( d => d.LocationId ).WillCascadeOnDelete( false );
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             Builder.HasMany( a => a.Locations )
                 .WithMany( b => b.Devices )
                 .UsingEntity( j =>

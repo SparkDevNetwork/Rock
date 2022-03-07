@@ -87,7 +87,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<string> ); }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -248,7 +248,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         private const string _CtlFormat = "ddlFormat";
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlRoleType = "ddlRoleType";

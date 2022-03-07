@@ -35,7 +35,7 @@ namespace Rock
         /// <returns></returns>
         public static string XxHash( this string str )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             var hash = K4os.Hash.xxHash.XXH32.DigestOf( Encoding.UTF8.GetBytes( str ) );
 #else
             var hash = xxHashSharp.xxHash.CalculateHash( Encoding.UTF8.GetBytes( str ) );

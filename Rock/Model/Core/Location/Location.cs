@@ -20,7 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using NetTopologySuite.Geometries;
 #else
 using System.Data.Entity.Spatial;
@@ -91,7 +91,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public Point GeoPoint { get; set; }
 #else
         public DbGeography GeoPoint { get; set; }
@@ -110,7 +110,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public NetTopologySuite.Geometries.Polygon GeoFence { get; set; }
 #else
         public DbGeography GeoFence { get; set; }
@@ -394,7 +394,7 @@ namespace Rock.Model
 
         private ICollection<GroupLocation> _groupLocations;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public virtual ICollection<Device> Devices { get; set; } = new Collection<Device>();
 #endif
 

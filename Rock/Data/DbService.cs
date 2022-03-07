@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -68,7 +68,7 @@ namespace Rock.Data
         /// <returns>DataSet.</returns>
         public DataSet GetDataSetFromSqlCommand( string commandText, CommandType commandType, Dictionary<string, object> parameters )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             string connectionString = this.Context.Database.GetConnectionString();
 #else
             string connectionString = this.Context.Database.Connection.ConnectionString;
@@ -81,7 +81,7 @@ namespace Rock.Data
 
                     using ( SqlCommand sqlCommand = new SqlCommand( commandText, con ) )
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         if ( Context.Database.GetCommandTimeout().HasValue )
                         {
                             sqlCommand.CommandTimeout = Context.Database.GetCommandTimeout().Value;

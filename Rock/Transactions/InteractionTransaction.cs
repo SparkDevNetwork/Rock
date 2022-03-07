@@ -508,7 +508,7 @@ namespace Rock.Transactions
         /// <param name="queue">The <see cref="ConcurrentQueue{InterationInfo}"/> into which this info object should be enqueued.</param>
         public void Initialize( ConcurrentQueue<InteractionTransactionInfo> queue )
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             RockPage rockPage = null;
             HttpRequest request = null;
 
@@ -544,7 +544,7 @@ namespace Rock.Transactions
             // Fall back to values from the HTTP request if specified by the caller AND the values weren't explicitly set on the info object:
             // (The rockPage and request variables will only be defined if this.GetValuesFromHttpRequest was true.)
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             this.InteractionData = this.InteractionData ?? request?.Url.ToString();
             this.UserAgent = this.UserAgent ?? request?.UserAgent;
 
@@ -569,7 +569,7 @@ namespace Rock.Transactions
             {
                 // If InteractionSummary was not specified, use the Page title.
                 var title = string.Empty;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( rockPage != null )
                 {
                     if ( rockPage.BrowserTitle.IsNotNullOrWhiteSpace() )

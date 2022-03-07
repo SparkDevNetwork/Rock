@@ -82,7 +82,7 @@ namespace Rock.Utility.Settings
         {
             get
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var path = AppDomain.CurrentDomain.BaseDirectory;
 #else
                 // Returns the path in which the current instance is hosted, or the path of the executing assembly if we are not running in a hosting environment.
@@ -101,7 +101,7 @@ namespace Rock.Utility.Settings
         {
             get
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var path = AppDomain.CurrentDomain.BaseDirectory;
 #else
                 // Refer: https://stackoverflow.com/questions/6041332/best-way-to-get-application-folder-path
@@ -137,7 +137,7 @@ namespace Rock.Utility.Settings
         {
             get
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 throw new NotImplementedException();
 #else
                 return RockUpdateHelper.GetDotNetVersion();

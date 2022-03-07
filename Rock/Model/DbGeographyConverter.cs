@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
 #endif
 
@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public class DbGeographyConverter : NetTopologySuite.IO.Converters.GeometryConverter { }
 #else
     public class DbGeographyConverter : JsonConverter

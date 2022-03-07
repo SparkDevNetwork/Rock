@@ -20,7 +20,7 @@ using System.IO;
 
 namespace Rock.Model
 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
     /// <summary>
     /// DDay.ical LoadFromStream is not threadsafe, so use locking
     /// </summary>

@@ -57,7 +57,7 @@ namespace Rock.Storage.AssetStorage
 
         #region Properties
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets or sets the file system component HTTP context.
         /// </summary>
@@ -368,7 +368,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         protected virtual string GetFileTypeIcon( string fileName )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return "/Assets/Icons/FileTypes/other.png";
 #else
             // If this not running in an actual HttpContext (tests), just return the "other" icon.
@@ -399,7 +399,7 @@ namespace Rock.Storage.AssetStorage
             return "/Assets/Images/corrupt-image.jpg";
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the image thumbnail using the provided Asset. If a thumbnail already exists it will be overwritten.
         /// </summary>
@@ -536,7 +536,7 @@ namespace Rock.Storage.AssetStorage
 
         #region Private Methods
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the image thumbnail from file.
         /// </summary>

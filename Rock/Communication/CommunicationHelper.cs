@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -130,7 +130,7 @@ namespace Rock.Communication
 
         private static CreateMessageResult CreateSmsMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new System.NotImplementedException();
 #else
             var isSmsEnabled = MediumContainer.HasActiveSmsTransport() && !string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );

@@ -89,7 +89,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return ConfiguredTheme;
 #else
                 var httpContext = HttpContext.Current;
@@ -175,7 +175,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? DefaultPageRouteId { get; private set; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the default page reference.
         /// </summary>
@@ -204,7 +204,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? ChangePasswordPageRouteId { get; private set; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the change password page reference.
         /// </summary>
@@ -232,7 +232,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? PageNotFoundPageRouteId { get; private set; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the page not found page reference.
         /// </summary>
@@ -260,7 +260,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? LoginPageRouteId { get; private set; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the login page reference.
         /// </summary>
@@ -288,7 +288,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? CommunicationPageRouteId { get; private set; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the communication page reference.
         /// </summary>
@@ -316,7 +316,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? RegistrationPageRouteId { get; private set; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the registration page reference.
         /// </summary>
@@ -666,7 +666,7 @@ namespace Rock.Web.Cache
             return Name;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Redirects to default page.
         /// </summary>

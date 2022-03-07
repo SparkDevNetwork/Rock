@@ -88,7 +88,7 @@ namespace Rock.Reporting
         {
             get
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     return HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] as Dictionary<string, object>;
@@ -100,7 +100,7 @@ namespace Rock.Reporting
 
             set
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] = value;
@@ -171,7 +171,7 @@ namespace Rock.Reporting
             return string.Format( "{0} {1} '{2}'", GetTitle( entityType ), comparisonType.ConvertToString(), value );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
@@ -309,7 +309,7 @@ namespace Rock.Reporting
 
         #region Static Properties
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Registers Javascript to hide/show .js-filter-control child elements of a .js-filter-compare dropdown
         /// see RockWeb\Scripts\Rock\reportingInclude.js

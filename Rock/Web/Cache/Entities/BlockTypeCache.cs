@@ -192,7 +192,7 @@ namespace Rock.Web.Cache
 
         #region Public Methods
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the security actions.
         /// </summary>
@@ -257,7 +257,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             string physicalPath;
 
             // This will add a file system watcher so that when the block on the file system changes, this
@@ -314,7 +314,7 @@ namespace Rock.Web.Cache
         {
             if ( !string.IsNullOrWhiteSpace( this.Path ) )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 try
                 {
                     return System.Web.Compilation.BuildManager.GetCompiledType( Path );

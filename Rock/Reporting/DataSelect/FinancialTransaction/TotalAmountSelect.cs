@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.SqlServer;
 #endif
 using System.Linq;
@@ -77,7 +77,7 @@ namespace Rock.Reporting.DataSelect.FinancialTransaction
             get { return typeof( decimal? ); }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -138,7 +138,7 @@ namespace Rock.Reporting.DataSelect.FinancialTransaction
             return selectTotalAmountExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

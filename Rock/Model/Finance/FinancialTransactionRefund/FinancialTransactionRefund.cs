@@ -110,7 +110,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionRefundConfiguration()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             Builder.HasOne( r => r.FinancialTransaction )
                 .WithOne( t => t.RefundDetails )
                 .HasForeignKey<FinancialTransactionRefund>( r => r.Id )

@@ -147,7 +147,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<DataViewFilter> ChildFilters
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             get { return _childFilters ?? ( _childFilters = new Collection<DataViewFilter>() ); }
             set { _childFilters = value; }
         }

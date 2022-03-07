@@ -170,7 +170,7 @@ namespace Rock.Reporting.DataSelect.Person
                         .SelectMany( m => m.Group.GroupLocations )
                         .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
                         .Where( gl => gl.Location.GeoPoint != null )
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         .Select( s => ( double? ) Math.Round( s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2 ) )
 #else
                         .Select( s => DbFunctions.Truncate(s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2) )
@@ -188,7 +188,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

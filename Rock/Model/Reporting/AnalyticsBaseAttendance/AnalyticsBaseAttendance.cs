@@ -39,7 +39,7 @@ namespace Rock.Model
         /// The attendance identifier.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         public int AttendanceId { get; set; }
@@ -192,7 +192,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_StartDateTime" )]
 #endif
         public DateTime StartDateTime { get; set; }

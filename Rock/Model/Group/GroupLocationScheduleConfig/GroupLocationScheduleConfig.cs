@@ -39,7 +39,7 @@ namespace Rock.Model
         /// <value>
         /// The group location identifier.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Key]
 #endif
         [Column( Order = 1 )]
@@ -52,7 +52,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule identifier.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Key]
 #endif
         [Column( Order = 2 )]
@@ -121,7 +121,7 @@ namespace Rock.Model
         /// </summary>
         public GroupLocationScheduleConfiguration()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             this.HasKey( k => new { k.GroupLocationId, k.ScheduleId } );
 #endif
             this.HasRequired( a => a.GroupLocation ).WithMany( a => a.GroupLocationScheduleConfigs ).HasForeignKey( a => a.GroupLocationId ).WillCascadeOnDelete( true );

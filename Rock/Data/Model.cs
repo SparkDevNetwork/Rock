@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 #else
@@ -32,7 +32,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using Rock.Transactions;
 #endif
 using Rock.Web.Cache;

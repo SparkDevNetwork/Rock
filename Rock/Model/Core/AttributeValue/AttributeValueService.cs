@@ -18,7 +18,7 @@
 using System.Linq;
 using Rock.Data;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -123,7 +123,7 @@ namespace Rock.Model
                 ENABLE TRIGGER [tgrAttributeValue_InsertUpdate] ON [AttributeValue];
             ";
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             // Store current CommandTimeout setting and change it to 120 seconds.
             var currentTimeoutSetting = rockContext.Database.GetCommandTimeout();
             rockContext.Database.SetCommandTimeout( commandTimeout );

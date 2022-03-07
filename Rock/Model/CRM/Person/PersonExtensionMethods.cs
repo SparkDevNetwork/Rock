@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity.SqlServer;
@@ -360,7 +360,7 @@ namespace Rock.Model
                       p => new
                       {
                           Person = p,
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                           Age = p.BirthDate > currentDate.AddYears( -EF.Functions.DateDiffYear( p.BirthDate, currentDate ).Value )
                             ? EF.Functions.DateDiffYear( p.BirthDate, currentDate ) - 1
                             : EF.Functions.DateDiffYear( p.BirthDate, currentDate )

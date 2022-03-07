@@ -94,7 +94,7 @@ namespace Rock.Storage
                 string url = string.Empty;
                 try
                 {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     url = file.Path.StartsWith( "~" ) ? file.Path.Substring( 1 ) : file.Path;
 #else
                     url = file.Path.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( file.Path ) : file.Path;
@@ -107,7 +107,7 @@ namespace Rock.Storage
                 catch { }
 
                 Uri uri = null;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 try
                 {
                     if ( HttpContext.Current != null && HttpContext.Current.Request != null )

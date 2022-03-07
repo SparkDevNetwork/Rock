@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -708,7 +708,7 @@ namespace Rock.Data
         /// <returns></returns>
         public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return _objectSet.FromSqlRaw( query, parameters );
 #else
             return _objectSet.SqlQuery( query, parameters );
@@ -727,7 +727,7 @@ namespace Rock.Data
             return this.Queryable().Any( lambda );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Transforms the specified source.
         /// </summary>

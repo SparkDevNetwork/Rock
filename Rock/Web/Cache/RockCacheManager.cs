@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private static ICacheManagerConfiguration GetCacheConfig()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             bool cacheStatisticsEnabled = false;
 #else
             bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean() ?? false;
@@ -136,7 +136,7 @@ namespace Rock.Web.Cache
                 return config.Build();
             }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             string redisPassword = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
             string[] redisEndPointList = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
             int redisDbIndex = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;

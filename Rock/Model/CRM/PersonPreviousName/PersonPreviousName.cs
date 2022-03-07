@@ -18,7 +18,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Infrastructure;
 #endif
 using System.Data.Entity.ModelConfiguration;
@@ -58,7 +58,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_LastName", IsUnique = false )]
 #endif
         public string LastName { get; set; }

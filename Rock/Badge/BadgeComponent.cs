@@ -85,7 +85,7 @@ namespace Rock.Badge
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets or sets the parent context block.
         /// </summary>
@@ -144,7 +144,7 @@ namespace Rock.Badge
         {
             get
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     return HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] as IEntity;
@@ -156,7 +156,7 @@ namespace Rock.Badge
 
             set
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] = value;
@@ -231,7 +231,7 @@ namespace Rock.Badge
             return badge.GetAttributeValue( key );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the attribute value for the badge
         /// </summary>
@@ -304,7 +304,7 @@ $@"(function () {{
             return $"{GetType().Name}-{badge.Guid}-{entityKey}";
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Renders the specified writer.
         /// </summary>

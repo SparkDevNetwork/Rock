@@ -22,7 +22,7 @@ using System.Runtime.Caching;
 using Ical.Net;
 using Ical.Net.DataTypes;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Event = Ical.Net.CalendarEvent;
 #endif
 
@@ -42,7 +42,7 @@ namespace Rock.Model
         // only keep in memory if unused for 10 minutes. This reduces the chances of this getting too big.
         private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the calendar event.
         /// </summary>
@@ -82,7 +82,7 @@ namespace Rock.Model
             return calendarEvent;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the occurrences.
         /// </summary>

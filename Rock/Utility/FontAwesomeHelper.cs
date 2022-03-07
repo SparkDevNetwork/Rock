@@ -17,7 +17,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.Hosting;
 #endif
 
@@ -141,7 +141,7 @@ namespace Rock.Utility
                     var webFontsFileEntries = webFontsWithCssFiles
                         .Where( a => new DirectoryInfo( Path.GetDirectoryName( a.FullName ) ).Name.Equals( "webfonts" ) ).ToList();
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     var fontAwesomeFontsFolder = "Assets/Fonts/FontAwesome";
                     var fontAwesomeStylesFolder = "Styles/FontAwesome";
 #else

@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
 #endif
 using System.Linq;

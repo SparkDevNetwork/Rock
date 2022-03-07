@@ -224,7 +224,7 @@ namespace Rock.Model
         /// <value>
         /// The order.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index]
 #endif
         [DataMember]

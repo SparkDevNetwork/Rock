@@ -22,7 +22,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Reporting;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Control = System.Object;
 #endif
 
@@ -164,7 +164,7 @@ namespace Rock.Field
 
         #region Formatting
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>

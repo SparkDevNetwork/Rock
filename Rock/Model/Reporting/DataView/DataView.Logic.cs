@@ -20,7 +20,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using Rock.Web.UI.Controls;
 using System.Web.UI.WebControls;
@@ -353,7 +353,7 @@ namespace Rock.Model
                     rockContext = new RockContext();
                 }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.SetCommandTimeout( databaseTimeoutSeconds );
 #else
                 rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
@@ -430,7 +430,7 @@ namespace Rock.Model
             return component.GetExpression( service, parameterExpression, whereExpression );
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         /// <summary>
         /// Gets the query.
         /// </summary>
@@ -467,7 +467,7 @@ namespace Rock.Model
             var databaseTimeoutSeconds = dataViewGetQueryArgs.DatabaseTimeoutSeconds;
             if ( databaseTimeoutSeconds.HasValue )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 dbContext.Database.SetCommandTimeout( databaseTimeoutSeconds.Value );
 #else
                 dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;

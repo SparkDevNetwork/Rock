@@ -39,7 +39,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_StreakTypeId", IsUnique = false )]
         [Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
 #endif
@@ -50,7 +50,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_PersonAliasId", IsUnique = false )]
         [Index( "IX_StreakTypeId_PersonAliasId", 1, IsUnique = true )]
 #endif

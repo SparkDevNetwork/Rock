@@ -517,7 +517,7 @@ namespace Rock.Lava
             // to theme assets may appear identical, but will render differently if the asset content is different for each theme.
             // For example, the template "{% include '~~/Assets/Lava/template.lava' %} will produce different output if the content
             // of the "template.lava" file is different for each theme.
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             var page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
@@ -660,7 +660,7 @@ namespace Rock.Lava
             // on pages with different themes if the content of the "template.lava" file is not the identical for those themes.
             if ( string.IsNullOrEmpty( themeName ) )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return baseCacheKey;
 #else
                 var page = HttpContext.Current?.Handler as RockPage;

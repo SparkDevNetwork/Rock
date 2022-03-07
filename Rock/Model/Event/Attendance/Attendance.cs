@@ -16,7 +16,7 @@
 //
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 #else
@@ -150,7 +150,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date and time that person checked in
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_StartDateTime" )]
 #endif
         public DateTime StartDateTime { get; set; }
@@ -466,12 +466,12 @@ namespace Rock.Model
             this.HasOptional( a => a.ScheduledByPersonAlias ).WithMany().HasForeignKey( p => p.ScheduledByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.CheckedOutByPersonAlias ).WithMany().HasForeignKey( p => p.CheckedOutByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PresentByPersonAlias ).WithMany().HasForeignKey( p => p.PresentByPersonAliasId ).WillCascadeOnDelete( false );
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             // EFCORE: Moved to AttendanceData with reverse relationship setup.
             this.HasOptional( a => a.AttendanceData ).WithRequired().WillCascadeOnDelete();
 #endif
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             this.HasOptional( a => a.AttendanceCheckInSession ).WithMany( s => s.Attendances ).HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
 #endif
         }

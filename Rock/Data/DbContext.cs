@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -42,7 +42,7 @@ using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 #else
@@ -81,7 +81,7 @@ namespace Rock.Data
         /// </summary>
         public DbContext() : base() { }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
@@ -120,7 +120,7 @@ namespace Rock.Data
         }
 #endif
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <inheritdoc />
         internal protected DbContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
             base( objectContext, dbContextOwnsObjectContext )
@@ -224,7 +224,7 @@ namespace Rock.Data
         /// the Pre and Post processing from being run. This should only be disabled
         /// when updating a large number of records at a time (e.g. importing records).</param>
         /// <returns></returns>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public new virtual int SaveChanges( bool disablePrePostProcessing )
 #else
         public virtual int SaveChanges( bool disablePrePostProcessing )
@@ -271,7 +271,7 @@ namespace Rock.Data
             // If update was not cancelled by triggered workflow
             if ( updatedItems != null )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 try
                 {
                     // EF Core does not do built-in validation. Run our own.
@@ -370,7 +370,7 @@ namespace Rock.Data
         /// <returns></returns>
         internal PersonAlias GetCurrentPersonAlias()
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
             {
                 var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
@@ -797,7 +797,7 @@ namespace Rock.Data
                 return new List<AchievementAttempt>();
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return new List<AchievementAttempt>();
 #else
             return AchievementTypeCache.ProcessAchievements( updatedItem.Entity );
@@ -848,7 +848,7 @@ namespace Rock.Data
 
             // if the CommandTimeout is less than 5 minutes (or null with a default of 30 seconds), set timeout to 5 minutes
             int minTimeout = 300;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             if ( this.Database.GetCommandTimeout().HasValue && this.Database.GetCommandTimeout().Value > minTimeout )
             {
                 minTimeout = this.Database.GetCommandTimeout().Value;
@@ -912,7 +912,7 @@ namespace Rock.Data
             var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
             int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
 #else
                 batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
@@ -937,7 +937,7 @@ namespace Rock.Data
             return queryable.Delete( d =>
             {
                 d.BatchSize = batchSize ?? 4000;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 d.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
 #else
                 d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
@@ -1375,7 +1375,7 @@ namespace Rock.Data
                 if ( dbEntityEntry.State == EntityState.Modified || dbEntityEntry.State == EntityState.Deleted )
                 {
                     var originalValues = new Dictionary<string, object>();
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     foreach ( var p in DbEntityEntry.OriginalValues.Properties )
                     {
                         originalValues.Add( p.Name, DbEntityEntry.OriginalValues[p] );

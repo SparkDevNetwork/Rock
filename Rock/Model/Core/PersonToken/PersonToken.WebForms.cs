@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string ObfuscateRockMagicToken( string url )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             if ( string.IsNullOrWhiteSpace( url ) )
             {
                 return url;
@@ -67,7 +67,7 @@ namespace Rock.Model
             return rckipidRegEx.Replace( url, "" );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Obfuscates the rock magic token.
         /// </summary>

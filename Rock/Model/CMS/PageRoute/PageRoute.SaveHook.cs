@@ -16,7 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.Routing;
 #endif
 
@@ -39,7 +39,7 @@ namespace Rock.Model
             {
                 if ( State == EntityContextState.Deleted )
                 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                     var routes = RouteTable.Routes;
                     if ( routes != null )
                     {

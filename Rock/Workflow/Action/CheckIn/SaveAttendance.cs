@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -108,7 +108,7 @@ namespace Rock.Workflow.Action.CheckIn
             AttendanceCheckInSession attendanceCheckInSession = new AttendanceCheckInSession()
             {
                 DeviceId = checkInState.DeviceId,
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 ClientIpAddress = RockPage.GetClientIpAddress()
 #endif
             };

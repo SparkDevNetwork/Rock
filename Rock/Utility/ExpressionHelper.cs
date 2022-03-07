@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.UI;
 #endif
 using Rock.Data;
@@ -357,7 +357,7 @@ namespace Rock.Utility
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Builds an expression using the specified FieldType and control.
         /// </summary>

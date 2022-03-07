@@ -127,7 +127,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 1 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 1 )]
 #endif
@@ -164,7 +164,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
 #endif
@@ -203,7 +203,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 3 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 2 )]
 #endif
@@ -309,7 +309,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_GivingId" )]
 #endif
         public string GivingId { get; private set; }
@@ -335,7 +335,7 @@ namespace Rock.Model
         [Previewable]
         // DV See also: Rock.Communication.EmailAddressFieldValidator _emailAddressRegex, make sure the two stay in sync. #4829, #4867
         [RegularExpression( @"\s*(?:[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[A-Za-z0-9-]*[A-Za-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])\s*", ErrorMessage = "The Email address is invalid" )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_Email" )]
 #endif
         public string Email { get; set; }
@@ -820,7 +820,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PreferredLanguageValue ).WithMany().HasForeignKey( a => a.PreferredLanguageValueId ).WillCascadeOnDelete( false );
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             this.HasOptional( p => p.CreatedByPersonAlias ).WithMany().HasForeignKey( p => p.CreatedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ModifiedByPersonAlias ).WithMany().HasForeignKey( p => p.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
 #endif

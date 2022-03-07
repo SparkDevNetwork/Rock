@@ -144,7 +144,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             get { return _eventCalendarItems ?? ( _eventCalendarItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalendarItems = value; }
         }
@@ -182,7 +182,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<EventItemAudience> EventItemAudiences
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             get { return _eventItemAudiences ?? ( _eventItemAudiences = new Collection<EventItemAudience>() ); }
             set { _eventItemAudiences = value; }
         }

@@ -197,7 +197,7 @@ namespace Rock.Model
                 catch ( Exception ex )
                 {
                     // Exception occurred (probably due to bad SQL)
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     ExceptionLogService.LogException( ex );
 #else
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );

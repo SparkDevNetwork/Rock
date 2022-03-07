@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Data.Entity.SqlServer;
 #endif
 using System.Linq;
@@ -79,7 +79,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( int? ); }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -136,7 +136,7 @@ namespace Rock.Reporting.DataSelect.Person
             return GetGlobalGradeLabel();
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Handles the OnFormatDataValue event of the CallbackField control.
         /// </summary>
@@ -170,7 +170,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectGradeExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

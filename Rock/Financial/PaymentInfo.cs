@@ -202,7 +202,7 @@ namespace Rock.Financial
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Updates the address fields from an address control.
         /// </summary>

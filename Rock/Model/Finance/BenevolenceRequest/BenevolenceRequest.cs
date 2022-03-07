@@ -243,7 +243,7 @@ namespace Rock.Model
         public BenevolenceRequest()
             : base()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             _benevolenceResults = new Collection<BenevolenceResult>();
 #else
             _results = new Collection<BenevolenceResult>();
@@ -318,7 +318,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<BenevolenceResult> BenevolenceResults
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             get { return _benevolenceResults; }
             set { _benevolenceResults = value; }
         }

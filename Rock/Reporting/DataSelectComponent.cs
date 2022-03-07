@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Extension;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
@@ -137,7 +137,7 @@ namespace Rock.Reporting
 
         #region Public Methods
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -163,7 +163,7 @@ namespace Rock.Reporting
             return this.ColumnPropertyName;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -256,7 +256,7 @@ namespace Rock.Reporting
             return string.Empty;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the attributes selection values.
         /// </summary>

@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbGeography = NetTopologySuite.Geometries.Geometry;
 #else
@@ -2854,7 +2854,7 @@ namespace Rock.Model
                 .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .OrderBy( m => groupOrderQuery.FirstOrDefault( x => x.GroupId == m.GroupId && x.PersonId == person.Id ).GroupOrder ?? int.MaxValue )
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 .ThenBy( m => EF.Functions.DateDiffDay( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
 #else
                 .ThenBy( m => DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
@@ -3480,7 +3480,7 @@ namespace Rock.Model
             rockContext = rockContext ?? new RockContext();
             using ( rockContext )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.ExecuteSqlRaw( sql );
 #else
                 rockContext.Database.ExecuteSqlCommand( sql );
@@ -4321,7 +4321,7 @@ FROM (
 
             if ( personId.HasValue )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var recordsChanged = rockContext.Database.ExecuteSqlRaw( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
 #else
                 var recordsChanged = rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
@@ -4348,7 +4348,7 @@ FROM (
             }
             else if ( groupId.HasValue )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return rockContext.Database.ExecuteSqlRaw( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@groupId", groupId.Value ) );
 #else
                 return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@groupId", groupId.Value ) );
@@ -4356,7 +4356,7 @@ FROM (
             }
             else
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return rockContext.Database.ExecuteSqlRaw( sqlUpdateBuilder.ToString() );
 #else
                 return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );
@@ -4399,7 +4399,7 @@ FROM (
             // Make sure the GivingId is correct.
             if ( person.GivingId != correctGivingId )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.ExecuteSqlRaw( $"UPDATE [Person] SET [GivingId] = '{ correctGivingId }' WHERE [Id] = { personId }" );
 #else
                 rockContext.Database.ExecuteSqlCommand( $"UPDATE [Person] SET [GivingId] = '{ correctGivingId }' WHERE [Id] = { personId }" );
@@ -4430,7 +4430,7 @@ WHERE GivingId IS NULL OR GivingId != (
 			ELSE 'P' + CONVERT([varchar], [Id])
 			END
 		)";
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             return rockContext.Database.ExecuteSqlRaw( sql );
 #else
             return rockContext.Database.ExecuteSqlCommand( sql );
@@ -4484,7 +4484,7 @@ FROM (
 
             if ( personId.HasValue )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return rockContext.Database.ExecuteSqlRaw( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
 #else
                 return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
@@ -4492,7 +4492,7 @@ FROM (
             }
             else
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return rockContext.Database.ExecuteSqlRaw( sqlUpdateBuilder.ToString() );
 #else
                 return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );

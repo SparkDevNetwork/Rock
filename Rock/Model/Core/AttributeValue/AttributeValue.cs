@@ -59,7 +59,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 2 )]
 #endif
         public int AttributeId { get; set; }
@@ -74,7 +74,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 1 )]
 #endif
         public int? EntityId { get; set; }

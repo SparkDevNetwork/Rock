@@ -24,7 +24,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
@@ -129,7 +129,7 @@ namespace Rock.Reporting.DataSelect.Person
             public int? GraduationYear { get; set; }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -263,7 +263,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectChildrenExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

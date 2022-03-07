@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif

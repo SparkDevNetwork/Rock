@@ -167,7 +167,7 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -332,7 +332,7 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
                     // if converting from a previous version of the selection
                     DateTime? startDate = selectionValues[2].AsDateTime();
                     DateTime? endDate = selectionValues[3].AsDateTime();
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     selectionConfig.SlidingDateRangePickerDelimitedValues = SlidingDateRangePicker.GetDelimitedValues(
                         SlidingDateRangePicker.SlidingDateRangeType.DateRange, null, null, startDate, endDate );
 #else
@@ -380,7 +380,7 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the selection.
         /// </summary>

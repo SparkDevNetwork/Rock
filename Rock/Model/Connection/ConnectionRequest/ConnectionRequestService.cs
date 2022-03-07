@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -941,7 +941,7 @@ namespace Rock.Model
                 viewModel.IsUnassigned
             };
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( LavaService.RockLiquidIsEnabled )
             {
                 mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );

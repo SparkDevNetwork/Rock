@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using Microsoft.EntityFrameworkCore;

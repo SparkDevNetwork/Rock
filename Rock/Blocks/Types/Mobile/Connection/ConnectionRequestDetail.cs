@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -1451,7 +1451,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Create the new activity via the Create() method so that lazy
                 // loading will work after it has been saved. This gets used by
                 // the lava template.
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var requestActivity = rockContext.ConnectionRequestActivities.CreateProxy();
 #else
                 var requestActivity = rockContext.ConnectionRequestActivities.Create();

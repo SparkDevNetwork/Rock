@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using DbGeography = NetTopologySuite.Geometries.Geometry;
 #else
 using System.Data.Entity.Spatial;
@@ -292,7 +292,7 @@ namespace Rock.Model
         /// <param name="point">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object
         ///     representing the GeoPoint for the location.</param>
         /// <returns>The first <see cref="Rock.Model.Location"/> that matches the specified GeoPoint.</returns>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public Location GetByGeoPoint( NetTopologySuite.Geometries.Point point )
 #else
         public Location GetByGeoPoint( DbGeography point )
@@ -303,7 +303,7 @@ namespace Rock.Model
             var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoPoint != null &&
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     a.GeoPoint.EqualsTopologically( point ) );
 #else
                     a.GeoPoint.SpatialEquals( point ) );
@@ -340,7 +340,7 @@ namespace Rock.Model
         /// <param name="fence">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that
         ///  represents the GeoFence of the location to retrieve.</param>
         /// <returns>The <see cref="Rock.Model.Location"/> for the specified GeoFence. </returns>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public Location GetByGeoFence( NetTopologySuite.Geometries.Polygon fence )
 #else
         public Location GetByGeoFence( DbGeography fence )
@@ -351,7 +351,7 @@ namespace Rock.Model
             var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoFence != null &&
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     a.GeoFence.EqualsTopologically( fence ) );
 #else
                     a.GeoFence.SpatialEquals( fence ) );

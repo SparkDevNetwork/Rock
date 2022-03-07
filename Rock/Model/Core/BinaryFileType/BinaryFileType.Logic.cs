@@ -15,7 +15,7 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -52,7 +52,7 @@ namespace Rock.Model
         /// <value>
         /// A queryable collection of <see cref="Rock.Model.BinaryFile"/> entities that are children of this<see cref="Rock.Model.BinaryFileType"/>.
         /// </value>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
 #endif
         public virtual IQueryable<BinaryFile> FileQuery

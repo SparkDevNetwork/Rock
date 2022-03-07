@@ -693,7 +693,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<RegistrationInstance> Instances
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             get { return _instances ?? ( _instances = new Collection<RegistrationInstance>() ); }
             set { _instances = value; }
         }
@@ -716,7 +716,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<RegistrationTemplateForm> Forms
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             get { return _forms ?? ( _forms = new Collection<RegistrationTemplateForm>() ); }
             set { _forms = value; }
         }

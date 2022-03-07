@@ -77,7 +77,7 @@ namespace Rock.Financial
         EnumSourceType = typeof( HostedGatewayMode ),
         DefaultValue = "Unhosted",
         Order = 5 )]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent
 #else
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent
@@ -596,7 +596,7 @@ namespace Rock.Financial
 
         #endregion
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         #region IHostedGatewayComponent
 
         /// <summary>
@@ -677,7 +677,7 @@ namespace Rock.Financial
 #endif
     }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
     /// <summary>
     /// Class TestGatewayPaymentControl.
     /// Implements the <see cref="System.Web.UI.WebControls.CompositeControl" />

@@ -75,7 +75,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>

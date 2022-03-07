@@ -17,14 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 #endif
 using System.Linq;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Linq.Dynamic;
 #endif
 using Rock.Chart;
@@ -52,7 +52,7 @@ namespace Rock.Model
             .AsNoTracking()
             .Where ( e => e.PersonAlias.PersonId == personId )
             .Where ( e => e.GroupId == groupId || e.GroupId == null )
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             .Where( e => e.StartDate >= date.Date && e.EndDate <= date.Date )
 #else
             .Where( e => e.StartDate >= DbFunctions.TruncateTime( date ) && e.EndDate <= DbFunctions.TruncateTime( date ) )

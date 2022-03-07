@@ -46,7 +46,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [Required]
         [MaxLength( 250 )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         public string NodeName { get; set; }
@@ -121,7 +121,7 @@ namespace Rock.Model
         /// The current leadership polling interval seconds.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         public decimal CurrentLeadershipPollingIntervalSeconds { get; set; }

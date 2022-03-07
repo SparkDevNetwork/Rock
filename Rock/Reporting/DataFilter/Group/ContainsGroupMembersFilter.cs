@@ -212,7 +212,7 @@ function ()
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlComparison = "ddlComparison";
         private const string _CtlMemberCount = "nbMemberCount";

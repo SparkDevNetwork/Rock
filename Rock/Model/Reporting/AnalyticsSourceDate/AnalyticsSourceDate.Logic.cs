@@ -21,7 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using EntityFramework.Utilities;
@@ -156,7 +156,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 try
                 {
                     // if TRUNCATE takes more than 5 seconds, it is probably due to a lock. If so, do a DELETE FROM instead
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( 5 );
                     rockContext.Database.ExecuteSqlRaw( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
 #else
@@ -166,7 +166,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 }
                 catch
                 {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( null );
                     rockContext.Database.ExecuteSqlRaw( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
 #else
@@ -338,14 +338,14 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
             using ( var rockContext = new RockContext() )
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 rockContext.AnalyticsSourceDates.BulkInsert( generatedDates );
 #else
                 EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
 #endif
 
                 // Update the Sunday of the Year data
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.ExecuteSqlRaw( SundayOfTheYearSql );
 #else
                 rockContext.Database.ExecuteSqlCommand( SundayOfTheYearSql );

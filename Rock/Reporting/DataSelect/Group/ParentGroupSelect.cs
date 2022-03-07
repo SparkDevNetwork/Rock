@@ -118,7 +118,7 @@ namespace Rock.Reporting.DataSelect.Group
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -159,7 +159,7 @@ namespace Rock.Reporting.DataSelect.Group
             var groupParentQry = new GroupService( context ).Queryable();
 
             IQueryable<string> groupParentLinkQry;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             string baseGroupUrl = "/Group/";
 #else
             string baseGroupUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Group/" );

@@ -78,7 +78,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<string> ); }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -193,7 +193,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectEmail;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

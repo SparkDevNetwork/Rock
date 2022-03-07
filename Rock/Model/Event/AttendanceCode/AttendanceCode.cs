@@ -44,7 +44,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date and time that the Attendance Code was issued.
         /// </value>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index]
 #endif
         public DateTime IssueDateTime { get; set; }

@@ -76,7 +76,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( string ); }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -137,7 +137,7 @@ namespace Rock.Reporting.DataSelect.Person
             var personQry = new PersonService( context ).Queryable();
             IQueryable<string> personLinkQuery;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
 #endif
 

@@ -124,7 +124,7 @@ namespace Rock.Model
             //    }
             //}
         */
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         // NET5: Required for EF Core.
         [DataMember]
         public int BinaryFileId { get; set; }
@@ -186,7 +186,7 @@ namespace Rock.Model
 
             // This is a 1:1 relationship and is not very common in Rock. We cannot add BinaryFileId to the model because of the EF limitation
             // discussed here: https://stackoverflow.com/a/41847251
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             // EFCORE: Not sure if this is correct? Test.
             Builder.HasOne( f => f.BinaryFile ).WithOne( a => a.Document ).HasForeignKey<Document>( f => f.BinaryFileId );
 #else

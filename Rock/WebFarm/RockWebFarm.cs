@@ -155,7 +155,7 @@ namespace Rock.WebFarm
         /// </summary>
         private static IntervalAction _pollingInterval;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// The CPU counter
         /// </summary>
@@ -172,7 +172,7 @@ namespace Rock.WebFarm
         /// </summary>
         public static readonly DateTime ProcessStartDateTime = RockDateTime.Now;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// The total ram megabytes
         /// </summary>
@@ -424,7 +424,7 @@ namespace Rock.WebFarm
         /// <summary>
         /// Stops this instance.
         /// </summary>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public static void Shutdown( string shutdownReasonText )
         {
 #else
@@ -746,7 +746,7 @@ namespace Rock.WebFarm
         /// </summary>
         private static void InitializePerformanceCounters()
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             try
             {
                 _cpuCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
@@ -771,7 +771,7 @@ namespace Rock.WebFarm
         /// <param name="rockContext">The rock context.</param>
         private static void AddMetrics( RockContext rockContext )
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             var webFarmNodeMetricService = new WebFarmNodeMetricService( rockContext );
 
             if ( _cpuCounter != null )
@@ -1078,7 +1078,7 @@ namespace Rock.WebFarm
         /// <param name="message">The message.</param>
         private static void Debug( string message )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             if ( DEBUG )
 #else
             if ( DEBUG && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )

@@ -97,7 +97,7 @@ namespace Rock.Constants
         /// </summary>
         public const string TextHtml = "";
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Return a ListItem with Text: "", Value: "0"
         /// </summary>
@@ -134,7 +134,7 @@ namespace Rock.Constants
         /// </summary>
         public const string Text = "All";
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the list item with Text "All", Value: -1
         /// </summary>

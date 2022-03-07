@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -520,7 +520,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public override ISecured ParentAuthority => new Model.Attribute { Id = 0, EntityTypeId = EntityTypeId };
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Adds the control.
         /// </summary>
@@ -834,7 +834,7 @@ namespace Rock.Web.Cache
         [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
         public static void RemoveEntityAttributes()
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             EntityAttributesCache.Remove();
 #endif
         }

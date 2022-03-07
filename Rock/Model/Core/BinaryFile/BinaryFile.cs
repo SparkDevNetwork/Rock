@@ -256,7 +256,7 @@ namespace Rock.Model
         public BinaryFileConfiguration()
         {
             this.HasRequired( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             //Builder.HasOne( p => p.DatabaseData )
             //    .WithOne()
             //    .HasForeignKey<( "")

@@ -212,7 +212,7 @@ function() {
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlLocationType = "ddlLocationType";
 
@@ -362,7 +362,7 @@ function() {
             return extractedFilterExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the related data view identifier.
         /// </summary>

@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Linq.Dynamic;
 #endif
 using System.Runtime.Serialization;

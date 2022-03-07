@@ -126,7 +126,7 @@ function() {
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -266,7 +266,7 @@ function() {
             return extractedFilterExpression;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Handles the SelectedIndexChanged event of the connectionTypePicker control.
         /// </summary>

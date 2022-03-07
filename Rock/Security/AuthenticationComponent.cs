@@ -92,7 +92,7 @@ namespace Rock.Security
         /// <returns></returns>
         public abstract Boolean Authenticate( UserLogin user, string password );
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
         /// </summary>
@@ -111,7 +111,7 @@ namespace Rock.Security
         /// <returns></returns>
         public abstract String EncodePassword( UserLogin user, string password );
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Generates the log in URL.
         /// </summary>

@@ -58,7 +58,7 @@ namespace Rock.Model
         /// <value>
         /// The entity identifier.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index]
 #endif
         [DataMember]

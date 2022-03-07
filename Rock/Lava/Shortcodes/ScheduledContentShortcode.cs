@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -296,7 +296,7 @@ namespace Rock.Lava.Shortcodes
 
             if ( currentPerson == null )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 var httpContext = System.Web.HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {

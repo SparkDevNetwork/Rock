@@ -418,7 +418,7 @@ namespace Rock.Web.Cache
                     return ( propValue as Guid? )?.ToString() ?? propValue;
                 }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 return null;
 #else
                 // The remainder of this method is only necessary to support the old way of getting attribute 

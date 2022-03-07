@@ -19,7 +19,7 @@ using System;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.Compilation;
 using Quartz;
 using Quartz.Impl;
@@ -53,7 +53,7 @@ namespace Rock.Model
             return Queryable();
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Schedules the Job to run immediately using the Quartz Scheduler
         /// and waits for the job to finish.

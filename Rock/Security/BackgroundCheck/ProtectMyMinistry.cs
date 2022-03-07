@@ -444,7 +444,7 @@ Response XML ({2}):
 
             if ( isAuthorized )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 var filePath = "/GetFile.ashx";
 #else
                 var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );

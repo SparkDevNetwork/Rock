@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -156,7 +156,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                     if ( defaultNoteImageFile != null )
                     {
                         var url = defaultNoteImageFile.Path;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         url = url.StartsWith( "~" ) ? url.Substring( 1 ) : url;
 #else
                         url = url.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( url ) : url;
@@ -411,7 +411,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                         return ActionForbidden( "Not authorized to add note." );
                     }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     note = rockContext.Notes.CreateProxy();
 #else
                     note = rockContext.Notes.Create();

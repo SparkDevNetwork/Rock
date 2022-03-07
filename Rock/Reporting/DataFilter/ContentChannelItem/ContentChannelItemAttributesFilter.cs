@@ -121,7 +121,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes

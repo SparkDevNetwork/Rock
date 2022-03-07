@@ -450,7 +450,7 @@ namespace Rock.CheckIn
     /// Helper class for summarizing the selected check-in
     /// </summary>
     [LavaType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
     [DotLiquid.LiquidType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
 #endif
     public class CheckInPersonSummary

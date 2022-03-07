@@ -16,7 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
 #endif
 using System.Runtime.Serialization;
@@ -29,7 +29,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupTypeLocationType" )]
     [DataContract]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public class GroupTypeLocationType : ILavaDataDictionarySource
 #else
     public class GroupTypeLocationType: DotLiquid.ILiquidizable, ILavaDataDictionarySource
@@ -41,7 +41,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/>.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Key]
 #endif
         [Column(Order=0)]
@@ -56,7 +56,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of a LocationType <see cref="Rock.Model.DefinedValue"/>  that is supported by a <see cref="Rock.Model.GroupType"/>.
         /// </value>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Key]
 #endif
         [Column( Order = 1 )]
@@ -96,7 +96,7 @@ namespace Rock.Model
         }
     }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     /// <summary>
     /// GroupTypeLocationTypeType EntityTypeConfiguration
     /// </summary>

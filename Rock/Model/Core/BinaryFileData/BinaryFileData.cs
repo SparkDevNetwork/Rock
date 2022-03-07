@@ -64,7 +64,7 @@ namespace Rock.Model
         /// </summary>
         public BinaryFileDataConfiguration()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             Builder.HasOne<BinaryFile>()
                 .WithOne( f => f.DatabaseData )
                 .HasForeignKey<BinaryFileData>( d => d.Id )

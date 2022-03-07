@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.CheckIn
 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
     /// <summary>
     /// 
     /// </summary>

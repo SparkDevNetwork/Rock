@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 #else
@@ -279,7 +279,7 @@ namespace Rock.Model
                 }
                 else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>() )
                 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                     Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
 #endif
                 }

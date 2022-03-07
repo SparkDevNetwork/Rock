@@ -165,7 +165,7 @@ namespace Rock.Utility
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Setups the HTTP cache policy based on the current RockCacheability properties.
         /// </summary>

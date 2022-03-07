@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -25,7 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.Security;
 #endif
 
@@ -723,7 +723,7 @@ namespace Rock.Security
             return Encoding.UTF8.GetString( b );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the auth cookie.
         /// </summary>
@@ -761,7 +761,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated );
 
             if ( authCookie == null )
@@ -780,7 +780,7 @@ namespace Rock.Security
 #endif
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the auth cookie.
         /// </summary>
@@ -818,7 +818,7 @@ namespace Rock.Security
         /// </summary>
         public static void SignOut()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new NotImplementedException();
 #else
             ExpireUnsecuredPersonIdentifierCookie();
@@ -850,7 +850,7 @@ namespace Rock.Security
 #endif
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Expires the Unsecured Person Identifier Cookie
         /// </summary>
@@ -943,7 +943,7 @@ namespace Rock.Security
             return ItemAuthorized( entity, action, person, true, checkParentAuthority );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the unsecure person identifier (COOKIE_UNSECURED_PERSON_IDENTIFIER) cookie.
         /// </summary>

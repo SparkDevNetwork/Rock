@@ -180,7 +180,7 @@ namespace Rock.Extension
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Method that is called before attribute values are updated. Components can
         /// override this to perform any needed initialization of attribute

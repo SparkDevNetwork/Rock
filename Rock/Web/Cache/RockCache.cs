@@ -285,7 +285,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static object GetOrAddExisting( RockCacheGetOrAddExistingArgs args )
         {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( args.AllowCacheBypass && System.Web.HttpContext.Current != null )
             {
                 var isCachedEnabled = System.Web.HttpContext.Current.Request.Cookies.Get( CACHE_CONTROL_COOKIE );
@@ -705,7 +705,7 @@ namespace Rock.Web.Cache
             return GetStatForSystemType( cacheTypeName );
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Determines whether the end point is available.
         /// </summary>

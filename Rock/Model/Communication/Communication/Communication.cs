@@ -504,7 +504,7 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.List{String}"/> of values containing the additional merge field list.
         /// </value>
         [DataMember]
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         [NotMapped]
 #endif
         public virtual List<string> AdditionalMergeFields

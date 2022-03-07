@@ -26,7 +26,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using Context = DotLiquid.Context;
 #endif
 
@@ -74,7 +74,7 @@ namespace Rock.Lava
         /// <param name="currentPerson">The current person.</param>
         /// <param name="options">The options.</param>
         /// <returns></returns>
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         public static Dictionary<string, object> GetCommonMergeFields( object rockPage, Person currentPerson = null, CommonMergeFieldsOptions options = null )
 #else
         public static Dictionary<string, object> GetCommonMergeFields( RockPage rockPage, Person currentPerson = null, CommonMergeFieldsOptions options = null )
@@ -82,7 +82,7 @@ namespace Rock.Lava
         {
             var mergeFields = new Dictionary<string, object>();
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( rockPage == null && HttpContext.Current != null )
             {
                 rockPage = HttpContext.Current.Handler as RockPage;
@@ -96,7 +96,7 @@ namespace Rock.Lava
 
             if ( currentPerson == null )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( rockPage != null )
                 {
                     currentPerson = rockPage.CurrentPerson;
@@ -121,7 +121,7 @@ namespace Rock.Lava
                 }
             }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( options.GetPageContext && rockPage != null )
             {
                 var contextObjects = rockPage.GetContextEntities();
@@ -208,7 +208,7 @@ namespace Rock.Lava
                         We'll also leave the RockLavaBlockBase check in place below, in case any plugins have been developed that add Commands
                         inheriting from the RockLavaBlockBase class.
                     */
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                     foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.IRockLavaBlock ) )
                         .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ) )
                         .Select( a => a.Value )
@@ -312,7 +312,7 @@ namespace Rock.Lava
 
             if ( currentPerson == null )
             {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 var httpContext = HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( currentPersonKey ) )
                 {
@@ -578,7 +578,7 @@ namespace Rock.Lava
 
         #region RockLiquid Lava Code
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Determines whether the specified command is authorized within the context.
         /// </summary>

@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Model;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using Rock.Web.UI.Controls.Communication;
 #endif
 
@@ -37,7 +37,7 @@ namespace Rock.Communication.Medium
 
         public override CommunicationType CommunicationType { get { return CommunicationType.PushNotification; } }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the control.
         /// </summary>

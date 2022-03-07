@@ -16,7 +16,7 @@
 //
 using System;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -116,7 +116,7 @@ END";
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 rockContext.Database.ExecuteSqlRaw( @"
 UPDATE FinancialTransaction

@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using Rock.Storage.AssetStorage;
 #endif
 using Rock.Web.Cache;
@@ -101,7 +101,7 @@ namespace Rock.Model
 
         #region Public Methods
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the asset storage component.
         /// </summary>

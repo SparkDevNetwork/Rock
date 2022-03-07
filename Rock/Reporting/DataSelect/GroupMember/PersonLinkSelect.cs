@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
@@ -85,7 +85,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>

@@ -65,7 +65,7 @@ namespace Rock.Model
         /// This value will be in the currency specified by the Organization Standard Currency Code which defaults to USD.
         /// </remarks>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
 #endif
         public decimal Amount { get; set; }
@@ -108,7 +108,7 @@ namespace Rock.Model
         /// This value will be in the currency specified by the Organization Standard Currency Code which defaults to USD.
         /// </remarks>
         [DataMember]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
 #endif
         [DecimalPrecision(18, 2)]

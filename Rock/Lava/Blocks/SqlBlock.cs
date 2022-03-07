@@ -21,7 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -100,7 +100,7 @@ namespace Rock.Lava.Blocks
                             {
                                 Sql = sql.ToString(), 
                                 Duration = stopWatch.ElapsedTicks,
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                                 Database = rockMockContext.Database.GetDbConnection().Database,
                                 Server = rockMockContext.Database.GetDbConnection().DataSource
 #else
@@ -120,7 +120,7 @@ namespace Rock.Lava.Blocks
 
                         using ( var rockContext = LavaHelper.GetRockContextFromLavaContext( context ) )
                         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                             if ( sqlTimeout != null )
                             {
                                 rockContext.Database.SetCommandTimeout( sqlTimeout );

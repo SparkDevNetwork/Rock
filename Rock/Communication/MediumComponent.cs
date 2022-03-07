@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using Rock.Web.UI.Controls.Communication;
 #endif
 
@@ -79,7 +79,7 @@ namespace Rock.Communication
         /// </value>
         public abstract CommunicationType CommunicationType { get; }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the control.
         /// </summary>
@@ -111,7 +111,7 @@ namespace Rock.Communication
 
                 if ( rockMessage.CurrentPerson == null )
                 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                     rockMessage.CurrentPerson = HttpContext.Current?.Items["CurrentPerson"] as Person;
 #endif
                 }

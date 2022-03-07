@@ -17,7 +17,7 @@
 using Rock.Data;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
 #endif
 using System.Runtime.Serialization;
@@ -37,7 +37,7 @@ namespace Rock.Model
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
     }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
     public partial class AnalyticsDimPersonCurrentConfiguration : EntityTypeConfiguration<AnalyticsDimPersonCurrent>
     {
         /// <summary>

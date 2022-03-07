@@ -21,7 +21,7 @@ namespace Rock.Reporting.DataFilter
     /// </summary>
     public interface IUpdateSelectionFromPageParameters
     {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Updates the selection from page parameters.
         /// </summary>

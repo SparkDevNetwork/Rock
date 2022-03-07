@@ -79,7 +79,7 @@ namespace Rock.Reporting.DataFilter.Person
 
         #region Public Methods
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Create the controls for the phone number type list and the Has SMS selection
         /// </summary>

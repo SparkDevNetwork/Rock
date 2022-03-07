@@ -45,7 +45,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 1 )]
 #endif
         public int SourceEntityTypeId { get; set; }
@@ -60,7 +60,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Range( 1, int.MaxValue, ErrorMessage = "SourceEntityId must be greater than zero" )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 2 )]
 #endif
         public int SourceEntityId { get; set; }
@@ -74,7 +74,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 3 )]
 #endif
         public int TargetEntityTypeId { get; set; }
@@ -89,7 +89,7 @@ namespace Rock.Model
         [Required]
         [Range( 1, int.MaxValue, ErrorMessage = "TargetEntityId must be greater than zero" )]
         [DataMember( IsRequired = true )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 4 )]
 #endif
         public int TargetEntityId { get; set; }
@@ -103,7 +103,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 5 )]
 #endif
         public string PurposeKey { get; set; }

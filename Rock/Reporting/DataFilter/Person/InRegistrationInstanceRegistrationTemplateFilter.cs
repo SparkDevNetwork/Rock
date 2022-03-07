@@ -108,7 +108,7 @@ namespace Rock.Reporting.DataFilter.Person
                 var registrationTemplateGuids = selectionValues[0].Split( ',' ).AsGuidList();
                 var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByGuids( registrationTemplateGuids );
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                 string delimitedValues = null;
 #else
                 SlidingDateRangePicker fakeSlidingDateRangePicker = null;
@@ -121,7 +121,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                     if ( selectionValues.Length >= 3 )
                     {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                         delimitedValues = SlidingDateRangePicker.SanitizeDelimitedValues( selectionValues[2].Replace( ',', '|' ) );
 #else
                         fakeSlidingDateRangePicker = new SlidingDateRangePicker();
@@ -141,7 +141,7 @@ namespace Rock.Reporting.DataFilter.Person
                         result += ", including inactive registration instances";
                     }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                     if ( delimitedValues != null )
                     {
                         result += string.Format( ", registered in Date Range: {0}", SlidingDateRangePicker.FormatDelimitedValues( delimitedValues ) );
@@ -158,7 +158,7 @@ namespace Rock.Reporting.DataFilter.Person
             return result;
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>

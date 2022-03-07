@@ -26,7 +26,7 @@ namespace Rock.Crm.ConnectionStatusChangeReport
     /// </summary>
     [Serializable]
     [LavaType]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
     [DotLiquid.LiquidType]
 #endif
     public class ConnectionStatusChangeReportData

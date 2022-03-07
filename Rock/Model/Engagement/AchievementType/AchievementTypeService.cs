@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -71,7 +71,7 @@ namespace Rock.Model
                 throw new ArgumentException( $"The AchievementTypeCache did not resolve for record id {achievementTypeId}" );
             }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new NotImplementedException();
 #else
             var achievementComponent = achievementTypeCache.AchievementComponent;
@@ -104,7 +104,7 @@ namespace Rock.Model
         public string GetBadgeMarkup( AchievementTypeCache achievementTypeCache, int achieverEntityId )
         {
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             throw new NotImplementedException();
 #else
             var achievementComponent = achievementTypeCache.AchievementComponent;

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web;
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
 using System.Web.Hosting;
 #endif
 
@@ -45,7 +45,7 @@ namespace Rock.Store
         /// <returns></returns>
         public static List<InstalledPackage> GetInstalledPackages()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             string packageFile = "App_Data/InstalledStorePackages.json";
 #else
             string packageFile = HostingEnvironment.MapPath( "~/App_Data/InstalledStorePackages.json" );
@@ -125,7 +125,7 @@ namespace Rock.Store
 
         private static void SaveInstalledPackages( List<InstalledPackage> packages )
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             string packageFile = "App_Data/InstalledStorePackages.json";
 #else
             string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );

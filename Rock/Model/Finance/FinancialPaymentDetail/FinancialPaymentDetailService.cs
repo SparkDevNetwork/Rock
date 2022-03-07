@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -86,7 +86,7 @@ namespace Rock.Model
             }
         }
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Deletes the financial payment detail if it was linked to the referencing Entity and is now orphaned.
         /// </summary>

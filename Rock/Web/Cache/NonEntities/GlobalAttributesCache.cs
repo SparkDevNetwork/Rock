@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -346,7 +346,7 @@ namespace Rock.Web.Cache
         {
             Clear();
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current == null ) return;
 
             var appSettings = HttpContext.Current.Application;
@@ -470,7 +470,7 @@ namespace Rock.Web.Cache
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return string.Empty;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     var appSettings = HttpContext.Current.Application;
@@ -524,7 +524,7 @@ namespace Rock.Web.Cache
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return string.Empty;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     var appSettings = HttpContext.Current.Application;
@@ -578,7 +578,7 @@ namespace Rock.Web.Cache
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return string.Empty;
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     var appSettings = HttpContext.Current.Application;

@@ -26,7 +26,7 @@ using Humanizer;
 
 namespace Rock.Web.UI.Controls
 {
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.ValueFilter"/> control for editing a simple filter
     /// </summary>

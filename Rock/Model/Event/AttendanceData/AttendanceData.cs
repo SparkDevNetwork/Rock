@@ -74,7 +74,7 @@ namespace Rock.Model
         /// </summary>
         public AttendanceDataConfiguration()
         {
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
             Builder.HasOne<Attendance>()
                 .WithOne( a => a.AttendanceData )
                 .HasForeignKey<AttendanceData>( "Id" )

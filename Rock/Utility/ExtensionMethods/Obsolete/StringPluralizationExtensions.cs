@@ -45,12 +45,8 @@ namespace Rock
                     return str + "ES";
 
                 default:
-#if NET5_0_OR_GREATER
-                    return Humanizer.InflectorExtensions.Pluralize( str );
-#else
                     var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
                     return pluralizationService.Pluralize( str );
-#endif
             }
         }
 

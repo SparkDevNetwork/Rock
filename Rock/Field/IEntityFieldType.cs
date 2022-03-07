@@ -19,7 +19,7 @@ using System.Web.UI;
 
 using Rock.Data;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Control = System.Object;
 #endif
 

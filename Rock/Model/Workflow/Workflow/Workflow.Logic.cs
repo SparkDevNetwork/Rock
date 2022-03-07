@@ -362,7 +362,7 @@ namespace Rock.Model
             }
         }
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
         /// <summary>
         /// Sets the initiator.
         /// </summary>

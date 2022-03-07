@@ -44,7 +44,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the full name of the EntityType.
         /// </value>
         [MaxLength( 100 )]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         [DataMember]

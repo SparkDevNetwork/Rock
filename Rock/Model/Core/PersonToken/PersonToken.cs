@@ -51,7 +51,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 32 )]
         [HideFromReporting]
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
         public string Token { get; private set; }

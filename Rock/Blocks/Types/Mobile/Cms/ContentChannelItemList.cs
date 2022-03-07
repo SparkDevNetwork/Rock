@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -381,7 +381,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             //
             // Apply page parameter filtering.
             //
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
             var pageParameters = RequestContext.GetPageParameters();
             if ( GetAttributeValue( AttributeKeys.QueryParameterFiltering ).AsBoolean() && pageParameters.Count > 0 )
             {
@@ -619,7 +619,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region Custom Settings
 
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Defines the control that will provide the Basic Settings tab content
         /// for the ContentChannelItemList block.

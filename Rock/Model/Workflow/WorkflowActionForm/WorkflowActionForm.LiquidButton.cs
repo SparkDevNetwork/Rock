@@ -23,7 +23,7 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding a button field to liquid properties
         /// </summary>
-#if !NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         [DotLiquid.LiquidType( "Name", "Html", "EmailHtml" )]
 #endif
         [LavaType( "Name", "Html", "EmailHtml" )]        

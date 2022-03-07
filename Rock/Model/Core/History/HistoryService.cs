@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
@@ -640,7 +640,7 @@ namespace Rock.Model
                             {
                                 string resolvedUrl;
 
-#if NET5_0_OR_GREATER
+#if REVIEW_NET5_0_OR_GREATER
                                 resolvedUrl = virtualUrl;
 #else
                                 if ( System.Web.HttpContext.Current == null )
