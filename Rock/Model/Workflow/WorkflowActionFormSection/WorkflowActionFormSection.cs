@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -26,7 +27,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a WorkflowActionFormSection in Rock
+    /// Represents a WorkflowActionFormSection in Rock 
     /// </summary>
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionFormSection" )]
@@ -36,18 +37,17 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Title. This is usually the value that is return when the entity's ToString() function is called. This property is required.
+        /// Gets or sets the title to display in the Section
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the Entity's Title.
+        /// The title.
         /// </value>
-        [Required]
         [MaxLength( 500 )]
-        [DataMember( IsRequired = true )]
+        [DataMember( IsRequired = false )]
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the description or summary about this WorkflowActionFormSection.
+        /// Gets or sets the description to display under the Title.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> containing a description or summary about this WorkflowActionFormSection.
@@ -56,7 +56,7 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to show heading separator.
+        /// Gets or sets a value indicating whether to show heading separator after the Title/Description
         /// </summary>
         /// <value>
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if heading separator will be shown; otherwise <c>false</c>.
@@ -94,10 +94,10 @@ namespace Rock.Model
         public int WorkflowActionFormId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the SectionType for this Workflow Avtion Form Section.
+        /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the SectionType for this Workflow Action Form Section.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing DefinedValueId of the SectionType's <see cref="Rock.Model.DefinedValue"/> for this Workflow Avtion Form Section.
+        /// A <see cref="System.Int32"/> representing DefinedValueId of the SectionType's <see cref="Rock.Model.DefinedValue"/> for this Workflow Action Form Section.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.SECTION_TYPE )]

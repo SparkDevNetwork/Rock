@@ -15,11 +15,12 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import DropDownList from "../Elements/dropDownList";
 import TextBox from "../Elements/textBox";
-import { useVModelPassthrough } from "../Util/component";
+import { ComparisonValue } from "../Reporting/comparisonValue";
 import { areEqual } from "../Util/guid";
+import { updateRefValue } from "../Util/util";
 import { ListItem } from "../ViewModels";
 import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldFilterRule } from "../ViewModels/Reporting/fieldFilterRule";
@@ -52,27 +53,21 @@ export const FieldFilterRuleRow = defineComponent({
     ],
 
     setup(props, { emit }) {
-        const rule = useVModelPassthrough(props, "modelValue", emit);
+        let internalUpdate = false;
 
-        // Rule Defaults
-        rule.value.comparisonType = rule.value.comparisonType ?? 0;
-        rule.value.value = rule.value.value ?? "";
-        rule.value.attributeGuid = rule.value.attributeGuid ?? props.sources[0].attribute?.attributeGuid;
+        const attributeGuid = ref(props.modelValue.attributeGuid);
+        const comparisonValue = ref<ComparisonValue>({
+            comparisonType: props.modelValue.comparisonType,
+            value: props.modelValue.value
+        });
 
         // Current Selected Attribute/Property
         const currentAttribute = computed<PublicFilterableAttribute>(() => {
             const source = props.sources.find(source => {
-                return areEqual(rule.value.attributeGuid ?? "", source.attribute?.attributeGuid ?? "");
+                return areEqual(attributeGuid.value ?? "", source.attribute?.attributeGuid ?? "");
             }) || props.sources[0];
 
             return source.attribute as PublicFilterableAttribute;
-        });
-
-        // Reset the rule after a new attribute is chosen
-        watch(currentAttribute, () => {
-            rule.value.comparisonType = 0;
-            rule.value.value = "";
-            rule.value.attributeGuid = currentAttribute.value.attributeGuid;
         });
 
         // Convert the list of sources into the options you can choose from the 
@@ -85,15 +80,53 @@ export const FieldFilterRuleRow = defineComponent({
             });
         });
 
-        function removeRule(): void {
+        function onRemoveRuleClick(): void {
             emit("removeRule", props.modelValue);
         }
 
+        // Watch for changes to the model value and update our internal values.
+        watch(() => props.modelValue, () => {
+            // Prevent a value reset.
+            internalUpdate = true;
+
+            updateRefValue(attributeGuid, props.modelValue.attributeGuid);
+            updateRefValue(comparisonValue, {
+                comparisonType: props.modelValue.comparisonType,
+                value: props.modelValue.value
+            });
+
+            internalUpdate = false;
+        });
+
+        // Watch for changes to our internal values and update the model value.
+        watch([attributeGuid, comparisonValue], () => {
+            const newValue: FieldFilterRule = {
+                ...props.modelValue,
+                attributeGuid: attributeGuid.value,
+                comparisonType: comparisonValue.value.comparisonType ?? 0,
+                value: comparisonValue.value.value
+            };
+
+            emit("update:modelValue", newValue);
+        });
+
+        // Reset the rule after a new attribute is chosen
+        watch(currentAttribute, () => {
+            if (!internalUpdate) {
+                comparisonValue.value = {
+                    comparisonType: 0,
+                    value: ""
+                };
+                attributeGuid.value = currentAttribute.value.attributeGuid;
+            }
+        });
+
         return {
-            removeRule,
-            rule,
+            attributeGuid,
             attributeList,
-            currentAttribute
+            comparisonValue,
+            currentAttribute,
+            onRemoveRuleClick,
         };
     },
 
@@ -102,15 +135,15 @@ export const FieldFilterRuleRow = defineComponent({
         <div class="col-xs-10 col-sm-11">
             <div class="row form-row">
                 <div class="filter-rule-comparefield col-md-4">
-                    <DropDownList :options="attributeList" v-model="rule.attributeGuid" :show-blank-item="false"  />
+                    <DropDownList :options="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
                 </div>
                 <div class="filter-rule-fieldfilter col-md-8">
-                    <RockAttributeFilter :attribute="currentAttribute" v-model="rule" :filter-mode="1" required />
+                    <RockAttributeFilter :attribute="currentAttribute" v-model="comparisonValue" :filter-mode="1" required />
                 </div>
             </div>
         </div>
         <div class="col-xs-2 col-sm-1">
-            <button class="btn btn-danger btn-square" @click.prevent="removeRule"><i class="fa fa-times"></i></button>
+            <button class="btn btn-danger btn-square" @click.prevent="onRemoveRuleClick"><i class="fa fa-times"></i></button>
         </div>
     </div>
     `

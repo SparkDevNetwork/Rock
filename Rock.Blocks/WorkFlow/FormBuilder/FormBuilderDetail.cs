@@ -225,6 +225,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     .Where( a => !allValidAttributeGuids.Contains( a.Attribute.Guid ) )
                     .ToList();
 
+                var allFormFields = formSettings.Sections.SelectMany( s => s.Fields ).ToList();
+
                 // Delete all sections that no longer exist in this form.
                 sectionsToDelete.ForEach( s =>
                 {
@@ -246,7 +248,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 {
                     var section = formSettings.Sections[sectionOrder];
 
-                    var formSection = AddOrUpdateFormSection( actionForm, workflowType, attributeService, formAttributeService, formSectionService, section, ref nextAttributeOrder );
+                    var formSection = AddOrUpdateFormSection( actionForm, workflowType, attributeService, formAttributeService, formSectionService, section, allFormFields, ref nextAttributeOrder );
                     formSection.Order = sectionOrder;
                 }
             }
@@ -277,7 +279,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <param name="section">The section view model that will be used as the source of information.</param>
         /// <param name="nextAttributeOrder">The next attribute order number to use when creating a new attribute.</param>
         /// <returns>The <see cref="WorkflowActionFormSection"/> entity that was either updated or created.</returns>
-        private static WorkflowActionFormSection AddOrUpdateFormSection( WorkflowActionForm actionForm, WorkflowType workflowType, AttributeService attributeService, WorkflowActionFormAttributeService formAttributeService, WorkflowActionFormSectionService formSectionService, FormSectionViewModel section, ref int nextAttributeOrder )
+        private static WorkflowActionFormSection AddOrUpdateFormSection( WorkflowActionForm actionForm, WorkflowType workflowType, AttributeService attributeService, WorkflowActionFormAttributeService formAttributeService, WorkflowActionFormSectionService formSectionService, FormSectionViewModel section, List<FormFieldViewModel> formFields, ref int nextAttributeOrder )
         {
             var formSection = actionForm.FormSections.FirstOrDefault( s => s.Guid == section.Guid );
 
@@ -298,14 +300,14 @@ namespace Rock.Blocks.Workflow.FormBuilder
             formSection.Title = section.Title;
             formSection.ShowHeadingSeparator = section.ShowHeadingSeparator;
             formSection.SectionTypeValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( section.Type );
-            formSection.SectionVisibilityRulesJSON = section.VisibilityRule?.FromViewModel().ToCamelCaseJson( false, true );
+            formSection.SectionVisibilityRules = section.VisibilityRule?.FromViewModel( formFields );
 
             // Loop through all fields that need to be either added or updated.
             for ( int fieldOrder = 0; fieldOrder < section.Fields.Count; fieldOrder++ )
             {
                 var field = section.Fields[fieldOrder];
 
-                var formField = AddOrUpdateFormField( actionForm, workflowType, attributeService, formAttributeService, formSection, field, ref nextAttributeOrder );
+                var formField = AddOrUpdateFormField( actionForm, workflowType, attributeService, formAttributeService, formSection, field, formFields, ref nextAttributeOrder );
                 formField.Order = fieldOrder;
             }
 
@@ -325,7 +327,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <param name="field">The field view model that contains the source information.</param>
         /// <param name="nextAttributeOrder">The next attribute Order value to use when adding a new attribute.</param>
         /// <returns>The <see cref="WorkflowActionFormAttribute"/> that was either created or updated.</returns>
-        private static WorkflowActionFormAttribute AddOrUpdateFormField( WorkflowActionForm actionForm, WorkflowType workflowType, AttributeService attributeService, WorkflowActionFormAttributeService formAttributeService, WorkflowActionFormSection formSection, FormFieldViewModel field, ref int nextAttributeOrder )
+        private static WorkflowActionFormAttribute AddOrUpdateFormField( WorkflowActionForm actionForm, WorkflowType workflowType, AttributeService attributeService, WorkflowActionFormAttributeService formAttributeService, WorkflowActionFormSection formSection, FormFieldViewModel field, List<FormFieldViewModel> formFields, ref int nextAttributeOrder )
         {
             var fieldType = FieldTypeCache.Get( field.FieldTypeGuid );
 
@@ -378,7 +380,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             formField.ColumnSize = field.Size;
             formField.IsVisible = true;
             formField.HideLabel = field.IsHideLabel;
-            formField.FieldVisibilityRules = field.VisibilityRule?.FromViewModel();
+            formField.FieldVisibilityRules = field.VisibilityRule?.FromViewModel( formFields );
 
             // Add or update the attribute qualifiers. Do not delete any old ones.
             foreach ( var kvp in configurationValues )
@@ -507,7 +509,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     ShowHeadingSeparator = workflowFormSection.ShowHeadingSeparator,
                     Title = workflowFormSection.Title,
                     Type = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( workflowFormSection.SectionTypeValueId ),
-                    VisibilityRule = workflowFormSection.SectionVisibilityRulesJSON.FromJsonOrNull<Field.FieldVisibilityRules>()?.ToViewModel()
+                    VisibilityRule = workflowFormSection.SectionVisibilityRules?.ToViewModel()
                 };
 
                 // Get all the form attributes for this section.

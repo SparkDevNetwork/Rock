@@ -15,8 +15,13 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType } from "../Reporting/comparisonType";
+import { ComparisonValue } from "../Reporting/comparisonValue";
+import { areEqual } from "../Util/guid";
 import { ListItem } from "../ViewModels";
+import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldTypeBase } from "./fieldType";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum ConfigurationValueKey {
     Values = "values",
@@ -36,6 +41,11 @@ export const enum ConfigurationPropertyKey {
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./campusFieldComponents")).EditComponent;
+});
+
+// Load the filter component only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./campusFieldComponents")).FilterComponent;
 });
 
 // Load the configuration component only as needed.
@@ -69,5 +79,30 @@ export class CampusFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return ComparisonType.None;
+    }
+
+    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+        if (!value.value) {
+            return "";
+        }
+
+        try {
+            const rawValues = value.value.split(",");
+            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const selectedValues = values.filter(o => rawValues.filter(v => areEqual(v, o.value)).length > 0);
+
+            return `'${selectedValues.map(o => o.text).join("' OR '")}'`;
+        }
+        catch {
+            return `'${value.value}'`;
+        }
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent("Is", filterComponent);
     }
 }

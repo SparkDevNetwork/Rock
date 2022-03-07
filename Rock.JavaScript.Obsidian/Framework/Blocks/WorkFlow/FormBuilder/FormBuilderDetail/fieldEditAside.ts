@@ -27,8 +27,6 @@ import RockButton from "../../../../Elements/rockButton";
 import Slider from "../../../../Elements/slider";
 import InlineSwitch from "../../../../Elements/switch";
 import TextBox from "../../../../Elements/textBox";
-import { getFieldType } from "../../../../Fields/index";
-import { FilterExpressionType } from "../../../../Reporting/filterExpressionType";
 import { ValidationResult, ValidationRule } from "../../../../Rules";
 import { useInvokeBlockAction } from "../../../../Util/block";
 import { FormError } from "../../../../Util/form";
@@ -40,13 +38,7 @@ import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGr
 import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
 import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
 import { FormField, FormFieldType } from "../Shared/types";
-import { useFormSources } from "./utils";
-
-const timeoutAsync = (ms: number): Promise<void> => {
-    return new Promise<void>((_resolve, reject) => {
-        setTimeout(reject, ms);
-    });
-};
+import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils";
 
 /**
  * Check if the two records are equal. This makes sure all the key names match
@@ -79,62 +71,6 @@ function shallowStrictEqual(a: Record<string, string>, b: Record<string, string>
     }
 
     return true;
-}
-
-/**
- * Get the friendly formatted title of a filter group. This returns an HTML
- * string.
- * 
- * @param group The group that contains the comparison type information.
- *
- * @returns An HTML formatted string with the comparison type text.
- */
-function getFilterGroupTitle(group: FieldFilterGroup): string {
-    switch (group.expressionType) {
-        case FilterExpressionType.GroupAll:
-            return "<strong>Show</strong> when <strong>all</strong> of the following match:";
-
-        case FilterExpressionType.GroupAny:
-            return "<strong>Show</strong> when <strong>any</strong> of the following match:";
-
-        case FilterExpressionType.GroupAllFalse:
-            return "<strong>Hide</strong> when <strong>all</strong> of the following match:";
-
-        case FilterExpressionType.GroupAnyFalse:
-            return "<strong>Hide</strong> when <strong>any</strong> of the following match:";
-
-        default:
-            return "";
-    }
-}
-
-/**
- * Get the description of the rule, including the name of the field it depends on.
- * 
- * @param rule The rule to be represented.
- * @param sources The field filter sources to use when looking up the source field.
- * @param fields The fields that contain the attribute information.
- *
- * @returns A plain text string that represents the rule in a human friendly format.
- */
-function getFilterRuleDescription(rule: FieldFilterRule, sources: FieldFilterSource[], fields: FormField[]): string {
-    const ruleField = fields.filter(f => areEqual(f.guid, rule.attributeGuid));
-    const ruleSource = sources.filter(s => areEqual(s.guid, rule.attributeGuid));
-
-    if (ruleField.length === 1 && ruleSource.length === 1 && ruleSource[0].attribute) {
-        const fieldType = getFieldType(ruleField[0].fieldTypeGuid);
-
-        if (fieldType) {
-            const descr = fieldType.getFilterValueDescription({
-                comparisonType: rule.comparisonType,
-                value: rule.value
-            }, ruleSource[0].attribute);
-
-            return `${ruleSource[0].attribute.name} ${descr}`;
-        }
-    }
-
-    return "";
 }
 
 export default defineComponent({
@@ -471,7 +407,6 @@ export default defineComponent({
             conditionalPanelOpen,
             conditionalRules,
             conditionalSources,
-            onConditionalEditClick,
             fieldDescription,
             fieldKey,
             fieldKeyRules,
@@ -487,6 +422,7 @@ export default defineComponent({
             isFieldRequired,
             isShowOnGrid,
             onBackClick,
+            onConditionalEditClick,
             onConditionalSave,
             onFieldTypeModelValueUpdate,
             onValidationChanged,

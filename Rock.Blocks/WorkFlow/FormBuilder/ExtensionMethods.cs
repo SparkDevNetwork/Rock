@@ -16,12 +16,14 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModel.Blocks.WorkFlow.FormBuilder;
 using Rock.ViewModel.NonEntities;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.WorkFlow.FormBuilder
 {
@@ -459,12 +461,12 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         /// <param name="viewModel">The view model that represents the object.</param>
         /// <returns>The object created from the view model.</returns>
-        internal static Rock.Field.FieldVisibilityRules FromViewModel( this FieldFilterGroupViewModel viewModel )
+        internal static Rock.Field.FieldVisibilityRules FromViewModel( this FieldFilterGroupViewModel viewModel, List<FormFieldViewModel> formFields )
         {
             return new Rock.Field.FieldVisibilityRules
             {
                 FilterExpressionType = ( FilterExpressionType ) viewModel.ExpressionType,
-                RuleList = viewModel.Rules.Select( r => r.FromViewModel() ).ToList()
+                RuleList = viewModel.Rules.Select( r => r.FromViewModel( formFields ) ).ToList()
             };
         }
 
@@ -475,7 +477,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// <returns>The view model representation.</returns>
         internal static FieldFilterRuleViewModel ToViewModel( this Rock.Field.FieldVisibilityRule rule )
         {
-            return new FieldFilterRuleViewModel
+            var viewModel = new FieldFilterRuleViewModel
             {
                 Guid = rule.Guid,
                 ComparisonType = ( int ) rule.ComparisonType,
@@ -483,6 +485,20 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 AttributeGuid = rule.ComparedToFormFieldGuid,
                 Value = rule.ComparedToValue
             };
+
+            if ( rule.ComparedToFormFieldGuid.HasValue )
+            {
+                var attribute = AttributeCache.Get( rule.ComparedToFormFieldGuid.Value );
+
+                if ( attribute?.FieldType?.Field != null)
+                {
+                    var filterValues = new List<string> { rule.ComparisonType.ConvertToInt().ToString(), rule.ComparedToValue };
+                    var comparisonValue = attribute.FieldType.Field.GetPublicFilterValue( filterValues.ToJson(), attribute.ConfigurationValues );
+                    viewModel.Value = comparisonValue.Value;
+                }
+            }
+
+            return viewModel;
         }
 
         /// <summary>
@@ -491,15 +507,65 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         /// <param name="viewModel">The view model that represents the object.</param>
         /// <returns>The object created from the view model.</returns>
-        internal static Rock.Field.FieldVisibilityRule FromViewModel( this FieldFilterRuleViewModel viewModel )
+        internal static Rock.Field.FieldVisibilityRule FromViewModel( this FieldFilterRuleViewModel viewModel, List<FormFieldViewModel> formFields )
         {
-            return new Rock.Field.FieldVisibilityRule
+            var rule = new Rock.Field.FieldVisibilityRule
             {
                 Guid = viewModel.Guid,
                 ComparisonType = ( ComparisonType ) viewModel.ComparisonType,
                 ComparedToFormFieldGuid = viewModel.AttributeGuid,
                 ComparedToValue = viewModel.Value
             };
+
+            if ( rule.ComparedToFormFieldGuid.HasValue )
+            {
+                var comparisonValue = new Rock.Reporting.ComparisonValue
+                {
+                    ComparisonType = rule.ComparisonType,
+                    Value = rule.ComparedToValue
+                };
+                var field = formFields.Where( f => f.Guid == rule.ComparedToFormFieldGuid.Value ).FirstOrDefault();
+
+                if ( field != null )
+                {
+                    var fieldType = FieldTypeCache.Get( field.FieldTypeGuid );
+
+                    if ( fieldType?.Field != null )
+                    {
+                        var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
+                        var filterValues = fieldType.Field.GetPrivateFilterValue( comparisonValue, privateConfigurationValues ).FromJsonOrNull<List<string>>();
+
+                        if ( filterValues != null && filterValues.Count == 2 )
+                        {
+                            rule.ComparedToValue = filterValues[1];
+                        }
+                        else if ( filterValues != null && filterValues.Count == 1 )
+                        {
+                            rule.ComparedToValue = filterValues[0];
+                        }
+                    }
+                }
+                else
+                {
+                    var attribute = AttributeCache.Get( rule.ComparedToFormFieldGuid.Value );
+
+                    if ( attribute?.FieldType?.Field != null )
+                    {
+                        var filterValues = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+
+                        if ( filterValues != null && filterValues.Count == 2 )
+                        {
+                            rule.ComparedToValue = filterValues[1];
+                        }
+                        else if ( filterValues != null && filterValues.Count == 1 )
+                        {
+                            rule.ComparedToValue = filterValues[0];
+                        }
+                    }
+                }
+            }
+
+            return rule;
         }
     }
 }

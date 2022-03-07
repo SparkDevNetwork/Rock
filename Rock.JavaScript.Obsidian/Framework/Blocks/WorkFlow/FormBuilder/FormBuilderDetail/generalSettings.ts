@@ -27,7 +27,7 @@ import TransitionVerticalCollapse from "../../../../Elements/transitionVerticalC
 import { EntityType } from "../../../../SystemGuids";
 import { updateRefValue } from "../../../../Util/util";
 import EmailSource from "../Shared/emailSource";
-import SettingsWell from "../Shared/settingsWell";
+import SectionContainer from "../../../../Controls/sectionContainer";
 import { FormGeneral } from "../Shared/types";
 import { FormTemplateListItem } from "./types";
 import { useFormSources } from "./utils";
@@ -46,7 +46,7 @@ export default defineComponent({
         DropDownList,
         EmailSource,
         InlineSwitch,
-        SettingsWell,
+        SectionContainer,
         TextBox,
         TransitionVerticalCollapse
     },
@@ -120,7 +120,7 @@ export default defineComponent({
     },
 
     template: `
-<SettingsWell title="General Settings"
+<SectionContainer title="General Settings"
     description="Update the general settings for the form below.">
     <div class="row">
         <div class="col-md-6">
@@ -165,6 +165,6 @@ export default defineComponent({
                 label="Form Entry Ends" />
         </div>
     </div>
-</Settingswell>
+</SectionContainer>
 `
 });

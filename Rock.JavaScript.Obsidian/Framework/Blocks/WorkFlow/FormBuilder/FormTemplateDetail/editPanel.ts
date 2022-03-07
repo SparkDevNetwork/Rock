@@ -27,7 +27,7 @@ import { ListItem } from "../../../../ViewModels";
 import CompletionSettings from "../Shared/completionSettings";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import PersonEntrySettings from "../Shared/personEntrySettings";
-import SettingsWell from "../Shared/settingsWell";
+import SectionContainer from "../../../../Controls/sectionContainer";
 import { FormCompletionAction } from "../Shared/types";
 import { TemplateEditDetail } from "./types";
 import { useSources } from "./utils";
@@ -60,7 +60,7 @@ export default defineComponent({
         PersonEntrySettings,
         RockButton,
         RockForm,
-        SettingsWell,
+        SectionContainer,
         TextBox
     },
 
@@ -201,7 +201,7 @@ export default defineComponent({
         label="Is Login Required"
         help="Determines if a person needs to be logged in to complete this form." />
 
-    <SettingsWell title="Form Headers and Footers"
+    <SectionContainer title="Form Headers and Footers"
         description="The headers and footers below will be displayed on all pages of the forms that use this template.">
         <TextBox v-model="formHeader"
             label="Form Header"
@@ -210,10 +210,10 @@ export default defineComponent({
         <TextBox v-model="formFooter"
             label="Form Footer"
             textMode="multiline" />
-    </SettingsWell>
+    </SectionContainer>
 
-    <SettingsWell v-model="allowPersonEntry"
-        hasEnable
+    <SectionContainer v-model="allowPersonEntry"
+        toggleText="Enable"
         title="Person Entry Settings"
         description="These settings will lock the forms person entry settings.">
         <PersonEntrySettings v-model="personEntry"
@@ -222,7 +222,7 @@ export default defineComponent({
             :campusTypeOptions="campusTypeOptions"
             :campusStatusOptions="campusStatusOptions"
             :addressTypeOptions="addressTypeOptions" />
-    </SettingsWell>
+    </SectionContainer>
 
     <ConfirmationEmail v-model="confirmationEmail"
         :recipientOptions="recipientOptions"

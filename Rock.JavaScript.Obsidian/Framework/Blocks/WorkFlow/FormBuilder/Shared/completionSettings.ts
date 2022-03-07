@@ -22,7 +22,7 @@ import { toNumberOrNull } from "../../../../Services/number";
 import { useVModelPassthrough } from "../../../../Util/component";
 import { ListItem } from "../../../../ViewModels";
 import SegmentedPicker from "./segmentedPicker";
-import SettingsWell from "./settingsWell";
+import SectionContainer from "../../../../Controls/sectionContainer";
 import { FormCompletionActionType, FormCompletionAction } from "./types";
 
 const typeOptions: ListItem[] = [
@@ -45,7 +45,7 @@ export default defineComponent({
     components: {
         DropDownList,
         SegmentedPicker,
-        SettingsWell,
+        SectionContainer,
         TextBox
     },
 
@@ -83,6 +83,9 @@ export default defineComponent({
         /** True if the type is Redirect */
         const isTypeRedirect = computed((): boolean => type.value === FormCompletionActionType.Redirect.toString());
 
+        /** The title text of the toggle button on the section. */
+        const sectionToggleText = computed((): string => props.hasEnable ? "Enable" : "");
+
         // Watch for changes in our modelValue and then update all our internal values.
         watch(() => props.modelValue, () => {
             type.value = props.modelValue.type?.toString() ?? FormCompletionActionType.DisplayMessage.toString();
@@ -108,16 +111,17 @@ export default defineComponent({
             isTypeRedirect,
             message,
             redirectUrl,
+            sectionToggleText,
             type,
             typeOptions
         };
     },
 
     template: `
-<SettingsWell v-model="enabled"
+<SectionContainer v-model="enabled"
     title="Completion Settings"
     description="The settings below determine the actions to take after an individual completes the form."
-    :hasEnable="hasEnable">
+    :toggleText="sectionToggleText">
     <SegmentedPicker v-model="type"
         :options="typeOptions" />
 
@@ -133,6 +137,6 @@ export default defineComponent({
             label="Redirect URL"
             rules="required" />
     </div>
-</Settingswell>
+</SectionContainer>
 `
 });

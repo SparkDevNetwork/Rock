@@ -15,16 +15,16 @@
 // </copyright>
 //
 
-import { PropType, defineComponent, ref, TransitionGroup, watch } from "vue";
-import { FieldFilterRuleRow } from "./fieldFilterRuleRow";
+import { defineComponent, PropType, ref, TransitionGroup, watch } from "vue";
 import DropDownList from "../Elements/dropDownList";
+import { FilterExpressionType } from "../Reporting/filterExpressionType";
+import { areEqual, newGuid } from "../Util/guid";
+import { updateRefValue } from "../Util/util";
 import { ListItem } from "../ViewModels";
-import { newGuid } from "../Util/guid";
-import { useVModelPassthrough } from "../Util/component";
-import { FieldFilterSource} from "../ViewModels/Reporting/fieldFilterSource";
 import { FieldFilterGroup } from "../ViewModels/Reporting/fieldFilterGroup";
 import { FieldFilterRule } from "../ViewModels/Reporting/fieldFilterRule";
-import { FilterExpressionType } from "../Reporting/filterExpressionType";
+import { FieldFilterSource } from "../ViewModels/Reporting/fieldFilterSource";
+import { FieldFilterRuleRow } from "./fieldFilterRuleRow";
 
 type ShowHide = "Show" | "Hide";
 type AllAny = "All" | "Any";
@@ -44,6 +44,15 @@ const filterExpressionTypeMap: Record<ShowHide, Record<AllAny, FilterExpressionT
 const filterExpressionToShowHideMap: ShowHide[] = ["Show", "Show", "Hide", "Hide"]; // Use FilterExpressionType - 1 as index
 const filterExpressionToAllAnyMap: AllAny[] = ["All", "Any", "All", "Any"]; // Use FilterExpressionType - 1 as index
 
+const showHideOptions: ListItem[] = [
+    { text: "Show", value: "Show" },
+    { text: "Hide", value: "Hide" }
+];
+
+const allAnyOptions: ListItem[] = [
+    { text: "All", value: "All" },
+    { text: "Any", value: "Any" }
+];
 
 export default defineComponent({
     name: "FieldVisibilityRulesEditor",
@@ -76,10 +85,9 @@ export default defineComponent({
     emits: ["update:modelValue"],
 
     setup(props, { emit }) {
-        const filterGroup = useVModelPassthrough(props, "modelValue", emit, { deep: true });
-
-        // Make sure non-required properties are initiated
-        filterGroup.value.rules = filterGroup.value.rules || [];
+        const showHide = ref(filterExpressionToShowHideMap[props.modelValue.expressionType - 1]);
+        const allAny = ref(filterExpressionToAllAnyMap[props.modelValue.expressionType - 1]);
+        const rules = ref(props.modelValue.rules ?? []);
 
         // We currently don't support nested groups, so fire a warning if anyone tries to use them
         watch(() => props.allowNestedGroups, () => {
@@ -88,53 +96,77 @@ export default defineComponent({
             }
         });
 
-        const showHide = ref<ShowHide>(filterExpressionToShowHideMap[filterGroup.value.expressionType - 1]);
-        const showHideOptions: ListItem[] = [
-            { text: "Show", value: "Show" },
-            { text: "Hide", value: "Hide" }
-        ];
+        /**
+         * Event handler for when the add rule button is clicked. Insert a new
+         * rule with default values into the list of rules.
+         */
+        function onAddRuleClick(): void {
+            rules.value = [
+                ...rules.value,
+                {
+                    guid: newGuid(),
+                    comparisonType: 0,
+                    value: "",
+                    sourceType: 0,
+                    attributeGuid: props.sources[0].attribute?.attributeGuid
+                }
+            ];
+        }
 
-        const allAny = ref<AllAny>(filterExpressionToAllAnyMap[filterGroup.value.expressionType - 1]);
-        const allAnyOptions: ListItem[] = [
-            { text: "All", value: "All" },
-            { text: "Any", value: "Any" }
-        ];
+        /**
+         * Event handler for when a single rule has been updated. Replace the
+         * rule in our array with the new rule.
+         * 
+         * @param rule The new rule information.
+         */
+        const onUpdateRule = (rule: FieldFilterRule): void => {
+            const newRules = [...rules.value];
+            const ruleIndex = newRules.findIndex(r => areEqual(r.guid, rule.guid));
 
+            if (ruleIndex !== -1) {
+                newRules.splice(ruleIndex, 1, rule);
+
+                rules.value = newRules;
+            }
+        };
+
+        /**
+         * Event handler for when a rule has requested that it be removed from
+         * the list of rules.
+         * 
+         * @param rule The rule to be removed.
+         */
+        function onRemoveRule(rule: FieldFilterRule): void {
+            rules.value = (rules.value || []).filter((val: FieldFilterRule) => !areEqual(val.guid, rule.guid));
+        }
+
+        // Watch for changes to the model value and update our internal values.
         watch(() => props.modelValue, () => {
-            filterGroup.value.rules = filterGroup.value.rules || [];
-        }, { immediate: true });
-
-        watch([showHide, allAny], () => {
-            filterGroup.value.expressionType = filterExpressionTypeMap[showHide.value][allAny.value];
+            showHide.value = filterExpressionToShowHideMap[props.modelValue.expressionType - 1];
+            allAny.value = filterExpressionToAllAnyMap[props.modelValue.expressionType - 1];
+            updateRefValue(rules, props.modelValue.rules ?? []);
         });
 
-        watch(() => filterGroup.value.expressionType, () => {
-            showHide.value = filterExpressionToShowHideMap[filterGroup.value.expressionType - 1];
-            allAny.value = filterExpressionToAllAnyMap[filterGroup.value.expressionType - 1];
+        // Watch for changes to our internal values and update the model value.
+        watch([showHide, allAny, rules], () => {
+            const newValue: FieldFilterGroup = {
+                ...props.modelValue,
+                expressionType: filterExpressionTypeMap[showHide.value][allAny.value],
+                rules: rules.value
+            };
+
+            emit("update:modelValue", newValue);
         });
-
-        function addRule():void {
-            (filterGroup.value.rules as FieldFilterRule[]).push({ 
-                guid: newGuid(),
-                comparisonType: 0,
-                value: "",
-                sourceType: 0,
-                attributeGuid: props.sources[0].attribute?.attributeGuid
-            });
-        }
-
-        function removeRule(rule: FieldFilterRule): void {
-            filterGroup.value.rules = (filterGroup.value.rules || []).filter((val: FieldFilterRule) => val !== rule);
-        }
 
         return {
-            showHide,
-            showHideOptions,
             allAny,
             allAnyOptions,
-            filterGroup,
-            addRule,
-            removeRule,
+            onAddRuleClick,
+            onRemoveRule,
+            onUpdateRule,
+            rules,
+            showHide,
+            showHideOptions
         };
     }, 
 
@@ -152,11 +184,11 @@ export default defineComponent({
     </div>
 
     <div class="filtervisibilityrules-ruleslist ">
-        <FieldFilterRuleRow v-for="rule in filterGroup.rules" :key="rule.guid" v-model="rule" :sources="sources" @removeRule="removeRule" />
+        <FieldFilterRuleRow v-for="rule in rules" :key="rule.guid" :modelValue="rule" :sources="sources" @update:modelValue="onUpdateRule" @removeRule="onRemoveRule" />
     </div>
 
     <div class="filter-actions">
-        <button class="btn btn-xs btn-action add-action" @click.prevent="addRule"><i class="fa fa-filter"></i> Add Criteria</button>
+        <button class="btn btn-xs btn-action add-action" @click.prevent="onAddRuleClick"><i class="fa fa-filter"></i> Add Criteria</button>
     </div>
 </div>
 `

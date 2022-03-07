@@ -16,6 +16,13 @@
 //
 
 import { inject, provide } from "vue";
+import { getFieldType } from "../../../../Fields/utils";
+import { FilterExpressionType } from "../../../../Reporting/filterExpressionType";
+import { areEqual } from "../../../../Util/guid";
+import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
+import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
+import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
+import { FormField } from "../Shared/types";
 import { FormValueSources } from "./types";
 
 // Unique key used to track the sources for the FormTemplateDetail block.
@@ -37,4 +44,71 @@ export function provideFormSources(options: FormValueSources): void {
  */
 export function useFormSources(): FormValueSources {
     return inject<FormValueSources>(sourcesKey) ?? {};
+}
+
+/**
+ * Get the friendly formatted title of a filter group. This returns an HTML
+ * string.
+ * 
+ * @param group The group that contains the comparison type information.
+ *
+ * @returns An HTML formatted string with the comparison type text.
+ */
+export function getFilterGroupTitle(group: FieldFilterGroup): string {
+    switch (group.expressionType) {
+        case FilterExpressionType.GroupAll:
+            return "<strong>Show</strong> when <strong>all</strong> of the following match:";
+
+        case FilterExpressionType.GroupAny:
+            return "<strong>Show</strong> when <strong>any</strong> of the following match:";
+
+        case FilterExpressionType.GroupAllFalse:
+            return "<strong>Hide</strong> when <strong>all</strong> of the following match:";
+
+        case FilterExpressionType.GroupAnyFalse:
+            return "<strong>Hide</strong> when <strong>any</strong> of the following match:";
+
+        default:
+            return "";
+    }
+}
+
+/**
+ * Get the description of the rule, including the name of the field it depends on.
+ * 
+ * @param rule The rule to be represented.
+ * @param sources The field filter sources to use when looking up the source field.
+ * @param fields The fields that contain the attribute information.
+ *
+ * @returns A plain text string that represents the rule in a human friendly format.
+ */
+export function getFilterRuleDescription(rule: FieldFilterRule, sources: FieldFilterSource[], fields: FormField[]): string {
+    const ruleField = fields.filter(f => areEqual(f.guid, rule.attributeGuid));
+    const ruleSource = sources.filter(s => areEqual(s.guid, rule.attributeGuid));
+
+    if (ruleField.length === 1 && ruleSource.length === 1 && ruleSource[0].attribute) {
+        const fieldType = getFieldType(ruleField[0].fieldTypeGuid);
+
+        if (fieldType) {
+            const descr = fieldType.getFilterValueDescription({
+                comparisonType: rule.comparisonType,
+                value: rule.value
+            }, ruleSource[0].attribute);
+
+            return `${ruleSource[0].attribute.name} ${descr}`;
+        }
+    }
+
+    return "";
+}
+
+/**
+ * Creates a promise that rejects when the timeout has elapsed.
+ * 
+ * @param ms The timeout in milliseconds.
+ */
+export function timeoutAsync(ms: number): Promise<void> {
+    return new Promise<void>((_resolve, reject) => {
+        setTimeout(reject, ms);
+    });
 }

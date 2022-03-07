@@ -152,6 +152,14 @@ namespace Rock.ViewModel
         public int? PersonEntryConnectionStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the PersonEntryDescription.
+        /// </summary>
+        /// <value>
+        /// The PersonEntryDescription.
+        /// </value>
+        public string PersonEntryDescription { get; set; }
+
+        /// <summary>
         /// Gets or sets the PersonEntryEmailEntryOption.
         /// </summary>
         /// <value>
@@ -240,6 +248,22 @@ namespace Rock.ViewModel
         public int? PersonEntryRecordStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the PersonEntrySectionTypeValueId.
+        /// </summary>
+        /// <value>
+        /// The PersonEntrySectionTypeValueId.
+        /// </value>
+        public int? PersonEntrySectionTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonEntryShowHeadingSeparator.
+        /// </summary>
+        /// <value>
+        /// The PersonEntryShowHeadingSeparator.
+        /// </value>
+        public bool PersonEntryShowHeadingSeparator { get; set; }
+
+        /// <summary>
         /// Gets or sets the PersonEntrySpouseAttributeGuid.
         /// </summary>
         /// <value>
@@ -262,6 +286,14 @@ namespace Rock.ViewModel
         /// The PersonEntrySpouseLabel.
         /// </value>
         public string PersonEntrySpouseLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonEntryTitle.
+        /// </summary>
+        /// <value>
+        /// The PersonEntryTitle.
+        /// </value>
+        public string PersonEntryTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

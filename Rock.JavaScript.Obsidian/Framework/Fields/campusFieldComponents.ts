@@ -69,6 +69,43 @@ export const EditComponent = defineComponent({
 `
 });
 
+export const FilterComponent = defineComponent({
+    name: "CampusField.Filter",
+
+    components: {
+        CheckBoxList
+    },
+
+    props: getFieldEditorProps(),
+
+    setup(props, { emit }) {
+        const internalValue = ref(props.modelValue.split(",").filter(s => s !== ""));
+
+        /** The options to choose from in the drop down list */
+        const options = computed((): ListItem[] => {
+            try {
+                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            }
+            catch {
+                return [];
+            }
+        });
+
+        watch(() => props.modelValue, () => internalValue.value = props.modelValue.split(",").filter(s => s !== ""));
+
+        watch(internalValue, () => emit("update:modelValue", internalValue.value.join(",")));
+
+        return {
+            internalValue,
+            options
+        };
+    },
+
+    template: `
+<CheckBoxList v-model="internalValue" :options="options" />
+`
+});
+
 export const ConfigurationComponent = defineComponent({
     name: "CampusField.Configuration",
 
