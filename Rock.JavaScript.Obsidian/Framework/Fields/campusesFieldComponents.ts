@@ -24,6 +24,7 @@ import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusesField
 import { ListItem } from "../ViewModels";
 import { areEqual, Guid } from "../Util/guid";
 import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
+import { updateRefValue } from "../Util/util";
 
 type CampusItem = {
     guid: Guid,
@@ -61,9 +62,13 @@ export const EditComponent = defineComponent({
             return toNumberOrNull(repeatColumnsConfig) ?? 4;
         });
 
-        watch(() => props.modelValue, () => internalValue.value = props.modelValue ? props.modelValue.split(",") : []);
+        watch(() => props.modelValue, () => {
+            updateRefValue(internalValue, props.modelValue ? props.modelValue.split(",") : []);
+        });
 
-        watchEffect(() => context.emit("update:modelValue", internalValue.value.join(",")));
+        watch(internalValue, () => {
+            context.emit("update:modelValue", internalValue.value.join(","));
+        });
 
         return {
             internalValue,
