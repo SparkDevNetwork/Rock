@@ -15,18 +15,21 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, ref, watch } from "vue";
-import InlineSwitch from "../../../../Elements/inlineSwitch";
-import TransitionVerticalCollapse from "../../../../Elements/transitionVerticalCollapse";
+import { computed, defineComponent, PropType } from "vue";
+import InlineSwitch from "../Elements/inlineSwitch";
+import TransitionVerticalCollapse from "../Elements/transitionVerticalCollapse";
+import { useVModelPassthrough } from "../Util/component";
+import Header from "./header";
 
 /**
  * Displays the UI for the Confirmation Email component in the Communications
  * screen.
  */
 export default defineComponent({
-    name: "Workflow.FormBuilderDetail.SettingsWell",
+    name: "SectionContainer",
 
     components: {
+        Header,
         InlineSwitch,
         TransitionVerticalCollapse
     },
@@ -37,9 +40,9 @@ export default defineComponent({
             default: false
         },
 
-        hasEnable: {
-            type: Boolean as PropType<boolean>,
-            default: false
+        toggleText: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         title: {
@@ -58,23 +61,13 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
-        const enabled = ref(props.modelValue);
+        const enabled = useVModelPassthrough(props, "modelValue", emit);
 
         /**
          * True if the content should be visible. Content is visible if we either
          * do not have an enable button or the enable button is on.
          */
-        const showContent = computed((): boolean => enabled.value || !props.hasEnable);
-
-        // Watch for changes in our modelValue and then update all our internal values.
-        watch(() => props.modelValue, () => {
-            enabled.value = props.modelValue;
-        });
-
-        // Watch for changes on any of our internal values and then update the modelValue.
-        watch([enabled], () => {
-            emit("update:modelValue", enabled.value);
-        });
+        const showContent = computed((): boolean => enabled.value || !props.toggleText);
 
         return {
             enabled,
@@ -83,15 +76,14 @@ export default defineComponent({
     },
 
     template: `
-<div class="well">
-    <div class="d-flex">
-        <div style="flex-grow: 1;">
-            <h3 v-if="title">{{ title }}</h3>
-            <p v-if="description">{{ description }}</p>
+<div class="section-container well">
+    <div class="section-header d-flex">
+        <div class="section-header-content" style="flex-grow: 1;">
+            <Header :title="title" :description="description" />
         </div>
 
-        <div v-if="hasEnable" style="align-self: end;">
-            <InlineSwitch v-model="enabled" label="Enable" />
+        <div v-if="toggleText" class="section-header-toggle" style="align-self: end;">
+            <InlineSwitch v-model="enabled" :label="toggleText" />
         </div>
     </div>
 

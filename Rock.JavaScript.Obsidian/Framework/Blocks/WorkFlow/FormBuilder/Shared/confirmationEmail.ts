@@ -21,7 +21,7 @@ import InlineSwitch from "../../../../Elements/inlineSwitch";
 import TransitionVerticalCollapse from "../../../../Elements/transitionVerticalCollapse";
 import { ListItem } from "../../../../ViewModels";
 import EmailSource from "./emailSource";
-import SettingsWell from "./settingsWell";
+import SectionContainer from "../../../../Controls/sectionContainer";
 import { FormConfirmationEmail, FormEmailSource } from "./types";
 
 /**
@@ -35,7 +35,7 @@ export default defineComponent({
         DropDownList,
         EmailSource,
         InlineSwitch,
-        SettingsWell,
+        SectionContainer,
         TransitionVerticalCollapse
     },
 
@@ -92,8 +92,8 @@ export default defineComponent({
     },
 
     template: `
-<SettingsWell v-model="enabled"
-    hasEnable
+<SectionContainer v-model="enabled"
+    toggleText="Enabled"
     title="Confirmation Email"
     description="The following settings will be used to send an email to the individual who submitted the form.">
     <div class="row">
@@ -108,6 +108,6 @@ export default defineComponent({
     <div class="mt-3">
         <EmailSource v-model="source" :templateOptions="sourceTemplateOptions" />
     </div>
-</Settingswell>
+</SectionContainer>
 `
 });

@@ -24,7 +24,7 @@ import { toNumberOrNull } from "../../../../Services/number";
 import { ListItem } from "../../../../ViewModels";
 import EmailSource from "../Shared/emailSource";
 import SegmentedPicker from "../Shared/segmentedPicker";
-import SettingsWell from "../Shared/settingsWell";
+import SectionContainer from "../../../../Controls/sectionContainer";
 import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types";
 
 const notificationDestinationOptions: ListItem[] = [
@@ -55,7 +55,7 @@ export default defineComponent({
         EmailSource,
         PersonPicker,
         SegmentedPicker,
-        SettingsWell,
+        SectionContainer,
         TextBox,
     },
 
@@ -148,8 +148,8 @@ export default defineComponent({
     },
 
     template: `
-<SettingsWell v-model="enabled"
-    hasEnable
+<SectionContainer v-model="enabled"
+    toggleText="Enable"
     title="Notification Email"
     description="Notification emails can be sent to specified individuals when each form is completed.">
     <SegmentedPicker v-model="destination" :options="destinationOptions" />
@@ -189,6 +189,6 @@ export default defineComponent({
     <div class="mt-3">
         <EmailSource v-model="source" :templateOptions="sourceTemplateOptions" />
     </div>
-</SettingsWell>
+</SectionContainer>
 `
 });
