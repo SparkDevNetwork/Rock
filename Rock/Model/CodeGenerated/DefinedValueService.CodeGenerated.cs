@@ -379,6 +379,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.PersonEntrySectionTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<WorkflowActionFormSection>( Context ).Queryable().Any( a => a.SectionTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, WorkflowActionFormSection.FriendlyTypeName );
