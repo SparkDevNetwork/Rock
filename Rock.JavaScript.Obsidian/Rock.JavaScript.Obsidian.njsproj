@@ -137,7 +137,8 @@
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\FormBuilderDetail\sectionZone.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\Shared\segmentedPicker.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\FormBuilderDetail\settingsTab.ts" />
-    <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\Shared\settingsWell.ts" />
+    <TypeScriptCompile Include="Framework\Controls\header.ts" />
+    <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\FormBuilderDetail\types.d.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\FormBuilderDetail\utils.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\formTemplateDetail.ts" />
