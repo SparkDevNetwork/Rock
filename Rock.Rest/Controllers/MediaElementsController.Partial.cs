@@ -200,10 +200,10 @@ namespace Rock.Rest.Controllers
                     .SingleOrDefault();
             }
 
+            var watchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap );
+
             if ( interaction != null )
             {
-                var watchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap );
-
                 // Update the interaction data with the new watch map.
                 var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>() ?? new MediaWatchedInteractionData();
                 data.WatchMap = mediaInteraction.WatchMap;
@@ -230,13 +230,14 @@ namespace Rock.Rest.Controllers
                 var data = new MediaWatchedInteractionData
                 {
                     WatchMap = mediaInteraction.WatchMap,
-                    WatchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap )
+                    WatchedPercentage = watchedPercentage
                 };
 
                 interaction = interactionService.CreateInteraction( interactionComponentId,
                     null, "Watch", string.Empty, data.ToJson(), personAliasId, RockDateTime.Now,
                     null, null, null, null, null, null );
 
+                interaction.InteractionLength = watchedPercentage;
                 interaction.InteractionEndDateTime = RockDateTime.Now;
                 interaction.RelatedEntityTypeId = mediaInteraction.RelatedEntityTypeId;
                 interaction.RelatedEntityId = mediaInteraction.RelatedEntityId;
