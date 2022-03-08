@@ -29,8 +29,9 @@
                             <asp:Literal ID="lFormHeaderText" runat="server" />
 
                             <%-- Person Entry --%>
-                            <asp:Panel ID="pnlPersonEntry" runat="server">
+                            <asp:Panel ID="pnlPersonEntrySection" runat="server">
                                 <asp:Literal ID="lPersonEntryPreHtml" runat="server" />
+                                <asp:Literal ID="lPersonEntrySectionHeaderHtml" runat="server" />
 
                                 <div class="row">
                                     <div class="col-md-6">

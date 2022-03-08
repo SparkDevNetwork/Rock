@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -1169,7 +1170,7 @@ namespace RockWeb.Blocks.WorkFlow
             var formPersonEntrySettings = actionForm.GetFormPersonEntrySettings( workflowType.FormBuilderTemplate );
             var allowPersonEntry = actionForm.GetAllowPersonEntry( workflowType.FormBuilderTemplate );
 
-            pnlPersonEntry.Visible = allowPersonEntry;
+            pnlPersonEntrySection.Visible = allowPersonEntry;
             if ( !allowPersonEntry )
             {
                 return;
@@ -1177,11 +1178,39 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( formPersonEntrySettings.HideIfCurrentPersonKnown && CurrentPerson != null )
             {
-                pnlPersonEntry.Visible = false;
+                pnlPersonEntrySection.Visible = false;
                 return;
             }
 
             lPersonEntryPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
+            var personEntrySectionHeaderHtml = new StringBuilder();
+
+            if ( actionForm.PersonEntrySectionTypeValueId.HasValue )
+            {
+                var sectionTypeValue = DefinedValueCache.Get( actionForm.PersonEntrySectionTypeValueId.Value );
+                var sectionTypeCssClass = sectionTypeValue?.GetAttributeValue( "CSSClass" );
+                if ( sectionTypeCssClass.IsNotNullOrWhiteSpace() )
+                {
+                    pnlPersonEntrySection.AddCssClass( sectionTypeCssClass );
+                }
+            }
+
+            if ( actionForm.PersonEntryTitle.IsNotNullOrWhiteSpace() )
+            {
+                personEntrySectionHeaderHtml.AppendLine( $"<h1>{actionForm.PersonEntryTitle}</h1>" );
+            }
+
+            if ( actionForm.PersonEntryDescription.IsNotNullOrWhiteSpace() )
+            {
+                personEntrySectionHeaderHtml.AppendLine( $"<p>{actionForm.PersonEntryDescription}</p>" );
+            }
+
+            if ( actionForm.PersonEntryShowHeadingSeparator )
+            {
+                personEntrySectionHeaderHtml.AppendLine( "<hr>" );
+            }
+
+            lPersonEntrySectionHeaderHtml.Text = personEntrySectionHeaderHtml.ToString();
 
             if ( formPersonEntrySettings.ShowCampus )
             {
