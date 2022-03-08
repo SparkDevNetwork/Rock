@@ -187,6 +187,8 @@
     <TypeScriptCompile Include="Framework\Elements\switch.ts" />
     <TypeScriptCompile Include="Framework\Elements\treeList.ts" />
     <TypeScriptCompile Include="Framework\Elements\urlLinkBox.ts" />
+    <TypeScriptCompile Include="Framework\Fields\fileField.ts" />
+    <TypeScriptCompile Include="Framework\Fields\fileFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListField.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\urlLinkField.ts" />
