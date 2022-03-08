@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -892,6 +893,7 @@ namespace RockWeb.Blocks.WorkFlow
                 .ToList();
 
             Dictionary<int, Control> formSectionControlLookup = new Dictionary<int, Control>();
+            Dictionary<int, Control> formSectionRowLookup = new Dictionary<int, Control>();
 
             foreach ( var formSection in formSections )
             {
@@ -900,6 +902,8 @@ namespace RockWeb.Blocks.WorkFlow
                     ID = $"formSectionControl_{formSection.Id}",
                     CssClass = "form-section"
                 };
+
+                formSectionControlLookup.Add( formSection.Id, formSectionControl );
 
                 if ( formSection.SectionTypeValueId.HasValue )
                 {
@@ -944,7 +948,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 phWorkflowFormAttributes.Controls.Add( formSectionControl );
 
-                formSectionControlLookup.Add( formSection.Id, formSectionRow );
+                formSectionRowLookup.Add( formSection.Id, formSectionRow );
             }
 
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
@@ -982,20 +986,21 @@ namespace RockWeb.Blocks.WorkFlow
                 fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
                 {
                     FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
+                    ApplySectionVisibilityRules( formSections, formSectionControlLookup );
                 };
 
-                Control sectionControl;
+                Control formSectionRow;
                 if ( formAttribute.ActionFormSectionId.HasValue )
                 {
-                    sectionControl = formSectionControlLookup.GetValueOrNull( formAttribute.ActionFormSectionId.Value ) ?? formSectionNone;
+                    formSectionRow = formSectionRowLookup.GetValueOrNull( formAttribute.ActionFormSectionId.Value ) ?? formSectionNone;
                 }
                 else
                 {
-                    sectionControl = formSectionNone;
+                    formSectionRow = formSectionNone;
                 }
 
                 Control fieldColumnContainer;
-                if ( sectionControl == formSectionNone )
+                if ( formSectionRow == formSectionNone )
                 {
                     // use PlaceHolder for non-formbuilder sections
                     // Placeholder is only a container for other controls, it doesn't render any markup
@@ -1006,7 +1011,8 @@ namespace RockWeb.Blocks.WorkFlow
                     fieldColumnContainer = new HtmlGenericControl( "div" );
                     ( fieldColumnContainer as HtmlGenericControl ).AddCssClass( $"col-md-{formAttribute.ColumnSize ?? 12}" );
                 }
-                sectionControl.Controls.Add( fieldColumnContainer );
+
+                formSectionRow.Controls.Add( fieldColumnContainer );
 
                 fieldColumnContainer.Controls.Add( fieldVisibilityWrapper );
 
@@ -1024,11 +1030,11 @@ namespace RockWeb.Blocks.WorkFlow
                     // get formatted value
                     if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                     {
-                        formattedValue = field.FormatValueAsHtml( fieldColumnContainer, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
+                        formattedValue = field.FormatValueAsHtml( fieldVisibilityWrapper, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
                     }
                     else
                     {
-                        formattedValue = field.FormatValueAsHtml( fieldColumnContainer, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
+                        formattedValue = field.FormatValueAsHtml( fieldVisibilityWrapper, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
                     }
 
                     if ( formAttribute.HideLabel )
@@ -1097,21 +1103,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
 
-            foreach ( var formSection in formSections )
-            {
-                var sectionVisibilityRules = formSection.SectionVisibilityRules;
-                if ( sectionVisibilityRules != null )
-                {
-                    var formSectionControl = formSectionControlLookup.GetValueOrNull( formSection.Id );
-                    if ( formSectionControl != null )
-                    {
-                        // the conditions for a section's visibility should not include its own controls
-                        var otherSectionsFormEditValues = GetWorkflowFormEditAttributeValues( formSection.Id );
-                        var showVisible = sectionVisibilityRules.Evaluate( otherSectionsFormEditValues, new Dictionary<RegistrationPersonFieldType, string>() );
-                        formSectionControl.Visible = showVisible;
-                    }
-                }
-            }
+            ApplySectionVisibilityRules( formSections, formSectionControlLookup );
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
@@ -1173,6 +1165,30 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
+        /// Applies the section visibility rules.
+        /// </summary>
+        /// <param name="formSections">The form sections.</param>
+        /// <param name="formSectionControlLookup">The form section control lookup.</param>
+        private void ApplySectionVisibilityRules( List<WorkflowActionFormSectionCache> formSections, Dictionary<int, Control> formSectionControlLookup )
+        {
+            foreach ( var formSection in formSections )
+            {
+                var sectionVisibilityRules = formSection.SectionVisibilityRules;
+                if ( sectionVisibilityRules != null )
+                {
+                    var formSectionControl = formSectionControlLookup.GetValueOrNull( formSection.Id );
+                    if ( formSectionControl != null )
+                    {
+                        // the conditions for a section's visibility should not include its own controls
+                        var otherSectionsFormEditValues = GetWorkflowFormEditAttributeValues( formSection.Id );
+                        var showVisible = sectionVisibilityRules.Evaluate( otherSectionsFormEditValues, new Dictionary<RegistrationPersonFieldType, string>() );
+                        formSectionControl.Visible = showVisible;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Builds the person entry form.
         /// </summary>
         /// <param name="action">The current action related to the form.</param>
@@ -1187,7 +1203,7 @@ namespace RockWeb.Blocks.WorkFlow
             var formPersonEntrySettings = actionForm.GetFormPersonEntrySettings( workflowType.FormBuilderTemplate );
             var allowPersonEntry = actionForm.GetAllowPersonEntry( workflowType.FormBuilderTemplate );
 
-            pnlPersonEntry.Visible = allowPersonEntry;
+            pnlPersonEntrySection.Visible = allowPersonEntry;
             if ( !allowPersonEntry )
             {
                 return;
@@ -1195,11 +1211,39 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( formPersonEntrySettings.HideIfCurrentPersonKnown && CurrentPerson != null )
             {
-                pnlPersonEntry.Visible = false;
+                pnlPersonEntrySection.Visible = false;
                 return;
             }
 
             lPersonEntryPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
+            var personEntrySectionHeaderHtml = new StringBuilder();
+
+            if ( actionForm.PersonEntrySectionTypeValueId.HasValue )
+            {
+                var sectionTypeValue = DefinedValueCache.Get( actionForm.PersonEntrySectionTypeValueId.Value );
+                var sectionTypeCssClass = sectionTypeValue?.GetAttributeValue( "CSSClass" );
+                if ( sectionTypeCssClass.IsNotNullOrWhiteSpace() )
+                {
+                    pnlPersonEntrySection.AddCssClass( sectionTypeCssClass );
+                }
+            }
+
+            if ( actionForm.PersonEntryTitle.IsNotNullOrWhiteSpace() )
+            {
+                personEntrySectionHeaderHtml.AppendLine( $"<h1>{actionForm.PersonEntryTitle}</h1>" );
+            }
+
+            if ( actionForm.PersonEntryDescription.IsNotNullOrWhiteSpace() )
+            {
+                personEntrySectionHeaderHtml.AppendLine( $"<p>{actionForm.PersonEntryDescription}</p>" );
+            }
+
+            if ( actionForm.PersonEntryShowHeadingSeparator )
+            {
+                personEntrySectionHeaderHtml.AppendLine( "<hr>" );
+            }
+
+            lPersonEntrySectionHeaderHtml.Text = personEntrySectionHeaderHtml.ToString();
 
             if ( formPersonEntrySettings.ShowCampus )
             {
@@ -1427,10 +1471,12 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
+            var formPersonEntrySettings = form.GetFormPersonEntrySettings( workflowType.FormBuilderTemplate );
+
             int? existingPersonId;
             int? existingPersonSpouseId = null;
 
-            if ( CurrentPersonId.HasValue && ( form.PersonEntryAutofillCurrentPerson || form.PersonEntryHideIfCurrentPersonKnown ) )
+            if ( CurrentPersonId.HasValue && ( formPersonEntrySettings.AutofillCurrentPerson || formPersonEntrySettings.HideIfCurrentPersonKnown ) )
             {
                 existingPersonId = CurrentPersonId.Value;
                 var existingPersonSpouse = CurrentPerson.GetSpouse( personEntryRockContext );
@@ -1439,7 +1485,7 @@ namespace RockWeb.Blocks.WorkFlow
                     existingPersonSpouseId = existingPersonSpouse.Id;
                 }
 
-                if ( form.PersonEntryHideIfCurrentPersonKnown )
+                if ( formPersonEntrySettings.HideIfCurrentPersonKnown )
                 {
                     SavePersonEntryToAttributeValues( existingPersonId.Value, existingPersonSpouseId, CurrentPerson.PrimaryFamily );
                     return;
@@ -1455,8 +1501,8 @@ namespace RockWeb.Blocks.WorkFlow
             var personEntryPerson = CreateOrUpdatePersonFromPersonEditor( existingPersonId, null, pePerson1, personEntryRockContext );
             if ( personEntryPerson.Id == 0 )
             {
-                personEntryPerson.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
-                personEntryPerson.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                personEntryPerson.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
+                personEntryPerson.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
                 PersonService.SaveNewPerson( personEntryPerson, personEntryRockContext, cpPersonEntryCampus.SelectedCampusId );
             }
 
@@ -1468,7 +1514,7 @@ namespace RockWeb.Blocks.WorkFlow
                 existingPersonSpouseId = matchedPersonsSpouse.Id;
             }
 
-            if ( form.PersonEntryMaritalStatusEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            if ( formPersonEntrySettings.MaritalStatus != WorkflowActionFormPersonEntryOption.Hidden )
             {
                 personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
             }
@@ -1489,8 +1535,8 @@ namespace RockWeb.Blocks.WorkFlow
                 var personEntryPersonSpouse = CreateOrUpdatePersonFromPersonEditor( existingPersonSpouseId, primaryFamily, pePerson2, personEntryRockContext );
                 if ( personEntryPersonSpouse.Id == 0 )
                 {
-                    personEntryPersonSpouse.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
-                    personEntryPersonSpouse.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                    personEntryPersonSpouse.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
+                    personEntryPersonSpouse.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 
@@ -1525,13 +1571,13 @@ namespace RockWeb.Blocks.WorkFlow
                 primaryFamily.CampusId = cpPersonEntryCampus.SelectedCampusId;
             }
 
-            if ( acPersonEntryAddress.Visible && form.PersonEntryGroupLocationTypeValueId.HasValue && acPersonEntryAddress.HasValue )
+            if ( acPersonEntryAddress.Visible && formPersonEntrySettings.AddressTypeValueId.HasValue && acPersonEntryAddress.HasValue )
             {
                 // a Person should always have a PrimaryFamilyId, but check to make sure, just in case
                 if ( primaryFamily != null )
                 {
                     var groupLocationService = new GroupLocationService( personEntryRockContext );
-                    var familyLocation = primaryFamily.GroupLocations.Where( a => a.GroupLocationTypeValueId == form.PersonEntryGroupLocationTypeValueId.Value ).FirstOrDefault();
+                    var familyLocation = primaryFamily.GroupLocations.Where( a => a.GroupLocationTypeValueId == formPersonEntrySettings.AddressTypeValueId.Value ).FirstOrDefault();
 
                     var newOrExistingLocation = new LocationService( personEntryRockContext ).Get(
                             acPersonEntryAddress.Street1,
@@ -1547,7 +1593,7 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             familyLocation = new GroupLocation
                             {
-                                GroupLocationTypeValueId = form.PersonEntryGroupLocationTypeValueId.Value,
+                                GroupLocationTypeValueId = formPersonEntrySettings.AddressTypeValueId.Value,
                                 GroupId = primaryFamily.Id,
                                 IsMailingLocation = true,
                                 IsMappedLocation = true
