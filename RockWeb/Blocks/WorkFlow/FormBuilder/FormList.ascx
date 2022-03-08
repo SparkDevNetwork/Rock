@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FormList.ascx.cs" Inherits="RockWeb.Blocks.WorkFlow.FormBuilder.FormList" %>
-
+<%@ Import Namespace="Rock" %>
 <div class="panel panel-block">
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa-solid fa-align-left"></i>Form Builder</h1>
@@ -9,6 +9,7 @@
         <div class="picker-wrapper clearfix">
             <asp:UpdatePanel ID="upnlCategory" Class="picker-folders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                 <ContentTemplate>
+                    <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
                     <div class="actions">
                         <h4 class="pull-left">Form Categories</h4>
                         <div runat="server" id="divTreeviewActions" class="btn-group pull-right">
@@ -89,6 +90,7 @@
 
                         $(function () {
                             var $selectedId = $('#<%=hfSelectedCategory.ClientID%>'),
+                                $expandedIds = $('#<%=hfInitialCategoryParentIds.ClientID%>'),
                                 _mapCategories = function (arr) {
                                     return $.map(arr, function (item) {
                                         var node = {
@@ -130,6 +132,7 @@
                                         mapData: _mapCategories
                                     },
                                     selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
+                                    expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
                                 });
                         });
 
@@ -147,39 +150,77 @@
             </asp:UpdatePanel>
             <asp:UpdatePanel ID="upnlForms" class="picker-files" runat="server">
                 <ContentTemplate>
+                    <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                    <Rock:NotificationBox ID="nbValidationError" runat="server" Title="There is a problem with one or more of the values you entered" NotificationBoxType="Danger" Visible="false" />
                     <asp:HiddenField ID="hfSelectedCategory" runat="server" />
                     <div class="js-files">
-
                         <h3>
                             <asp:Literal ID="lTitle" runat="server" /></h3>
                         <div>
                             <asp:Literal ID="lDescription" runat="server" />
-                            <div id="divEditPanel" runat="server" class="pull-right">
+                            <div id="divFormListTopPanel" runat="server" class="pull-right">
                                 <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
-                                <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs btn-square" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Lava Shortcode');"><i class="fa fa-times"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></asp:LinkButton>
                             </div>
                         </div>
                         <hr class="mt-2" />
                         <asp:Panel ID="pnlFormList" runat="server" Visible="false">
-                            <div>
-                                <div class="pull-right">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div class="form-horizontal label-auto pull-right">
+                                        <Rock:RockDropDownList ID="ddlSortBy" Label="Sort By" runat="server" FormGroupCssClass="input-width-xl" AutoPostBack="true" OnSelectedIndexChanged="ddlSortBy_SelectedIndexChanged" />
+                                    </div>
                                     <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-xs btn-default" OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
                                 </div>
                             </div>
+                            <asp:Repeater ID="rForms" runat="server">
+                                <ItemTemplate>
+                                    <div class="card card-sm card-schedule">
+                                        <div class="card-body d-flex">
+                                            <div class="flex-fill">
+                                                <h3><%# Eval("Name") %></h3>
+                                                <p>Created by <%# Eval("CreatedByPersonAlias.Person") %> <%# ((DateTime?)Eval("CreatedDateTime")).ToElapsedString() %></p>
+                                            </div>
+                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center flex-nowrap justify-content-end" runat="server">
+                                                <span class='badge badge-info'>23</span>
+                                            </asp:Panel>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
                         </asp:Panel>
                         <asp:Panel ID="pnlAddForm" runat="server" Visible="false">
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:DataTextBox ID="tbFormName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" Help="The internal name of the foam you are creating. This name will not be displayed when the form is not being shown." />
                                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" Help="An internal description of what the foam will be used for." />
-                                    <Rock:RockDropDownList ID="ddlTemplate" runat="server" Help="An optional template to use that provides pre-configured settings." />
+                                    <Rock:RockDropDownList ID="ddlTemplate" Label="Template" runat="server" Help="An optional template to use that provides pre-configured settings." />
                                     <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                                 </div>
                             </div>
                             <div class="actions">
                                 <asp:LinkButton ID="btnStartBuilding" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Start Building" CssClass="btn btn-primary" OnClick="btnStartBuilding_Click" />
                                 <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                            </div>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlCategory" runat="server" Visible="false">
+                            <fieldset>
+                                <Rock:DataTextBox ID="tbCategoryName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
+                                <Rock:DataTextBox ID="tbCategoryDescription" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <div class="actions">
+                                <asp:LinkButton ID="btnCategorySave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnCategorySave_Click" />
+                                <asp:LinkButton ID="btnCategoryCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                             </div>
                         </asp:Panel>
                     </div>
