@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, PropType, ref, watch, watchEffect } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockFormField from "./rockFormField";
 
 /**
@@ -60,7 +60,7 @@ export default defineComponent({
         watch(() => props.modelValue, () => internalValue.value = props.modelValue);
 
         /** Watch for changes in our internal value and emit the new value. */
-        watchEffect(() => emit("update:modelValue", internalValue.value));
+        watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
         /**
          * Set the rating value from an action.
