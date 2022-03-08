@@ -77,6 +77,24 @@ namespace Rock.WebStartup
         #endregion Properties
 
         /// <summary>
+        /// Class UnobservedTaskException.
+        /// Implements the <see cref="System.Exception" />
+        /// </summary>
+        /// <seealso cref="System.Exception" />
+        private class UnobservedTaskException : Exception
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="UnobservedTaskException"/> class.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <param name="exception">The exception.</param>
+            public UnobservedTaskException( string message, Exception exception )
+                : base( message, exception )
+            {
+            }
+        }
+
+        /// <summary>
         /// If there are Task.Runs that don't handle their exceptions, this will catch those
         /// so that we can log it.
         /// </summary>
@@ -84,17 +102,8 @@ namespace Rock.WebStartup
         /// <param name="e">The <see cref="UnobservedTaskExceptionEventArgs"/> instance containing the event data.</param>
         private static void TaskScheduler_UnobservedTaskException( object sender, UnobservedTaskExceptionEventArgs e )
         {
-            Exception ex;
-            if ( e.Exception?.InnerExceptions?.Count == 1 )
-            {
-                ex = e.Exception.InnerException;
-            }
-            else
-            {
-                ex = e.Exception;
-            }
-
-            ExceptionLogService.LogException( ex );
+            Debug.WriteLine( "Unobserved Task Exception" );
+            ExceptionLogService.LogException( new UnobservedTaskException( "Unobserved Task Exception", e.Exception ) );
         }
 
         /// <summary>
