@@ -859,6 +859,7 @@ namespace RockWeb.Blocks.WorkFlow
                 .ToList();
 
             Dictionary<int, Control> formSectionControlLookup = new Dictionary<int, Control>();
+            Dictionary<int, Control> formSectionRowLookup = new Dictionary<int, Control>();
 
             foreach ( var formSection in formSections )
             {
@@ -867,6 +868,8 @@ namespace RockWeb.Blocks.WorkFlow
                     ID = $"formSectionControl_{formSection.Id}",
                     CssClass = "form-section"
                 };
+
+                formSectionControlLookup.Add( formSection.Id, formSectionControl );
 
                 if ( formSection.SectionTypeValueId.HasValue )
                 {
@@ -911,7 +914,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 phWorkflowFormAttributes.Controls.Add( formSectionControl );
 
-                formSectionControlLookup.Add( formSection.Id, formSectionRow );
+                formSectionRowLookup.Add( formSection.Id, formSectionRow );
             }
 
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
@@ -949,20 +952,21 @@ namespace RockWeb.Blocks.WorkFlow
                 fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
                 {
                     FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
+                    ApplySectionVisibilityRules( formSections, formSectionControlLookup );
                 };
 
-                Control sectionControl;
+                Control formSectionRow;
                 if ( formAttribute.ActionFormSectionId.HasValue )
                 {
-                    sectionControl = formSectionControlLookup.GetValueOrNull( formAttribute.ActionFormSectionId.Value ) ?? formSectionNone;
+                    formSectionRow = formSectionRowLookup.GetValueOrNull( formAttribute.ActionFormSectionId.Value ) ?? formSectionNone;
                 }
                 else
                 {
-                    sectionControl = formSectionNone;
+                    formSectionRow = formSectionNone;
                 }
 
                 Control fieldColumnContainer;
-                if ( sectionControl == formSectionNone )
+                if ( formSectionRow == formSectionNone )
                 {
                     // use PlaceHolder for non-formbuilder sections
                     // Placeholder is only a container for other controls, it doesn't render any markup
@@ -973,7 +977,8 @@ namespace RockWeb.Blocks.WorkFlow
                     fieldColumnContainer = new HtmlGenericControl( "div" );
                     ( fieldColumnContainer as HtmlGenericControl ).AddCssClass( $"col-md-{formAttribute.ColumnSize ?? 12}" );
                 }
-                sectionControl.Controls.Add( fieldColumnContainer );
+
+                formSectionRow.Controls.Add( fieldColumnContainer );
 
                 fieldColumnContainer.Controls.Add( fieldVisibilityWrapper );
 
@@ -991,11 +996,11 @@ namespace RockWeb.Blocks.WorkFlow
                     // get formatted value
                     if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                     {
-                        formattedValue = field.FormatValueAsHtml( fieldColumnContainer, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
+                        formattedValue = field.FormatValueAsHtml( fieldVisibilityWrapper, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
                     }
                     else
                     {
-                        formattedValue = field.FormatValueAsHtml( fieldColumnContainer, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
+                        formattedValue = field.FormatValueAsHtml( fieldVisibilityWrapper, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
                     }
 
                     if ( formAttribute.HideLabel )
@@ -1064,21 +1069,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
 
-            foreach ( var formSection in formSections )
-            {
-                var sectionVisibilityRules = formSection.SectionVisibilityRules;
-                if ( sectionVisibilityRules != null )
-                {
-                    var formSectionControl = formSectionControlLookup.GetValueOrNull( formSection.Id );
-                    if ( formSectionControl != null )
-                    {
-                        // the conditions for a section's visibility should not include its own controls
-                        var otherSectionsFormEditValues = GetWorkflowFormEditAttributeValues( formSection.Id );
-                        var showVisible = sectionVisibilityRules.Evaluate( otherSectionsFormEditValues, new Dictionary<RegistrationPersonFieldType, string>() );
-                        formSectionControl.Visible = showVisible;
-                    }
-                }
-            }
+            ApplySectionVisibilityRules( formSections, formSectionControlLookup );
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
@@ -1136,6 +1127,30 @@ namespace RockWeb.Blocks.WorkFlow
 
                 phActions.Controls.Add( new LiteralControl( buttonHtml ) );
                 phActions.Controls.Add( new LiteralControl( " " ) );
+            }
+        }
+
+        /// <summary>
+        /// Applies the section visibility rules.
+        /// </summary>
+        /// <param name="formSections">The form sections.</param>
+        /// <param name="formSectionControlLookup">The form section control lookup.</param>
+        private void ApplySectionVisibilityRules( List<WorkflowActionFormSectionCache> formSections, Dictionary<int, Control> formSectionControlLookup )
+        {
+            foreach ( var formSection in formSections )
+            {
+                var sectionVisibilityRules = formSection.SectionVisibilityRules;
+                if ( sectionVisibilityRules != null )
+                {
+                    var formSectionControl = formSectionControlLookup.GetValueOrNull( formSection.Id );
+                    if ( formSectionControl != null )
+                    {
+                        // the conditions for a section's visibility should not include its own controls
+                        var otherSectionsFormEditValues = GetWorkflowFormEditAttributeValues( formSection.Id );
+                        var showVisible = sectionVisibilityRules.Evaluate( otherSectionsFormEditValues, new Dictionary<RegistrationPersonFieldType, string>() );
+                        formSectionControl.Visible = showVisible;
+                    }
+                }
             }
         }
 
