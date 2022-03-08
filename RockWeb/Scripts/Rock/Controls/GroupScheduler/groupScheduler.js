@@ -724,9 +724,15 @@
                         var blackdateDates = schedulerResource.BlackoutDates.map(function (d) {
                             return new Date(d).toLocaleDateString()
                         })
-                        var firstBlackoutDate = blackdateDates[0];
-                        var lastBlackoutDate = blackdateDates[blackdateDates.length - 1];
-                        resourceTooltip += " has a blackout from " + firstBlackoutDate + " to " + lastBlackoutDate;
+
+                        if (blackdateDates.length == 1) {
+                            var blackoutDate = blackdateDates[0];
+                            resourceTooltip += " has a blackout on " + blackoutDate;
+                        } else {
+                            var firstBlackoutDate = blackdateDates[0];
+                            var lastBlackoutDate = blackdateDates[blackdateDates.length - 1];
+                            resourceTooltip += " has a blackout from " + firstBlackoutDate + " to " + lastBlackoutDate;
+                        }
                     }
 
                     $resourceDiv.attr('title', resourceTooltip + ".");
