@@ -25,6 +25,7 @@ import { get, post } from "../Util/http";
 import { areEqual } from "../Util/guid";
 import { PublicEditableAttributeValue, ListItem } from "../ViewModels";
 import { FieldTypeConfigurationPropertiesViewModel, FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
+import { deepEqual, updateRefValue } from "../Util/util";
 
 export default defineComponent({
     name: "FieldTypeEditor",
@@ -53,6 +54,8 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
+        const internalValue = ref(props.modelValue);
+
         /** The selected field type in the drop down list. */
         const fieldTypeValue = ref(props.modelValue?.fieldTypeGuid ?? "");
 
@@ -139,7 +142,9 @@ export default defineComponent({
                 defaultValue: defaultValue.value?.value ?? ""
             };
 
-            emit("update:modelValue", newValue);
+            // This only updates if the value has actually changed, which removes
+            // some false dirty state.
+            updateRefValue(internalValue, newValue);
         };
 
         /**
@@ -199,15 +204,6 @@ export default defineComponent({
                 });
         };
 
-        // Called when the field type drop down value is changed.
-        watch(fieldTypeValue, () => {
-            if (resetToDefaultsTimer === null) {
-                resetToDefaultsTimer = window.setTimeout(resetToDefaults, 250);
-            }
-
-            updateFieldConfiguration("");
-        });
-
         /** Called when the default value has been changed by the screen control. */
         const onDefaultValueUpdate = (): void => {
             console.debug("default value updated");
@@ -237,6 +233,28 @@ export default defineComponent({
                 updateModelValue();
             }
         };
+
+        // Called when the field type drop down value is changed.
+        watch(fieldTypeValue, () => {
+            if (resetToDefaultsTimer === null) {
+                resetToDefaultsTimer = window.setTimeout(resetToDefaults, 250);
+            }
+
+            updateFieldConfiguration("");
+        });
+
+        // Watch for changes to our internal value and update the model value.
+        watch(internalValue, () => {
+            // Normally, this deepEqual wouldn't be needed. But there are times
+            // where the internalValue is changed twice. For example, we will
+            // reset the value to blank and then set the proper value. In that
+            // case this watch will be triggered because it detects the value
+            // did indeed change, but we need to check if it was just a toggle
+            // to a blank value and then back to the model value.
+            if (!deepEqual(internalValue.value, props.modelValue, true)) {
+                emit("update:modelValue", internalValue.value);
+            }
+        });
 
         // Get all the available field types that the user is allowed to edit.
         get<ListItem[]>("/api/v2/Controls/FieldTypeEditor/availableFieldTypes")
