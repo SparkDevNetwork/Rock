@@ -77,6 +77,9 @@ registerFieldType(FieldTypeGuids.File, new FileFieldType());
 import { GenderFieldType } from "./genderField";
 registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
 
+import { ImageFieldType } from "./imageField";
+registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
+
 import { IntegerFieldType } from "./integerField";
 registerFieldType(FieldTypeGuids.Integer, new IntegerFieldType());
 

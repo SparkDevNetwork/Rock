@@ -59,10 +59,19 @@ namespace RockWeb.Blocks.Connection
         IsRequired = false,
         DefaultValue = Lava.ConnectionOpportunities,
         Order = 1 )]
+
     [LinkedPage( "Detail Page", Description = "Page to link to when user taps on a connection opportunity. ConnectionOpportunityGuid is passed in the query string.",
         Order = 2,
         Key = AttributeKey.DetailPage
          )]
+
+    [BooleanField(
+        "Update Page Title",
+        Description = "Updates the page title with the connection type name.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.UpdatePageTitle,
+        Order = 3 )]
     #endregion
 
     public partial class WebConnectionOpportunityListLava : RockBlock
@@ -121,6 +130,7 @@ namespace RockWeb.Blocks.Connection
         {
             public const string OpportunityTemplate = "OpportunityTemplate";
             public const string DetailPage = "DetailPage";
+            public const string UpdatePageTitle = "UpdatePageTitle";
         }
         #endregion
 
@@ -219,6 +229,13 @@ namespace RockWeb.Blocks.Connection
 
                 var opportunityClientService = new ConnectionOpportunityClientService( rockContext, CurrentPerson );
                 var connectionType = new ConnectionTypeService( rockContext ).GetNoTracking( _connectionTypeGuid );
+
+                // Determine if we should update the page title with the connection opportunity name
+                var updatePageTitle = GetAttributeValue( AttributeKey.UpdatePageTitle ).AsBoolean();
+                if ( updatePageTitle )
+                {
+                    RockPage.PageTitle = connectionType.Name;
+                }
 
                 var filterOptions = new ConnectionOpportunityQueryOptions
                 {

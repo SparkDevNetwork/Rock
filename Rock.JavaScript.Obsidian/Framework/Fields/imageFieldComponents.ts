@@ -16,17 +16,19 @@
 //
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
+import CheckBox from "../Elements/checkBox";
 import DropDownList from "../Elements/dropDownList";
-import FileUploader from "../Elements/fileUploader";
-import { ConfigurationValueKey, ConfigurationPropertyKey } from "./fileField";
+import ImageUploader from "../Elements/imageUploader";
+import { ConfigurationValueKey, ConfigurationPropertyKey } from "./imageField";
 import { ListItem } from "../ViewModels/listItem";
 import { updateRefValue } from "../Util/util";
+import { asBooleanOrNull, asTrueFalseOrNull } from "../Services/boolean";
 
 export const EditComponent = defineComponent({
-    name: "FileField.Edit",
+    name: "ImageField.Edit",
 
     components: {
-        FileUploader
+        ImageUploader
     },
 
     props: getFieldEditorProps(),
@@ -64,14 +66,15 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<FileUploader v-model="internalValue" :binaryFileTypeGuid="binaryFileType" uploadAsTemporary />
+<ImageUploader v-model="internalValue" :binaryFileTypeGuid="binaryFileType" uploadAsTemporary />
 `
 });
 
 export const ConfigurationComponent = defineComponent({
-    name: "FileField.Configuration",
+    name: "ImageField.Configuration",
 
     components: {
+        CheckBox,
         DropDownList
     },
 
@@ -86,6 +89,7 @@ export const ConfigurationComponent = defineComponent({
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
         const fileType = ref("");
+        const formatAsLink = ref(false);
 
         /** The binary file types the individual can select from. */
         const fileTypeOptions = computed((): ListItem[] => {
@@ -111,9 +115,11 @@ export const ConfigurationComponent = defineComponent({
             // Construct the new value that will be emitted if it is different
             // than the current value.
             newValue[ConfigurationValueKey.BinaryFileType] = fileType.value ?? "";
+            newValue[ConfigurationValueKey.FormatAsLink] = asTrueFalseOrNull(formatAsLink.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.BinaryFileType] !== (props.modelValue[ConfigurationValueKey.BinaryFileType] ?? "");
+            const anyValueChanged = newValue[ConfigurationValueKey.BinaryFileType] !== (props.modelValue[ConfigurationValueKey.BinaryFileType] ?? "")
+                || newValue[ConfigurationValueKey.FormatAsLink] !== (props.modelValue[ConfigurationValueKey.FormatAsLink] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -141,6 +147,7 @@ export const ConfigurationComponent = defineComponent({
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
             fileType.value = props.modelValue[ConfigurationValueKey.BinaryFileType];
+            formatAsLink.value = asBooleanOrNull(props.modelValue[ConfigurationValueKey.FormatAsLink]) ?? false;
         }, {
             immediate: true
         });
@@ -157,10 +164,12 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that only require a local UI update.
         watch(fileType, () => maybeUpdateConfiguration(ConfigurationValueKey.BinaryFileType, fileType.value ?? ""));
+        watch(formatAsLink, () => maybeUpdateConfiguration(ConfigurationValueKey.FormatAsLink, asTrueFalseOrNull(formatAsLink.value) ?? "False"));
 
         return {
             fileType,
-            fileTypeOptions
+            fileTypeOptions,
+            formatAsLink
         };
     },
 
@@ -170,6 +179,10 @@ export const ConfigurationComponent = defineComponent({
         label="File Type"
         help="File type to use to store and retrieve the file. New file types can be configured under 'Admins Tools &gt; General Settings &gt; File Types'."
         :options="fileTypeOptions" />
+
+    <CheckBox v-model="formatAsLink"
+        label="Format as Link"
+        help="Enable this to navigate to a full size image when the image is clicked." />
 </div>
 `
 });
