@@ -1,5 +1,21 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FormList.ascx.cs" Inherits="RockWeb.Blocks.WorkFlow.FormBuilder.FormList" %>
-<%@ Import Namespace="Rock" %>
+<style>
+   .hidden-link {
+      display: none;
+   }
+   .hover-div:hover .hidden-link {
+      display: block;
+   }
+   .created-by {
+       display: block;
+   }
+   .hover-div:hover .created-by {
+      display: none;  
+   }
+    .aspNetDisabled.btn-category-delete {
+        pointer-events: auto;
+    }
+</style>
 <div class="panel panel-block">
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa-solid fa-align-left"></i>Form Builder</h1>
@@ -150,6 +166,7 @@
             </asp:UpdatePanel>
             <asp:UpdatePanel ID="upnlForms" class="picker-files" runat="server">
                 <ContentTemplate>
+                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbValidationError" runat="server" Title="There is a problem with one or more of the values you entered" NotificationBoxType="Danger" Visible="false" />
                     <asp:HiddenField ID="hfSelectedCategory" runat="server" />
@@ -161,7 +178,7 @@
                             <div id="divFormListTopPanel" runat="server" class="pull-right">
                                 <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
                                 <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnDeleteCategory" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
                             </div>
                         </div>
                         <hr class="mt-2" />
@@ -174,16 +191,27 @@
                                     <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-xs btn-default" OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
                                 </div>
                             </div>
-                            <asp:Repeater ID="rForms" runat="server">
+                            <asp:Repeater ID="rForms" runat="server" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
-                                    <div class="card card-sm card-schedule">
+                                    <div class="card card-sm card-schedule hover-div">
                                         <div class="card-body d-flex">
                                             <div class="flex-fill">
                                                 <h3><%# Eval("Name") %></h3>
-                                                <p>Created by <%# Eval("CreatedByPersonAlias.Person") %> <%# ((DateTime?)Eval("CreatedDateTime")).ToElapsedString() %></p>
+                                                <p class="created-by"><%# Eval("Description") %></p>
+                                                <div class="hidden-link">
+                                                    <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-xs" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                    <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-xs" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                    <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-xs" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                    <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-xs" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                    <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-xs" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
+                                                    <div class="pull-right">
+                                                        <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-link btn-xs btn-square" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                                        <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-link btn-xs btn-square" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center flex-nowrap justify-content-end" runat="server">
-                                                <span class='badge badge-info'>23</span>
+                                                <span class='badge badge-info'><%# Eval("SubmissionCount") %></span>
                                             </asp:Panel>
                                         </div>
                                     </div>
@@ -205,6 +233,9 @@
                             </div>
                         </asp:Panel>
                         <asp:Panel ID="pnlCategory" runat="server" Visible="false">
+                            <asp:HiddenField ID="hfCategoryId" runat="server" />
+                            <asp:HiddenField ID="hfParentCategory" runat="server" />
+                            <asp:CustomValidator ID="cvCategory" runat="server" Display="None" />
                             <fieldset>
                                 <Rock:DataTextBox ID="tbCategoryName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
                                 <Rock:DataTextBox ID="tbCategoryDescription" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
