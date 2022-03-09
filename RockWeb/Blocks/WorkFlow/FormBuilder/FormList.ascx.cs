@@ -23,6 +23,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -62,12 +63,26 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
     #endregion Rock Attributes
     public partial class FormList : RockBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Page Param Keys
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string CategoryId = "CategoryId";
+            public const string WorkflowTypeId = "WorkflowTypeId";
+            public const string Tab = "tab";
+        }
+
         public static class AttributeKeys
         {
             public const string AnalyticsPage = "AnalyticsPage";
             public const string FormBuilderDetailPage = "FormBuilderDetailPage";
             public const string SubmissionsPage = "SubmissionsPage";
         }
+
+        #endregion
 
         public const string CategoryNodePrefix = "C";
 
@@ -85,7 +100,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
+            btnDeleteCategory.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Category.FriendlyTypeName );
         }
 
         /// <summary>
@@ -120,7 +135,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     RestParms = parms;
 
                     Category category = null;
-                    var categoryId = PageParameter( "CategoryId" ).AsIntegerOrNull();
+                    var categoryId = PageParameter( PageParameterKey.CategoryId ).AsIntegerOrNull();
                     if ( categoryId.HasValue )
                     {
                         category = new CategoryService( new RockContext() ).Get( categoryId.Value );
@@ -180,6 +195,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         }
 
         #endregion
+
         #region Events
 
         #region Category
@@ -191,68 +207,53 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCategorySave_Click( object sender, EventArgs e )
         {
-            //Category category;
+            Category category;
 
-            //var rockContext = new RockContext();
-            //CategoryService categoryService = new CategoryService( rockContext );
+            var rockContext = new RockContext();
+            CategoryService categoryService = new CategoryService( rockContext );
 
-            //int categoryId = hfSelectedCategory.ValueAsInt();
+            int categoryId = hfCategoryId.ValueAsInt();
 
-            //if ( categoryId == 0 )
-            //{
-            //    category = new Category();
-            //    category.IsSystem = false;
-            //    category.EntityTypeId = entityTypeId;
-            //    category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
-            //    category.EntityTypeQualifierValue = entityTypeQualifierValue;
-            //    category.Order = 0;
-            //    categoryService.Add( category );
-            //}
-            //else
-            //{
-            //    category = categoryService.Get( categoryId );
-            //}
+            if ( categoryId == 0 )
+            {
+                var entityTypeId = EntityTypeCache.GetId<WorkflowType>();
+                category = new Category();
+                category.IsSystem = false;
+                category.EntityTypeId = entityTypeId.Value;
+                category.Order = 0;
+                categoryService.Add( category );
+            }
+            else
+            {
+                category = categoryService.Get( categoryId );
+            }
 
-            //category.Name = tbName.Text;
-            //category.Description = tbDescription.Text;
-            //category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
-            //category.IconCssClass = tbIconCssClass.Text;
-            //category.HighlightColor = tbHighlightColor.Text;
+            category.Name = tbCategoryName.Text;
+            category.Description = tbCategoryDescription.Text;
+            category.ParentCategoryId = hfParentCategory.Value.AsIntegerOrNull();
+            category.IconCssClass = tbIconCssClass.Text;
+            category.HighlightColor = tbHighlightColor.Text;
 
-            //List<int> orphanedBinaryFileIdList = new List<int>();
+            if ( !Page.IsValid )
+            {
+                return;
+            }
 
-            //if ( !Page.IsValid )
-            //{
-            //    return;
-            //}
+            // if the category IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of category didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvCategory.IsValid = category.IsValid;
 
-            //// if the category IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of category didn't pass.
-            //// So, make sure a message is displayed in the validation summary
-            //cvCategory.IsValid = category.IsValid;
+            if ( !cvCategory.IsValid )
+            {
+                cvCategory.ErrorMessage = category.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
 
-            //if ( !cvCategory.IsValid )
-            //{
-            //    cvCategory.ErrorMessage = category.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-            //    return;
-            //}
+            rockContext.SaveChanges();
 
-            //BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-            //foreach ( int binaryFileId in orphanedBinaryFileIdList )
-            //{
-            //    var binaryFile = binaryFileService.Get( binaryFileId );
-            //    if ( binaryFile != null )
-            //    {
-            //        // marked the old images as IsTemporary so they will get cleaned up later
-            //        binaryFile.IsTemporary = true;
-            //    }
-            //}
-
-            //rockContext.SaveChanges();
-
-            //var qryParams = new Dictionary<string, string>();
-            //qryParams["CategoryId"] = category.Id.ToString();
-            //qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
-            //NavigateToPage( RockPage.Guid, qryParams );
+            var qryParams = new Dictionary<string, string>();
+            qryParams[PageParameterKey.CategoryId] = category.Id.ToString();
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -264,7 +265,38 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             var service = new CategoryService( new RockContext() );
             var category = service.Get( hfSelectedCategory.ValueAsInt() );
-            ShowCategoryDetails( category );
+            if ( category != null )
+            {
+                hfParentCategory.Value = category.ParentCategoryId.ToStringSafe();
+                ShowCategoryDetails( category );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteCategory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDeleteCategory_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var service = new CategoryService( rockContext );
+            var category = service.Get( hfSelectedCategory.ValueAsInt() );
+
+            if ( category != null )
+            {
+                if ( !category.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to delete this category.", ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( category );
+
+                rockContext.SaveChanges();
+
+                NavigateToPage( RockPage.Guid, new Dictionary<string, string>() );
+            }
         }
 
         /// <summary>
@@ -274,6 +306,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryChild_Click( object sender, EventArgs e )
         {
+            hfParentCategory.Value = hfSelectedCategory.Value;
             var category = new Category();
             ShowCategoryDetails( category );
         }
@@ -285,6 +318,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryRoot_Click( object sender, EventArgs e )
         {
+            hfParentCategory.Value = string.Empty;
             var category = new Category();
             ShowCategoryDetails( category );
         }
@@ -392,10 +426,80 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlSortBy_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindFormList(hfSelectedCategory.ValueAsInt());
+            BindFormListRepeater( hfSelectedCategory.ValueAsInt() );
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the rForms control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rForms_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            var workflowTypeId = e.CommandArgument.ToString().AsInteger();
+
+            if ( e.CommandName == "Submissions" )
+            {
+                if ( GetAttributeValue( AttributeKeys.SubmissionsPage ).IsNotNullOrWhiteSpace() )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
+                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                }
+            }
+            else if ( e.CommandName == "Builder" )
+            {
+                if ( GetAttributeValue( AttributeKeys.FormBuilderDetailPage ).IsNotNullOrWhiteSpace() )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
+                    qryParams[PageParameterKey.Tab] = "FormBuilder";
+                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                }
+            }
+            else if ( e.CommandName == "Communications" )
+            {
+                if ( GetAttributeValue( AttributeKeys.FormBuilderDetailPage ).IsNotNullOrWhiteSpace() )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
+                    qryParams[PageParameterKey.Tab] = "Communications";
+                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                }
+            }
+            else if ( e.CommandName == "Settings" )
+            {
+                if ( GetAttributeValue( AttributeKeys.FormBuilderDetailPage ).IsNotNullOrWhiteSpace() )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
+                    qryParams[PageParameterKey.Tab] = "Settings";
+                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                }
+            }
+            else if ( e.CommandName == "Analytics" )
+            {
+                if ( GetAttributeValue( AttributeKeys.AnalyticsPage ).IsNotNullOrWhiteSpace() )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
+                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                }
+            }
+            else if ( e.CommandName == "Copy" )
+            {
+                CopyWorkflowType( workflowTypeId );
+                BindFormListRepeater( hfSelectedCategory.ValueAsInt() );
+            }
+            else if ( e.CommandName == "Delete" )
+            {
+                DeleteForm( workflowTypeId );
+                BindFormListRepeater( hfSelectedCategory.ValueAsInt() );
+            }
         }
 
         #endregion
+
         #region Methods
 
         /// <summary>
@@ -437,8 +541,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 lTitle.Text = $"{category.Name} Form List";
                 lDescription.Text = $"Below are a list of forms for the {category.Name} Category";
                 btnSecurity.EntityId = category.Id;
-                btnDelete.ToolTip = string.Empty;
-                BindFormList( categoryId );
+                btnDeleteCategory.ToolTip = string.Empty;
+                BindFormListRepeater( categoryId );
             }
         }
 
@@ -446,43 +550,63 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// Binds the form to repeater.
         /// </summary>
 
-        private void BindFormList( int categoryId )
+        private void BindFormListRepeater( int categoryId )
         {
             var rockContext = new RockContext();
-            var workflowTypes = new WorkflowTypeService( rockContext )
+            var workflowService = new WorkflowService( rockContext );
+            var workflowTypeQry = new WorkflowTypeService( rockContext )
                                 .Queryable()
-                                .Where( a => a.IsFormBuilder && a.CategoryId == categoryId );
+                                .Where( a => a.CategoryId == categoryId );
+
+            btnDeleteCategory.Enabled = !workflowTypeQry.Any();
+            if ( workflowTypeQry.Any() )
+            {
+                btnDeleteCategory.ToolTip = "All forms must be removed to enable deleting a category.";
+            }
+
+            workflowTypeQry = workflowTypeQry.Where( a => a.IsFormBuilder );
 
             var sortBy = ddlSortBy.SelectedValueAsEnum<FormOrder>( FormOrder.DateCreated );
             switch ( sortBy )
             {
                 case FormOrder.DateCreated:
                     {
-                        workflowTypes = workflowTypes.OrderBy( a => a.CreatedDateTime );
+                        workflowTypeQry = workflowTypeQry.OrderBy( a => a.CreatedDateTime );
                     }
                     break;
                 case FormOrder.Name:
                     {
-                        workflowTypes = workflowTypes.OrderBy( a => a.Name );
+                        workflowTypeQry = workflowTypeQry.OrderBy( a => a.Name );
                     }
                     break;
                 case FormOrder.SubmissionCount:
-                    {
-                        //workflowTypes = workflowTypes.OrderBy( a => a. );
-                    }
-                    break;
                 default:
                     break;
             }
 
-            rForms.DataSource = workflowTypes.ToList();
-            rForms.DataBind();
-
-            btnDelete.Enabled = !workflowTypes.Any();
-            if ( workflowTypes.Any() )
+            var workflowTypes = workflowTypeQry.ToList();
+            var formResults = new List<FormResult>();
+            foreach ( var workflowType in workflowTypes )
             {
-                btnDelete.ToolTip = "All forms must be removed to enable deleting a category.";
+                var formResult = new FormResult
+                {
+                    Id = workflowType.Id,
+                    Name = workflowType.Name,
+                    CreatedDateTime = workflowType.CreatedDateTime,
+                    CreatedBy = workflowType.CreatedByPersonName
+                };
+
+                formResults.Add( formResult );
+                formResult.SubmissionCount = workflowService.Queryable().Where( a => a.WorkflowTypeId == workflowType.Id ).Count();
             }
+
+            if ( sortBy == FormOrder.SubmissionCount )
+            {
+                formResults = formResults.OrderBy( a => a.SubmissionCount ).ToList();
+            }
+
+            rForms.DataSource = formResults;
+            rForms.DataBind();
         }
 
         /// <summary>
@@ -513,6 +637,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="category">The category.</param>
         private void ShowCategoryDetails( Category category )
         {
+            hfCategoryId.Value = category.Id.ToString();
             lDescription.Text = string.Empty;
             divFormListTopPanel.Visible = false;
             pnlCategory.Visible = true;
@@ -531,6 +656,287 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             tbCategoryDescription.Text = category.Description;
             tbIconCssClass.Text = category.IconCssClass;
             tbHighlightColor.Text = category.HighlightColor;
+        }
+
+        /// <summary>
+        /// Delete the workflow type
+        /// </summary>
+        private void DeleteForm( int workflowTypeId )
+        {
+            var rockContext = new RockContext();
+            var service = new WorkflowTypeService( rockContext );
+            var workflowType = service.Get( workflowTypeId );
+
+            if ( workflowType != null )
+            {
+                if ( !workflowType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to delete this workflow type.", ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( workflowType );
+
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Copy the workflow type
+        /// </summary>
+        private void CopyWorkflowType( int workflowTypeId )
+        {
+            var rockContext = new RockContext();
+            var workflowTypeService = new WorkflowTypeService( rockContext );
+            var workflowType = workflowTypeService.Get( workflowTypeId );
+            if ( workflowType != null )
+            {
+                var existingActivityTypes = workflowType.ActivityTypes.OrderBy( a => a.Order ).ToList();
+                // Load the state objects for the source workflow type
+                var existingWorkflowTypeAttributes = LoadWorkflowTypeAttributeForCopy( workflowType, rockContext );
+                var existingWorkflowTypeActivityAttributes = LoadWorkflowTypeActivityAttributeForCopy( existingActivityTypes, rockContext );
+
+                // clone the workflow type
+                var newWorkflowType = workflowType.CloneWithoutIdentity();
+                newWorkflowType.IsSystem = false;
+                newWorkflowType.Name = workflowType.Name + " - Copy";
+
+                workflowTypeService.Add( newWorkflowType );
+                rockContext.SaveChanges();
+
+                // Create temporary state objects for the new workflow type
+                var newAttributesState = new List<Rock.Model.Attribute>();
+                var newActivityTypesState = new List<WorkflowActivityType>();
+                // Dictionary to keep the attributes and activity types linked between the source and the target based on their guids
+                var guidXref = new Dictionary<Guid, Guid>();
+
+                // Clone the workflow attributes
+                foreach ( var attribute in existingWorkflowTypeAttributes )
+                {
+                    var newAttribute = attribute.Clone( false );
+                    newAttribute.Id = 0;
+                    newAttribute.Guid = Guid.NewGuid();
+                    newAttribute.IsSystem = false;
+                    newAttributesState.Add( newAttribute );
+
+                    guidXref.Add( attribute.Guid, newAttribute.Guid );
+
+                    foreach ( var qualifier in attribute.AttributeQualifiers )
+                    {
+                        var newQualifier = qualifier.Clone( false );
+                        newQualifier.Id = 0;
+                        newQualifier.Guid = Guid.NewGuid();
+                        newQualifier.IsSystem = false;
+                        newAttribute.AttributeQualifiers.Add( qualifier );
+
+                        guidXref.Add( qualifier.Guid, newQualifier.Guid );
+                    }
+                }
+                // Save the workflow type attributes
+                SaveAttributes( new Workflow().TypeId, "WorkflowTypeId", workflowType.Id.ToString(), newAttributesState, rockContext );
+
+                // Create new guids for all the existing activity types
+                foreach ( var activityType in existingActivityTypes )
+                {
+                    guidXref.Add( activityType.Guid, Guid.NewGuid() );
+                }
+
+                foreach ( var activityType in existingActivityTypes )
+                {
+                    var newActivityType = activityType.Clone( false );
+                    newActivityType.WorkflowTypeId = 0;
+                    newActivityType.Id = 0;
+                    newActivityType.Guid = guidXref[activityType.Guid];
+                    newWorkflowType.ActivityTypes.Add( newActivityType );
+                    rockContext.SaveChanges();
+
+                    var newActivityAttributes = new List<Rock.Model.Attribute>();
+                    foreach ( var attribute in existingWorkflowTypeActivityAttributes[activityType.Guid] )
+                    {
+                        var newAttribute = attribute.Clone( false );
+                        newAttribute.Id = 0;
+                        newAttribute.Guid = Guid.NewGuid();
+                        newAttribute.IsSystem = false;
+                        newActivityAttributes.Add( newAttribute );
+
+                        guidXref.Add( attribute.Guid, newAttribute.Guid );
+
+                        foreach ( var qualifier in attribute.AttributeQualifiers )
+                        {
+                            var newQualifier = qualifier.Clone( false );
+                            newQualifier.Id = 0;
+                            newQualifier.Guid = Guid.NewGuid();
+                            newQualifier.IsSystem = false;
+                            newAttribute.AttributeQualifiers.Add( qualifier );
+
+                            guidXref.Add( qualifier.Guid, newQualifier.Guid );
+                        }
+                    }
+                    // Save ActivityType Attributes
+                    SaveAttributes( new WorkflowActivity().TypeId, "ActivityTypeId", newActivityType.Id.ToString(), newActivityAttributes, rockContext );
+
+                    foreach ( var actionType in activityType.ActionTypes )
+                    {
+                        var newActionType = actionType.Clone( false );
+                        newActionType.Id = 0;
+                        newActionType.ActivityTypeId = 0;
+                        newActionType.WorkflowFormId = null;
+                        newActionType.Guid = Guid.NewGuid();
+                        newActivityType.ActionTypes.Add( newActionType );
+
+                        if ( actionType.CriteriaAttributeGuid.HasValue &&
+                            guidXref.ContainsKey( actionType.CriteriaAttributeGuid.Value ) )
+                        {
+                            newActionType.CriteriaAttributeGuid = guidXref[actionType.CriteriaAttributeGuid.Value];
+                        }
+                        Guid criteriaAttributeGuid = actionType.CriteriaValue.AsGuid();
+                        if ( !criteriaAttributeGuid.IsEmpty() &&
+                            guidXref.ContainsKey( criteriaAttributeGuid ) )
+                        {
+                            newActionType.CriteriaValue = guidXref[criteriaAttributeGuid].ToString();
+                        }
+
+                        if ( actionType.WorkflowForm != null )
+                        {
+                            var newWorkflowForm = actionType.WorkflowForm.Clone( false );
+                            newWorkflowForm.Id = 0;
+                            newWorkflowForm.Guid = Guid.NewGuid();
+
+                            WorkflowFormEditor.CopyEditableProperties( newWorkflowForm, newActionType.WorkflowForm );
+
+                            foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes )
+                            {
+                                if ( guidXref.ContainsKey( formAttribute.Attribute.Guid ) )
+                                {
+                                    var newFormAttribute = formAttribute.Clone( false );
+                                    newFormAttribute.WorkflowActionFormId = 0;
+                                    newFormAttribute.Id = 0;
+                                    newFormAttribute.Guid = Guid.NewGuid();
+
+                                    newFormAttribute.Attribute = new Rock.Model.Attribute
+                                    {
+                                        Guid = guidXref[formAttribute.Attribute.Guid],
+                                        Name = formAttribute.Attribute.Name,
+                                        FieldTypeId = formAttribute.Attribute.FieldTypeId,
+                                        AttributeQualifiers = formAttribute.Attribute.AttributeQualifiers
+                                    };
+
+                                    if ( newFormAttribute.FieldVisibilityRules != null )
+                                    {
+                                        var visibilityRules = newFormAttribute.FieldVisibilityRules.Clone();
+
+                                        foreach ( var rule in visibilityRules.RuleList )
+                                        {
+                                            if ( rule.ComparedToFormFieldGuid != null && guidXref.ContainsKey( rule.ComparedToFormFieldGuid.Value ) )
+                                            {
+                                                rule.ComparedToFormFieldGuid = guidXref[rule.ComparedToFormFieldGuid.Value];
+                                            }
+                                        }
+
+                                        newFormAttribute.FieldVisibilityRules = visibilityRules;
+                                    }
+
+                                    newActionType.WorkflowForm.FormAttributes.Add( newFormAttribute );
+                                }
+                            }
+                        }
+
+                        rockContext.SaveChanges();
+
+                        newActionType.LoadAttributes( rockContext );
+                        if ( actionType.Attributes != null && actionType.Attributes.Any() )
+                        {
+                            foreach ( var attributeKey in actionType.Attributes.Select( a => a.Key ) )
+                            {
+                                string value = actionType.GetAttributeValue( attributeKey );
+                                Guid guidValue = value.AsGuid();
+                                if ( !guidValue.IsEmpty() && guidXref.ContainsKey( guidValue ) )
+                                {
+                                    newActionType.SetAttributeValue( attributeKey, guidXref[guidValue].ToString() );
+                                }
+                                else
+                                {
+                                    newActionType.SetAttributeValue( attributeKey, value );
+                                }
+                            }
+                            newActionType.SaveAttributeValues( rockContext );
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves the attributes.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="qualifierColumn">The qualifier column.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Rock.Model.Attribute> attributes, RockContext rockContext )
+        {
+            // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
+            var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
+
+            // Delete any of those attributes that were removed in the UI
+            var selectedAttributeGuids = attributes.Select( a => a.Guid );
+            foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
+            {
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
+            }
+
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attribute in attributes )
+            {
+                Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+            }
+        }
+
+        private List<Rock.Model.Attribute> LoadWorkflowTypeAttributeForCopy( WorkflowType workflowType, RockContext rockContext )
+        {
+            var attributeService = new AttributeService( rockContext );
+            return attributeService
+                .GetByEntityTypeId( new Workflow().TypeId, true ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+        }
+
+        private Dictionary<Guid, List<Rock.Model.Attribute>> LoadWorkflowTypeActivityAttributeForCopy( List<WorkflowActivityType> activityTypes, RockContext rockContext )
+        {
+            var activityAttributes = new Dictionary<Guid, List<Rock.Model.Attribute>>();
+            var attributeService = new AttributeService( rockContext );
+            foreach ( var activityType in activityTypes )
+            {
+                var activityTypeAttributes = attributeService
+                    .GetByEntityTypeId( new WorkflowActivity().TypeId, true ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "ActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( activityType.Id.ToString() ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList();
+
+                activityAttributes.Add( activityType.Guid, activityTypeAttributes );
+
+                foreach ( var actionType in activityType.ActionTypes )
+                {
+                    var action = EntityTypeCache.Get( actionType.EntityTypeId );
+                    if ( action != null )
+                    {
+                        Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), actionType.TypeId, "EntityTypeId", actionType.EntityTypeId.ToString(), rockContext );
+                        actionType.LoadAttributes( rockContext );
+                    }
+                }
+            }
+
+            return activityAttributes;
         }
 
         #endregion
@@ -563,5 +969,85 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         }
 
         #endregion
+
+        #region Supporting Classes
+
+        /// <summary>
+        ///
+        /// </summary>
+        public class FormResult
+        {
+            /// <summary>
+            /// Gets or sets the form identifier.
+            /// </summary>
+            /// <value>
+            /// The form identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the submission count.
+            /// </summary>
+            /// <value>
+            /// The submission count.
+            /// </value>
+            public int SubmissionCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Created Date Time.
+            /// </summary>
+            /// <value>
+            /// The Created Date Time.
+            /// </value>
+            public DateTime? CreatedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Created By.
+            /// </summary>
+            /// <value>
+            /// The Created By.
+            /// </value>
+            public string CreatedBy { get; set; }
+
+            /// <summary>
+            /// Gets or sets the description.
+            /// </summary>
+            /// <value>
+            /// The description.
+            /// </value>
+            public string Description
+            {
+                get
+                {
+                    string description = string.Empty;
+                    if ( CreatedBy.IsNotNullOrWhiteSpace() )
+                    {
+                        description = $"Created By {CreatedBy}";
+                    }
+
+                    if ( CreatedDateTime.HasValue )
+                    {
+                        if ( description.IsNullOrWhiteSpace() )
+                        {
+                            description = "Created";
+                        }
+
+                        description += $" {CreatedDateTime.ToElapsedString()}";
+                    }
+
+                    return description;
+                }
+            }
+        }
+
+        # endregion Supporting Classes
     }
 }
