@@ -24,6 +24,7 @@ import { IFieldType } from "./fieldType";
 import DropDownList from "../Elements/dropDownList";
 import FieldFilterContainer from "../Elements/fieldFilterContainer";
 import { toNumberOrNull } from "../Services/number";
+import { ListItem } from "../ViewModels";
 
 const fieldTypeTable: Record<Guid, IFieldType> = {};
 
@@ -187,6 +188,20 @@ export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {
 }
 
 /**
+ * Allows callers to modify the names of the comparison type options. The values
+ * and the array itself should not be modified.
+ */
+export type UpdateComparisonTypeNamesCallback = (comparisonTypeOptions: ListItem[]) => void;
+
+/**
+ * Options that can be passed to the getStandardFilterComponent method which
+ * will alter it's default behavior.
+ */
+export type StandardFilterComponentOptions = {
+    updateComparisonTypeNames?: UpdateComparisonTypeNamesCallback;
+};
+
+/**
  * Gets a standard filter component that uses a constant string in place of the
  * comparison type picker. This component will always emit a ComparisonValue
  * with a null type.
@@ -196,7 +211,7 @@ export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {
  *
  * @returns A component that will handle editing a filter value.
  */
-export function getStandardFilterComponent(compareLabel: string, valueComponent: Component): Component;
+export function getStandardFilterComponent(compareLabel: string, valueComponent: Component, options?: StandardFilterComponentOptions): Component;
 
 /**
  * Gets a standard filter component that uses a picker to let the individual
@@ -210,7 +225,7 @@ export function getStandardFilterComponent(compareLabel: string, valueComponent:
  *
  * @returns A component that will handle editing a filter value.
  */
-export function getStandardFilterComponent(comparisonTypes: ComparisonType | null, valueComponent: Component): Component;
+export function getStandardFilterComponent(comparisonTypes: ComparisonType | null, valueComponent: Component, options?: StandardFilterComponentOptions): Component;
 
 /**
  * Gets a standard filter component that can be used by field types to generate
@@ -221,12 +236,25 @@ export function getStandardFilterComponent(comparisonTypes: ComparisonType | nul
  *
  * @returns A component that will handle editing a filter value.
  */
-export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonType | string | null, valueComponent: Component): Component {
+export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonType | string | null, valueComponent: Component, options?: StandardFilterComponentOptions): Component {
     const comparisonTypes: ComparisonType | null = typeof comparisonLabelOrTypes === "number" ? comparisonLabelOrTypes : null;
     const compareLabel: string = typeof comparisonLabelOrTypes === "string" ? comparisonLabelOrTypes : "";
 
-    const comparisonTypeOptions = comparisonTypes !== null ? getFilteredComparisonTypeOptions(comparisonTypes) : [];
-    
+    let comparisonTypeOptions = comparisonTypes !== null ? getFilteredComparisonTypeOptions(comparisonTypes) : [];
+
+    if (options?.updateComparisonTypeNames) {
+        // Create a new array with new objects so we don't modify the core
+        // set for every component on the page.
+        comparisonTypeOptions = comparisonTypeOptions.map(o => {
+            return {
+                value: o.value,
+                text: o.text
+            };
+        });
+
+        options.updateComparisonTypeNames(comparisonTypeOptions);
+    }
+
     return defineComponent({
         name: "StandardFilterComponent",
 
@@ -245,6 +273,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
         setup(props, { emit }) {
             /** The comparison type currently selected in the UI. */
             const internalComparisonType = ref(props.modelValue.comparisonType?.toString() ?? "");
+            const comparisonType = ref(props.modelValue.comparisonType ?? null);
 
             /** The comparison value currently entered in the UI. */
             const internalComparisonValue = ref(props.modelValue.value);
@@ -303,6 +332,8 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
                     }
                 }
 
+                comparisonType.value = type;
+
                 // Construct the new value to be emitted.
                 const newValue: ComparisonValue = {
                     comparisonType: type,
@@ -319,6 +350,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
             // values to match.
             watch(() => props.modelValue, () => {
                 internalComparisonType.value = props.modelValue.comparisonType?.toString() ?? "";
+                comparisonType.value = props.modelValue.comparisonType ?? null;
                 internalComparisonValue.value = props.modelValue.value;
             });
 
@@ -332,6 +364,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
 
             return {
                 compareLabel,
+                comparisonType,
                 comparisonTypeOptions,
                 hasCompareComponent,
                 hasValueComponent,
@@ -347,7 +380,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
         <DropDownList v-model="internalComparisonType" :options="comparisonTypeOptions" :showBlankItem="isTypeOptional" />
     </template>
 
-    <ValueComponent v-if="hasValueComponent" v-model="internalComparisonValue" :configurationValues="configurationValues" />
+    <ValueComponent v-if="hasValueComponent" v-model="internalComparisonValue" :configurationValues="configurationValues" :comparisonType="comparisonType" />
 </FieldFilterContainer>
 `
     });
