@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, ref, SetupContext, watch, watchEffect } from "vue";
+import { computed, defineComponent, ref, SetupContext, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "../Elements/checkBox";
 import CheckBoxList from "../Elements/checkBoxList";

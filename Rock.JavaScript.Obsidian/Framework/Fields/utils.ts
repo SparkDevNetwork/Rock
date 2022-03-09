@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, computed, defineComponent, PropType, ref, watch, watchEffect } from "vue";
+import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import { binaryComparisonTypes, ComparisonType, containsComparisonTypes, isCompareVisibleForComparisonFilter, isSingleComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
 import { getFilteredComparisonTypeOptions } from "../Reporting/comparisonTypeOptions";
 import { ComparisonValue } from "../Reporting/comparisonValue";
@@ -24,7 +24,6 @@ import { IFieldType } from "./fieldType";
 import DropDownList from "../Elements/dropDownList";
 import FieldFilterContainer from "../Elements/fieldFilterContainer";
 import { toNumberOrNull } from "../Services/number";
-import { useVModelPassthrough } from "../Util/component";
 
 const fieldTypeTable: Record<Guid, IFieldType> = {};
 

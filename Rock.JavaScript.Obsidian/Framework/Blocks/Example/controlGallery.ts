@@ -57,10 +57,14 @@ import Rating from "../../Elements/rating";
 import Fullscreen from "../../Elements/fullscreen";
 import Panel from "../../Controls/panel";
 import PersonPicker from "../../Controls/personPicker";
+import FileUploader from "../../Elements/fileUploader";
+import ImageUploader from "../../Elements/imageUploader";
 import { toNumber } from "../../Services/number";
 import { ListItem } from "../../ViewModels";
 import "../../Fields/index";
 import { newGuid } from "../../Util/guid";
+import { FieldFilterGroup } from "../../ViewModels/Reporting/fieldFilterGroup";
+import { BinaryFiletype } from "../../SystemGuids";
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -225,79 +229,90 @@ const filterRules = defineComponent({
 
         const sources = computed(() => {
             return JSON.parse(sourcesText.value);
-        })
+        });
 
-        const prefilled = () => ({
+        const prefilled = (): FieldFilterGroup => ({
             guid: newGuid(),
             expressionType: 4,
             "rules": [
                 {
                     "guid": "a81c3ef9-72a9-476b-8b88-b52f513d92e6",
                     "comparisonType": 128,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b0",
                     "value": "50"
                 },
                 {
                     "guid": "74d34117-4cc6-4cea-92c5-8297aa693ba5",
                     "comparisonType": 2,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b1",
                     "value": "BlanchedAlmond"
                 },
                 {
                     "guid": "0fa2b6ea-bc86-4fae-b0da-02e48fed8d96",
                     "comparisonType": 8,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b5",
                     "value": "@gmail.com"
                 },
                 {
                     "guid": "434107e6-6c0c-4698-90ef-d615b1c2de4b",
                     "comparisonType": 2,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b6",
                     "value": "2"
                 },
                 {
                     "guid": "706179b9-7518-4a74-8e0f-8a48016aec04",
                     "comparisonType": 16,
+                    sourceType: 0,
                     "attributeGuid": "4eb1eb34-988b-4212-8c93-844fae61b43c",
                     "value": "text"
                 },
                 {
                     "guid": "4564eac2-15d9-48d9-b618-563523285af0",
                     "comparisonType": 512,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b2",
                     "value": "999"
                 },
                 {
                     "guid": "e6c56d4c-7f63-44f9-8f07-1ea0860b605d",
                     "comparisonType": 1,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b3",
                     "value": "2022-02-01,2022-02-28"
                 },
                 {
                     "guid": "0c27507f-9fb7-4f37-8026-70933bbf1398",
                     "comparisonType": 0,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b4",
                     "value": "3"
                 },
                 {
                     "guid": "4f68fa2c-0942-4084-bb4d-3c045cef4551",
                     "comparisonType": 8,
+                    sourceType: 0,
                     "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b7",
                     "value": "more text than I want to deal with...."
                 }
             ]
         });
 
-        const clean = () => ({
+        const clean = (): FieldFilterGroup => ({
             guid: newGuid(),
             expressionType: 1,
-            rules: [] as any[]
+            rules: []
         });
 
         const usePrefilled = ref(false);
         const value = ref(clean());
         
-        watch(usePrefilled, () => { value.value = usePrefilled.value ? prefilled() : clean(); });
+        watch(usePrefilled, () => {
+            value.value = usePrefilled.value ? prefilled() : clean();
+        });
 
         const title = ref("TEST PROPERTY");
 
@@ -1498,6 +1513,88 @@ const personPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates the file uploader component. */
+const fileUploaderGallery = defineComponent({
+    name: "FileUploaderGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        FileUploader,
+        TextBox
+    },
+    data() {
+        return {
+            binaryFileTypeGuid: BinaryFiletype.Default,
+            showDeleteButton: true,
+            uploadAsTemporary: true,
+            uploadButtonText: "Upload",
+            value: null
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        File Uploader
+    </template>
+    <template #gallery>
+        <CheckBox v-model="uploadAsTemporary" label="Upload As Temporary" />
+        <CheckBox v-model="showDeleteButton" label="Show Delete Button" />
+        <TextBox v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+        <TextBox v-model="uploadButtonText" label="Upload Button Text" />
+
+        <FileUploader v-model="value"
+            :uploadAsTemporary="uploadAsTemporary"
+            :binaryFileTypeGuid="binaryFileTypeGuid"
+            :uploadButtonText="uploadButtonText"
+            :showDeleteButton="showDeleteButton" />
+    </template>
+    <template #result>
+        {{ JSON.stringify(value) }}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates the image uploader component. */
+const imageUploaderGallery = defineComponent({
+    name: "ImageUploaderGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        ImageUploader,
+        TextBox
+    },
+    data() {
+        return {
+            binaryFileTypeGuid: BinaryFiletype.Default,
+            showDeleteButton: true,
+            uploadAsTemporary: true,
+            uploadButtonText: "Upload",
+            value: null
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        Image Uploader
+    </template>
+    <template #gallery>
+        <CheckBox v-model="uploadAsTemporary" label="Upload As Temporary" />
+        <CheckBox v-model="showDeleteButton" label="Show Delete Button" />
+        <TextBox v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+        <TextBox v-model="uploadButtonText" label="Upload Button Text" />
+
+        <ImageUploader v-model="value"
+            :uploadAsTemporary="uploadAsTemporary"
+            :binaryFileTypeGuid="binaryFileTypeGuid"
+            :uploadButtonText="uploadButtonText"
+            :showDeleteButton="showDeleteButton" />
+    </template>
+    <template #result>
+        {{ JSON.stringify(value) }}
+    </template>
+</GalleryAndResult>`
+});
+
 
 const galleryComponents: Record<string, Component> = {
     filterRules,
@@ -1536,7 +1633,9 @@ const galleryComponents: Record<string, Component> = {
     urlLinkBoxGallery,
     fullscreenGallery,
     panelGallery,
-    personPickerGallery
+    personPickerGallery,
+    fileUploaderGallery,
+    imageUploaderGallery
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");

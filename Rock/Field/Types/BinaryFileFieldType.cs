@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -41,6 +42,8 @@ namespace Rock.Field.Types
 
         private const string BINARY_FILE_TYPE = "binaryFileType";
 
+        private const string BINARY_FILE_TYPES_PROPERTY_KEY = "binaryFileTypes";
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -50,6 +53,29 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( BINARY_FILE_TYPE );
             return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = new Dictionary<string, string>();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileTypes = new BinaryFileTypeService( rockContext )
+                    .Queryable()
+                    .OrderBy( t => t.Name )
+                    .Select( t => new ListItemViewModel
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.Name
+                    } )
+                    .ToList();
+
+                configurationProperties[BINARY_FILE_TYPES_PROPERTY_KEY] = binaryFileTypes.ToCamelCaseJson( false, true );
+            }
+
+            return configurationProperties;
         }
 
         /// <summary>
@@ -117,6 +143,64 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <summary>
+        /// Get the formatted value as either a plain text string or an HTML formatted string.
+        /// </summary>
+        /// <param name="privateValue">The value to be formatted.</param>
+        /// <param name="formatAsHtml"><c>true</c> if the output should be formatted as HTML; otherwise <c>false</c>.</param>
+        /// <returns>A string that represents the value.</returns>
+        private string GetFormattedValue( string privateValue, bool formatAsHtml )
+        {
+            string formattedValue = string.Empty;
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue || guid.Value.IsEmpty() )
+            {
+                return "";
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileInfo = new BinaryFileService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( f => f.Guid == guid.Value )
+                    .Select( f => new
+                    {
+                        f.FileName,
+                        f.Guid
+                    } )
+                    .FirstOrDefault();
+
+                if ( binaryFileInfo == null )
+                {
+                    return "";
+                }
+
+                if ( !formatAsHtml )
+                {
+                    return binaryFileInfo.FileName;
+                }
+                else
+                {
+                    var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                    return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetFormattedValue( privateValue, false );
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetFormattedValue( privateValue, true );
+        }
+
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -126,40 +210,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue && !guid.Value.IsEmpty() )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var binaryFileInfo = new BinaryFileService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( f => f.Guid == guid.Value )
-                    .Select( f =>
-                        new
-                        {
-                            f.Id,
-                            f.FileName,
-                            f.Guid
-                        } )
-                    .FirstOrDefault();
-
-                    if ( binaryFileInfo != null )
-                    {
-                        if ( condensed )
-                        {
-                            return binaryFileInfo.FileName;
-                        }
-                        else
-                        {
-                            var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                            return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
-                        }
-                    }
-                }
-            }
+            var formattedValue = GetFormattedValue( value, !condensed );
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
@@ -167,6 +218,52 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue || guid.Value.IsEmpty() )
+            {
+                return "";
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileInfo = new BinaryFileService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( f => f.Guid == guid.Value )
+                    .Select( f => new
+                    {
+                        f.FileName,
+                        f.Guid
+                    } )
+                    .FirstOrDefault();
+
+                if ( binaryFileInfo == null )
+                {
+                    return "";
+                }
+
+                // A binary file needs more than just the Guid to properly display
+                // in most cases, so include the guid and the filename.
+                return new ListItemViewModel
+                {
+                    Value = binaryFileInfo.Guid.ToString(),
+                    Text = binaryFileInfo.FileName
+                }.ToCamelCaseJson( false, true );
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Extract the raw value.
+            return publicValue.FromJsonOrNull<ListItemViewModel>()?.Value ?? string.Empty;
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value

@@ -176,7 +176,9 @@
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
     <TypeScriptCompile Include="Framework\Elements\auditDetail.ts" />
     <TypeScriptCompile Include="Framework\Elements\fieldFilterContainer.ts" />
+    <TypeScriptCompile Include="Framework\Elements\fileUploader.ts" />
     <TypeScriptCompile Include="Framework\Elements\fullscreen.ts" />
+    <TypeScriptCompile Include="Framework\Elements\imageUploader.ts" />
     <TypeScriptCompile Include="Framework\Elements\inlineCheckBox.ts" />
     <TypeScriptCompile Include="Framework\Elements\inlineSlider.ts" />
     <TypeScriptCompile Include="Framework\Elements\inlineSwitch.ts" />
@@ -185,6 +187,8 @@
     <TypeScriptCompile Include="Framework\Elements\switch.ts" />
     <TypeScriptCompile Include="Framework\Elements\treeList.ts" />
     <TypeScriptCompile Include="Framework\Elements\urlLinkBox.ts" />
+    <TypeScriptCompile Include="Framework\Fields\fileField.ts" />
+    <TypeScriptCompile Include="Framework\Fields\fileFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListField.ts" />
     <TypeScriptCompile Include="Framework\Fields\keyValueListFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\Fields\urlLinkField.ts" />
