@@ -172,6 +172,7 @@
     <TypeScriptCompile Include="Framework\Controls\personPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockAttributeFilter.ts" />
+    <TypeScriptCompile Include="Framework\Controls\slidingDateRangePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
     <TypeScriptCompile Include="Framework\Elements\auditDetail.ts" />
@@ -305,6 +306,7 @@
     <TypeScriptCompile Include="Framework\index.ts" />
     <TypeScriptCompile Include="Framework\Rules\index.ts" />
     <TypeScriptCompile Include="Framework\Services\boolean.ts" />
+    <TypeScriptCompile Include="Framework\Services\slidingDateRange.ts" />
     <TypeScriptCompile Include="Framework\Services\dateKey.ts" />
     <TypeScriptCompile Include="Framework\Services\email.ts" />
     <TypeScriptCompile Include="Framework\Services\number.ts" />
