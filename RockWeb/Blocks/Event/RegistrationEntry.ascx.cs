@@ -1260,18 +1260,21 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantNext_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == PanelIndex.PanelRegistrant )
+            if ( Page.IsValid )
             {
-                _saveNavigationHistory = true;
+                if ( CurrentPanel == PanelIndex.PanelRegistrant )
+                {
+                    _saveNavigationHistory = true;
 
-                ShowRegistrant( true, true );
-            }
-            else
-            {
-                ShowStart();
-            }
+                    ShowRegistrant( true, true );
+                }
+                else
+                {
+                    ShowStart();
+                }
 
-            hfTriggerScroll.Value = "true";
+                hfTriggerScroll.Value = "true";
+            }
         }
 
         /// <summary>
@@ -1383,58 +1386,61 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSummaryNext_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == PanelIndex.PanelSummary )
+            if ( Page.IsValid )
             {
-                List<string> summaryErrors = ValidateSummary();
-                if ( !summaryErrors.Any() )
+                if ( CurrentPanel == PanelIndex.PanelSummary )
                 {
-                    _saveNavigationHistory = true;
-
-                    if ( Using3StepGateway && RegistrationState.PaymentAmount > 0.0M )
+                    List<string> summaryErrors = ValidateSummary();
+                    if ( !summaryErrors.Any() )
                     {
-                        string errorMessage = string.Empty;
-                        if ( ProcessStep1( out errorMessage ) )
+                        _saveNavigationHistory = true;
+
+                        if ( Using3StepGateway && RegistrationState.PaymentAmount > 0.0M )
                         {
-                            if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
+                            string errorMessage = string.Empty;
+                            if ( ProcessStep1( out errorMessage ) )
                             {
-                                hfStep2AutoSubmit.Value = "true";
-                                ShowSummary(); // Stay on summary page so blank page does not appear when autopost occurs
+                                if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
+                                {
+                                    hfStep2AutoSubmit.Value = "true";
+                                    ShowSummary(); // Stay on summary page so blank page does not appear when autopost occurs
+                                }
+                                else
+                                {
+                                    ShowPayment();
+                                }
                             }
                             else
                             {
-                                ShowPayment();
+                                throw new Exception( errorMessage );
                             }
                         }
                         else
                         {
-                            throw new Exception( errorMessage );
+                            var registrationId = SaveChanges();
+                            if ( registrationId.HasValue )
+                            {
+                                ShowSuccess( registrationId.Value );
+                            }
+                            else
+                            {
+                                ShowSummary();
+                            }
                         }
                     }
                     else
                     {
-                        var registrationId = SaveChanges();
-                        if ( registrationId.HasValue )
-                        {
-                            ShowSuccess( registrationId.Value );
-                        }
-                        else
-                        {
-                            ShowSummary();
-                        }
+                        ShowError( "Please correct the following:", string.Format( "<ul><li>{0}</li></ul>", summaryErrors.AsDelimited( "</li><li>" ) ) );
+                        ShowSummary();
                     }
                 }
                 else
                 {
-                    ShowError( "Please correct the following:", string.Format( "<ul><li>{0}</li></ul>", summaryErrors.AsDelimited( "</li><li>" ) ) );
-                    ShowSummary();
+                    ShowStart();
                 }
-            }
-            else
-            {
-                ShowStart();
-            }
 
-            hfTriggerScroll.Value = "true";
+                hfTriggerScroll.Value = "true";
+            }
         }
 
         /// <summary>
