@@ -30,20 +30,15 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
     #region Rock Attributes
 
     [LinkedPage(
-        "FormSubmission List Page",
-        Description = "Page to show a list forms submitted for a given FormBuilder form.",
+        "Submissions Page",
+        Description = "The page that shows the submissions for this form.",
         Order = 0,
-        Key = AttributeKeys.FormSubmissionListPage )]
+        Key = AttributeKeys.SubmissionsPage )]
     [LinkedPage(
-        "FormBuilder Detail Page",
-        Description = "Page to edit using the form builder.",
+        "Form Builder Page",
+        Description = "The page that has the form builder editor.",
         Order = 1,
         Key = AttributeKeys.FormBuilderDetailPage )]
-    [LinkedPage(
-        "Analytics Detail Page",
-        Description = "Page used to view the analytics for this form.",
-        Order = 2,
-        Key = AttributeKeys.AnalyticsDetailPage )]
 
     #endregion Rock Attributes
 
@@ -56,12 +51,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private static class AttributeKeys
         {
-            public const string FormBuilderDetailPage = "FormBuilderDetailPage";
-            public const string FormSubmissionListPage = "FormSubmissionListPage";
-            public const string AnalyticsDetailPage = "AnalyticsDetailPage";
-            public const string CommunicationsDetailPage = "CommunicationsDetailPage";
-            public const string SettingsDetailPage = "SettingsDetailPage";
-        }
+            public const string FormBuilderDetailPage = "FormBuilderPage";
+            public const string SubmissionsPage = "SubmissionsPage";        }
 
         #endregion Attribute Keys
 
@@ -162,7 +153,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkSubmissions_Click( object sender, EventArgs e )
         {
-            NavigateToCurrentPage( GetQueryString( PageParameterKeys.SubmissionsTab ) );
+            NavigateToLinkedPage( AttributeKeys.SubmissionsPage, GetQueryString( PageParameterKeys.SubmissionsTab ) );
         }
 
         /// <summary>
@@ -182,7 +173,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkComminucations_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.CommunicationsDetailPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
         }
 
         /// <summary>
@@ -192,7 +183,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkSettings_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.SettingsDetailPage, GetQueryString( PageParameterKeys.SettingsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, GetQueryString( PageParameterKeys.SettingsTab ) );
         }
 
         /// <summary>
@@ -202,7 +193,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkAnalytics_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.AnalyticsDetailPage, GetQueryString( PageParameterKeys.AnalyticsTab ) );
+            NavigateToCurrentPage( GetQueryString( PageParameterKeys.AnalyticsTab ) );
         }
 
         /// <summary>

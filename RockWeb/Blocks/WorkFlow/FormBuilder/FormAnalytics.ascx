@@ -9,7 +9,7 @@
             <div class="panel-heading panel-follow">
 
                 <div class="pull-left">
-                    <h1 class="panel-title"><span class="fa fa-user"></span>&nbsp;
+                    <h1 class="panel-title"><span class="fa fa-poll-h"></span>&nbsp;
                     <asp:Label ID="lTitle" runat="server">Form Builder</asp:Label></h1>
                 </div>
 

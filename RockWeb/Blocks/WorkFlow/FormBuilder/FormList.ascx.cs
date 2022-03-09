@@ -44,19 +44,19 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
     [LinkedPage(
         "Submissions Page",
-        Description = "The Page that shows the submissions for this form.",
+        Description = "The page that shows the submissions for this form.",
         Order = 0,
         Key = AttributeKeys.SubmissionsPage )]
 
     [LinkedPage(
-        "FormBuilder Detail Page",
-        Description = "Page to edit using the form builder.",
+        "Form Builder Page",
+        Description = "The page that has the form builder editor.",
         Order = 1,
-        Key = AttributeKeys.FormBuilderDetailPage )]
+        Key = AttributeKeys.FormBuilderPage )]
 
     [LinkedPage(
         "Analytics Page",
-        Description = "Page used to view the analytics for this form.",
+        Description = " The page that shows the analytics for this form.",
         Order = 2,
         Key = AttributeKeys.AnalyticsPage )]
 
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         public static class AttributeKeys
         {
             public const string AnalyticsPage = "AnalyticsPage";
-            public const string FormBuilderDetailPage = "FormBuilderDetailPage";
+            public const string FormBuilderPage = "FormBuilderPage";
             public const string SubmissionsPage = "SubmissionsPage";
         }
 
@@ -397,11 +397,11 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowActionType.Order = 0;
             rockContext.SaveChanges();
 
-            if ( GetAttributeValue( AttributeKeys.FormBuilderDetailPage ).IsNotNullOrWhiteSpace() )
+            if ( GetAttributeValue( AttributeKeys.FormBuilderPage ).IsNotNullOrWhiteSpace() )
             {
                 var qryParams = new Dictionary<string, string>();
                 qryParams["WorkflowTypeId"] = workflowType.Id.ToString();
-                NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, qryParams );
+                NavigateToLinkedPage( AttributeKeys.FormBuilderPage, qryParams );
             }
             else
             {
@@ -449,32 +449,32 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             }
             else if ( e.CommandName == "Builder" )
             {
-                if ( GetAttributeValue( AttributeKeys.FormBuilderDetailPage ).IsNotNullOrWhiteSpace() )
+                if ( GetAttributeValue( AttributeKeys.FormBuilderPage ).IsNotNullOrWhiteSpace() )
                 {
                     var qryParams = new Dictionary<string, string>();
                     qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
                     qryParams[PageParameterKey.Tab] = "FormBuilder";
-                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                    NavigateToLinkedPage( AttributeKeys.FormBuilderPage, qryParams );
                 }
             }
             else if ( e.CommandName == "Communications" )
             {
-                if ( GetAttributeValue( AttributeKeys.FormBuilderDetailPage ).IsNotNullOrWhiteSpace() )
+                if ( GetAttributeValue( AttributeKeys.FormBuilderPage ).IsNotNullOrWhiteSpace() )
                 {
                     var qryParams = new Dictionary<string, string>();
                     qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
                     qryParams[PageParameterKey.Tab] = "Communications";
-                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                    NavigateToLinkedPage( AttributeKeys.FormBuilderPage, qryParams );
                 }
             }
             else if ( e.CommandName == "Settings" )
             {
-                if ( GetAttributeValue( AttributeKeys.FormBuilderDetailPage ).IsNotNullOrWhiteSpace() )
+                if ( GetAttributeValue( AttributeKeys.FormBuilderPage ).IsNotNullOrWhiteSpace() )
                 {
                     var qryParams = new Dictionary<string, string>();
                     qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
                     qryParams[PageParameterKey.Tab] = "Settings";
-                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                    NavigateToLinkedPage( AttributeKeys.FormBuilderPage, qryParams );
                 }
             }
             else if ( e.CommandName == "Analytics" )
@@ -483,7 +483,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 {
                     var qryParams = new Dictionary<string, string>();
                     qryParams[PageParameterKey.WorkflowTypeId] = workflowTypeId.ToString();
-                    NavigateToLinkedPage( AttributeKeys.SubmissionsPage, qryParams );
+                    NavigateToLinkedPage( AttributeKeys.AnalyticsPage, qryParams );
                 }
             }
             else if ( e.CommandName == "Copy" )
