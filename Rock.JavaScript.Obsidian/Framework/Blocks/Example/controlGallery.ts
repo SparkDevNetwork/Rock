@@ -59,12 +59,14 @@ import Panel from "../../Controls/panel";
 import PersonPicker from "../../Controls/personPicker";
 import FileUploader from "../../Elements/fileUploader";
 import ImageUploader from "../../Elements/imageUploader";
+import SlidingDateRangePicker from "../../Controls/slidingDateRangePicker";
 import { toNumber } from "../../Services/number";
 import { ListItem } from "../../ViewModels";
 import "../../Fields/index";
 import { newGuid } from "../../Util/guid";
 import { FieldFilterGroup } from "../../ViewModels/Reporting/fieldFilterGroup";
 import { BinaryFiletype } from "../../SystemGuids";
+import { SlidingDateRange, slidingDateRangeToString } from "../../Services/slidingDateRange";
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -1543,6 +1545,7 @@ const fileUploaderGallery = defineComponent({
         <TextBox v-model="uploadButtonText" label="Upload Button Text" />
 
         <FileUploader v-model="value"
+            label="File Uploader"
             :uploadAsTemporary="uploadAsTemporary"
             :binaryFileTypeGuid="binaryFileTypeGuid"
             :uploadButtonText="uploadButtonText"
@@ -1584,6 +1587,7 @@ const imageUploaderGallery = defineComponent({
         <TextBox v-model="uploadButtonText" label="Upload Button Text" />
 
         <ImageUploader v-model="value"
+            label="Image Uploader"
             :uploadAsTemporary="uploadAsTemporary"
             :binaryFileTypeGuid="binaryFileTypeGuid"
             :uploadButtonText="uploadButtonText"
@@ -1591,6 +1595,39 @@ const imageUploaderGallery = defineComponent({
     </template>
     <template #result>
         {{ JSON.stringify(value) }}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a sliding date range picker */
+const slidingDateRangePickerGallery = defineComponent({
+    name: "SlidingDateRangePickerGallery",
+    components: {
+        GalleryAndResult,
+        SlidingDateRangePicker
+    },
+    setup() {
+        const value = ref<SlidingDateRange | null>(null);
+        const valueText = computed((): string => value.value ? slidingDateRangeToString(value.value) : "");
+
+        return {
+            value,
+            valueText
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        SlidingDateRangePicker
+    </template>
+    <template #gallery>
+        <SlidingDateRangePicker v-model="value" label="Sliding Date Range" />
+    </template>
+    <template #result>
+        <div v-if="value">
+            <div>{{ value }}</div>
+            <div>{{ valueText }}</div>
+        </div>
     </template>
 </GalleryAndResult>`
 });
@@ -1635,7 +1672,8 @@ const galleryComponents: Record<string, Component> = {
     panelGallery,
     personPickerGallery,
     fileUploaderGallery,
-    imageUploaderGallery
+    imageUploaderGallery,
+    slidingDateRangePickerGallery
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");

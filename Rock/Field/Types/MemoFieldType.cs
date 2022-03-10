@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to edit text in a multi-line text box
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
     public class MemoFieldType : FieldType
     {

@@ -129,12 +129,13 @@ export default defineComponent({
 
     template: `
 <slot name="pre" />
-<div class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses]">
-    <RockLabel v-if="label || help" :for="uniqueId" :help="help">
+<div v-if="label || help" class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses]">
+    <RockLabel :for="uniqueId" :help="help">
         {{label}}
     </RockLabel>
     <slot v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
 </div>
+<slot v-else v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
 <slot name="post" />
 `
 });
