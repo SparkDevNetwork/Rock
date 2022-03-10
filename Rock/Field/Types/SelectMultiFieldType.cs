@@ -34,7 +34,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a comma-delimited list
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class SelectMultiFieldType : FieldType
     {
         #region Configuration
@@ -43,6 +43,8 @@ namespace Rock.Field.Types
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
         private const string REPEAT_COLUMNS = "repeatColumns";
         private const string REPEAT_DIRECTION = "repeatDirection";
+
+        private const string RAW_VALUES_OPTION_KEY = "rawValues";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -56,6 +58,58 @@ namespace Rock.Field.Types
             configKeys.Add( REPEAT_COLUMNS );
             configKeys.Add( REPEAT_DIRECTION );
             return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationOptions = base.GetPublicConfigurationOptions( privateConfigurationValues );
+
+            if ( configurationOptions.ContainsKey( VALUES_KEY ) )
+            {
+                var options = Helper.GetConfiguredValues( privateConfigurationValues )
+                    .Select( kvp => new
+                    {
+                        value = kvp.Key,
+                        text = kvp.Value
+                    } );
+
+                // rawValues contains the actual raw string that comprises the values.
+                // is used while editing the configuration values only.
+                configurationOptions[RAW_VALUES_OPTION_KEY] = configurationOptions[VALUES_KEY];
+                configurationOptions[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+            }
+            else
+            {
+                configurationOptions[VALUES_KEY] = "[]";
+            }
+
+            return configurationOptions;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationOptions( publicConfigurationValues );
+
+            // Don't allow them to provide the actual value items.
+            if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                privateConfigurationValues.Remove( VALUES_KEY );
+            }
+
+            // Convert the raw values string into the values to be stored.
+            if ( privateConfigurationValues.ContainsKey( RAW_VALUES_OPTION_KEY ) )
+            {
+                privateConfigurationValues[VALUES_KEY] = privateConfigurationValues[RAW_VALUES_OPTION_KEY];
+                privateConfigurationValues.Remove( RAW_VALUES_OPTION_KEY );
+            }
+            else
+            {
+                privateConfigurationValues[VALUES_KEY] = "";
+            }
+
+            return privateConfigurationValues;
         }
 
         /// <inheritdoc/>
