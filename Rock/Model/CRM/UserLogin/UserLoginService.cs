@@ -152,10 +152,7 @@ namespace Rock.Model
 
         #region Static Methods
 
-        /// <summary>
-        /// Returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in, and updates their last activity date
-        /// </summary>
-        /// <returns>The <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in</returns>
+        /// <inheritdoc cref="GetCurrentUser(bool)"/>
         public static UserLogin GetCurrentUser()
         {
             return GetCurrentUser( true );
