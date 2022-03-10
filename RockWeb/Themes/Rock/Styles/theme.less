@@ -1801,6 +1801,19 @@ body.navbar-side-open {
   &.active:hover {
     background: #cbeefa;
   }
+
+  &.btn-primary {
+    background: @btn-primary-bg;
+    border-radius: @btn-border-radius-base;
+
+    &:active,
+    &:active:focus,
+    &.active,
+    &.active:focus,
+    &.active:hover {
+      background: darken(@btn-primary-bg, 10%);
+    }
+  }
 }
 
 .btn-mergefield {
