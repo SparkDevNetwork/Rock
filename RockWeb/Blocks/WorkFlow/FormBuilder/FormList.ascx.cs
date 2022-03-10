@@ -392,6 +392,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowActivityType.Order = 0;
             var workflowActionType = new WorkflowActionType();
             workflowActivityType.ActionTypes.Add( workflowActionType );
+            workflowActionType.WorkflowForm = new WorkflowActionForm();
             workflowActionType.EntityTypeId = formBuilderEntityTypeId.Value;
             workflowActionType.Name = "Form Builder";
             workflowActionType.Order = 0;

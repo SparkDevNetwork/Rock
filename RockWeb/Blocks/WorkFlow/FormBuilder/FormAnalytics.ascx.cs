@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
     /// Shows the interaction and analytics data for the given WorkflowTypeId.
     /// </summary>
     [DisplayName( "Form Analytics" )]
-    [Category( "WorkFlow > FormAnalytics" )]
+    [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows the interaction and analytics data for the given WorkflowTypeId." )]
 
     #region Rock Attributes
@@ -52,7 +52,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         private static class AttributeKeys
         {
             public const string FormBuilderDetailPage = "FormBuilderPage";
-            public const string SubmissionsPage = "SubmissionsPage";        }
+            public const string SubmissionsPage = "SubmissionsPage";
+        }
 
         #endregion Attribute Keys
 

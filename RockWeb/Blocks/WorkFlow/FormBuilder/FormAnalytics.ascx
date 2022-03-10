@@ -43,7 +43,7 @@
                     <h4 class="step-title text-break">Form Analytics</h4>
                     <div class="row">
                         <div class="col-sm-8">
-                            Below are the views and complete rates for the form over time. These statatistics assume that the workflow entry block that hosted the form is configured to collect metrics.
+                            Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.
                         </div>
                         <div class="col-sm-4">
                             <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" CssClass="pull-right" runat="server" Label="Date Range" OnSelectedDateRangeChanged="drpSlidingDateRange_SelectedDateRangeChanged"
