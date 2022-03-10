@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited pair of integers
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class IntegerRangeFieldType : FieldType
     {
