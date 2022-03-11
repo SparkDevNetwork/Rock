@@ -56,7 +56,7 @@ namespace Rock.Rest.Controllers
         /// <param name="errorMessage">The error message if method returns <c>false</c>.</param>
         /// <param name="userName">Name of the user.</param>
         /// <returns><c>true</c> if the login request was valid; otherwise <c>false</c>.</returns>
-        private bool IsLoginValid( LoginParameters loginParameters, out string errorMessage, out string userName )
+        internal static bool IsLoginValid( LoginParameters loginParameters, out string errorMessage, out string userName )
         {
             userName = null;
             if ( loginParameters == null )

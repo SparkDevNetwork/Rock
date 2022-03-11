@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 
@@ -102,7 +103,7 @@ namespace Rock.Rest.Controllers
             {
                 RockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber(),
                 LatestVersionId = additionalSettings.LastDeploymentVersionId ?? ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
-                IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
+                IsSiteAdministrator = site.IsAuthorized( Rock.Security.Authorization.EDIT, person )
             };
 
             if ( deviceData.DeviceType == DeviceType.Phone )
@@ -456,7 +457,6 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         public IHttpActionResult Login( [FromBody] LoginParameters loginParameters, Guid? personalDeviceGuid = null )
         {
-            var authController = new AuthController();
             var site = MobileHelper.GetCurrentApplicationSite();
 
             if ( site == null )
@@ -465,10 +465,13 @@ namespace Rock.Rest.Controllers
             }
 
             //
-            // Chain to the existing login method for actual authorization check.
-            // Throws exception if not authorized.
+            // Use the existing AuthController.IsLoginValid method for actual authorization check. Throws exception if not authorized.
             //
-            authController.Login( loginParameters );
+            if ( !AuthController.IsLoginValid( loginParameters, out var errorMessage, out var userName ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( System.Net.HttpStatusCode.Unauthorized, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
 
             //
             // Find the user and translate to a mobile person.
