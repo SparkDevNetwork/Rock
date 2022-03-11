@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 ActivatedDateTime = w.ActivatedDateTime,
                 Campus = w.Campus,
                 Person = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.Person : null,
-                Personid = w.InitiatorPersonAliasId
+                PersonId = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.PersonId : 0
             } );
 
             gWorkflows.SetLinqDataSource( qryGrid );
@@ -484,7 +484,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             public DateTime? ActivatedDateTime { get; set; }
             public Campus Campus { get; set; }
             public Person Person { get; set; }
-            public int? Personid { get; set; }
+            public int? PersonId { get; set; }
         }
 
         #endregion
