@@ -289,6 +289,19 @@ export default defineComponent({
             blockError.value = "That form does not exist or it can't be edited.";
         }
 
+        // Set initially selected tab.
+        const queryString = new URLSearchParams(window.location.search.toLowerCase());
+        if (queryString.has("tab")) {
+            const tab = queryString.get("tab");
+
+            if (tab === "communications") {
+                selectedTab.value = 1;
+            }
+            else if (tab === "settings") {
+                selectedTab.value = 2;
+            }
+        }
+
         return {
             analyticsPageUrl: config.analyticsPageUrl,
             blockError,

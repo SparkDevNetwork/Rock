@@ -366,7 +366,9 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowType.IsPersisted = false;
             workflowType.LoggingLevel = WorkflowLoggingLevel.None;
             workflowType.IsFormBuilder = true;
-            workflowType.WorkTerm = "Work";
+            workflowType.WorkTerm = "Form";
+            workflowType.IsSystem = false;
+
             if ( validationErrors.Any() )
             {
                 nbValidationError.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>",
@@ -376,7 +378,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 return;
             }
 
-            if ( !Page.IsValid || !workflowType.IsValid )
+            if ( !workflowType.IsValid )
             {
                 return;
             }
@@ -384,15 +386,78 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             service.Add( workflowType );
             rockContext.SaveChanges();
 
+            // Create temporary state objects for the new workflow type
+            var newAttributesState = new List<Rock.Model.Attribute>();
+            // Dictionary to keep the attributes and activity types linked between the source and the target based on their guids
+            var guidXref = new Dictionary<Guid, Guid>();
+
+            var personAttribute = new Rock.Model.Attribute();
+            personAttribute.Id = 0;
+            personAttribute.Guid = Guid.NewGuid();
+            personAttribute.IsSystem = false;
+            personAttribute.Name = "Person";
+            personAttribute.Key = "Person";
+            personAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.PERSON ).Id;
+            newAttributesState.Add( personAttribute );
+            var personQualifier = new AttributeQualifier();
+            personQualifier.Id = 0;
+            personQualifier.Guid = Guid.NewGuid();
+            personQualifier.IsSystem = false;
+            personQualifier.Key = "EnableSelfSelection";
+            personQualifier.Value = "False";
+            personAttribute.AttributeQualifiers.Add( personQualifier );
+
+            var spouseAttribute = new Rock.Model.Attribute();
+            spouseAttribute.Id = 0;
+            spouseAttribute.Guid = Guid.NewGuid();
+            spouseAttribute.IsSystem = false;
+            spouseAttribute.Name = "Spouse";
+            spouseAttribute.Key = "Spouse";
+            spouseAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.PERSON ).Id;
+            newAttributesState.Add( spouseAttribute );
+            var spouseQualifier = new AttributeQualifier();
+            spouseQualifier.Id = 0;
+            spouseQualifier.Guid = Guid.NewGuid();
+            spouseQualifier.IsSystem = false;
+            spouseQualifier.Key = "EnableSelfSelection";
+            spouseQualifier.Value = "False";
+            spouseAttribute.AttributeQualifiers.Add( spouseQualifier );
+
+            var familyAttribute = new Rock.Model.Attribute();
+            familyAttribute.Id = 0;
+            familyAttribute.Guid = Guid.NewGuid();
+            familyAttribute.IsSystem = false;
+            familyAttribute.Name = "Family";
+            familyAttribute.Key = "Family";
+            familyAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.PERSON ).Id;
+            newAttributesState.Add( familyAttribute );
+
+            // Save the workflow type attributes
+            SaveAttributes( new Workflow().TypeId, "WorkflowTypeId", workflowType.Id.ToString(), newAttributesState, rockContext );
+
             var formBuilderEntityTypeId = EntityTypeCache.GetId<Rock.Workflow.Action.FormBuilder>();
             var workflowActivityType = new WorkflowActivityType();
             workflowType.ActivityTypes.Add( workflowActivityType );
             workflowActivityType.IsActive = true;
             workflowActivityType.Name = "Form Builder";
             workflowActivityType.Order = 0;
+            workflowActivityType.IsActivatedWithWorkflow = true;
             var workflowActionType = new WorkflowActionType();
             workflowActivityType.ActionTypes.Add( workflowActionType );
             workflowActionType.WorkflowForm = new WorkflowActionForm();
+            workflowActionType.WorkflowForm.PersonEntryPersonAttributeGuid = personAttribute.Guid;
+            workflowActionType.WorkflowForm.PersonEntrySpouseAttributeGuid = spouseQualifier.Guid;
+            workflowActionType.WorkflowForm.PersonEntryFamilyAttributeGuid = familyAttribute.Guid;
+            workflowActionType.WorkflowForm.AllowPersonEntry = true;
+            workflowActionType.WorkflowForm.PersonEntryRecordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            workflowActionType.WorkflowForm.PersonEntryConnectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
+            workflowActionType.WorkflowForm.PersonEntryGroupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            workflowActionType.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
+            var systemEmail = new SystemCommunicationService( new RockContext() ).Get( Rock.SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
+            if ( systemEmail != null )
+            {
+                workflowActionType.WorkflowForm.NotificationSystemCommunicationId = systemEmail.Id;
+            }
             workflowActionType.EntityTypeId = formBuilderEntityTypeId.Value;
             workflowActionType.Name = "Form Builder";
             workflowActionType.Order = 0;
@@ -707,7 +772,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
                 // Create temporary state objects for the new workflow type
                 var newAttributesState = new List<Rock.Model.Attribute>();
-                var newActivityTypesState = new List<WorkflowActivityType>();
                 // Dictionary to keep the attributes and activity types linked between the source and the target based on their guids
                 var guidXref = new Dictionary<Guid, Guid>();
 
@@ -728,7 +792,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                         newQualifier.Id = 0;
                         newQualifier.Guid = Guid.NewGuid();
                         newQualifier.IsSystem = false;
-                        newAttribute.AttributeQualifiers.Add( qualifier );
+                        newAttribute.AttributeQualifiers.Add( newQualifier );
 
                         guidXref.Add( qualifier.Guid, newQualifier.Guid );
                     }
@@ -768,7 +832,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                             newQualifier.Id = 0;
                             newQualifier.Guid = Guid.NewGuid();
                             newQualifier.IsSystem = false;
-                            newAttribute.AttributeQualifiers.Add( qualifier );
+                            newAttribute.AttributeQualifiers.Add( newQualifier );
 
                             guidXref.Add( qualifier.Guid, newQualifier.Guid );
                         }
@@ -799,11 +863,11 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
                         if ( actionType.WorkflowForm != null )
                         {
-                            var newWorkflowForm = actionType.WorkflowForm.Clone( false );
-                            newWorkflowForm.Id = 0;
-                            newWorkflowForm.Guid = Guid.NewGuid();
+                            newActionType.WorkflowForm = actionType.WorkflowForm.Clone( false );
+                            newActionType.WorkflowForm.Id = 0;
+                            newActionType.WorkflowForm.Guid = Guid.NewGuid();
 
-                            WorkflowFormEditor.CopyEditableProperties( newWorkflowForm, newActionType.WorkflowForm );
+                            WorkflowFormEditor.CopyEditableProperties( actionType.WorkflowForm, newActionType.WorkflowForm );
 
                             foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes )
                             {

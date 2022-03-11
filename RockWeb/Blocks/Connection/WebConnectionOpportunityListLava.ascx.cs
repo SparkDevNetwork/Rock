@@ -235,6 +235,12 @@ namespace RockWeb.Blocks.Connection
                 if ( updatePageTitle )
                 {
                     RockPage.PageTitle = connectionType.Name;
+
+                    var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                    if ( pageBreadCrumb != null )
+                    {
+                        pageBreadCrumb.Name = RockPage.PageTitle;
+                    }
                 }
 
                 var filterOptions = new ConnectionOpportunityQueryOptions

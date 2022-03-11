@@ -329,6 +329,12 @@ namespace RockWeb.Blocks.Connection
                 if ( updatePageTitle )
                 {
                     RockPage.PageTitle = connectionOpportunity.Name;
+
+                    var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                    if ( pageBreadCrumb != null )
+                    {
+                        pageBreadCrumb.Name = RockPage.PageTitle;
+                    }
                 }
 
                 if ( _onlyShowMyConnections && CurrentPerson == null )
@@ -401,8 +407,8 @@ namespace RockWeb.Blocks.Connection
                     HasMore = hasMore
                 };
 
-                divLoadPrevious.Visible = pageNumber != 0;
-                divLoadMore.Visible = _currentRequestsViewModel.HasMore;
+                lbLoadPrevious.Visible = pageNumber != 0;
+                lbLoadMore.Visible = _currentRequestsViewModel.HasMore;
 
 
                 //Store current page information in view state so we can load next data pages
