@@ -8,6 +8,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -224,14 +225,15 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
   [[ kpi icon:'fa fa-percentage' value:'{{ConversionRate | Format:'P0' }}' label:'Conversion Rate' color:'indigo-500' ]][[ endkpi ]]
 {[endkpis]}";
 
-            int completionsCount = completions.Count( m => m > 0 );
-            int viewsCount = views.Count( m => m > 0 );
+            int completionsCount = completions.Sum();
+            int viewsCount = views.Sum();
+            double conversionRate = (double) completionsCount / viewsCount;
 
             var mergeFields = new Dictionary<string, object>
             {
                 { "TotalViews", viewsCount },
                 { "Completions", completionsCount  },
-                { "ConversionRate", (completionsCount/viewsCount) * 100  }
+                { "ConversionRate", double.IsNaN(conversionRate) ? 0 : conversionRate }
             };
 
             lKPIHtml.Text = kpiLava.ResolveMergeFields( mergeFields );
@@ -324,43 +326,36 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             var context = new RockContext();
 
-            var workflowService = new WorkflowService( context );
-            var workflows = workflowService.Queryable().Where( m => m.WorkflowTypeId == workflowTypeId ).ToList();
-            var summaries = new List<SummaryInfo>();
+            var interactionService = new InteractionService( context );
+            var interactionQuery = interactionService.Queryable()
+                                    .AsNoTracking()
+                                    .Where( x => x.InteractionComponent.EntityId == workflowTypeId);
 
-            foreach ( var workflow in workflows )
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            if ( dateRange.End == null )
             {
-                var interactionService = new InteractionService( context );
-                var interactionQuery = interactionService.Queryable()
-                                        .AsNoTracking()
-                                        .Where( x => x.InteractionComponent.EntityId == workflow.Id );
-
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-                if ( dateRange.End == null )
-                {
-                    dateRange.End = RockDateTime.Now;
-                }
-
-                if ( dateRange.Start.HasValue )
-                {
-                    interactionQuery = interactionQuery.Where( x => x.InteractionDateTime >= dateRange.Start.Value );
-                }
-
-                var interactionsList = interactionQuery.ToList();
-
-                var summary = interactionsList.Where( x => x.InteractionDateTime.Date < dateRange.End.Value.Date ).GroupBy( m => m.InteractionDateTime.Month )
-                    .Select( m => new SummaryInfo
-                    {
-                        Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( m.Key ),
-                        ViewsCounts = m.Count( x => x.Operation == "Form Viewed" ),
-                        CompletionCounts = m.Count( x => x.Operation == "Form Completed" ),
-                        InterationDateTime = m.Min( x => x.InteractionDateTime )
-                    } ).ToList();
-
-                summaries.AddRange( summary );
+                dateRange.End = RockDateTime.Now;
             }
 
-            return summaries;
+            if ( dateRange.Start.HasValue )
+            {
+                interactionQuery = interactionQuery.Where( x => x.InteractionDateTime >= dateRange.Start.Value && x.InteractionDateTime < dateRange.End.Value );
+            }
+
+            var lookup =
+                ( from w in interactionQuery
+                  select w ).ToLookup( w => w.InteractionDateTime.Month );
+
+            var summaries =
+                from m in Enumerable.Range( 1, dateRange.End.Value.Month )
+                select new SummaryInfo()
+                {
+                    Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( m ),
+                    ViewsCounts = lookup[m].Count( x => x.Operation == "Form Viewed" ),
+                    CompletionCounts = lookup[m].Count( x => x.Operation == "Form Completed" ),
+                };
+
+            return summaries.ToList();
         }
 
         /// <summary>
@@ -425,7 +420,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             /// <value>
             /// The interation date time.
             /// </value>
-            public DateTime InterationDateTime { get; set; }
+            public DateTime? InterationDateTime { get; set; }
         }
 
         #endregion Helper Classes

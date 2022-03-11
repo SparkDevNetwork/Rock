@@ -47,7 +47,7 @@
                         </div>
                         <div class="col-sm-4">
                             <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" CssClass="pull-right" runat="server" Label="Date Range" OnSelectedDateRangeChanged="drpSlidingDateRange_SelectedDateRangeChanged"
-                                EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" EnabledSlidingDateRangeUnits="Week, Month, Year, Day, Hour" />
+                                EnabledSlidingDateRangeTypes="Current, DateRange" EnabledSlidingDateRangeUnits="Year" />
                         </div>
                     </div>
                     <hr />
@@ -91,12 +91,7 @@
 
                 var linecharts = $('#<%=viewsAndCompletionsCanvas.ClientID%>');
 
-                if (linecharts.length == 0) {
-                    return null;
-                }
-
                 var linechartCtx = $('#<%=viewsAndCompletionsCanvas.ClientID%>')[0].getContext('2d');
-
                 var chart = new Chart(linechartCtx, {
                     type: 'line',
                     data: {
@@ -107,7 +102,7 @@
                             borderColor: '#60BD68',
                             data: lineChartDataViews,
                             spanGaps: true,
-                            fill: true
+                            fill: false
                         },
                         {
                             label: 'Completions',
@@ -115,7 +110,7 @@
                             borderColor: '#5DA5DA',
                             data: lineChartDataCompletions,
                             spanGaps: true,
-                            fill: true
+                            fill: false
                         }]
                     },
                     options: {
