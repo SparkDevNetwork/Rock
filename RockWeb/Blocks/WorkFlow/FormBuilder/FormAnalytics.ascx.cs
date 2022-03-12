@@ -126,8 +126,17 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             if ( !Page.IsPostBack )
             {
-                LoadSettings();
-                InitializeAnalyticsPanel();
+                var workflowType = new WorkflowTypeService( new RockContext() ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+                if ( workflowType != null )
+                {
+                    lTitle.Text = $"{workflowType} Form";
+                    LoadSettings();
+                    InitializeAnalyticsPanel();
+                }
+                else
+                {
+                    pnlView.Visible = false;
+                }
             }
 
             base.OnLoad( e );

@@ -9,8 +9,7 @@
             <div class="panel-heading panel-follow">
 
                 <div class="pull-left">
-                    <h1 class="panel-title"><span class="fa fa-poll-h"></span>&nbsp;
-                    <asp:Label ID="lTitle" runat="server">Form Builder</asp:Label></h1>
+                    <h1 class="panel-title"><span class="fa fa-poll-h"></span>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
                 </div>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
