@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.WorkFlow
             var entitySetId = GetEntitySetId();
             var rockContext = new RockContext();
             var entitySetService = new EntitySetService( rockContext );
-            entitySetService.LaunchWorkflows( entitySetId, workflowType.Id, workflowAttributes );
+            entitySetService.LaunchWorkflows( entitySetId, workflowType.Id, CurrentPersonAliasId, workflowAttributes );
         }
 
         /// <summary>

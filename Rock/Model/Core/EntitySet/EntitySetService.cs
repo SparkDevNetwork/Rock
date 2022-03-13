@@ -194,9 +194,27 @@ namespace Rock.Model
             var query = GetEntityQuery( entitySetId ).AsNoTracking();
             var entities = query.ToList();
             var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e, attributeValues ) ).ToList();
-
+            
             // Queue a transaction to launch workflow
             new LaunchWorkflowsTransaction( workflowTypeId, launchWorkflowDetails ).Enqueue();
+        }
+
+        /// <summary>
+        /// Launch a workflow for each item in the set using a Rock transaction.
+        /// </summary>
+        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="initiatorPersonAliasId">The initiator person alias identifier.</param>
+        /// <param name="attributeValues">The attribute values.</param>
+        public void LaunchWorkflows( int entitySetId, int workflowTypeId, int? initiatorPersonAliasId,  Dictionary<string, string> attributeValues )
+        {
+            var query = GetEntityQuery( entitySetId ).AsNoTracking();
+            var entities = query.ToList();
+            var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e, attributeValues ) ).ToList();
+            var launchWorkflowsTransaction = new LaunchWorkflowsTransaction( workflowTypeId, launchWorkflowDetails );
+            launchWorkflowsTransaction.InitiatorPersonAliasId = initiatorPersonAliasId;
+            // Queue a transaction to launch workflow
+            launchWorkflowsTransaction.Enqueue();
         }
 
         /// <summary>
