@@ -63,6 +63,11 @@ export default defineComponent({
         });
 
         const generalViewModel = ref<FormGeneral>(form.general ?? {});
+       
+        const blockTitle = computed((): string => {
+            return generalViewModel.value?.name + " Form" ?? "Workflow Form Builder";
+        });
+
         const completionViewModel = ref<FormCompletionAction>(form.completion ?? {});
 
         const builderViewModel = ref<FormBuilderSettings>({
@@ -318,6 +323,7 @@ export default defineComponent({
             isSettingsTabSelected,
             settingsContainerStyle,
             generalViewModel,
+            blockTitle,
             submissionsPageUrl: config.submissionsPageUrl, 
             onCommunicationsTabClick,
             onCommunicationsValidationChanged,
@@ -336,7 +342,7 @@ export default defineComponent({
     {{ blockError }}
 </Alert>
 
-<Panel v-else type="block" hasFullscreen title="Workflow Form Builder" titleIconClass="fa fa-hammer">
+<Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconClass="fa fa-poll-h">
     <template #default>
         <v-style>
             /*** Overrides for theme CSS ***/
