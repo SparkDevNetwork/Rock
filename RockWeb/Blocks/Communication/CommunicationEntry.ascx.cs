@@ -908,7 +908,7 @@ namespace RockWeb.Blocks.Communication
         private void ShowDetail( Rock.Model.Communication communication )
         {
             Recipients.Clear();
-
+            int? mediumEntityTypeId = null;
             if ( communication != null && communication.Id > 0 )
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
@@ -930,9 +930,11 @@ namespace RockWeb.Blocks.Communication
                         a.Status,
                         a.StatusNote,
                         a.OpenedClient,
-                        a.OpenedDateTime
+                        a.OpenedDateTime,
+                        a.MediumEntityTypeId
                     } ).ToList();
 
+                mediumEntityTypeId = recipientList.Where( a => a.MediumEntityTypeId.HasValue ).Select( a => a.MediumEntityTypeId ).FirstOrDefault();
                 Recipients = recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.HasPersonalDevice, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList();
             }
             else
@@ -967,6 +969,10 @@ namespace RockWeb.Blocks.Communication
             CommunicationId = communication.Id;
 
             BindMediums();
+            if ( mediumEntityTypeId.HasValue && !ViewedEntityTypes.Contains( mediumEntityTypeId.Value ) )
+            {
+                ViewedEntityTypes.Add( mediumEntityTypeId.Value );
+            }
 
             CommunicationData = new CommunicationDetails();
             CommunicationDetails.Copy( communication, CommunicationData );
