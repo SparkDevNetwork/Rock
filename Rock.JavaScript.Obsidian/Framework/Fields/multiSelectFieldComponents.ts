@@ -293,7 +293,7 @@ export const ConfigurationComponent = defineComponent({
 <div>
     <TextBox v-model="rawValues"
         label="Values"
-        help="The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column &lt;span class='tip tip-lava'&gt;&gtl/span&gt;."
+        help="The source of the values to display in a list. Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns a result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>."
         textMode="multiline"
         @blur="onBlur" />
 
