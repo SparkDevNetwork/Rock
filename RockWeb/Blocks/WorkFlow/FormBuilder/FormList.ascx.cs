@@ -435,7 +435,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             familyAttribute.IsSystem = false;
             familyAttribute.Name = "Family";
             familyAttribute.Key = "Family";
-            familyAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.PERSON ).Id;
+            familyAttribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.GROUP ).Id;
             newAttributesState.Add( familyAttribute );
 
             // Save the workflow type attributes
