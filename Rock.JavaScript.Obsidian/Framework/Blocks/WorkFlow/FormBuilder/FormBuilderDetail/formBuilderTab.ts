@@ -140,7 +140,12 @@ function getFieldDragSourceOptions(sections: FormSection[], availableFieldTypes:
                     key: key,
                     size: 12,
                     configurationValues: {},
-                    defaultValue: ""
+                    defaultValue: "",
+                    visibilityRule: {
+                        guid: newGuid(),
+                        expressionType: 1,
+                        rules: []
+                    }
                 });
             }
         }
