@@ -374,6 +374,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             formField.Attribute.DefaultValue = fieldType.Field.GetPrivateEditValue( field.DefaultValue, configurationValues );
             formField.Attribute.Description = field.Description;
             formField.Attribute.IsRequired = field.IsRequired;
+            formField.IsRequired = field.IsRequired;
             formField.Attribute.IsGridColumn = field.IsShowOnGrid;
             formField.Attribute.Key = field.Key;
             formField.Attribute.Name = field.Name;
