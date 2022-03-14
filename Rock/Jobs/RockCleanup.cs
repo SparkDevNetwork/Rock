@@ -387,23 +387,6 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Updates the person account protection profile.
-        /// </summary>
-        /// <returns></returns>
-        private int UpdatePersonAccountProtectionProfile()
-        {
-            var rowsUpdated = 0;
-            using ( var rockContext = new RockContext() )
-            {
-                rockContext.Database.CommandTimeout = commandTimeout;
-
-                PersonService.UpdateAccountProtectionProfileAll( rockContext );
-            }
-
-            return rowsUpdated;
-        }
-
-        /// <summary>
         /// Get a cleanup job result as a formatted string
         /// </summary>
         /// <param name="result"></param>
@@ -2302,14 +2285,12 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
 
             var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
 
-
-
             var filter = rockContext.BenevolenceRequests
                 .Where( b => b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0
-                        &  DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays) ;
+                        & DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays );
 
             rockContext.BenevolenceRequests.RemoveRange( filter );
-            var removedCount=rockContext.SaveChanges();
+            var removedCount = rockContext.SaveChanges();
 
             return removedCount;
         }

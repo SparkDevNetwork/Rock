@@ -356,6 +356,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             WorkflowType workflowType = new WorkflowType();
 
             var validationErrors = new List<string>();
+            var formBuilderSettings = new Rock.Workflow.FormBuilder.FormSettings();
+            formBuilderSettings.CompletionAction = new Rock.Workflow.FormBuilder.FormCompletionActionSettings
+            {
+                Message = "Your information has been submitted successfully.",
+                Type = Rock.Workflow.FormBuilder.FormCompletionActionType.DisplayMessage
+            };
 
             workflowType.IsActive = true;
             workflowType.Name = tbFormName.Text;
@@ -368,7 +374,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowType.IsFormBuilder = true;
             workflowType.WorkTerm = "Form";
             workflowType.IsSystem = false;
-
+            workflowType.FormBuilderSettingsJson = formBuilderSettings.ToJson();
             if ( validationErrors.Any() )
             {
                 nbValidationError.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>",
@@ -798,7 +804,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     }
                 }
                 // Save the workflow type attributes
-                SaveAttributes( new Workflow().TypeId, "WorkflowTypeId", workflowType.Id.ToString(), newAttributesState, rockContext );
+                SaveAttributes( new Workflow().TypeId, "WorkflowTypeId", newWorkflowType.Id.ToString(), newAttributesState, rockContext );
 
                 // Create new guids for all the existing activity types
                 foreach ( var activityType in existingActivityTypes )

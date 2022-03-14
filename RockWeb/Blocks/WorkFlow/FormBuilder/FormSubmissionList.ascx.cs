@@ -174,8 +174,17 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             if ( !Page.IsPostBack )
             {
-                BindGrid();
-                BindFilters();
+                var workflowType = new WorkflowTypeService( new RockContext() ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+                if ( workflowType != null )
+                {
+                    lTitle.Text = $"{workflowType.Name} Form";
+                    BindGrid();
+                    BindFilters();
+                }
+                else
+                {
+                    pnlView.Visible = false;
+                }
             }
 
             base.OnLoad( e );
