@@ -158,7 +158,7 @@
                             ValidationGroup="NewEventRegistrationGroupLinkage" />
                         <asp:CustomValidator runat="server"
                             ID="rvUrlSlugForNewLinkage"
-                            ErrorMessage="URL Slug cannot contain any special characters other than -"
+                            ErrorMessage="URL Slug must be lowercase and cannot contain any special characters other than -"
                             ControlToValidate="tbNewLinkageUrlSlug"
                             OnServerValidate="rvUrlSlug_ServerValidate"
                             ValidationGroup="NewEventRegistrationGroupLinkage" />
@@ -255,7 +255,7 @@
                             ValidationGroup="EditLinkage" />
                         <asp:CustomValidator runat="server"
                             ID="rvEditUrlSlug"
-                            ErrorMessage="URL Slug cannot contain any special characters other than -"
+                            ErrorMessage="URL Slug must be lowercase and cannot contain any special characters other than -"
                             ControlToValidate="tbEditLinkageUrlSlug"
                             OnServerValidate="rvUrlSlug_ServerValidate"
                             ValidationGroup="NewEventRegistrationGroupLinkage" />
