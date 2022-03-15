@@ -1767,14 +1767,20 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         }
 
         /// <summary>
-        /// Determines if action is editable.
+        /// Determines if action type is editable.
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
-        private bool DetermineIfActionIsEditable( WorkflowActionType action )
+        /// <param name="actionType">Type of the action.</param>
+        private bool DetermineIfActionIsEditable( WorkflowActionType actionType )
         {
-            var actionType = action.WorkflowAction.GetType();
-            var attr = actionType.GetCustomAttribute<ActionCategoryAttribute>( false );
+            ActionComponent actionComponent = actionType?.WorkflowAction;
+
+            if ( actionComponent == null )
+            {
+                // probably adding a new workflow action and type hasn't been selected yet
+                return true;
+            }
+
+            var attr = actionComponent.GetType().GetCustomAttribute<ActionCategoryAttribute>( false );
 
             if ( attr.IsNotNull() && attr.CategoryName == "HideFromUser" )
             {

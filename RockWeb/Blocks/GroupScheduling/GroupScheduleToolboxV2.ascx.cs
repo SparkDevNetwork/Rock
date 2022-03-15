@@ -239,6 +239,9 @@ $('#{0}').tooltip();
 
             if ( !Page.IsPostBack )
             {
+                // Make sure NavigationHistory doesn't get applied with the Browser is Refreshed
+                hfNavigationHistoryInstance.Value = Guid.NewGuid().ToString();
+
                 BindScheduleRepeater();
             }
             else
@@ -923,6 +926,14 @@ $('#{0}').tooltip();
         void page_PageNavigate( object sender, HistoryEventArgs e )
         {
             var navigationPanelId = e.State["navigationPanelId"];
+            var navigationHistoryInstance = e.State["navigationHistoryInstance"];
+
+            if ( navigationHistoryInstance != null && navigationHistoryInstance != hfNavigationHistoryInstance.Value )
+            {
+                // Navigation History was in the URL but is from Page Refresh, not Browser Next/Prior, so ignore
+                return;
+            }
+
             Panel navigationPanel = null;
 
             if ( navigationPanelId == null )
@@ -958,6 +969,7 @@ $('#{0}').tooltip();
         private void SetNavigationHistory( Panel navigateToPanel )
         {
             this.AddHistory( "navigationPanelId", navigateToPanel.ID );
+            this.AddHistory( "navigationHistoryInstance", hfNavigationHistoryInstance.Value );
         }
 
         /// <summary>

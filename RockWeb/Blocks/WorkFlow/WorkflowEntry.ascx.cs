@@ -146,6 +146,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
+            public const string CampusId = "CampusId";
         }
 
         #endregion PageParameter Keys
@@ -438,21 +439,21 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
-            if ( workflowType.FormStartDateTime.HasValue && workflowType.FormStartDateTime.Value < RockDateTime.Now )
+            if ( workflowType.FormStartDateTime.HasValue && workflowType.FormStartDateTime.Value > RockDateTime.Now )
             {
                 ShowNotes( false );
                 ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
                 return false;
             }
 
-            if ( workflowType.FormEndDateTime.HasValue && workflowType.FormEndDateTime.Value > RockDateTime.Now )
+            if ( workflowType.FormEndDateTime.HasValue && workflowType.FormEndDateTime.Value < RockDateTime.Now )
             {
                 ShowNotes( false );
                 ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
                 return false;
             }
 
-            if ( workflowType.WorkflowExpireDateTime.HasValue && workflowType.WorkflowExpireDateTime.Value > RockDateTime.Now )
+            if ( workflowType.WorkflowExpireDateTime.HasValue && workflowType.WorkflowExpireDateTime.Value < RockDateTime.Now )
             {
                 ShowNotes( false );
                 ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
@@ -2008,6 +2009,44 @@ namespace RockWeb.Blocks.WorkFlow
 
             var responseText = responseTextTemplate.ResolveMergeFields( mergeFields );
 
+            var workflowCampusSetFrom = workflowType?.FormBuilderSettings?.CampusSetFrom;
+            switch ( workflowCampusSetFrom )
+            {
+                case CampusSetFrom.CurrentPerson:
+                    {
+                        _workflow.CampusId = this.CurrentPerson?.PrimaryCampusId;
+                    }
+                    break;
+                case CampusSetFrom.WorkflowPerson:
+                    {
+                        Person personEntryPerson;
+                        Person personEntrySpouse;
+                        _action.GetPersonEntryPeople( new RockContext(), CurrentPersonId, out personEntryPerson, out personEntrySpouse );
+                        if (personEntryPerson != null)
+                        {
+                            _workflow.CampusId = personEntryPerson.PrimaryCampusId;
+                        }
+                    }
+                    break;
+                case CampusSetFrom.QueryString:
+                    {
+                        _workflow.CampusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            if ( workflowType.IsPersisted == false && workflowType.IsFormBuilder )
+            {
+                /* 3/14/2022 MP 
+                 If this is a FormBuilder workflow, the WorkflowType probably has _workflowType.IsPersisted == false.
+                 This is because we don't want to persist the workflow until they have submitted.
+                 So, in the case of FormBuilder, we'll persist when they submit regardless of the _workflowType.IsPersisted setting
+                */
+                _workflowService.PersistImmediately( _action );
+            }
+
             CompleteCurrentWorkflowAction( activityTypeGuid, responseText );
         }
 
@@ -2284,13 +2323,20 @@ namespace RockWeb.Blocks.WorkFlow
             else if ( formNotificationEmailDestination == FormNotificationEmailDestination.CampusTopic
                 && notificationEmailSettings.CampusTopicValueId.HasValue )
             {
-                var campusTopicEmail = new CampusTopicService( rockContext ).GetSelect( notificationEmailSettings.CampusTopicValueId.Value, s => s.Email );
-                if ( campusTopicEmail.IsNullOrWhiteSpace() )
+                var workflowCampusId = _workflow?.CampusId;
+                if ( workflowCampusId.HasValue )
                 {
-                    return;
-                }
+                    var campusTopicEmail = new CampusTopicService( rockContext ).Queryable()
+                        .Where( a => a.TopicTypeValueId == notificationEmailSettings.CampusTopicValueId.Value && a.CampusId == workflowCampusId )
+                        .Select( a => a.Email ).FirstOrDefault();
 
-                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( campusTopicEmail, workflowMergeFields ) );
+                    if ( campusTopicEmail.IsNullOrWhiteSpace() )
+                    {
+                        return;
+                    }
+
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( campusTopicEmail, workflowMergeFields ) );
+                }
 
             }
             else

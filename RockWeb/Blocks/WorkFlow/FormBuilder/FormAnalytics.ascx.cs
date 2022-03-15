@@ -7,8 +7,8 @@
 using DocumentFormat.OpenXml.Wordprocessing;
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
 using Rock.Data;
-using Rock.Financial;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
+using System.Web.UI;
 
 namespace RockWeb.Blocks.WorkFlow.FormBuilder
 {
@@ -92,14 +93,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         #endregion User Preference Keys
 
-        #region Properties
-
-        public string ViewsJSON { get; set; }
-        public string CompletionsJSON { get; set; }
-        public string LabelsJSON { get; set; }
-
-        #endregion Properties
-
         #region Base Control Methods
 
         /// <summary>
@@ -115,7 +108,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             InitializeChartScripts();
-            InitializeAnalyticsPanelControls();
         }
 
         /// <summary>
@@ -154,7 +146,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <exception cref="System.NotImplementedException"></exception>
         private void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            SaveSettings();
+            InitializeAnalyticsPanel();
         }
 
         /// <summary>
@@ -208,11 +201,11 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         }
 
         /// <summary>
-        /// Handles the SelectedDateRangeChanged event of the drpSlidingDateRange control.
+        /// Handles the Click event of the btnRefreshChart control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void drpSlidingDateRange_SelectedDateRangeChanged( object sender, EventArgs e )
+        protected void btnRefreshChart_Click( object sender, EventArgs e )
         {
             SaveSettings();
             InitializeAnalyticsPanel();
@@ -273,16 +266,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         }
 
         /// <summary>
-        /// Initializes the analytics panel controls.
-        /// </summary>
-        private void InitializeAnalyticsPanelControls()
-        {
-            ViewsJSON = "[]";
-            CompletionsJSON = "[]";
-            LabelsJSON = "[]";
-        }
-
-        /// <summary>
         /// Initializes the analytics panel.
         /// </summary>
         private void InitializeAnalyticsPanel()
@@ -307,9 +290,19 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         private void ShowAnalytics( int workflowTypeId )
         {
             nbWorkflowIdNullMessage.Visible = false;
-            List<SummaryInfo> summary = GetSummary( workflowTypeId );
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            if ( dateRange.End == null )
+            {
+                dateRange.End = RockDateTime.Now;
+            }
 
-            if ( summary.Count == 0 )
+            List<SummaryInfo> summary = GetSummary( workflowTypeId, dateRange );
+            var views = summary.Select( m => m.ViewsCounts );
+            var completions = summary.Select( m => m.CompletionCounts );
+
+            ShowKpis( views, completions );
+
+            if ( views.Sum() == 0 && completions.Sum() == 0 )
             {
                 nbViewsAndCompletionsEmptyMessage.Visible = true;
                 dvCharts.Visible = false;
@@ -319,32 +312,74 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 nbViewsAndCompletionsEmptyMessage.Visible = false;
                 dvCharts.Visible = true;
 
-                var labels = summary.Select( m => m.Month );
-                var views = summary.Select( m => m.ViewsCounts );
-                var completions = summary.Select( m => m.CompletionCounts );
+                ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> chartFactory = this.GetChartJsFactory( summary, dateRange );
 
-                ShowKpis( views, completions );
+                InitializeChartScripts();
 
-                CompletionsJSON = completions.ToJson();
-                LabelsJSON = labels.ToJson();
-                ViewsJSON = views.ToJson();
+                var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
+                {
+                    SizeToFitContainerWidth = true,
+                    MaintainAspectRatio = false,
+                    LineTension = 0.4m,
+                    DisplayLegend = true
+                } );
+
+                string script = string.Format( @"
+                var barCtx = $('#{0}')[0].getContext('2d');
+                var barChart = new Chart(barCtx, {1});",
+                                    viewsAndCompletionsCanvas.ClientID,
+                                    chartDataJson );
+
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "formAnalyticsChartScript", script, true );
             }
         }
 
-        private List<SummaryInfo> GetSummary( int workflowTypeId )
+        /// <summary>
+        /// Gets a configured factory that creates the data required for the chart.
+        /// </summary>
+        /// <param name="summary">The summary.</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( List<SummaryInfo> summary, DateRange dateRange )
+        {
+            ChartJsTimeSeriesTimeScaleSpecifier chartTimeScale = drpSlidingDateRange.TimeUnit == SlidingDateRangePicker.TimeUnitType.Year ? ChartJsTimeSeriesTimeScaleSpecifier.Month : ChartJsTimeSeriesTimeScaleSpecifier.Day;
+
+            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
+
+            factory.TimeScale = chartTimeScale;
+            factory.StartDateTime = dateRange.Start;
+            factory.EndDateTime = dateRange.End;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
+
+            var viewedDataset = new ChartJsTimeSeriesDataset();
+            viewedDataset.Name = "Views";
+            viewedDataset.DataPoints = summary
+                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.ViewsCounts } )
+                .Cast<IChartJsTimeSeriesDataPoint>()
+                .ToList();
+
+            var completionDataset = new ChartJsTimeSeriesDataset();
+            completionDataset.Name = "Completions";
+            completionDataset.DataPoints = summary
+                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.CompletionCounts } )
+                .Cast<IChartJsTimeSeriesDataPoint>()
+                .ToList();
+
+            factory.Datasets.Add( viewedDataset );
+            factory.Datasets.Add( completionDataset );
+
+            return factory;
+        }
+
+        private List<SummaryInfo> GetSummary( int workflowTypeId, DateRange dateRange )
         {
             var context = new RockContext();
 
+            IEnumerable<SummaryInfo> summaries;
             var interactionService = new InteractionService( context );
             var interactionQuery = interactionService.Queryable()
                                     .AsNoTracking()
-                                    .Where( x => x.InteractionComponent.EntityId == workflowTypeId);
-
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-            if ( dateRange.End == null )
-            {
-                dateRange.End = RockDateTime.Now;
-            }
+                                    .Where( x => x.InteractionComponent.EntityId == workflowTypeId );
 
             if ( dateRange.Start.HasValue )
             {
@@ -355,14 +390,29 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 ( from w in interactionQuery
                   select w ).ToLookup( w => w.InteractionDateTime.Month );
 
-            var summaries =
-                from m in Enumerable.Range( 1, dateRange.End.Value.Month )
-                select new SummaryInfo()
-                {
-                    Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( m ),
-                    ViewsCounts = lookup[m].Count( x => x.Operation == "Form Viewed" ),
-                    CompletionCounts = lookup[m].Count( x => x.Operation == "Form Completed" ),
-                };
+            if ( drpSlidingDateRange.TimeUnit == SlidingDateRangePicker.TimeUnitType.Year )
+            {
+                summaries =
+                    from m in Enumerable.Range( 1, dateRange.End.Value.Month )
+                    select new SummaryInfo()
+                    {
+                        Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( m ),
+                        ViewsCounts = lookup[m].Count( x => x.Operation == "Form Viewed" ),
+                        CompletionCounts = lookup[m].Count( x => x.Operation == "Form Completed" ),
+                        InterationDateTime = lookup[m].Any() ? lookup[m].Min( x => x.InteractionDateTime ) : new DateTime( dateRange.End.Value.Year, m, 1 )
+                    };
+            }
+            else
+            {
+                summaries =
+                    from m in Enumerable.Range( 1, dateRange.End.Value.Day )
+                    select new SummaryInfo()
+                    {
+                        ViewsCounts = lookup[m].Count( x => x.Operation == "Form Viewed" ),
+                        CompletionCounts = lookup[m].Count( x => x.Operation == "Form Completed" ),
+                        InterationDateTime = lookup[m].Any() ? lookup[m].Min( x => x.InteractionDateTime ) : new DateTime( dateRange.End.Value.Year, dateRange.End.Value.Month, m )
+                    };
+            }
 
             return summaries.ToList();
         }
@@ -372,7 +422,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private void LoadSettings()
         {
-            string slidingDateRangeSettings = GetUserPreference( UserPreferenceKeys.SlidingDateRange );
+            string keyPrefix = string.Format( "form-analytics-{0}-", this.BlockId );
+            string slidingDateRangeSettings = GetUserPreference( keyPrefix + UserPreferenceKeys.SlidingDateRange );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
             {
                 // default to current year
@@ -390,7 +441,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         public void SaveSettings()
         {
-            SetUserPreference( UserPreferenceKeys.SlidingDateRange, drpSlidingDateRange.DelimitedValues, true );
+            string keyPrefix = string.Format( "form-analytics-{0}-", this.BlockId );
+            SetUserPreference( keyPrefix + UserPreferenceKeys.SlidingDateRange, drpSlidingDateRange.DelimitedValues, false );
         }
 
         #endregion Methods
@@ -429,7 +481,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             /// <value>
             /// The interation date time.
             /// </value>
-            public DateTime? InterationDateTime { get; set; }
+            public DateTime InterationDateTime { get; set; }
         }
 
         #endregion Helper Classes

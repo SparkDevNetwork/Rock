@@ -41,12 +41,17 @@
                 <div>
                     <h4 class="step-title text-break">Form Analytics</h4>
                     <div class="row">
-                        <div class="col-sm-8">
+                        <div class="col-sm-7">
                             Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.
                         </div>
-                        <div class="col-sm-4">
-                            <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" CssClass="pull-right" runat="server" Label="Date Range" OnSelectedDateRangeChanged="drpSlidingDateRange_SelectedDateRangeChanged"
-                                EnabledSlidingDateRangeTypes="Current, DateRange" EnabledSlidingDateRangeUnits="Year" />
+                        <div class="col-sm-5">
+                            <div class="flex-grow-1 d-flex justify-content-end">
+                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="" EnabledSlidingDateRangeTypes="Current, Previous, Last, DateRange"
+                                    EnabledSlidingDateRangeUnits="Year, Month, Day, Hour" FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
+
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+                            </div>
                         </div>
                     </div>
                     <hr />
@@ -57,7 +62,7 @@
                         <asp:Literal runat="server" ID="lKPIHtml" />
                     </div>
                 </div>
-            
+
                 <br />
 
                 <div class="panel-analytics">
@@ -79,58 +84,7 @@
         <script type="text/javascript">
             Sys.Application.add_load(function () {
                 Rock.controls.fullScreen.initialize('body');
-                loadChart();
             });
-
-            function loadChart() {
-
-                var lineChartDataLabels = <%=this.LabelsJSON%>;
-                var lineChartDataViews = <%=this.ViewsJSON%>;
-                var lineChartDataCompletions = <%=this.CompletionsJSON%>;
-
-                var linecharts = $('#<%=viewsAndCompletionsCanvas.ClientID%>');
-
-                var linechartCtx = $('#<%=viewsAndCompletionsCanvas.ClientID%>')[0].getContext('2d');
-                var chart = new Chart(linechartCtx, {
-                    type: 'line',
-                    data: {
-                        labels: lineChartDataLabels,
-                        datasets: [{
-                            label: 'Views',
-                            backgroundColor: '#60BD68',
-                            borderColor: '#60BD68',
-                            data: lineChartDataViews,
-                            spanGaps: true,
-                            fill: false
-                        },
-                        {
-                            label: 'Completions',
-                            backgroundColor: '#5DA5DA',
-                            borderColor: '#5DA5DA',
-                            data: lineChartDataCompletions,
-                            spanGaps: true,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        maintainAspectRatio: false,
-                        responsive: true,
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                filter: function (item, data) {
-                                    // don't include the label if the dataset is hidden
-                                    if (data.datasets[item.datasetIndex].hidden) {
-                                        return false;
-                                    }
-
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                });
-            }
         </script>
 
     </ContentTemplate>
