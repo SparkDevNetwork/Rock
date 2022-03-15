@@ -872,25 +872,36 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                             newActionType.WorkflowForm = actionType.WorkflowForm.Clone( false );
                             newActionType.WorkflowForm.Id = 0;
                             newActionType.WorkflowForm.Guid = Guid.NewGuid();
-
                             WorkflowFormEditor.CopyEditableProperties( actionType.WorkflowForm, newActionType.WorkflowForm );
+
+                            foreach ( var section in actionType.WorkflowForm.FormSections )
+                            {
+                                var newSection = section.Clone( false );
+                                newSection.Id = 0;
+                                newSection.Guid = Guid.NewGuid();
+                                newActionType.WorkflowForm.FormSections.Add( newSection );
+                                guidXref.Add( section.Guid, newSection.Guid );
+                            }
+
+                            rockContext.SaveChanges();
 
                             foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes )
                             {
                                 if ( guidXref.ContainsKey( formAttribute.Attribute.Guid ) )
                                 {
+                                    var attribute = AttributeCache.Get( guidXref[formAttribute.Attribute.Guid], rockContext );
+                                    WorkflowActionFormSection section = null;
+                                    if ( guidXref.ContainsKey( formAttribute.ActionFormSection.Guid ) )
+                                    {
+                                        section = newActionType.WorkflowForm.FormSections.FirstOrDefault( a => a.Guid == guidXref[formAttribute.ActionFormSection.Guid] );
+                                    }
+
                                     var newFormAttribute = formAttribute.Clone( false );
                                     newFormAttribute.WorkflowActionFormId = 0;
                                     newFormAttribute.Id = 0;
                                     newFormAttribute.Guid = Guid.NewGuid();
-
-                                    newFormAttribute.Attribute = new Rock.Model.Attribute
-                                    {
-                                        Guid = guidXref[formAttribute.Attribute.Guid],
-                                        Name = formAttribute.Attribute.Name,
-                                        FieldTypeId = formAttribute.Attribute.FieldTypeId,
-                                        AttributeQualifiers = formAttribute.Attribute.AttributeQualifiers
-                                    };
+                                    newFormAttribute.AttributeId = attribute.Id;
+                                    newFormAttribute.ActionFormSectionId = section.Id;
 
                                     if ( newFormAttribute.FieldVisibilityRules != null )
                                     {
