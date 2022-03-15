@@ -77,24 +77,6 @@ namespace Rock.WebStartup
         #endregion Properties
 
         /// <summary>
-        /// Class UnobservedTaskException.
-        /// Implements the <see cref="System.Exception" />
-        /// </summary>
-        /// <seealso cref="System.Exception" />
-        private class UnobservedTaskException : Exception
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="UnobservedTaskException"/> class.
-            /// </summary>
-            /// <param name="message">The message.</param>
-            /// <param name="exception">The exception.</param>
-            public UnobservedTaskException( string message, Exception exception )
-                : base( message, exception )
-            {
-            }
-        }
-
-        /// <summary>
         /// If there are Task.Runs that don't handle their exceptions, this will catch those
         /// so that we can log it.
         /// </summary>
