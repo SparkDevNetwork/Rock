@@ -297,8 +297,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             }
 
             List<SummaryInfo> summary = GetSummary( workflowTypeId, dateRange );
+            var views = summary.Select( m => m.ViewsCounts );
+            var completions = summary.Select( m => m.CompletionCounts );
 
-            if ( summary.Count == 0 )
+            ShowKpis( views, completions );
+
+            if ( views.Sum() == 0 && completions.Sum() == 0 )
             {
                 nbViewsAndCompletionsEmptyMessage.Visible = true;
                 dvCharts.Visible = false;
@@ -307,11 +311,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             {
                 nbViewsAndCompletionsEmptyMessage.Visible = false;
                 dvCharts.Visible = true;
-
-                var views = summary.Select( m => m.ViewsCounts );
-                var completions = summary.Select( m => m.CompletionCounts );
-
-                ShowKpis( views, completions );
 
                 ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> chartFactory = this.GetChartJsFactory( summary, dateRange );
 
@@ -376,10 +375,11 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             var context = new RockContext();
 
+            IEnumerable<SummaryInfo> summaries;
             var interactionService = new InteractionService( context );
             var interactionQuery = interactionService.Queryable()
                                     .AsNoTracking()
-                                    .Where( x => x.InteractionComponent.EntityId == workflowTypeId);
+                                    .Where( x => x.InteractionComponent.EntityId == workflowTypeId );
 
             if ( dateRange.Start.HasValue )
             {
@@ -390,38 +390,31 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 ( from w in interactionQuery
                   select w ).ToLookup( w => w.InteractionDateTime.Month );
 
-            var summaries =
-                from m in Enumerable.Range( 1, dateRange.End.Value.Month )
-                select new SummaryInfo()
-                {
-                    Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( m ),
-                    ViewsCounts = lookup[m].Count( x => x.Operation == "Form Viewed" ),
-                    CompletionCounts = lookup[m].Count( x => x.Operation == "Form Completed" ),
-                    InterationDateTime = GetInteractionDateTime( lookup, m, dateRange )
-                };
-
-            return summaries.ToList();
-        }
-
-        /// <summary>
-        /// Gets the interaction date time.
-        /// </summary>
-        /// <param name="lookup">The lookup.</param>
-        /// <param name="month">The month.</param>
-        /// <param name="dateRange">The date range.</param>
-        /// <returns></returns>
-        private DateTime GetInteractionDateTime( ILookup<int, Interaction> lookup, int month, DateRange dateRange )
-        {
-            var interaction = lookup[month];
-            if(!interaction.Any())
+            if ( drpSlidingDateRange.TimeUnit == SlidingDateRangePicker.TimeUnitType.Year )
             {
-                // Since we are getting data for all the months 
-                return new DateTime( dateRange.End.Value.Year, month, 1 );
+                summaries =
+                    from m in Enumerable.Range( 1, dateRange.End.Value.Month )
+                    select new SummaryInfo()
+                    {
+                        Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( m ),
+                        ViewsCounts = lookup[m].Count( x => x.Operation == "Form Viewed" ),
+                        CompletionCounts = lookup[m].Count( x => x.Operation == "Form Completed" ),
+                        InterationDateTime = lookup[m].Any() ? lookup[m].Min( x => x.InteractionDateTime ) : new DateTime( dateRange.End.Value.Year, m, 1 )
+                    };
             }
             else
             {
-                return interaction.Min( m => m.InteractionDateTime );
+                summaries =
+                    from m in Enumerable.Range( 1, dateRange.End.Value.Day )
+                    select new SummaryInfo()
+                    {
+                        ViewsCounts = lookup[m].Count( x => x.Operation == "Form Viewed" ),
+                        CompletionCounts = lookup[m].Count( x => x.Operation == "Form Completed" ),
+                        InterationDateTime = lookup[m].Any() ? lookup[m].Min( x => x.InteractionDateTime ) : new DateTime( dateRange.End.Value.Year, dateRange.End.Value.Month, m )
+                    };
             }
+
+            return summaries.ToList();
         }
 
         /// <summary>
