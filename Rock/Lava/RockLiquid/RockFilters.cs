@@ -5630,21 +5630,25 @@ namespace Rock.Lava
                             result.Add( liquidObject[selectKey] );
                         }
                     }
-                    else if ( value is IDictionary<string, object> )
+                    else if ( value is IDictionary<string, object> genericDictionary )
                     {
-                        var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( selectKey ) )
+                        if ( genericDictionary.ContainsKey( selectKey ) )
                         {
-                            result.Add( dictionaryObject[selectKey] );
+                            result.Add( genericDictionary[selectKey] );
                         }
                     }
-                    else if ( value is IDictionary )
+                    else if ( value is IDictionary simpleDictionary )
                     {
-                        var dictionaryObject = value as IDictionary;
-                        if ( dictionaryObject.Contains( selectKey ) )
+                        if ( simpleDictionary.Contains( selectKey ) )
                         {
-                            result.Add( dictionaryObject[selectKey] );
+                            result.Add( simpleDictionary[selectKey] );
                         }
+                    }
+                    else if ( value is DynamicObject dyo )
+                    {
+                        // Try to resolve the key as a property of the object.
+                        // We can assume that all properties of a runtime type are available to Lava.
+                        result.Add( dyo.GetPropertyValue( selectKey ) );
                     }
                 }
 

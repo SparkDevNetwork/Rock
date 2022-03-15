@@ -668,6 +668,33 @@ UNION
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
+        /// <summary>
+        /// Verify that the Select filter operates correctly on the result set returned by the Sql Lava block.
+        /// Verifies Issue #4938 ⁃ Select Lava Filter Does Not See Values In A SQL Results Array.
+        /// Refer https://github.com/SparkDevNetwork/Rock/issues/4938.
+        /// </summary>
+        [TestMethod]
+        public void SqlBlock_SelectFilterAppliedToResultSet_ReturnsSelectedField()
+        {
+            var input = @"
+{% sql %}
+SELECT * FROM Campus
+{% endsql %}
+{% assign campusNames = results | Select:'Name' | Uniq %}
+{% for campusName in campusNames %}
+{{ campusName }};
+{% endfor %}
+";
+
+            var expectedOutput = @"
+Main Campus;Stepping Stone;
+";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
         #endregion
 
         #region Stylesheet
