@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfNavigationHistoryInstance" runat="server" Value="" />
         <asp:HiddenField ID="hfSelectedPersonId" runat="server" />
         <div class="panel panel-block">
             <div class="panel-heading">
