@@ -46,8 +46,8 @@
                         </div>
                         <div class="col-sm-5">
                             <div class="flex-grow-1 d-flex justify-content-end">
-                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="" EnabledSlidingDateRangeTypes="Current, DateRange"
-                                    EnabledSlidingDateRangeUnits="Year, Month, Day" FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
+                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="" EnabledSlidingDateRangeTypes="Current, Previous, Last, DateRange"
+                                    EnabledSlidingDateRangeUnits="Year, Month, Day, Hour" FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
 
                                 <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
                                     OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
