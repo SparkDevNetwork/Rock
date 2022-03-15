@@ -15,8 +15,9 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType, numericComparisonTypes } from "../Reporting/comparisonType";
+import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 
 export const enum ConfigurationValueKey {
     MaxRating = "max"
@@ -28,21 +29,25 @@ export type RatingValue = {
     maxValue?: number;
 };
 
-
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./ratingFieldComponents")).EditComponent;
+});
+
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./ratingFieldComponents")).ConfigurationComponent;
 });
 
 /**
  * The field type handler for the Rating field.
  */
 export class RatingFieldType extends FieldTypeBase {
-    public override getTextValue(value: ClientAttributeValue): string {
+    public override getTextValue(value: PublicAttributeValue): string {
         return value.textValue || "0";
     }
 
-    public override getHtmlValue(value: ClientAttributeValue): string {
+    public override getHtmlValue(value: PublicAttributeValue): string {
         let ratingValue: RatingValue | null;
 
         try {
@@ -67,17 +72,25 @@ export class RatingFieldType extends FieldTypeBase {
         return html;
     }
 
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
         try {
-            const ratingValue = JSON.parse(value.value ?? "") as RatingValue;
-            value.textValue = ratingValue?.value?.toString() ?? "";
+            const ratingValue = JSON.parse(value ?? "") as RatingValue;
+            return ratingValue?.value?.toString() ?? "";
         }
         catch {
-            value.textValue = "";
+            return "";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return numericComparisonTypes;
     }
 }

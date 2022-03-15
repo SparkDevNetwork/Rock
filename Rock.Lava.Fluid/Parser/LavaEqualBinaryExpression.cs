@@ -121,6 +121,16 @@ namespace Rock.Lava.Fluid
                 }
             }
 
+            // If either value is an Enum, perform an Enum comparison.
+            if ( leftValue is LavaEnumValue lv )
+            {
+                return EnumValueIsEqualToOtherTypeValue( lv, rightValue );
+            }
+            if ( rightValue is LavaEnumValue rv )
+            {
+                return EnumValueIsEqualToOtherTypeValue( rv, leftValue );
+            }
+
             // If either value is numeric, and both values can be converted to a number, perform a numeric comparison.
             if ( leftValue is NumberValue || rightValue is NumberValue )
             {
@@ -165,6 +175,52 @@ namespace Rock.Lava.Fluid
             else
             {
                 return leftValue.Equals( rightValue ) ? BooleanValue.True : BooleanValue.False;
+            }
+        }
+
+        /// <summary>
+        /// Compares an Enum value with another value for equality.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private BooleanValue EnumValueIsEqualToOtherTypeValue( LavaEnumValue enumValue, FluidValue otherValue )
+        {
+            if ( otherValue.Type == FluidValues.Number )
+            {
+                // If the other value is a number, perform a numeric comparison.
+                var leftValueInt = enumValue.ToNumberValue();
+                int rightValueInt = 0;
+
+                var rightValueNumber = otherValue.ToNumberValue();
+                if ( rightValueNumber % 1 == 0 )
+                {
+                    rightValueInt = ( int ) rightValueNumber;
+                }
+
+                if ( FailIfEqual )
+                {
+                    return leftValueInt == rightValueInt ? BooleanValue.False : BooleanValue.True;
+                }
+                else
+                {
+                    return leftValueInt == rightValueInt ? BooleanValue.True : BooleanValue.False;
+                }
+            }
+            else
+            {
+                // For all other value types, perform a string comparison.
+                var leftValueString = enumValue.ToStringValue();
+                var rightValueString = otherValue.ToStringValue();
+
+                if ( FailIfEqual )
+                {
+                    return leftValueString == rightValueString ? BooleanValue.False : BooleanValue.True;
+                }
+                else
+                {
+                    return leftValueString == rightValueString ? BooleanValue.True : BooleanValue.False;
+                }
             }
         }
     }

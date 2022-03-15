@@ -53,6 +53,7 @@ import { Block } from "./block";
 import { BlockType } from "./blockType";
 import { Campus } from "./campus";
 import { CampusSchedule } from "./campusSchedule";
+import { CampusTopic } from "./campusTopic";
 import { Category } from "./category";
 import { Communication } from "./communication";
 import { CommunicationAttachment } from "./communicationAttachment";
@@ -235,9 +236,11 @@ import { Workflow } from "./workflow";
 import { WorkflowAction } from "./workflowAction";
 import { WorkflowActionForm } from "./workflowActionForm";
 import { WorkflowActionFormAttribute } from "./workflowActionFormAttribute";
+import { WorkflowActionFormSection } from "./workflowActionFormSection";
 import { WorkflowActionType } from "./workflowActionType";
 import { WorkflowActivity } from "./workflowActivity";
 import { WorkflowActivityType } from "./workflowActivityType";
+import { WorkflowFormBuilderTemplate } from "./workflowFormBuilderTemplate";
 import { WorkflowType } from "./workflowType";
 
 export {
@@ -273,6 +276,7 @@ export {
     BlockType,
     Campus,
     CampusSchedule,
+    CampusTopic,
     Category,
     Communication,
     CommunicationAttachment,
@@ -455,8 +459,10 @@ export {
     WorkflowAction,
     WorkflowActionForm,
     WorkflowActionFormAttribute,
+    WorkflowActionFormSection,
     WorkflowActionType,
     WorkflowActivity,
     WorkflowActivityType,
+    WorkflowFormBuilderTemplate,
     WorkflowType,
 };

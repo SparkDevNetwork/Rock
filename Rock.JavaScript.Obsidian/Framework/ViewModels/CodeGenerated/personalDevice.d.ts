@@ -28,6 +28,8 @@ export type PersonalDevice = IEntity & {
     deviceUniqueIdentifier?: string | null;
     deviceVersion?: string | null;
     isActive?: boolean;
+    lastSeenDateTime?: string | null;
+    lastVerifiedDateTime?: string | null;
     mACAddress?: string | null;
     manufacturer?: string | null;
     model?: string | null;

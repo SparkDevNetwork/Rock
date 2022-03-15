@@ -145,8 +145,14 @@ namespace Rock.Model
                 CategoryId = model.CategoryId,
                 CompletedWorkflowRetentionPeriod = model.CompletedWorkflowRetentionPeriod,
                 Description = model.Description,
+                FormBuilderSettingsJson = model.FormBuilderSettingsJson,
+                FormBuilderTemplateId = model.FormBuilderTemplateId,
+                FormEndDateTime = model.FormEndDateTime,
+                FormStartDateTime = model.FormStartDateTime,
                 IconCssClass = model.IconCssClass,
                 IsActive = model.IsActive,
+                IsFormBuilder = model.IsFormBuilder,
+                IsLoginRequired = model.IsLoginRequired,
                 IsPersisted = model.IsPersisted,
                 IsSystem = model.IsSystem,
                 LoggingLevel = ( int ) model.LoggingLevel,
@@ -157,6 +163,7 @@ namespace Rock.Model
                 Order = model.Order,
                 ProcessingIntervalSeconds = model.ProcessingIntervalSeconds,
                 SummaryViewText = model.SummaryViewText,
+                WorkflowExpireDateTime = model.WorkflowExpireDateTime,
                 WorkflowIdPrefix = model.WorkflowIdPrefix,
                 WorkTerm = model.WorkTerm,
                 CreatedDateTime = model.CreatedDateTime,
@@ -233,8 +240,14 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.FormBuilderSettingsJson = source.FormBuilderSettingsJson;
+            target.FormBuilderTemplateId = source.FormBuilderTemplateId;
+            target.FormEndDateTime = source.FormEndDateTime;
+            target.FormStartDateTime = source.FormStartDateTime;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
+            target.IsFormBuilder = source.IsFormBuilder;
+            target.IsLoginRequired = source.IsLoginRequired;
             target.IsPersisted = source.IsPersisted;
             target.IsSystem = source.IsSystem;
             target.LoggingLevel = source.LoggingLevel;
@@ -245,6 +258,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
             target.SummaryViewText = source.SummaryViewText;
+            target.WorkflowExpireDateTime = source.WorkflowExpireDateTime;
             target.WorkflowIdPrefix = source.WorkflowIdPrefix;
             target.WorkTerm = source.WorkTerm;
             target.CreatedDateTime = source.CreatedDateTime;

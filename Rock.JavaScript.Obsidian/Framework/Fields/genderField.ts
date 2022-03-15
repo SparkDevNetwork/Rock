@@ -15,41 +15,50 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { toNumberOrNull } from "../Services/number";
+import { PublicAttributeValue } from "../ViewModels";
+import { FieldTypeBase } from "./fieldType";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./genderFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./genderFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Gender field.
  */
 export class GenderFieldType extends FieldTypeBase {
-    public override getTextValue(value: ClientAttributeValue): string {
+    public override getTextValue(value: PublicAttributeValue): string {
         return value.textValue || "Unknown";
     }
 
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        const numberValue = toNumberOrNull(value.value);
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+        const numberValue = toNumberOrNull(value);
 
         if (numberValue === 0) {
-            value.textValue = "Unknown";
+            return "Unknown";
         }
         else if (numberValue === 1) {
-            value.textValue = "Male";
+            return "Male";
         }
         else if (numberValue === 2) {
-            value.textValue = "Female";
+            return "Female";
         }
         else {
-            value.textValue = "";
+            return "";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

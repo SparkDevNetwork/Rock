@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ListItem } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue, ListItem } from "../ViewModels";
 
 export const enum ConfigurationValueKey {
     Values = "values",
@@ -34,29 +34,28 @@ const editComponent = defineAsyncComponent(async () => {
  * The field type handler for the SingleSelect field.
  */
 export class SingleSelectFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
-        if (value.value === undefined || value.value === null || value.value === "") {
-            value.textValue = "";
-            return;
+    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+        if (value === "") {
+            return "";
         }
 
         try {
-            const values = JSON.parse(value.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
-            const selectedValues = values.filter(v => v.value === value.value);
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const selectedValues = values.filter(v => v.value === value);
 
             if (selectedValues.length >= 1) {
-                value.textValue = selectedValues[0].text;
+                return selectedValues[0].text;
             }
             else {
-                value.textValue = "";
+                return "";
             }
         }
         catch {
-            value.textValue = value.value;
+            return value;
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 }

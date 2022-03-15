@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -33,6 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) EventCalendarFieldType
     /// Stored as EventCalendar's Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class EventCalendarFieldType : FieldType, IEntityFieldType
     {
 

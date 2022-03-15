@@ -300,39 +300,30 @@ namespace RockWeb.Blocks.Communication
 
                 // render UI based on Authorized and IsSystem
                 var readOnly = false;
-                var restrictedEdit = false;
 
                 if ( !emailTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    restrictedEdit = true;
                     readOnly = true;
                     nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( CommunicationTemplate.FriendlyTypeName );
                     nbEditModeMessage.Visible = true;
                 }
 
-                if ( emailTemplate.IsSystem )
-                {
-                    restrictedEdit = true;
-                    nbEditModeMessage.Text = EditModeMessage.System( CommunicationTemplate.FriendlyTypeName );
-                    nbEditModeMessage.Visible = true;
-                }
+                tbTitle.ReadOnly = readOnly;
+                cbIsActive.Enabled = !readOnly;
+                cpCategory.Enabled = !readOnly;
+                tbFromName.ReadOnly = readOnly;
+                tbTo.ReadOnly = readOnly;
+                tbFrom.ReadOnly = readOnly;
+                tbCc.ReadOnly = readOnly;
+                tbBcc.ReadOnly = readOnly;
+                tbSubject.ReadOnly = readOnly;
 
-                tbTitle.ReadOnly = restrictedEdit;
-                cbIsActive.Enabled = !restrictedEdit;
-                cpCategory.Enabled = !restrictedEdit;
-                tbFromName.ReadOnly = restrictedEdit;
-                tbTo.ReadOnly = restrictedEdit;
-                tbFrom.ReadOnly = restrictedEdit;
-                tbCc.ReadOnly = restrictedEdit;
-                tbBcc.ReadOnly = restrictedEdit;
-                tbSubject.ReadOnly = restrictedEdit;
+                mfpSMSMessage.Visible = !readOnly;
+                dvpSMSFrom.Enabled = !readOnly;
+                tbSMSTextMessage.ReadOnly = readOnly;
+                ceEmailTemplate.ReadOnly = readOnly;
 
-                mfpSMSMessage.Visible = !restrictedEdit;
-                dvpSMSFrom.Enabled = !restrictedEdit;
-                tbSMSTextMessage.ReadOnly = restrictedEdit;
-                ceEmailTemplate.ReadOnly = restrictedEdit;
-
-                ( phPushNotification.Controls[0] as PushNotification ).Enabled = !restrictedEdit;
+                ( phPushNotification.Controls[0] as PushNotification ).Enabled = !readOnly;
 
                 btnSave.Enabled = !readOnly;
                 showMessagePreview = true;

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) component filtered by a channel
     /// Stored as "Channel.Guid|Component.Guid"
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class InteractionChannelInteractionComponentFieldType : FieldType
     {
         #region Keys

@@ -163,6 +163,9 @@ namespace Rock.Client
         public DefinedValue CampusStatusValue { get; set; }
 
         /// <summary />
+        public ICollection<CampusTopic> CampusTopics { get; set; }
+
+        /// <summary />
         public DefinedValue CampusTypeValue { get; set; }
 
         /// <summary />

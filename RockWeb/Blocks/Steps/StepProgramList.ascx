@@ -20,7 +20,7 @@
                             <asp:ListItem Text="Inactive" Value="Inactive"></asp:ListItem>
                         </Rock:RockDropDownList>
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gStepProgram" runat="server" AllowSorting="false">
+                    <Rock:Grid ID="gStepProgram" runat="server" AllowSorting="false" CssClass="js-grid-stepProgram-list">
                         <Columns>
                             <Rock:ReorderField />
                              <Rock:RockTemplateField ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px">

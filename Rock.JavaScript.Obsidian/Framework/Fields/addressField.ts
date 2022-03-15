@@ -16,8 +16,6 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
-
 
 export type AddressFieldValue = {
     street1?: string;
@@ -42,32 +40,31 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Address field.
  */
 export class AddressFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
+    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
         try {
-            const addressValue = JSON.parse(value.value || "{}") as AddressFieldValue;
+            const addressValue = JSON.parse(value || "{}") as AddressFieldValue;
             let textValue = `${addressValue.street1 ?? ""} ${addressValue.street2 ?? ""} ${addressValue.city ?? ""}, ${addressValue.state ?? ""} ${addressValue.postalCode ?? ""}`;
 
             textValue = textValue.replace(/  +/, " ");
             textValue = textValue.replace(/^ +/, "");
             textValue = textValue.replace(/ +$/, "");
 
-            if (textValue === ",") {
-                value.textValue = "";
-            }
-            else {
-                value.textValue = textValue;
-            }
+            return textValue === "," ? "" : textValue;
         }
         catch {
-            value.textValue = value.value;
+            return value;
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override isFilterable(): boolean {
+        return false;
     }
 }

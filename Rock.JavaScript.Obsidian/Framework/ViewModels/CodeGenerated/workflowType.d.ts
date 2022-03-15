@@ -27,8 +27,14 @@ export type WorkflowType = IEntity & {
     categoryId?: number | null;
     completedWorkflowRetentionPeriod?: number | null;
     description?: string | null;
+    formBuilderSettingsJson?: string | null;
+    formBuilderTemplateId?: number | null;
+    formEndDateTime?: string | null;
+    formStartDateTime?: string | null;
     iconCssClass?: string | null;
     isActive?: boolean | null;
+    isFormBuilder?: boolean;
+    isLoginRequired?: boolean;
     isPersisted?: boolean;
     isSystem?: boolean;
     loggingLevel?: number;
@@ -39,6 +45,7 @@ export type WorkflowType = IEntity & {
     order?: number;
     processingIntervalSeconds?: number | null;
     summaryViewText?: string | null;
+    workflowExpireDateTime?: string | null;
     workflowIdPrefix?: string | null;
     workTerm?: string | null;
     createdDateTime?: string | null;

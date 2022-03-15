@@ -17,6 +17,7 @@
 import Alert from "../Elements/alert";
 import { defineComponent, PropType } from "vue";
 import { RockDateTime } from "../Util/rockDateTime";
+import { FormError } from "../Util/form";
 
 export default defineComponent({
     name: "RockValidation",
@@ -25,7 +26,7 @@ export default defineComponent({
     },
     props: {
         errors: {
-            type: Object as PropType<Record<string, string>>,
+            type: Object as PropType<Record<string, FormError>>,
             required: true
         },
         submitCount: {
@@ -35,7 +36,7 @@ export default defineComponent({
     },
     data() {
         return {
-            errorsToShow: {} as Record<string, string>,
+            errorsToShow: {} as Record<string, FormError>,
             lastSubmitCount: 0,
             lastErrorChangeMs: 0
         };
@@ -84,9 +85,9 @@ export default defineComponent({
 <Alert v-show="hasErrors" alertType="validation">
     Please correct the following:
     <ul>
-        <li v-for="(error, fieldLabel) of errorsToShow">
-            <strong>{{fieldLabel}}</strong>
-            {{error}}
+        <li v-for="(error) of errorsToShow">
+            <strong>{{error.name}}</strong>
+            {{error.text}}
         </li>
     </ul>
 </Alert>`

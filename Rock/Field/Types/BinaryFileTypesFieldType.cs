@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -25,6 +26,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to pick multiple Binary Files Types
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class BinaryFileTypesFieldType : SelectFromListFieldType
     {
         /// <summary>

@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -46,6 +62,11 @@ namespace RockWeb.Blocks.Communication
         Order = 4,
         Key = AttributeKey.FutureWeeksToShow )]
 
+    [LavaCommandsField( "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled.",
+        IsRequired = false,
+        Key = AttributeKey.EnabledLavaCommands,
+        Order = 5 )]
     #endregion Block Attributes
 
     public partial class CommunicationJobPreview : RockBlock
@@ -120,6 +141,7 @@ namespace RockWeb.Blocks.Communication
             public const string SendDaysOfTheWeek = "SendDaysOfTheWeek";
             public const string PreviousWeeksToShow = "PreviousWeeksToShow";
             public const string FutureWeeksToShow = "FutureWeeksToShow";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
         }
 
         #endregion Attribute Keys
@@ -156,7 +178,7 @@ namespace RockWeb.Blocks.Communication
         #endregion Page Events
 
         #region Control Events
-        
+
         /// <summary>
         /// Handles the Click event of the lbUpdate control.
         /// </summary>
@@ -164,7 +186,7 @@ namespace RockWeb.Blocks.Communication
         {
             var mergeFields = ProcessTemplateMergeFields();
 
-            var source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
+            var source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
             lContent.Text = Variables.EmailContainerHtml.Replace( Variables.SystemCommunicationSourceReplacementKey, source );
         }
 
@@ -193,7 +215,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected void ppTargetPerson_SelectPerson( object sender, EventArgs e )
         {
-            var person = new PersonService( new RockContext() ).Get( ppTargetPerson.ID.AsInteger() );
+            var person = new PersonService( new RockContext() ).Get( ppTargetPerson.SelectedValue.Value );
             Variables.TargetPerson = person;
         }
 
@@ -336,7 +358,7 @@ namespace RockWeb.Blocks.Communication
         #endregion Control Events
 
         #region Methods
-        
+
         /// <summary>
         /// Loads the system communication.
         /// </summary>
@@ -373,7 +395,7 @@ namespace RockWeb.Blocks.Communication
                 lSubject.Text = $"<small class='text-semibold'>{Variables.SystemCommunicationRecord.Title} | {Variables.SystemCommunicationRecord.Subject}</small>";
                 lDate.Text = $"<small class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</small>";
 
-                string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
+                string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
 
                 lContent.Text = Variables.EmailContainerHtml.Replace( Variables.SystemCommunicationSourceReplacementKey, source );
             }
@@ -537,7 +559,15 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                Variables.TargetPerson = CurrentPerson;
+                if( ppTargetPerson.SelectedValue.GetValueOrDefault( 0 ) >0 )
+                {
+                    var person = new PersonService( new RockContext() ).Get( ppTargetPerson.SelectedValue.Value );
+                    Variables.TargetPerson = person;
+                }
+                else
+                {
+                    Variables.TargetPerson = CurrentPerson;
+                }
             }
 
             if ( Variables.HasTargetPerson )
@@ -548,8 +578,20 @@ namespace RockWeb.Blocks.Communication
 
         #endregion Methods
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the enabled lava commands.
+        /// </summary>
+        /// <value>
+        /// The enabled lava commands.
+        /// </value>
+        protected string EnabledLavaCommands => GetAttributeValue( AttributeKey.EnabledLavaCommands );
+
+        #endregion
+
         #region Classes
-        
+
         /// <summary>
         /// Class SystemCommunicationPreviewInfo.
         /// </summary>

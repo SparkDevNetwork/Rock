@@ -407,17 +407,17 @@ namespace Rock.Web.UI
         /// Returns an object from the default <see cref="System.Runtime.Caching.MemoryCache"/> .
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the object's key. Defaults to an empty string.</param>
-        /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
+        /// <returns>The cached <see cref="System.Object"/>, or null if a key match is not found.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            return GetCacheItem( ItemCacheKey( key ), false );
+            return GetCacheItem( key, false );
         }
 
         /// <summary>
         /// Gets the cache item.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <param name="allowCacheByPass">if set to <c>true</c> [allow cache by pass].</param>
+        /// <param name="allowCacheByPass">if set to <c>true</c> allows the cache to be ignored based on current cookie settings.</param>
         /// <returns></returns>
         protected virtual object GetCacheItem( string key, bool allowCacheByPass )
         {

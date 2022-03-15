@@ -98,6 +98,15 @@ namespace Rock.Model
         [Required]
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the category identifier. This property is ignored if <see cref="Rock.Model.DefinedType.CategorizedValuesEnabled">DefinedType.CategorizedValuesEnabled</see> is disabled.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the identifier of the <see cref="Rock.Model.Category"/> that this Defined Value belongs to.
+        /// </value>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -110,6 +119,15 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual DefinedType DefinedType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Category that this Defined Value belongs to.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Category"/> that this Defined Value belongs to.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
 
         #endregion
 

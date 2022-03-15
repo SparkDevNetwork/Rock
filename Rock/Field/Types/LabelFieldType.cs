@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -25,6 +26,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of label files
     /// Stored as BinaryFile's Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class LabelFieldType : BinaryFileFieldType
     {
 

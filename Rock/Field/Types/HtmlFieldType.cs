@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class HtmlFieldType : FieldType
     {
 

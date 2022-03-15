@@ -32,7 +32,7 @@ namespace Rock.ViewModel.Controls
         /// describing a field type edit operation.
         /// </summary>
         /// <remarks>
-        /// See: Rock.Field.IFieldType.GetClientEditConfigurationProperties()
+        /// See: Rock.Field.IFieldType.GetPublicEditConfigurationProperties()
         /// </remarks>
         /// <value>The configuration properties for a field edit operation.</value>
         public Dictionary<string, string> ConfigurationProperties { get; set; }
@@ -52,6 +52,6 @@ namespace Rock.ViewModel.Controls
         /// to the current <see cref="ConfigurationOptions"/>.
         /// </summary>
         /// <value>The default value information.</value>
-        public ClientEditableAttributeValueViewModel DefaultValue { get; set; }
+        public PublicEditableAttributeValueViewModel DefaultValue { get; set; }
     }
 }

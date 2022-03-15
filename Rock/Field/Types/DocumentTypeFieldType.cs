@@ -20,6 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -28,6 +30,7 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     class DocumentTypeFieldType : FieldType
     {
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";

@@ -458,7 +458,7 @@
     <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
-    <Compile Include="Attribute\ClientAttributeHelper.cs" />
+    <Compile Include="Attribute\PublicAttributeHelper.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
@@ -797,6 +797,8 @@
     <Compile Include="Model\CodeGenerated\BenevolenceWorkflowService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\RemoteAuthenticationSessionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionFormSectionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowFormBuilderTemplateService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipient.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientServiceExtensions.cs" />
     <Compile Include="Model\Communication\CommunicationRecipient\CommunicationRecipientStatus.cs" />
@@ -810,8 +812,10 @@
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
     <Compile Include="Model\Communication\Communication\SegmentCriteria.cs" />
     <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
-    <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureType.cs" />
-    <Compile Include="Model\Communication\SignatureDocument\SignatureDocumentStatus.cs" />
+    <Compile Include="Model\Core\CampusTopic\CampusTopicService.cs" />
+    <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureType.cs" />
+    <Compile Include="Model\Core\SignatureDocument\SignatureDocument.Logic.cs" />
+    <Compile Include="Model\Core\SignatureDocument\SignatureDocumentStatus.cs" />
     <Compile Include="Model\Communication\SmsAction\SmsAction.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.SaveHook.cs" />
@@ -848,6 +852,7 @@
     <Compile Include="Model\Core\BinaryFile\BinaryFile.Logic.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFile.SaveHook.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFileService.WebService.cs" />
+    <Compile Include="Model\Core\CampusTopic\CampusTopic.cs" />
     <Compile Include="Model\Core\Category\Category.Logic.cs" />
     <Compile Include="Model\Core\Category\Options\CategorizedItemQueryOptions.cs" />
     <Compile Include="Model\Core\Category\Options\ChildCategoryQueryOptions.cs" />
@@ -1112,6 +1117,7 @@
     <Compile Include="Model\WebFarm\WebFarmNodeMetric\WebFarmNodeMetric.Logic.cs" />
     <Compile Include="Model\WebFarm\WebFarmNode\WebFarmNode.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowActionFormSection\WorkflowActionFormSection.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.LiquidButton.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionForm.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActionForm\WorkflowActionFormPersonEntryOption.cs" />
@@ -1120,6 +1126,7 @@
     <Compile Include="Model\Workflow\WorkflowAction\WorkflowAction.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivityType\WorkflowActivityType.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowActivity\WorkflowActivity.Logic.cs" />
+    <Compile Include="Model\Workflow\WorkflowFormBuilderTemplate\WorkflowFormBuilderTemplate.cs" />
     <Compile Include="Model\Workflow\WorkflowLog\WorkflowLog.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTrigger.Logic.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTriggerType.cs" />
@@ -1134,6 +1141,7 @@
     <Compile Include="Plugin\HotFixes\146_UpdateStatementGeneratorDownloadLink.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
+    <Compile Include="Reporting\ComparisonValue.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\AttendanceInPlacementGroup.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ConnectionOpportunityFilter.cs" />
@@ -1157,6 +1165,7 @@
     <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\BenevolenceType.cs" />
     <Compile Include="SystemGuid\FollowingEventType.cs" />
+    <Compile Include="SystemGuid\SignatureDocumentTemplate.cs" />
     <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="SystemKey\CreditCardTypeAttributeKey.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
@@ -1221,6 +1230,7 @@
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -1473,6 +1483,8 @@
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\ICustomActionEventHandler.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfigEvent.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
     <Compile Include="Web\UI\Controls\IHasAttributeId.cs" />
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
@@ -2753,10 +2765,10 @@
     <Compile Include="Model\Core\ServiceJob\ServiceJob.cs" />
     <Compile Include="Model\Core\ServiceJob\ServiceJobService.cs" />
     <Compile Include="Model\Core\ServiceLog\ServiceLog.cs" />
-    <Compile Include="Model\Communication\SignatureDocument\SignatureDocument.cs" />
-    <Compile Include="Model\Communication\SignatureDocument\SignatureDocumentService.cs" />
-    <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplate.cs" />
-    <Compile Include="Model\Communication\SignatureDocumentTemplate\SignatureDocumentTemplateService.cs" />
+    <Compile Include="Model\Core\SignatureDocument\SignatureDocument.cs" />
+    <Compile Include="Model\Core\SignatureDocument\SignatureDocumentService.cs" />
+    <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.cs" />
+    <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\Site.cs" />
     <Compile Include="Model\PageShortLink.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
@@ -3561,6 +3573,7 @@
     <Compile Include="Workflow\Action\Registrations\GenerateDiscountCode.cs" />
     <Compile Include="Workflow\Action\Registrations\UpdateDiscountCode.cs" />
     <Compile Include="Workflow\Action\People\AddStep.cs" />
+    <Compile Include="Workflow\Action\Utility\FormBuilder.cs" />
     <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
@@ -3601,6 +3614,17 @@
     <Compile Include="Workflow\Action\WorkflowControl\UserForm.cs" />
     <Compile Include="Workflow\Action\Utility\WebRequest.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\WriteToLog.cs" />
+    <Compile Include="SystemKey\WorkflowFormBuilderKey.cs" />
+    <Compile Include="Workflow\FormBuilder\CampusSetFrom.cs" />
+    <Compile Include="Workflow\FormBuilder\FormCompletionActionSettings.cs" />
+    <Compile Include="Workflow\FormBuilder\FormCompletionActionType.cs" />
+    <Compile Include="Workflow\FormBuilder\FormConfirmationEmailSettings.cs" />
+    <Compile Include="Workflow\FormBuilder\FormEmailSourceSettings.cs" />
+    <Compile Include="Workflow\FormBuilder\FormEmailSourceType.cs" />
+    <Compile Include="Workflow\FormBuilder\FormNotificationEmailDestination.cs" />
+    <Compile Include="Workflow\FormBuilder\FormNotificationEmailSettings.cs" />
+    <Compile Include="Workflow\FormBuilder\FormPersonEntrySettings.cs" />
+    <Compile Include="Workflow\FormBuilder\FormSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

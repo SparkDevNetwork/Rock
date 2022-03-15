@@ -1749,12 +1749,6 @@
                 cssLink.rel = "stylesheet";
                 cssLink.type = "text/css";
 
-                var fontAwesomeLink = document.createElement("link")
-                fontAwesomeLink.className = "js-emaileditor-addon";
-                fontAwesomeLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/font-awesome.css", true ) %>';
-                fontAwesomeLink.rel = "stylesheet";
-                fontAwesomeLink.type = "text/css";
-
                 var jqueryLoaderScript = document.createElement("script");
                 jqueryLoaderScript.async = false;
                 jqueryLoaderScript.className = "js-emaileditor-addon";
