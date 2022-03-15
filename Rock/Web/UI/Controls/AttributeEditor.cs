@@ -1076,8 +1076,6 @@ namespace Rock.Web.UI.Controls
             field?.SetConfigurationValues( _phQualifiers.Controls.OfType<Control>().ToList(), qualifiers );
             qualifiers = field.ConfigurationValues( _phQualifiers.Controls.OfType<Control>().ToList() );
 
-            CreateFieldTypeDefaultControl( fieldTypeId, qualifiers );
-
             this.FieldTypeIdState = this.AttributeFieldTypeId;
             this.FieldTypeQualifierStateJSON = this.AttributeQualifiers.ToJson();
         }
@@ -1992,18 +1990,9 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // make sure each default control has a unique/predictable ID to help avoid viewstate issues
-                var defaultControlId = $"defaultValue_{fieldTypeId}_{this.AttributeGuid.ToString("N")}";
-
-                var defaultControl = field.EditControl( qualifiers, defaultControlId );
+                var defaultControl = field.EditControl( qualifiers, $"defaultValue_{fieldTypeId}_{this.AttributeGuid.ToString("N")}" );
                 if ( defaultControl != null )
                 {
-
-                    var existingDefaultControl = _phDefaultValue.Controls.Cast<Control>().Where( c => c.ID == defaultControlId ).FirstOrDefault();
-                    if ( existingDefaultControl != null )
-                    {
-                        _phDefaultValue.Controls.Remove( existingDefaultControl );
-                    }
-
                     _phDefaultValue.Controls.Add( defaultControl );
 
                     if ( defaultControl is IRockControl )
