@@ -462,7 +462,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
             var workFlowSection = new WorkflowActionFormSection();
             workflowActionType.WorkflowForm.FormSections.Add( workFlowSection );
-            workFlowSection.Title = "Section";
             workFlowSection.Guid = Guid.NewGuid();
             workflowActivityType.Order = 0;
 
