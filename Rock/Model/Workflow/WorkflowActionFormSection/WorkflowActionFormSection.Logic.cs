@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 
 using Rock.Web.Cache;
@@ -22,6 +23,35 @@ namespace Rock.Model
 {
     public partial class WorkflowActionFormSection
     {
+        /// <summary>
+        /// Gets or sets the section visibility rules.
+        /// </summary>
+        /// <value>
+        /// The section visibility rules.
+        /// </value>
+        [NotMapped]
+        public virtual Field.FieldVisibilityRules SectionVisibilityRules
+        {
+            get
+            {
+                if ( SectionVisibilityRulesJSON.IsNullOrWhiteSpace() )
+                {
+                    return new Field.FieldVisibilityRules();
+                }
+                return SectionVisibilityRulesJSON.FromJsonOrNull<Field.FieldVisibilityRules>() ?? new Field.FieldVisibilityRules();
+            }
+            set
+            {
+                if ( value == null || value.RuleList.Count == 0 )
+                {
+                    SectionVisibilityRulesJSON = null;
+                }
+                else
+                {
+                    SectionVisibilityRulesJSON = value.ToJson();
+                }
+            }
+        }
 
         #region ICacheable
 

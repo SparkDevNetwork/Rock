@@ -15,9 +15,16 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Bus.Queue;
+using Rock.Data;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
+using Rock.Model;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -504,6 +511,61 @@ Cache #{{ item.Count }}
             var options = new LavaTestRenderOptions() { EnabledCommands = "InteractionWrite" };
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        [TestMethod]
+        public void InteractionWriteBlock_ForMultipleChannelInteractions_WritesInteractionsToCorrectChannels()
+        {
+            var interaction1Summary = Guid.NewGuid().ToString();
+            var interaction2Summary = Guid.NewGuid().ToString();
+            var interaction3Summary = Guid.NewGuid().ToString();
+            var input = @"
+{% interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 1' componentname:'Component 1' operation:'View' summary:'<Summary1>' %}
+findme-interactiontest1
+{% endinteractionwrite %}  
+{% interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 2' componentname:'Component 2' operation:'View' summary:'<Summary2>' %}
+findme-interactiontest2
+{% endinteractionwrite %}
+{% interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 2' componentname:'Component 1' operation:'View' summary:'<Summary3>' %}
+findme-interactiontest3
+{% endinteractionwrite %}";
+            input = input
+                .Replace( "<Summary1>", interaction1Summary )
+                .Replace( "<Summary2>", interaction2Summary )
+                .Replace( "<Summary3>", interaction3Summary );
+            var expectedOutput = @"";
+            var options = new LavaTestRenderOptions() { EnabledCommands = "InteractionWrite" };
+
+            // Process the Lava template to create the interactions.
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input, options );
+
+            // Process the transaction queue to ensure that the interactions are created.
+            var exceptions = new List<Exception>();
+            Rock.Transactions.RockQueue.Drain( ( e ) => { exceptions.Add( e ); } );
+            Assert.IsTrue( exceptions.Count == 0, "Interaction transaction processing failed." );
+
+            // Verify the interactions are assigned to the correct channel and component.
+            Interaction interaction;
+            interaction = GetInteractionBySummary( interaction1Summary );
+            Assert.IsTrue( interaction.InteractionComponent.InteractionChannel.Name == "Channel 1" && interaction.InteractionComponent.Name == "Component 1" );
+            interaction = GetInteractionBySummary( interaction2Summary );
+            Assert.IsTrue( interaction.InteractionComponent.InteractionChannel.Name == "Channel 2" && interaction.InteractionComponent.Name == "Component 2" );
+            interaction = GetInteractionBySummary( interaction3Summary );
+            Assert.IsTrue( interaction.InteractionComponent.InteractionChannel.Name == "Channel 2" && interaction.InteractionComponent.Name == "Component 1" );
+        }
+
+        private Interaction GetInteractionBySummary( string summary )
+        {
+            var rockContext = new RockContext();
+            var interactionService = new InteractionService( rockContext );
+            var interactions = interactionService
+                .Queryable()
+                .Where( x => x.InteractionSummary == summary )
+                .ToList();
+
+            Assert.IsTrue( interactions.Count == 1, $"Expected Interaction not found. [Interaction Summary={summary}]" );
+
+            return interactions.First();
         }
 
         #endregion

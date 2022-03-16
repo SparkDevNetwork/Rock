@@ -116,6 +116,14 @@ namespace RockWeb.Blocks.Connection
         DefaultBooleanValue = true,
         Order = 10,
         Key = AttributeKey.ExcludeNonPublicAttributes )]
+
+    [TextField("Comment Field Label",
+        Description = "The label to apply to the comment field.",
+        DefaultValue = "Comments",
+        IsRequired = false,
+        Order = 11,
+        Key = AttributeKey.CommentFieldLabel)]
+
     #endregion Block Attributes
     public partial class ConnectionOpportunitySignup : RockBlock
     {
@@ -136,6 +144,7 @@ namespace RockWeb.Blocks.Connection
             public const string IncludeAttributeCategories = "IncludeAttributeCategories";
             public const string ExcludeAttributeCategories = "ExcludeAttributeCategories";
             public const string ExcludeNonPublicAttributes = "ExcludeNonPublicAttributes";
+            public const string CommentFieldLabel = "CommentFieldLabel";
         }
 
         #endregion
@@ -415,9 +424,15 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 lTitle.Text = opportunity.Name;
+                tbComments.Label = GetAttributeValue( AttributeKey.CommentFieldLabel );
 
-                pnHome.Visible = dvHome.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean();
-                pnMobile.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean();
+                // Hide show home phone
+                pnlHomePhone.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean(); // hide column
+                pnHome.Visible = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean(); // hide control
+
+                // Hide show mobile phone
+                pnlMobilePhone.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean(); // hide column
+                pnMobile.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean(); // hide control
 
                 Person registrant = null;
 

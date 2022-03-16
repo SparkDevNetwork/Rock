@@ -77,6 +77,159 @@ Font Bold: true
             } );
         }
 
+        [TestMethod]
+        public void Shortcode_ReferencingItemFromParentScope_CorrectlyResolvesItem()
+        {
+            var shortcodeTemplate = @"
+ValueInShortcodeScope = {{ Value }}
+";
+
+            // Create a new test shortcode.
+            var shortcodeDefinition = new DynamicShortcodeDefinition();
+
+            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Inline;
+            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
+            shortcodeDefinition.Name = "debug";
+
+            var input = @"
+ValueInOuterScope = {{ Value }}
+{[ debug ]}
+";
+
+            var expectedOutput = @"
+ValueInOuterScope = 99
+ValueInShortcodeScope = 99
+";
+
+            expectedOutput = expectedOutput.Replace( "``", @"""" );
+
+            var context = new LavaDataDictionary() { { "Value", 99 } };
+
+            var options = new LavaTestRenderOptions { MergeFields = context };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
+                {
+                    return;
+                }
+
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+            } );
+        }
+
+        /// <summary>
+        /// A shortcode with no specific commands enabled should inherit the enabled commands from the outer scope.
+        /// </summary>
+        [TestMethod]
+        public void Shortcode_WithUnspecifiedEnabledCommands_InheritsEnabledCommandsFromOuterScope()
+        {
+            var shortcodeTemplate = @"
+{% execute %}
+    return ""Shortcode!"";
+{% endexecute %}
+";
+
+            // Create a new test shortcode with no enabled commands.
+            var shortcodeDefinition = new DynamicShortcodeDefinition();
+
+            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Inline;
+            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
+            shortcodeDefinition.Name = "shortcode_execute";
+            shortcodeDefinition.EnabledLavaCommands = new List<string> { "" };
+
+            var input = @"
+Shortcode Output:
+{[ shortcode_execute ]}
+<br>
+Main Output:
+{% execute %}
+    return ""Main!"";
+{% endexecute %}
+<br>
+";
+
+            var expectedOutput = @"
+Shortcode Output: Shortcode!<br>
+Main Output: Main!<br>
+";
+
+            // Render the template with the "execute" command enabled.
+            // This permission setting should be inherited by the shortcode, allowing it to render the "execute" command.
+            var options = new LavaTestRenderOptions { EnabledCommands = "execute" };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
+                {
+                    return;
+                }
+
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+            } );
+        }
+
+        /// <summary>
+        /// A shortcode that enables a specific command should not cause that command to be enabled outside the scope of the shortcode.
+        /// </summary>
+        [TestMethod]
+        public void Shortcode_WithEnabledCommand_DoesNotEnableCommandForOuterScope()
+        {
+            var shortcodeTemplate = @"
+{% execute %}
+    return ""Shortcode!"";
+{% endexecute %}
+";
+
+            // Create a new test shortcode with the "execute" command permission.
+            var shortcodeDefinition = new DynamicShortcodeDefinition();
+
+            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Inline;
+            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
+            shortcodeDefinition.Name = "shortcode_execute";
+            shortcodeDefinition.EnabledLavaCommands = new List<string> { "execute" };
+
+            var input = @"
+Shortcode Output:
+{[ shortcode_execute ]}
+<br>
+Main Output:
+{% execute %}
+    return ""Main!"";
+{% endexecute %}
+<br>
+";
+
+            var expectedOutput = @"
+Shortcode Output: Shortcode!<br>
+Main Output: The Lava command 'execute' is not configured for this template.<br>
+";
+
+            // Render the template with no enabled commands.
+            // The shortcode should render correctly using the enabled commands defined by its definition,
+            // but the main template should show a permission error.
+            var options = new LavaTestRenderOptions { EnabledCommands = "" };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
+                {
+                    return;
+                }
+
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+            } );
+        }
+
         #region Bootstrap Alert
 
         /// <summary>
@@ -87,9 +240,7 @@ Font Bold: true
 
         public void BootstrapAlertShortcode_VariousTypes_ProducesCorrectHtml( string input, string expectedResult )
         {
-
-            TestHelper.AssertTemplateOutput( expectedResult,
-                                          input );
+            TestHelper.AssertTemplateOutput( expectedResult, input );
         }
 
         #endregion
@@ -261,7 +412,7 @@ Schedule Active = {{isScheduleActive}}
   </script>
 ";
 
-            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards= new List<string> { "<guid>" } } );
+            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards = new List<string> { "<guid>" } } );
         }
 
         /// <summary>

@@ -2565,11 +2565,12 @@ namespace RockWeb.Blocks.Connection
                     .Queryable()
                     .AsNoTracking()
                     .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
+                var campuses = CampusCache.All().Where( c => !c.IsActive.HasValue || c.IsActive.Value ).ToList();
 
                 // Grant edit access to any of those in a non campus-specific connector group
                 userCanEditConnectionRequest = qryConnectionOpportunityConnectorGroups
                     .Any( g =>
-                        !g.CampusId.HasValue &&
+                        ( campuses.Count == 1 || !g.CampusId.HasValue ) &&
                         g.ConnectorGroup != null &&
                         g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
@@ -4321,7 +4322,15 @@ namespace RockWeb.Blocks.Connection
                     .AsNoTracking()
                     .Where( o => o.Id == opportunity.Id )
                     .SelectMany( o => o.ConnectionOpportunityGroups )
-                    .Select( cog => cog.Group );
+                    .Select( cog => cog.Group )
+                    .Where( g => g.IsActive && !g.IsArchived ) //Filter early
+                    .Select( g => new GroupViewModel           //Strip out unnecessary data
+                    {
+                        Id = g.Id,
+                        Name = g.Name,
+                        CampusId = g.CampusId,
+                        CampusName = g.Campus.Name
+                    } );
 
                 // Then get any groups that are configured with 'all groups of type'
                 var allGroupsOfTypeQuery = service.Queryable()
@@ -4330,17 +4339,17 @@ namespace RockWeb.Blocks.Connection
                     .SelectMany( o => o.ConnectionOpportunityGroupConfigs )
                     .Where( gc => gc.UseAllGroupsOfType )
                     .Select( gc => gc.GroupType )
-                    .SelectMany( gt => gt.Groups );
-
-                _availablePlacementGroups = specificConfigQuery.Union( allGroupsOfTypeQuery )
-                    .Where( g => g.IsActive && !g.IsArchived )
-                    .Select( g => new GroupViewModel
+                    .SelectMany( gt => gt.Groups )
+                    .Where( g => g.IsActive && !g.IsArchived ) //Filter early
+                    .Select( g => new GroupViewModel           //Strip out unnecessary data
                     {
                         Id = g.Id,
                         Name = g.Name,
                         CampusId = g.CampusId,
                         CampusName = g.Campus.Name
-                    } )
+                    } );
+
+                _availablePlacementGroups = specificConfigQuery.Union( allGroupsOfTypeQuery )
                     .ToList();
             }
 

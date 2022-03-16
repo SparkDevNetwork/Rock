@@ -59,7 +59,7 @@
 
         <div class="actions margin-t-xl">
             <Rock:BootstrapButton runat="server" ID="btnFlushCache" CssClass="btn btn-primary" Text="Clear Cache" OnClick="btnClearCache_Click" DataLoadingText="Clearing..." ToolTip="Flushes all cached items from the Rock cache (e.g. Pages, BlockTypes, Blocks, Attributes, etc." />
-            <a href="#" Class="btn btn-link js-restart" title="Restarts the Application.">Restart Rock</a>
+            <a href="#" class="btn btn-link js-restart" title="Restarts the Application.">Restart Rock</a>
             <asp:Button runat="server" ID="btnRestart" OnClick="btnRestart_Click" CssClass="hidden" />
         </div>
     </asp:Panel>
@@ -109,7 +109,8 @@
 
         <div>
             <h4>Transaction Queue</h4>
-            <asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal>
+            <div><asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal></div>
+            <asp:LinkButton ID="btnDrainQueue" runat="server" CssClass="btn btn-default btn-xs" Text="Drain Queue" ToolTip="Drain Queue now instead of waiting for the scheduled drain." OnClick="btnDrainQueue_Click" />
         </div>
 
         <div>

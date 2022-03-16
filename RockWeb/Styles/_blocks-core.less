@@ -729,7 +729,7 @@
     margin-bottom: 0;
   }
 
-  &:hover {
+  &.editable:hover {
     border-color: @brand-primary;
   }
 
@@ -760,6 +760,10 @@
   .form-action-rows .form-row {
     margin-bottom: 15px;
   }
+}
+
+.workflow-action.not-editable {
+  opacity: .5;
 }
 
 // panel for workflow entry/navigation

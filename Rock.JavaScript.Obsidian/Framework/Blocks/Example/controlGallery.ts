@@ -16,7 +16,8 @@
 //
 
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
-import { Component, defineComponent, PropType } from "vue";
+import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
+import FieldVisibilityRulesEditor from "../../Controls/fieldFilterEditor";
 import TextBox from "../../Elements/textBox";
 import EmailBox from "../../Elements/emailBox";
 import CurrencyBox from "../../Elements/currencyBox";
@@ -56,8 +57,16 @@ import Rating from "../../Elements/rating";
 import Fullscreen from "../../Elements/fullscreen";
 import Panel from "../../Controls/panel";
 import PersonPicker from "../../Controls/personPicker";
+import FileUploader from "../../Elements/fileUploader";
+import ImageUploader from "../../Elements/imageUploader";
+import SlidingDateRangePicker from "../../Controls/slidingDateRangePicker";
 import { toNumber } from "../../Services/number";
 import { ListItem } from "../../ViewModels";
+import "../../Fields/index";
+import { newGuid } from "../../Util/guid";
+import { FieldFilterGroup } from "../../ViewModels/Reporting/fieldFilterGroup";
+import { BinaryFiletype } from "../../SystemGuids";
+import { SlidingDateRange, slidingDateRangeToString } from "../../Services/slidingDateRange";
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -92,6 +101,240 @@ const GalleryAndResult = defineComponent({
             <slot name="result" />
         </div>
     </template>
+</Panel>`
+});
+
+
+/** Demonstrates a phone number box */
+const filterRules = defineComponent({
+    name: "FilterRules",
+    components: {
+        Panel,
+        FieldVisibilityRulesEditor,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        
+        const sourcesText = ref(`[
+            {
+                "guid": "2a50d342-3a0b-4da3-83c1-25839c75615c",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "4eb1eb34-988b-4212-8c93-844fae61b43c",
+                    "fieldTypeGuid": "9C204CD0-1233-41C5-818A-C5DA439445AA",
+                    "name": "Text Field",
+                    "description": "",
+                    "configurationValues": {
+                        "maxcharacters": "10"
+                    }
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c0",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b0",
+                    "fieldTypeGuid": "A75DFC58-7A1B-4799-BF31-451B2BBE38FF",
+                    "name": "Integer Field",
+                    "description": "",
+                    "configurationValues": {}
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c1",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b1",
+                    "fieldTypeGuid": "D747E6AE-C383-4E22-8846-71518E3DD06F",
+                    "name": "Color",
+                    "description": "",
+                    "configurationValues": {
+                        "selectiontype": "Color Picker"
+                }
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c2",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b2",
+                    "fieldTypeGuid": "3EE69CBC-35CE-4496-88CC-8327A447603F",
+                    "name": "Currency",
+                    "description": "",
+                    "configurationValues": {}
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c3",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b3",
+                    "fieldTypeGuid": "9C7D431C-875C-4792-9E76-93F3A32BB850",
+                    "name": "Date Range",
+                    "description": "",
+                    "configurationValues": {}
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c4",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b4",
+                    "fieldTypeGuid": "7EDFA2DE-FDD3-4AC1-B356-1F5BFC231DAE",
+                    "name": "Day of Week",
+                    "description": "",
+                    "configurationValues": {}
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c5",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b5",
+                    "fieldTypeGuid": "3D045CAE-EA72-4A04-B7BE-7FD1D6214217",
+                    "name": "Email",
+                    "description": "",
+                    "configurationValues": {}
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c6",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b6",
+                    "fieldTypeGuid": "2E28779B-4C76-4142-AE8D-49EA31DDB503",
+                    "name": "Gender",
+                    "description": "",
+                    "configurationValues": {
+                        "hideUnknownGender": "True"
+                    }
+                }
+            },
+            {
+                "guid": "6dbb47c4-5816-4110-8a52-92880d4d05c7",
+                "type": 0,
+                "attribute": {
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b7",
+                    "fieldTypeGuid": "C28C7BF3-A552-4D77-9408-DEDCF760CED0",
+                    "name": "Memo",
+                    "description": "",
+                    "configurationValues": {
+                        "numberofrows": "4",
+                        "allowhtml": "True",
+                        "maxcharacters": "5",
+                        "showcountdown": "True"
+                    }
+                }
+            }
+        ]`);
+
+        const sources = computed(() => {
+            return JSON.parse(sourcesText.value);
+        });
+
+        const prefilled = (): FieldFilterGroup => ({
+            guid: newGuid(),
+            expressionType: 4,
+            "rules": [
+                {
+                    "guid": "a81c3ef9-72a9-476b-8b88-b52f513d92e6",
+                    "comparisonType": 128,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b0",
+                    "value": "50"
+                },
+                {
+                    "guid": "74d34117-4cc6-4cea-92c5-8297aa693ba5",
+                    "comparisonType": 2,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b1",
+                    "value": "BlanchedAlmond"
+                },
+                {
+                    "guid": "0fa2b6ea-bc86-4fae-b0da-02e48fed8d96",
+                    "comparisonType": 8,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b5",
+                    "value": "@gmail.com"
+                },
+                {
+                    "guid": "434107e6-6c0c-4698-90ef-d615b1c2de4b",
+                    "comparisonType": 2,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b6",
+                    "value": "2"
+                },
+                {
+                    "guid": "706179b9-7518-4a74-8e0f-8a48016aec04",
+                    "comparisonType": 16,
+                    sourceType: 0,
+                    "attributeGuid": "4eb1eb34-988b-4212-8c93-844fae61b43c",
+                    "value": "text"
+                },
+                {
+                    "guid": "4564eac2-15d9-48d9-b618-563523285af0",
+                    "comparisonType": 512,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b2",
+                    "value": "999"
+                },
+                {
+                    "guid": "e6c56d4c-7f63-44f9-8f07-1ea0860b605d",
+                    "comparisonType": 1,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b3",
+                    "value": "2022-02-01,2022-02-28"
+                },
+                {
+                    "guid": "0c27507f-9fb7-4f37-8026-70933bbf1398",
+                    "comparisonType": 0,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b4",
+                    "value": "3"
+                },
+                {
+                    "guid": "4f68fa2c-0942-4084-bb4d-3c045cef4551",
+                    "comparisonType": 8,
+                    sourceType: 0,
+                    "attributeGuid": "c41817d8-be26-460c-9f89-a7059ae6a9b7",
+                    "value": "more text than I want to deal with...."
+                }
+            ]
+        });
+
+        const clean = (): FieldFilterGroup => ({
+            guid: newGuid(),
+            expressionType: 1,
+            rules: []
+        });
+
+        const usePrefilled = ref(false);
+        const value = ref(clean());
+        
+        watch(usePrefilled, () => {
+            value.value = usePrefilled.value ? prefilled() : clean();
+        });
+
+        const title = ref("TEST PROPERTY");
+
+        const json = computed(() => {
+            return JSON.stringify(value.value, null, 4);
+        });
+
+        return { json, sourcesText, sources, value, title, usePrefilled };
+    },
+    template: `
+<Panel :has-collapse="true" title="Form Field Filter">
+    <template #drawer>
+        <TextBox v-model="title" label="Attribute Name" />
+        <TextBox v-model="sourcesText" label="Sources JSON" text-mode="multiline" :rows="15" />
+        <CheckBox v-model="usePrefilled" text="Use prefilled data" />
+    </template>
+    <div>
+        <FieldVisibilityRulesEditor :sources="sources" v-model="value" :title="title" />
+    </div>
+    <pre class="mt-3">{{json}}</pre>
 </Panel>`
 });
 
@@ -1272,8 +1515,126 @@ const personPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates the file uploader component. */
+const fileUploaderGallery = defineComponent({
+    name: "FileUploaderGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        FileUploader,
+        TextBox
+    },
+    data() {
+        return {
+            binaryFileTypeGuid: BinaryFiletype.Default,
+            showDeleteButton: true,
+            uploadAsTemporary: true,
+            uploadButtonText: "Upload",
+            value: null
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        File Uploader
+    </template>
+    <template #gallery>
+        <CheckBox v-model="uploadAsTemporary" label="Upload As Temporary" />
+        <CheckBox v-model="showDeleteButton" label="Show Delete Button" />
+        <TextBox v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+        <TextBox v-model="uploadButtonText" label="Upload Button Text" />
+
+        <FileUploader v-model="value"
+            label="File Uploader"
+            :uploadAsTemporary="uploadAsTemporary"
+            :binaryFileTypeGuid="binaryFileTypeGuid"
+            :uploadButtonText="uploadButtonText"
+            :showDeleteButton="showDeleteButton" />
+    </template>
+    <template #result>
+        {{ JSON.stringify(value) }}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates the image uploader component. */
+const imageUploaderGallery = defineComponent({
+    name: "ImageUploaderGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        ImageUploader,
+        TextBox
+    },
+    data() {
+        return {
+            binaryFileTypeGuid: BinaryFiletype.Default,
+            showDeleteButton: true,
+            uploadAsTemporary: true,
+            uploadButtonText: "Upload",
+            value: null
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        Image Uploader
+    </template>
+    <template #gallery>
+        <CheckBox v-model="uploadAsTemporary" label="Upload As Temporary" />
+        <CheckBox v-model="showDeleteButton" label="Show Delete Button" />
+        <TextBox v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+        <TextBox v-model="uploadButtonText" label="Upload Button Text" />
+
+        <ImageUploader v-model="value"
+            label="Image Uploader"
+            :uploadAsTemporary="uploadAsTemporary"
+            :binaryFileTypeGuid="binaryFileTypeGuid"
+            :uploadButtonText="uploadButtonText"
+            :showDeleteButton="showDeleteButton" />
+    </template>
+    <template #result>
+        {{ JSON.stringify(value) }}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a sliding date range picker */
+const slidingDateRangePickerGallery = defineComponent({
+    name: "SlidingDateRangePickerGallery",
+    components: {
+        GalleryAndResult,
+        SlidingDateRangePicker
+    },
+    setup() {
+        const value = ref<SlidingDateRange | null>(null);
+        const valueText = computed((): string => value.value ? slidingDateRangeToString(value.value) : "");
+
+        return {
+            value,
+            valueText
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        SlidingDateRangePicker
+    </template>
+    <template #gallery>
+        <SlidingDateRangePicker v-model="value" label="Sliding Date Range" />
+    </template>
+    <template #result>
+        <div v-if="value">
+            <div>{{ value }}</div>
+            <div>{{ valueText }}</div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const galleryComponents: Record<string, Component> = {
+    filterRules,
     textBoxGallery,
     datePickerGallery,
     dateRangePickerGallery,
@@ -1309,7 +1670,10 @@ const galleryComponents: Record<string, Component> = {
     urlLinkBoxGallery,
     fullscreenGallery,
     panelGallery,
-    personPickerGallery
+    personPickerGallery,
+    fileUploaderGallery,
+    imageUploaderGallery,
+    slidingDateRangePickerGallery
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");

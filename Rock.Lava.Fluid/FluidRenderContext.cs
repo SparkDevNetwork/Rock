@@ -29,6 +29,8 @@ namespace Rock.Lava.Fluid
     public class FluidRenderContext : LavaRenderContextBase
     {
         private TemplateContext _context;
+        private const string _InternalFieldKeyPrefix = "$_";
+        private const string _InternalFieldKeyEnabledCommands = "EnabledCommands";
 
         #region Constructors
 
@@ -66,17 +68,8 @@ namespace Rock.Lava.Fluid
         /// <param name="key"></param>
         public override object GetInternalField( string key, object defaultValue = null )
         {
-            // In the Fluid framework, internal values are stored in the AmbientValues collection.
-            object value;
-
-            var exists = _context.AmbientValues.TryGetValue( key, out value );
-
-            if ( exists )
-            {
-                return value;
-            }
-
-            return defaultValue;
+            // Internal values are stored in the current scope with a prefix to identify them as private.
+            return GetFieldPrivate( _InternalFieldKeyPrefix + key, defaultValue, allowInternalFieldAccess: true );
         }
 
         /// <summary>
@@ -87,9 +80,10 @@ namespace Rock.Lava.Fluid
         {
             var values = new LavaDataDictionary();
 
-            foreach ( var item in _context.AmbientValues )
+            var internalKeys = _context.ValueNames.Where( x => x.StartsWith( _InternalFieldKeyPrefix ) );
+            foreach ( var key in internalKeys )
             {
-                values.AddOrReplace( item.Key, item.Value );
+                values.AddOrReplace( key, _context.GetValue( key ) );
             }
 
             return values;
@@ -102,8 +96,12 @@ namespace Rock.Lava.Fluid
         /// <param name="value"></param>
         public override void SetInternalField( string key, object value )
         {
-            // In the Fluid framework, internal values are stored in the AmbientValues collection.
-            _context.AmbientValues[key] = value;
+            // Internal values are stored in the current scope with a prefix to identify them as private.
+            if ( !key.StartsWith( _InternalFieldKeyPrefix ) )
+            {
+                key = _InternalFieldKeyPrefix + key;
+            }
+            SetFieldPrivate( key, value, allowInternalFieldAccess: true );
         }
 
         /// <summary>
@@ -114,14 +112,7 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         public override object GetMergeField( string key, object defaultValue )
         {
-            var value = _context.GetValue( key );
-
-            if ( value == null )
-            {
-                return defaultValue;
-            }
-
-            return value.ToRealObjectValue();
+            return GetFieldPrivate( key, defaultValue, allowInternalFieldAccess: false );
         }
 
         /// <summary>
@@ -133,7 +124,7 @@ namespace Rock.Lava.Fluid
         {
             var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
 
-            var dictionary = new LavaDataDictionary( GetScopeAggregatedValues( localScope ) );
+            var dictionary = new LavaDataDictionary( GetScopeAggregatedValues( localScope, includeInternalFields: false ) );
 
             // Remove fields that were added for internal use.
             dictionary.Remove( "Blank" );
@@ -152,6 +143,102 @@ namespace Rock.Lava.Fluid
         /// <param name="scopeReference">root|parent|current</param>
         public override void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current )
         {
+            SetFieldPrivate( key, value, allowInternalFieldAccess: false, scope );
+        }
+
+        /// <summary>
+        /// Gets the Lava Commands that are enabled for templates resolved in the current scope.
+        /// This setting is also effective for any child scopes that do not explicitly redefine it.
+        /// </summary>
+        public override List<string> GetEnabledCommands()
+        {
+            // The set of enabled Lava Commands is stored in the current scope.
+
+            var enabledCommands = GetInternalField( _InternalFieldKeyEnabledCommands );
+
+            if ( enabledCommands != null )
+            {
+                return enabledCommands.ToString().Split( ",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Sets the Lava Commands that are enabled for templates resolved in the current scope.
+        /// This setting is also effective for any child scopes that do not explicitly redefine it.
+        /// </summary>
+        /// <param name="commands"></param>
+        public override void SetEnabledCommands( IEnumerable<string> commands )
+        {
+            if ( commands == null )
+            {
+                SetInternalField( _InternalFieldKeyEnabledCommands, string.Empty );
+            }
+            else
+            {
+                SetInternalField( _InternalFieldKeyEnabledCommands, commands.JoinStrings( "," ) );
+            }
+        }
+
+        /// <summary>
+        /// Creates a new child scope. Values added to the child scope will be released once <see cref="ExitChildScope" /> is called.
+        /// Values in the parent scope remain available to the child scope.
+        /// </summary>
+        public override void EnterChildScope()
+        {
+            _context.EnterChildScope();
+        }
+
+        /// <summary>
+        /// Exits the current scope that has been created by <see cref="EnterChildScope" />.
+        /// </summary>
+        public override void ExitChildScope()
+        {
+            _context.ReleaseScope();
+        }
+
+        #endregion
+
+        private static PropertyInfo _contextScopeInternalField = typeof( TemplateContext ).GetProperty( "LocalScope", BindingFlags.NonPublic | BindingFlags.Instance );
+
+        /// <summary>
+        /// Get a field value in the current scope.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="defaultValue"></param>
+        /// <param name="allowInternalFieldAccess"></param>
+        /// <returns></returns>
+        private object GetFieldPrivate( string key, object defaultValue, bool allowInternalFieldAccess )
+        {
+            if ( !allowInternalFieldAccess && key.StartsWith( _InternalFieldKeyPrefix ) )
+            {
+                throw new Exception( "GetMergeField failed. Invalid key." );
+            }
+
+            var value = _context.GetValue( key );
+
+            if ( value == null )
+            {
+                return defaultValue;
+            }
+
+            return value.ToRealObjectValue();
+        }
+
+        /// <summary>
+        /// Set a merge field value within the specified scope.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="scopeReference">root|parent|current</param>
+        private void SetFieldPrivate( string key, object value, bool allowInternalFieldAccess, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current )
+        {
+            if ( !allowInternalFieldAccess && key.StartsWith( _InternalFieldKeyPrefix ) )
+            {
+                throw new Exception( "SetFieldValue failed. Invalid key." );
+            }
+
             var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
 
             if ( scope == LavaContextRelativeScopeSpecifier.Current )
@@ -184,68 +271,17 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
-        /// Gets the Lava Commands that are enabled for this context.
-        /// </summary>
-        public override List<string> GetEnabledCommands()
-        {
-            // The set of enabled Lava Commands is stored in the Fluid AmbientValues collection.
-            if ( _context.AmbientValues?.ContainsKey( "EnabledCommands" ) == true )
-            {
-                return _context.AmbientValues["EnabledCommands"].ToString().Split( ",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
-            }
-
-            return new List<string>();
-        }
-
-        /// <summary>
-        /// Sets the Lava commands enabled for this template.
-        /// </summary>
-        /// <param name="commands"></param>
-        public override void SetEnabledCommands( IEnumerable<string> commands )
-        {
-            if ( commands == null )
-            {
-                _context.AmbientValues["EnabledCommands"] = string.Empty;
-            }
-            else
-            {
-                _context.AmbientValues["EnabledCommands"] = commands.JoinStrings( "," );
-            }
-        }
-
-        /// <summary>
-        /// Creates a new child scope. Values added to the child scope will be released once <see cref="ExitChildScope" /> is called.
-        /// Values in the parent scope remain available to the child scope.
-        /// </summary>
-        public override void EnterChildScope()
-        {
-            _context.EnterChildScope();
-        }
-
-        /// <summary>
-        /// Exits the current scope that has been created by <see cref="EnterChildScope" />.
-        /// </summary>
-        public override void ExitChildScope()
-        {
-            _context.ReleaseScope();
-        }
-
-        #endregion
-
-        private static PropertyInfo _contextScopeInternalField = typeof( TemplateContext ).GetProperty( "LocalScope", BindingFlags.NonPublic | BindingFlags.Instance );
-
-        /// <summary>
         /// Gets an aggregated set of key/value pairs for variables in the current scope and outer scopes.
         /// </summary>
         /// <param name="scope"></param>
         /// <returns></returns>
-        private Dictionary<string, object> GetScopeAggregatedValues( Scope scope )
+        private Dictionary<string, object> GetScopeAggregatedValues( Scope scope, bool includeInternalFields )
         {
             var dictionary = new Dictionary<string, object>();
 
             while ( scope != null )
             {
-                var properties = GetScopeDefinedValues( scope );
+                var properties = GetScopeDefinedValues( scope, includeInternalFields );
 
                 foreach ( var key in properties.Keys )
                 {
@@ -263,11 +299,16 @@ namespace Rock.Lava.Fluid
         /// </summary>
         /// <param name="scope"></param>
         /// <returns></returns>
-        private Dictionary<string, object> GetScopeDefinedValues( Scope scope )
+        private Dictionary<string, object> GetScopeDefinedValues( Scope scope, bool includeInternalFields )
         {
             var dictionary = new Dictionary<string, object>();
 
-            foreach ( var key in scope.Properties )
+            var properties = scope.Properties;
+            if ( !includeInternalFields )
+            {
+                properties = properties.Where( x => !x.StartsWith( _InternalFieldKeyPrefix ) );
+            }
+            foreach ( var key in properties )
             {
                 dictionary.AddOrReplace( key, scope.GetValue( key ).ToRealObjectValue() );
             }

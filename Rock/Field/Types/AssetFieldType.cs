@@ -46,7 +46,7 @@ namespace Rock.Field.Types
 {% endif %}
 
 <div class='fileupload-thumbnail{% if imageTypeUrl contains '/Assets/Icons/FileTypes/' %} fileupload-thumbnail-icon{% endif %}' {% if fileName != '' %}style='background-image:url({{ imageTypeUrl }}) !important;' title='{{ fileName }}'{% endif %}>
-    {% if fileName != '' %}<span class='file-link'>{{ fileName }}</span>{% else %}<span class='file-link file-link-default'></span>{% endif %}
+    {% if fileName != '' %}<span class='file-link' style='background-color: transparent'>{{ fileName }}</span>{% else %}<span class='file-link file-link-default'></span>{% endif %}
 </div>
 <div class='imageupload-dropzone'>
     <span>

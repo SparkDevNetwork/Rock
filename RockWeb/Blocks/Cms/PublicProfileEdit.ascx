@@ -113,7 +113,7 @@
                             </asp:Panel>
 
                             <div class="form-section">
-                                <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Label="Email Address" />
+                                <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" FormGroupCssClass="email-box" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Label="Email Address" />
 
                                 <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                                     <asp:ListItem Text="All Emails" Value="EmailAllowed" />

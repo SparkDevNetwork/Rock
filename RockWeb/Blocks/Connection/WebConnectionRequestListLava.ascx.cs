@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Connection
         IsRequired = false,
         DefaultValue = Lava.ConnectionRequests,
         Order = 1 )]
+
     [LinkedPage(
         "Detail Page",
         Description = "Page to link to when user taps on a connection request. ConnectionRequestGuid is passed in the query string.",
@@ -73,6 +74,14 @@ namespace RockWeb.Blocks.Connection
         DefaultIntegerValue = 50,
         Key = AttributeKey.MaxRequestsToShow,
         Order = 3 )]
+
+    [BooleanField(
+        "Update Page Title",
+        Description = "Updates the page title with the opportunity name.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.UpdatePageTitle,
+        Order = 4)]
     #endregion Block Attributes
 
     public partial class WebConnectionRequestListLava : RockBlock
@@ -139,6 +148,7 @@ namespace RockWeb.Blocks.Connection
             public const string RequestTemplate = "RequestTemplate";
             public const string DetailPage = "DetailPage";
             public const string MaxRequestsToShow = "MaxRequestsToShow";
+            public const string UpdatePageTitle = "UpdatePageTitle";
         }
         #endregion Attribute Keys
 
@@ -314,6 +324,19 @@ namespace RockWeb.Blocks.Connection
                 bool hasMore;
                 List<ConnectionRequest> requests;
 
+                // Determine if we should update the page title with the connection opportunity name
+                var updatePageTitle = GetAttributeValue( AttributeKey.UpdatePageTitle ).AsBoolean();
+                if ( updatePageTitle )
+                {
+                    RockPage.PageTitle = connectionOpportunity.Name;
+
+                    var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                    if ( pageBreadCrumb != null )
+                    {
+                        pageBreadCrumb.Name = RockPage.PageTitle;
+                    }
+                }
+
                 if ( _onlyShowMyConnections && CurrentPerson == null )
                 {
                     hasMore = false;
@@ -384,8 +407,8 @@ namespace RockWeb.Blocks.Connection
                     HasMore = hasMore
                 };
 
-                divLoadPrevious.Visible = pageNumber != 0;
-                divLoadMore.Visible = _currentRequestsViewModel.HasMore;
+                lbLoadPrevious.Visible = pageNumber != 0;
+                lbLoadMore.Visible = _currentRequestsViewModel.HasMore;
 
 
                 //Store current page information in view state so we can load next data pages

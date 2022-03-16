@@ -269,7 +269,7 @@ export abstract class FieldTypeBase implements IFieldType {
     public getFilterValueDescription(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
         const valueText = this.getFilterValueText(value, attribute);
 
-        if (value.comparisonType === null || value.comparisonType === undefined) {
+        if (!value.comparisonType) {
             return valueText ? `Is ${valueText}` : "";
         }
 
@@ -293,6 +293,8 @@ export abstract class FieldTypeBase implements IFieldType {
     }
 
     public getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
-        return this.getTextValueFromConfiguration(value.value, attribute.configurationValues ?? {}) ?? "";
+        const text = this.getTextValueFromConfiguration(value.value, attribute.configurationValues ?? {}) ?? "";
+
+        return text ? `'${text}'` : text;
     }
 }

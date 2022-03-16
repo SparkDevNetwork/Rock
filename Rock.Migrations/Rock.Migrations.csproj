@@ -64,44 +64,68 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202202041919089_UpdateSignatureDocument2.cs" />
-    <Compile Include="Migrations\202202041919089_UpdateSignatureDocument2.Designer.cs">
+    <Compile Include="Migrations\202203101710039_AddFormBuilderBlocksAndPages.cs" />
+    <Compile Include="Migrations\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
+      <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203112213470_RemoveGatewayMigrationUtility.cs" />
+    <Compile Include="Migrations\202203112213470_RemoveGatewayMigrationUtility.Designer.cs">
+      <DependentUpon>202203112213470_RemoveGatewayMigrationUtility.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203152204281_Rollup_20220315.cs" />
+    <Compile Include="Migrations\202203152204281_Rollup_20220315.Designer.cs">
+      <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203152234586_CodeGenerated_20220315.cs" />
+    <Compile Include="Migrations\202203152234586_CodeGenerated_20220315.Designer.cs">
+      <DependentUpon>202203152234586_CodeGenerated_20220315.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
+      <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203082129530_BackgroundCheckWorkflowEmailActions.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203082129530_BackgroundCheckWorkflowEmailActions.Designer.cs">
+      <DependentUpon>202203082129530_BackgroundCheckWorkflowEmailActions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202041919089_UpdateSignatureDocument2.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202041919089_UpdateSignatureDocument2.Designer.cs">
       <DependentUpon>202202041919089_UpdateSignatureDocument2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202071922404_RemoveRockUpdateLegacy.cs" />
-    <Compile Include="Migrations\202202071922404_RemoveRockUpdateLegacy.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202071922404_RemoveRockUpdateLegacy.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202071922404_RemoveRockUpdateLegacy.Designer.cs">
       <DependentUpon>202202071922404_RemoveRockUpdateLegacy.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202072150397_AddLastSeenDateTimeToPersonalDevice.cs" />
-    <Compile Include="Migrations\202202072150397_AddLastSeenDateTimeToPersonalDevice.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202072150397_AddLastSeenDateTimeToPersonalDevice.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202072150397_AddLastSeenDateTimeToPersonalDevice.Designer.cs">
       <DependentUpon>202202072150397_AddLastSeenDateTimeToPersonalDevice.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202080813593_AddCampusTopic.cs" />
-    <Compile Include="Migrations\202202080813593_AddCampusTopic.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202080813593_AddCampusTopic.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202080813593_AddCampusTopic.Designer.cs">
       <DependentUpon>202202080813593_AddCampusTopic.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202090430115_AddWorkflowRelatedModel.cs" />
-    <Compile Include="Migrations\202202090430115_AddWorkflowRelatedModel.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202090430115_AddWorkflowRelatedModel.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202090430115_AddWorkflowRelatedModel.Designer.cs">
       <DependentUpon>202202090430115_AddWorkflowRelatedModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.cs" />
-    <Compile Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202111031395_FixPersonMergeWithGroupAssignments.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202111031395_FixPersonMergeWithGroupAssignments.Designer.cs">
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202152230518_Rollup_20220215.cs" />
-    <Compile Include="Migrations\202202152230518_Rollup_20220215.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202152230518_Rollup_20220215.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202152230518_Rollup_20220215.Designer.cs">
       <DependentUpon>202202152230518_Rollup_20220215.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202152250406_CodeGenerated_20220215.cs" />
-    <Compile Include="Migrations\202202152250406_CodeGenerated_20220215.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202152250406_CodeGenerated_20220215.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202152250406_CodeGenerated_20220215.Designer.cs">
       <DependentUpon>202202152250406_CodeGenerated_20220215.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202202162343093_rollup_20220216.cs" />
-    <Compile Include="Migrations\202202162343093_rollup_20220216.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202162343093_rollup_20220216.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202202162343093_rollup_20220216.Designer.cs">
       <DependentUpon>202202162343093_rollup_20220216.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202203012130384_CodeGenerated_20220301.cs" />
-    <Compile Include="Migrations\202203012130384_CodeGenerated_20220301.Designer.cs">
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203012130384_CodeGenerated_20220301.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203012130384_CodeGenerated_20220301.Designer.cs">
       <DependentUpon>202203012130384_CodeGenerated_20220301.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.cs" />
@@ -994,35 +1018,53 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202202041919089_UpdateSignatureDocument2.resx">
+    <EmbeddedResource Include="Migrations\202203101710039_AddFormBuilderBlocksAndPages.resx">
+      <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203112213470_RemoveGatewayMigrationUtility.resx">
+      <DependentUpon>202203112213470_RemoveGatewayMigrationUtility.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203152204281_Rollup_20220315.resx">
+      <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203152234586_CodeGenerated_20220315.resx">
+      <DependentUpon>202203152234586_CodeGenerated_20220315.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
+      <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203082129530_BackgroundCheckWorkflowEmailActions.resx">
+      <DependentUpon>202203082129530_BackgroundCheckWorkflowEmailActions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202041919089_UpdateSignatureDocument2.resx">
       <DependentUpon>202202041919089_UpdateSignatureDocument2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202071922404_RemoveRockUpdateLegacy.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202071922404_RemoveRockUpdateLegacy.resx">
       <DependentUpon>202202071922404_RemoveRockUpdateLegacy.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202072150397_AddLastSeenDateTimeToPersonalDevice.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202072150397_AddLastSeenDateTimeToPersonalDevice.resx">
       <DependentUpon>202202072150397_AddLastSeenDateTimeToPersonalDevice.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202080813593_AddCampusTopic.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202080813593_AddCampusTopic.resx">
       <DependentUpon>202202080813593_AddCampusTopic.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202090430115_AddWorkflowRelatedModel.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202090430115_AddWorkflowRelatedModel.resx">
       <DependentUpon>202202090430115_AddWorkflowRelatedModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202111031395_FixPersonMergeWithGroupAssignments.resx">
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202152230518_Rollup_20220215.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202152230518_Rollup_20220215.resx">
       <DependentUpon>202202152230518_Rollup_20220215.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202152250406_CodeGenerated_20220215.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202152250406_CodeGenerated_20220215.resx">
       <DependentUpon>202202152250406_CodeGenerated_20220215.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202202162343093_rollup_20220216.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202202162343093_rollup_20220216.resx">
       <DependentUpon>202202162343093_rollup_20220216.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202203012130384_CodeGenerated_20220301.resx">
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203012130384_CodeGenerated_20220301.resx">
       <DependentUpon>202203012130384_CodeGenerated_20220301.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.1\202201142130057_GroupType_IsCapacityRequired.resx">
@@ -1705,6 +1747,9 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\202203152204281_Rollup_20220315_update-chartjs.sql">
+      <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 13.0\Version 1.13.0\202108251744427_Rollups_20210825_kpilinkshortcode.sql">
       <DependentUpon>202108251744427_Rollups_20210825.cs</DependentUpon>
     </Content>
@@ -1816,7 +1861,7 @@
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202105251443228_SparklineChart_SparklineUpdate.sql">
       <DependentUpon>202105251443228_SparklineChart.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge.sql">
+    <Content Include="Migrations\Version 13.0\Version 1.13.2\202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge.sql">
       <DependentUpon>202202111031395_FixPersonMergeWithGroupAssignments.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />

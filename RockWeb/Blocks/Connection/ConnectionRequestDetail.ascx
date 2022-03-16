@@ -296,8 +296,8 @@
 
             </asp:Panel>
 
-            <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows" CssClass="clickable">
-                <div class="grid">
+            <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows" CssClass="clickable connection-request-workflows">
+                <div class="grid grid-panel">
                     <Rock:Grid ID="gConnectionRequestWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location" OnRowSelected="gConnectionRequestWorkflows_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
@@ -310,7 +310,7 @@
                 </div>
             </Rock:PanelWidget>
 
-            <asp:Panel ID="pnlConnectionRequestActivities" runat="server" CssClass="panel panel-block" Visible="true">
+            <asp:Panel ID="pnlConnectionRequestActivities" runat="server" CssClass="panel panel-block connection-request-activities" Visible="true">
                 <div id="divLavaActivities" runat="server">
                     <div class="panel-body">
                         <div id="divLavaActivitiesContent" >

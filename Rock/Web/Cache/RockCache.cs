@@ -74,7 +74,7 @@ namespace Rock.Web.Cache
 
             lock ( Obj )
             {
-                foreach ( var cacheManager in _allManagers )
+                foreach ( var cacheManager in _allManagers.ToArray() )
                 {
                     cacheManager?.Clear();
                 }

@@ -3540,7 +3540,7 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current.Request ) );
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
         }
 
         /// <summary>

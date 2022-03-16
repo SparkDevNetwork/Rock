@@ -55,16 +55,16 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         DefaultValue = Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES )]
 
     [LinkedPage(
-        "FormBuilder Detail Page",
-        Description = "Page to edit using the form builder.",
+        "Form Builder Page",
+        Description = "The page that has the form builder editor.",
         Order = 2,
-        Key = AttributeKeys.FormBuilderDetailPage )]
+        Key = AttributeKeys.FormBuilderPage )]
 
     [LinkedPage(
-        "Analytics Detail Page",
-        Description = "Page used to view the analytics for this form.",
+        "Analytics Page",
+        Description = " The page that shows the analytics for this form.",
         Order = 3,
-        Key = AttributeKeys.AnalyticsDetailPage )]
+        Key = AttributeKeys.AnalyticsPage )]
 
     #endregion Rock Attributes
 
@@ -79,10 +79,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             public const string DetailPage = "DetailPage";
             public const string PersonProfilePage = "PersonProfilePage";
-            public const string FormBuilderDetailPage = "FormBuilderDetailPage";
-            public const string AnalyticsDetailPage = "AnalyticsDetailPage";
-            public const string CommunicationsDetailPage = "CommunicationsDetailPage";
-            public const string SettingsDetailPage = "SettingsDetailPage";
+            public const string FormBuilderPage = "FormBuilderPage";
+            public const string AnalyticsPage = "AnalyticsPage";
         }
 
         #endregion Attribute Keys
@@ -176,8 +174,17 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             if ( !Page.IsPostBack )
             {
-                BindGrid();
-                BindFilters();
+                var workflowType = new WorkflowTypeService( new RockContext() ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+                if ( workflowType != null )
+                {
+                    lTitle.Text = $"{workflowType.Name} Form";
+                    BindGrid();
+                    BindFilters();
+                }
+                else
+                {
+                    pnlView.Visible = false;
+                }
             }
 
             base.OnLoad( e );
@@ -270,22 +277,22 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         protected void lnkFormBuilder_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, GetQueryString( PageParameterKeys.FormBuilderTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderPage, GetQueryString( PageParameterKeys.FormBuilderTab ) );
         }
 
         protected void lnkComminucations_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.CommunicationsDetailPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
         }
 
         protected void lnkSettings_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.SettingsDetailPage, GetQueryString( PageParameterKeys.SettingsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderPage, GetQueryString( PageParameterKeys.SettingsTab ) );
         }
 
         protected void lnkAnalytics_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.AnalyticsDetailPage, GetQueryString( PageParameterKeys.AnalyticsTab ) );
+            NavigateToLinkedPage( AttributeKeys.AnalyticsPage, GetQueryString( PageParameterKeys.AnalyticsTab ) );
         }
 
         #endregion Events
@@ -375,7 +382,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 ActivatedDateTime = w.ActivatedDateTime,
                 Campus = w.Campus,
                 Person = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.Person : null,
-                Personid = w.InitiatorPersonAliasId
+                PersonId = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.PersonId : 0
             } );
 
             gWorkflows.SetLinqDataSource( qryGrid );
@@ -486,7 +493,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             public DateTime? ActivatedDateTime { get; set; }
             public Campus Campus { get; set; }
             public Person Person { get; set; }
-            public int? Personid { get; set; }
+            public int? PersonId { get; set; }
         }
 
         #endregion

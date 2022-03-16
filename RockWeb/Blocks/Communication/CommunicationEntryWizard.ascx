@@ -451,7 +451,31 @@
 
                                         <div class="row">
                                             <div class="col-md-6">
+                                                <div class="btn-group toggle-container">
+                                                    <asp:HyperLink ID="aImagePickerTypeImage" runat="server" CssClass="js-image-picker-type-image btn btn-toggle btn-xs btn-primary">Image</asp:HyperLink>
+                                                    <asp:HyperLink ID="aImagePickerTypeAsset" runat="server" CssClass="js-image-picker-type-asset btn btn-toggle btn-xs btn-default">Asset</asp:HyperLink>
+                                                </div>
                                                 <Rock:ImageUploader ID="componentImageUploader" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="handleImageUpdate(e, data)" DeleteFunctionClientScript="handleImageUpdate()" />
+
+                                                <asp:UpdatePanel ID="assetPickerPanel" runat="server">
+                                                    <ContentTemplate>
+                                                    <Rock:ItemFromBlockPicker
+                                                        ID="componentAssetManager"
+                                                        runat="server"
+                                                        BlockTypePath="~/Blocks/CMS/AssetManager.ascx"
+                                                        ShowInModal=true
+                                                        SelectControlCssClass="imageupload-group"
+                                                        CssClass="js-component-asset-manager picker-asset"
+                                                        ModalSaveButtonText="Select"
+                                                        ModalSaveButtonCssClass="js-singleselect aspNetDisabled"
+                                                        ModalCssClass="js-AssetManager-modal"
+                                                        ButtonTextTemplate="Select Asset"
+                                                        ModalTitle="Asset Manager"
+                                                        ShowSelectNoneButton=false>
+                                                    </Rock:ItemFromBlockPicker>
+                                                    </ContentTemplate>
+                                                </asp:UpdatePanel>
+
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -1153,10 +1177,6 @@
                                         <br />
                                         Three
                                     </div>
-                                    <!--
-                                    <div class="component component-section" data-content="<table class='row' width='100%'><tr><td class='dropzone' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td><td class='dropzone columns large-3 small-3' width='25%' valign='top'></td></tr></table>" data-state="template">
-					                    <i class="rk rk-four-column"></i> <br /> Four
-				                    </div> -->
                                     <div class="component component-section" data-content="<table class='row'width='100%' ><tr><td class='dropzone columns large-4 small-12 first' width='33%' valign='top'></td><td class='dropzone columns large-8 small-12 last' width='67%' valign='top'></td></tr></table>" data-state="template">
                                         <i class="rk rk-left-column"></i>
                                         <br />
@@ -1516,6 +1536,34 @@
         <script type="text/javascript">
             Sys.Application.add_load(function () {
                 Rock.controls.fullScreen.initialize('body');
+
+                if ($('#<%=aImagePickerTypeAsset.ClientID%>').hasClass("btn-primary")) {
+                    $('.js-component-asset-manager').show();
+                    $('#componentImageUploader').hide();
+                } else {
+                    $('.js-component-asset-manager').hide();
+                    $('#componentImageUploader').show();
+                }
+
+                $('.js-image-picker-type-asset').off('click').on('click', function (e) {
+                    $('.js-image-picker-type-asset').removeClass("btn-default");
+                    $('.js-image-picker-type-asset').addClass("btn-primary");
+                    $('.js-image-picker-type-image').removeClass("btn-primary");
+                    $('.js-image-picker-type-image').addClass("btn-default");
+                    $('#componentImageUploader').hide();
+                    $('.js-component-asset-manager').show();
+                    return false;
+                });
+
+                $('.js-image-picker-type-image').off('click').on('click', function (e) {
+                    $('.js-image-picker-type-asset').removeClass("btn-primary");
+                    $('.js-image-picker-type-asset').addClass("btn-default");
+                    $('.js-image-picker-type-image').removeClass("btn-default");
+                    $('.js-image-picker-type-image').addClass("btn-primary");
+                    $('#componentImageUploader').show();
+                    $('.js-component-asset-manager').hide();
+                    return false;
+                });
 
                 if ($('#<%=pnlEmailEditor.ClientID%>').length) {
                     loadEmailEditor()
@@ -1887,6 +1935,10 @@
 
             function handleImageUpdate(e, data) {
                 Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
+            }
+
+            function handleAssetUpdate(e, data) {
+                Rock.controls.emailEditor.imageComponentHelper.handleAssetUpdate(e, data);
             }
 
             function handleVideoImageUpdate(e, data)
