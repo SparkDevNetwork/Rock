@@ -262,6 +262,7 @@ namespace Rock.Field.Types
             ddlDefinedType.SelectedIndexChanged += OnQualifierUpdated;
 
             var definedTypeService = new DefinedTypeService( new RockContext() );
+            ddlDefinedType.Items.Add( new ListItem() );
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {
                 ddlDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
@@ -332,7 +333,12 @@ namespace Rock.Field.Types
 
             tbRepeatColumns.TextChanged += OnQualifierUpdated;
 
-            var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+            List<(string, string)> definedValues = new List<(string, string)>();
+            if ( ddlDefinedType.SelectedValue.IsNotNullOrWhiteSpace() )
+            {
+                definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => (Text: v.Value, Value: v.Id.ToString()) ).ToList();
+            }
+
             var cblSelectableDefinedValues = new RockCheckBoxList
             {
                 AutoPostBack = true,
@@ -340,7 +346,8 @@ namespace Rock.Field.Types
                 Label = "Selectable Values",
                 DataTextField = "Text",
                 DataValueField = "Value",
-                DataSource = definedValues
+                DataSource = definedValues,
+                Visible = definedValues.Any()
             };
 
             cblSelectableDefinedValues.DataBind();
@@ -427,6 +434,7 @@ namespace Rock.Field.Types
                     var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
+                    cblSelectableValues.Visible = definedValues?.Any() ?? false;
 
                     if ( selectableValues != null && selectableValues.Any() )
                     {
@@ -498,7 +506,7 @@ namespace Rock.Field.Types
 
                 if ( cblSelectableValues != null )
                 {
-                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
 
