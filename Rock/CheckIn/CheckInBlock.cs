@@ -416,9 +416,9 @@ namespace Rock.CheckIn
         /// <value>
         /// The locations.
         /// </value>
-        protected IEnumerable<Location> GetGroupTypesLocations( RockContext rockContext )
+        protected IEnumerable<int> GetGroupTypesLocationIds( RockContext rockContext )
         {
-            return CurrentCheckInState.Kiosk.Locations( LocalDeviceConfig.CurrentGroupTypeIds, rockContext );
+            return CurrentCheckInState.Kiosk.LocationIds( LocalDeviceConfig.CurrentGroupTypeIds, rockContext );
         }
 
         /// <summary>

@@ -37,8 +37,15 @@ namespace Rock.CheckIn
         /// <value>
         /// The schedule.
         /// </value>
-        [DataMember]
-        public Schedule Schedule { get; set; }
+        public NamedScheduleCache Schedule => NamedScheduleCache.Get( this.ScheduleId );
+
+        /// <summary>
+        /// Gets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        public int ScheduleId { get; internal set; }
 
         /// <summary>
         /// Gets or sets the check in times.
@@ -166,11 +173,11 @@ namespace Rock.CheckIn
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskSchedule" /> class.
         /// </summary>
-        /// <param name="schedule">The schedule.</param>
-        public KioskSchedule( Schedule schedule )
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public KioskSchedule( int scheduleId )
             : base()
         {
-            Schedule = schedule.Clone( false );
+            ScheduleId = scheduleId;
         }
 
         /// <summary>

@@ -109,8 +109,7 @@ namespace Rock.Workflow.Action.CheckIn
                             GroupTypeId = a.Occurrence.Group.GroupTypeId,
                             GroupId = a.Occurrence.GroupId,
                             LocationId = a.Occurrence.LocationId,
-                            ScheduleId = a.Occurrence.ScheduleId,
-                            Schedule = a.Occurrence.Schedule
+                            ScheduleId = a.Occurrence.ScheduleId
                         } )
                         .ToList();
 
@@ -393,20 +392,20 @@ namespace Rock.Workflow.Action.CheckIn
             public int? LocationId { get; set; }
 
             /// <summary>
-            /// Gets or sets the schedule identifier.
-            /// </summary>
-            /// <value>
-            /// The schedule identifier.
-            /// </value>
-            public int? ScheduleId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the schedule.
+            /// Gets the schedule.
             /// </summary>
             /// <value>
             /// The schedule.
             /// </value>
-            public Schedule Schedule { get; set; }
+            public NamedScheduleCache Schedule => this.ScheduleId.HasValue ? NamedScheduleCache.Get( this.ScheduleId.Value ) : null;
+
+            /// <summary>
+            /// Gets the schedule identifier.
+            /// </summary>
+            /// <value>
+            /// The schedule identifier.
+            /// </value>
+            public int? ScheduleId { get; internal set; }
         }
 
         /// <summary>

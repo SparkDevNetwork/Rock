@@ -202,22 +202,22 @@ namespace Rock.CheckIn
         /// <param name="configuredGroupTypes">The configured group types. (Checkin Areas)</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public IEnumerable<Location> Locations( List<int> configuredGroupTypes, RockContext rockContext )
+        public IEnumerable<int> LocationIds( List<int> configuredGroupTypes, RockContext rockContext )
         {
-            var result = new List<Rock.Model.Location>();
+            var result = new List<int>();
 
-            Rock.Model.Device currentDevice = new DeviceService( rockContext ).Get( this.Device.Id );
+            var currentDeviceLocationIds = new DeviceService( rockContext ).GetSelect( this.Device.Id, s => s.Locations.Select( a => a.Id ) ).ToList();
 
             // first, get all the possible locations for this device including child locations
             var allLocations = new List<int>();
-            foreach ( Rock.Model.Location location in currentDevice.Locations )
+            foreach ( var locationId in currentDeviceLocationIds )
             {
                 // add the location to the locations for this device
-                allLocations.Add( location.Id );
+                allLocations.Add( locationId );
 
                 // Get all the child locations also
                 new LocationService( rockContext )
-                    .GetAllDescendents( location.Id )
+                    .GetAllDescendents( locationId )
                     .Select( l => l.Id )
                     .ToList()
                     .ForEach( l => allLocations.Add( l ) );
@@ -228,9 +228,9 @@ namespace Rock.CheckIn
             {
                 if ( configuredGroupTypes.Contains( groupLocation.Group.GroupTypeId ) )
                 {
-                    if ( !result.Any( a => a.Id == groupLocation.LocationId ) )
+                    if ( !result.Any( a => a == groupLocation.LocationId ) )
                     {
-                        result.Add( groupLocation.Location );
+                        result.Add( groupLocation.LocationId );
                     }
                 }
             }
@@ -271,17 +271,14 @@ namespace Rock.CheckIn
                     .ToList()
                     .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
 
-                var deviceModel = new DeviceService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( d => d.Id == id )
-                    .FirstOrDefault();
+                var deviceModel = new DeviceService( rockContext ).GetInclude( id, a => a.Locations );
 
                 if ( deviceModel != null )
                 {
                     var device = new KioskDevice( deviceModel );
                     foreach ( Location location in deviceModel.Locations )
                     {
-                        LoadKioskLocations( device, location, campusLocations, rockContext );
+                        LoadKioskLocations( device, location.Id, campusLocations, rockContext );
                     }
 
                     return device;
@@ -317,14 +314,14 @@ namespace Rock.CheckIn
         /// Loads the kiosk locations.
         /// </summary>
         /// <param name="kioskDevice">The kiosk device.</param>
-        /// <param name="location">The location.</param>
+        /// <param name="locationId">The location identifier.</param>
         /// <param name="campusLocations">The campus locations.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, Dictionary<int, int> campusLocations, RockContext rockContext )
+        private static void LoadKioskLocations( KioskDevice kioskDevice, int locationId, Dictionary<int, int> campusLocations, RockContext rockContext )
         {
             // First check to see if this is a campus location
             int campusId = campusLocations
-                .Where( c => c.Value == location.Id )
+                .Where( c => c.Value == locationId )
                 .Select( c => c.Key )
                 .FirstOrDefault();
 
@@ -332,7 +329,7 @@ namespace Rock.CheckIn
             if ( campusId == 0 )
             {
                 foreach ( var parentLocationId in new LocationService( rockContext )
-                    .GetAllAncestorIds( location.Id ) )
+                    .GetAllAncestorIds( locationId ) )
                 {
                     campusId = campusLocations
                         .Where( c => c.Value == parentLocationId )
@@ -345,21 +342,21 @@ namespace Rock.CheckIn
                 }
             }
 
-            LoadKioskLocations( kioskDevice, location, ( campusId > 0 ? campusId : ( int? ) null ), rockContext );
+            LoadKioskLocations( kioskDevice, locationId, ( campusId > 0 ? campusId : ( int? ) null ), rockContext );
         }
 
         /// <summary>
         /// Loads the kiosk locations.
         /// </summary>
         /// <param name="kioskDevice">The kiosk device.</param>
-        /// <param name="location">The location.</param>
+        /// <param name="locationId">The location identifier.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, int? campusId, RockContext rockContext )
+        private static void LoadKioskLocations( KioskDevice kioskDevice, int locationId, int? campusId, RockContext rockContext )
         {
             // Get the child locations and the selected location
-            var allLocations = new LocationService( rockContext ).GetAllDescendentIds( location.Id ).ToList();
-            allLocations.Add( location.Id );
+            var allLocations = new LocationService( rockContext ).GetAllDescendentIds( locationId ).ToList();
+            allLocations.Add( locationId );
 
             DateTime currentDateTime = RockDateTime.Now;
             if ( campusId.HasValue )
@@ -380,7 +377,7 @@ namespace Rock.CheckIn
 
             foreach ( var groupLocation in groupLocationList )
             {
-                var kioskLocation = new KioskLocation( groupLocation.Location );
+                var kioskLocation = new KioskLocation( groupLocation.LocationId );
                 kioskLocation.CampusId = campusId;
                 kioskLocation.Order = groupLocation.Order;
 
@@ -393,7 +390,7 @@ namespace Rock.CheckIn
                     }
                     else
                     {
-                        var kioskSchedule = new KioskSchedule( schedule );
+                        var kioskSchedule = new KioskSchedule( schedule.Id );
                         kioskSchedule.CampusId = kioskLocation.CampusId;
                         kioskSchedule.CheckInTimes = schedule.GetCheckInTimes( currentDateTime );
                         if ( kioskSchedule.IsCheckInActive || kioskSchedule.IsCheckOutActive || kioskSchedule.NextActiveDateTime.HasValue )

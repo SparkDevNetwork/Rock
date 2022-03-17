@@ -37,7 +37,16 @@ namespace Rock.CheckIn
         /// The schedule.
         /// </value>
         [DataMember]
-        public Schedule Schedule { get; set; }
+        public NamedScheduleCache Schedule => NamedScheduleCache.Get( this.ScheduleId );
+
+        /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        [DataMember]
+        public int ScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the campus identifier.

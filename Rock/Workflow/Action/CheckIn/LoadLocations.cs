@@ -76,8 +76,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             if ( !group.Locations.Any( l => l.Location.Id == kioskLocation.Location.Id ) )
                                             {
                                                 var checkInLocation = new CheckInLocation();
-                                                checkInLocation.Location = kioskLocation.Location.Clone( false );
-                                                checkInLocation.Location.CopyAttributesFrom( kioskLocation.Location );
+                                                checkInLocation.LocationId = kioskLocation.LocationId;
                                                 checkInLocation.CampusId = kioskLocation.CampusId;
                                                 checkInLocation.Order = kioskLocation.Order;
                                                 group.Locations.Add( checkInLocation );

@@ -1000,8 +1000,8 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
             if ( this.LocalDeviceConfig.CurrentKioskId.HasValue )
             {
-                var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
-                var selectQry = groupTypesLocations
+                var groupTypesLocationIds = this.GetGroupTypesLocationIds( rockContext );
+                var selectQry = groupTypesLocationIds.Select( a => NamedScheduleCache.Get( a ) ).Where( a => a != null )
                     .Select( a => new LocationGridItem
                     {
                         LocationId = a.Id,

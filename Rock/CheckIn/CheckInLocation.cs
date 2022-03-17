@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Lava;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -37,7 +38,16 @@ namespace Rock.CheckIn
         /// The location.
         /// </value>
         [DataMember]
-        public Location Location { get; set; }
+        public NamedLocationCache Location => NamedLocationCache.Get( this.LocationId );
+
+        /// <summary>
+        /// Gets the location identifier.
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
+        [DataMember]
+        public int LocationId { get; internal set; }
 
         /// <summary>
         /// Gets or sets the campus identifier.

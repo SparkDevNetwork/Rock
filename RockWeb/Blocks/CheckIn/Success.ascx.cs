@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.CheckIn
                                     CheckinResult checkinResult = new CheckinResult();
                                     checkinResult.Person = person;
                                     checkinResult.Group = group;
-                                    checkinResult.Location = location.Location;
+                                    checkinResult.LocationId = location.LocationId;
                                     checkinResult.Schedule = schedule;
                                     checkinResult.UpdateAchievementFields( successfullyCompletedAchievementIdsPriorToCheckin, achievementsStateAfterCheckin );
                                     checkinResultList.Add( checkinResult );

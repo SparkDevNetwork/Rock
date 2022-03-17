@@ -216,10 +216,10 @@ namespace Rock.Workflow.Action.CheckIn
                             continue;
                         }
 
-                        if ( !location.Schedules.Any( s => s.Schedule.Id == kioskSchedule.Schedule.Id ) )
+                        if ( !location.Schedules.Any( s => s.ScheduleId == kioskSchedule.ScheduleId ) )
                         {
                             var checkInSchedule = new CheckInSchedule();
-                            checkInSchedule.Schedule = kioskSchedule.Schedule.Clone( false );
+                            checkInSchedule.ScheduleId = kioskSchedule.ScheduleId;
                             checkInSchedule.CampusId = kioskSchedule.CampusId;
                             checkInSchedule.StartTime = kioskSchedule.StartTime;
                             checkInSchedule.PreSelected = preSelectForOccurrence;
@@ -228,10 +228,10 @@ namespace Rock.Workflow.Action.CheckIn
                         }
 
                         if ( checkInState.CheckInType?.TypeOfCheckin == TypeOfCheckin.Family &&
-                            !person.PossibleSchedules.Any( s => s.Schedule.Id == kioskSchedule.Schedule.Id ) )
+                            !person.PossibleSchedules.Any( s => s.ScheduleId == kioskSchedule.ScheduleId ) )
                         {
                             var checkInSchedule = new CheckInSchedule();
-                            checkInSchedule.Schedule = kioskSchedule.Schedule.Clone( false );
+                            checkInSchedule.ScheduleId = kioskSchedule.ScheduleId;
                             checkInSchedule.CampusId = kioskSchedule.CampusId;
                             checkInSchedule.StartTime = kioskSchedule.StartTime;
                             checkInSchedule.PreSelected = preSelectForOccurrence;
