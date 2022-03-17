@@ -459,6 +459,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowActionType.WorkflowForm.PersonEntryConnectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
             workflowActionType.WorkflowForm.PersonEntryGroupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
             workflowActionType.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
+
+            var workFlowSection = new WorkflowActionFormSection();
+            workflowActionType.WorkflowForm.FormSections.Add( workFlowSection );
+            workFlowSection.Guid = Guid.NewGuid();
+            workflowActivityType.Order = 0;
+
             var systemEmail = new SystemCommunicationService( new RockContext() ).Get( Rock.SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
             if ( systemEmail != null )
             {
