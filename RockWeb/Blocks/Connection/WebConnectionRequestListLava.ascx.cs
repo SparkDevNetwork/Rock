@@ -327,7 +327,14 @@ namespace RockWeb.Blocks.Connection
             using ( var rockContext = new RockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).GetNoTracking( _connectionOpportunityGuid );
+
+                if ( connectionOpportunity == null )
+                {
+                    return;
+                }
+
                 bool hasMore;
                 List<ConnectionRequest> requests;
 
