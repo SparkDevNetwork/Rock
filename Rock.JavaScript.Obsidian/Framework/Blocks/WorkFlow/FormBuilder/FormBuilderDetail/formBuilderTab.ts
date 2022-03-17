@@ -64,7 +64,12 @@ function getSectionDragSourceOptions(sections: FormSection[]): IDragSourceOption
                     description: "",
                     showHeadingSeparator: false,
                     type: null,
-                    fields: []
+                    fields: [],
+                    visibilityRule: {
+                        guid: newGuid(),
+                        expressionType: 1,
+                        rules: []
+                    }
                 });
             }
         }
