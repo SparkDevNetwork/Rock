@@ -242,6 +242,9 @@ namespace RockWeb.Blocks.Connection
             SetConnectionStatesPreference();
             SetBlockUserPreference( UserPreferenceKey.OnlyShowMyConnections, swOnlyShowMyConnections.Checked.ToString(), true );
             _onlyShowMyConnections = swOnlyShowMyConnections.Checked;
+            // Assume changes happened, therefore reset the SetConnectionStates() and clear the GetRequestsViewModel so we start over.
+            SetConnectionStates();
+            ViewState[ViewStateKeys.GetRequestsViewModel] = null;
 
             GetConnectionRequests();
 
@@ -316,6 +319,10 @@ namespace RockWeb.Blocks.Connection
             {
                 pageNumber = _currentRequestsViewModel != null ? _currentRequestsViewModel.PageNumber + 1 : 0;
             }
+            else
+            {
+                pageNumber = _currentRequestsViewModel != null ? _currentRequestsViewModel.PageNumber - 1 : 0;
+            }
 
             using ( var rockContext = new RockContext() )
             {
@@ -363,22 +370,35 @@ namespace RockWeb.Blocks.Connection
                         filterOptions.ConnectorPersonIds = new List<int> { CurrentPerson.Id };
                     }
 
-                    var qry = connectionRequestService.GetConnectionRequestsQuery( filterOptions );
+                    var qry = connectionRequestService.GetConnectionRequestsQuery( filterOptions )
+                        .Include( r => r.PersonAlias.Person )
+                        .Include( r => r.ConnectionRequestActivities );
 
                     // We currently don't support showing connected connection requests
                     // since that could end up being a massive list for mobile.
                     qry = qry.Where( r => r.ConnectionState != ConnectionState.Connected );
 
-                    // Put all the requests in memory so we can check security and
-                    // then get the current set of requests, plus one. The extra is
-                    // so that we can tell if there are more to load.
-
-                    requests = qry
-                        .ToList()
-                        .Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                        .Skip( ( pageNumber * MaxRequestsToShow ) )
-                        .Take( MaxRequestsToShow + 1 )
-                        .ToList();
+                    if ( connectionOpportunity.ConnectionType.EnableRequestSecurity )
+                    {
+                        // Put all the requests in memory so we can check security and
+                        // then get the current set of requests, plus one. The extra is
+                        // so that we can tell if there are more to load.
+                        requests = qry
+                            .OrderByDescending( r => r.CreatedDateKey ).ThenByDescending( r => r.Id )
+                            .ToList()
+                            .Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            .Skip( ( pageNumber * MaxRequestsToShow ) )
+                            .Take( MaxRequestsToShow + 1 )
+                            .ToList();
+                    }
+                    else
+                    {
+                        requests = qry
+                            .OrderByDescending( r => r.CreatedDateKey ).ThenByDescending( r => r.Id )
+                            .Skip( ( pageNumber * MaxRequestsToShow ) )
+                            .Take( MaxRequestsToShow + 1 )
+                            .ToList();
+                    }
 
                     // Determine if we have more requests to show and then properly
                     // limit the requests to the correct amount.
@@ -404,12 +424,12 @@ namespace RockWeb.Blocks.Connection
 
                 _currentRequestsViewModel = new GetRequestsViewModel
                 {
-                    HasMore = hasMore
+                    HasMore = hasMore,
+                    PageNumber = pageNumber,
                 };
 
                 lbLoadPrevious.Visible = pageNumber != 0;
                 lbLoadMore.Visible = _currentRequestsViewModel.HasMore;
-
 
                 //Store current page information in view state so we can load next data pages
                 ViewState[ViewStateKeys.GetRequestsViewModel] = _currentRequestsViewModel;
@@ -418,7 +438,6 @@ namespace RockWeb.Blocks.Connection
 
         private void ConfigureSettings()
         {
-
             var titles = GetConnectionOpportunityTitles();
             var connectionOpportunityTitle = titles.Item1;
             var connectionTypeTitle = titles.Item2;
@@ -427,7 +446,7 @@ namespace RockWeb.Blocks.Connection
 
             foreach ( var state in GetConnectionStates() )
             {
-                if(state== ConnectionState.Connected )
+                if( state == ConnectionState.Connected )
                 {
                     continue;
                 }
@@ -442,6 +461,11 @@ namespace RockWeb.Blocks.Connection
             _onlyShowMyConnections = onlyShowMyConnections;
 
             // Get the ConnectionStates user preference on load
+            SetConnectionStates();
+        }
+
+        private void SetConnectionStates()
+        {
             var connectionStateString = GetBlockUserPreference( UserPreferenceKey.ConnectionStates );
             if ( !string.IsNullOrEmpty( connectionStateString ) )
             {
@@ -451,6 +475,7 @@ namespace RockWeb.Blocks.Connection
                     .ToList();
             }
         }
+
         #endregion Methods
 
         #region Support Classes
