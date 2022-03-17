@@ -457,7 +457,8 @@ namespace RockWeb.Blocks.Event
                     foreach ( EventCalendarItem eventCalendarItem in eventItem.EventCalendarItems )
                     {
                         eventCalendarItem.LoadAttributes();
-                        Rock.Attribute.Helper.GetEditValues( phAttributes, eventCalendarItem );
+                        Control attributeContainer = phAttributes.FindControl( $"phAttributes_{eventCalendarItem.EventCalendarId}" );
+                        Rock.Attribute.Helper.GetEditValues( attributeContainer, eventCalendarItem );
                         eventCalendarItem.SaveAttributeValues();
                     }
 
@@ -844,10 +845,13 @@ namespace RockWeb.Blocks.Event
                         string value = eventCalendarItem.GetAttributeValue( attr.Key );
                         if ( !string.IsNullOrWhiteSpace( value ) )
                         {
-                            var rl = new RockLiteral();
-                            rl.ID = "attr_" + attr.Key;
-                            rl.Label = attr.Value.Name;
-                            rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, attr.Value.EntityTypeId, eventCalendarItem.Id, value, attr.Value.QualifierValues, false );
+                            var rl = new RockLiteral
+                            {
+                                ID = $"eci{eventCalendarItem.EventCalendarId}_attr_{attr.Key}",
+                                Label = attr.Value.Name,
+                                Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, attr.Value.EntityTypeId, eventCalendarItem.Id, value, attr.Value.QualifierValues, false )
+                            };
+
                             phAttributesView.Controls.Add( rl );
                         }
                     }
@@ -925,10 +929,15 @@ namespace RockWeb.Blocks.Event
 
                     if ( eventCalendarItem.Attributes.Count > 0 )
                     {
+                        var calendarAttributeHtmlGenericContainer = new HtmlGenericContainer
+                        {
+                            ID = $"phAttributes_{eventCalendarId}"
+                        };
+
                         wpAttributes.Visible = true;
-                        phAttributes.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
-                        PlaceHolder phcalAttributes = new PlaceHolder();
-                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, phAttributes, true, BlockValidationGroup );
+                        calendarAttributeHtmlGenericContainer.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
+                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, calendarAttributeHtmlGenericContainer, true, BlockValidationGroup );
+                        phAttributes.Controls.Add( calendarAttributeHtmlGenericContainer );
                     }
                 }
             }
