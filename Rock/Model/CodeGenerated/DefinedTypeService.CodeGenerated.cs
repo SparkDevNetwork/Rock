@@ -88,6 +88,7 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                CategorizedValuesEnabled = model.CategorizedValuesEnabled,
                 CategoryId = model.CategoryId,
                 Description = model.Description,
                 EnableSecurityOnValues = model.EnableSecurityOnValues,
@@ -166,6 +167,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this DefinedType target, DefinedType source )
         {
             target.Id = source.Id;
+            target.CategorizedValuesEnabled = source.CategorizedValuesEnabled;
             target.CategoryId = source.CategoryId;
             target.Description = source.Description;
             target.EnableSecurityOnValues = source.EnableSecurityOnValues;

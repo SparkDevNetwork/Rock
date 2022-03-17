@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { ClientEditableAttributeValue } from "../";
+import { PublicEditableAttributeValue } from "../";
 import { Guid } from "../../Util/guid";
 
 /**
@@ -39,7 +39,7 @@ export type FieldTypeConfigurationPropertiesViewModel = {
      * Gets or sets the default attribute value view model that corresponds
      * to the current configurationOptions.
      */
-    defaultValue: ClientEditableAttributeValue;
+    defaultValue: PublicEditableAttributeValue;
 };
 
 /**

@@ -16,6 +16,8 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -26,6 +28,7 @@ namespace Rock.Field.Types
     /// Field Type to select 0 or more Checkin Configuration Areas/Types. (Weekly Service Check-in, Volunteer Check-in, etc)
     /// Stored as a list of GroupType Guids
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class CheckinConfigurationTypeFieldType : SelectFromListFieldType
     {
         /// <summary>

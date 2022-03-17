@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -26,6 +27,7 @@ namespace Rock.Field.Types
     /// Field Type used for Volume / Page / Entry that is useful for sacraments or steps (<see cref="Rock.Model.Step"/>)
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class RegistryEntryFieldType : FieldType
     {
         /// <summary>

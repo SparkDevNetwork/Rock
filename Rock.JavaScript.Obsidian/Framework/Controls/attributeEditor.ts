@@ -21,7 +21,7 @@ import TextBox from "../Elements/textBox";
 import { Guid } from "../Util/guid";
 import { FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
 import { PublicEditableAttributeViewModel } from "../ViewModels/publicEditableAttribute";
-import CategoryPicker from "./categoryPicker";
+import CategoriesPicker from "./categoriesPicker";
 import FieldTypeEditor from "./fieldTypeEditor";
 import StaticFormControl from "../Elements/staticFormControl";
 import PanelWidget from "../Elements/panelWidget";
@@ -31,7 +31,7 @@ export default defineComponent({
     name: "AttributeEditor",
 
     components: {
-        CategoryPicker,
+        CategoriesPicker,
         CheckBox,
         FieldTypeEditor,
         PanelWidget,
@@ -228,7 +228,7 @@ export default defineComponent({
 
     <div class="row">
         <div class="col-md-6">
-            <CategoryPicker v-model="categories"
+            <CategoriesPicker v-model="categories"
                 label="Categories"
                 :entityTypeGuid="attributeEntityTypeGuid"
                 entityTypeQualifierColumn="EntityTypeId"

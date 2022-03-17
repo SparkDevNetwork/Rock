@@ -15,9 +15,8 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { FieldTypeBase } from "./fieldType";
-import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModels";
 import { asBoolean } from "../Services/boolean";
+import { FieldTypeBase } from "./fieldType";
 
 /**
  * The key names for the configuration properties available when editing the
@@ -98,29 +97,29 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Defined Value field.
  */
 export class DefinedValueFieldType extends FieldTypeBase {
-    public override updateTextValue(value: ClientEditableAttributeValue): void {
+    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
         try {
-            const clientValue = JSON.parse(value.value ?? "") as ClientValue;
+            const clientValue = JSON.parse(value ?? "") as ClientValue;
 
             try {
-                const values = JSON.parse(value.configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
-                const displayDescription = asBoolean(value.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
+                const values = JSON.parse(configurationValues[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+                const displayDescription = asBoolean(configurationValues[ConfigurationValueKey.DisplayDescription]);
                 const rawValues = clientValue.value.split(",");
 
-                value.textValue = values.filter(v => rawValues.includes(v.value))
+                return values.filter(v => rawValues.includes(v.value))
                     .map(v => displayDescription ? v.description : v.text)
                     .join(", ");
             }
             catch {
-                value.textValue = clientValue.value;
+                return clientValue.value;
             }
         }
         catch {
-            value.textValue = "";
+            return "";
         }
     }
 
-    public override getEditComponent(_value: ClientAttributeValue): Component {
+    public override getEditComponent(): Component {
         return editComponent;
     }
 

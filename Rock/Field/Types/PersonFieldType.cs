@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -32,9 +33,10 @@ namespace Rock.Field.Types
     /// Field used to save and display a person. Stored as PersonAlias.Guid
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
     {
-        #region configuration
+        #region Configuration
 
         private const string ENABLE_SELF_SELECTION_KEY = "EnableSelfSelection";
 

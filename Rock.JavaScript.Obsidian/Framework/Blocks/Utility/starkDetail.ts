@@ -16,27 +16,25 @@
 //
 
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import Alert from "../../Elements/alert";
 import RockButton from "../../Elements/rockButton";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 
-/** An example block */
-const StarkDetailOptions = defineComponent({
-    /** This is the name that will appear in the browser debug tools. This is mostly for organization and
-     *  doesn't affect function. */
+/**
+ * Stark Detail
+ * Domain: Utility
+ *
+ * This is an example block that provides developers with a good starting point in
+ * creating blocks.
+ *
+ */
+export default defineComponent({
+    /**
+     * This is the name that will appear in the browser debug tools. This is mostly for organization and
+     * doesn't affect function.
+     */
     name: "Utility.StarkDetailOptions",
-
-    /** This allows for standard block tools, such as invokeBlockAction, to be available to this block */
-    setup() {
-        const invokeBlockAction = useInvokeBlockAction();
-        const configurationValues = useConfigurationValues<Record<string, unknown>>();
-
-        return {
-            configurationValues,
-            invokeBlockAction
-        };
-    },
 
     /** These are the child components that are used by this block component */
     components: {
@@ -45,43 +43,59 @@ const StarkDetailOptions = defineComponent({
         RockButton
     },
 
-    /** This method returns the zero-state of the component's local state object. All reactive data must
-     *  be declared here (even if it only might be used at some point). */
-    data() {
-        return {
-            configMessage: "",
-            blockActionMessage: ""
-        };
-    },
+    /** This allows for standard block tools, such as invokeBlockAction, to be available to this block */
+    setup() {
+        // #region Variables
 
-    /** These are methods that can be invoked by button clicks or other methods. */
-    methods: {
+        const invokeBlockAction = useInvokeBlockAction();
+        const configurationValues = useConfigurationValues<Record<string, unknown>>();
 
-        /** Fetch a message from the C# block action named "GetMessage". */
-        async loadBlockActionMessage() {
-            const response = await this.invokeBlockAction<{ message: string; }>("GetMessage", {
+        // Set the state "configMessage" to the value sent by C#'s GetObsidianConfigurationValues
+        const configMessage = ref((configurationValues.message as string) ?? "");
+
+        // Set the initial state of the block action message to an empty string.
+        const blockActionMessage = ref("");
+
+        // #endregion
+
+        // #region Computed Values
+
+        // #endregion
+
+        // #region Functions
+
+        // #endregion
+
+        // #region Event Handlers
+
+        /**
+         * Event handler for the Invoke Block Action button. Fetches a message from the C# block
+         * action named "GetMessage".
+         */
+        const invokeBlockActionClick = async (): Promise<void> => {
+            const response = await invokeBlockAction<{ message: string; }>("GetMessage", {
                 paramFromClient: "This is a value sent to the server from the client."
             });
 
             if (response.data) {
-                this.blockActionMessage = response.data.message;
+                blockActionMessage.value = response.data.message;
             }
             else {
-                this.blockActionMessage = response.errorMessage || "An error occurred";
+                blockActionMessage.value = response.errorMessage || "An error occurred";
             }
-        }
-    },
+        };
 
-    /** This method is a lifecycle hook called when the component is created (initializing and not yet in
-     *  the DOM) */
-    created() {
-        // Set the local state "configMessage" to the value sent by C#'s GetObsidianConfigurationValues
-        this.configMessage = <string>this.configurationValues.message;
-    },
+        // #endregion
 
-    /** This method is another lifecycle hook called when the component is mounted (put in the DOM) */
-    mounted() {
-        // Do something when the component's elements are now in the DOM
+        /**
+         * This returns the variables and functions that make up the component's local state object.
+         * It is available during the lifetime of the component.
+         */
+        return {
+            blockActionMessage,
+            configMessage,
+            invokeBlockActionClick
+        };
     },
 
     /** The template is the markup of the component. Any custom components used within this template,
@@ -92,14 +106,17 @@ const StarkDetailOptions = defineComponent({
         <i class="fa fa-star"></i>
         Blank Detail Block
     </template>
+
     <template #titleAside>
         <div class="panel-labels">
             <span class="label label-info">Vue</span>
         </div>
     </template>
+
     <template #drawer>
         An example block that uses Vue
     </template>
+
     <template #default>
         <Alert alertType="info">
             <h4>Stark Template Block</h4>
@@ -117,22 +134,27 @@ const StarkDetailOptions = defineComponent({
                 <li>Remove this text... unless you really like it...</li>
             </ul>
         </Alert>
+
         <div>
             <h4>Value from Configuration</h4>
             <p>
                 This value came from the C# file and was provided to the JavaScript before the Vue component was even mounted:
             </p>
+
             <pre>{{ configMessage }}</pre>
+
             <h4>Value from Block Action</h4>
             <p>
                 This value will come from the C# file using a "Block Action". Block Actions allow the Vue Component to communicate with the
                 C# code behind (much like a Web Forms Postback):
             </p>
-            <RockButton btnType="primary" btnSize="sm" @click="loadBlockActionMessage">Invoke Block Action</RockButton>
+
             <pre>{{ blockActionMessage }}</pre>
+
+            <div class="actions">
+                <RockButton btnType="primary" btnSize="sm" @click="invokeBlockActionClick">Invoke Block Action</RockButton>
+            </div>
         </div>
     </template>
 </PaneledBlockTemplate>`
 });
-
-export default StarkDetailOptions;

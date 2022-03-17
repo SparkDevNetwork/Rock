@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 
@@ -28,6 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a text value
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class EncryptedTextFieldType : TextFieldType
     {
 

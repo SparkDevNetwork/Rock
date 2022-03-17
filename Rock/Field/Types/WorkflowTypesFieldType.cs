@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a workflow type picker with option to select multiple. Stored as a comma-delimited list of WorkflowType Guids
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class WorkflowTypesFieldType : FieldType
     {
 

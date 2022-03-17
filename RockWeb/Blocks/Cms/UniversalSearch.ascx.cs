@@ -69,13 +69,13 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.SearchType )]
 
     [TextField( "Base Field Filters",
-        Description = "These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command.",
+        Description = "These field filters will always be enabled and will not be changeable by the individual. Uses the same syntax as the lava command.",
         IsRequired = false,
         Category = "CustomSetting",
         Key = AttributeKey.BaseFieldFilters )]
 
     [BooleanField( "Show Refined Search",
-        Description = "Determines whether the refinded search should be shown.",
+        Description = "Determines whether the refined search should be shown.",
         DefaultBooleanValue = true,
         Category = "CustomSetting",
         Key = AttributeKey.ShowRefinedSearch )]

@@ -15,10 +15,10 @@
 // </copyright>
 //
 import { Guid } from "../Util/guid";
-import { ClientAttributeValue } from "./clientAttributeValue";
+import { PublicAttributeValue } from "./publicAttributeValue";
 
 export interface IEntity {
     id: number;
     guid: Guid;
-    attributes: Record<string, ClientAttributeValue> | null;
+    attributes: Record<string, PublicAttributeValue> | null;
 }

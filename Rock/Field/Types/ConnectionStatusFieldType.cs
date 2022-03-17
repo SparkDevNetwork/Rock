@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Connection Statuses.
     /// The selected value is stored as a Guid.
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class ConnectionStatusFieldType : FieldType, IEntityFieldType
     {
         #region Configuration

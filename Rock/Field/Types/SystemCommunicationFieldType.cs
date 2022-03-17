@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a system communication. Stored as SystemCommunication.Guid
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class SystemCommunicationFieldType : FieldType, IEntityFieldType
     {
         #region Formatting

@@ -39,6 +39,14 @@ export interface IDragSourceOptions {
     handleSelector?: string;
 
     /**
+     * Defines the container element that dragged mirror elements will be added
+     * to. If not set then the body element is used. This property is dynamic and
+     * can be updated on the fly. It will be used anytime a drag operation is
+     * about to begin.
+     */
+    mirrorContainer?: Element;
+
+    /**
      * true if elements are duplicated and instead of the original being moved.
      */
     copyElement?: boolean | ((operation: DragOperation) => boolean);
@@ -55,49 +63,43 @@ export interface IDragSourceOptions {
     acceptDrop?: (operation: DragOperation) => boolean;
 
     /**
-     * Called when a drag operation has successfully started. "element" is the element
-     * being dragged. "source" is the container that it originally came from.
+     * Called when a drag operation has successfully started. 
      */
     dragBegin?: (operation: DragOperation) => void;
 
     /**
-     * Called when a drag operation has ended for any reason. "element" is the element
-     * that was being dragged.
+     * Called when a drag operation has ended for any reason. 
      */
     dragEnd?: (operation: DragOperation) => void;
 
     /**
-     * Called when a drag operation has successfully completed. "element" is the
-     * element that was dropped. "target" is the container that it was dropped
-     * onto. "source" is the container it originally came from. "sibling" is the
-     * element it was dropped before, or undefined if it was dropped in the last
-     * position.
+     * Called when a drag operation has successfully completed.
      */
     dragDrop?: (operation: DragOperation) => void;
 
     /**
      * Called when the drag operation was cancelled, usually because it was dropped
-     * outside of a valid container. "element" is the element that was dragged.
-     * "lastContainer" is the last valid container it where "element" went back
-     * to. "source" is the original container it came from.
+     * outside of a valid container.
      */
     dragCancel?: (operation: DragOperation) => void;
 
     /**
      * Called when a drag operation has moved over the specified valid target
-     * container. "element" is the element being dragged. "target" is the container
-     * the operation is currently hovering over. "source" is the container it
-     * originally came from.
+     * container.
      */
     dragOver?: (operation: DragOperation) => void;
 
     /**
      * Called when a drag operation has moved out of the specified container (or
-     * was dropped into it). "element" is the element being dragged. "target"
-     * is the container it has left or was dropped into. "source" is the container
-     * it originally came from.
+     * was dropped into it).
      */
     dragOut?: (operation: DragOperation) => void;
+
+    /**
+     * Called when a drag operation has created, or positioned, the shadow element
+     * that is being displayed in the target container.
+     */
+    dragShadow?: (operation: DragOperation) => void;
 }
 
 /**
@@ -126,6 +128,9 @@ type ElementOptions<T> = {
 export type DragOperation = {
     /** The element that is being dragged. */
     element: Element;
+
+    /** The shadow element that is currently displayed in the target container. */
+    shadow?: Element;
 
     /** The container that the element is originally from. */
     sourceContainer: Element;
@@ -169,6 +174,8 @@ class DragDropService {
     /** The internal drag operation that is currently in progress. */
     private internalOperation?: DragOperation;
 
+    private options: dragula.DragulaOptions;
+
     /**
      * Creates a new instance of the DragDropService class.
      * 
@@ -176,12 +183,14 @@ class DragDropService {
      */
     constructor(identifier: string) {
         this.id = identifier;
-        this.drake = window.dragula([], {
+        this.options = {
             accepts: this.drakeAccepts.bind(this),
             copy: this.drakeCopy.bind(this),
             moves: this.drakeMoves.bind(this),
             revertOnSpill: true
-        });
+        };
+
+        this.drake = window.dragula([], this.options);
 
         this.drake.on("drag", this.drakeEventDrag.bind(this));
         this.drake.on("drop", this.drakeEventDrop.bind(this));
@@ -189,6 +198,7 @@ class DragDropService {
         this.drake.on("out", this.drakeEventOut.bind(this));
         this.drake.on("cancel", this.drakeEventCancel.bind(this));
         this.drake.on("dragend", this.drakeEventEnd.bind(this));
+        this.drake.on("shadow", this.drakeEventShadow.bind(this));
     }
 
     /**
@@ -339,6 +349,8 @@ class DragDropService {
             return false;
         }
 
+        this.options.mirrorContainer = elementOptions.options.mirrorContainer;
+
         // User has defined their own custom logic to determine if a drag
         // operation can begin.
         if (elementOptions.options.startDrag) {
@@ -458,6 +470,7 @@ class DragDropService {
         if (sourceOptions.options.dragDrop) {
             sourceOptions.options.dragDrop({
                 ...this.internalOperation,
+                element: el,
                 targetContainer: target,
                 targetIndex,
                 targetSibling: sibling ?? undefined
@@ -561,6 +574,32 @@ class DragDropService {
         }
     }
 
+    /**
+     * Notification that the drag operation has created (or moved) a shadow
+     * element.
+     * 
+     * @param el The shadow element that is has been added to the container (this is NOT the original element).
+     * @param target The target container being hovered over.
+     * @param source The source container the element came from.
+     */
+    private drakeEventShadow(el: Element, target: Element, source: Element): void {
+        const sourceOptions = this.sourceContainers.find(c => c.element === source);
+        const targetOptions = this.targetContainers.find(c => c.element === target);
+
+        // No sourceOptions found means this isn't a valid source container.
+        // No targetOptions found means this isn't a valid target container.
+        if (!sourceOptions || !targetOptions || !this.internalOperation) {
+            return;
+        }
+
+        if (sourceOptions.options.dragShadow) {
+            sourceOptions.options.dragShadow({
+                ...this.internalOperation,
+                shadow: el
+            });
+        }
+    }
+
     // #endregion
 }
 
@@ -610,6 +649,32 @@ function destroyService(service: DragDropService): void {
 }
 
 /**
+ * Get the target options from the value, which could either be an options
+ * object or a simple string identifier.
+ * 
+ * @param value The value that should be translated into an options object.
+ *
+ * @returns An options object that conforms to IDragTargetOptions.
+ */
+function getTargetOptions(value: string | IDragTargetOptions): IDragTargetOptions | null {
+    if (!value) {
+        return null;
+    }
+
+    if (typeof value === "string") {
+        return {
+            id: value
+        };
+    }
+    else if (typeof value === "object" && value.id) {
+        return value;
+    }
+    else {
+        return null;
+    }
+}
+
+/**
  * Defines the source of a drag and drop operation.
  *
  * When using a v-for to display the items, ensure you use a unique :key. Otherwise
@@ -652,26 +717,34 @@ export const DragSource: Directive<HTMLElement, IDragSourceOptions> = {
  * When using a v-for to display the items, ensure you use a unique :key. Otherwise
  * when you .splice() after a drop weird things will happen.
  */
-export const DragTarget: Directive<HTMLElement, IDragTargetOptions> = {
+export const DragTarget: Directive<HTMLElement, string | IDragTargetOptions> = {
     mounted(element, binding) {
-        if (!binding.value || !binding.value.id) {
+        const options = getTargetOptions(binding.value);
+
+        if (!options) {
             console.error("DragTarget must have a valid identifier.");
             return;
         }
 
         dragulaScriptPromise.then(() => {
-            const service = getDragDropService(binding.value.id);
+            // This will never be null, but TS doesn't know that because we
+            // are inside a function callback.
+            if (options) {
+                const service = getDragDropService(options.id);
 
-            service.addTargetContainer(element, binding.value);
+                service.addTargetContainer(element, options);
+            }
         });
     },
 
     unmounted(element, binding) {
-        if (!binding.value || !binding.value.id) {
+        const options = getTargetOptions(binding.value);
+
+        if (!options) {
             return;
         }
 
-        const service = getExistingDragDropService(binding.value.id);
+        const service = getExistingDragDropService(options.id);
 
         if (service) {
             service.removeTargetContainer(element);

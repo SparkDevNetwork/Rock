@@ -452,7 +452,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 var attributes = AttributeFiltersGuids.Select( a => AttributeCache.Get( a ) )
                     .Where( a => a != null )
-                    .Select( a => ClientAttributeHelper.ToClientEditableAttributeValue( a, a.DefaultValue ) )
+                    .Select( a => PublicAttributeHelper.ToPublicEditableAttributeValue( a, a.DefaultValue ) )
                     .ToList();
 
                 return new

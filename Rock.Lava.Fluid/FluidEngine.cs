@@ -108,7 +108,7 @@ namespace Rock.Lava.Fluid
                 // If the value is an Enum, render the value name.
                 if ( value is Enum e )
                 {
-                    return e.ToString();
+                    return new LavaEnumValue( e );
                 }
 
                 // This converter cannot process the value.

@@ -98,6 +98,8 @@ namespace Rock.Model
                 DeviceUniqueIdentifier = model.DeviceUniqueIdentifier,
                 DeviceVersion = model.DeviceVersion,
                 IsActive = model.IsActive,
+                LastSeenDateTime = model.LastSeenDateTime,
+                LastVerifiedDateTime = model.LastVerifiedDateTime,
                 MACAddress = model.MACAddress,
                 Manufacturer = model.Manufacturer,
                 Model = model.Model,
@@ -182,6 +184,8 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.LastSeenDateTime = source.LastSeenDateTime;
+            target.LastVerifiedDateTime = source.LastVerifiedDateTime;
             target.MACAddress = source.MACAddress;
             target.Manufacturer = source.Manufacturer;
             target.Model = source.Model;

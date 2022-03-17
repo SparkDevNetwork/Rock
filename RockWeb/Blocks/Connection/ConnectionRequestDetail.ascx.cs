@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Dynamic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -96,7 +95,7 @@ namespace RockWeb.Blocks.Connection
                             <p><strong>ConnectionRequest, CurrentPerson, Context, PageParameter, Campuses</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
-        //DefaultValue = Lava.ConnectionRequestDetails, // For Testing Only
+        // DefaultValue = Lava.ConnectionRequestDetails, // For Testing Only
         IsRequired = false,
         Order = 8 )]
 
@@ -676,7 +675,20 @@ namespace RockWeb.Blocks.Connection
 
                     connectionRequest.ConnectorPersonAliasId = newConnectorPersonAliasId;
                     connectionRequest.PersonAlias = personAliasService.Get( ppRequestor.PersonAliasId.Value );
-                    connectionRequest.ConnectionState = rblState.SelectedValueAsEnum<ConnectionState>();
+
+                    var state = rblState.SelectedValueAsEnumOrNull<ConnectionState>();
+
+                    // If a value is selected in the radio button list, use it, otherwise use "Active".
+                    // This prevents the "FutureFollowUp" State from remaining on a Connection Request if the Connection Type's "Enable Future Follow-up" was unchecked.
+                    if ( state.HasValue )
+                    {
+                        connectionRequest.ConnectionState = rblState.SelectedValueAsEnum<ConnectionState>();
+                    }
+                    else
+                    {
+                        connectionRequest.ConnectionState = ConnectionState.Active;
+                    }
+
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
 
                     connectionRequest.CampusId = cpCampus.SelectedCampusId;
@@ -687,7 +699,16 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
 
                     connectionRequest.Comments = tbComments.Text.SanitizeHtml();
-                    connectionRequest.FollowupDate = dpFollowUp.SelectedDate;
+
+                    // If this request is a Future FollowUp state, use the selected date from the date picker, otherwise it should be null.
+                    if ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
+                    {
+                        connectionRequest.FollowupDate = dpFollowUp.SelectedDate;
+                    }
+                    else
+                    {
+                        connectionRequest.FollowupDate = null;
+                    }
 
                     if ( !Page.IsValid )
                     {
@@ -950,7 +971,18 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblState_SelectedIndexChanged( object sender, EventArgs e )
         {
-            if ( rblState.SelectedValueAsEnum<ConnectionState>() == ConnectionState.FutureFollowUp )
+            SyncRequestEditModeFutureFollowUp();
+        }
+
+        /// <summary>
+        /// Synchronizes the request's edit mode for Future Follow-Up date picker.
+        /// </summary>
+        private void SyncRequestEditModeFutureFollowUp()
+        {
+            var isFutureFollowUp = !rblState.SelectedValue.IsNullOrWhiteSpace() &&
+                rblState.SelectedValueAsEnum<ConnectionState>() == ConnectionState.FutureFollowUp;
+
+            if ( isFutureFollowUp )
             {
                 dpFollowUp.Visible = true;
                 dpFollowUp.Required = true;
@@ -1413,7 +1445,7 @@ namespace RockWeb.Blocks.Connection
                         rockContext.SaveChanges();
                         connectionRequestActivity.SaveAttributeValues( rockContext );
 
-                        if ( ViewState[ViewStateKey.ActivityWebViewMode]?.ToStringOrDefault("False") == "False" )
+                        if ( ViewState[ViewStateKey.ActivityWebViewMode]?.ToStringOrDefault( "False" ) == "False" )
                         {
                             BindConnectionRequestActivitiesGrid( connectionRequest, rockContext );
                         }
@@ -2311,28 +2343,22 @@ namespace RockWeb.Blocks.Connection
                 ppRequestor.Enabled = true;
             }
 
-            // State
-            rblState.BindToEnum<ConnectionState>();
+            // Set the Connection State options.
+            ConnectionState[] ignoredConnectionTypes = { };
+
+            // If this Connection Type does not allow Future Follow-Up, ignore it from the ConnectionState types.
             if ( !connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup )
             {
-                rblState.Items.RemoveAt( 2 );
+                ignoredConnectionTypes = new ConnectionState[] { ConnectionState.FutureFollowUp };
             }
+
+            // Ignore binding the Connection Types that are in the provided array.
+            rblState.BindToEnum( ignoreTypes: ignoredConnectionTypes );
 
             rblState.SetValue( connectionRequest.ConnectionState.ConvertToInt().ToString() );
 
-            // Follow up Date
-            if ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
-            {
-                dpFollowUp.Visible = true;
-                if ( connectionRequest.FollowupDate != null )
-                {
-                    dpFollowUp.SelectedDate = connectionRequest.FollowupDate;
-                }
-                else
-                {
-                    dpFollowUp.Visible = false;
-                }
-            }
+            // Controls whether the date picker for Future Follow-Up is displayed.
+            SyncRequestEditModeFutureFollowUp();
 
             tbComments.Text = connectionRequest.Comments;
 

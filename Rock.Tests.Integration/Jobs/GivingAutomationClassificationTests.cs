@@ -90,7 +90,7 @@ namespace Rock.Tests.Integration.Jobs
         #region GetAmountIqrCount
 
         /// <summary>
-        /// Tests that normal amount deviation count calculates correctly.
+        /// Tests that normal amount deviation count calculates correctly when median is $30
         /// </summary>
         /// <param name="daysSinceLastTransaction">The days since last transaction.</param>
         /// <param name="expected">The expected.</param>
@@ -295,6 +295,8 @@ namespace Rock.Tests.Integration.Jobs
             var transactionCount = last12MonthsTransactions.Count;
             var middleTransactionPosition = transactionCount / 2.00;
             var currentPosition = 0;
+            var refundAmount = 0.00m;
+            bool didARefund = false;
 
             foreach ( var transactionView in last12MonthsTransactions.OrderByDescending( a => a.TransactionDateTime ) )
             {
@@ -316,10 +318,28 @@ namespace Rock.Tests.Integration.Jobs
                     testAmount = amountMedian + ( amountIqr / 2.0M );
                 }
 
-                transactionView.TransactionViewDetails = new List<TransactionViewDetail>
+                // Partial refunds are rare, but let's throw one into our test transactions to help detect problems with the partial refund logic
+                if ( !didARefund )
                 {
-                    new TransactionViewDetail { AccountId = 123, Amount = testAmount }
+                    refundAmount = Math.Round( testAmount * 0.25M, 2 );
+                    didARefund = true;
+                }
+                else
+                {
+                    refundAmount = 0.00M;
+                }
+
+                transactionView.TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
+                {
+                    new TransactionViewDetail { AccountId = 123, Amount = testAmount + refundAmount },
                 };
+
+                if ( refundAmount != 0.00M )
+                {
+                    transactionView.RefundDetails = new List<TransactionViewDetail> {
+                        new TransactionViewDetail { AccountId = 123, Amount = -refundAmount }
+                    };
+                }
             }
 
             return last12MonthsTransactions;
@@ -444,7 +464,6 @@ namespace Rock.Tests.Integration.Jobs
             recentAlerts.Add( new AlertView { AlertDateTime = context.Now.AddDays( -4 ), AlertType = AlertType.FollowUp, AlertTypeId = 1, TransactionId = null } );
             recentAlerts.Add( new AlertView { AlertDateTime = context.Now.AddDays( -5 ), AlertType = AlertType.FollowUp, AlertTypeId = 2, TransactionId = null } );
 
-
             var alerts = new List<FinancialTransactionAlert>();
             foreach ( var lateGiftAlertType in lateGiftAlertTypes )
             {
@@ -465,7 +484,6 @@ namespace Rock.Tests.Integration.Jobs
                     alerts.Add( financialTransactionAlert );
                 }
             }
-
 
             Assert.IsNotNull( alerts );
             Assert.AreEqual( 1, alerts.Count );
@@ -817,7 +835,11 @@ namespace Rock.Tests.Integration.Jobs
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
             last12MonthsTransactions.ForEach( e =>
             {
-                e.TransactionViewDetails[0].AccountId = previousTransactionsAccountId;
+                e.TransactionViewDetailsBeforeRefunds[0].AccountId = previousTransactionsAccountId;
+                if ( e.RefundDetails?.Count == 1 )
+                {
+                    e.RefundDetails[0].AccountId = previousTransactionsAccountId;
+                }
             } );
 
             var alerts = new List<FinancialTransactionAlert>();
@@ -960,9 +982,9 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 7, 8, 0 )]
         [DataRow( 7, 9, 0 )]
         [DataRow( 7, 10, 0 )]
-        [DataRow( 7, 11, 0 )] 
+        [DataRow( 7, 11, 0 )]
         [DataRow( 7, 12, 0 )]
-        [DataRow( 7, 13, 0 )] 
+        [DataRow( 7, 13, 0 )]
         [DataRow( 7, 14, 0 )]
         [DataRow( 7, 15, 0 )]
         [DataRow( 7, 16, 1 )] // Sensitivity 3
@@ -970,12 +992,17 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 7, 18, 1 )]
         [DataRow( 7, 19, 2 )] // Sensitivity 3 and 4
         [DataRow( 7, 20, 2 )]
-        [DataRow( 7, 27, 2 )]
-        [DataRow( 7, 28, 3 )] // Sensitivity 3, 4 and 5 
+        [DataRow( 7, 21, 2 )]
+        [DataRow( 7, 22, 3 )] // Sensitivity 3, 4 and 5 
+        [DataRow( 7, 23, 3 )]
+        [DataRow( 7, 24, 3 )]
+        [DataRow( 7, 25, 3 )]
+        [DataRow( 7, 26, 3 )]
+        [DataRow( 7, 27, 3 )]
+        [DataRow( 7, 28, 3 )]
         [DataRow( 7, 29, 3 )]
-        [DataRow( 7, 40, 3 )] 
+        [DataRow( 7, 40, 3 )]
         [DataRow( 7, 80, 3 )]
-
 
         // Very consistent bi-weekly
         [DataRow( 14, 15, 0 )]
@@ -984,13 +1011,19 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 14, 18, 0 )]
         [DataRow( 14, 19, 0 )]
         [DataRow( 14, 20, 0 )]
-        [DataRow( 14, 21, 1 )] // Sensitivity 3
-        [DataRow( 14, 22, 1 )]
-        [DataRow( 14, 23, 2 )] // Sensitivity 3 and 4
-        [DataRow( 14, 24, 2 )]
-        [DataRow( 14, 25, 3 )] // Sensitivity 3, 4 and 5 
-        [DataRow( 14, 26, 3 )]
-        [DataRow( 14, 27, 3 )]
+        [DataRow( 14, 21, 0 )]
+        [DataRow( 14, 22, 0 )]
+        [DataRow( 14, 23, 1 )] // Sensitivity 3
+        [DataRow( 14, 24, 1 )]
+        [DataRow( 14, 25, 1 )]
+        [DataRow( 14, 26, 2 )] // Sensitivity 3 and 4
+        [DataRow( 14, 27, 2 )]
+        [DataRow( 14, 28, 2 )]
+        [DataRow( 14, 29, 3 )] // Sensitivity 3, 4 and 5
+        [DataRow( 14, 30, 3 )]
+        [DataRow( 14, 31, 3 )]
+        [DataRow( 14, 32, 3 )]
+        [DataRow( 14, 33, 3 )]
 
         // Somewhat consistent bi-weekly
         [DataRow( 17.8, 34, 0, 6.23 )]  // sometimes every 2 weeks, but sometimes every 4 weeks
@@ -1193,7 +1226,7 @@ namespace Rock.Tests.Integration.Jobs
 
         // $500 +/- $50. IQR range is $550 - $450
         // $1100.00 is $600 more than mean. 6x more than IQR
-        [DataRow( 500.0, 100.0, 1100.00, 6.0 )] 
+        [DataRow( 500.0, 100.0, 1100.00, 6.0 )]
 
         // Median Amount $110
         // Upper Median $120
@@ -1260,7 +1293,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = (decimal)transactionAmount , AccountId = 123 }
                  }
@@ -1285,7 +1318,7 @@ namespace Rock.Tests.Integration.Jobs
             Assert.AreEqual( ( decimal ) amountIQR, alert.AmountCurrentIqr );
 
             Assert.IsNotNull( alert.AmountIqrMultiplier );
-            Assert.AreEqual( Math.Round( (decimal)expectedAmountIqrMultiplier, 2), Math.Round( alert.AmountIqrMultiplier.Value, 2) );
+            Assert.AreEqual( Math.Round( ( decimal ) expectedAmountIqrMultiplier, 2 ), Math.Round( alert.AmountIqrMultiplier.Value, 2 ) );
 
             Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
             Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
@@ -1404,7 +1437,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = newTransactionAccountId }
                  }
@@ -1416,7 +1449,11 @@ namespace Rock.Tests.Integration.Jobs
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
             last12MonthsTransactions.ForEach( e =>
              {
-                 e.TransactionViewDetails[0].AccountId = previousTransactionsAccountId;
+                 e.TransactionViewDetailsBeforeRefunds[0].AccountId = previousTransactionsAccountId;
+                 if ( e.RefundDetails?.Count == 1 )
+                 {
+                     e.RefundDetails[0].AccountId = previousTransactionsAccountId;
+                 }
              } );
 
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
@@ -1518,7 +1555,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -1623,7 +1660,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 100M, AccountId = 123 }
                  }
@@ -1768,7 +1805,7 @@ namespace Rock.Tests.Integration.Jobs
                 Id = 888,
                 // have the new gift be X days after the last normal giving date
                 TransactionDateTime = lastGiftDate.AddDays( frequency ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 650M, AccountId = 123 }
                  }
@@ -1858,7 +1895,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -1943,7 +1980,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -2029,7 +2066,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -2114,7 +2151,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -2205,7 +2242,7 @@ namespace Rock.Tests.Integration.Jobs
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
                 AuthorizedPersonGivingId = "G200",
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -2284,7 +2321,7 @@ namespace Rock.Tests.Integration.Jobs
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
                 AuthorizedPersonCampusId = 2,
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -2367,7 +2404,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = now,
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
                  }
@@ -2400,20 +2437,31 @@ namespace Rock.Tests.Integration.Jobs
         }
 
         /// <summary>
-        /// Tests an example transaction that is over $10,000
-        /// There is no requirement of sensitivity (this could be their first transaction).
+        /// Tests example transactions that might be $10,000 or larger
+        /// when normal amount is $500.00
+        /// Some scenerios are where this is their first transaction.
+        /// If they have some transaction history, they might get the Larger Than Usual alert too
         /// Scenario: 
         /// </summary>
         [TestMethod]
-        [DataRow( false, 9999.99 )]
-        [DataRow( false, 10000.00 )]
-        [DataRow( false, 10000.01 )]
-        [DataRow( true, 9999.99 )]
-        [DataRow( true, 10000.00 )]
-        [DataRow( true, 10000.01 )]
-        public void CreateAlertsForTransaction_LargeAmount( bool generateTransactionHistory, double transactionAmount )
+        [DataRow( false, 9999.99, 0, 0 )] // Should create no alert
+        [DataRow( false, 10000.00, 0, 3 )] // Should create 'Large Amount' alerts except for the AccountId 999 one, but not 'Larger than Usual' (they haven't given before)
+        [DataRow( false, 10000.01, 0, 3 )]
+
+        [DataRow( false, 10200.00, 201.00, 0 )] // partial refund takes it under $10000
+        [DataRow( false, 10400.00, 201.00, 3 )] // partial refund but still over $10000
+        [DataRow( false, 10200.00, 10200.00, 0 )] // full refund
+
+        [DataRow( true, 9999.99, 0, 1 )] // Should create 'Larger than Usual', but not 'Large Amount' alerts
+        [DataRow( true, 10000.00, 0, 4 )] // Should create 'Large Amount' alerts and 'Larger than Usual' (they normally give $500)
+        [DataRow( true, 10000.01, 0, 4 )] // Should create 'Large Amount' alerts and 'Larger than Usual' (they normally give $500)
+
+        [DataRow( true, 10200.00, 201.00, 1 )] // Should create 'Larger than Usual', but not the Large Amount alert since the amount is less than $10000 due to the partial refund
+        [DataRow( true, 10400.00, 201.00, 4 )] // Should create 'Larger than Usual', and the Large Amount alert since the amount is still larger than $10000 after the partial refund
+        public void CreateAlertsForTransaction_LargeAmount( bool generateTransactionHistory, double transactionAmount, double refundAmount, int expectedAlertCount )
         {
             var minimumGiftAmount = 10000.00M;
+            int transactionAccountId = 123;
 
             var jobExecutionContext = new TestJobContext();
             var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
@@ -2422,7 +2470,7 @@ namespace Rock.Tests.Integration.Jobs
                     new FinancialTransactionAlertType {
                         Id = 1,
                         Order = 1,
-                        Name = "Amount over $10,000 (No Sensitivity, any Account) - Gratitude",
+                        Name = "Amount over $10,000 (No Sensitivity, any Account)",
                         AmountSensitivityScale = null,
                         FrequencySensitivityScale = null,
                         MinimumGiftAmount = minimumGiftAmount,
@@ -2436,9 +2484,11 @@ namespace Rock.Tests.Integration.Jobs
                         AmountSensitivityScale = null,
                         FrequencySensitivityScale = null,
                         MinimumGiftAmount = minimumGiftAmount,
+                        FinancialAccountId = 123,
                         ContinueIfMatched = true,
                         AlertType = AlertType.Gratitude
                     },
+
                     new FinancialTransactionAlertType {
                         Id = 3,
                         Order = 3,
@@ -2458,6 +2508,17 @@ namespace Rock.Tests.Integration.Jobs
                         ContinueIfMatched = true,
                         AlertType = AlertType.FollowUp
                     },
+                    new FinancialTransactionAlertType {
+                        Id = 5,
+                        Order = 5,
+                        Name = "Amount over $10,000 (No Sensitivity, different AccountId 999)",
+                        AmountSensitivityScale = null,
+                        FrequencySensitivityScale = null,
+                        MinimumGiftAmount = minimumGiftAmount,
+                        FinancialAccountId = 999,
+                        ContinueIfMatched = true,
+                        AlertType = AlertType.Gratitude
+                    },
                 }
             };
 
@@ -2474,11 +2535,19 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
-                     new TransactionViewDetail { Amount = (decimal)transactionAmount, AccountId = 123 }
+                     new TransactionViewDetail { Amount = (decimal)transactionAmount, AccountId = transactionAccountId }
                  }
             };
+
+            if ( refundAmount > 0.00 )
+            {
+                transaction.RefundDetails = new List<TransactionViewDetail>
+                {
+                    new TransactionViewDetail { Amount = -(decimal)refundAmount, AccountId = transactionAccountId }
+                };
+            }
 
             List<TransactionView> last12MonthsTransactions;
 
@@ -2495,59 +2564,33 @@ namespace Rock.Tests.Integration.Jobs
 
             Assert.IsNotNull( alerts );
 
-            if ( ( decimal ) transactionAmount >= minimumGiftAmount )
-            {
-                if ( generateTransactionHistory )
-                {
-                    // Large Gift
-                    // everything including the 'Larger than usual' case
-                    Assert.AreEqual( 4, alerts.Count );
-                }
-                else
-                {
-                    // Large Gift
-                    // everything but the 'Larger than usual' case
-                    Assert.IsFalse( alerts.Any( x => x.AlertTypeId == 3 ) );
-                    Assert.AreEqual( 3, alerts.Count );
-                }
-            }
-            else
-            {
-                if ( generateTransactionHistory )
-                {
-                    // Less than Large Amount gift, but more than the usual $500
-                    Assert.AreEqual( 1, alerts.Count );
-                    Assert.AreEqual( 3, alerts.Single().AlertTypeId );
-                }
-                else
-                {
-                    // Less than Large Amount gift, and no transaction history
-                    Assert.AreEqual( 0, alerts.Count );
-                }
-            }
+
+            Assert.AreEqual( expectedAlertCount, alerts.Count );
         }
 
         /// <summary>
-        /// Tests an example transaction that is large
-        /// Scenario: Family always gives monthly exactly $500. This gift is larger in amount at $501. Make sure
-        /// an alert is not triggered for a small increase that technically is infinite on the sensitivity scale
-        /// because ($1 / 0 => infinite).
+        /// Tests various scenerios for a transaction that might be 'larger than usual'.
+        /// Scenario: Family always gives monthly *exactly* same amount. Make sure alert isn't generated
+        /// in cases where a family usually gives a consistent amount, and then gives a slightly larger amount.
+        ///
+        /// In cases of consistent amount, a small increase would technically be infinite on the sensitivity scale
+        /// because ($1 / 0 => infinite). The logic should have a have a minimum deviation for those cases.
         /// </summary>
         [TestMethod]
-        [DataRow( 0, 500, 510, 0 )]
+        [DataRow( 0, 500, 510, 0 )]  // these larger amounts aren't really large enough to be considered for a Sensitivity 3
         [DataRow( 0, 500, 550, 0 )]
         [DataRow( 0, 500, 600, 0 )]
         [DataRow( 0, 500, 650, 0 )]
         [DataRow( 0, 500, 700, 0 )]
-        [DataRow( 0, 500, 750, 2 )]
-        [DataRow( 0, 500, 1000, 3 )]
+        [DataRow( 0, 500, 750, 2 )]  // Sensitivity 3 alert gets triggered, 50% larger than usual 
+        [DataRow( 0, 500, 1000, 3 )] // Sensitivity 3 and 4 alerts get triggered, twice as larger 
 
-        [DataRow( 0, 100, 110, 0 )]
+        [DataRow( 0, 100, 110, 0 )]  // these larger amounts aren't really large enough to be considered for a Sensitivity 3
         [DataRow( 0, 100, 144, 0 )]
-        [DataRow( 0, 100, 145, 2 )]
+        [DataRow( 0, 100, 145, 2 )]  // Sensitivity 3 alert gets triggered
         [DataRow( 0, 100, 146, 2 )]
         [DataRow( 0, 100, 150, 2 )]
-        [DataRow( 0, 100, 175, 3 )]
+        [DataRow( 0, 100, 175, 3 )]  // Sensitivity 3 and 4 alert gets triggered
         [DataRow( 0, 100, 200, 3 )]
 
         [DataRow( 0, 20, 22, 0 )]
@@ -2620,7 +2663,7 @@ namespace Rock.Tests.Integration.Jobs
             {
                 Id = 888,
                 TransactionDateTime = now.AddDays( -1 ),
-                TransactionViewDetails = new List<TransactionViewDetail>
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
                  {
                      new TransactionViewDetail { Amount = (decimal)transactionAmount, AccountId = 123 }
                  }
@@ -2689,7 +2732,8 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = firstCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 750.00M } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1300.00M } },
+                RefundDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = -550.00M } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2697,7 +2741,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = firstCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1150.00M } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1150.00M } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2705,7 +2749,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = firstCurrencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2713,7 +2757,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = firstCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2721,7 +2765,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = firstCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2729,7 +2773,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = firstCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2737,7 +2781,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = secondCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2745,7 +2789,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = secondCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2753,7 +2797,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = secondCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2761,7 +2805,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = secondCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2769,7 +2813,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = secondCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2777,7 +2821,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = secondCurrencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
             } );
 
             Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
@@ -2909,7 +2953,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2917,7 +2961,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2925,7 +2969,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2933,7 +2977,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2941,7 +2985,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2949,7 +2993,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2957,7 +3001,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2965,7 +3009,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2973,7 +3017,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2981,7 +3025,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2989,7 +3033,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -2997,7 +3041,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3005,7 +3049,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3013,7 +3057,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3021,7 +3065,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3029,7 +3073,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3037,7 +3081,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3045,7 +3089,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3053,7 +3097,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3061,7 +3105,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3069,7 +3113,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3077,7 +3121,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3085,7 +3129,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3093,7 +3137,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3101,7 +3145,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3109,7 +3153,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3117,7 +3161,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3125,7 +3169,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3133,7 +3177,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3141,7 +3185,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3149,7 +3193,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3157,7 +3201,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3165,7 +3209,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3173,7 +3217,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3181,7 +3225,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3189,7 +3233,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3197,7 +3241,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3205,7 +3249,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100000.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100000.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3213,7 +3257,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3221,7 +3265,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3229,7 +3273,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3237,7 +3281,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3245,7 +3289,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3253,7 +3297,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3261,7 +3305,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3269,7 +3313,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3277,7 +3321,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = true,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
             } );
 
             Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
@@ -3399,7 +3443,8 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } }
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
+                RefundDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = -10.0000000000m } }
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3407,7 +3452,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 180.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 180.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3415,7 +3460,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3423,7 +3468,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 45.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 45.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3431,7 +3476,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 155.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 155.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3439,7 +3484,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3447,7 +3492,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3455,7 +3500,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 30.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 30.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3463,7 +3508,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 115.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 115.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3471,7 +3516,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3479,7 +3524,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3487,7 +3532,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3495,7 +3540,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 66.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 66.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3503,7 +3548,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3511,7 +3556,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3519,7 +3564,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3527,7 +3572,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 97.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 97.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3535,7 +3580,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 90.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 90.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3543,7 +3588,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3551,7 +3596,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3559,7 +3604,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 63.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 63.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3567,7 +3612,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3575,7 +3620,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 81.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 81.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3583,7 +3628,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 19.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 19.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3591,7 +3636,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3599,7 +3644,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3607,7 +3652,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3615,7 +3660,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 98.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 98.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3623,7 +3668,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 112.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 112.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3631,7 +3676,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3639,7 +3684,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3647,7 +3692,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 200.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 200.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3655,7 +3700,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3663,7 +3708,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3671,7 +3716,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3679,7 +3724,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 25.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 25.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3687,7 +3732,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3695,7 +3740,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3703,7 +3748,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 25.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 25.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3711,7 +3756,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3719,7 +3764,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3727,7 +3772,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 35.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 35.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3735,7 +3780,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3743,7 +3788,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 135.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 135.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3751,7 +3796,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3759,7 +3804,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 108.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 108.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3767,7 +3812,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3775,7 +3820,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3783,7 +3828,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3791,7 +3836,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3799,7 +3844,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 22.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 22.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3807,7 +3852,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 98.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 98.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3815,7 +3860,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 116.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 116.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3823,7 +3868,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3831,7 +3876,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3839,7 +3884,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3847,7 +3892,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3855,7 +3900,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 132.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 132.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3863,7 +3908,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3871,7 +3916,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3879,7 +3924,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 105.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 105.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3887,7 +3932,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3895,7 +3940,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 107.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 107.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3903,7 +3948,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 13.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 13.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3911,7 +3956,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 35.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 35.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3919,7 +3964,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3927,7 +3972,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3935,7 +3980,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3943,7 +3988,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 135.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 135.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3951,7 +3996,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3959,7 +4004,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3967,7 +4012,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3975,7 +4020,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3983,7 +4028,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3991,7 +4036,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -3999,7 +4044,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4007,7 +4052,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4015,7 +4060,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4023,7 +4068,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4031,7 +4076,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4039,7 +4084,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4047,7 +4092,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 13.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 13.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4055,7 +4100,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 77.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 77.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4063,7 +4108,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4071,7 +4116,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4079,7 +4124,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 73.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 73.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4087,7 +4132,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4095,7 +4140,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4103,7 +4148,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 72.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 72.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4111,7 +4156,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4119,7 +4164,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 96.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 96.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4127,7 +4172,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4135,7 +4180,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 66.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 66.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4143,7 +4188,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 175.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 175.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4151,7 +4196,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4159,7 +4204,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4167,7 +4212,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4175,7 +4220,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 95.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 95.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4183,7 +4228,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 125.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 125.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4191,7 +4236,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 136.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 136.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4199,7 +4244,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4207,7 +4252,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 95.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 95.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4215,7 +4260,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4223,7 +4268,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4231,7 +4276,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 125.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 125.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4239,7 +4284,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4247,7 +4292,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4255,7 +4300,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4263,7 +4308,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4271,7 +4316,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4279,7 +4324,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4287,7 +4332,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 190.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 190.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4295,7 +4340,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4303,7 +4348,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 175.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 175.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4311,7 +4356,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4319,7 +4364,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
             } );
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
             {
@@ -4327,7 +4372,7 @@ namespace Rock.Tests.Integration.Jobs
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
             } );
 
             Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );

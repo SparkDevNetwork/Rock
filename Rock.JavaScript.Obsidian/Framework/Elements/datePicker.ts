@@ -206,6 +206,9 @@ export default defineComponent({
                 if (this.isCurrent) {
                     this.internalValue = "Current";
                 }
+                else {
+                    this.internalValue = null;
+                }
             }
         },
 
@@ -236,6 +239,15 @@ export default defineComponent({
                 }
 
                 this.internalValue = this.modelValue;
+            }
+        },
+
+        displayCurrentOption() {
+            // clear out the "current" data this option is disabled so we can actually set a new value
+            if (!this.displayCurrentOption && this.isCurrent) {
+                this.internalValue = null;
+                this.isCurrent = false;
+                this.currentDiff = "0";
             }
         }
     },

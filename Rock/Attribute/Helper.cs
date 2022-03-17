@@ -730,7 +730,7 @@ This can be due to multiple threads updating the same attribute at the same time
                     } )
                     .ToList(),
                 ConfigurationOptions = fieldTypeCache.Field?.GetPublicConfigurationOptions( configurationValues ) ?? new Dictionary<string, string>(),
-                DefaultValue = fieldTypeCache.Field?.GetClientEditValue( attribute.DefaultValue, configurationValues ) ?? string.Empty
+                DefaultValue = fieldTypeCache.Field?.GetPublicEditValue( attribute.DefaultValue, configurationValues ) ?? string.Empty
             };
         }
 
@@ -802,7 +802,7 @@ This can be due to multiple threads updating the same attribute at the same time
             newAttribute.PreHtml = attribute.PreHtml;
             newAttribute.PostHtml = attribute.PostHtml;
             newAttribute.FieldTypeId = fieldTypeCache.Id;
-            newAttribute.DefaultValue = fieldTypeCache.Field.GetValueFromClient( attribute.DefaultValue, configurationValues );
+            newAttribute.DefaultValue = fieldTypeCache.Field.GetPrivateEditValue( attribute.DefaultValue, configurationValues );
 
             var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
             newAttribute.Categories.Clear();

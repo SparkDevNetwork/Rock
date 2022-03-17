@@ -24,6 +24,7 @@
 import { AchievementType } from "./achievementType";
 import { BenevolenceType } from "./benevolenceType";
 import { FollowingEventType } from "./followingEventType";
+import { SignatureDocumentTemplate } from "./signatureDocumentTemplate";
 import { StreakType } from "./streakType";
 import { Badge } from "./badge";
 import { AuthScope } from "./authScope";
@@ -64,6 +65,7 @@ export {
     AchievementType,
     BenevolenceType,
     FollowingEventType,
+    SignatureDocumentTemplate,
     StreakType,
     Badge,
     AuthScope,

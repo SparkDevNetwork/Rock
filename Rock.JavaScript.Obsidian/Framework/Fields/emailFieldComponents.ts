@@ -17,6 +17,8 @@
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import EmailBox from "../Elements/emailBox";
+import TextBox from "../Elements/textBox";
+import { useVModelPassthrough } from "../Util/component";
 
 export const EditComponent = defineComponent({
     name: "EmailField.Edit",
@@ -46,6 +48,32 @@ export const EditComponent = defineComponent({
     },
     template: `
 <EmailBox v-model="internalValue" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "EmailField.Filter",
+
+    components: {
+        TextBox
+    },
+
+    props: getFieldEditorProps(),
+
+    emits: [
+        "update:modelValue"
+    ],
+
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        return {
+            internalValue
+        };
+    },
+
+    template: `
+<TextBox v-model="internalValue" />
 `
 });
 

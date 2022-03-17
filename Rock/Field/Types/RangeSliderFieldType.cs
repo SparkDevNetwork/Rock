@@ -20,6 +20,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -29,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to select an integer value using a slider
     /// </summary>
+    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     public class RangeSliderFieldType : FieldType
     {
         #region Formatting

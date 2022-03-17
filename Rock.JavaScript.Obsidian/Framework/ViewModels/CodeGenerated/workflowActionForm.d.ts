@@ -40,6 +40,7 @@ export type WorkflowActionForm = IEntity & {
     personEntryCampusStatusValueId?: number | null;
     personEntryCampusTypeValueId?: number | null;
     personEntryConnectionStatusValueId?: number | null;
+    personEntryDescription?: string | null;
     personEntryEmailEntryOption?: number;
     personEntryFamilyAttributeGuid?: Guid | null;
     personEntryGenderEntryOption?: number;
@@ -51,9 +52,12 @@ export type WorkflowActionForm = IEntity & {
     personEntryPostHtml?: string | null;
     personEntryPreHtml?: string | null;
     personEntryRecordStatusValueId?: number | null;
+    personEntrySectionTypeValueId?: number | null;
+    personEntryShowHeadingSeparator?: boolean;
     personEntrySpouseAttributeGuid?: Guid | null;
     personEntrySpouseEntryOption?: number;
     personEntrySpouseLabel?: string | null;
+    personEntryTitle?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;
