@@ -1521,6 +1521,39 @@ namespace RockWeb.Blocks.Event
             pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = "block";
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblFamilyOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblFamilyOptions_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int? selectedFamilyMember =
+                ddlFamilyMembers.Visible
+                && pnlFamilyMembers.Visible
+                && ( pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] == null || pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] != "none" )
+                    ? ddlFamilyMembers.SelectedValueAsInt()
+                    : RegistrationState.Registrants[CurrentRegistrantIndex].PersonId;
+
+            if ( rblFamilyOptions.SelectedItem.Text == "None of the above" )
+            {
+                selectedFamilyMember = null;
+                if ( ddlFamilyMembers.Items.Count > 0 )
+                {
+                    ddlFamilyMembers.SelectedIndex = 0;
+                }
+            }
+
+            SetRegistrantFields( selectedFamilyMember );
+            CreateRegistrantControls( true );
+
+            decimal currentStep = ( FormCount * CurrentRegistrantIndex ) + CurrentFormIndex + 1;
+            PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
+            pnlRegistrantProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
+
+            ShowFamilyMembersPanel();
+        }
+
         #endregion
 
         #region Summary Panel Events
@@ -4566,17 +4599,17 @@ namespace RockWeb.Blocks.Event
                 controlFamilyGuid = CurrentPerson.GetFamily().Guid;
             }
 
-            string script = string.Format(
-    @"
+            string script = $@"
     // Adjust the label of 'is in the same family' based on value of first name entered
     $('input.js-first-name').change( function() {{
         var name = $(this).val();
         if ( name == null || name == '') {{
-            name = '{11}';
+            name = '{RegistrantTerm}';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' is in the same {10} as');
+        $lbl.text( name + ' is in the same {GetAttributeValue( AttributeKey.FamilyTerm )} as');
     }} );
+
     $('input.js-your-first-name').change( function() {{
         var name = $(this).val();
         if ( name == null || name == '') {{
@@ -4585,25 +4618,13 @@ namespace RockWeb.Blocks.Event
             name += ' is';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' in the same {10} as');
+        $lbl.text( name + ' in the same {GetAttributeValue( AttributeKey.FamilyTerm )} as');
     }} );
 
-    // Adjust the Family Member dropdown when choosing same immediate family
-    $('#{12}').on('change', function() {{
-        var displaySetting = $('#{13}').css('display');
-
-        if ( {15} && $(""input[id*='{12}']:checked"").val() == '{14}' && displaySetting == 'none' ) {{
-            $( '#{13}').slideToggle();
-        }}
-        else if ( displaySetting == 'block' ) {{
-            $('#{13}').slideToggle();
-        }}
-    }});
-
-    $('#{0}').on('change', function() {{
-        var totalCost = parseFloat($('#{1}').val());
-        var minDue = parseFloat($('#{2}').val());
-        var previouslyPaid = parseFloat($('#{3}').val());
+    $('#{nbAmountPaid.ClientID}').on('change', function() {{
+        var totalCost = parseFloat($('#{hfTotalCost.ClientID}').val());
+        var minDue = parseFloat($('#{hfMinimumDue.ClientID}').val());
+        var previouslyPaid = parseFloat($('#{hfPreviouslyPaid.ClientID}').val());
         var balanceDue = totalCost - previouslyPaid;
 
         // Format and validate the amount entered
@@ -4618,10 +4639,10 @@ namespace RockWeb.Blocks.Event
                 amountPaid = balanceDue
             }}
         }}
-        $(this).val(amountPaid.toFixed({16}));
+        $(this).val(amountPaid.toFixed({RockCurrencyCodeInfo.GetDecimalPlaces()}));
 
         var amountRemaining = totalCost - ( previouslyPaid + amountPaid );
-        $('#{4}').text( '{6}' + amountRemaining.toLocaleString(undefined, {{ minimumFractionDigits: {16}, maximumFractionDigits: {16} }}));
+        $('#{lRemainingDue.ClientID}').text( '{RockCurrencyCodeInfo.GetCurrencySymbol()}' + amountRemaining.toLocaleString(undefined, {{ minimumFractionDigits: {RockCurrencyCodeInfo.GetDecimalPlaces()}, maximumFractionDigits: {RockCurrencyCodeInfo.GetDecimalPlaces()} }}));
     }});
 
     // Detect credit card type
@@ -4646,9 +4667,9 @@ namespace RockWeb.Blocks.Event
         $(this).parents('.checkbox').next('.toggle-content').slideToggle();
     }});
 
-    if ( $('#{5}').val() == 'true' ) {{
+    if ( $('#{hfTriggerScroll.ClientID}').val() == 'true' ) {{
         setTimeout('window.scrollTo(0,0)',0);
-        $('#{5}').val('')
+        $('#{hfTriggerScroll.ClientID}').val('')
     }}
 
     // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
@@ -4658,8 +4679,8 @@ namespace RockWeb.Blocks.Event
         try {{
             var qryString = this.contentWindow.location.search;
             if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{
-                $('#{7}').val(qryString);
-                window.location = ""javascript:{8}"";
+                $('#{hfRequiredDocumentQueryString.ClientID}').val(qryString);
+                window.location = ""javascript:{this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, string.Empty )}"";
             }}
         }}
         catch (e) {{
@@ -4667,29 +4688,11 @@ namespace RockWeb.Blocks.Event
         }}
     }});
 
-    if ($('#{9}').val() != '' ) {{
-        $('#iframeRequiredDocument').attr('src', $('#{9}').val() );
+    if ($('#{hfRequiredDocumentLinkUrl.ClientID}').val() != '' ) {{
+        $('#iframeRequiredDocument').attr('src', $('#{hfRequiredDocumentLinkUrl.ClientID}').val() );
     }}
 
-",
-            nbAmountPaid.ClientID,                 // {0}
-            hfTotalCost.ClientID,                   // {1}
-            hfMinimumDue.ClientID,                  // {2}
-            hfPreviouslyPaid.ClientID,              // {3}
-            lRemainingDue.ClientID,                 // {4}
-            hfTriggerScroll.ClientID,               // {5}
-            RockCurrencyCodeInfo.GetCurrencySymbol(),   // {6}
-            hfRequiredDocumentQueryString.ClientID, // {7}
-            this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, string.Empty ), // {8}
-            hfRequiredDocumentLinkUrl.ClientID,     // {9}
-            GetAttributeValue( AttributeKey.FamilyTerm ),      // {10}
-            RegistrantTerm,                         // {11}
-            rblFamilyOptions.ClientID,              // {12}
-            pnlFamilyMembers.ClientID,              // {13}
-            controlFamilyGuid,                      // {14}
-            // NULL check not needed here because it is checked at the start of this method.
-            RegistrationTemplate.ShowCurrentFamilyMembers.ToString().ToLower(), // {15}
-            RockCurrencyCodeInfo.GetDecimalPlaces() ); // {16}
+";
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
 
@@ -5258,8 +5261,7 @@ namespace RockWeb.Blocks.Event
                             registrant.PersonName = string.Empty;
                         }
 
-                        foreach ( var field in RegistrationTemplate.Forms
-                            .SelectMany( f => f.Fields ) )
+                        foreach ( var field in RegistrationTemplate.Forms.SelectMany( f => f.Fields ) )
                         {
                             object dbValue = null;
 
