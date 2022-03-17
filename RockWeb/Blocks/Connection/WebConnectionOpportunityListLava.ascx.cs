@@ -257,30 +257,38 @@ namespace RockWeb.Blocks.Connection
                 {
                     filterOptions.ConnectorPersonIds = null;
                 }
+
                 // Put all the opportunities in memory so we can check security.
                 var connectionOpportunityQuery = opportunityService.GetConnectionOpportunitiesQuery( filterOptions );
                 var opportunities = connectionOpportunityQuery.ToList()
                     .Where( o => o.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
 
-                    // Get the various counts to make available to the Lava template.
+                // Get the various counts to make available to the Lava template.
                 // The conversion of the value to a dictionary is a temporary work-around
                 // until we have a way to mark external types as lava safe.
                 var opportunityIds = opportunities.Select( o => o.Id ).ToList();
-                var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds );
                 var connectionRequestCounts = new Dictionary<string, string>();
-                foreach ( var opportunityId in opportunityIds )
+
+                // We only need to perform this query under this condition, otherwise we will use the
+                // requestCountsPerOpportunity fetched earlier.
+                if ( _onlyShowOpportunitiesWithRequestsForUser )
                 {
-                    if ( _onlyShowOpportunitiesWithRequestsForUser )
+                    var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds );
+                    foreach ( var opportunityId in opportunityIds )
                     {
+                        // Note use AssignedToYouCount here:
                         connectionRequestCounts.Add( opportunityId.ToString(), requestCounts[opportunityId].AssignedToYouCount.ToString() );
                     }
-                    else
+                }
+                else
+                {
+                    var requestCounts = opportunityClientService.GetOpportunityRequestCountsTotal( opportunityIds );
+                    foreach ( var opportunityId in opportunityIds )
                     {
-                        var connectionOpportunityRequestCount = opportunities.First( v => v.Id == opportunityId ).ConnectionRequests.Count.ToString();
-                        connectionRequestCounts.Add( opportunityId.ToString(), connectionOpportunityRequestCount );
+                        // Note use TotalCount here:
+                        connectionRequestCounts.Add( opportunityId.ToString(), requestCounts[opportunityId].TotalCount.ToString() );
                     }
                 }
-
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                 mergeFields.AddOrReplace( "ConnectionOpportunities", opportunities );

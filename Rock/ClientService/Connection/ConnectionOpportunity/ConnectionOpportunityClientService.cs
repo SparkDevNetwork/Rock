@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModel.Connection.ConnectionRequest;
@@ -90,6 +91,52 @@ namespace Rock.ClientService.Connection.ConnectionOpportunity
                 } )
                 .ToList()
                 .ForEach( o => requestCounts[o.Id].AssignedToYouCount = o.Count );
+
+            return requestCounts;
+        }
+
+        /// <summary>
+        /// Gets the total active opportunity request counts for the given opportunities. This 
+        /// does NOT calculate the <see cref="ConnectionRequestCountsViewModel.AssignedToYouCount"/>.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal method</strong> that is going to be removed when we
+        ///         have more time and will be combined with the GetOpportunityRequestCounts method
+        ///         and a new "options" argument filter that will let you control which queries to
+        ///         perform.
+        ///     </para>
+        ///     <para>
+        ///         This method does not check security, it is assumed you have already done so.
+        ///     </para>
+        /// </remarks>
+        /// <param name="connectionOpportunityIds">The connection opportunity identifiers.</param>
+        /// <returns>A dictionary of connection request count objects.</returns>
+        [RockInternal]
+        public Dictionary<int, ConnectionRequestCountsViewModel> GetOpportunityRequestCountsTotal( IEnumerable<int> connectionOpportunityIds )
+        {
+            var connectionRequestService = new ConnectionRequestService( RockContext );
+
+            // Create all counts as initially empty, this method must always return
+            // a value for each opportunity id.
+            var requestCounts = connectionOpportunityIds.ToDictionary( id => id, _ => new ConnectionRequestCountsViewModel() );
+
+            // Find all the active connection requests for the given opportunities.
+            var activeRequestQry = connectionRequestService.Queryable()
+                .Where( r => connectionOpportunityIds.Contains( r.ConnectionOpportunityId )
+                    && r.ConnectionState == ConnectionState.Active );
+
+            // Group them by the connection opportunity and get the counts for
+            // each opportunity.
+            activeRequestQry
+                .GroupBy( r => r.ConnectionOpportunityId )
+                .Select( g => new
+                {
+                    Id = g.Key,
+                    Count = g.Count()
+                } )
+                .ToList()
+                .ForEach( o => requestCounts[o.Id].TotalCount = o.Count );
 
             return requestCounts;
         }

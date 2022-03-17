@@ -78,6 +78,12 @@ namespace Rock.Model
                         Text = setValue && fieldValue != null ? fieldValue.ToString() : string.Empty
                     };
 
+                    // Enable the middle name field if it is currently disabled but required and there is no value.
+                    if ( !tbMiddleName.Enabled && tbMiddleName.Required && tbMiddleName.Text.IsNullOrWhiteSpace() )
+                    {
+                        tbMiddleName.Enabled = true;
+                    }
+
                     personFieldControl = tbMiddleName;
                     break;
 

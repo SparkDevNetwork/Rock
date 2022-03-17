@@ -175,6 +175,32 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Determines whether change notification is supported by this field type
+        /// with the specified configuration values.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The configuration values used to check support.</param>
+        /// <returns><c>true</c> if change notification is supported; otherwise, <c>false</c>.</returns>
+        internal bool IsWebFormChangeNotificationSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Field == null )
+            {
+                return false;
+            }
+
+            try
+            {
+                var configurationValues = privateConfigurationValues
+                    .ToDictionary( v => v.Key, v => new Field.ConfigurationValue( v.Value ) );
+
+                return Field.HasChangeHandler( Field.EditControl( configurationValues, "ignored" ) );
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

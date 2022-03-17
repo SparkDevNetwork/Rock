@@ -1608,7 +1608,7 @@ This can be due to multiple threads updating the same attribute at the same time
             {
                 foreach ( var attributeKeyValue in item.Attributes )
                 {
-                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
+                    Control control = parentControl?.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
                     if ( control != null )
                     {
                         result.AddOrIgnore( attributeKeyValue.Value, control );
