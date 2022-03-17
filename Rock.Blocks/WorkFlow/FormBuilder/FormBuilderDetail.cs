@@ -738,7 +738,19 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 // Convert the attribute configuration into values that can be used
                 // for filtering a value.
                 var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
-                var filterConfigurationValues = fieldType.Field.GetPublicFilterConfigurationValues( privateConfigurationValues );
+                var publicConfigurationValues = fieldType.Field.GetPublicFilterConfigurationValues( privateConfigurationValues );
+
+                /*
+                 * Daniel Hazelbaker - 3/17/2022
+                 * 
+                 * This should be removed once the WorkflowEntry block has been converted
+                 * into Obsidian. This filters out any form fields whose field type does
+                 * not support change notification in WebForms.
+                 */
+                if ( !fieldType.IsWebFormChangeNotificationSupported( privateConfigurationValues ) )
+                {
+                    continue;
+                }
 
                 var source = new FieldFilterSourceViewModel
                 {
@@ -747,7 +759,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     Attribute = new PublicFilterableAttributeViewModel
                     {
                         AttributeGuid = field.Guid,
-                        ConfigurationValues = filterConfigurationValues,
+                        ConfigurationValues = publicConfigurationValues,
                         Description = field.Description,
                         FieldTypeGuid = field.FieldTypeGuid,
                         Name = field.Name
