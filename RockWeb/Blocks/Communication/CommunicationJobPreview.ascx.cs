@@ -95,13 +95,13 @@ namespace RockWeb.Blocks.Communication
 
             public const string LavaDebugCommand = "{{ 'Lava' | Debug }}";
 
-            public const string EmailContainerHtml = @"<span class='card-text'>
+            public const string EmailContainerHtml = @"
                                 <div id='divEmailPreview'
-                                    class='email-preview js-email-preview center-block device-browser' style='position: relative; height: 720px;'>
+                                    class='email-preview js-email-preview overflow-auto' style='position: relative; height: 720px;'>
                                     <iframe name='emailPreview' src='javascript: window.frameElement.getAttribute('srcdoc');'
                                         id='ifEmailPreview' name='emailpreview-iframe'
-                                        class='emaileditor-iframe js-emailpreview-iframe email-wrapper email-content-desktop' frameborder='0' border='0' cellspacing='0'
-                                        scrolling='yes' srcdoc='[SOURCE_REPLACEMENT]''></iframe>
+                                        class='emaileditor-iframe js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll' frameborder='0' border='0' cellspacing='0'
+                                        scrolling='no' srcdoc='[SOURCE_REPLACEMENT]''></iframe>
                                     <div class='resize-sensor'
                                         style='position: absolute; inset: 0px; overflow: scroll; z-index: -1; visibility: hidden;'>
                                         <div class='resize-sensor-expand'
@@ -113,8 +113,7 @@ namespace RockWeb.Blocks.Communication
                                             <div style='position: absolute; left: 0; top: 0; width: 200%; height: 200%'></div>
                                         </div>
                                     </div>
-                                </div>
-                               </span>";
+                                </div>";
         }
 
         #endregion Variables
@@ -388,12 +387,13 @@ namespace RockWeb.Blocks.Communication
 
                 var fromName = Variables.SystemCommunicationRecord.FromName.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.FromName : CurrentPerson.FullName;
                 var fromEmail = Variables.SystemCommunicationRecord.From.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.From : CurrentPerson.Email;
+                var publicationDate = Variables.SystemCommunicationRecord.From.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.From : CurrentPerson.Email;
 
-                lTitle.Text = $"<span class='panel-title'>{Variables.SystemCommunicationRecord.Title} Message Preview</small>";
-                lNavTitle.Text = $"<span class='text-muted'>{Variables.SystemCommunicationRecord.Title}</span>";
-                lFrom.Text = $"<small><span class='text-semibold'>{fromName}</span> <span class='text-muted'>&lt;{fromEmail}&gt;</span></small>";
-                lSubject.Text = $"<small class='text-semibold'>{Variables.SystemCommunicationRecord.Title} | {Variables.SystemCommunicationRecord.Subject}</small>";
-                lDate.Text = $"<small class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</small>";
+                lTitle.Text = Variables.SystemCommunicationRecord.Title;
+                lNavTitle.Text = Variables.SystemCommunicationRecord.Title;
+                lFrom.Text = $"<span class='text-semibold'>{fromName}</span> <span class='text-muted'>&lt;{fromEmail}&gt;</span>";
+                lSubject.Text = $"<span class='text-semibold'>{Variables.SystemCommunicationRecord.Title} | {Variables.SystemCommunicationRecord.Subject}</small>";
+                lDate.Text = $"<span class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</span>";
 
                 string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
 
@@ -422,13 +422,13 @@ namespace RockWeb.Blocks.Communication
         {
             var dayOfWeeks = GetAttributeValues( AttributeKey.SendDaysOfTheWeek )?.Select( dow => ( DayOfWeek ) Enum.Parse( typeof( DayOfWeek ), dow ) );
             var previousWeeks = GetAttributeValue( AttributeKey.PreviousWeeksToShow ).ToIntSafe();
-            var futureWeeks = GetAttributeValue( AttributeKey.PreviousWeeksToShow ).ToIntSafe();
+            var futureWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).ToIntSafe();
 
             Variables.HasSendDate = Variables.RockEmailMessage.Message.Contains( $"{{ {MergeFieldKey.SendDateTime} }}" );
 
-            navMessageDate.Visible = Variables.HasSendDate && dayOfWeeks.Count() > 0;
+            ddlMessageDate.Visible = Variables.HasSendDate && dayOfWeeks.Count() > 0;
 
-            if ( navMessageDate.Visible )
+            if ( ddlMessageDate.Visible )
             {
                 ddlMessageDate.Required = true;
 
