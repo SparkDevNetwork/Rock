@@ -509,41 +509,10 @@ Build up string of check-in areas
 
 
 {% if host == 'rockstage.lcbcchurch.com' %}
-    <style>
-        @media (min-width: 1024px) {
-            .environment-warning {
-                float: left;
-                color: #fff;
-                box-sizing: border-box;
-                position: absolute;
-                top: 23px;
-                left: 98px;
-                font-size: x-large;
-            }
-        }
-        @media (min-width: 769px) and (max-width: 1023px) {
-            .environment-warning {
-                float: left;
-                color: #fff;
-                box-sizing: border-box;
-                position: absolute;
-                top: 27px;
-                left: 98px;
-                font-size: medium;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .environment-warning {
-                display: none;
-            }
-        }
-    </style>
-
     <script>
     $(document).ready(
     function() {
-        $('#fixed-header > div').append('<div class="environment-warning"><i class="fas fa-exclamation-triangle"></i><span style="padding: 0 10px; display: inline-block">Check-In Test Environment</span><i class="fas fa-exclamation-triangle"></i></div>');
+        $('#fixed-header > span.site-name').html('<i class="fas fa-exclamation-triangle"></i><span style="padding: 0 10px;">Check-In Test Environment</span><i class="fas fa-exclamation-triangle"></i>');
     });
     </script>
 {% endif %}
