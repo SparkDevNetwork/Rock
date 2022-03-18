@@ -28,6 +28,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using CsvHelper;
+using CsvHelper.Configuration;
 
 using Rock;
 using Rock.Data;
@@ -2570,12 +2571,24 @@ namespace Rock.Slingshot
                 {
                     using ( var slingshotFileStream = File.OpenText( fileName ) )
                     {
-                        CsvReader csvReader = new CsvReader( slingshotFileStream );
-                        csvReader.Configuration.HasHeaderRecord = true;
+                        var config = new CsvConfiguration( System.Globalization.CultureInfo.CurrentCulture )
+                        {
+                            HasHeaderRecord = true,
+                        };
+
                         if ( willThrowOnMissingField.HasValue )
                         {
-                            csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
+                            config.MissingFieldFound = ( x ) =>
+                            {
+                                if ( willThrowOnMissingField == false )
+                                {
+                                    // ignore
+                                }
+                            };
                         }
+
+                        CsvReader csvReader = new CsvReader( slingshotFileStream, config );
+                        
 
                         return csvReader.GetRecords<T>().ToList();
                     }
@@ -2610,13 +2623,34 @@ namespace Rock.Slingshot
             {
                 var fiFile = new FileInfo( fileName );
                 // Pre process file to see if there are errors.
-                CsvReader csvReader = new CsvReader( slingshotFileStream );
-                csvReader.Configuration.HasHeaderRecord = true;
+
+                var config = new CsvConfiguration( System.Globalization.CultureInfo.CurrentCulture )
+                {
+                    HasHeaderRecord = true,
+                };
+
                 if ( willThrowOnMissingField.HasValue )
                 {
-                    csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
-                    csvReader.Configuration.IgnoreReadingExceptions = true;
+                    config.MissingFieldFound = ( x ) =>
+                    {
+                        if ( willThrowOnMissingField == false )
+                        {
+                            // ignore
+                        }
+                    };
+
+                    config.ReadingExceptionOccurred = ( x ) =>
+                    {
+                        if ( willThrowOnMissingField == false )
+                        {
+                            // ignore
+                        }
+
+                        return true;
+                    };
                 }
+
+                CsvReader csvReader = new CsvReader( slingshotFileStream, config );
 
                 // We're just reading these to spot any problems on a particular row.
                 int i = 1; // start count at the header row
@@ -2629,7 +2663,7 @@ namespace Rock.Slingshot
                     }
                     catch ( Exception ex )
                     {
-                        exceptions.Add( new CsvBadDataException( $"Error converting line {i} of {fiFile.Name} to model type {typeof( T ).FullName} during Slingshot import.", ex ) );
+                        exceptions.Add( new CsvHelperException( csvReader.Context,  $"Error converting line {i} of {fiFile.Name} to model type {typeof( T ).FullName} during Slingshot import.", ex ) );
                     }
 
                     if ( exceptions.Count() >= 1000 )
