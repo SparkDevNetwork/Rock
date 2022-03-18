@@ -32,7 +32,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Phone Number field.
  */
 export class PhoneNumberFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         return formatPhoneNumber(value || "");
     }
 

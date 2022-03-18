@@ -47,31 +47,7 @@ const editComponent = defineAsyncComponent(async () => {
  * The field type handler for the Defined Value Range field.
  */
 export class DefinedValueRangeFieldType extends FieldTypeBase {
-    public override getTextValue(value: PublicAttributeValue): string {
-        try {
-            const clientValue = JSON.parse(value.value ?? "") as ClientValue;
-
-            // If description is undefined or empty string then return text. If
-            // that is undefined then return an empty string.
-            return (clientValue.description || clientValue.text) ?? "";
-        }
-        catch {
-            return super.getTextValue(value);
-        }
-    }
-
-    public override getCondensedTextValue(value: PublicAttributeValue): string {
-        try {
-            const clientValue = JSON.parse(value.value ?? "") as ClientValue;
-
-            return clientValue.text ?? "";
-        }
-        catch {
-            return value.value ?? "";
-        }
-    }
-
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
             const clientValue = JSON.parse(value) as ClientValue;
 
@@ -101,6 +77,17 @@ export class DefinedValueRangeFieldType extends FieldTypeBase {
             catch {
                 return clientValue.value ?? "";
             }
+        }
+        catch {
+            return value;
+        }
+    }
+
+    public override getCondensedTextValue(value: string, _configurationValues: Record<string, string>): string {
+        try {
+            const clientValue = JSON.parse(value ?? "") as ClientValue;
+
+            return clientValue.text ?? "";
         }
         catch {
             return value;

@@ -42,14 +42,14 @@ namespace Rock.ViewModel.Controls
         /// selections when editing a field type.
         /// </summary>
         /// <remarks>
-        /// See: Rock.Field.IFieldType.GetPublicConfigurationOptions()
+        /// See: Rock.Field.IFieldType.GetPublicConfigurationValues()
         /// </remarks>
         /// <value>The configuration options.</value>
-        public Dictionary<string, string> ConfigurationOptions { get; set; }
+        public Dictionary<string, string> ConfigurationValues { get; set; }
 
         /// <summary>
         /// Gets or sets the default attribute value view model that corresponds
-        /// to the current <see cref="ConfigurationOptions"/>.
+        /// to the current <see cref="ConfigurationValues"/>.
         /// </summary>
         /// <value>The default value information.</value>
         public PublicEditableAttributeValueViewModel DefaultValue { get; set; }

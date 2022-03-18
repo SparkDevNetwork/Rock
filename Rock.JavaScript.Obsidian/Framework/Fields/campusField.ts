@@ -57,7 +57,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Campus field.
  */
 export class CampusFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === undefined || value === null || value === "") {
             return "";
         }
@@ -85,14 +85,14 @@ export class CampusFieldType extends FieldTypeBase {
         return ComparisonType.None;
     }
 
-    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+    public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
         if (!value.value) {
             return "";
         }
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
             const selectedValues = values.filter(o => rawValues.filter(v => areEqual(v, o.value)).length > 0);
 
             return `'${selectedValues.map(o => o.text).join("' OR '")}'`;

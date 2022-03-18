@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, ref, watch } from "vue";
+import { Component, defineComponent, PropType, ref, watch } from "vue";
 import Alert from "../../Elements/alert";
 import AttributeEditor from "../../Controls/attributeEditor";
 import DropDownList from "../../Elements/dropDownList";
@@ -29,11 +29,12 @@ import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import { Guid, normalize as normalizeGuid } from "../../Util/guid";
 import { PublicAttributeValue, PublicEditableAttributeValue, ListItem } from "../../ViewModels";
 import { getFieldType } from "../../Fields/index";
-import { truncate } from "../../Services/string";
+import { escapeHtml, truncate } from "../../Services/string";
 import { computed } from "vue";
 import { PublicEditableAttributeViewModel } from "../../ViewModels/publicEditableAttribute";
 import { FieldType } from "../../SystemGuids";
 import { alert, confirmDelete } from "../../Util/dialogs";
+import { compile } from "vue";
 
 type BlockConfiguration = {
     attributeEntityTypeId: number;
@@ -315,26 +316,6 @@ export default defineComponent({
         // #endregion
 
         /**
-         * Get the condensed value to display in a row.
-         * 
-         * @param value The value representation to display.
-         *
-         * @returns A string to display in the grid row for the value.
-         */
-        const getCondensedValue = (value: PublicAttributeValue): string => {
-            // TODO: This should probably be updated to have a new method called
-            // getFieldTypeOrDefault() that will return the Text field type.
-            const fieldType = getFieldType(value.fieldTypeGuid);
-
-            if (!fieldType) {
-                return truncate(value.textValue ?? "", 100);
-            }
-            else {
-                return fieldType.getCondensedTextValue(value);
-            }
-        };
-
-        /**
          * Gets the CSS classes to be applied to the delete button.
          * 
          * @param row The row containing the delete button.
@@ -398,7 +379,6 @@ export default defineComponent({
             entityTypeOptions,
             entityTypeQualifierColumn,
             entityTypeQualifierValue,
-            getCondensedValue,
             getDataCellClass,
             getDeleteButtonClass,
             saveEditAttribute,
@@ -462,7 +442,9 @@ export default defineComponent({
                             <td :class="getDataCellClass(attribute)" data-priority="1" style="white-space: nowrap;">{{ attribute.qualifier }}</td>
                             <td :class="getDataCellClass(attribute)" data-priority="1">{{ attribute.name }}</td>
                             <td :class="getDataCellClass(attribute)" data-priority="1">{{ attribute.categories }}</td>
-                            <td :class="getDataCellClass(attribute)" data-priority="1">{{ getCondensedValue(attribute.value) }}</td>
+                            <td :class="getDataCellClass(attribute)" data-priority="1">
+                                <RockField :attributeValue="attribute.value" :showLabel="false" isCondensed />
+                            </td>
                             <td class="grid-columncommand" data-priority="1" align="center" @click.stop="onIgnore">
                                 <a title="Edit" class="btn btn-default btn-sm" @click.prevent.stop="editAttribute(attribute)"><i class="fa fa-pencil"></i></a>
                             </td>

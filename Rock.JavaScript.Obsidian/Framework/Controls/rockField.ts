@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { getFieldType } from "../Fields/index";
-import { computed, defineComponent, PropType, provide } from "vue";
+import { computed, defineComponent, PropType, provide, ref } from "vue";
 import { TextFieldType } from "../Fields/textField";
 import { PublicAttributeValue, PublicEditableAttributeValue } from "../ViewModels";
 
@@ -39,6 +39,14 @@ export default defineComponent({
         isEditMode: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        showLabel: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        isCondensed: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
     setup(props, { emit }) {
@@ -49,7 +57,7 @@ export default defineComponent({
         });
 
         /** True if the read-only value should be displayed. */
-        const showValue = computed(() => props.showEmptyValue || field.value.getTextValue(props.attributeValue) !== "");
+        const showValue = computed(() => props.showEmptyValue || field.value.getTextValue(props.attributeValue.value ?? "", props.attributeValue.configurationValues ?? {}) !== "");
 
         /** True if this field is required and must be filled in. */
         const isRequired = computed(() => instanceOfEditable(props.attributeValue) && props.attributeValue.isRequired);
@@ -70,13 +78,14 @@ export default defineComponent({
         const valueComponent = computed(() => {
             // This is here to cause the component to update reactively if
             // the value changes.
-            const _ignored = props.attributeValue.value;
+            // Commented out on 3/14/2022 by DSH. If no issues show up it can be removed
+            // at a later point in time (maybe 6 months later). I do not believe this
+            // is needed anymore after the refactoring that was performed.
+            //const _ignored = props.attributeValue.value;
 
-            // TODO: Remove me, this is a temporary hack for DateField needing
-            // to make an async call.
-            const _ignored2 = props.attributeValue.textValue;
-
-            return field.value.getFormattedComponent(props.attributeValue);
+            return props.isCondensed
+                ? field.value.getCondensedFormattedComponent()
+                : field.value.getFormattedComponent();
         });
 
         /** The edit component to use to display the value. */
@@ -89,7 +98,7 @@ export default defineComponent({
                 props.attributeValue.value = newValue;
 
                 if (instanceOfEditable(props.attributeValue)) {
-                    props.attributeValue.textValue = field.value.getTextValueFromConfiguration(props.attributeValue.value, props.attributeValue.configurationValues ?? {});
+                    props.attributeValue.textValue = field.value.getTextValue(props.attributeValue.value ?? "", props.attributeValue.configurationValues ?? {});
                 }
 
                 emit("update:attributeValue", props.attributeValue);
@@ -98,12 +107,7 @@ export default defineComponent({
 
         /** The configuration values for the editor component. */
         const configurationValues = computed(() => {
-            if (instanceOfEditable(props.attributeValue)) {
-                return props.attributeValue.configurationValues;
-            }
-            else {
-                return {};
-            }
+            return props.attributeValue.configurationValues ?? {};
         });
 
         provide("isRequired", isRequired);
@@ -122,16 +126,19 @@ export default defineComponent({
     },
     template: `
 <template v-if="!isEditMode">
-    <div v-if="showValue" class="form-group static-control">
-        <label class="control-label">
-            {{ label }}
-        </label>
-        <div class="control-wrapper">
-            <div class="form-control-static">
-                <component :is="valueComponent" />
+    <template v-if="showLabel">
+        <div v-if="showValue" class="form-group static-control">
+            <label class="control-label">
+                {{ label }}
+            </label>
+            <div class="control-wrapper">
+                <div class="form-control-static">
+                    <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+                </div>
             </div>
         </div>
-    </div>
+    </template>
+    <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
 </template>
 <template v-else>
     <component :is="editComponent"

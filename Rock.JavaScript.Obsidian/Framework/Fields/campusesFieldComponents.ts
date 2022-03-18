@@ -176,6 +176,7 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.FilterCampusTypes] = filterCampusTypes.value.join(",");
             newValue[ConfigurationValueKey.FilterCampusStatus] = filterCampusStatus.value.join(",");
             newValue[ConfigurationValueKey.SelectableCampuses] = selectableCampuses.value.join(",");
+            newValue[ConfigurationValueKey.Values] = JSON.stringify(campusOptions.value);
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
@@ -183,7 +184,8 @@ export const ConfigurationComponent = defineComponent({
                 || newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive] ?? "False")
                 || newValue[ConfigurationValueKey.FilterCampusTypes] !== (props.modelValue[ConfigurationValueKey.FilterCampusTypes] ?? "")
                 || newValue[ConfigurationValueKey.FilterCampusStatus] !== (props.modelValue[ConfigurationValueKey.FilterCampusStatus] ?? "")
-                || newValue[ConfigurationValueKey.SelectableCampuses] !== (props.modelValue[ConfigurationValueKey.SelectableCampuses] ?? "");
+                || newValue[ConfigurationValueKey.SelectableCampuses] !== (props.modelValue[ConfigurationValueKey.SelectableCampuses] ?? "")
+                || newValue[ConfigurationValueKey.Values] !== (props.modelValue[ConfigurationValueKey.Values] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -243,7 +245,7 @@ export const ConfigurationComponent = defineComponent({
         watch(filterCampusTypes, () => maybeUpdateConfiguration(ConfigurationValueKey.FilterCampusTypes, filterCampusTypes.value.join(",")));
         watch(filterCampusStatus, () => maybeUpdateConfiguration(ConfigurationValueKey.FilterCampusStatus, filterCampusStatus.value.join(",")));
         watch(selectableCampuses, () => maybeUpdateConfiguration(ConfigurationValueKey.SelectableCampuses, selectableCampuses.value.join(",")));
-        watch(campusOptions, () => emit("updateConfigurationValue", ConfigurationValueKey.Values, JSON.stringify(campusOptions.value)));
+        watch(campusOptions, () => maybeUpdateConfiguration(ConfigurationValueKey.Values, JSON.stringify(campusOptions.value)));
 
         return {
             allCampusOptions,

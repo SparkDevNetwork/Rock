@@ -216,17 +216,17 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {};
+            const newValue: Record<string, string> = {...props.modelValue};
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.RawValues] = internalRawValues.value ?? "";
+            newValue[ConfigurationValueKey.CustomValues] = internalRawValues.value ?? "";
             newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
             newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
             newValue[ConfigurationValueKey.RepeatDirection] = repeatDirection.value ?? "0";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.RawValues] !== (props.modelValue[ConfigurationValueKey.RawValues] ?? "")
+            const anyValueChanged = newValue[ConfigurationValueKey.CustomValues] !== (props.modelValue[ConfigurationValueKey.CustomValues] ?? "")
                 || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
                 || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "")
                 || newValue[ConfigurationValueKey.RepeatDirection] !== (props.modelValue[ConfigurationValueKey.RepeatDirection] ?? "0");
@@ -257,7 +257,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            rawValues.value = props.modelValue[ConfigurationValueKey.RawValues] ?? "";
+            rawValues.value = props.modelValue[ConfigurationValueKey.CustomValues] ?? "";
             internalRawValues.value = rawValues.value;
             enhanceForLongLists.value = asBooleanOrNull(props.modelValue[ConfigurationValueKey.EnhancedSelection]) ?? false;
             repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);

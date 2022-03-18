@@ -68,8 +68,8 @@ export default defineComponent({
         /** The current configuration properties that describe the field type options. */
         const configurationProperties = ref<Record<string, string>>({});
 
-        /** The current options selected in the configuration properties. */
-        const configurationOptions = ref<Record<string, string>>(props.modelValue?.configurationOptions ?? {});
+        /** The current values selected in the configuration properties. */
+        const configurationValues = ref<Record<string, string>>(props.modelValue?.configurationValues ?? {});
 
         /** True if the default value component should be shown. */
         const hasDefaultValue = computed((): boolean => {
@@ -138,7 +138,7 @@ export default defineComponent({
 
             const newValue: FieldTypeConfigurationViewModel = {
                 fieldTypeGuid: fieldTypeValue.value,
-                configurationOptions: configurationOptions.value,
+                configurationValues: configurationValues.value,
                 defaultValue: defaultValue.value?.value ?? ""
             };
 
@@ -160,7 +160,7 @@ export default defineComponent({
             isConfigurationReady.value = false;
             isInternalUpdate = true;
             configurationProperties.value = {};
-            configurationOptions.value = {};
+            configurationValues.value = {};
             defaultValue.value = null;
             isInternalUpdate = false;
 
@@ -177,7 +177,7 @@ export default defineComponent({
 
             const update: FieldTypeConfigurationViewModel = {
                 fieldTypeGuid: fieldTypeValue.value,
-                configurationOptions: configurationOptions.value,
+                configurationValues: configurationValues.value,
                 defaultValue: currentDefaultValue
             };
 
@@ -186,13 +186,13 @@ export default defineComponent({
                     resetToDefaults();
                     console.debug("got configuration", result.data);
 
-                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationOptions && result.data.defaultValue) {
+                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues && result.data.defaultValue) {
                         fieldErrorMessage.value = "";
                         isConfigurationReady.value = true;
 
                         isInternalUpdate = true;
                         configurationProperties.value = result.data.configurationProperties;
-                        configurationOptions.value = result.data.configurationOptions;
+                        configurationValues.value = result.data.configurationValues;
                         defaultValue.value = result.data.defaultValue;
                         isInternalUpdate = false;
 
@@ -273,7 +273,7 @@ export default defineComponent({
 
         return {
             configurationComponent,
-            configurationOptions,
+            configurationValues,
             configurationProperties,
             defaultValue,
             hasDefaultValue,
@@ -298,7 +298,7 @@ export default defineComponent({
     <Alert v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}
     </Alert>
-    <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationOptions" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
+    <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
     <RockField v-if="hasDefaultValue" :attributeValue="defaultValue" @update:attributeValue="onDefaultValueUpdate" isEditMode />
 </div>
 `

@@ -106,7 +106,7 @@ const filterComponent = defineAsyncComponent(async () => {
  * The field type handler for the Defined Value field.
  */
 export class DefinedValueFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
             const clientValue = JSON.parse(value ?? "") as ClientValue;
 
@@ -140,12 +140,12 @@ export class DefinedValueFieldType extends FieldTypeBase {
         return containsComparisonTypes;
     }
 
-    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+    public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
         try {
             const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
-            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
-            const useDescription = asBoolean(attribute.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+            const useDescription = asBoolean(configurationValues?.[ConfigurationValueKey.DisplayDescription]);
             const rawValues = clientValue.value.split(",");
 
             const text = values.filter(v => rawValues.includes(v.value))

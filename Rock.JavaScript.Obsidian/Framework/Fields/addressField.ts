@@ -40,7 +40,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Address field.
  */
 export class AddressFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         try {
             const addressValue = JSON.parse(value || "{}") as AddressFieldValue;
             let textValue = `${addressValue.street1 ?? ""} ${addressValue.street2 ?? ""} ${addressValue.city ?? ""}, ${addressValue.state ?? ""} ${addressValue.postalCode ?? ""}`;

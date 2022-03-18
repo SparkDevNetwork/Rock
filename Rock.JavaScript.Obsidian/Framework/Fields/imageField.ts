@@ -16,8 +16,7 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
-import { escapeHtml } from "../Services/string";
-import { ListItem, PublicAttributeValue } from "../ViewModels";
+import { ListItem } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
 
 /**
@@ -54,13 +53,24 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Image field.
  */
 export class ImageFieldType extends FieldTypeBase {
-    public override getTextValue(value: PublicAttributeValue): string {
-        return value.textValue || "Unknown";
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
+        try {
+            const realValue = JSON.parse(value ?? "") as ListItem;
+
+            if (!realValue.value) {
+                return "";
+            }
+
+            return realValue.text ?? "";
+        }
+        catch {
+            return value;
+        }
     }
 
-    public override getHtmlValue(value: PublicAttributeValue): string {
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value.value ?? "") as ListItem;
+            const realValue = JSON.parse(value ?? "") as ListItem;
 
             if (!realValue.value) {
                 return "";
@@ -69,13 +79,13 @@ export class ImageFieldType extends FieldTypeBase {
             return `<img src="/GetImage.ashx?guid=${realValue.value}" class="img-responsive" />`;
         }
         catch {
-            return value.value ?? "";
+            return value ?? "";
         }
     }
 
-    public override getCondensedHtmlValue(value: PublicAttributeValue): string {
+    public override getCondensedHtmlValue(value: string, _configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value.value ?? "") as ListItem;
+            const realValue = JSON.parse(value ?? "") as ListItem;
 
             if (!realValue.value) {
                 return "";
@@ -84,18 +94,7 @@ export class ImageFieldType extends FieldTypeBase {
             return `<img src="/GetImage.ashx?guid=${realValue.value}&width=120" class="img-responsive" />`;
         }
         catch {
-            return value.value ?? "";
-        }
-    }
-
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
-        try {
-            const realValue = JSON.parse(value) as ListItem;
-
-            return realValue?.text ?? value;
-        }
-        catch {
-            return value;
+            return value ?? "";
         }
     }
 

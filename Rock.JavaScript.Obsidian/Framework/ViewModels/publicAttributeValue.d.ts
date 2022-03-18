@@ -33,6 +33,9 @@ export type PublicAttributeValue = {
     /** The categories that this attribute is a member of. */
     categories: PublicAttributeValueCategory[];
 
+    /** The configuration values for the attribute. */
+    configurationValues?: Record<string, string> | null;
+
     /** The user friendly display value. */
     textValue?: string | null;
 

@@ -33,8 +33,8 @@ const editComponent = defineAsyncComponent(async () => {
  * The field type handler for the Email field.
  */
 export class UrlLinkFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: PublicAttributeValue): string {
-        const textValue = this.getTextValue(value);
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+        const textValue = this.getTextValue(value, configurationValues);
 
         return textValue ? `<a href="${textValue}">${textValue}</a>` : "";
     }
