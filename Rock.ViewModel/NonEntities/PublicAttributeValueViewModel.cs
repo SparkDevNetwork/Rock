@@ -68,6 +68,12 @@ namespace Rock.ViewModel.NonEntities
         public List<PublicAttributeValueCategoryViewModel> Categories { get; set; }
 
         /// <summary>
+        /// Gets or sets the configuration values.
+        /// </summary>
+        /// <value>The configuration values.</value>
+        public Dictionary<string, string> ConfigurationValues { get; set; }
+
+        /// <summary>
         /// Gets or sets the user-friendly display text value.
         /// </summary>
         /// <value>

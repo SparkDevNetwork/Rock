@@ -729,7 +729,7 @@ This can be due to multiple threads updating the same attribute at the same time
                         Text = c.Name
                     } )
                     .ToList(),
-                ConfigurationOptions = fieldTypeCache.Field?.GetPublicConfigurationOptions( configurationValues ) ?? new Dictionary<string, string>(),
+                ConfigurationValues = fieldTypeCache.Field?.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, null ) ?? new Dictionary<string, string>(),
                 DefaultValue = fieldTypeCache.Field?.GetPublicEditValue( attribute.DefaultValue, configurationValues ) ?? string.Empty
             };
         }
@@ -782,7 +782,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 throw new Exception( "Unable to save attribute referencing unknown field type." );
             }
 
-            var configurationValues = fieldTypeCache.Field.GetPrivateConfigurationOptions( attribute.ConfigurationOptions );
+            var configurationValues = fieldTypeCache.Field.GetPrivateConfigurationValues( attribute.ConfigurationValues );
 
             // Note: We intentionally ignore IsSystem, that cannot be changed by the user.
             newAttribute.Name = attribute.Name;

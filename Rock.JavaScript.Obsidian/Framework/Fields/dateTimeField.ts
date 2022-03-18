@@ -52,7 +52,7 @@ const filterComponent = defineAsyncComponent(async () => {
  * The field type handler for the Date Time field.
  */
 export class DateTimeFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (this.isCurrentDateValue(value)) {
             return this.getCurrentDateText(value);
         }
@@ -101,15 +101,15 @@ export class DateTimeFieldType extends FieldTypeBase {
         });
     }
 
-    public override getFilterValueDescription(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+    public override getFilterValueDescription(value: ComparisonValue, configurationValues: Record<string, string>): string {
         if (value.comparisonType === ComparisonType.Between) {
-            return `During '${this.getFilterValueText(value, attribute)}'`;
+            return `During '${this.getFilterValueText(value, configurationValues)}'`;
         }
 
-        return super.getFilterValueDescription(value, attribute);
+        return super.getFilterValueDescription(value, configurationValues);
     }
 
-    public override getFilterValueText(value: ComparisonValue, _attribute: PublicFilterableAttribute): string {
+    public override getFilterValueText(value: ComparisonValue, _configurationValues: Record<string, string>): string {
         const filterValues = value.value.split("\t");
 
         // If the comparison type is Between, then we need to use the second

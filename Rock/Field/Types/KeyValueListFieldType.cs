@@ -73,9 +73,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var configurationOptions = base.GetPublicConfigurationOptions( privateConfigurationValues );
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
             var options = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                 .Select( kvp => new
@@ -85,29 +85,35 @@ namespace Rock.Field.Types
                 } )
                 .ToCamelCaseJson( false, true );
 
-            configurationOptions[VALUES_KEY] = options;
+            publicConfigurationValues[VALUES_KEY] = options;
 
-            if ( configurationOptions.ContainsKey( "definedtype" ) )
+            if ( usage != ConfigurationValueUsage.Configure )
             {
-                var definedTypeId = configurationOptions["definedtype"].AsIntegerOrNull();
+                publicConfigurationValues.Remove( "definedtype" );
+                publicConfigurationValues.Remove( "customvalues" );
+            }
+
+            if ( publicConfigurationValues.ContainsKey( "definedtype" ) )
+            {
+                var definedTypeId = publicConfigurationValues["definedtype"].AsIntegerOrNull();
 
                 if ( definedTypeId.HasValue )
                 {
-                    configurationOptions["definedtype"] = DefinedTypeCache.Get( definedTypeId.Value )?.Guid.ToString() ?? "";
+                    publicConfigurationValues["definedtype"] = DefinedTypeCache.Get( definedTypeId.Value )?.Guid.ToString() ?? "";
                 }
                 else
                 {
-                    configurationOptions["definedtype"] = "";
+                    publicConfigurationValues["definedtype"] = "";
                 }
             }
 
-            return configurationOptions;
+            return publicConfigurationValues;
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            var privateConfigurationValues = base.GetPrivateConfigurationOptions( publicConfigurationValues );
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
             // Don't allow them to provide the actual value items.
             if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
@@ -131,36 +137,6 @@ namespace Rock.Field.Types
             }
 
             return privateConfigurationValues;
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
-        {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
-
-            // Remove the defined type key if it exists, public devices don't need to see this.
-            if ( publicConfigurationValues.ContainsKey( "definedtype" ) )
-            {
-                publicConfigurationValues.Remove( "definedtype" );
-            }
-
-            // Remove the internal custom values key if it exists, public devices don't
-            // need to see this.
-            if ( publicConfigurationValues.ContainsKey( "customvalues" ) )
-            {
-                publicConfigurationValues.Remove( "customvalues" );
-            }
-
-            // Generate the custom values that the public devices expects to see.
-            publicConfigurationValues[VALUES_KEY] = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
-                .Select( kvp => new
-                {
-                    value = kvp.Key,
-                    text = kvp.Value
-                } )
-                .ToCamelCaseJson( false, true );
-
-            return publicConfigurationValues;
         }
 
         /// <summary>

@@ -49,7 +49,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Campuses field.
  */
 export class CampusesFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === undefined || value === null || value === "") {
             return "";
         }

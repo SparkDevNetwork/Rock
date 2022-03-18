@@ -787,6 +787,7 @@
     <Compile Include="ElectronicSignature\SampleDrawnSignatures.cs" />
     <Compile Include="ElectronicSignature\ElectronicSignatureHelper.cs" />
     <Compile Include="ElectronicSignature\GetSignatureInformationHtmlOptions.cs" />
+    <Compile Include="Field\ConfigurationValueUsage.cs" />
     <Compile Include="Field\FieldTypeUsage.cs" />
     <Compile Include="Field\Types\CategorizedDefinedValueFieldType.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />

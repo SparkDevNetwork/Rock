@@ -78,6 +78,7 @@ namespace Rock.Attribute
                     Name = c.Name,
                     Order = c.Order
                 } ).ToList(),
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.View, value ),
                 Order = attribute.Order,
                 TextValue = fieldType.GetTextValue( value, attribute.ConfigurationValues ),
                 Value = fieldType.GetPublicValue( value, attribute.ConfigurationValues )
@@ -124,7 +125,7 @@ namespace Rock.Attribute
                 Key = attribute.Key,
                 IsRequired = attribute.IsRequired,
                 Description = attribute.Description,
-                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues )
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.Edit, null )
             };
         }
 
@@ -144,7 +145,7 @@ namespace Rock.Attribute
                 Name = attribute.Name,
                 Description = attribute.Description,
                 FieldTypeGuid = attribute.FieldType.Guid,
-                ConfigurationValues = fieldType.GetPublicFilterConfigurationValues( attribute.ConfigurationValues )
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.Edit, null )
             };
         }
 
@@ -167,7 +168,7 @@ namespace Rock.Attribute
                 Name = attribute.Name,
                 Description = attribute.Description,
                 FieldTypeGuid = attribute.FieldType.Guid,
-                ConfigurationValues = fieldType.GetPublicFilterConfigurationValues( attribute.ConfigurationValues ),
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.Edit, null ),
                 Value = new PublicComparisonValueViewModel
                 {
                     ComparisonType = ( int? ) publicValue.ComparisonType,

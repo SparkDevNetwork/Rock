@@ -532,7 +532,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
 
                     if ( fieldType?.Field != null )
                     {
-                        var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
+                        var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
                         var filterValues = fieldType.Field.GetPrivateFilterValue( comparisonValue, privateConfigurationValues ).FromJsonOrNull<List<string>>();
 
                         if ( filterValues != null && filterValues.Count == 2 )

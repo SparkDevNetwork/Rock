@@ -59,7 +59,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Key Value List field.
  */
 export class KeyValueListFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
             const clientValues = JSON.parse(value ?? "[]") as ClientValue[];
             const configuredValues = new List(JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);

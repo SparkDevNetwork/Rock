@@ -84,7 +84,7 @@ namespace Rock.Rest.v2.Controls
 
             // Convert the public configuration options into our private
             // configuration options (values).
-            var configurationValues = fieldType.GetPrivateConfigurationOptions( updateViewModel.ConfigurationOptions );
+            var configurationValues = fieldType.GetPrivateConfigurationValues( updateViewModel.ConfigurationValues );
 
             // Convert the default value from the public value into our
             // private internal value.
@@ -95,7 +95,7 @@ namespace Rock.Rest.v2.Controls
             var configurationProperties = fieldType.GetPublicEditConfigurationProperties( configurationValues );
 
             // Get the public configuration options from the internal options (values).
-            var publicConfigurationOptions = fieldType.GetPublicConfigurationOptions( configurationValues );
+            var publicConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
 
             // Get the editable attribute value so they can render a default value
             // control.
@@ -111,13 +111,13 @@ namespace Rock.Rest.v2.Controls
                 Key = "DefaultValue",
                 IsRequired = false,
                 Description = string.Empty,
-                ConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues )
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, null )
             };
 
             return Ok( new FieldTypeConfigurationPropertiesViewModel
             {
                 ConfigurationProperties = configurationProperties,
-                ConfigurationOptions = publicConfigurationOptions,
+                ConfigurationValues = publicConfigurationValues,
                 DefaultValue = clientEditableValue
             } );
         }

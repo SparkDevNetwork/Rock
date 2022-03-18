@@ -149,7 +149,7 @@ export default defineComponent({
         /** The value used by the FieldTypeEditor for editing the field configuration. */
         const fieldTypeValue = ref<FieldTypeConfigurationViewModel>({
             fieldTypeGuid: props.modelValue.fieldTypeGuid,
-            configurationOptions: props.modelValue.configurationValues ?? {},
+            configurationValues: props.modelValue.configurationValues ?? {},
             defaultValue: props.modelValue.defaultValue ?? ""
         });
 
@@ -299,7 +299,7 @@ export default defineComponent({
         const onFieldTypeModelValueUpdate = (value: FieldTypeConfigurationViewModel): void => {
             emit("update:modelValue", {
                 ...props.modelValue,
-                configurationValues: value.configurationOptions,
+                configurationValues: value.configurationValues,
                 defaultValue: value.defaultValue
             });
         };
@@ -386,14 +386,14 @@ export default defineComponent({
             visibilityRule.value = props.modelValue.visibilityRule ?? null;
 
             const isConfigChanged = fieldTypeValue.value.fieldTypeGuid !== props.modelValue.fieldTypeGuid
-                || !shallowStrictEqual(fieldTypeValue.value.configurationOptions, props.modelValue.configurationValues ?? {})
+                || !shallowStrictEqual(fieldTypeValue.value.configurationValues, props.modelValue.configurationValues ?? {})
                 || fieldTypeValue.value.defaultValue !== props.modelValue.defaultValue;
 
             // Only update the field type if anything actually changed.
             if (isConfigChanged) {
                 fieldTypeValue.value = {
                     fieldTypeGuid: props.modelValue.fieldTypeGuid,
-                    configurationOptions: props.modelValue.configurationValues ?? {},
+                    configurationValues: props.modelValue.configurationValues ?? {},
                     defaultValue: props.modelValue.defaultValue ?? ""
                 };
             }

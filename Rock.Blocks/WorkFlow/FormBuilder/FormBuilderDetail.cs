@@ -367,7 +367,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             // Convert the attribute configuration into values that can be stored
             // in the database.
-            var configurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
+            var configurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
 
             // Update all the standard properties.
             formField.ActionFormSection = formSection;
@@ -531,7 +531,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
                     sectionViewModel.Fields.Add( new FormFieldViewModel
                     {
-                        ConfigurationValues = fieldType.Field.GetPublicConfigurationOptions( attribute.ConfigurationValues ),
+                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Configure, null ),
                         DefaultValue = fieldType.Field.GetPublicEditValue( attribute.DefaultValue, attribute.ConfigurationValues ),
                         Description = attribute.Description,
                         FieldTypeGuid = fieldType.Guid,
@@ -737,8 +737,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
                 // Convert the attribute configuration into values that can be used
                 // for filtering a value.
-                var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
-                var publicConfigurationValues = fieldType.Field.GetPublicFilterConfigurationValues( privateConfigurationValues );
+                var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
+                var publicConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, Field.ConfigurationValueUsage.Configure, null );
 
                 /*
                  * Daniel Hazelbaker - 3/17/2022

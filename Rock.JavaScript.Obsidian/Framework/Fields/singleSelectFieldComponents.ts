@@ -216,16 +216,16 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {};
+            const newValue: Record<string, string> = {...props.modelValue};
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.RawValues] = internalRawValues.value ?? "";
+            newValue[ConfigurationValueKey.CustomValues] = internalRawValues.value ?? "";
             newValue[ConfigurationValueKey.FieldType] = controlType.value ?? "";
             newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.RawValues] !== (props.modelValue[ConfigurationValueKey.RawValues] ?? "")
+            const anyValueChanged = newValue[ConfigurationValueKey.CustomValues] !== (props.modelValue[ConfigurationValueKey.CustomValues] ?? "")
                 || newValue[ConfigurationValueKey.FieldType] !== (props.modelValue[ConfigurationValueKey.FieldType] ?? "")
                 || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
 
@@ -254,7 +254,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            rawValues.value = props.modelValue[ConfigurationValueKey.RawValues] ?? "";
+            rawValues.value = props.modelValue[ConfigurationValueKey.CustomValues] ?? "";
             internalRawValues.value = rawValues.value;
             controlType.value = props.modelValue[ConfigurationValueKey.FieldType] ?? "ddl";
             repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);

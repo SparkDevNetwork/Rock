@@ -27,7 +27,7 @@ export const enum ConfigurationValueKey {
     RepeatColumns = "repeatColumns",
 
     /** Only used during editing of the field type configuration. */
-    RawValues = "rawValues"
+    CustomValues = "customValues"
 }
 
 
@@ -50,7 +50,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the SingleSelect field.
  */
 export class SingleSelectFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === "") {
             return "";
         }
@@ -83,14 +83,14 @@ export class SingleSelectFieldType extends FieldTypeBase {
         return getStandardFilterComponent("Is", filterComponent);
     }
 
-    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+    public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
         if (value.value === "") {
             return "";
         }
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
             const selectedValues = values.filter(v => rawValues.includes(v.value));
 
             if (selectedValues.length >= 1) {

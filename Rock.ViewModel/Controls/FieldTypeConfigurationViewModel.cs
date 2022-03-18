@@ -32,14 +32,14 @@ namespace Rock.ViewModel.Controls
         public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration options that describe the current
+        /// Gets or sets the configuration values that describe the current
         /// selections when editing a field type.
         /// </summary>
         /// <remarks>
-        /// See: Rock.Field.IFieldType.GetPublicConfigurationOptions()
+        /// See: Rock.Field.IFieldType.GetPublicConfigurationValues()
         /// </remarks>
         /// <value>The configuration options.</value>
-        public Dictionary<string, string> ConfigurationOptions { get; set; }
+        public Dictionary<string, string> ConfigurationValues { get; set; }
 
         /// <summary>
         /// Gets or sets the default value currently set.
