@@ -111,6 +111,7 @@
 
 //// Admin Bar
 @adminbar-bg:                       @theme-2;
+@adminbar-border:                   @theme-2;
 @adminbar-text-color:               @theme-2-text;
 @configbar-font-size:               18px;
 
@@ -155,8 +156,10 @@
 @custom-checkbox-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23ffffff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E");
 @custom-radio-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23ffffff'/%3E%3C/svg%3E");
 
+@custom-switch-indicator-offset:          @custom-control-indicator-offset + 2px;
 @custom-switch-indicator-padding:         2px;
 @custom-switch-width:                     (@custom-control-indicator-size * 1.4);
+@custom-switch-height:                    (@custom-switch-indicator-size + (@custom-switch-indicator-padding *2));
 @custom-control-switch-border-width:      1px;
 @custom-switch-indicator-border-radius:   (@custom-control-indicator-size / 2);
 @custom-switch-indicator-size:            (@custom-control-indicator-size  - (@custom-control-indicator-border-width * 4));
