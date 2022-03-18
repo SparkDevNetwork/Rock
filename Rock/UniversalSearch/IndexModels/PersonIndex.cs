@@ -196,7 +196,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The email.
         /// </value>
-        [RockIndexField( Index = IndexType.NotAnalyzed, Analyzer = "whitespace" )]
+        [RockIndexField( Index = IndexType.Indexed, Analyzer = "whitespace" )]
         public string Email { get; set; }
 
         /// <summary>

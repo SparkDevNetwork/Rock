@@ -179,7 +179,8 @@ namespace Rock.UniversalSearch.IndexComponents
                 indexName = typeof( T ).Name.ToLower();
             }
 
-            _client.DeleteByQueryAsync<T>( indexName, typeof( T ).Name.ToLower(), d => d.MatchAll() );
+            //_client.DeleteByQueryAsync<T>( indexName, typeof( T ).Name.ToLower(), d => d.MatchAll() );
+            _client.DeleteByQueryAsync<T>( d => d.MatchAll() );
         }
 
         /// <summary>
@@ -234,7 +235,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
 
                 var typeMapping = new TypeMapping();
-                typeMapping.Dynamic = DynamicMapping.Allow;
+                //typeMapping.Dynamic = DynamicMapping.Allow;
                 typeMapping.Properties = new Properties();
 
                 createIndexRequest.Mappings.Add( indexName, typeMapping );
@@ -255,50 +256,50 @@ namespace Rock.UniversalSearch.IndexComponents
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 
                         // rewrite non-string index option (would be nice if they made the enums match up...)
-                        NonStringIndexOption nsIndexOption = NonStringIndexOption.NotAnalyzed;
+                        bool? nsIndexOption = null;
                         if ( attribute.Type != IndexFieldType.String )
                         {
                             if ( attribute.Index == IndexType.NotIndexed )
                             {
-                                nsIndexOption = NonStringIndexOption.No;
+                                nsIndexOption = false;
                             }
                         }
 
                         switch ( attribute.Type )
                         {
                             case IndexFieldType.Boolean:
-                            {
-                                typeMapping.Properties.Add( propertyName, new BooleanProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
-                                break;
-                            }
-
-                            case IndexFieldType.Date:
-                            {
-                                typeMapping.Properties.Add( propertyName, new DateProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
-                                break;
-                            }
-
-                            case IndexFieldType.Number:
-                            {
-                                typeMapping.Properties.Add( propertyName, new NumberProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
-                                break;
-                            }
-
-                            default:
-                            {
-                                var stringProperty = new StringProperty();
-                                stringProperty.Name = propertyName;
-                                stringProperty.Boost = attribute.Boost;
-                                stringProperty.Index = ( FieldIndexOption ) attribute.Index;
-
-                                if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
                                 {
-                                    stringProperty.Analyzer = attribute.Analyzer;
+                                    typeMapping.Properties.Add( propertyName, new BooleanProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
+                                    break;
                                 }
 
-                                typeMapping.Properties.Add( propertyName, stringProperty );
-                                break;
-                            }
+                            case IndexFieldType.Date:
+                                {
+                                    typeMapping.Properties.Add( propertyName, new DateProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
+                                    break;
+                                }
+
+                            case IndexFieldType.Number:
+                                {
+                                    typeMapping.Properties.Add( propertyName, new NumberProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
+                                    break;
+                                }
+
+                            default:
+                                {
+                                    var stringProperty = new Nest.GenericProperty();
+                                    stringProperty.Name = propertyName;
+                                    stringProperty.Boost = attribute.Boost;
+                                    stringProperty.Indexed = attribute.Index == IndexType.Indexed;
+
+                                    if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
+                                    {
+                                        stringProperty.Analyzer = attribute.Analyzer;
+                                    }
+
+                                    typeMapping.Properties.Add( propertyName, stringProperty );
+                                    break;
+                                }
                         }
                     }
                 }
@@ -422,145 +423,145 @@ namespace Rock.UniversalSearch.IndexComponents
                 switch ( searchType )
                 {
                     case SearchType.ExactMatch:
-                    {
-                        if ( !string.IsNullOrWhiteSpace( query ) )
                         {
-                            queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
-                        }
-
-                        // special logic to support emails
-                        if ( query.Contains( "@" ) )
-                        {
-                            queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
-                        }
-
-                        // special logic to support phone search
-                        if ( query.IsDigitsOnly() )
-                        {
-                            queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
-                        }
-
-                        // add a search for all the words as one single search term
-                        queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
-
-                        if ( matchQuery != null )
-                        {
-                            queryContainer &= matchQuery;
-                        }
-
-                        if ( size.HasValue )
-                        {
-                            searchDescriptor.Size( size.Value );
-                        }
-
-                        if ( from.HasValue )
-                        {
-                            searchDescriptor.From( from.Value );
-                        }
-
-                        searchDescriptor.Query( q => queryContainer );
-
-                        results = _client.Search<dynamic>( searchDescriptor );
-                        break;
-                    }
-
-                    case SearchType.Fuzzy:
-                    {
-                        results = _client.Search<dynamic>( d =>
-                                    d.AllIndices().AllTypes()
-                                    .Query( q =>
-                                        q.Fuzzy( f => f.Value( query )
-                                            .Rewrite( MultiTermQueryRewrite.TopTerms( size ?? 10 ) ) ) ) );
-                        break;
-                    }
-
-                    case SearchType.Wildcard:
-                    {
-                        bool enablePhraseSearch = true;
-
-                        if ( !string.IsNullOrWhiteSpace( query ) )
-                        {
-                            QueryContainer wildcardQuery = null;
-
-                            // break each search term into a separate query and add the * to the end of each
-                            var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+                            if ( !string.IsNullOrWhiteSpace( query ) )
+                            {
+                                queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
+                            }
 
                             // special logic to support emails
-                            if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                            if ( query.Contains( "@" ) )
                             {
-                                wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
-                                enablePhraseSearch = false;
-                            }
-                            else
-                            {
-                                // We want to require each of the terms to exists for a result to be returned.
-                                var searchString = "+" + queryTerms.JoinStrings( "* +" ) + "*";
-                                wildcardQuery &= new QueryStringQuery { Query = searchString, Analyzer = "whitespace", MinimumShouldMatch = "100%", MultiTermQueryRewrite = MultiTermQueryRewrite.ScoringBoolean };
-
-                                // add special logic to help boost last names
-                                if ( queryTerms.Count > 1 )
-                                {
-                                    QueryContainer nameQuery = null;
-                                    nameQuery &= new QueryStringQuery { Query = "lastName:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
-                                    nameQuery &= new QueryStringQuery { Query = "firstName:" + queryTerms.First() + "*", Analyzer = "whitespace" };
-                                    wildcardQuery |= nameQuery;
-                                }
-
-                                // special logic to support phone search
-                                if ( query.IsDigitsOnly() )
-                                {
-                                    wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
-                                }
+                                queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
                             }
 
-                            queryContainer &= wildcardQuery;
+                            // special logic to support phone search
+                            if ( query.IsDigitsOnly() )
+                            {
+                                queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
+                            }
 
                             // add a search for all the words as one single search term
-                            if ( enablePhraseSearch )
+                            queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+
+                            if ( matchQuery != null )
                             {
-                                var searchString = "+" + queryTerms.JoinStrings( " +" );
-                                queryContainer |= new QueryStringQuery { Query = searchString, AnalyzeWildcard = true, PhraseSlop = 0 };
+                                queryContainer &= matchQuery;
                             }
-                        }
 
-                        if ( matchQuery != null )
-                        {
-                            queryContainer &= matchQuery;
-                        }
-
-                        if ( size.HasValue )
-                        {
-                            searchDescriptor.Size( size.Value );
-                        }
-
-                        if ( from.HasValue )
-                        {
-                            searchDescriptor.From( from.Value );
-                        }
-
-                        searchDescriptor.Query( q => queryContainer );
-
-                        var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
-
-                        if ( indexBoost.IsNotNullOrWhiteSpace() )
-                        {
-                            var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                            foreach ( var boostItem in boostItems )
+                            if ( size.HasValue )
                             {
-                                var boostParms = boostItem.Split( new char[] { '^' } );
+                                searchDescriptor.Size( size.Value );
+                            }
 
-                                if ( boostParms.Length == 2 )
+                            if ( from.HasValue )
+                            {
+                                searchDescriptor.From( from.Value );
+                            }
+
+                            searchDescriptor.Query( q => queryContainer );
+
+                            results = _client.Search<dynamic>( searchDescriptor );
+                            break;
+                        }
+
+                    case SearchType.Fuzzy:
+                        {
+                            results = _client.Search<dynamic>( d =>
+                                        d.AllIndices().AllTypes()
+                                        .Query( q =>
+                                            q.Fuzzy( f => f.Value( query )
+                                                .Rewrite( MultiTermQueryRewrite.TopTerms( size ?? 10 ) ) ) ) );
+                            break;
+                        }
+
+                    case SearchType.Wildcard:
+                        {
+                            bool enablePhraseSearch = true;
+
+                            if ( !string.IsNullOrWhiteSpace( query ) )
+                            {
+                                QueryContainer wildcardQuery = null;
+
+                                // break each search term into a separate query and add the * to the end of each
+                                var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+
+                                // special logic to support emails
+                                if ( queryTerms.Count == 1 && query.Contains( "@" ) )
                                 {
-                                    int boost = 1;
-                                    Int32.TryParse( boostParms[1], out boost );
-                                    searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
+                                    wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                                    enablePhraseSearch = false;
+                                }
+                                else
+                                {
+                                    // We want to require each of the terms to exists for a result to be returned.
+                                    var searchString = "+" + queryTerms.JoinStrings( "* +" ) + "*";
+                                    wildcardQuery &= new QueryStringQuery { Query = searchString, Analyzer = "whitespace", MinimumShouldMatch = "100%", FuzzyRewrite = MultiTermQueryRewrite.ScoringBoolean };
+
+                                    // add special logic to help boost last names
+                                    if ( queryTerms.Count > 1 )
+                                    {
+                                        QueryContainer nameQuery = null;
+                                        nameQuery &= new QueryStringQuery { Query = "lastName:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
+                                        nameQuery &= new QueryStringQuery { Query = "firstName:" + queryTerms.First() + "*", Analyzer = "whitespace" };
+                                        wildcardQuery |= nameQuery;
+                                    }
+
+                                    // special logic to support phone search
+                                    if ( query.IsDigitsOnly() )
+                                    {
+                                        wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                    }
+                                }
+
+                                queryContainer &= wildcardQuery;
+
+                                // add a search for all the words as one single search term
+                                if ( enablePhraseSearch )
+                                {
+                                    var searchString = "+" + queryTerms.JoinStrings( " +" );
+                                    queryContainer |= new QueryStringQuery { Query = searchString, AnalyzeWildcard = true, PhraseSlop = 0 };
                                 }
                             }
-                        }
 
-                        results = _client.Search<dynamic>( searchDescriptor );
-                        break;
-                    }
+                            if ( matchQuery != null )
+                            {
+                                queryContainer &= matchQuery;
+                            }
+
+                            if ( size.HasValue )
+                            {
+                                searchDescriptor.Size( size.Value );
+                            }
+
+                            if ( from.HasValue )
+                            {
+                                searchDescriptor.From( from.Value );
+                            }
+
+                            searchDescriptor.Query( q => queryContainer );
+
+                            var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
+
+                            if ( indexBoost.IsNotNullOrWhiteSpace() )
+                            {
+                                var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                foreach ( var boostItem in boostItems )
+                                {
+                                    var boostParms = boostItem.Split( new char[] { '^' } );
+
+                                    if ( boostParms.Length == 2 )
+                                    {
+                                        int boost = 1;
+                                        Int32.TryParse( boostParms[1], out boost );
+                                        searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
+                                    }
+                                }
+                            }
+
+                            results = _client.Search<dynamic>( searchDescriptor );
+                            break;
+                        }
                 }
 
                 totalResultsAvailable = results.Total;
@@ -593,7 +594,10 @@ namespace Rock.UniversalSearch.IndexComponents
                                 document["Explain"] = hit.Explanation.ToJson();
                             }
 
-                            document.Score = hit.Score;
+                            if ( hit.Score.HasValue )
+                            {
+                                document.Score = hit.Score.Value;
+                            }
 
                             documents.Add( document );
                         }
@@ -624,7 +628,8 @@ namespace Rock.UniversalSearch.IndexComponents
         }}
 }}", Char.ToLowerInvariant( propertyName[0] ) + propertyName.Substring( 1 ), propertyValue );
 
-            var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ) );
+            //var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ) );
+            var response = _client.DeleteByQuery<IndexModelBase>( qd => qd.Query( q => q.Raw( jsonSearch ) ) );
         }
 
         /// <summary>
