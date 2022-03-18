@@ -121,13 +121,18 @@ BEGIN
 		FROM @CommunicationMediumEntities
 		ORDER BY newid()
 
+		declare @smsMessage nvarchar(max);
+
         if (@isSmsEntityTypeId = 1) begin
 		    set @transportEntityTypeId = @twilioEntityTypeId
 			set @transportEntityTypeName = 'Rock.Communication.Transport.Twilio'
+			set @smsMessage = 'Some SMS Message';
         end else begin
             SELECT TOP 1 @transportEntityTypeId = [Id], @transportEntityTypeName = [Name]
 		    FROM @CommunicationTransportEntities
 		    ORDER BY newid()
+
+			set @smsMessage = '';
         end
 
 		-- have it be from a SystemCommunication a about 1/10th of the time
@@ -163,10 +168,10 @@ BEGIN
 			,[IsBulkCommunication]
 			,[SenderPersonAliasId]
 			,[ReviewerPersonAliasId]
-			,[MediumDataJson]
             ,[SMSFromDefinedValueId]
 			,[CommunicationTemplateId]
 			,[SystemCommunicationId]
+			,[SMSMessage]
 			)
 		VALUES (
 			@communicationSubject
@@ -184,10 +189,10 @@ BEGIN
 			,@isbulk
 			,@senderPersonAliasId
 			,NULL
-			,NULL
             ,@relatedSmsFromDefinedValueId
 			,@CommunicationTemplateId
 			,@SystemCommunicationId
+			,@smsMessage
 			)
 
 		SET @communicationId = SCOPE_IDENTITY()
