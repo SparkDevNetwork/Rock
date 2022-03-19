@@ -639,7 +639,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             btnDeleteCategory.Enabled = !workflowTypeQry.Any();
             if ( workflowTypeQry.Any() )
             {
-                btnDeleteCategory.ToolTip = "All forms must be removed to enable deleting a category.";
+                btnDeleteCategory.ToolTip = "All forms and workflow types (not shown here) must be removed to enable deleting a category.";
             }
 
             workflowTypeQry = workflowTypeQry.Where( a => a.IsFormBuilder );
