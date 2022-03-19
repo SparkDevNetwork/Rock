@@ -2224,7 +2224,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 var selectedKeys = SelectedKeys.ToList();
                 for ( int i = 0; i < dataItems.Count; i++ )
                 {
-                    rowCounter++;
                     var dataItem = dataItems[i];
                     var gridViewRow = gridViewRows[i];
 
@@ -2238,6 +2237,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         }
                     }
 
+                    rowCounter++;
                     var args = new RockGridViewRowEventArgs( gridViewRow, true );
                     gridViewRow.DataItem = dataItem;
                     this.OnRowDataBound( args );
