@@ -19,18 +19,17 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../../../../Controls/rockField";
 import { DragSource, DragTarget, IDragSourceOptions } from "../../../../Directives/dragDrop";
 import { areEqual, Guid, newGuid } from "../../../../Util/guid";
-import { PublicEditableAttributeValue, ListItem } from "../../../../ViewModels";
+import { ListItem, PublicAttribute } from "../../../../ViewModels";
 import ConfigurableZone from "./configurableZone";
 import { FormField, FormSection } from "../Shared/types";
 
-function getAttributeValueFromField(field: FormField): PublicEditableAttributeValue {
+function getAttributeFromField(field: FormField): PublicAttribute {
     return {
         attributeGuid: newGuid(),
         fieldTypeGuid: field.fieldTypeGuid,
         name: !(field.isHideLabel ?? false) ? field.name : "",
         key: field.key,
         configurationValues: field.configurationValues,
-        value: field.defaultValue,
         isRequired: field.isRequired ?? false,
         description: field.description ?? "",
         order: 0,
@@ -53,21 +52,25 @@ const fieldWrapper = defineComponent({
     },
 
     setup(props) {
-        const attributeValue = ref<PublicEditableAttributeValue>(getAttributeValueFromField(props.modelValue));
+        const attribute = ref<PublicAttribute>(getAttributeFromField(props.modelValue));
+
+        const defaultValue = ref(props.modelValue.defaultValue ?? "");
 
         watch(() => props.modelValue, () => {
-            attributeValue.value = getAttributeValueFromField(props.modelValue);
+            attribute.value = getAttributeFromField(props.modelValue);
+            defaultValue.value = props.modelValue.defaultValue ?? "";
         }, {
             deep: true
         });
 
         return {
-            attributeValue
+            attribute,
+            defaultValue
         };
     },
 
     template: `
-<RockField :attributeValue="attributeValue" isEditMode />
+<RockField :modelValue="defaultValue" :attribute="attribute" isEditMode />
 `
 });
 

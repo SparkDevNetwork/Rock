@@ -115,7 +115,7 @@ namespace Rock.Field.Types
             if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure )
             {
                 // Convert the selectable values from integer identifiers into
-                // unique identifiers that can be stored in the database.
+                // unique identifiers.
                 var selectableValues = privateConfigurationValues.GetValueOrDefault( SELECTABLE_CAMPUSES_KEY, string.Empty );
                 publicConfigurationValues[SELECTABLE_CAMPUSES_PUBLIC_KEY] = ConvertDelimitedIdsToGuids( selectableValues, v => CampusCache.Get( v )?.Guid );
                 publicConfigurationValues.Remove( SELECTABLE_CAMPUSES_KEY );
@@ -129,18 +129,21 @@ namespace Rock.Field.Types
                 // unique identifiers that can be stored in the database.
                 var campusStatus = privateConfigurationValues.GetValueOrDefault( FILTER_CAMPUS_STATUS_KEY, string.Empty );
                 publicConfigurationValues[FILTER_CAMPUS_STATUS_KEY] = ConvertDelimitedIdsToGuids( campusStatus, v => DefinedValueCache.Get( v )?.Guid );
-
-                var publicValues = GetListSource( privateConfigurationValues )
-                        .Select( kvp => new ListItemViewModel
-                        {
-                            Value = kvp.Key,
-                            Text = kvp.Value
-                        } )
-                        .ToList()
-                        .ToCamelCaseJson( false, true );
-
-                publicConfigurationValues[VALUES_PUBLIC_KEY] = publicValues;
             }
+
+            var publicValues = GetListSource( privateConfigurationValues )
+                .Select( kvp => new ListItemViewModel
+                {
+                    Value = kvp.Key,
+                    Text = kvp.Value
+                } );
+
+            if ( usage == ConfigurationValueUsage.View )
+            {
+                publicValues = publicValues.Where( v => v.Value.AsGuid() == privateValue.AsGuid() );
+            }
+
+            publicConfigurationValues[VALUES_PUBLIC_KEY] = publicValues.ToCamelCaseJson( false, true );
 
             if ( usage == ConfigurationValueUsage.View )
             {

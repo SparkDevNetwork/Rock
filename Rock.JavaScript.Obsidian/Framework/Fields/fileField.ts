@@ -17,7 +17,7 @@
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
 import { escapeHtml } from "../Services/string";
-import { ListItem, PublicAttributeValue } from "../ViewModels";
+import { ListItem } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
 
 /**

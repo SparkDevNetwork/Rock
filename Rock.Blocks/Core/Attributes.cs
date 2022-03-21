@@ -204,7 +204,8 @@ namespace Rock.Blocks.Core
                 Categories = attribute.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ),
                 IsActive = attribute.IsActive,
                 Qualifier = GetAttributeQualifier( attribute ),
-                Value = GetAttributeValue( rockContext, attribute ),
+                Attribute = GetPublicAttribute( rockContext, attribute ),
+                Value = GetPublicAttributeValue( rockContext, attribute ),
                 IsDeleteEnabled = !attribute.IsSystem,
                 IsSecurityEnabled = false
             };
@@ -311,7 +312,7 @@ namespace Rock.Blocks.Core
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="attribute">The attribute whose value will be viewed.</param>
         /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
-        private PublicAttributeValueViewModel GetAttributeValue( RockContext rockContext, AttributeCache attribute )
+        private PublicAttributeViewModel GetPublicAttribute( RockContext rockContext, AttributeCache attribute )
         {
             var entityId = GetEntityId();
 
@@ -322,16 +323,48 @@ namespace Rock.Blocks.Core
 
                 if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
                 {
-                    return PublicAttributeHelper.ToPublicAttributeValue( attribute, attributeValue.Value );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attributeValue.Value );
                 }
                 else
                 {
-                    return PublicAttributeHelper.ToPublicAttributeValue( attribute, attribute.DefaultValue );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
                 }
             }
             else
             {
-                return PublicAttributeHelper.ToPublicAttributeValue( attribute, attribute.DefaultValue );
+                return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute value as a model that can be displayed on the
+        /// user's device. This handles special block settings that change what
+        /// value is available.
+        /// </summary>
+        /// <param name="rockContext">The rock database context.</param>
+        /// <param name="attribute">The attribute whose value will be viewed.</param>
+        /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
+        private string GetPublicAttributeValue( RockContext rockContext, AttributeCache attribute )
+        {
+            var entityId = GetEntityId();
+
+            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false )
+            {
+                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
+
+                if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
+                {
+                    return PublicAttributeHelper.GetPublicValueForView( attribute, attributeValue.Value );
+                }
+                else
+                {
+                    return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
+                }
+            }
+            else
+            {
+                return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
             }
         }
 
@@ -382,7 +415,11 @@ namespace Rock.Blocks.Core
             var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attribute.Id, entityId );
             string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
 
-            return ActionOk( PublicAttributeHelper.ToPublicEditableAttributeValue( attribute, value ) );
+            return ActionOk( new
+            {
+                Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( attribute ),
+                Value = PublicAttributeHelper.GetPublicEditValue( attribute, value )
+            } );
         }
 
         /// <summary>
@@ -450,7 +487,7 @@ namespace Rock.Blocks.Core
 
                 return ActionOk( new EditAttributeViewModel
                 {
-                    Attribute = Helper.GetPublicEditableAttributeViewModel( attribute ),
+                    Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
                     EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = attribute.EntityTypeQualifierValue
                 } );
@@ -583,7 +620,9 @@ namespace Rock.Blocks.Core
 
         public bool IsActive { get; set; }
 
-        public PublicAttributeValueViewModel Value { get; set; }
+        public PublicAttributeViewModel Attribute { get; set; }
+
+        public string Value { get; set; }
 
         public bool IsDeleteEnabled { get; set; }
 

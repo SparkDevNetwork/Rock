@@ -17,7 +17,7 @@
 
 import { GatewayControlModel } from "../../../Controls/gatewayControl";
 import { Guid } from "../../../Util/guid";
-import { PublicEditableAttributeValue, ListItem, SavedFinancialAccountListItem } from "../../../ViewModels";
+import { PublicAttribute, ListItem, SavedFinancialAccountListItem } from "../../../ViewModels";
 import { ComparisonType } from "../../../Reporting/comparisonType";
 import { FilterExpressionType } from "../../../Reporting/filterExpressionType";
 import { RegistrationEntryBlockSession } from "./registrationEntryBlockArgs";
@@ -80,8 +80,8 @@ export type RegistrationEntryBlockViewModel = {
     registrantForms: RegistrationEntryBlockFormViewModel[];
     fees: RegistrationEntryBlockFeeViewModel[];
     familyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
-    registrationAttributesStart: PublicEditableAttributeValue[];
-    registrationAttributesEnd: PublicEditableAttributeValue[];
+    registrationAttributesStart: PublicAttribute[];
+    registrationAttributesEnd: PublicAttribute[];
     forceEmailUpdate: boolean;
     registrarOption: RegistrarOption;
     cost: number;
@@ -141,7 +141,7 @@ export type RegistrationEntryBlockFormFieldViewModel = {
     personFieldType: RegistrationPersonFieldType;
     isRequired: boolean;
     isSharedValue: boolean;
-    attribute: PublicEditableAttributeValue | null;
+    attribute: PublicAttribute | null;
     visibilityRuleType: FilterExpressionType;
     visibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
     preHtml: string;

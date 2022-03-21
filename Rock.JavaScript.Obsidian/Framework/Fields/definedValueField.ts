@@ -18,7 +18,6 @@ import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType, containsComparisonTypes } from "../Reporting/comparisonType";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { asBoolean } from "../Services/boolean";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -45,7 +44,7 @@ export const enum ConfigurationValueKey {
      * The unique identifiers of the defined values that can be selected
      * during editing.
      */
-    SelectableValues = "selectableValues",
+    Values = "values",
 
     /**
      * Contains "True" if the edit control should be rendered to allow
@@ -111,7 +110,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
             const clientValue = JSON.parse(value ?? "") as ClientValue;
 
             try {
-                const values = JSON.parse(configurationValues[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+                const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
                 const displayDescription = asBoolean(configurationValues[ConfigurationValueKey.DisplayDescription]);
                 const rawValues = clientValue.value.split(",");
 
@@ -144,7 +143,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
         try {
             const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
-            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
             const useDescription = asBoolean(configurationValues?.[ConfigurationValueKey.DisplayDescription]);
             const rawValues = clientValue.value.split(",");
 

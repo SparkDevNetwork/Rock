@@ -84,8 +84,7 @@
     <Compile Include="NonEntities\AuditDetailViewModel.cs" />
     <Compile Include="NonEntities\PublicComparisonValueViewModel.cs" />
     <Compile Include="NonEntities\PublicAttributeValueCategoryViewModel.cs" />
-    <Compile Include="NonEntities\PublicEditableAttributeValueViewModel.cs" />
-    <Compile Include="NonEntities\PublicAttributeValueViewModel.cs" />
+    <Compile Include="NonEntities\PublicAttributeViewModel.cs" />
     <Compile Include="CodeGenerated\AchievementAttemptViewModel.cs" />
     <Compile Include="CodeGenerated\AchievementTypePrerequisiteViewModel.cs" />
     <Compile Include="CodeGenerated\AchievementTypeViewModel.cs" />

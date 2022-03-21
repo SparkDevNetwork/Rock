@@ -15,52 +15,50 @@
 // </copyright>
 //
 
-import { Component, defineComponent, PropType, reactive, ref } from "vue";
+import { Component, computed, defineComponent, PropType, reactive, ref } from "vue";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import PanelWidget from "../../Elements/panelWidget";
 import TextBox from "../../Elements/textBox";
 import { FieldType as FieldTypeGuids } from "../../SystemGuids";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
+import { useVModelPassthrough } from "../../Util/component";
 import { Guid } from "../../Util/guid";
-import { PublicEditableAttributeValue, ListItem } from "../../ViewModels";
+import { PublicAttribute, ListItem } from "../../ViewModels";
 
 /**
- * Convert a simpler set of parameters into AttributeValueData
+ * Convert a simpler set of parameters into PublicAttribute
  * @param name
  * @param fieldTypeGuid
  * @param configValues
  */
-const getAttributeValueData = (name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Array<PublicEditableAttributeValue> => {
+const getAttributeData = (name: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Record<string, PublicAttribute> => {
     const configurationValues = configValues;
 
-    return [reactive({
+    return {
+        "value1": reactive({
             fieldTypeGuid: fieldTypeGuid,
             name: `${name} 1`,
-            key: name,
+            key: "value1",
             description: `This is the description of the ${name} without an initial value`,
             configurationValues,
             isRequired: false,
-            textValue: "",
-            value: "",
             attributeGuid: "",
             order: 0,
             categories: []
         }),
-        reactive({
-            fieldTypeGuid: fieldTypeGuid,
-            name: `${name} 2`,
-            key: name,
-            description: `This is the description of the ${name} with an initial value`,
-            configurationValues,
-            isRequired: false,
-            textValue: initialValue,
-            value: initialValue,
-            attributeGuid: "",
-            order: 0,
-            categories: []
-        })
-    ];
+        "value2": reactive({
+                fieldTypeGuid: fieldTypeGuid,
+                name: `${name} 2`,
+                key: "value2",
+                description: `This is the description of the ${name} with an initial value`,
+                configurationValues,
+                isRequired: false,
+                attributeGuid: "",
+                order: 0,
+                categories: []
+            })
+    };
 };
 
 /** An inner component that describes the template used for each of the controls
@@ -72,23 +70,32 @@ const galleryAndResult = defineComponent({
         AttributeValuesContainer
     },
     props: {
+        values: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
         title: {
             type: String as PropType<string>,
             required: true
         },
-        attributeValues: {
-            type: Array as PropType<PublicEditableAttributeValue[]>,
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttribute>>,
             required: true
         }
     },
-    computed: {
-        value1Json(): string {
-            return this.attributeValues[0].value ?? "";
-        },
-        value2Json(): string {
-            return this.attributeValues[1].value ?? "";
-        }
+
+    setup(props) {
+        const values = ref(props.values);
+        const value1Json = computed((): string => values.value["value1"]);
+        const value2Json = computed((): string => values.value["value2"]);
+
+        return {
+            value1Json,
+            value2Json,
+            values
+        };
     },
+
     template: `
 <PanelWidget>
     <template #header>{{title}}</template>
@@ -98,11 +105,11 @@ const galleryAndResult = defineComponent({
             <slot />
             <hr />
             <h4>Attribute Values Container (edit)</h4>
-            <AttributeValuesContainer :attributeValues="attributeValues" :isEditMode="true" />
+            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="true" />
         </div>
         <div class="col-md-6">
             <h4>Attribute Values Container (view)</h4>
-            <AttributeValuesContainer :attributeValues="attributeValues" :isEditMode="false" />
+            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="false" />
             <hr />
             <h4>Values</h4>
             <p>
@@ -134,16 +141,18 @@ const getFieldTypeGalleryComponent = (name: string, initialValue: string, fieldT
         data () {
             return {
                 name,
+                values: { "value1": "", "value2": initialValue },
                 configValues: { ...initialConfigValues } as Record<string, string>,
-                attributeValues: getAttributeValueData(name, initialValue, fieldTypeGuid, initialConfigValues)
+                attributes: getAttributeData(name, fieldTypeGuid, initialConfigValues)
             };
         },
         computed: {
             configKeys(): string[] {
                 const keys: string[] = [];
 
-                for (const attributeValue of this.attributeValues) {
-                    for (const key in attributeValue.configurationValues) {
+                for (const attributeKey in this.attributes) {
+                    const attribute = this.attributes[attributeKey];
+                    for (const key in attribute.configurationValues) {
                         if (keys.indexOf(key) === -1) {
                             keys.push(key);
                         }
@@ -157,17 +166,18 @@ const getFieldTypeGalleryComponent = (name: string, initialValue: string, fieldT
             configValues: {
                 deep: true,
                 handler() {
-                    for (const attributeValue of this.attributeValues) {
-                        for (const key in attributeValue.configurationValues) {
+                    for (const attributeKey in this.attributes) {
+                        const attribute = this.attributes[attributeKey];
+                        for (const key in attribute.configurationValues) {
                             const value = this.configValues[key] || "";
-                            attributeValue.configurationValues[key] = value;
+                            attribute.configurationValues[key] = value;
                         }
                     }
                 }
             }
         },
         template: `
-<GalleryAndResult :title="name" :attributeValues="attributeValues">
+<GalleryAndResult :title="name" :values="values" :attributes="attributes">
     <TextBox v-for="configKey in configKeys" :key="configKey" :label="configKey" v-model="configValues[configKey]" />
 </GalleryAndResult>`
     });

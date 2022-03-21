@@ -17,19 +17,19 @@
 import { getFieldType } from "../Fields/index";
 import { computed, defineComponent, PropType, provide, ref } from "vue";
 import { TextFieldType } from "../Fields/textField";
-import { PublicAttributeValue, PublicEditableAttributeValue } from "../ViewModels";
+import { PublicAttribute } from "../ViewModels";
 
 const textField = new TextFieldType();
-
-function instanceOfEditable(value: PublicAttributeValue): value is PublicEditableAttributeValue {
-    return (<PublicEditableAttributeValue>value).key !== undefined;
-}
 
 export default defineComponent({
     name: "RockField",
     props: {
-        attributeValue: {
-            type: Object as PropType<PublicAttributeValue | PublicEditableAttributeValue>,
+        modelValue: {
+            type: String as PropType<string>,
+            required: false
+        },
+        attribute: {
+            type: Object as PropType<PublicAttribute>,
             required: true
         },
         showEmptyValue: {
@@ -51,28 +51,28 @@ export default defineComponent({
     },
     setup(props, { emit }) {
         const field = computed(() => {
-            const fieldType = getFieldType(props.attributeValue.fieldTypeGuid);
+            const fieldType = getFieldType(props.attribute.fieldTypeGuid);
 
             return fieldType ?? textField;
         });
 
         /** True if the read-only value should be displayed. */
-        const showValue = computed(() => props.showEmptyValue || field.value.getTextValue(props.attributeValue.value ?? "", props.attributeValue.configurationValues ?? {}) !== "");
+        const showValue = computed(() => props.showEmptyValue || field.value.getTextValue(props.modelValue ?? "", props.attribute.configurationValues ?? {}) !== "");
 
         /** True if this field is required and must be filled in. */
-        const isRequired = computed(() => instanceOfEditable(props.attributeValue) && props.attributeValue.isRequired);
+        const isRequired = computed(() => props.attribute.isRequired);
 
         /** Indicates to the editor component if this field is required or not. */
         const rules = computed(() => isRequired.value ? "required" : "");
 
         /** True if we are currently in edit mode. */
-        const isEditMode = computed(() => props.isEditMode && instanceOfEditable(props.attributeValue));
+        const isEditMode = computed(() => props.isEditMode);
 
         /** The label to display above the value or editor. */
-        const label = computed(() => props.attributeValue.name);
+        const label = computed(() => props.attribute.name);
 
         /** The help text to display in the help bubble when in edit mode. */
-        const helpText = computed(() => instanceOfEditable(props.attributeValue) ? props.attributeValue.description : "");
+        const helpText = computed(() => props.attribute.description);
 
         /** The read-only component to use to display the value. */
         const valueComponent = computed(() => {
@@ -93,21 +93,15 @@ export default defineComponent({
 
         /** The value to display or edit. */
         const value = computed({
-            get: () => props.attributeValue.value || "",
+            get: () => props.modelValue || "",
             set(newValue) {
-                props.attributeValue.value = newValue;
-
-                if (instanceOfEditable(props.attributeValue)) {
-                    props.attributeValue.textValue = field.value.getTextValue(props.attributeValue.value ?? "", props.attributeValue.configurationValues ?? {});
-                }
-
-                emit("update:attributeValue", props.attributeValue);
+                emit("update:modelValue", newValue);
             }
         });
 
         /** The configuration values for the editor component. */
         const configurationValues = computed(() => {
-            return props.attributeValue.configurationValues ?? {};
+            return props.attribute.configurationValues ?? {};
         });
 
         provide("isRequired", isRequired);

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, reactive, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../../../Controls/rockField";
 import Alert from "../../../Elements/alert";
 import { ComparisonType } from "../../../Reporting/comparisonType";
@@ -90,29 +90,28 @@ export default defineComponent({
             return true;
         });
 
-        const attribute = reactive({
-            ...props.field.attribute,
-            value: props.fieldValues[props.field.guid] ?? props.field.attribute?.value ?? ""
-        });
+        const attribute = ref(props.field.attribute);
+        const value = ref(props.fieldValues[props.field.guid] ?? "");
 
         // Detect changes like switch from one person to another.
-        watch(() => props.fieldValues[props.field.guid], (value) => {
-            attribute.value = value;
+        watch(() => props.fieldValues[props.field.guid], () => {
+            value.value = props.fieldValues[props.field.guid];
         });
 
-        watch(() => attribute.value, (value) => {
-            props.fieldValues[props.field.guid] = value;
+        watch(value, () => {
+            props.fieldValues[props.field.guid] = value.value;
         });
 
         return {
             isVisible,
-            attribute
+            attribute,
+            value
         };
     },
 
     template: `
 <template v-if="isVisible">
-    <RockField v-if="attribute" isEditMode :attributeValue="attribute" />
+    <RockField v-if="attribute" v-model="value" isEditMode :attribute="attribute" />
     <Alert v-else alertType="danger">Could not resolve attribute field</Alert>
 </template>`
 });

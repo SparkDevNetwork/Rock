@@ -703,50 +703,6 @@ This can be due to multiple threads updating the same attribute at the same time
         }
 
         /// <summary>
-        /// Gets the publically editable attribute model. This contains all the
-        /// information required for the individual to make changes to the attribute.
-        /// </summary>
-        /// <param name="attribute">The attribute that will be represented.</param>
-        /// <returns>A <see cref="PublicEditableAttributeViewModel"/> that represents the attribute.</returns>
-        internal static PublicEditableAttributeViewModel GetPublicEditableAttributeViewModel( Rock.Model.Attribute attribute )
-        {
-            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeId );
-            var configurationValues = attribute.AttributeQualifiers.ToDictionary( q => q.Key, q => q.Value );
-
-            return new PublicEditableAttributeViewModel
-            {
-                Guid = attribute.Guid,
-                Name = attribute.Name,
-                Key = attribute.Key,
-                AbbreviatedName = attribute.AbbreviatedName,
-                Description = attribute.Description,
-                IsActive = attribute.IsActive,
-                IsAnalytic = attribute.IsAnalytic,
-                IsAnalyticHistory = attribute.IsAnalyticHistory,
-                PreHtml = attribute.PreHtml,
-                PostHtml = attribute.PostHtml,
-                IsAllowSearch = attribute.AllowSearch,
-                IsEnableHistory = attribute.EnableHistory,
-                IsIndexEnabled = attribute.IsIndexEnabled,
-                IsPublic = attribute.IsPublic,
-                IsRequired = attribute.IsRequired,
-                IsSystem = attribute.IsSystem,
-                IsShowInGrid = attribute.IsGridColumn,
-                IsShowOnBulk = attribute.ShowOnBulk,
-                FieldTypeGuid = fieldTypeCache.Guid,
-                Categories = attribute.Categories
-                    .Select( c => new ListItemViewModel
-                    {
-                        Value = c.Guid.ToString(),
-                        Text = c.Name
-                    } )
-                    .ToList(),
-                ConfigurationValues = fieldTypeCache.Field?.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, null ) ?? new Dictionary<string, string>(),
-                DefaultValue = fieldTypeCache.Field?.GetPublicEditValue( attribute.DefaultValue, configurationValues ) ?? string.Empty
-            };
-        }
-
-        /// <summary>
         /// Saves any attribute edits made using a view model.
         /// </summary>
         /// <param name="attribute">The attribute values that were edited.</param>
