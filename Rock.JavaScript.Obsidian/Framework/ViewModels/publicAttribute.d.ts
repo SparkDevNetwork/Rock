@@ -17,7 +17,7 @@
 import { Guid } from "../Util/guid";
 import { PublicAttributeValueCategory } from "./publicAttributeValueCategory";
 
-export type PublicAttributeValue = {
+export type PublicAttribute = {
     /** The field type unique identifier. */
     fieldTypeGuid: Guid;
 
@@ -27,6 +27,15 @@ export type PublicAttributeValue = {
     /** The display name of the attribute. */
     name: string;
 
+    /** The key that identifies the attribute. */
+    key: string;
+
+    /** The description of the attribute. */
+    description: string;
+
+    /** True if this attribute is required. */
+    isRequired: boolean;
+
     /** The attribute order. */
     order: number;
 
@@ -35,10 +44,4 @@ export type PublicAttributeValue = {
 
     /** The configuration values for the attribute. */
     configurationValues?: Record<string, string> | null;
-
-    /** The user friendly display value. */
-    textValue?: string | null;
-
-    /** The raw value provided by the server. */
-    value?: string | null;
 };

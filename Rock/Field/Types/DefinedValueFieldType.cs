@@ -49,7 +49,7 @@ namespace Rock.Field.Types
         private const string ALLOW_ADDING_NEW_VALUES_KEY = "AllowAddingNewValues";
         private const string REPEAT_COLUMNS_KEY = "RepeatColumns";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValuesId";
-        private const string SELECTABLE_VALUES_PUBLIC_KEY = "selectableValues";
+        private const string VALUES_PUBLIC_KEY = "values";
 
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
         private const string DEFINED_VALUES_PROPERTY_KEY = "definedValues";
@@ -144,7 +144,7 @@ namespace Rock.Field.Types
             if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
             {
                 var selectableValues = ConvertDelimitedIdsToGuids( publicConfigurationValues[SELECTABLE_VALUES_KEY], id => DefinedValueCache.Get( id )?.Guid );
-                publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = selectableValues;
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = selectableValues;
                 publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
             }
 
@@ -170,7 +170,7 @@ namespace Rock.Field.Types
 
                     var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
 
-                    publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = definedType.DefinedValues
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
                         .Where( v => ( includeInactive || v.IsActive )
                             && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
                         .OrderBy( v => v.Order )
@@ -184,7 +184,7 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = "[]";
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
                 }
             }
 
@@ -198,7 +198,7 @@ namespace Rock.Field.Types
 
             // Convert the selectable values from unique identifiers into
             // integer identifiers that can be stored in the database.
-            var selectableValues = publicConfigurationValues.GetValueOrDefault( SELECTABLE_VALUES_PUBLIC_KEY, string.Empty )
+            var selectableValues = publicConfigurationValues.GetValueOrDefault( VALUES_PUBLIC_KEY, string.Empty )
                 .SplitDelimitedValues()
                 .AsGuidList()
                 .Select( v => DefinedValueCache.Get( v ) )
@@ -207,7 +207,7 @@ namespace Rock.Field.Types
                 .ToList();
 
             privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues.JoinStrings( "," );
-            privateConfigurationValues.Remove( SELECTABLE_VALUES_PUBLIC_KEY );
+            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
 
             // Convert the defined type value from a guid to an integer.
             var definedTypeGuid = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();

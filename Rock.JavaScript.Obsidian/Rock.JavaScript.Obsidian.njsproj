@@ -403,9 +403,8 @@
     <TypeScriptCompile Include="Framework\Util\linq.ts" />
     <TypeScriptCompile Include="Framework\Util\page.ts" />
     <TypeScriptCompile Include="Framework\Util\rockDateTime.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\publicAttributeValue.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\publicAttribute.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\publicAttributeValueCategory.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\publicEditableAttributeValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\achievementAttempt.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\achievementType.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CodeGenerated\achievementTypePrerequisite.d.ts" />

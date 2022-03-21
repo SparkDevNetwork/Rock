@@ -21,11 +21,10 @@ using System.Collections.Generic;
 namespace Rock.ViewModel.NonEntities
 {
     /// <summary>
-    /// A slimmed down version of <see cref="AttributeValueViewModel"/> designed
-    /// for normal transmission of attribute values to the client when needed
-    /// for display purposes.
+    /// A slimmed down version of <see cref="AttributeViewModel"/> designed
+    /// for normal transmission of attribute values to the client when needed.
     /// </summary>
-    public class PublicAttributeValueViewModel : IViewModel
+    public class PublicAttributeViewModel : IViewModel
     {
         /// <summary>
         /// Gets or sets the field type unique identifier.
@@ -52,6 +51,30 @@ namespace Rock.ViewModel.NonEntities
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the key that identifies the attribute on the entity.
+        /// </summary>
+        /// <value>
+        /// The key that identifies the attribute on the entity.
+        /// </value>
+        public string Key { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this attribute value is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this attribute value is required; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRequired { get; set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -72,21 +95,5 @@ namespace Rock.ViewModel.NonEntities
         /// </summary>
         /// <value>The configuration values.</value>
         public Dictionary<string, string> ConfigurationValues { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user-friendly display text value.
-        /// </summary>
-        /// <value>
-        /// The user-friendly display text value.
-        /// </value>
-        public string TextValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value.
-        /// </summary>
-        /// <value>
-        /// The value.
-        /// </value>
-        public string Value { get; set; }
     }
 }
