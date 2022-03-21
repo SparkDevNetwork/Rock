@@ -317,9 +317,11 @@ namespace RockWeb.Blocks.Crm
             }});
         }});
         $('#{0}').val(newValue);
-
+        if($(this).closest('.form-group.attribute-matrix-editor').length){{
+        __doPostBack('{3}', null);
+        }}
     }});
-", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID );
+", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID, pnlEntry.ClientID );
             ScriptManager.RegisterStartupScript( hfSelectedItems, hfSelectedItems.GetType(), "select-items-" + BlockId.ToString(), script, true );
 
             ddlGroupAction.SelectedValue = "Add";
