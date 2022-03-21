@@ -5428,29 +5428,32 @@ namespace Rock.Lava
 
                 foreach ( var value in ( ( IEnumerable ) input ) )
                 {
-                    if ( value is ILavaDataDictionary )
+                    if ( value is ILavaDataDictionary lavaDictionary )
                     {
-                        var liquidObject = value as ILavaDataDictionary;
-                        if ( liquidObject.ContainsKey( selectKey ) )
+                        if ( lavaDictionary.ContainsKey( selectKey ) )
                         {
-                            result.Add( liquidObject.GetValue( selectKey ) );
+                            result.Add( lavaDictionary.GetValue( selectKey ) );
                         }
                     }
-                    else if ( value is IDictionary<string, object> )
+                    else if ( value is IDictionary<string, object> genericDictionary )
                     {
-                        var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( selectKey ) )
+                        if ( genericDictionary.ContainsKey( selectKey ) )
                         {
-                            result.Add( dictionaryObject[selectKey] );
+                            result.Add( genericDictionary[selectKey] );
                         }
                     }
-                    else if ( value is IDictionary )
+                    else if ( value is IDictionary simpleDictionary )
                     {
-                        var dictionaryObject = value as IDictionary;
-                        if ( dictionaryObject.Contains( selectKey ) )
+                        if ( simpleDictionary.Contains( selectKey ) )
                         {
-                            result.Add( dictionaryObject[selectKey] );
+                            result.Add( simpleDictionary[selectKey] );
                         }
+                    }
+                    else if ( value is DynamicObject dyo )
+                    {
+                        // Try to resolve the key as a property of the object.
+                        // We can assume that all properties of a runtime type are available to Lava.
+                        result.Add( dyo.GetPropertyValue( selectKey ) );
                     }
                 }
 

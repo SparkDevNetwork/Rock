@@ -1879,6 +1879,7 @@ $('#{0}').tooltip();
                 }
             }
 
+            SetNavigationHistory( pnlToolbox );
             BindScheduleRepeater();
         }
 
@@ -1889,6 +1890,7 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnUnavailabilityScheduleCancel_Click( object sender, EventArgs e )
         {
+            SetNavigationHistory( pnlToolbox );
             BindScheduleRepeater();
         }
 
