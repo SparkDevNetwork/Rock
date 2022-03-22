@@ -126,6 +126,9 @@ namespace Rock.Attribute
                     Name = c.Name,
                     Order = c.Order
                 } ).ToList(),
+                Key = attribute.Key,
+                IsRequired = attribute.IsRequired,
+                Description = attribute.Description,
                 ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.View, value ),
                 Order = attribute.Order
             };
