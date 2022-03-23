@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             category.Description = tbCategoryDescription.Text;
             category.ParentCategoryId = hfParentCategory.Value.AsIntegerOrNull();
             category.IconCssClass = tbIconCssClass.Text;
-            category.HighlightColor = tbHighlightColor.Text;
+            category.HighlightColor = cpHighlightColor.Text;
 
             if ( !Page.IsValid )
             {
@@ -733,7 +733,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             tbCategoryName.Text = category.Name;
             tbCategoryDescription.Text = category.Description;
             tbIconCssClass.Text = category.IconCssClass;
-            tbHighlightColor.Text = category.HighlightColor;
+            cpHighlightColor.Text = category.HighlightColor;
         }
 
         /// <summary>

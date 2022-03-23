@@ -236,10 +236,10 @@
                                 <Rock:DataTextBox ID="tbCategoryDescription" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
+                                        <Rock:ColorPicker ID="cpHighlightColor" runat="server" Label="Highligh Color" />
                                     </div>
                                 </div>
                             </fieldset>
