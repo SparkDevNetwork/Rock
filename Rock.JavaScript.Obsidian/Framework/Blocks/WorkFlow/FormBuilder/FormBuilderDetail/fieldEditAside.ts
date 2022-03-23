@@ -43,7 +43,7 @@ import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutA
 /**
  * Check if the two records are equal. This makes sure all the key names match
  * and the associated values also match. Strict checking is performed.
- * 
+ *
  * @param a The first record value to be compared.
  * @param b The second record value to be compared.
  *
@@ -251,7 +251,7 @@ export default defineComponent({
 
         /**
          * Gets the description of a single filter rule, including the source name.
-         * 
+         *
          * @param rule The rule that needs to be translated into description text.
          *
          * @returns A string that contains a human friendly description about the rule.
@@ -293,7 +293,7 @@ export default defineComponent({
         /**
          * Event handler for when the field type editor has updated any configuration
          * values.
-         * 
+         *
          * @param value The value that contains the changed information.
          */
         const onFieldTypeModelValueUpdate = (value: FieldTypeConfigurationViewModel): void => {
@@ -306,7 +306,7 @@ export default defineComponent({
 
         /**
          * Event handler for when the validation state of the form has changed.
-         * 
+         *
          * @param errors Any errors that were detected on the form.
          */
         const onValidationChanged = (errors: FormError[]): void => {
@@ -432,20 +432,20 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column" style="overflow-y: hidden; flex-grow: 1;">
+<div class="d-flex flex-column flex-grow-1 overflow-y-hidden">
     <div class="d-flex">
-        <div class="d-flex clickable" style="background-color: #484848; color: #fff; align-items: center; justify-content: center; width: 40px;" @click="onBackClick">
+        <div class="d-flex justify-content-center align-items-center text-white clickable" style="background-color: #484848; width: 40px;" @click="onBackClick">
             <i class="fa fa-chevron-left"></i>
         </div>
 
-        <div class="p-2 aside-header" style="flex-grow: 1;">
+        <div class="p-2 aside-header flex-grow-1">
             <i v-if="asideIconClass" :class="asideIconClass"></i>
             <span class="title">{{ fieldName }}</span>
         </div>
     </div>
 
-    <div ref="scrollableElement" class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
-        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column" style="flex-grow: 1;">
+    <div ref="scrollableElement" class="aside-body d-flex flex-column flex-grow-1 overflow-y-auto">
+        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column flex-grow-1">
             <Panel :modelValue="true" title="Field Type" :hasCollapse="true">
                 <TextBox v-model="fieldName"
                     rules="required"

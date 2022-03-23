@@ -151,12 +151,12 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column" style="overflow-y: hidden; flex-grow: 1;">
+<div class="d-flex flex-column overflow-y-hidden flex-grow-1">
     <div class="p-2 aside-header" style="border-right: 1px solid #dfe0e1; border-bottom: 1px solid #dfe0e1;">
         <span class="title">Field List</span>
     </div>
 
-    <div class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
+    <div class="aside-body d-flex flex-column overflow-y-hidden flex-grow-1 border-right border-panel p-3">
         <div class="mt-3" v-drag-source="sectionDragOptions">
             <div class="form-template-item form-template-item-section">
                 <i class="fa fa-expand fa-fw"></i>
@@ -164,7 +164,7 @@ export default defineComponent({
             </div>
         </div>
 
-        <div class="mt-3" style="flex-grow: 1;">
+        <div class="mt-3 flex-grow-1">
             <RockLabel>Field Types</RockLabel>
 
             <div class="d-flex flex-wrap mt-1" style="overflow-x: clip; margin-right: -5px;" v-drag-source="fieldDragOptions">
