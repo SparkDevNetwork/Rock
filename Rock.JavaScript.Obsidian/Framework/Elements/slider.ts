@@ -69,8 +69,8 @@ export default defineComponent({
     template: `
 <RockFormField
     :modelValue="internalValue"
-    formGroupClasses="rock-switch"
-    name="switch">
+    formGroupClasses="rock-range-slider"
+    name="range-slider">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
             <InlineSlider v-model="internalValue" :uniqueId="uniqueId" v-bind="field" :isIntegerOnly="isIntegerOnly" :min="min" :max="max" :showValueBar="showValueBar" />
