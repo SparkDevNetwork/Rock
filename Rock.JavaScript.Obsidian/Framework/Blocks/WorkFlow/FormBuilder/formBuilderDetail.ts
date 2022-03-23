@@ -347,7 +347,7 @@ export default defineComponent({
 
         <div ref="bodyElement" class="form-builder-detail d-flex flex-column panel-flex-fill-body overflow-hidden styled-scroll">
             <div class="d-flex align-items-center p-2  border-bottom border-panel" style="box-shadow: rgba(0,0,0,0.15) 0 0 4px;">
-                <ul class="nav nav-pills flex-grow-1">
+                <ul class="nav nav-pills nav-sm flex-grow-1">
                     <li role="presentation"><a :href="submissionsPageUrl">Submissions</a></li>
                     <li :class="{ active: isFormBuilderTabSelected }" role="presentation"><a href="#" @click.prevent="onFormBuilderTabClick">Form Builder</a></li>
                     <li :class="{ active: isCommunicationsTabSelected }" role="presentation"><a href="#" @click.prevent="onCommunicationsTabClick">Communications</a></li>
@@ -355,7 +355,7 @@ export default defineComponent({
                     <li role="presentation"><a :href="analyticsPageUrl">Analytics</a></li>
                 </ul>
 
-                <RockButton btnType="primary" :disabled="!isFormDirty" @click="onSaveClick">Save</RockButton>
+                <RockButton btnType="primary" btnSize="sm" :disabled="!isFormDirty" @click="onSaveClick">Save</RockButton>
             </div>
 
             <div class="flex-grow-1 overflow-y-hidden" :style="formBuilderContainerStyle">
