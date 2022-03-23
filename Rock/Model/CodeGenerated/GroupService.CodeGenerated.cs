@@ -193,6 +193,7 @@ namespace Rock.Model
                 ArchivedDateTime = model.ArchivedDateTime,
                 AttendanceRecordRequiredForCheckIn = ( int ) model.AttendanceRecordRequiredForCheckIn,
                 CampusId = model.CampusId,
+                ConfirmationAdditionalDetails = model.ConfirmationAdditionalDetails,
                 Description = model.Description,
                 DisableScheduleToolboxAccess = model.DisableScheduleToolboxAccess,
                 DisableScheduling = model.DisableScheduling,
@@ -213,6 +214,7 @@ namespace Rock.Model
                 Order = model.Order,
                 ParentGroupId = model.ParentGroupId,
                 RequiredSignatureDocumentTemplateId = model.RequiredSignatureDocumentTemplateId,
+                RSVPReminderAdditionalDetails = model.RSVPReminderAdditionalDetails,
                 RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
                 RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
                 ScheduleCancellationPersonAliasId = model.ScheduleCancellationPersonAliasId,
@@ -293,6 +295,7 @@ namespace Rock.Model
             target.ArchivedDateTime = source.ArchivedDateTime;
             target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
+            target.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             target.Description = source.Description;
             target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
             target.DisableScheduling = source.DisableScheduling;
@@ -315,6 +318,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            target.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;

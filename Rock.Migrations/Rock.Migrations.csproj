@@ -77,6 +77,10 @@
     <Compile Include="Migrations\202203152234586_CodeGenerated_20220315.Designer.cs">
       <DependentUpon>202203152234586_CodeGenerated_20220315.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202203231615477_AddAdditionalPropertiesToGroupRelated.cs" />
+    <Compile Include="Migrations\202203231615477_AddAdditionalPropertiesToGroupRelated.Designer.cs">
+      <DependentUpon>202203231615477_AddAdditionalPropertiesToGroupRelated.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1026,6 +1030,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202203152234586_CodeGenerated_20220315.resx">
       <DependentUpon>202203152234586_CodeGenerated_20220315.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203231615477_AddAdditionalPropertiesToGroupRelated.resx">
+      <DependentUpon>202203231615477_AddAdditionalPropertiesToGroupRelated.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
