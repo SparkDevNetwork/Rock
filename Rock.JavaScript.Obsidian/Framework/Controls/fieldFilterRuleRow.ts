@@ -70,7 +70,7 @@ export const FieldFilterRuleRow = defineComponent({
             return source.attribute as PublicFilterableAttribute;
         });
 
-        // Convert the list of sources into the options you can choose from the 
+        // Convert the list of sources into the options you can choose from the
         const attributeList = computed<ListItem[]>(() => {
             return props.sources.map(source => {
                 return {
@@ -131,8 +131,8 @@ export const FieldFilterRuleRow = defineComponent({
     },
 
     template: `
-    <div class="filter-rule row form-row">
-        <div class="col-xs-10 col-sm-11">
+    <div class="d-flex form-group">
+        <div class="flex-fill">
             <div class="row form-row">
                 <div class="filter-rule-comparefield col-md-4">
                     <DropDownList :options="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
@@ -142,7 +142,7 @@ export const FieldFilterRuleRow = defineComponent({
                 </div>
             </div>
         </div>
-        <div class="col-xs-2 col-sm-1">
+        <div class="flex-shrink-0 ml-2">
             <button class="btn btn-danger btn-square" @click.prevent="onRemoveRuleClick"><i class="fa fa-times"></i></button>
         </div>
     </div>
