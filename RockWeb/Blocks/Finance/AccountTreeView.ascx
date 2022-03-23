@@ -136,7 +136,7 @@
                     })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildren/" ) %>',
-                        restParams: '/' + ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false),
+                        restParams: '/' + ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + "?lazyLoad=true",
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null

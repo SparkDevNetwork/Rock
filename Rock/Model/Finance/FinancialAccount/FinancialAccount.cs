@@ -17,6 +17,8 @@
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -34,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialAccount" )]
     [DataContract]
-    public partial class FinancialAccount : Model<FinancialAccount>, IOrdered, IHasActiveFlag
+    public partial class FinancialAccount : Model<FinancialAccount>, IOrdered, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 

@@ -212,7 +212,9 @@ namespace Rock.Model
                     }
                 }
 
-                if ( null != Entity.RefundDetails || Entity.TotalAmount <= 0 )
+                bool isRefund = null != Entity.RefundDetails || Entity.TotalAmount <= 0;
+
+                if ( !isRefund )
                 {
                     // The data context operation doesn't need to wait for this to compelete
                     Task.Run( () => StreakTypeService.HandleFinancialTransactionRecord( Entity.Id ) );

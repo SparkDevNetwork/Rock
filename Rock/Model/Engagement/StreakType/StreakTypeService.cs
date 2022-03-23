@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Web.Cache;
@@ -1941,7 +1942,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Handles the financial transaction record for streaks. Use this method with the ID instead of the whole object if there is
-        /// a chance the context for the transactopm could be disposed. e.g. if this method is being run in a new Task.
+        /// a chance the context for the transaction could be disposed. e.g. if this method is being run in a new Task.
         /// </summary>
         /// <param name="transactionId">The financial transaction identifier.</param>
         public static void HandleFinancialTransactionRecord( int transactionId )
@@ -1993,10 +1994,11 @@ namespace Rock.Model
                 return;
             }
 
-            // Exclude the following transations from streaks
+            // Exclude the following transactions from streaks
             // Refunds, negative/zero amounts
-            if ( null != transaction.RefundDetails ||
-                 transaction.TotalAmount <= 0 )
+            bool isRefund = null != transaction.RefundDetails || transaction.TotalAmount <= 0;
+
+            if ( isRefund )
             {
                 // No error message, we just don't want to track these for streaks
                 return;
@@ -2013,11 +2015,10 @@ namespace Rock.Model
                 .Select( se => se.StreakTypeId );
             var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
 
-            // Get the account identifier for this transaction
+            // Get the account identifier(s) for this transaction
             var accountService = new FinancialAccountService( rockContext );
-            var accountId = transaction.TransactionDetails.Select( t => t.AccountId ).ToIntSafe();
-            var accountAncestorIds = accountService.GetAllAncestorIds( accountId ).ToList();
-            var accountDescendentIds = accountService.GetAllDescendentIds( accountId ).ToList();
+            var transactionAccountIds = transaction.TransactionDetails.Where( a => a.Amount > 0.00M ).Select( t => t.AccountId ).ToList();
+            var accountAncestorIds = FinancialAccountCache.GetByIds( transactionAccountIds ).SelectMany( s => s.GetAncestorFinancialAccountIds() ).Distinct().ToList();
 
             // Query each active streak type and mark engagement for it if the person
             // is enrolled or the streak type does not require enrollment
@@ -2031,13 +2032,11 @@ namespace Rock.Model
                 ) &&
                 (
                     // Try to match the Financial Account ID first
-                    ( s.StructureType == StreakStructureType.FinancialTransaction && s.StructureEntityId.Value == accountId ) ||
-                    // If include children, match ancestors or descendents
+                    ( s.StructureType == StreakStructureType.FinancialTransaction
+                        && transactionAccountIds.Contains( s.StructureEntityId.Value ) ||
+                    // If include children, see if the Streak's defined AccountId is one of the Ancestors of the account(s) that the transaction was posted to
                     ( s.StructureType == StreakStructureType.FinancialTransaction &&
-                        s.StructureSettings.IncludeChildAccounts &&
-                        ( accountAncestorIds.Contains( s.StructureEntityId.Value ) ||
-                          accountDescendentIds.Contains( s.StructureEntityId.Value )
-                        ) )
+                        s.StructureSettings.IncludeChildAccounts && accountAncestorIds.Contains( s.StructureEntityId.Value ) ) )
                 ) );
 
             foreach ( var streakType in matchedStreakTypes )
@@ -2776,14 +2775,14 @@ namespace Rock.Model
         /// <returns></returns>
         private static DateTime IncrementDateTime( DateTime dateTime, StreakOccurrenceFrequency streakOccurrenceFrequency, bool isReverse = false )
         {
-            var incrementBy = (isReverse) ? -1 : 1;
+            var incrementBy = ( isReverse ) ? -1 : 1;
 
             switch ( streakOccurrenceFrequency )
             {
                 case StreakOccurrenceFrequency.Daily:
                     return dateTime.AddDays( incrementBy );
                 case StreakOccurrenceFrequency.Weekly:
-                    incrementBy = (isReverse) ? -1 * DaysPerWeek : DaysPerWeek;
+                    incrementBy = ( isReverse ) ? -1 * DaysPerWeek : DaysPerWeek;
                     return dateTime.AddDays( incrementBy );
                 case StreakOccurrenceFrequency.Monthly:
                     return dateTime.AddMonths( incrementBy );
@@ -2892,7 +2891,7 @@ namespace Rock.Model
                     }
                     return numberOfMonths;
                 case StreakOccurrenceFrequency.Yearly:
-                    numberOfYears =  endDate.Year - startDate.Year;
+                    numberOfYears = endDate.Year - startDate.Year;
                     if ( isInclusive )
                     {
                         numberOfYears += 1;
@@ -3087,8 +3086,9 @@ namespace Rock.Model
             }
 
             // Get the account identifier for this transaction
-            var accountService = new FinancialAccountService( rockContext );
-            var accountDescendentIds = includeChildAccounts ? accountService.GetAllDescendentIds( structureEntityId ).ToList() : new List<int>();
+            var accountDescendentIds = includeChildAccounts
+                ? FinancialAccountCache.Get( structureEntityId )?.GetDescendentFinancialAccountIds() ?? new int[0]
+                : new int[0];
 
             var transactionService = new FinancialTransactionService( rockContext );
             var query = transactionService.Queryable()

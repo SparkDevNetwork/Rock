@@ -1,4 +1,9 @@
+SET NOCOUNT ON
+
 -- Creates random Financial Accounts.  The Child Accounts will be randomly assigned parent accounts.
+--
+-- Run this to delete previously generated accounts
+ -- DELETE FROM [FinancialAccount] where [Name] like 'CodeGen Account%' and Id not in (select AccountId from FinancialTransactionDetail)
 --
 -- Configurable parameters
 DECLARE @maxAccounts INT = 255
@@ -21,6 +26,7 @@ DECLARE @campusId INT = NULL
     , @url NVARCHAR(100) = NULL
     , @isPublic BIT = 1
     , @accountsAdded INT = 0
+    , @accountNameNumber INT = (select count(*) from FinancialTransaction)
     , @parentFinancialAccountName NVARCHAR(100)
 
 BEGIN
@@ -29,6 +35,7 @@ BEGIN
     WHILE @accountsAdded < @maxAccounts
     BEGIN
         SET @accountsAdded += 1;
+        set @accountNameNumber += 1;
 
         SELECT @parentAccountId = (
                 SELECT TOP 1 ID
@@ -51,8 +58,8 @@ BEGIN
         SELECT @financialAccountGuid = NEWID();
 
         SELECT @financialAccountName = substring(CONCAT (
-                    'CodeGen Account L'
-                    , @financialAccountGuid
+                    'CodeGen Account '
+                    , @accountNameNumber
                     ), 0, 35)
 
         SELECT @financialAccountDescription = 'Description of ' + @financialAccountName;

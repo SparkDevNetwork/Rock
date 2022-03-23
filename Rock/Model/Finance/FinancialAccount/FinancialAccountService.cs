@@ -17,6 +17,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Web.Cache;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -58,18 +60,9 @@ namespace Rock.Model
         /// <returns></returns>
         public IOrderedEnumerable<int> GetAllAncestorIds( int accountId )
         {
-            var result = this.Context.Database.SqlQuery<int>(
-                @"
-                with CTE as (
-                select *, 0 as [Level] from [FinancialAccount] where [Id]={0}
-                union all
-                select [a].*, [Level] + 1 as [Level] from [FinancialAccount] [a]
-                inner join CTE pcte on pcte.ParentAccountId = [a].[Id]
-                )
-                select Id from CTE where Id != {0} order by Level
-                ", accountId );
+            var result = FinancialAccountCache.Get( accountId )?.GetAncestorFinancialAccountIds() ?? new int[0];
 
-            // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
+            // already ordered GetAncestorFinancialAccountIds, so do a dummy order by to get IOrderedEnumerable
             return result.OrderBy( a => 0 );
         }
 
@@ -80,16 +73,7 @@ namespace Rock.Model
         /// <returns>System.Collections.Generic.IEnumerable&lt;int&gt;.</returns>
         public IEnumerable<int> GetAllDescendentIds( int parentAccountId )
         {
-            return this.Context.Database.SqlQuery<int>(
-                @"
-                with CTE as (
-                select * from [FinancialAccount] where [ParentAccountId]={0}
-                union all
-                select [a].* from [FinancialAccount] [a]
-                inner join CTE pcte on pcte.Id = [a].[ParentAccountId]
-                )
-                select Id from CTE
-                ", parentAccountId );
+            return FinancialAccountCache.Get( parentAccountId )?.GetDescendentFinancialAccountIds() ?? new int[0];
         }
 
         /// <summary>

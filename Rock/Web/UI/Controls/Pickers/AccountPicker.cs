@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -175,16 +176,34 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value to the specified FinancialAccount
         /// </summary>
         /// <param name="account">The account.</param>
         public void SetValue( FinancialAccount account )
         {
-            if ( account != null )
+            if ( account == null )
             {
-                ItemId = account.Id.ToString();
+                SetValueFromCache( null );
+            }
+            else
+            {
+                var accountCache = FinancialAccountCache.Get( account.Id );
+                SetValueFromCache( accountCache );
+            }
+            
+        }
+
+        /// <summary>
+        /// Sets the value to the specified FinancialAccountCache
+        /// </summary>
+        /// <param name="accountCache">The account cache.</param>
+        public void SetValueFromCache( FinancialAccountCache accountCache )
+        {
+            if ( accountCache != null )
+            {
+                ItemId = accountCache.Id.ToString();
                 List<int> parentAccountIds = new List<int>();
-                var parentAccount = account.ParentAccount;
+                var parentAccount = accountCache.ParentAccount;
 
                 while ( parentAccount != null )
                 {
@@ -199,7 +218,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 InitialItemParentIds = parentAccountIds.AsDelimited( "," );
-                ItemName = this.DisplayPublicName ? account.PublicName : account.Name;
+                ItemName = this.DisplayPublicName ? accountCache.PublicName : accountCache.Name;
             }
             else
             {
@@ -215,7 +234,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="financialAccount">The financial account.</param>
         /// <param name="ancestorFinancialAccountIds">The ancestor financial account ids.</param>
         /// <returns></returns>
-        private List<int> GetFinancialAccountAncestorsIdList( FinancialAccount financialAccount, List<int> ancestorFinancialAccountIds = null )
+        private List<int> GetFinancialAccountAncestorsIdList( FinancialAccountCache financialAccount, List<int> ancestorFinancialAccountIds = null )
         {
             if ( ancestorFinancialAccountIds == null )
             {
@@ -242,20 +261,28 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the selected values to the specified Financial Accounts
         /// </summary>
-        /// <param name="accounts">The accounts.</param>
+        /// <param name="accounts"></param>
         public void SetValues( IEnumerable<FinancialAccount> accounts )
         {
-            var financialAccounts = accounts.ToList();
+            var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ));
+            SetValuesFromCache( financialAccountsCache );
+        }
 
-            if ( financialAccounts.Any() )
+        /// <summary>
+        /// Sets the selected values to the specified Financial Accounts
+        /// </summary>
+        /// <param name="financialAccountsCache"></param>
+        public void SetValuesFromCache( IEnumerable<FinancialAccountCache> financialAccountsCache )
+        {
+            if ( financialAccountsCache.Any() )
             {
                 var ids = new List<string>();
                 var names = new List<string>();
                 var parentAccountIds = new List<int>();
 
-                foreach ( var account in accounts )
+                foreach ( var account in financialAccountsCache )
                 {
                     if ( account != null )
                     {
@@ -290,8 +317,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var item = new FinancialAccountService( new RockContext() ).Get( int.Parse( ItemId ) );
-            this.SetValue( item );
+            var item = FinancialAccountCache.Get( ItemId.AsInteger() );
+            this.SetValueFromCache( item );
         }
 
         /// <summary>
@@ -301,8 +328,8 @@ namespace Rock.Web.UI.Controls
         protected override void SetValuesOnSelect()
         {
             var itemIds = ItemIds.Select( int.Parse );
-            var items = new FinancialAccountService( new RockContext() ).Queryable().Where( i => itemIds.Contains( i.Id ) );
-            this.SetValues( items );
+            var items = FinancialAccountCache.GetByIds( itemIds );
+            this.SetValuesFromCache( items );
         }
 
         /// <summary>
@@ -324,6 +351,19 @@ namespace Rock.Web.UI.Controls
             var extraParams = new System.Text.StringBuilder();
             extraParams.Append( $"/{this.DisplayActiveOnly.ToString()}/{this.DisplayPublicName.ToString()}" );
             ItemRestUrlExtraParams = extraParams.ToString();
+
+            if ( AllowMultiSelect && ShowSelectChildren )
+            {
+                // If this is a multi-select with the ShowSelectChildren, disable lazy-load
+                // to help the "Select Children" btn in the AccountPicker work better.
+                // Note that if there are an unusually large number of FinancialAccounts, 
+                // disabling lazy-loading could cause issues. 
+                ItemRestUrlExtraParams += "?lazyLoad=false";
+            }
+            else
+            {
+                ItemRestUrlExtraParams += "?lazyLoad=true";
+            }
         }
     }
 }

@@ -385,7 +385,7 @@ namespace Rock.Model
             List<int> accountIds;
             if ( settings.FinancialAccountGuids?.Any() == true )
             {
-                accountIds = new FinancialAccountService( this.Context as RockContext ).GetByGuids( settings.FinancialAccountGuids ).Select( a => a.Id ).ToList();
+                accountIds = FinancialAccountCache.GetByGuids( settings.FinancialAccountGuids ).Select( a => a.Id ).ToList();
             }
             else
             {
@@ -399,18 +399,20 @@ namespace Rock.Model
             }
             else if ( settings.AreChildAccountsIncluded == true )
             {
-                if ( accountIds.Count() == 1 )
+                var selectedAccountIds = accountIds.ToList();
+                var childAccountsIds = FinancialAccountCache.GetByIds( accountIds ).SelectMany( a => a.GetDescendentFinancialAccountIds() ).ToList();
+                selectedAccountIds.AddRange( childAccountsIds );
+                selectedAccountIds = selectedAccountIds.Distinct().ToList();
+
+                if ( selectedAccountIds.Count() == 1 )
                 {
-                    var accountId = accountIds[0];
-                    query = query.Where( t => t.TransactionDetails.Any( td => td.AccountId == accountId ||
-                        ( td.Account.ParentAccountId.HasValue && accountId == td.Account.ParentAccountId.Value ) ) );
+                    var accountId = selectedAccountIds[0];
+                    query = query.Where( t => t.TransactionDetails.Any( td => td.AccountId == accountId ) );
 
                 }
                 else
                 {
-                    query = query.Where( t => t.TransactionDetails.Any( td =>
-                        accountIds.Contains( td.AccountId ) ||
-                        ( td.Account.ParentAccountId.HasValue && accountIds.Contains( td.Account.ParentAccountId.Value ) ) ) );
+                    query = query.Where( t => t.TransactionDetails.Any( td => selectedAccountIds.Contains( td.AccountId ) ) );
                 }
             }
             else
@@ -497,9 +499,9 @@ namespace Rock.Model
                     td.AccountId,
                     td.Amount,
 
-                        // For each Refund (there could be more than one) get the refund amount for each if the refunds's Detail records for the Account.
-                        // Then sum that up for the total refund amount for the account
-                        AccountRefundAmount = td.Transaction
+                    // For each Refund (there could be more than one) get the refund amount for each if the refunds's Detail records for the Account.
+                    // Then sum that up for the total refund amount for the account
+                    AccountRefundAmount = td.Transaction
                         .Refunds.Select( a => a.FinancialTransaction.TransactionDetails.Where( rrr => rrr.AccountId == td.AccountId )
                         .Sum( rrrr => ( decimal? ) rrrr.Amount ) ).Sum() ?? 0.0M
                 } ) )
