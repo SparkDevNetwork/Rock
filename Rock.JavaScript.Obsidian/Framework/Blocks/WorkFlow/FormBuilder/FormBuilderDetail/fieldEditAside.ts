@@ -445,7 +445,7 @@ export default defineComponent({
     </div>
 
     <div ref="scrollableElement" class="aside-body d-flex flex-column flex-grow-1 overflow-y-auto">
-        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column flex-grow-1">
+        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="field-edit-aside d-flex flex-column flex-grow-1">
             <Panel :modelValue="true" title="Field Type" :hasCollapse="true">
                 <TextBox v-model="fieldName"
                     rules="required"
@@ -467,10 +467,8 @@ export default defineComponent({
                         </ul>
                     </div>
 
-                    <div class="clearfix">
-                        <div class="pull-right">
-                            <RockButton btnType="link" @click="onConditionalEditClick"><i class="fa fa-pencil"></i></RockButton>
-                        </div>
+                    <div class="d-flex justify-content-end">
+                        <RockButton btnType="default" btnSize="sm" @click="onConditionalEditClick"><i class="fa fa-pencil"></i></RockButton>
                     </div>
                 </div>
             </Panel>

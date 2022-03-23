@@ -61,7 +61,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="configurable-zone" :class="zoneClasses">
+<div :class="zoneClasses">
     <div class="zone-content-container">
         <div class="zone-content">
             <slot />

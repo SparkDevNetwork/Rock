@@ -883,7 +883,7 @@ export default defineComponent({
             @validationChanged="onPersonEntryValidationChanged" />
     </div>
 
-    <div class="p-3 d-flex flex-column" style="flex: 3 1; overflow-y: auto;">
+    <div class="p-3 d-flex flex-column form-layout" style="flex: 3 1; overflow-y: auto;">
         <FormContentZone v-if="templateFormHeaderContent" :modelValue="templateFormHeaderContent" placeholder="" iconCssClass="" />
 
         <FormContentZone :modelValue="formHeaderContent" :isActive="isFormHeaderActive" @configure="onConfigureFormHeader" placeholder="Form Header" />

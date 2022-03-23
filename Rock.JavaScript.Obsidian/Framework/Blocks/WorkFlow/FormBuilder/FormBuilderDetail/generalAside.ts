@@ -156,7 +156,7 @@ export default defineComponent({
         <span class="title">Field List</span>
     </div>
 
-    <div class="aside-body d-flex flex-column overflow-y-hidden flex-grow-1 border-right border-panel p-3">
+    <div class="aside-body d-flex flex-column flex-grow-1 border-right border-panel p-3 overflow-y-auto">
         <div class="mt-3" v-drag-source="sectionDragOptions">
             <div class="form-template-item form-template-item-section">
                 <i class="fa fa-expand fa-fw"></i>
@@ -167,7 +167,7 @@ export default defineComponent({
         <div class="mt-3 flex-grow-1">
             <RockLabel>Field Types</RockLabel>
 
-            <div class="d-flex flex-wrap mt-1" style="overflow-x: clip; margin-right: -5px;" v-drag-source="fieldDragOptions">
+            <div class="d-flex flex-wrap mt-1" v-drag-source="fieldDragOptions">
                 <div v-for="field in commonFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
                     <i :class="field.icon + ' fa-fw'"></i>
                     <div class="text">{{ field.text }}</div>
@@ -176,7 +176,7 @@ export default defineComponent({
 
             <div class="text-semibold text-sm mt-2">More Fields</div>
 
-            <div class="d-flex flex-wrap mt-1" style="overflow-x: clip; margin-right: -5px;" v-drag-source="fieldDragOptions">
+            <div class="d-flex flex-wrap mt-1" v-drag-source="fieldDragOptions">
                 <div v-for="field in advancedFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
                     <i :class="field.icon + ' fa-fw'"></i>
                     <div class="text">{{ field.text }}</div>
