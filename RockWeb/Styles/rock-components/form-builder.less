@@ -10,6 +10,7 @@
   --zone-highlight-color: #ee7725;
   --zone-highlight-action-text-color: #e4bda2;
   --flex-col-gutter: 30px;
+  --zone-border-radius: 6px;
 
     .aside-body {
       border-right: 1px solid @panel-border;
@@ -194,6 +195,8 @@
               display: flex;
               flex-grow: 1;
               border: 2px solid var(--zone-border);
+              border-radius: var(--zone-border-radius) 0 0 var(--zone-border-radius);
+              background: #ffffff;
           }
 
           .form-builder-detail .configurable-zone.zone-section > .zone-content-container {
@@ -206,7 +209,6 @@
           }
 
           .form-builder-detail .configurable-zone > .zone-content-container > .zone-content > .zone-body {
-              background: #ffffff;
               min-height: 100%;
               padding: 20px;
           }
@@ -275,6 +277,7 @@
               opacity: 0;
               transform: scaleX(0);
               transform-origin: 0% 0%;
+              border-radius: 0 var(--zone-border-radius) var(--zone-border-radius) 0;
             }
 
             &.active,
