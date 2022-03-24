@@ -1810,7 +1810,10 @@ namespace Rock.Blocks.Event
 
             if ( context is null )
             {
-                return null;
+                return new RegistrationEntryBlockViewModel
+                {
+                    RegistrationInstanceNotFoundMessage = errorMessage
+                };
             }
 
             // If the registration is existing, then add the args that describe it to the view model

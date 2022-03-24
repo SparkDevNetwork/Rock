@@ -356,6 +356,15 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// The saved accounts that can be offered to use for payment.
         /// </value>
         public List<SavedFinancialAccountListItemViewModel> SavedAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets a message to show when the registration instance cannot be used,
+        /// either because it cannot be found, or is outside the time you're allowed to register.
+        /// </summary>
+        /// <value>
+        /// A message to show to the indiviual when the registration instance cannot be found.
+        /// </value>
+        public string RegistrationInstanceNotFoundMessage { get; set; }
     }
 
     /// <summary>

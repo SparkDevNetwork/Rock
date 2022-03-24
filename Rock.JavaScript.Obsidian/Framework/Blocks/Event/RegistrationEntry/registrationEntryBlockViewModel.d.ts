@@ -107,6 +107,7 @@ export type RegistrationEntryBlockViewModel = {
     grades: ListItem[];
     enableSaveAccount: boolean;
     savedAccounts: SavedFinancialAccountListItem[] | null;
+    registrationInstanceNotFoundMessage: string | null;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
