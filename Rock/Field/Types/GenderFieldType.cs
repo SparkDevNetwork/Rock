@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg id=""Layer_1"" data-name=""Layer 1"" xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><defs><style>.cls-1{fill:#343a40;}</style></defs><path class=""cls-1"" d=""M6.87,3.12A1.13,1.13,0,1,1,8,4.25,1.13,1.13,0,0,1,6.87,3.12ZM8.19,5h.16a2.25,2.25,0,0,1,1.93,1.09l1.36,2.27a.75.75,0,0,1-1.28.78L9.69,8v5.23a.75.75,0,0,1-1.5,0ZM5.61,6.27A2.65,2.65,0,0,1,7.81,5v8.25a.75.75,0,0,1-1.5,0V11H5.9a.37.37,0,0,1-.36-.49l.9-2.7-.8,1.33a.75.75,0,1,1-1.28-.78Z""/></svg>" )]
     public class GenderFieldType : FieldType
     {
         #region Configuration

@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     [Serializable]
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg id=""Layer_1"" data-name=""Layer 1"" xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><defs><style>.cls-1{fill:none;stroke:#343a40;}.cls-2{fill:#343a40;}</style></defs><circle class=""cls-1"" cx=""8"" cy=""8"" r=""5.25""/><circle class=""cls-2"" cx=""8"" cy=""8"" r=""3""/></svg>" )]
     public class SelectSingleFieldType : FieldType
     {
 

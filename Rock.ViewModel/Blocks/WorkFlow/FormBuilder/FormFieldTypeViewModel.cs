@@ -35,10 +35,10 @@ namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
         public string Text { get; set; }
 
         /// <summary>
-        /// The CSS classes that are used to provide an iconic representation
+        /// The SVG icon that is used to provide an iconic representation
         /// of this field type.
         /// </summary>
-        public string Icon { get; set; }
+        public string Svg { get; set; }
 
         /// <summary>
         /// Determines if this field type is considered common and should be

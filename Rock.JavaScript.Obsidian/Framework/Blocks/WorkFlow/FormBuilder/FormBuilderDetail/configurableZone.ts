@@ -32,6 +32,11 @@ export default defineComponent({
         iconCssClass: {
             type: String as PropType<string>,
             default: "fa fa-gear"
+        },
+
+        clickBodyToConfigure: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -54,15 +59,22 @@ export default defineComponent({
             emit("configure");
         };
 
+        const onBodyActionClick = (): void => {
+            if (props.clickBodyToConfigure) {
+                emit("configure");
+            }
+        };
+
         return {
             onActionClick,
+            onBodyActionClick,
             zoneClasses
         };
     },
 
     template: `
 <div :class="zoneClasses">
-    <div class="zone-content-container">
+    <div class="zone-content-container" @click.stop="onBodyActionClick">
         <div class="zone-content">
             <slot />
         </div>

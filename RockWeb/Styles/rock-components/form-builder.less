@@ -68,7 +68,7 @@
     }
 
     .zone-body {
-      .configurable-zone > .zone-content-container {
+      .configurable-zone > .zone-content-container > .zone-content {
         pointer-events: none;
       }
 
@@ -154,6 +154,12 @@
               margin: 0 3px 6px;
               flex: 0 0 auto;
               width: ~"calc(50% - 6px)";
+
+              > .icon {
+                  width: 18px;
+                  height: 18px;
+                  margin-right: 3px;
+              }
           }
 
           /*** Configuration Asides ***/

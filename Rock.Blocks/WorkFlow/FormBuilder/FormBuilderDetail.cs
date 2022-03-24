@@ -567,7 +567,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 {
                     Guid = f.Guid,
                     Text = f.Name,
-                    Icon = f.IconCssClass,
+                    Svg = f.IconSvg,
                     IsCommon = f.Usage.HasFlag( Field.FieldTypeUsage.Common )
                 } )
                 .ToList();
