@@ -35,9 +35,9 @@
             <div class="panel-body">
 
                 <div>
-                    <h4 class="step-title text-break">Form Analytics</h4>
+                    <h3 class="m-0">Form Analytics</h3>
                     <div class="row">
-                        <div class="col-sm-7">
+                        <div class="col-sm-7 text-sm text-muted">
                             Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.
                         </div>
                         <div class="col-sm-5">

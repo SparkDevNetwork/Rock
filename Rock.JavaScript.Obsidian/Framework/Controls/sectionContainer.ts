@@ -89,7 +89,7 @@ export default defineComponent({
 
     <TransitionVerticalCollapse>
         <div v-if="showContent">
-            <hr />
+            <hr class="section-header-hr" />
 
             <slot />
         </div>

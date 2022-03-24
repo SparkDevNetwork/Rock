@@ -35,16 +35,14 @@
             <div class="panel-body">
 
                 <div>
-                    <h4 class="step-title text-break">Submissions</h4>
-                    <div class="row">
-                        <div class="col-sm-8">
-                            Below is a listing of submissions for this form.
-                        </div>
+                    <h3 class="m-0">Submissions</h3>
+                    <div class="text-sm text-muted">
+                        Below is a listing of submissions for this form.
                     </div>
-                    <hr />
+                    <hr class="section-header-hr" />
                 </div>
 
-                <div class="grid grid-panel">
+                <div class="grid">
                     <Rock:GridFilter ID="gfWorkflows" runat="server">
                         <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />

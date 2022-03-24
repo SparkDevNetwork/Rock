@@ -233,8 +233,8 @@ export default defineComponent({
 
     template: `
 <ConfigurableZone class="zone-section" :modelValue="isSectionActive">
-    <div class="zone-body d-flex flex-column">
-        <div class="d-flex flex-column flex-grow-1" :class="sectionTypeClass">
+    <div class="zone-body d-flex flex-column" style="min-height: 100%;">
+        <div class="d-flex flex-column" :class="sectionTypeClass" style="flex-grow: 1;">
             <div>
                 <h1 v-if="title">{{ title }}</h1>
                 <div v-if="description" class="mb-2">{{ description }}</div>

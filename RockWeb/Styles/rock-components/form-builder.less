@@ -1,9 +1,10 @@
 .form-builder-detail {
   --zone-border: #ebebeb;
-  --zone-configurable-border: fade(#ebebeb, 60%);
-  --zone-configurable-hover-border: @panel-border;
-  --zone-action-bg: @gray-50;
-  --zone-action-color: fade(@text-muted, 80%);
+  --zone-configurable-border: #f5faff;
+  --zone-configurable-hover-border: #dfe0e1;
+  --zone-action-bg: #f5faff;
+  --zone-action-border: #dde7f2;
+  --zone-action-color: #89a1b9;
   --zone-action-hover-color: fade(@text-muted, 100%);
   --zone-active-color: #c9eaf9;
   --zone-active-action-color: #83bad3;
@@ -80,9 +81,8 @@
 
 .zone-action {
   width: 100% !important;
-  padding: 8px 4px;
+  padding: 6px 4px;
   color: var(--zone-action-color);
-  margin: 2px 0px;
   cursor: pointer;
   z-index: 10;
 
@@ -97,6 +97,10 @@
   &.zone-action-delete:hover {
     color: @brand-danger;
   }
+}
+
+.section-header-hr {
+  margin-top: 16px;
 }
 
 // DIRECT OUT
@@ -147,10 +151,9 @@
           }
 
           .form-builder-detail .form-template-item.form-template-item-field {
-              border-left-color: #ee7725;
               margin: 0 3px 6px;
               flex: 0 0 auto;
-              width: calc(50% - 6px);
+              width: ~"calc(50% - 6px)";
           }
 
           /*** Configuration Asides ***/
@@ -194,14 +197,10 @@
           .form-builder-detail .configurable-zone > .zone-content-container {
               display: flex;
               flex-grow: 1;
-              border: 2px solid var(--zone-border);
+              border: 2px dotted var(--zone-border);
+              border-right: 2px solid var(--zone-action-border);
               border-radius: var(--zone-border-radius) 0 0 var(--zone-border-radius);
               background: #ffffff;
-          }
-
-          .form-builder-detail .configurable-zone.zone-section > .zone-content-container {
-              border-style: dotted;
-              border-right-style: solid;
           }
 
           .form-builder-detail .configurable-zone > .zone-content-container > .zone-content {
@@ -215,7 +214,7 @@
 
           .form-builder-detail .configurable-zone > .zone-actions {
               background-color: var(--zone-action-bg);
-              border: 2px solid var(--zone-border);
+              border: 2px solid var(--zone-action-border);
               border-left: 0px;
               width: 40px;
               flex-shrink: 0;
@@ -252,9 +251,10 @@
           .form-builder-detail .form-section {
               display: flex;
               flex-wrap: wrap;
+              align-content: flex-start;
               margin: 0 ~"calc(-.5 * var(--flex-col-gutter))" -10px;
               min-height: 50px;
-              height: 100%;
+              flex: 1 1 auto;
           }
 
           .form-builder-detail .form-layout .form-template-item {
@@ -278,11 +278,20 @@
               transform: scaleX(0);
               transform-origin: 0% 0%;
               border-radius: 0 var(--zone-border-radius) var(--zone-border-radius) 0;
+              border-style: dotted;
+            }
+
+            > .zone-content-container {
+              border-right: 2px dotted var(--zone-border);
             }
 
             &.active,
             &:hover {
               --zone-border: var(--zone-configurable-hover-border);
+              > .zone-content-container {
+                border-right: 0;
+              }
+
               > .zone-actions,
               > .zone-actions {
                 opacity: 1;

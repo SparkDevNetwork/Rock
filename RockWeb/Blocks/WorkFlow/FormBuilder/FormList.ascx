@@ -15,9 +15,9 @@
                 <ContentTemplate>
                     <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h4 class="m-0">Form Categories</h4>
+                        <strong class="d-block text-sm m-0">Form Categories</strong>
                         <div runat="server" id="divTreeviewActions" class="btn-group pull-right">
-                            <button type="button" class="btn btn-default btn-xs btn-square dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
+                            <button type="button" class="btn btn-link text-color btn-xs btn-square dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
                                 <i class="fa fa-folder-plus"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
@@ -158,7 +158,7 @@
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbValidationError" runat="server" Title="There is a problem with one or more of the values you entered" NotificationBoxType="Danger" Visible="false" />
                     <asp:HiddenField ID="hfSelectedCategory" runat="server" />
-                    <div class="js-files">
+                    <div class="container-in-block">
                         <div class="my-3">
                             <h3 class="mt-0 mb-2">
                                 <asp:Literal ID="lTitle" runat="server" /></h3>
@@ -190,7 +190,7 @@
                                                 <div class="position-relative">
                                                     <span class="text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
                                                     <div class="d-flex justify-content-between align-items-center position-absolute inset-0 group-hover-item group-hover-show">
-                                                        <div>
+                                                        <div class="text-muted">
                                                             <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm p-0" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
                                                             <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm p-0" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
                                                             <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm p-0" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
@@ -199,13 +199,13 @@
 
                                                         </div>
                                                         <div>
-                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-xs btn-square btn-link text-color" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-xs btn-square btn-link text-color" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center justify-content-end ml-2" runat="server">
+                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center justify-content-end ml-2 group-hover-hide" runat="server">
                                                 <span class='badge badge-info'><%# Eval("SubmissionCount") %></span>
                                             </asp:Panel>
                                         </div>

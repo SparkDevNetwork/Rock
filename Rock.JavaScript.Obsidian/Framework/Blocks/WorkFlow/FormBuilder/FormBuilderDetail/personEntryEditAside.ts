@@ -122,7 +122,7 @@ export default defineComponent({
         </div>
     </div>
 
-    <div ref="scrollableElement" class="aside-body d-flex flex-column flex-grow-1 overflow-y-auto">
+    <div ref="scrollableElement" class="aside-body d-flex flex-column flex-grow-1 overflow-y-auto p-3">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column flex-grow-1">
             <PersonEntrySettings v-model="internalValue"
                 isVertical
