@@ -65,12 +65,12 @@ namespace Rock.Model
             errorMessage = string.Empty;
 
             // Load the instance and template
-            var registrationInstance = GetActiveRegistrationInstance( registrationInstanceId );
+            var registrationInstance = GetActiveRegistrationInstance( registrationInstanceId, out errorMessage );
             var registrationTemplate = registrationInstance?.RegistrationTemplate;
 
-            if ( registrationTemplate == null )
+            if ( registrationInstance == null || registrationTemplate == null )
             {
-                errorMessage = "The registration template or instance was not found";
+                // In this case, errorMessage will already contain the reason for it thanks to GetActiveRegistrationInstance
                 return null;
             }
 
@@ -165,17 +165,26 @@ namespace Rock.Model
         /// Gets the active registration instance.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private RegistrationInstance GetActiveRegistrationInstance( int registrationInstanceId )
+        private RegistrationInstance GetActiveRegistrationInstance( int registrationInstanceId, out string errorMessage )
         {
+            errorMessage = string.Empty;
+
             var now = RockDateTime.Now;
             var registrationInstanceService = new RegistrationInstanceService( Context as RockContext );
             var registrationInstance = registrationInstanceService.Get( registrationInstanceId );
             var registrationTemplate = registrationInstance?.RegistrationTemplate;
 
             // Ensure that the registration entities are active
-            if ( registrationInstance is null || registrationTemplate is null || !registrationTemplate.IsActive || !registrationInstance.IsActive )
+            if ( registrationInstance is null || registrationTemplate is null )
             {
+                errorMessage = "We could not find the item you are looking for.";
+                return null;
+            }
+            else if ( !registrationTemplate.IsActive || !registrationInstance.IsActive )
+            {
+                errorMessage = $"We could not find the {registrationTemplate.RegistrationTerm.ToLower()} you are looking for.";
                 return null;
             }
 
@@ -183,8 +192,14 @@ namespace Rock.Model
             var isBeforeRegistrationOpens = registrationInstance.StartDateTime.HasValue && registrationInstance.StartDateTime > now;
             var isAfterRegistrationCloses = registrationInstance.EndDateTime.HasValue && registrationInstance.EndDateTime < now;
 
-            if ( isBeforeRegistrationOpens || isAfterRegistrationCloses )
+            if ( isAfterRegistrationCloses )
             {
+                errorMessage = $"{registrationInstance.Name} closed on {registrationInstance.EndDateTime.ToShortDateString()}.";
+                return null;
+            }
+            else if ( isBeforeRegistrationOpens )
+            {
+                errorMessage = $"{registrationTemplate.RegistrationTerm} for {registrationInstance.Name} does not open until {registrationInstance.StartDateTime.ToShortDateString()}.";
                 return null;
             }
 
