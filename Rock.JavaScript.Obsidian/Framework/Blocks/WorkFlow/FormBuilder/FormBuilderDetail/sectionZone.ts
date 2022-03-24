@@ -158,7 +158,7 @@ export default defineComponent({
 
         /**
          * Determines the column size CSS class to use for the given field.
-         * 
+         *
          * @param field The field to be rendered.
          *
          * @returns The CSS classes to apply to the element.
@@ -167,7 +167,7 @@ export default defineComponent({
 
         /**
          * Checks if the field is active, that is currently being edited.
-         * 
+         *
          * @param field The field in question.
          *
          * @returns true if the field is active and should be highlighted.
@@ -178,7 +178,7 @@ export default defineComponent({
 
         /**
          * Event handler for when a field is requesting edit mode.
-         * 
+         *
          * @param field The field requesting to being edit mode.
          */
         const onConfigureField = (field: FormField): void => {
@@ -194,7 +194,7 @@ export default defineComponent({
 
         /**
          * Event handler for when the delete button of a field is clicked.
-         * 
+         *
          * @param field The field to be deleted.
          */
         const onDeleteField = (field: FormField): void => {
@@ -252,7 +252,7 @@ export default defineComponent({
                         <span class="zone-action-pad"></span>
                     </template>
                     <template #postActions>
-                        <i class="fa fa-times fa-fw zone-action" @click.stop="onDeleteField(field)"></i>
+                        <i class="fa fa-times fa-fw zone-action zone-action-delete" @click.stop="onDeleteField(field)"></i>
                     </template>
                 </ConfigurableZone>
             </div>
@@ -263,7 +263,7 @@ export default defineComponent({
         <span class="zone-action-pad"></span>
     </template>
     <template #postActions>
-        <i class="fa fa-times fa-fw zone-action" @click.stop="onDelete"></i>
+        <i class="fa fa-times fa-fw zone-action zone-action-delete" @click.stop="onDelete"></i>
     </template>
 </ConfigurableZone>
 `

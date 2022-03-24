@@ -1,35 +1,23 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FormList.ascx.cs" Inherits="RockWeb.Blocks.WorkFlow.FormBuilder.FormList" %>
 <style>
-   .hidden-link {
-      display: none;
-   }
-   .hover-div:hover .hidden-link {
-      display: block;
-   }
-   .created-by {
-       display: block;
-   }
-   .hover-div:hover .created-by {
-      display: none;  
-   }
     .aspNetDisabled.btn-category-delete {
         pointer-events: auto;
     }
 </style>
-<div class="panel panel-block">
+<div class="panel panel-block panel-analytics">
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa-solid fa-align-left"></i>Form Builder</h1>
     </div>
     <div class="panel-body">
         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-        <div class="picker-wrapper clearfix">
-            <asp:UpdatePanel ID="upnlCategory" Class="picker-folders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+        <div class="row row-eq-height-md">
+            <asp:UpdatePanel ID="upnlCategory" Class="col-md-3 col-lg-2 filter-options" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                 <ContentTemplate>
                     <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
-                    <div class="actions">
-                        <h4 class="pull-left">Form Categories</h4>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <strong class="d-block text-sm m-0">Form Categories</strong>
                         <div runat="server" id="divTreeviewActions" class="btn-group pull-right">
-                            <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
+                            <button type="button" class="btn btn-link text-color btn-xs btn-square dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
                                 <i class="fa fa-folder-plus"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
@@ -164,53 +152,60 @@
                     </script>
                 </ContentTemplate>
             </asp:UpdatePanel>
-            <asp:UpdatePanel ID="upnlForms" class="picker-files" runat="server">
+            <asp:UpdatePanel ID="upnlForms" class="col-md-9 col-lg-10" runat="server">
                 <ContentTemplate>
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbValidationError" runat="server" Title="There is a problem with one or more of the values you entered" NotificationBoxType="Danger" Visible="false" />
                     <asp:HiddenField ID="hfSelectedCategory" runat="server" />
-                    <div class="js-files">
-                        <h3>
-                            <asp:Literal ID="lTitle" runat="server" /></h3>
-                        <div>
-                            <asp:Literal ID="lDescription" runat="server" />
-                            <div id="divFormListTopPanel" runat="server" class="pull-right">
-                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
-                                <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                <asp:LinkButton ID="btnDeleteCategory" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                            </div>
-                        </div>
-                        <hr class="mt-2" />
-                        <asp:Panel ID="pnlFormList" runat="server" Visible="false">
-                            <div class="row">
-                                <div class="col-xs-12">
-                                    <div class="form-horizontal label-auto pull-right">
-                                        <Rock:RockDropDownList ID="ddlSortBy" Label="Sort By" runat="server" FormGroupCssClass="input-width-xl" AutoPostBack="true" OnSelectedIndexChanged="ddlSortBy_SelectedIndexChanged" />
-                                    </div>
-                                    <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-xs btn-default" OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <div class="container-in-block">
+                        <div class="my-3">
+                            <h3 class="mt-0 mb-2">
+                                <asp:Literal ID="lTitle" runat="server" /></h3>
+                            <div class="d-flex flex-wrap justify-content-between">
+                                <div class="text-sm text-muted">
+                                    <asp:Literal ID="lDescription" runat="server" />
                                 </div>
+                                <div id="divFormListTopPanel" runat="server" class="ml-auto">
+                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
+                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnDeleteCategory" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                </div>
+                            </div>
+                            <hr class="mt-2 mb-0" />
+                        </div>
+                        <asp:Panel ID="pnlFormList" runat="server" Visible="false">
+                            <div class="d-flex flex-wrap align-items-start justify-content-end">
+                                <div class="form-horizontal label-auto">
+                                    <Rock:RockDropDownList ID="ddlSortBy" Label="Sort By" runat="server" FormGroupCssClass="form-group-sm" AutoPostBack="true" OnSelectedIndexChanged="ddlSortBy_SelectedIndexChanged" />
+                                </div>
+                                <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-sm btn-square btn-primary ml-2 " OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
                             </div>
                             <asp:Repeater ID="rForms" runat="server" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
-                                    <div class="card card-sm card-schedule hover-div">
+                                    <div class="card card-sm group-hover">
                                         <div class="card-body d-flex">
                                             <div class="flex-fill">
-                                                <h3><%# Eval("Name") %></h3>
-                                                <p class="created-by"><%# Eval("Description") %></p>
-                                                <div class="hidden-link">
-                                                    <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-xs" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                    <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-xs" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                    <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-xs" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                    <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-xs" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                    <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-xs" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
-                                                    <div class="pull-right">
-                                                        <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-link btn-xs btn-square" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                                                        <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-link btn-xs btn-square" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                <h3 class="m-0"><%# Eval("Name") %></h3>
+                                                <div class="position-relative">
+                                                    <span class="text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
+                                                    <div class="d-flex justify-content-between align-items-center position-absolute inset-0 group-hover-item group-hover-show">
+                                                        <div class="text-muted">
+                                                            <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm p-0" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm p-0" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm p-0" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-sm p-0" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm p-0" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
+
+                                                        </div>
+                                                        <div>
+                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center flex-nowrap justify-content-end" runat="server">
+                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center justify-content-end ml-2 group-hover-hide" runat="server">
                                                 <span class='badge badge-info'><%# Eval("SubmissionCount") %></span>
                                             </asp:Panel>
                                         </div>
@@ -220,14 +215,14 @@
                         </asp:Panel>
                         <asp:Panel ID="pnlAddForm" runat="server" Visible="false">
                             <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbFormName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" Help="The internal name of the foam you are creating. This name will not be displayed when the form is not being shown." />
-                                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" Help="An internal description of what the foam will be used for." />
+                                <div class="col-xs-12 col-md-6">
+                                    <Rock:DataTextBox ID="tbFormName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" Help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." />
+                                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" Help="An internal description of what the form will be used for." />
                                     <Rock:RockDropDownList ID="ddlTemplate" Label="Template" runat="server" Help="An optional template to use that provides pre-configured settings." />
                                     <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                                 </div>
                             </div>
-                            <div class="actions">
+                            <div class="form-actions">
                                 <asp:LinkButton ID="btnStartBuilding" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Start Building" CssClass="btn btn-primary" OnClick="btnStartBuilding_Click" />
                                 <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                             </div>
@@ -241,10 +236,10 @@
                                 <Rock:DataTextBox ID="tbCategoryDescription" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
+                                        <Rock:ColorPicker ID="cpHighlightColor" runat="server" Label="Highligh Color" />
                                     </div>
                                 </div>
                             </fieldset>

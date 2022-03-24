@@ -396,6 +396,7 @@ namespace RockWeb.Blocks.Event
             public const string RegistrationTemplatePlacementGuidGroupIdsStateJSON = "RegistrationTemplatePlacementGuidGroupIdsStateJSON";
             public const string FeeStateJSON = "FeeStateJSON";
             public const string FeeItemsEditStateJSON = "FeeItemsEditStateJSON";
+            public const string SignatureDocumentTemplateStateJSON = "SignatureDocumentTemplateState";
         }
 
         #endregion ViewState Keys
@@ -428,6 +429,14 @@ namespace RockWeb.Blocks.Event
         /// The State of the RegistrationTemplateFeeItems in the Fees Dialog while it is being edited
         /// </summary>
         private List<RegistrationTemplateFeeItem> FeeItemsEditState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state of the signature document template.
+        /// </summary>
+        /// <value>
+        /// The state of the signature document template.
+        /// </value>
+        private List<SignatureDocumentTemplate> SignatureDocumentTemplateState { get; set; }
 
         private int? GridFieldsDeleteIndex { get; set; }
 
@@ -527,6 +536,16 @@ namespace RockWeb.Blocks.Event
             else
             {
                 FeeItemsEditState = JsonConvert.DeserializeObject<List<RegistrationTemplateFeeItem>>( json );
+            }
+
+            json = ViewState[ViewStateKey.SignatureDocumentTemplateStateJSON] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                SignatureDocumentTemplateState = new List<SignatureDocumentTemplate>();
+            }
+            else
+            {
+                SignatureDocumentTemplateState = JsonConvert.DeserializeObject<List<SignatureDocumentTemplate>>( json );
             }
 
             BuildControls( false );
@@ -704,6 +723,7 @@ The logged-in person's information will be used to complete the registrar inform
             ViewState[ViewStateKey.RegistrationTemplatePlacementGuidGroupIdsStateJSON] = JsonConvert.SerializeObject( RegistrationTemplatePlacementGuidGroupIdsState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.FeeStateJSON] = JsonConvert.SerializeObject( FeeState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.FeeItemsEditStateJSON] = JsonConvert.SerializeObject( FeeItemsEditState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.SignatureDocumentTemplateStateJSON] = JsonConvert.SerializeObject( SignatureDocumentTemplateState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -963,6 +983,7 @@ The logged-in person's information will be used to complete the registrar inform
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             RegistrationTemplate registrationTemplate = null;
+            SignatureDocumentTemplate documentTemplate = GetSelectedTemplate();
 
             int? registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
             if ( registrationTemplateId.HasValue )
@@ -994,7 +1015,9 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             registrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
-            registrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+            // Rock’s signature system is only in-line enabled so if a new (non-legacy) template is selected
+            // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
+            registrationTemplate.SignatureDocumentAction = documentTemplate?.IsLegacy == false || cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
@@ -2291,6 +2314,17 @@ The logged-in person's information will be used to complete the registrar inform
             BindFeeItemsControls( feeItems, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlSignatureDocumentTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlSignatureDocumentTemplate_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var selectedTemplate = GetSelectedTemplate();
+            cbDisplayInLine.Visible = selectedTemplate?.IsLegacy != true;
+        }
+
         #endregion
 
         #endregion
@@ -2837,12 +2871,22 @@ The logged-in person's information will be used to complete the registrar inform
 
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
-            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
-                .Queryable().AsNoTracking()
-                .OrderBy( t => t.Name ) )
+            SignatureDocumentTemplateState = new SignatureDocumentTemplateService( rockContext ).Queryable().AsNoTracking().OrderBy( t => t.Name ).ToList();
+
+            foreach ( var documentType in SignatureDocumentTemplateState )
             {
                 ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
             }
+        }
+
+        /// <summary>
+        /// Gets the selected template.
+        /// </summary>
+        /// <returns></returns>
+        private SignatureDocumentTemplate GetSelectedTemplate()
+        {
+            var selectedId = ddlSignatureDocumentTemplate.SelectedValueAsInt() ?? 0;
+            return SignatureDocumentTemplateState.Find( m => m.Id == selectedId );
         }
 
         #endregion

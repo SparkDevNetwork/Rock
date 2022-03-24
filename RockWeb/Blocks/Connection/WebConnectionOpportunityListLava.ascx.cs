@@ -230,6 +230,11 @@ namespace RockWeb.Blocks.Connection
                 var opportunityClientService = new ConnectionOpportunityClientService( rockContext, CurrentPerson );
                 var connectionType = new ConnectionTypeService( rockContext ).GetNoTracking( _connectionTypeGuid );
 
+                if ( connectionType == null )
+                {
+                    return;
+                }
+
                 // Determine if we should update the page title with the connection opportunity name
                 var updatePageTitle = GetAttributeValue( AttributeKey.UpdatePageTitle ).AsBoolean();
                 if ( updatePageTitle )

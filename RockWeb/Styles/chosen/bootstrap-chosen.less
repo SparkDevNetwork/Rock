@@ -67,7 +67,7 @@
 
       &.group-result {
         display: list-item;
-        font-weight: 700;
+        font-weight: bold;
         color: #999;
         cursor: default;
       }
@@ -183,19 +183,14 @@
       top: 0;
       right: 0;
       display: block;
-      width: 32px;
+      width: @form-select-indicator-padding;
       height: @chosen-height;
       padding-left: 8px;
 
-      &::after {
-        position: relative;
-        display: inline-block;
-        font-family: @fa-font-face;
-        font-size: @font-size-base;
-        font-weight: @fa-theme-weight;
-        color: @chosen-svg-color;
-        content: @fa-var-chevron-down;
-      }
+      background-image: @form-select-indicator;
+      background-repeat: no-repeat;
+      background-position: @form-select-bg-position;
+      background-size: @form-select-bg-size;
     }
   }
   .chosen-default {
@@ -360,12 +355,6 @@
     .border-bottom-radius(0);
     .box-shadow(@chosen-focus-box-shadow);
     .transition(@chosen-focus-transition);
-
-    div {
-      &::after {
-        content: @fa-var-chevron-up;
-      }
-    }
   }
   .chosen-choices {
     border: @chosen-focus-border;
@@ -449,24 +438,33 @@ input[type="text"].chosen-focus-input {
 }
 
 .input-group {
-  .chosen-container {
-    position: relative;
-    flex: 1 1 auto;
-
-    .chosen-default {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
+  &:nth-of-type(1) {
+    .chosen-container {
+      .chosen-choices {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
     }
   }
 
-  .chosen-container-active {
-    z-index: 3;
-  }
-}
+  &:not(:nth-of-type(1)) {
+    .chosen-container {
+      .chosen-choices {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
 
-// Chosen Error States
-.has-error {
-  .chosen-single {
-    border-color: @state-danger-text;
+    .input-group-prepend {
+      .input-group-text {
+        border-top-right-radius: @input-border-radius;
+        border-bottom-right-radius: @input-border-radius;
+      }
+    }
+  }
+
+  .chosen-container {
+    position: relative;
+    flex: 1 1 auto;
   }
 }

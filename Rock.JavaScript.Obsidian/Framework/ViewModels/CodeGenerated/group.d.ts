@@ -28,6 +28,7 @@ export type Group = IEntity & {
     archivedByPersonAliasId?: number | null;
     archivedDateTime?: string | null;
     attendanceRecordRequiredForCheckIn?: number;
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     description?: string | null;
     disableScheduleToolboxAccess?: boolean;

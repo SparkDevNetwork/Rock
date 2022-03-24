@@ -45,7 +45,7 @@ import { FormError } from "../../../../Util/form";
 /**
  * Get the drag source options for the section zones. This allows the user to
  * drag a zone placeholder into the form to add a new zone.
- * 
+ *
  * @param sections The (reactive) array of sections to update.
  *
  * @returns The IDragSourceOptions object to use for drag operations.
@@ -537,7 +537,7 @@ export default defineComponent({
 
         /**
          * Event handler for when any field section wants to configure itself.
-         * 
+         *
          * @param section The section that is requesting to start configuration.
          */
         const onConfigureSection = (section: FormSection): void => {
@@ -560,7 +560,7 @@ export default defineComponent({
 
         /**
          * Event handler for when any field wants to configure itself.
-         * 
+         *
          * @param field The field that is requesting to start configuration.
          */
         const onConfigureField = (field: FormField): void => {
@@ -598,7 +598,7 @@ export default defineComponent({
         /**
          * Event handler for when the field edit aside has updated the field
          * values or configuration.
-         * 
+         *
          * @param value The new form field details.
          */
         const onFieldEditUpdate = (value: FormField): void => {
@@ -647,7 +647,7 @@ export default defineComponent({
         /**
          * Event handler for when a section's settings have been updated in the
          * aside.
-         * 
+         *
          * @param value The new section settings.
          */
         const onSectionEditUpdate = (value: SectionAsideSettings): void => {
@@ -691,7 +691,7 @@ export default defineComponent({
         /**
          * Event handler for when the person entry settings have been updated
          * in the aside.
-         * 
+         *
          * @param value The new person entry settings.
          */
         const onEditPersonEntryUpdate = (value: FormPersonEntry): void => {
@@ -848,8 +848,8 @@ export default defineComponent({
     },
 
     template: `
-<div ref="bodyElement" class="d-flex" style="flex-grow: 1; overflow-y: hidden;">
-    <div class="d-flex flex-column" style="background-color: #f8f9fa; min-width: 320px; max-width: 480px; flex: 1 0; overflow-y: hidden;">
+<div ref="bodyElement" class="d-flex flex-grow-1 overflow-y-hidden">
+    <div class="d-flex flex-column flex-grow-1 flex-shrink-0 overflow-hidden" style="background-color: #f8f9fa; min-width: 320px; max-width: 480px;">
         <GeneralAside v-if="showGeneralAside"
             v-model="generalAsideSettings"
             ref="generalAsideComponentInstance"
@@ -883,7 +883,7 @@ export default defineComponent({
             @validationChanged="onPersonEntryValidationChanged" />
     </div>
 
-    <div class="p-3 d-flex flex-column" style="flex: 3 1; overflow-y: auto;">
+    <div class="p-3 d-flex flex-column form-layout" style="flex: 3 1; overflow-y: auto;">
         <FormContentZone v-if="templateFormHeaderContent" :modelValue="templateFormHeaderContent" placeholder="" iconCssClass="" />
 
         <FormContentZone :modelValue="formHeaderContent" :isActive="isFormHeaderActive" @configure="onConfigureFormHeader" placeholder="Form Header" />
@@ -894,7 +894,7 @@ export default defineComponent({
             </div>
         </ConfigurableZone>
 
-        <div style="flex-grow: 1; display: flex; flex-direction: column;" v-drag-target="sectionDragTargetId" v-drag-source="sectionReorderDragSourceOptions" v-drag-target:2="sectionReorderDragSourceOptions.id">
+        <div class="d-flex flex-grow-1 flex-column" v-drag-target="sectionDragTargetId" v-drag-source="sectionReorderDragSourceOptions" v-drag-target:2="sectionReorderDragSourceOptions.id">
             <SectionZone v-for="section in sections"
                 :key="section.guid"
                 v-model="section"

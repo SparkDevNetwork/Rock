@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Rock.Model
 {
     public partial class SignatureDocumentTemplate
@@ -38,9 +40,10 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance is legacy; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsLegacy()
+        [NotMapped]
+        public bool IsLegacy
         {
-            return ProviderEntityTypeId.HasValue;
+            get { return ProviderEntityTypeId.HasValue; }
         }
     }
 }

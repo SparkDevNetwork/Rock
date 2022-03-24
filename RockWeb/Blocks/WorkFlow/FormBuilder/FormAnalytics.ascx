@@ -7,17 +7,13 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading panel-follow">
-
-                <div class="pull-left">
-                    <h1 class="panel-title"><span class="fa fa-poll-h"></span>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
-                </div>
+                <h1 class="panel-title"><i class="fa fa-poll-h"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
-            <div class="panel-body">
-                <div>
-                    <ul class="nav nav-pills">
+                <div class="d-flex align-items-center p-2  border-bottom border-panel" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 4px;">
+                    <ul class="nav nav-pills nav-sm">
                         <li id="tabSubmissions" runat="server">
                             <asp:LinkButton ID="lnkSubmissions" runat="server" Text="Submissions" CssClass="show-pill" OnClick="lnkSubmissions_Click" pill="submissions-tab" />
                         </li>
@@ -36,12 +32,12 @@
                     </ul>
                 </div>
 
-                <hr />
+            <div class="panel-body">
 
                 <div>
-                    <h4 class="step-title text-break">Form Analytics</h4>
+                    <h3 class="m-0">Form Analytics</h3>
                     <div class="row">
-                        <div class="col-sm-7">
+                        <div class="col-sm-7 text-sm text-muted">
                             Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.
                         </div>
                         <div class="col-sm-5">

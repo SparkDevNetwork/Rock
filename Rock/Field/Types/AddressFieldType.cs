@@ -164,13 +164,22 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var addressControl = control as AddressControl;
+            if ( addressControl == null || !addressControl.HasValue )
+            {
+                return null;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
                 string result = null;
 
-                if ( addressControl != null
-                     && addressControl.HasValue )
+                var editLocation = new Location();
+                addressControl.GetValues( editLocation );
+                var addressIsValid = locationService.ValidateAddressRequirements( editLocation, out _ );
+
+                // Only get a LocationGuid if the AddressControl has a value and has met the ValidateAddressRequirements rules
+                if ( addressIsValid )
                 {
                     var guid = Guid.Empty;
 

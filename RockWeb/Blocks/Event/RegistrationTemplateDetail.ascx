@@ -173,11 +173,11 @@
                             <div class="col-md-6">
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document"
-                                            Help="A document that needs to be signed for registrations of this type." />
+                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" AutoPostBack="true"
+                                            Help="A document that needs to be signed for registrations of this type." OnSelectedIndexChanged="ddlSignatureDocumentTemplate_SelectedIndexChanged" />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line Signature" Text="Yes"
+                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line Signature" Text="Yes" Visible="false"
                                             Help="When registering for this type of event, should the Required Signature Document be displayed during the registration steps? If not, a request will be sent after the registration is completed." />
                                     </div>
                                 </div>

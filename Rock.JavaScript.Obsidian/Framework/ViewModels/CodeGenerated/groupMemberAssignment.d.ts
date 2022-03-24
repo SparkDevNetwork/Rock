@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type GroupMemberAssignment = IEntity & {
+    attributeValues?: Record<string, unknown>;
     groupMemberId?: number;
     locationId?: number | null;
     scheduleId?: number | null;
