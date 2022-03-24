@@ -159,9 +159,9 @@
                                 <li class="footer-nav__item"><a class="footer-nav__link"
                                         href="https://pushpay.com/pay/lcbcchurch" rel="noopener" target="_blank">Give
                                         Now</a></li>
-                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                <!-- <li class="footer-nav__item"><a class="footer-nav__link"
                                         href="https://lcbcchurch.com/90-day-tithing-challenge">90-Day Tithing
-                                        Challenge</a></li>
+                                        Challenge</a></li> -->
                                 <li class="footer-nav__item"><a class="footer-nav__link"
                                         href="https://pushpay.com/login" rel="noopener" target="_blank">Pushpay Giving
                                         Account</a></li>
