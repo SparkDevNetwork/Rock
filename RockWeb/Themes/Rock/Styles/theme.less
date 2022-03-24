@@ -631,6 +631,22 @@ textarea,
   }
 }
 
+.panel-analytics {
+  .panel-body {
+    > .row {
+      > * {
+        padding-left: @panel-body-padding;
+        padding-right: @panel-body-padding;
+      }
+
+      .row {
+        margin-right: -@panel-body-padding;
+        margin-left: -@panel-body-padding;
+      }
+    }
+  }
+}
+
 .modal {
   .box-shadow(@shadow-modal);
   border-radius: 0;
