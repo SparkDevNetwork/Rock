@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
-    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><defs><style>.cls-1{fill:#343a40;}</style></defs><g id=""Layer_10"" data-name=""Layer 10""><path class=""cls-1"" d=""M8,1a7,7,0,1,0,7,7A7,7,0,0,0,8,1ZM8,13.69A5.69,5.69,0,1,1,13.69,8,5.69,5.69,0,0,1,8,13.69Zm2.79-4.84L8.66,7.62V4.28a.66.66,0,0,0-1.32,0V8a.68.68,0,0,0,.33.57L10.13,10a.9.9,0,0,0,.33.09A.65.65,0,0,0,11,9.75.67.67,0,0,0,10.79,8.85Z""/></g></svg>" )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M8,1a7,7,0,1,0,7,7A7,7,0,0,0,8,1ZM8,13.69A5.69,5.69,0,1,1,13.69,8,5.69,5.69,0,0,1,8,13.69Zm2.79-4.84L8.66,7.62V4.28a.66.66,0,0,0-1.32,0V8a.68.68,0,0,0,.33.57L10.13,10a.9.9,0,0,0,.33.09A.65.65,0,0,0,11,9.75.67.67,0,0,0,10.79,8.85Z""/></g></svg>" )]
     public class TimeFieldType : FieldType
     {
 
@@ -102,7 +102,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var tp = new TimePicker { ID = id }; 
+            var tp = new TimePicker { ID = id };
             return tp;
         }
 
