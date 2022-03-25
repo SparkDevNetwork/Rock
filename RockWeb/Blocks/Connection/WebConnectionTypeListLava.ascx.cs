@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.TypeTemplate,
         Description = @"This Lava template will be used to display the Connection Types.
                          <i>(Note: The Lava will include the following merge fields:
-                            <p><strong>ConnectionTypes, DetailPage, ConnectionRequestCounts, CurrentPerson, Context, PageParameter, Campuses</strong>)</p>
+                            <p><strong>ConnectionTypes, DetailPage, ConnectionRequestCounts, SumTotalConnectionRequests</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
@@ -74,52 +74,51 @@ namespace RockWeb.Blocks.Connection
         private static class Lava
         {
             public const string ConnectionTypes = @"
-{% comment %}
-   This is the default lava template for the ConnectionOpportunitySelect block
+/-
+   This is the default lava template for the block
 
    Available Lava Fields:
        ConnectionTypes
-       DetailPage (Detail Page GUID)
-       ConnectionRequestCounts
-       CurrentPerson
-       Context
-       PageParameter
-       Campuses
-{% endcomment %}
+       DetailPage (page GUID)
+       ConnectionRequestCounts (a dictionary with key of Type Id and value is the count; where count is either the total count or count of requests assigned to the individual)
+       SumTotalConnectionRequests (a sum total of all the counts from that dictionary)
+-/
 <style>
     .card:hover {
       transform: scale(1.01);
       box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
     }
 </style>
-{% for connectionType in ConnectionTypes %}
-{% assign typeId = connectionType.Id | ToString %}
-{% assign count = ConnectionRequestCounts[typeId] | AsInteger %}
+{% if SumTotalConnectionRequests > 0 %}
+    {% for connectionType in ConnectionTypes %}
+        {% assign typeId = connectionType.Id | ToString %}
+        {% assign count = ConnectionRequestCounts[typeId] | AsInteger %}
 
-{% if count >0 %}
-    <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionTypeGuid={{ connectionType.Guid }}' stretched-link>
-        <div class='card mb-2'>
-            <div class='card-body'>
-              <div class='row pt-2' style='height:60px;'>
-                    <div class='col-xs-2 col-md-1 mx-auto'>
-                        <i class='{{ connectionType.IconCssClass }} text-muted' style=';font-size:30px;'></i>
-                    </div>
-                    <div class='col-xs-8 col-md-10 pl-md-0 mx-auto'>
-                        <span class='text-color'><strong>{{ connectionType.Name }}</strong></span>
-                        </br>
-                        <span class='text-muted'><small>{{ connectionType.Description }}</small></span>
-                    </div>
-                    <div class='col-xs-1 col-md-1 mx-auto text-right'>
-                        <span class='badge badge-pill badge-primary bg-blue-500'><small>{{ count }}</small></span>
+        {% if count > 0 %}
+            <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionTypeGuid={{ connectionType.Guid }}' stretched-link>
+                <div class='card mb-2'>
+                    <div class='card-body'>
+                      <div class='row pt-2' style='height:60px;'>
+                            <div class='col-xs-2 col-md-1 mx-auto'>
+                                <i class='{{ connectionType.IconCssClass }} text-muted' style=';font-size:30px;'></i>
+                            </div>
+                            <div class='col-xs-8 col-md-10 pl-md-0 mx-auto'>
+                                <span class='text-color'><strong>{{ connectionType.Name }}</strong></span>
+                                </br>
+                                <span class='text-muted'><small>{{ connectionType.Description }}</small></span>
+                            </div>
+                            <div class='col-xs-1 col-md-1 mx-auto text-right'>
+                                <span class='badge badge-pill badge-primary bg-blue-500'><small>{{ count }}</small></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-       </a>
-{%endif %}
-{% endfor %}
-"
-;
+               </a>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <div class=""alert alert-info"">No connection requests currently available</div>
+{% endif %}";
 
         }
         #endregion Lava
@@ -189,18 +188,22 @@ namespace RockWeb.Blocks.Connection
                 var connectionTypeIds = connectionTypes.Select( t => t.Id ).ToList();
                 var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds );
                 var connectionRequestCounts = new Dictionary<string, string>();
+                var sumTotalConnectionRequests = 0;
+
                 foreach ( var typeId in connectionTypeIds )
                 {
-                    var connectionTypesRequestCount = connectionTypes
-                        .FirstOrDefault( v => v.Id == typeId && v.ConnectionOpportunities.Count(c=>c.ConnectionRequests?.Count>0)>0)
-                        ?.ConnectionOpportunities
-                        ?.Select(v=>v.ConnectionRequests)
-                        ?.Count();
-
-                    if ( connectionTypesRequestCount!=null && connectionTypesRequestCount.HasValue && connectionTypesRequestCount.Value > 0 )
-                    {
-                        connectionRequestCounts.Add( typeId.ToString(), connectionTypesRequestCount.Value.ToString() );
-                    }
+                    // For now, show TotalCount since there is no way to toggle between the two.
+                    // In the future, an options control should be added to allow seeing all vs "only my"
+                    //if ( CurrentPerson != null )
+                    //{
+                    //    sumTotalConnectionRequests += requestCounts[typeId].AssignedToYouCount;
+                    //    connectionRequestCounts.Add( typeId.ToString(), requestCounts[typeId].AssignedToYouCount.ToString() );
+                    //}
+                    //else
+                    //{
+                    sumTotalConnectionRequests += requestCounts[typeId].TotalCount;
+                        connectionRequestCounts.Add( typeId.ToString(), requestCounts[typeId].TotalCount.ToString() );
+                    //}
                 }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -208,6 +211,7 @@ namespace RockWeb.Blocks.Connection
                 mergeFields.AddOrReplace( "ConnectionTypes", connectionTypes );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid.ToString() );
                 mergeFields.AddOrReplace( "ConnectionRequestCounts", connectionRequestCounts );
+                mergeFields.AddOrReplace( "SumTotalConnectionRequests", sumTotalConnectionRequests );
 
                 var content = TypeTemplate
                     .ResolveMergeFields( mergeFields )
