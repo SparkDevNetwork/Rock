@@ -162,7 +162,11 @@ namespace Rock.Model
                             }
                             else
                             {
+#if REVIEW_NET5_0_OR_GREATER
+                                throw new Exception( "A storage provider has not been registered for this file type or the current storage provider is inactive." );
+#else
                                 throw new Rock.Web.FileUploadException( "A storage provider has not been registered for this file type or the current storage provider is inactive.", System.Net.HttpStatusCode.BadRequest );
+#endif
                             }
                         }
                     }
