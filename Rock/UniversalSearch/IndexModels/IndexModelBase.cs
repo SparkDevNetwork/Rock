@@ -334,8 +334,16 @@ namespace Rock.UniversalSearch.IndexModels
                 var mi = miArray[0];
                 if ( mi.MemberType == MemberTypes.Property )
                 {
-                    result = ( ( PropertyInfo ) mi ).GetValue( instance, null );
-                    return true;
+                    var propertyInfo = ( PropertyInfo ) mi;
+
+                    // To avoid a TargetParameterCountException, make sure this is a property that doesn't take parameters (for example the this[string] property)
+                    // See remarks at https://docs.microsoft.com/en-us/dotnet/api/system.reflection.propertyinfo.getvalue?view=netframework-4.7.2&f1url=%3FappId%3DDev16IDEF1%26l%3DEN-US%26k%3Dk(System.Reflection.PropertyInfo.GetValue);k(TargetFrameworkMoniker-.NETFramework,Version%253Dv4.7.2);k(DevLang-csharp)%26rd%3Dtrue
+                    var hasParameters = propertyInfo.GetIndexParameters().Length > 0;
+                    if ( !hasParameters )
+                    {
+                        result = propertyInfo.GetValue( instance, null );
+                        return true;
+                    }
                 }
             }
 
@@ -402,20 +410,25 @@ namespace Rock.UniversalSearch.IndexModels
                 try
                 {
                     // try to get from properties collection first
-                    return _members[key];
+                    if ( _members.ContainsKey( key ) )
+                    {
+                        return _members[key];
+                    }
                 }
                 catch ( KeyNotFoundException )
                 {
-                    // try reflection on instanceType
-                    object result = null;
-                    if ( GetProperty( Instance, key, out result ) )
-                    {
-                        return result;
-                    }
-
-                    // nope doesn't exist
-                    return null;
+                    // if there is a KeyNotFoundException (even though we check), ignore and use the GetProperty Approach
                 }
+
+                // try reflection on instanceType
+                object result = null;
+                if ( GetProperty( Instance, key, out result ) )
+                {
+                    return result;
+                }
+
+                // nope doesn't exist
+                return null;
             }
 
             set
