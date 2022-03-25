@@ -813,6 +813,7 @@
     <Compile Include="Model\CMS\PersonalLinkSectionOrder\PersonalLinkSectionOrder.Logic.cs" />
     <Compile Include="Model\CMS\PersonalLinkSection\PersonalLinkSection.Logic.cs" />
     <Compile Include="Model\CMS\PersonalLink\PersonalLink.SaveHook.cs" />
+    <Compile Include="Model\CodeGenerated\CampusTopicService.CodeGenerated.cs" />
     <Compile Include="Model\Core\AuthAuditLog\AuthAuditLog.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.Logic.cs" />
     <Compile Include="Model\CMS\Block\Block.Logic.cs" />
@@ -875,7 +876,6 @@
     <Compile Include="Model\Core\AuthAuditLog\ChangeType.cs" />
     <Compile Include="Model\Core\CampusSchedule\CampusSchedule.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.Logic.cs" />
-    <Compile Include="Model\Core\CampusTopic\CampusTopicService.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureType.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.SaveHook.cs" />
