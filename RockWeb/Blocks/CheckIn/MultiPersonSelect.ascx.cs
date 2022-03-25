@@ -708,16 +708,21 @@ namespace RockWeb.Blocks.CheckIn
             return false;
         }
 
+        /// <summary>
+        /// Selects the first option based on the order property of Schedule from CheckinPerson.PossibleSchedules.
+        /// If no schedules exists in PossibleSchedules than one is chosen based on the Order property of GroupType, Group, Location, and Schedule.
+        /// </summary>
+        /// <param name="person">The person.</param>
         private void SelectFirstOption( CheckInPerson person )
         {
-            var firstSchedule = person.PossibleSchedules.FirstOrDefault();
+            var firstSchedule = person.PossibleSchedules.OrderBy( s => s.Schedule.Order ).FirstOrDefault();
             if ( firstSchedule != null )
             {
-                foreach ( var groupType in person.GroupTypes.Where( t => t.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ) )
+                foreach ( var groupType in person.GroupTypes.Where( t => t.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ).OrderBy( t => t.GroupType.Order ) )
                 {
-                    foreach ( var group in groupType.Groups.Where( t => t.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ) )
+                    foreach ( var group in groupType.Groups.Where( g => g.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ).OrderBy( g => g.Group.Order ) )
                     {
-                        foreach ( var location in group.Locations.Where( t => t.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ) )
+                        foreach ( var location in group.Locations.Where( l => l.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ).OrderBy( l => l.Order ) )
                         {
                             foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == firstSchedule.Schedule.Id ) )
                             {
@@ -736,14 +741,14 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            // Couldn't find a match for first schedule, just select first option
-            foreach ( var groupType in person.GroupTypes )
+            // Couldn't find a match for first schedule, just select first available option based on the order property
+            foreach ( var groupType in person.GroupTypes.OrderBy( t => t.GroupType.Order ) )
             {
-                foreach ( var group in groupType.Groups )
+                foreach ( var group in groupType.Groups.OrderBy( g => g.Group.Order ) )
                 {
-                    foreach ( var location in group.Locations )
+                    foreach ( var location in group.Locations.OrderBy( l => l.Order ) )
                     {
-                        foreach ( var schedule in location.Schedules )
+                        foreach ( var schedule in location.Schedules.OrderBy( s => s.Schedule.Order ) )
                         {
                             int scheduleId = schedule.Schedule.Id;
 

@@ -35,6 +35,8 @@ namespace Rock.Web.Cache
     [DataContract]
     public class FieldTypeCache : ModelCache<FieldTypeCache, FieldType>
     {
+        private const string _defaultFieldTypeSvg = @"<svg xmlns=""http://www.w3.org/2000/svg"" xmlns:xlink=""http://www.w3.org/1999/xlink"" viewBox=""0 0 16 16""><defs><style>.cls-1{fill:none;}.cls-2{clip-path:url(#clip-path);}.cls-3{fill:#343a40;}</style><clipPath id=""clip-path""><rect x=""1"" y=""2.4"" width=""14"" height=""11.2""/></clipPath></defs><g id=""Layer_2"" data-name=""Layer 2""><g class=""cls-2""><path class=""cls-3"" d=""M3.8,5.9a.53.53,0,0,0-.53.53V9.57a.53.53,0,0,0,.53.53.53.53,0,0,0,.53-.53V6.43A.53.53,0,0,0,3.8,5.9Zm9.8-2.1H2.38A1.4,1.4,0,0,0,1,5.2v5.6a1.4,1.4,0,0,0,1.38,1.4H13.6A1.4,1.4,0,0,0,15,10.8V5.2A1.4,1.4,0,0,0,13.6,3.8Zm.35,7a.35.35,0,0,1-.35.35H2.38A.35.35,0,0,1,2,10.8V5.2a.35.35,0,0,1,.35-.35H13.6A.35.35,0,0,1,14,5.2Z""/></g></g></svg>";
+
         #region Properties
 
         /// <summary>
@@ -90,7 +92,19 @@ namespace Rock.Web.Cache
         /// The CSS class to use when displaying an icon that represents this
         /// field type.
         /// </value>
-        public string IconCssClass { get; private set; }
+        [RockObsolete( "1.13.3" )]
+        [Obsolete( "Font icon classes are no longer used, use IconSvg instead." )]
+        public string IconCssClass { get; } = "";
+
+        /// <summary>
+        /// Gets the SVG content to use when displaying an icon that represents
+        /// this field type.
+        /// </summary>
+        /// <value>
+        /// The CSS class to use when displaying an icon that represents this
+        /// field type.
+        /// </value>
+        public string IconSvg { get; private set; }
 
         /// <summary>
         /// Gets the ways this field type can be used and presented in the system.
@@ -165,7 +179,7 @@ namespace Rock.Web.Cache
             // use inherited attributes since that could have unintended consequences.
             if ( fieldTypeImplementationType != null )
             {
-                IconCssClass = fieldTypeImplementationType.GetCustomAttribute<IconCssClassAttribute>( false )?.IconCssClass ?? string.Empty;
+                IconSvg = fieldTypeImplementationType.GetCustomAttribute<IconSvgAttribute>( false )?.IconSvg ?? _defaultFieldTypeSvg;
 
                 // Default to Advanced if the field type does not specify its usage.
                 Usage = fieldTypeImplementationType.GetCustomAttribute<FieldTypeUsageAttribute>( false )?.Usage ?? Rock.Field.FieldTypeUsage.Advanced;

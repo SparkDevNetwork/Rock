@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// </summary>
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M1,5.18H2.67v6.67H3.78V5.18H5.44V4.07H1Z""/><path d=""M15,5.18V4.07H10.56v7.78h1.11V8.52h2.77V7.4H11.67V5.18Z""/><rect x=""7.44"" y=""3"" width=""1.11"" height=""10""/></svg>" )]
     public class BooleanFieldType : FieldType
     {
         /// <summary>

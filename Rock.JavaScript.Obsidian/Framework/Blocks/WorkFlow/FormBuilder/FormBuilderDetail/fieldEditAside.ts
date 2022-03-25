@@ -32,13 +32,12 @@ import { useInvokeBlockAction } from "../../../../Util/block";
 import { FormError } from "../../../../Util/form";
 import { areEqual } from "../../../../Util/guid";
 import { List } from "../../../../Util/linq";
-import { ListItem } from "../../../../ViewModels";
 import { FieldTypeConfigurationViewModel } from "../../../../ViewModels/Controls/fieldTypeEditor";
 import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
 import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
 import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
 import { FormField, FormFieldType } from "../Shared/types";
-import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils";
+import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils";
 
 /**
  * Check if the two records are equal. This makes sure all the key names match
@@ -197,7 +196,7 @@ export default defineComponent({
         });
 
         /** The icon to display in the title area. */
-        const asideIconClass = computed((): string => fieldType.value?.icon ?? "");
+        const asideIconSvg = computed((): string => fieldType.value?.svg ?? "");
 
         /**
          * The validation rules for the attribute key. This uses custom logic
@@ -205,17 +204,14 @@ export default defineComponent({
          */
         const fieldKeyRules = computed((): ValidationRule[] => {
             const rules: ValidationRule[] = ["required"];
-            const keys: ListItem[] = props.formFields
+            const keys: string[] = props.formFields
                 .filter(f => !areEqual(f.guid, props.modelValue.guid))
-                .map(f => ({
-                    value: f.guid,
-                    text: f.name
-                }));
+                .map(f => f.key);
 
             rules.push((value): ValidationResult => {
                 const valueString = value as string;
 
-                if (keys.filter(k => k.text === valueString).length > 0) {
+                if (keys.includes(valueString)) {
                     return "must be unique";
                 }
 
@@ -400,7 +396,7 @@ export default defineComponent({
         });
 
         return {
-            asideIconClass,
+            asideIconSvg,
             conditionalTitle,
             conditionalModalOpen,
             conditionalModel,
@@ -439,7 +435,7 @@ export default defineComponent({
         </div>
 
         <div class="p-2 aside-header flex-grow-1">
-            <i v-if="asideIconClass" :class="asideIconClass"></i>
+            <span v-if="asideIconSvg" class="icon" v-html="asideIconSvg"></span>
             <span class="title">{{ fieldName }}</span>
         </div>
     </div>

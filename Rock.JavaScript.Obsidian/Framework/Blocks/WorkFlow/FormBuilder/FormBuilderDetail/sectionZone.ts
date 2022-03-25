@@ -242,7 +242,13 @@ export default defineComponent({
             </div>
 
             <div class="form-section" v-drag-source="reorderDragOptions" v-drag-target="reorderDragOptions.id" v-drag-target:2="dragTargetId" :data-section-id="sectionGuid">
-                <ConfigurableZone v-for="field in fields" :key="field.guid" :modelValue="isFieldActive(field)" :class="getFieldColumnSize(field)" :data-field-id="field.guid" @configure="onConfigureField(field)">
+                <ConfigurableZone v-for="field in fields"
+                    :key="field.guid"
+                    :modelValue="isFieldActive(field)"
+                    :class="getFieldColumnSize(field)"
+                    :data-field-id="field.guid"
+                    clickBodyToConfigure
+                    @configure="onConfigureField(field)">
                     <div class="zone-body">
                         <FieldWrapper :modelValue="field" />
                     </div>

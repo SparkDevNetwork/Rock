@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M14.52,6.06H9.89L8.45,1.64a.47.47,0,0,0-.9,0L6.11,6.06H1.48a.47.47,0,0,0-.28.86L5,9.65,3.52,14.06a.48.48,0,0,0,.45.63.46.46,0,0,0,.28-.1L8,11.84l3.75,2.73a.39.39,0,0,0,.28.12.48.48,0,0,0,.45-.63L11.05,9.65,14.8,6.92A.47.47,0,0,0,14.52,6.06ZM10.31,8.63l-.73.54,1,3L8,10.31v-6l1,3h3.15Z""/></g></svg>" )]
     public class RatingFieldType : FieldType
     {
         #region Formatting
@@ -250,7 +251,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             int max = GetMaxRating(configurationValues);
-            return new RockRating { ID = id, Max = max }; 
+            return new RockRating { ID = id, Max = max };
         }
 
 
