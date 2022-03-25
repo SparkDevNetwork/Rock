@@ -2887,9 +2887,9 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
+                    // If a match was not found, create a new person
                     if ( person == null )
                     {
-                        // If a match was not found, create a new person
                         person = new Person();
                         person.FirstName = firstName;
                         person.LastName = lastName;
@@ -2909,12 +2909,11 @@ namespace RockWeb.Blocks.Event
                     }
 
                     int? campusId = CampusId;
+                    var updateCampus = false;
                     Location location = null;
 
                     // Set any of the template's person fields
-                    foreach ( var field in RegistrationTemplate.Forms
-                        .SelectMany( f => f.Fields
-                            .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
+                    foreach ( var field in RegistrationTemplate.Forms.SelectMany( f => f.Fields.Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
                     {
                         // Find the registrant's value
                         var fieldValue = registrantInfo.FieldValues
@@ -2928,6 +2927,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 case RegistrationPersonFieldType.Campus:
                                     campusId = fieldValue.ToString().AsIntegerOrNull();
+                                    updateCampus = campusId != null;
                                     break;
 
                                 case RegistrationPersonFieldType.MiddleName:
@@ -3002,7 +3002,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Save the person ( and family if needed )
-                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateCampus );
 
                     // Load the person's attributes
                     person.LoadAttributes();
@@ -3321,9 +3321,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <returns></returns>
-        private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
+        private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId, bool updateCampus = false )
         {
-            if ( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            if ( campusId.HasValue && !person.PrimaryCampusId.HasValue )
             {
                 person.PrimaryCampusId = campusId;
                 rockContext.SaveChanges();
@@ -3388,7 +3388,7 @@ namespace RockWeb.Blocks.Event
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
 
-                if ( !familyGroup.CampusId.HasValue && campusId.HasValue )
+                if ( campusId.HasValue && ( updateCampus || !familyGroup.CampusId.HasValue ) )
                 {
                     familyGroup.CampusId = campusId;
                     rockContext.SaveChanges();
