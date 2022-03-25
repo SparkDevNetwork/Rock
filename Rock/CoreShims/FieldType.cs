@@ -29,7 +29,7 @@ namespace Rock.Field
             => new List<string>();
 
         [RockInternal]
-        public Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
             => new Dictionary<string, string>( privateConfigurationValues );
 
         public List<object> ConfigurationControls()
@@ -211,22 +211,12 @@ namespace Rock.Field
             return publicValue;
         }
 
-        public Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues )
-        {
-            return new Dictionary<string, string>( privateConfigurationValues );
-        }
-
         public Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
             return new Dictionary<string, string>();
         }
 
-        public Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
-        {
-            return new Dictionary<string, string>( privateConfigurationValues );
-        }
-
-        public Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        public Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
             return new Dictionary<string, string>( publicConfigurationValues );
         }

@@ -77,7 +77,7 @@
                                 {% assign marriedDate = CurrentPerson.AnniversaryDate | Date:'M/d' %}
                                 {{ maritalStatusValue.Value }} {{ marriedYears }} {{ 'yr' | PluralizeForQuantity:marriedYears }} <small>({{ marriedDate }})</small>
                             {% else %}
-                                {{ maritalStatusValue }}
+                                {{ maritalStatusValue.Value }}
                             {% endif %}
                         {% endif %}
                     </li>
@@ -254,7 +254,7 @@
         	                                        {% assign marriedDate = familyMember.Person.AnniversaryDate | Date:'M/d' %}
         	                                        {{ maritalStatusValue.Value }} {{ marriedYears }} {{ 'yr' | PluralizeForQuantity:marriedYears }} <small>({{ marriedDate }})</small>
         	                                    {% else %}
-        	                                        {{ maritalStatusValue }}
+        	                                        {{ maritalStatusValue.Value }}
         	                                    {% endif %}
         	                                </li>
         	                            </ul>
@@ -272,7 +272,7 @@
         	                                    {% assign numberTypeValue = phoneNumber.NumberTypeValueId | FromCache:'DefinedValue' %}
         	                                    {% assign displayPhoneType = DisplayedPhoneTypeValueIds | Contains:numberTypeValue.Id %}
         	                                    {% if displayPhoneType %}
-        	                                        <li>{{ phoneNumber.NumberFormatted }}<small>{{ numberTypeValue }} {% if phoneNumber.IsUnlisted %}Unlisted{% endif %}</small></li>
+        	                                        <li>{{ phoneNumber.NumberFormatted }}<small>{{ numberTypeValue.Value }} {% if phoneNumber.IsUnlisted %}Unlisted{% endif %}</small></li>
         	                                    {% endif %}
         	                                {% endfor %}
         	                                </ul>

@@ -51,9 +51,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
             var repeatColumns = privateConfigurationValues.GetValueOrNull( REPEAT_COLUMNS )?.AsIntegerOrNull() ?? 0;
 

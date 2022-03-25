@@ -32,9 +32,6 @@ using Rock.Security;
 using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
-using PublicAttributeValueViewModel = Rock.ViewModel.NonEntities.PublicAttributeValueViewModel;
-using PublicEditableAttributeValueViewModel = Rock.ViewModel.NonEntities.PublicEditableAttributeValueViewModel;
-
 namespace Rock.Blocks.Types.Mobile.Connection
 {
     /// <summary>
@@ -324,7 +321,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var viewModel = new RequestViewModel
             {
                 ActivityContent = activityContent,
-                Attributes = request.GetClientAttributeValues( RequestContext.CurrentPerson ),
+                Attributes = GetPublicAttributeValues( request ),
                 CampusGuid = request.Campus?.Guid,
                 CampusName = request.Campus?.Name,
                 Comments = request.Comments,
@@ -376,7 +373,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             var viewModel = new RequestEditViewModel
             {
-                Attributes = request.GetClientEditableAttributeValues( RequestContext.CurrentPerson ),
+                Attributes = GetPublicEditableAttributeValues( request ),
                 CampusGuid = request.Campus?.Guid,
                 Comments = request.Comments,
                 ConnectorGuid = request.ConnectorPersonAlias?.Person.Guid,
@@ -391,6 +388,79 @@ namespace Rock.Blocks.Types.Mobile.Connection
             };
 
             return viewModel;
+        }
+
+        /// <summary>
+        /// Gets all the attributes and values for the connection request.
+        /// </summary>
+        /// <param name="request">The connection request.</param>
+        /// <returns>A list of editable attribute values.</returns>
+        private List<PublicEditableAttributeValueViewModel> GetPublicAttributeValues( ConnectionRequest request )
+        {
+            // Build the basic attributes.
+            var attributes = request.GetPublicAttributesForView( RequestContext.CurrentPerson )
+                .ToDictionary( kvp => kvp.Key, kvp => new PublicEditableAttributeValueViewModel
+                {
+                    AttributeGuid = kvp.Value.AttributeGuid,
+                    Categories = kvp.Value.Categories,
+                    ConfigurationValues = kvp.Value.ConfigurationValues,
+                    Description = kvp.Value.Description,
+                    FieldTypeGuid = kvp.Value.FieldTypeGuid,
+                    IsRequired = kvp.Value.IsRequired,
+                    Key = kvp.Value.Key,
+                    Name = kvp.Value.Name,
+                    Order = kvp.Value.Order,
+                    Value = ""
+                } );
+
+            // Add all the values to those attributes.
+            request.GetPublicAttributeValuesForView( RequestContext.CurrentPerson )
+                .ToList()
+                .ForEach( kvp =>
+                {
+                    if ( attributes.ContainsKey( kvp.Key ) )
+                    {
+                        attributes[kvp.Key].Value = kvp.Value;
+                    }
+                } );
+
+            return attributes.Select( kvp => kvp.Value ).OrderBy( a => a.Order ).ToList();
+        }
+
+        /// <summary>
+        /// Gets all the attributes and values for the connection request in a form
+        /// suitable to use for editing.
+        /// </summary>
+        /// <param name="request">The connection request.</param>
+        /// <returns>A list of editable attribute values.</returns>
+        private List<PublicEditableAttributeValueViewModel> GetPublicEditableAttributeValues( ConnectionRequest request )
+        {
+            var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
+                .ToDictionary( kvp => kvp.Key, kvp => new PublicEditableAttributeValueViewModel
+                {
+                    AttributeGuid = kvp.Value.AttributeGuid,
+                    Categories = kvp.Value.Categories,
+                    ConfigurationValues = kvp.Value.ConfigurationValues,
+                    Description = kvp.Value.Description,
+                    FieldTypeGuid = kvp.Value.FieldTypeGuid,
+                    IsRequired = kvp.Value.IsRequired,
+                    Key = kvp.Value.Key,
+                    Name = kvp.Value.Name,
+                    Order = kvp.Value.Order,
+                    Value = ""
+                } );
+
+            request.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
+                .ToList()
+                .ForEach( kvp =>
+                {
+                    if ( attributes.ContainsKey( kvp.Key ) )
+                    {
+                        attributes[kvp.Key].Value = kvp.Value;
+                    }
+                } );
+
+            return attributes.Select( kvp => kvp.Value ).OrderBy( a => a.Order ).ToList();
         }
 
         /// <summary>
@@ -1294,7 +1364,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Set any custom request attribute values.
                 if ( requestDetails.AttributeValues != null )
                 {
-                    request.SetClientAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson );
+                    request.SetPublicAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson );
                 }
 
                 // Add an activity that the connector was assigned or changed.
@@ -1612,7 +1682,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     }
                 }
 
-                var attributes = groupMember.GetClientEditableAttributeValues( RequestContext.CurrentPerson );
+                var attributes = groupMember.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson );
 
                 return ActionOk( attributes );
             }
@@ -1875,7 +1945,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The attributes.
             /// </value>
-            public List<PublicAttributeValueViewModel> Attributes { get; set; }
+            public List<PublicEditableAttributeValueViewModel> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the workflow types.
@@ -2290,6 +2360,19 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// The errors messages generated by the workflow.
             /// </value>
             public IList<string> Errors { get; set; }
+        }
+
+        /// <summary>
+        /// Custom class to store the value along with the attribute. This is for
+        /// backwards compatibility with Mobile Shell.
+        /// </summary>
+        public class PublicEditableAttributeValueViewModel : PublicAttributeViewModel
+        {
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>The value.</value>
+            public string Value { get; set; }
         }
 
         #endregion

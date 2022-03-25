@@ -15,9 +15,10 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType } from "../Reporting/comparisonType";
 import { asBooleanOrNull } from "../Services/boolean";
-import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum ConfigurationValueKey {
     BooleanControlType = "BooleanControlType",
@@ -36,12 +37,17 @@ const configurationComponent = defineAsyncComponent(async () => {
     return (await import("./booleanFieldComponents")).ConfigurationComponent;
 });
 
+// Only load the filter component as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./booleanFieldComponents")).FilterComponent;
+});
+
 /**
  * The field type handler for the Boolean field.
  */
 export class BooleanFieldType extends FieldTypeBase {
-    public override getCondensedTextValue(value: PublicAttributeValue): string {
-        const boolValue = asBooleanOrNull(value.value);
+    public override getCondensedTextValue(value: string, _configurationValues: Record<string, string>): string {
+        const boolValue = asBooleanOrNull(value);
 
         if (boolValue === null) {
             return "";
@@ -54,7 +60,7 @@ export class BooleanFieldType extends FieldTypeBase {
         }
     }
 
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         const boolValue = asBooleanOrNull(value);
 
         if (boolValue === null) {
@@ -74,5 +80,13 @@ export class BooleanFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return ComparisonType.EqualTo | ComparisonType.NotEqualTo;
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
     }
 }

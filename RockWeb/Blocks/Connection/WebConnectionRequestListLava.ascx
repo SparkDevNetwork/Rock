@@ -1,27 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WebConnectionRequestListLava.ascx.cs" Inherits="RockWeb.Blocks.Connection.WebConnectionRequestListLava" %>
 
-<style>
-    .btn-previous-text {
-        position: relative;
-        left: 8px;
-    }
-
-    .btn-previous-icon {
-        position: relative;
-        right: 8px;
-    }
-
-    .btn-more-text {
-        position: relative;
-        right: 16px;
-    }
-
-    .btn-more-icon {
-        position: relative;
-        left: 18px;
-    }
-</style>
-
 <asp:UpdatePanel ID="upConnectionSelectLava" runat="server">
     <ContentTemplate>
         <!-- Content -->
@@ -40,9 +18,9 @@
                         </h2>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-xs-12 pb-2">
-                        <asp:LinkButton ID="lbOptions" runat="server" CssClass="text-muted text-semibold pull-right pr-1" OnClick="lbOptions_Click"><i class="fa fa-sliders"></i>&nbsp;&nbsp;Options</asp:LinkButton>
+                <div class="row options-filter-row">
+                    <div class="col-xs-12">
+                        <asp:LinkButton ID="lbOptions" runat="server" CssClass="text-muted text-semibold pull-right pr-1 mb-2" OnClick="lbOptions_Click"><i class="fa fa-sliders"></i>&nbsp;&nbsp;Options</asp:LinkButton>
                     </div>
                 </div>
                 <div class="row">
@@ -50,31 +28,27 @@
                         <asp:Literal ID="lContent" runat="server"></asp:Literal>
                     </div>
                 </div>
-                <div class="row">
-                    <div id="divLoadPrevious" runat="server" class="col-xs-6 col-md-2">
-                        <asp:LinkButton ID="lbLoadPrevious" runat="server" Style="width: 120px;" CssClass="btn btn-primary" OnClick="lbLoadPrevious_Click"><i class="fa fa-chevron-circle-left btn-previous-icon"></i><span class="btn-previous-text">Previous</span></asp:LinkButton>
-                    </div>
-                    <div id="divLoadMore" runat="server" class="col-xs-6 col-md-2 ">
-                        <asp:LinkButton ID="lbLoadMore" runat="server" Style="width: 120px;" CssClass="btn btn-primary" OnClick="lbLoadMode_Click"><span class="btn-more-text">More</span><i class="fa fa-chevron-circle-right btn-more-icon"></i></asp:LinkButton>
-                    </div>
+                <div class="clearfix mt-3 paging">
+                    <asp:LinkButton ID="lbLoadPrevious" runat="server" CssClass="btn btn-primary prev-page pull-left" OnClick="lbLoadPrevious_Click">Previous</asp:LinkButton>
+                    <asp:LinkButton ID="lbLoadMore" runat="server" CssClass="btn btn-primary next-page pull-right" OnClick="lbLoadMode_Click">More</asp:LinkButton>
                 </div>
             </div>
         </asp:Panel>
         <!-- Modal -->
         <Rock:ModalDialog ID="mdOptions" runat="server" Title="Options" SaveButtonText="Save" OnSaveClick="mdOptions_SaveClick">
             <Content>
+                <Rock:NotificationBox id="nbWarning" runat="server" NotificationBoxType="Warning" Visible="false">You are not logged in so some options are not available.</Rock:NotificationBox>
                 <div class="row">
                     <div class="col-xs-12">
-                        <Rock:Switch
+                        <div class="form-group">
+                            <Rock:Switch
                             ID="swOnlyShowMyConnections"
                             runat="server"
                             Checked="true"
                             FormGroupCssClass="custom-switch-centered hide-label-sm"
                             Text="Only Show My Connections" />
-                    </div>
-                </div>
-                <div class="row pt-2">
-                    <div class="col-xs-8">
+                        </div>
+
                         <Rock:RockCheckBoxList ID="cblStates" runat="server" RepeatDirection="Horizontal" Label="Request States" />
                     </div>
                 </div>

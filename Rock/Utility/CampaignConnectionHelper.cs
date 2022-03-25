@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 #if REVIEW_NET5_0_OR_GREATER
@@ -22,7 +23,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif
 using System.Linq;
-
 using Rock;
 using Rock.Data;
 using Rock.Model;

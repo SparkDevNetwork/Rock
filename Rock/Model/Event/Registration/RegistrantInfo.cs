@@ -200,6 +200,22 @@ namespace Rock.Model
         public DateTime? SignatureDocumentLastSent { get; set; }
 
         /// <summary>
+        /// Gets or sets the signature document signed by.
+        /// </summary>
+        /// <value>
+        /// The signature document signed by.
+        /// </value>
+        public string SignatureDocumentSignedName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature document signed at.
+        /// </summary>
+        /// <value>
+        /// The signature document signed at.
+        /// </value>
+        public DateTime? SignatureDocumentSignedDateTime { get; set; }
+
+        /// <summary>
         /// Discounts the cost.
         /// </summary>
         /// <param name="discountPercent">The discount percent.</param>

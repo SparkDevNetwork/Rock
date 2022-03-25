@@ -35,6 +35,9 @@ namespace Rock.Client
         public int AttendanceOccurrenceGroupId { get; set; }
 
         /// <summary />
+        public Int32[] AttendanceOccurrenceLocationIds { get; set; }
+
+        /// <summary />
         // Made Obsolete in Rock "1.12"
         [Obsolete( "Use AttendanceOccurrenceScheduleIds instead", false )]
         public int AttendanceOccurrenceScheduleId { get; set; }
@@ -60,6 +63,9 @@ namespace Rock.Client
         /// <summary />
         public int? ResourceGroupId { get; set; }
 
+        /// <summary />
+        public Rock.Client.Enums.GroupSchedulerResourceListSourceType? ResourceListSourceType { get; set; }
+
         /// <summary>
         /// Copies the base properties from a source SchedulerResourceParameters object
         /// </summary>
@@ -67,6 +73,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( SchedulerResourceParameters source )
         {
             this.AttendanceOccurrenceGroupId = source.AttendanceOccurrenceGroupId;
+            this.AttendanceOccurrenceLocationIds = source.AttendanceOccurrenceLocationIds;
             #pragma warning disable 612, 618
             this.AttendanceOccurrenceScheduleId = source.AttendanceOccurrenceScheduleId;
             #pragma warning restore 612, 618
@@ -77,6 +84,7 @@ namespace Rock.Client
             this.ResourceAdditionalPersonIds = source.ResourceAdditionalPersonIds;
             this.ResourceDataViewId = source.ResourceDataViewId;
             this.ResourceGroupId = source.ResourceGroupId;
+            this.ResourceListSourceType = source.ResourceListSourceType;
 
         }
     }

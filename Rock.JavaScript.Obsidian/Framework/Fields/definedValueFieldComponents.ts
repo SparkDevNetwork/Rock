@@ -21,9 +21,10 @@ import DropDownList from "../Elements/dropDownList";
 import NumberBox from "../Elements/numberBox";
 import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
 import { toNumber, toNumberOrNull } from "../Services/number";
+import { useVModelPassthrough } from "../Util/component";
 import { ListItem } from "../ViewModels";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField";
-import { getFieldEditorProps } from "./utils";
+import { ConfigurationValues, getFieldEditorProps } from "./utils";
 
 function parseModelValue(modelValue: string | undefined): string {
     try {
@@ -72,7 +73,7 @@ export const EditComponent = defineComponent({
 
         const valueOptions = computed((): ValueItem[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
             }
             catch {
                 return [];
@@ -93,7 +94,7 @@ export const EditComponent = defineComponent({
             return providedOptions;
         });
 
-        /** The options to choose from in the drop down list */
+        /** The options to choose from in the checkbox list */
         const optionsMultiple = computed((): ListItem[] => {
             return valueOptions.value.map(v => {
                 return {
@@ -155,6 +156,37 @@ export const EditComponent = defineComponent({
     template: `
 <DropDownList v-if="!isMultiple" v-model="internalValue" v-bind="configAttributes" :options="options" :showBlankItem="!isRequired" />
 <CheckBoxList v-else v-model="internalValues" :options="optionsMultiple" horizontal :repeatColumns="repeatColumns" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "DefinedValueField.Filter",
+
+    components: {
+        EditComponent
+    },
+
+    props: getFieldEditorProps(),
+
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        const configurationValues = ref({ ...props.configurationValues });
+        configurationValues.value[ConfigurationValueKey.AllowMultiple] = "True";
+
+        watch(() => props.configurationValues, () => {
+            configurationValues.value = { ...props.configurationValues };
+            configurationValues.value[ConfigurationValueKey.AllowMultiple] = "True";
+        });
+
+        return {
+            internalValue,
+            configurationValues
+        };
+    },
+
+    template: `
+<EditComponent v-model="internalValue" :configurationValues="configurationValues" />
 `
 });
 
@@ -222,7 +254,7 @@ export const ConfigurationComponent = defineComponent({
             // Construct the new value that will be emitted if it is different
             // than the current value.
             newValue[ConfigurationValueKey.DefinedType] = definedTypeValue.value;
-            newValue[ConfigurationValueKey.SelectableValues] = selectableValues.value.join(",");
+            newValue[ConfigurationValueKey.Values] = selectableValues.value.join(",");
             newValue[ConfigurationValueKey.AllowMultiple] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
             newValue[ConfigurationValueKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
             newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
@@ -231,7 +263,7 @@ export const ConfigurationComponent = defineComponent({
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== props.modelValue[ConfigurationValueKey.DefinedType]
-                || newValue[ConfigurationValueKey.SelectableValues] !== (props.modelValue[ConfigurationValueKey.SelectableValues] ?? "")
+                || newValue[ConfigurationValueKey.Values] !== (props.modelValue[ConfigurationValueKey.Values] ?? "")
                 || newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple] ?? "False")
                 || newValue[ConfigurationValueKey.DisplayDescription] !== (props.modelValue[ConfigurationValueKey.DisplayDescription] ?? "False")
                 || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")

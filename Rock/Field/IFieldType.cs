@@ -47,6 +47,8 @@ namespace Rock.Field
         /// be included or should be encrypted before storing in the dictionary.
         /// </summary>
         /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <param name="usage">The way the public configuration values are intended to be used.</param>
+        /// <param name="internalValue">The current private value. This is required when <paramref name="usage"/> is <see cref="ConfigurationValueUsage.View"/> and will be <c>null</c> in other cases.</param>
         /// <returns>The configuration values that are safe for public use.</returns>
         /// <remarks>
         ///     <para>
@@ -57,25 +59,7 @@ namespace Rock.Field
         ///     </para>
         /// </remarks>
         [RockInternal]
-        Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues );
-
-        /// <summary>
-        /// Gets the public filter configuration values. This data will be sent to
-        /// remote systems which have no security protection. Sensitive data should
-        /// not be included or should be encrypted before storing in the dictionary.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
-        /// <returns>The configuration values that are safe for public use.</returns>
-        [RockInternal]
-        Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues );
+        Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string internalValue );
 
         /// <summary>
         /// Get the edit configuration properties that are safe to send to a remote
@@ -99,34 +83,14 @@ namespace Rock.Field
         Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
-        /// Gets the public configuration options that will be used when editing
-        /// a field type. This should include all information required to show
-        /// the current selections when editing a field type, but made safe from
-        /// any potentially sensitive data.
-        /// </summary>
-        /// <remarks>
-        ///     <para>This method is used during the editing of a field type's configuration.</para>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        /// <param name="privateConfigurationValues">The private configuration values from the database.</param>
-        /// <returns>A <see cref="Dictionary{TKey, TValue}"/> of options that are safe to be made public.</returns>
-        [RockInternal]
-        Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues );
-
-        /// <summary>
         /// Gets the private configuration options that will be saved to the
         /// database.
         /// </summary>
         /// <remarks>
         ///     <para>This method is used during the editing of a field type's configuration.</para>
         ///     <para>
-        ///         Calling this method with the results from <see cref="GetPublicConfigurationOptions(Dictionary{string, string})"/>
-        ///         should return the same data that was originally passed to <see cref="GetPublicConfigurationOptions(Dictionary{string, string})"/>.
+        ///         Calling this method with the results from <see cref="GetPublicConfigurationValues(Dictionary{string, string}, ConfigurationValueUsage, string)"/>
+        ///         should return the same data that was originally passed to <see cref="GetPublicConfigurationValues(Dictionary{string, string}, ConfigurationValueUsage, string)"/>.
         ///     </para>
         ///     <para>
         ///         <strong>This is an internal API</strong> that supports the Rock
@@ -138,7 +102,7 @@ namespace Rock.Field
         /// <param name="publicConfigurationValues">The public configuration values.</param>
         /// <returns>A <see cref="Dictionary{TKey, TValue}"/> of options that are safe to store to the database.</returns>
         [RockInternal]
-        Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues );
+        Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues );
 
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
@@ -243,6 +207,24 @@ namespace Rock.Field
         string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
+        /// Gets the value that will be sent to remote devices. This value is
+        /// used by those devices to do custom formatting when displaying the value.
+        /// </summary>
+        /// <param name="privateValue">The private (database) value.</param>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>A string of text to send to the device.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
+
+        /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -332,25 +314,6 @@ namespace Rock.Field
         /// <c>true</c> if this instance has default control; otherwise, <c>false</c>.
         /// </value>
         bool HasDefaultControl { get; }
-
-        /// <summary>
-        /// Gets the value that will be sent to remote devices. This value is
-        /// primarily used by those devices to do custom formatting when
-        /// displaying the value.
-        /// </summary>
-        /// <param name="privateValue">The private (database) value.</param>
-        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
-        /// <returns>A string of text to send to the device.</returns>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        [RockInternal]
-        string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
         /// Gets the value that will be sent to remote devices. This value is

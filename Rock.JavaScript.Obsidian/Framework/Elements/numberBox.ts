@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 import { defineComponent, PropType } from "vue";
 import { normalizeRules, rulesPropType, ValidationRule } from "../Rules/index";
 import { asFormattedString, toNumberOrNull } from "../Services/number";
@@ -65,7 +65,7 @@ export default defineComponent({
     },
     methods: {
         onChange(): void {
-            this.internalValue = asFormattedString(this.modelValue, this.internalDecimalCount ?? undefined);
+            this.internalValue = asFormattedString(this.modelValue, this.internalDecimalCount ?? undefined, { useGrouping: false });
         }
     },
     computed: {

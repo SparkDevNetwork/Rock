@@ -32,7 +32,7 @@ namespace Rock.ViewModel.Controls
         /// describing a field type edit operation.
         /// </summary>
         /// <remarks>
-        /// See: Rock.Field.IFieldType.GetClientEditConfigurationProperties()
+        /// See: Rock.Field.IFieldType.GetPublicEditConfigurationProperties()
         /// </remarks>
         /// <value>The configuration properties for a field edit operation.</value>
         public Dictionary<string, string> ConfigurationProperties { get; set; }
@@ -42,16 +42,16 @@ namespace Rock.ViewModel.Controls
         /// selections when editing a field type.
         /// </summary>
         /// <remarks>
-        /// See: Rock.Field.IFieldType.GetPublicConfigurationOptions()
+        /// See: Rock.Field.IFieldType.GetPublicConfigurationValues()
         /// </remarks>
         /// <value>The configuration options.</value>
-        public Dictionary<string, string> ConfigurationOptions { get; set; }
+        public Dictionary<string, string> ConfigurationValues { get; set; }
 
         /// <summary>
         /// Gets or sets the default attribute value view model that corresponds
-        /// to the current <see cref="ConfigurationOptions"/>.
+        /// to the current <see cref="ConfigurationValues"/>.
         /// </summary>
         /// <value>The default value information.</value>
-        public PublicEditableAttributeValueViewModel DefaultValue { get; set; }
+        public string DefaultValue { get; set; }
     }
 }

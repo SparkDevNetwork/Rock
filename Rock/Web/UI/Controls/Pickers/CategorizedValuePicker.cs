@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Model;
 
@@ -596,7 +597,7 @@ namespace Rock.Web.UI.Controls
             var availableNodes = GetSelectableNodesFromParentNode( selectorNode );
 
             var emptyItem = new CategorizedValuePickerItem { Key = CategorizedValuePickerItem.EmptyValue };
-            availableNodes.Add( emptyItem );
+            availableNodes.Insert( 0, emptyItem );
 
             var info = new SelectionControlInfo
             {
@@ -627,7 +628,7 @@ namespace Rock.Web.UI.Controls
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "value-list" );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.WriteLine();
 
             _hfValue.RenderControl( writer );
@@ -635,15 +636,8 @@ namespace Rock.Web.UI.Controls
 
             writer.WriteLine();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "value-list-rows" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.WriteLine();
-
             // Render the selection controls top-down.
             _categorySelectorRepeater.RenderControl( writer );
-
-            writer.RenderEndTag();
-            writer.WriteLine();
 
             writer.RenderEndTag();
             writer.WriteLine();
@@ -684,7 +678,7 @@ namespace Rock.Web.UI.Controls
             public void InstantiateIn( Control container )
             {
                 var hf = new HiddenField { ID = "hfNodeKey" };
-                var label = new Label { ID = "lLabel" };
+                var label = new Label { ID = "lLabel", CssClass = "control-label control-label-sm" };
                 var ddlSelector = new RockDropDownList
                 {
                     DataTextField = "Value",
@@ -693,12 +687,16 @@ namespace Rock.Web.UI.Controls
                     AutoPostBack = true,
                 };
 
-                ddlSelector.AddCssClass( "form-control input-width-lg js-value-list-input" );
+                ddlSelector.AddCssClass( "form-control" );
                 ddlSelector.SelectedIndexChanged += ddlSelector_SelectedIndexChanged;
 
-                container.Controls.Add( hf );
-                container.Controls.Add( label );
-                container.Controls.Add( ddlSelector );
+                HtmlGenericControl divFormGroup = new HtmlGenericControl( "div" );
+                divFormGroup.AddCssClass( "form-group" );
+                container.Controls.Add( divFormGroup );
+
+                divFormGroup.Controls.Add( hf );
+                divFormGroup.Controls.Add( label );
+                divFormGroup.Controls.Add( ddlSelector );
             }
 
             private void ddlSelector_SelectedIndexChanged( object sender, EventArgs e )

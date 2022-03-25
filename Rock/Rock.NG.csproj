@@ -199,6 +199,7 @@
     <Compile Include="Web\Cache\Entities\EntityTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\EventCalendarCache.cs" />
     <Compile Include="Web\Cache\Entities\FieldTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractionChannelCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractionComponentCache.cs" />
@@ -222,8 +223,10 @@
     <Compile Include="Web\Cache\Entities\StreakTypeExclusionCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormAttributeCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowActionFormSectionCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActivityTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowFormBuilderTemplateCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowTypeCache.cs" />
     <Compile Include="Web\Cache\EntityCache.cs" />
     <Compile Include="Web\Cache\EntityItemCache.cs" />

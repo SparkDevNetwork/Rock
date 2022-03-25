@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 namespace Rock.Attribute
@@ -33,6 +34,14 @@ namespace Rock.Attribute
         /// Get any alternate Ids that should be used when loading attribute value for this entity.
         /// </summary>
         /// <returns>A list of any alternate entity Ids that should be used when loading attribute values.</returns>
+        [Obsolete( "Use GetAlternateEntityIdsByType instead." )]
+        [RockObsolete("1.13")]
         List<int> GetAlternateEntityIds( Data.RockContext rockContext );
+
+        /// <summary>
+        /// Get any alternate Ids that should be used when loading attribute value for this entity.
+        /// </summary>
+        /// <returns>A list of any alternate entity Ids, grouped by entity type, that should be used when loading attribute values.</returns>
+        Dictionary<int,List<int>> GetAlternateEntityIdsByType( Data.RockContext rockContext );
     }
 }

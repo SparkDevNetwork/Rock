@@ -282,6 +282,8 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     PersonalDevicePlatformAndroid = "63464BB8-83E2-4914-B922-5075311758F9",
     /** Default Structure Content Editor */
     StructureContentEditorDefault = "09B25845-B879-4E69-87E9-003F9380B8DD",
+    /** Structure Content Editor Message Notes */
+    StructureContentEditorMessageNotes = "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
     /** Google map style */
     MapStyleGoogle = "BFC46259-FB66-4427-BF05-2B030A582BEA",
     /** The standard Rock map style */

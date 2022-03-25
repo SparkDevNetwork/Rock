@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Administration
         #region Control Events
         protected void btnLoggingSave_Click( object sender, EventArgs e )
         {
+            Page.Validate();
             if ( !Page.IsValid || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 return;

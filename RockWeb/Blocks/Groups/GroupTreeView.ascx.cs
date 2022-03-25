@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
@@ -166,6 +167,39 @@ namespace RockWeb.Blocks.Groups
                 tglIncludeNoCampus.Checked = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             }
 
+            if ( string.IsNullOrWhiteSpace( _groupId ) )
+            {
+                // If no group was selected, try to find the first group and redirect
+                // back to current page with that group selected
+                var group = FindFirstGroup();
+                {
+                    if ( group != null )
+                    {
+                        _groupId = group.Id.ToString();
+                        string redirectUrl = string.Empty;
+
+                        // redirect so that the group treeview has the first node selected right away and group detail shows the group
+                        if ( hfPageRouteTemplate.Value.IndexOf( "{groupId}", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                        {
+                            redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
+                        }
+                        else
+                        {
+                            if ( this.Request.QueryString.Count == 0 )
+                            {
+                                redirectUrl = this.Request.UrlProxySafe() + "?GroupId=" + _groupId.ToString();
+                            }
+                            else
+                            {
+                                redirectUrl = this.Request.UrlProxySafe() + "&GroupId=" + _groupId.ToString();
+                            }
+                        }
+
+                        this.Response.Redirect( redirectUrl, false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -189,40 +223,6 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 SetAllowedGroupTypes();
-
-                if ( string.IsNullOrWhiteSpace( _groupId ) )
-                {
-                    // If no group was selected, try to find the first group and redirect
-                    // back to current page with that group selected
-                    var group = FindFirstGroup();
-                    {
-                        if ( group != null )
-                        {
-                            _groupId = group.Id.ToString();
-                            string redirectUrl = string.Empty;
-
-                            // redirect so that the group treeview has the first node selected right away and group detail shows the group
-                            if ( hfPageRouteTemplate.Value.IndexOf( "{groupId}", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                            {
-                                redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{groupId}", _groupId.ToString() );
-                            }
-                            else
-                            {
-                                if ( this.Request.QueryString.Count == 0 )
-                                {
-                                    redirectUrl = this.Request.UrlProxySafe() + "?GroupId=" + _groupId.ToString();
-                                }
-                                else
-                                {
-                                    redirectUrl = this.Request.UrlProxySafe() + "&GroupId=" + _groupId.ToString();
-                                }
-                            }
-
-                            this.Response.Redirect( redirectUrl, false );
-                            Context.ApplicationInstance.CompleteRequest();
-                        }
-                    }
-                }
             }
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
@@ -236,7 +236,9 @@ namespace RockWeb.Blocks.Groups
                 if ( selectedGroup == null )
                 {
                     int id = _groupId.AsInteger();
-                    selectedGroup = new GroupService( rockContext ).Queryable( "GroupType" )
+                    selectedGroup = new GroupService( rockContext )
+                        .Queryable( "GroupType" )
+                        .AsNoTracking()
                         .Where( g => g.Id == id )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, selectedGroup );

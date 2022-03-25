@@ -34,9 +34,9 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description("Select the phone numbers of the parents of a person")]
-    [Export(typeof(DataSelectComponent))]
-    [ExportMetadata("ComponentName", "Select Person's Parent's Phone Number")]
+    [Description( "Select the phone numbers of the parents of a person." )]
+    [Export( typeof( DataSelectComponent ) )]
+    [ExportMetadata( "ComponentName", "Select Person's Parents' Phone Numbers" )]
     public class ParentsPhoneNumberSelect : DataSelectComponent
     {
         #region Properties
@@ -52,12 +52,12 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return typeof(Rock.Model.Person).FullName;
+                return typeof( Rock.Model.Person ).FullName;
             }
         }
 
         /// <summary>
-        /// Gets the section that this will appear in in the Field Selector
+        /// Gets the section in the Field Selector that this will appear.
         /// </summary>
         /// <value>
         /// The section.
@@ -92,7 +92,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( IEnumerable<Rock.Model.PhoneNumber> ); }
+            get { return typeof( IEnumerable<string> ); }
         }
 
 #if REVIEW_WEBFORMS
@@ -118,7 +118,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Parent's Phone Number";
+                return "Parents' Phone Numbers";
             }
         }
 
@@ -151,7 +151,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Parent's Phone Number";
+            return "Parents' Phone Numbers";
         }
 
         /// <summary>
@@ -172,12 +172,12 @@ namespace Rock.Reporting.DataSelect.Person
                 phoneNumberTypeValueGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();
             }
 
-            int phoneNumberTypeValueId = DefinedValueCache.Get(phoneNumberTypeValueGuid.Value).Id;
+            int phoneNumberTypeValueId = DefinedValueCache.Get( phoneNumberTypeValueGuid.Value ).Id;
 
-            var familyGroupMembers = new GroupMemberService(context).Queryable()
-                .Where(m => m.Group.GroupType.Guid == familyGuid);
+            var familyGroupMembers = new GroupMemberService( context ).Queryable()
+                .Where( m => m.Group.GroupType.Guid == familyGuid );
 
-            // this returns Enumerable of PhoneNumber for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parent's Phone Numbers
+            // This returns an Enumerable of a string per row. The Grid then uses ListDelimitedField to convert the list into Parents' Phone Numbers and NickNames.
             var personParentsPhoneQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                     .SelectMany( m => m.Group.Members )
@@ -185,10 +185,11 @@ namespace Rock.Reporting.DataSelect.Person
                     .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
                     .Select( m => m.Person )
                     .Where( m => m.PhoneNumbers.Count( t => t.NumberTypeValueId == phoneNumberTypeValueId ) != 0 )
-                    .Select( m => m.PhoneNumbers.FirstOrDefault( t => t.NumberTypeValueId == phoneNumberTypeValueId ) ).AsEnumerable() );
+                    .Select( m =>
+                    m.PhoneNumbers.FirstOrDefault( t => t.NumberTypeValueId == phoneNumberTypeValueId ).NumberFormatted + " - " + m.NickName ).AsEnumerable() );
 
-            var selectNumbersExpression = SelectExpressionExtractor.Extract( personParentsPhoneQuery, entityIdProperty, "p" );            
-            
+            var selectNumbersExpression = SelectExpressionExtractor.Extract( personParentsPhoneQuery, entityIdProperty, "p" );
+
             return selectNumbersExpression;
         }
 
@@ -202,14 +203,14 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList phoneNumberTypeList = new RockDropDownList();
             phoneNumberTypeList.Items.Clear();
-            foreach ( var value in DefinedTypeCache.Get(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy(a => a.Order).ThenBy(a => a.Value) )
+            foreach ( var value in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
-                phoneNumberTypeList.Items.Add(new ListItem(value.Value.EndsWith("Phone") ? value.Value : value.Value + " Phone", value.Guid.ToString()));
+                phoneNumberTypeList.Items.Add( new ListItem( value.Value.EndsWith( "Phone" ) ? value.Value : value.Value + " Phone", value.Guid.ToString() ) );
             }
 
             phoneNumberTypeList.ID = parentControl.ID + "_phoneTypeList";
             phoneNumberTypeList.Label = "Phone Type";
-            parentControl.Controls.Add(phoneNumberTypeList);
+            parentControl.Controls.Add( phoneNumberTypeList );
 
             return new System.Web.UI.Control[] { phoneNumberTypeList };
         }
@@ -222,7 +223,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
         {
-            base.RenderControls(parentControl, writer, controls);
+            base.RenderControls( parentControl, writer, controls );
         }
 
         /// <summary>
@@ -256,7 +257,7 @@ namespace Rock.Reporting.DataSelect.Person
                 RockDropDownList dropDownList = controls[0] as RockDropDownList;
                 if ( dropDownList != null )
                 {
-                    dropDownList.SetValue(selection);
+                    dropDownList.SetValue( selection );
                 }
             }
         }

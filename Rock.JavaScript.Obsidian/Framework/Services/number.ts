@@ -13,13 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
+// Number.toLocaleString takes the same options as Intl.NumberFormat
+// Most of the options probably won't get used, so just add the ones you need to use to this when needed
+type NumberFormatOptions = {
+    useGrouping?: boolean // MDN gives other possible values, but TS is complaining that it should only be boolean
+};
+
 /**
  * Get a formatted string.
  * Ex: 10001.2 => 10,001.2
  * @param num
  */
-export function asFormattedString(num: number | null, digits?: number): string {
+export function asFormattedString(num: number | null, digits?: number, options: NumberFormatOptions = {}): string {
     if (num === null) {
         return "";
     }
@@ -28,7 +35,8 @@ export function asFormattedString(num: number | null, digits?: number): string {
         "en-US",
         {
             minimumFractionDigits: digits,
-            maximumFractionDigits: digits ?? 9
+            maximumFractionDigits: digits ?? 9,
+            ...options
         }
     );
 }

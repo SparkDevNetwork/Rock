@@ -662,6 +662,8 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["EnabledSlidingDateRangeUnits"] = value;
+                EnsureChildControls();
+                PopulateDropDowns();
             }
         }
         /// <summary>

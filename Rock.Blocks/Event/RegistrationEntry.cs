@@ -903,9 +903,10 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
+        /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="forms">The forms.</param>
         /// <returns></returns>
-        private Dictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, IEnumerable<RegistrationTemplateForm> forms )
+        private Dictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
         {
             var fieldValues = new Dictionary<Guid, object>();
 
@@ -929,12 +930,17 @@ namespace Rock.Blocks.Event
                             || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }
 
+                    if ( f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
+                    {
+                        return true;
+                    }
+
                     return false;
                 } );
 
                 foreach ( var field in fields )
                 {
-                    var value = GetCurrentFieldValue( rockContext, person, field );
+                    var value = GetCurrentFieldValue( rockContext, person, registrant, field );
 
                     if ( value != null )
                     {
@@ -951,9 +957,10 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
+        /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field )
         {
             switch ( field.FieldSource )
             {
@@ -961,6 +968,8 @@ namespace Rock.Blocks.Event
                     return GetPersonCurrentFieldValue( rockContext, person, field );
                 case RegistrationFieldSource.PersonAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, person, field );
+                case RegistrationFieldSource.RegistrantAttribute:
+                    return GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
             }
 
             return null;
@@ -1075,6 +1084,11 @@ namespace Rock.Blocks.Event
             if ( attribute is null )
             {
                 return null;
+            }
+
+            if ( entity == null )
+            {
+                return PublicAttributeHelper.GetPublicEditValue( attribute, attribute.DefaultValue );
             }
 
             entity.LoadAttributes( rockContext );
@@ -1800,7 +1814,10 @@ namespace Rock.Blocks.Event
 
             if ( context is null )
             {
-                return null;
+                return new RegistrationEntryBlockViewModel
+                {
+                    RegistrationInstanceNotFoundMessage = errorMessage
+                };
             }
 
             // If the registration is existing, then add the args that describe it to the view model
@@ -1890,7 +1907,7 @@ namespace Rock.Blocks.Event
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, formModels )
+                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, null, formModels )
                     } )
                     .ToList() :
                     new List<RegistrationEntryBlockFamilyMemberViewModel>();
@@ -1948,7 +1965,7 @@ namespace Rock.Blocks.Event
                     var attribute = fieldModel.AttributeId.HasValue ? AttributeCache.Get( fieldModel.AttributeId.Value ) : null;
 
                     field.Guid = fieldModel.Guid;
-                    field.Attribute = attribute != null ? PublicAttributeHelper.ToPublicEditableAttributeValue( attribute, attribute.DefaultValue ) : null;
+                    field.Attribute = attribute != null ? PublicAttributeHelper.GetPublicAttributeForEdit( attribute ) : null;
                     field.FieldSource = ( int ) fieldModel.FieldSource;
                     field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
                     field.IsRequired = fieldModel.IsRequired;
@@ -1990,7 +2007,7 @@ namespace Rock.Blocks.Event
             var beforeAttributes = registrationAttributes
                 .Where( a =>
                     a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION.AsGuid() ) )
-                .Select( a => PublicAttributeHelper.ToPublicEditableAttributeValue( a, a.DefaultValue ) )
+                .Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) )
                 .ToList();
 
             // only show the Registration Attributes After Registrants that have don't have a category or have a category of REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION
@@ -1998,7 +2015,7 @@ namespace Rock.Blocks.Event
                 .Where( a =>
                     !a.Categories.Any() ||
                     a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION.AsGuid() ) )
-                .Select( a => PublicAttributeHelper.ToPublicEditableAttributeValue( a, a.DefaultValue ) )
+                .Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) )
                 .ToList();
 
             // Get the maximum number of registrants
@@ -2082,7 +2099,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = currentPerson.Guid,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, formModels )
+                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels )
                     } );
                 }
                 else
@@ -2096,7 +2113,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = null,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( rockContext, currentPerson, formModels ) : new Dictionary<Guid, object>()
+                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
                     } );
                 }
             }
@@ -2428,15 +2445,25 @@ namespace Rock.Blocks.Event
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
 
-            DefinedValueCache currencyType = null;
-            DefinedValueCache creditCardType = null;
+            /* 02/17/2022 MDP
+            Note that after the transaction, the HostedGateway knows more about the FinancialPaymentDetail than Rock does
+            since it is the gateway that collects the payment info. But just in case paymentInfo has information the the gateway hasn't set,
+            we'll fill in any missing details.
+            But then we'll want to use FinancialPaymentDetail as the most accurate values for the payment info. 
+            */
 
             if ( paymentInfo != null )
             {
                 transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
-                currencyType = paymentInfo.CurrencyTypeValue;
-                creditCardType = paymentInfo.CreditCardTypeValue;
             }
+
+            var currencyTypeValue = transaction.FinancialPaymentDetail?.CurrencyTypeValueId != null
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value )
+                : null;
+
+            var creditCardTypeValue = transaction.FinancialPaymentDetail?.CreditCardTypeValueId != null
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value )
+                : null;
 
             Guid sourceGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( AttributeKey.Source ), out sourceGuid ) )
@@ -2471,8 +2498,8 @@ namespace Rock.Blocks.Event
                 // Get the batch
                 var batch = batchService.Get(
                 batchPrefix,
-                currencyType,
-                creditCardType,
+                currencyTypeValue,
+                creditCardTypeValue,
                 transaction.TransactionDateTime.Value,
                 financialGateway.GetBatchTimeOffset() );
 
@@ -2849,7 +2876,7 @@ namespace Rock.Blocks.Event
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,
                     PersonGuid = person?.Guid,
-                    FieldValues = GetCurrentValueFieldValues( rockContext, person, settings.Forms ),
+                    FieldValues = GetCurrentValueFieldValues( rockContext, person, registrant, settings.Forms ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
                     IsOnWaitList = registrant.OnWaitList
                 };

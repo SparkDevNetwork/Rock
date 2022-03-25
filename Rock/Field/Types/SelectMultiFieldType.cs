@@ -34,7 +34,9 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a comma-delimited list
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.Common )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M13,1H3A2,2,0,0,0,1,3V13a2,2,0,0,0,2,2H13a2,2,0,0,0,2-2V3A2,2,0,0,0,13,1Zm.5,12a.5.5,0,0,1-.5.5H3a.5.5,0,0,1-.5-.5V3A.5.5,0,0,1,3,2.5H13a.5.5,0,0,1,.5.5Zm-3-7.53L7,8.94,5.5,7.47A.75.75,0,0,0,4.44,8.53l2,2a.87.87,0,0,0,.56.22.74.74,0,0,0,.53-.22l4-4a.75.75,0,0,0-1.06-1.06Z""/></g></svg>" )]
     public class SelectMultiFieldType : FieldType
     {
         #region Configuration
@@ -43,6 +45,8 @@ namespace Rock.Field.Types
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
         private const string REPEAT_COLUMNS = "repeatColumns";
         private const string REPEAT_DIRECTION = "repeatDirection";
+
+        private const string CUSTOM_VALUES_PUBLIC_KEY = "customValues";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -59,13 +63,18 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            if ( clientValues.ContainsKey( VALUES_KEY ) )
+            if ( publicConfigurationValues.ContainsKey( VALUES_KEY ) )
             {
-                var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+                if ( usage == ConfigurationValueUsage.Configure )
+                {
+                    // customValues contains the actual raw string that comprises the values.
+                    // is used while editing the configuration values only.
+                    publicConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY] = publicConfigurationValues[VALUES_KEY];
+                }
 
                 var options = Helper.GetConfiguredValues( privateConfigurationValues )
                     .Select( kvp => new
@@ -74,14 +83,45 @@ namespace Rock.Field.Types
                         text = kvp.Value
                     } );
 
-                clientValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                if ( usage == ConfigurationValueUsage.View )
+                {
+                    var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    options = options.Where( o => selectedValues.Contains( o.value ) );
+                }
+
+                publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
             }
             else
             {
-                clientValues[VALUES_KEY] = "[]";
+                publicConfigurationValues[VALUES_KEY] = "[]";
             }
 
-            return clientValues;
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            // Don't allow them to provide the actual value items.
+            if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                privateConfigurationValues.Remove( VALUES_KEY );
+            }
+
+            // Convert the custom values string into the values to be stored.
+            if ( privateConfigurationValues.ContainsKey( CUSTOM_VALUES_PUBLIC_KEY ) )
+            {
+                privateConfigurationValues[VALUES_KEY] = privateConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY];
+                privateConfigurationValues.Remove( CUSTOM_VALUES_PUBLIC_KEY );
+            }
+            else
+            {
+                privateConfigurationValues[VALUES_KEY] = "";
+            }
+
+            return privateConfigurationValues;
         }
 
         /// <summary>
@@ -430,7 +470,7 @@ namespace Rock.Field.Types
             Expression comparison = null;
             if ( filterValues.Count > 1 )
             {
-                //// OR up the where clauses for each of the selected values 
+                //// OR up the where clauses for each of the selected values
                 // and make sure to wrap commas around things so we don't collide with partial matches
                 // so it'll do something like this:
                 //

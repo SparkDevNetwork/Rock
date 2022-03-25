@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Event
 
             // add button to the wait list action grid
             Button btnProcessWaitlist = new Button();
-            btnProcessWaitlist.CssClass = "pull-left margin-l-none btn btn-sm btn-default";
+            btnProcessWaitlist.CssClass = "btn btn-sm btn-default btn-grid-custom-action pull-left";
             btnProcessWaitlist.Text = "Move From Wait List";
             btnProcessWaitlist.Click += btnProcessWaitlist_Click;
             gWaitList.Actions.AddCustomActionControl( btnProcessWaitlist );
@@ -1381,6 +1381,6 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = visible;
         }
 
-        #endregion       
+        #endregion
     }
 }

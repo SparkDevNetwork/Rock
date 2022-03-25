@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 
 using Newtonsoft.Json;
@@ -33,6 +34,7 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Workflow;
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.WorkFlow
@@ -738,6 +740,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
             rockContext.SaveChanges();
 
+            var formBuilderEntityTypeId = EntityTypeCache.GetId<Rock.Workflow.Action.FormBuilder>();
+
             // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
             int workflowActivityTypeOrder = 0;
             foreach ( var editorWorkflowActivityType in ActivityTypesState )
@@ -787,14 +791,16 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
                     workflowActionType.Order = workflowActionTypeOrder++;
 
-                    if ( workflowActionType.WorkflowForm != null && editorWorkflowActionType.WorkflowForm == null )
+                    var isFormBuilderAction = workflowActionType.EntityTypeId == formBuilderEntityTypeId;
+
+                    if ( !isFormBuilderAction && workflowActionType.WorkflowForm != null && editorWorkflowActionType.WorkflowForm == null )
                     {
                         // Form removed
                         workflowFormService.Delete( workflowActionType.WorkflowForm );
                         workflowActionType.WorkflowForm = null;
                     }
 
-                    if ( editorWorkflowActionType.WorkflowForm != null )
+                    if ( !isFormBuilderAction && editorWorkflowActionType.WorkflowForm != null )
                     {
                         if ( workflowActionType.WorkflowForm == null )
                         {
@@ -1425,6 +1431,11 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             SetEditMode( true );
+            nbWarningMessage.Visible = workflowType.IsFormBuilder;
+            if ( workflowType.IsFormBuilder )
+            {
+                nbWarningMessage.Text = "This workflow was created from the Form Builder feature. Care should be taken in editing this as a workflow to ensure that you do no break the native capabilities.";
+            }
 
             cbIsActive.Checked = workflowType.IsActive == true;
             tbName.Text = workflowType.Name;
@@ -1686,6 +1697,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 bool showInvalid = false )
         {
             var control = new WorkflowActionTypeEditor();
+            control.IsEditable = DetermineIfActionIsEditable( actionType );
             parentControl.Controls.Add( control );
             control.ID = actionType.Guid.ToString( "N" );
             control.ValidationGroup = btnSave.ValidationGroup;
@@ -1757,6 +1769,30 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             return control;
+        }
+
+        /// <summary>
+        /// Determines if action type is editable.
+        /// </summary>
+        /// <param name="actionType">Type of the action.</param>
+        private bool DetermineIfActionIsEditable( WorkflowActionType actionType )
+        {
+            ActionComponent actionComponent = actionType?.WorkflowAction;
+
+            if ( actionComponent == null )
+            {
+                // probably adding a new workflow action and type hasn't been selected yet
+                return true;
+            }
+
+            var attr = actionComponent.GetType().GetCustomAttribute<ActionCategoryAttribute>( false );
+
+            if ( attr.IsNotNull() && attr.CategoryName == "HideFromUser" )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

@@ -320,6 +320,44 @@ namespace Rock.Model
         [DataMember]
         public Guid? PersonEntryFamilyAttributeGuid { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the SectionType for the Person Entry Section.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing DefinedValueId of the SectionType's <see cref="Rock.Model.DefinedValue"/> for the Person Entry Section.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.SECTION_TYPE )]
+        public int? PersonEntrySectionTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title to display at the top the Person Entry Section
+        /// </summary>
+        /// <value>
+        /// The person entry title.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        public string PersonEntryTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description to display under the <see cref="PersonEntryTitle"/>
+        /// </summary>
+        /// <value>
+        /// The person entry description.
+        /// </value>
+        [DataMember]
+        public string PersonEntryDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a heading separator should be display under the <see cref="PersonEntryTitle"/> and <see cref="PersonEntryDescription" />
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [person entry show heading separator]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PersonEntryShowHeadingSeparator { get; set; }
+
         #endregion Person entry related Entity Properties
 
         #endregion Entity Properties
@@ -421,6 +459,13 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue PersonEntryCampusTypeValue{ get; set; }
 
+        /// <summary>
+        /// Gets or sets the person entry section type value.
+        /// </summary>
+        /// <value>The person entry section type value.</value>
+        [DataMember]
+        public virtual DefinedValue PersonEntrySectionTypeValue { get; set; }
+
         #endregion Navigation Properties
     }
 
@@ -448,6 +493,8 @@ namespace Rock.Model
 
             this.HasOptional( f => f.PersonEntryCampusStatusValue).WithMany().HasForeignKey( f => f.PersonEntryCampusStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.PersonEntryCampusTypeValue ).WithMany().HasForeignKey( f => f.PersonEntryCampusTypeValueId ).WillCascadeOnDelete( false );
+
+            this.HasOptional( f => f.PersonEntrySectionTypeValue ).WithMany().HasForeignKey( f => f.PersonEntrySectionTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

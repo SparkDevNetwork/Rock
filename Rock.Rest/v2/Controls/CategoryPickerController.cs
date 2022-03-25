@@ -31,6 +31,7 @@ namespace Rock.Rest.v2.Controls
     /// </summary>
     /// <seealso cref="Rock.Rest.v2.Controls.ControlsControllerBase" />
     [RoutePrefix( "api/v2/Controls/CategoryPicker" )]
+    [RockGuid( "257f1800-7882-4b64-bab2-a558b9b9c0fc" )]
     public class CategoryPickerController : ControlsControllerBase
     {
         private static readonly Regex QualifierValueLookupRegex = new Regex( "^{EL:((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12})):((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12}))}$", RegexOptions.IgnoreCase );
@@ -44,6 +45,7 @@ namespace Rock.Rest.v2.Controls
         [HttpPost]
         [System.Web.Http.Route( "childTreeItems" )]
         [Authenticate]
+        [RockGuid( "940ec38f-9614-46cd-afc0-e9d446c8c193" )]
         public IHttpActionResult PostChildTreeItems( [FromBody] ChildTreeItemOptions options )
         {
             using ( var rockContext = new RockContext() )

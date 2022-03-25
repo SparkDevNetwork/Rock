@@ -96,6 +96,9 @@ namespace Rock.Client
         public int? PersonEntryConnectionStatusValueId { get; set; }
 
         /// <summary />
+        public string PersonEntryDescription { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryEmailEntryOption { get; set; } = Rock.Client.Enums.WorkflowActionFormPersonEntryOption.Required;
 
         /// <summary />
@@ -129,6 +132,12 @@ namespace Rock.Client
         public int? PersonEntryRecordStatusValueId { get; set; }
 
         /// <summary />
+        public int? PersonEntrySectionTypeValueId { get; set; }
+
+        /// <summary />
+        public bool PersonEntryShowHeadingSeparator { get; set; }
+
+        /// <summary />
         public Guid? PersonEntrySpouseAttributeGuid { get; set; }
 
         /// <summary />
@@ -136,6 +145,9 @@ namespace Rock.Client
 
         /// <summary />
         public string PersonEntrySpouseLabel { get; set; } = @"Spouse";
+
+        /// <summary />
+        public string PersonEntryTitle { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -191,6 +203,7 @@ namespace Rock.Client
             this.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
             this.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
             this.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
+            this.PersonEntryDescription = source.PersonEntryDescription;
             this.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             this.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
             this.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
@@ -202,9 +215,12 @@ namespace Rock.Client
             this.PersonEntryPostHtml = source.PersonEntryPostHtml;
             this.PersonEntryPreHtml = source.PersonEntryPreHtml;
             this.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            this.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
+            this.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;
             this.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             this.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
             this.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
+            this.PersonEntryTitle = source.PersonEntryTitle;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -224,6 +240,9 @@ namespace Rock.Client
         public ICollection<WorkflowActionFormAttribute> FormAttributes { get; set; }
 
         /// <summary />
+        public ICollection<WorkflowActionFormSection> FormSections { get; set; }
+
+        /// <summary />
         public DefinedValue PersonEntryCampusStatusValue { get; set; }
 
         /// <summary />
@@ -237,6 +256,9 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue PersonEntryRecordStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue PersonEntrySectionTypeValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

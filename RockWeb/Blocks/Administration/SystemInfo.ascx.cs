@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -246,6 +247,21 @@ namespace RockWeb.Blocks.Administration
             response.Flush();
             response.End();
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnDrainQueue control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDrainQueue_Click( object sender, EventArgs e )
+        {
+            // Drain the Queue immediately, then wait for up to 2 seconds so we can see some progress if it drained some stuff quickly
+            var task = Task.Run( () => RockQueue.Drain( ( ex ) => ExceptionLogService.LogException( ex ) ) );
+            task.Wait( 2000 );
+
+            LoadPageDiagnostics();
+        }
+
         #endregion
 
         #region Methods
@@ -569,5 +585,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
+       
     }
 }

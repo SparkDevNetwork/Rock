@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-import { PublicEditableAttributeValue } from "../";
 import { Guid } from "../../Util/guid";
 
 /**
@@ -30,16 +29,16 @@ export type FieldTypeConfigurationPropertiesViewModel = {
     configurationProperties: Record<string, string>;
 
     /**
-     * Gets or sets the configuration options that describe the current
+     * Gets or sets the configuration values that describe the current
      * selections when editing a field type.
      */
-    configurationOptions: Record<string, string>;
+    configurationValues: Record<string, string>;
 
     /**
      * Gets or sets the default attribute value view model that corresponds
-     * to the current configurationOptions.
+     * to the current configurationValues.
      */
-    defaultValue: PublicEditableAttributeValue;
+    defaultValue: string;
 };
 
 /**
@@ -50,10 +49,10 @@ export type FieldTypeConfigurationViewModel = {
     fieldTypeGuid: Guid;
 
     /**
-     * Gets or sets the configuration options that describe the current
+     * Gets or sets the configuration values that describe the current
      * selections when editing a field type.
      */
-    configurationOptions: Record<string, string>;
+    configurationValues: Record<string, string>;
 
     /** Gets or sets the default value currently set. */
     defaultValue: string;

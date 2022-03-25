@@ -436,14 +436,23 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-
             hfDefinedValueId.SetValue( definedValue.Id );
             tbValueName.Text = definedValue.Value;
             tbValueDescription.Text = definedValue.Description;
             cbValueActive.Checked = definedValue.IsActive;
-            cpCategory.SetValue( definedValue.CategoryId );
 
-            cpCategory.Visible = definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
+            // If the Defined Type has categorized values, show the category picker and 
+            // filter for only categories of that type.
+            var hasCategorizedValues = definedType?.CategorizedValuesEnabled ?? false;
+
+            cpCategory.Visible = hasCategorizedValues;
+            if ( hasCategorizedValues )
+            {
+                cpCategory.EntityTypeQualifierColumn = "DefinedTypeId";
+                cpCategory.EntityTypeQualifierValue = definedType.Id.ToString();
+            }
+
+            cpCategory.SetValue( definedValue.CategoryId );
 
             avcDefinedValueAttributes.ValidationGroup = modalValue.ValidationGroup;
             avcDefinedValueAttributes.AddEditControls( definedValue );

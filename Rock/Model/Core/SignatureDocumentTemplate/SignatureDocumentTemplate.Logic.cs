@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Rock.Model
 {
     public partial class SignatureDocumentTemplate
@@ -24,5 +27,23 @@ namespace Rock.Model
 <p>## Insert your legal disclaimer here ##</p>
 <br>
 ";
+    }
+
+    /// <summary>
+    /// Entity Set Item POCO Entity.
+    /// </summary>
+    public partial class SignatureDocumentTemplate
+    {
+        /// <summary>
+        /// Determines whether this instance is legacy.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is legacy; otherwise, <c>false</c>.
+        /// </returns>
+        [NotMapped]
+        public bool IsLegacy
+        {
+            get { return ProviderEntityTypeId.HasValue; }
+        }
     }
 }

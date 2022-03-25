@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Workflow.FormBuilder;
 
 namespace Rock.Web.Cache
 {
@@ -36,7 +37,6 @@ namespace Rock.Web.Cache
     [DataContract]
     public class WorkflowActionFormCache : ModelCache<WorkflowActionFormCache, WorkflowActionForm>
     {
-
         #region Properties
 
         private readonly object _obj = new object();
@@ -146,9 +146,11 @@ namespace Rock.Web.Cache
         public int? PersonEntryGroupLocationTypeValueId { get; private set; }
 
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryCampusStatusValueId"/>
+        [DataMember]
         public int? PersonEntryCampusStatusValueId { get; private set; }
 
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryCampusTypeValueId"/>
+        [DataMember]
         public int? PersonEntryCampusTypeValueId { get; private set; }
 
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryFamilyAttributeGuid"/>
@@ -162,6 +164,22 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="WorkflowActionForm.PersonEntrySpouseAttributeGuid"/>
         [DataMember]
         public Guid? PersonEntrySpouseAttributeGuid { get; private set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntrySectionTypeValueId"/>
+        [DataMember]
+        public int? PersonEntrySectionTypeValueId { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryTitle"/>
+        [DataMember]
+        public string PersonEntryTitle { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryDescription"/>
+        [DataMember]
+        public string PersonEntryDescription { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryShowHeadingSeparator"/>
+        [DataMember]
+        public bool PersonEntryShowHeadingSeparator { get; set; }
 
         #endregion Person entry related Entity Properties
 
@@ -225,6 +243,129 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Gets the PersonEntryPersonAttribute from either the WorkflowActionForm or WorkflowType.WorkflowFormBuilderTemplate
+        /// </summary>
+        /// <param name="workflow">The workflow</param>
+        /// <returns></returns>
+        public AttributeCache GetPersonEntryPersonAttribute( Rock.Model.Workflow workflow  )
+        {
+            var workflowType = workflow?.WorkflowTypeCache;
+            if ( workflowType?.FormBuilderTemplate != null )
+            {
+                return workflow.Attributes.GetValueOrNull( "Person" );
+            }
+            else if ( this.PersonEntryPersonAttributeGuid.HasValue )
+            {
+                return AttributeCache.Get( this.PersonEntryPersonAttributeGuid.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the PersonEntrySpouseAttribute from either the WorkflowActionForm or WorkflowType.WorkflowFormBuilderTemplate
+        /// </summary>
+        /// <param name="workflow">The workflow</param>
+        /// <returns></returns>
+        public AttributeCache GetPersonEntrySpouseAttribute( Rock.Model.Workflow workflow )
+        {
+            var workflowType = workflow?.WorkflowTypeCache;
+            if ( workflowType?.FormBuilderTemplate != null )
+            {
+                return workflow.Attributes.GetValueOrNull( "Spouse" );
+            }
+            else if ( this.PersonEntrySpouseAttributeGuid.HasValue )
+            {
+                return AttributeCache.Get( this.PersonEntrySpouseAttributeGuid.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the PersonEntryFamilyAttribute from either the WorkflowActionForm or WorkflowType.WorkflowFormBuilderTemplate
+        /// </summary>
+        /// <param name="workflow">The workflow</param>
+        /// <returns></returns>
+        public AttributeCache GetPersonEntryFamilyAttribute( Rock.Model.Workflow workflow )
+        {
+            var workflowType = workflow?.WorkflowTypeCache;
+            if ( workflowType?.FormBuilderTemplate != null )
+            {
+                return workflow.Attributes.GetValueOrNull( "Family" );
+            }
+            else if ( this.PersonEntryFamilyAttributeGuid.HasValue )
+            {
+                return AttributeCache.Get( this.PersonEntryFamilyAttributeGuid.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the form person entry settings from either the WorkflowActionForm or WorkflowFormBuilderTemplate
+        /// </summary>
+        /// <param name="workflowFormBuilderTemplate">The workflow form builder template.</param>
+        /// <returns></returns>
+        public FormPersonEntrySettings GetFormPersonEntrySettings( WorkflowFormBuilderTemplateCache workflowFormBuilderTemplate )
+        {
+            var actionForm = this;
+
+            FormPersonEntrySettings formPersonEntrySettings;
+            if ( workflowFormBuilderTemplate != null )
+            {
+                formPersonEntrySettings = workflowFormBuilderTemplate.PersonEntrySettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormPersonEntrySettings>();
+            }
+            else
+            {
+                formPersonEntrySettings = new Rock.Workflow.FormBuilder.FormPersonEntrySettings
+                {
+                    Address = actionForm.PersonEntryAddressEntryOption,
+                    AddressTypeValueId = actionForm.PersonEntryGroupLocationTypeValueId,
+                    AutofillCurrentPerson = actionForm.PersonEntryAutofillCurrentPerson,
+                    Birthdate = actionForm.PersonEntryBirthdateEntryOption,
+                    CampusStatusValueId = actionForm.PersonEntryCampusStatusValueId,
+                    CampusTypeValueId = actionForm.PersonEntryCampusTypeValueId,
+                    ConnectionStatusValueId = actionForm.PersonEntryConnectionStatusValueId,
+                    Email = actionForm.PersonEntryEmailEntryOption,
+                    Gender = actionForm.PersonEntryGenderEntryOption,
+                    HideIfCurrentPersonKnown = actionForm.PersonEntryHideIfCurrentPersonKnown,
+                    MaritalStatus = actionForm.PersonEntryMaritalStatusEntryOption,
+                    MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption,
+                    RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
+                    ShowCampus = actionForm.PersonEntryCampusIsVisible,
+                    SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
+                    SpouseLabel = actionForm.PersonEntrySpouseLabel
+                };
+            }
+
+            return formPersonEntrySettings;
+        }
+
+        /// <summary>
+        /// Gets the AllowPersonEntry values form either the WorkflowActionForm or WorkflowFormBuilderTemplate
+        /// </summary>
+        /// <param name="workflowFormBuilderTemplate">The workflow form builder template.</param>
+        /// <returns></returns>
+        public bool GetAllowPersonEntry( WorkflowFormBuilderTemplateCache workflowFormBuilderTemplate )
+        {
+            if ( workflowFormBuilderTemplate != null )
+            {
+                return workflowFormBuilderTemplate.AllowPersonEntry;
+            }
+            else
+            {
+                return this.AllowPersonEntry;
+            }
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -275,6 +416,10 @@ namespace Rock.Web.Cache
             this.PersonEntrySpouseAttributeGuid = workflowActionForm.PersonEntrySpouseAttributeGuid;
             this.PersonEntrySpouseEntryOption = workflowActionForm.PersonEntrySpouseEntryOption;
             this.PersonEntrySpouseLabel = workflowActionForm.PersonEntrySpouseLabel;
+            this.PersonEntrySectionTypeValueId = workflowActionForm.PersonEntrySectionTypeValueId;
+            this.PersonEntryTitle = workflowActionForm.PersonEntryTitle;
+            this.PersonEntryDescription = workflowActionForm.PersonEntryDescription;
+            this.PersonEntryShowHeadingSeparator = workflowActionForm.PersonEntryShowHeadingSeparator;
             this.Guid = workflowActionForm.Guid;
             this.ForeignId = workflowActionForm.ForeignId;
 

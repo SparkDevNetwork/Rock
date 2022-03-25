@@ -537,6 +537,7 @@ namespace Rock.Client.SystemGuid
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
         public const string SCHEDULE_TYPE = "831648D4-2E2C-4940-8358-9B426AEDB460";
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
+        public const string SECTION_TYPE = "A72D940B-2A69-44B8-931C-7FE99824D84C";
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
         public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
         public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
@@ -544,6 +545,7 @@ namespace Rock.Client.SystemGuid
         public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
         public const string TEMPLATE_BLOCK = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183";
         public const string TEXT_TO_WORKFLOW = "2CACB86F-D811-4483-98E1-272F1FF8FF5D";
+        public const string TOPIC_TYPE = "41141100-8fc6-44bb-aa36-9778eeda7f62";
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
     }
@@ -762,6 +764,7 @@ namespace Rock.Client.SystemGuid
         public const string SPIRITUAL_GIFTS_TEACHING = "E8278791-2400-4DDA-AEAA-C6F11E0AC9D0";
         public const string SPIRITUAL_GIFTS_WISDOM = "5F1F5A92-D981-4027-A4BC-C3642E784D0B";
         public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "09B25845-B879-4E69-87E9-003F9380B8DD";
+        public const string STRUCTURE_CONTENT_EDITOR_MESSAGE_NOTES = "31C63FB9-1365-4EEF-851D-8AB9A188A06C";
         public const string TRANSACTION_FREQUENCY_BIWEEKLY = "72990023-0D43-4554-8D32-28461CAB8920";
         public const string TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH = "C752403C-0F88-45CD-B574-069355C01D77";
         public const string TRANSACTION_FREQUENCY_MONTHLY = "1400753C-A0F9-4A45-8A1D-81C98450BD1F";
@@ -873,6 +876,8 @@ namespace Rock.Client.SystemGuid
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
         public const string OBSIDIAN_EXAMPLE_CONTROL_GALLERY = "7B916FEC-9395-4877-9856-427419C50AB5";
         public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "82F9C803-C998-46B2-B354-783D4D1E3B43";
+        public const string OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE = "BB44D8ED-DEDC-4C9B-A30D-C636019BC960";
+        public const string OBSIDIAN_FORM_TEMPLATE_DETAIL_BLOCK_TYPE = "4A08BC88-AD45-4106-BDD7-184A14B39B9A";
         public const string PAGE = "E104DCDF-247C-4CED-A119-8CC51632761F";
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
@@ -963,6 +968,7 @@ namespace Rock.Client.SystemGuid
         public const string DECIMAL_RANGE = "758D9648-573E-4800-B5AF-7CC29F4BE170";
         public const string DEFINED_TYPE = "BC48720C-3610-4BCF-AE66-D255A17F1CDF";
         public const string DEFINED_VALUE = "59D5A94C-94A0-4630-B80A-BB25697D74C7";
+        public const string DEFINED_VALUE_CATEGORIZED = "3D986B5C-A706-4C69-B0F2-7C81286194CF";
         public const string DEFINED_VALUE_RANGE = "B5C07B16-844D-4620-82E3-4CCA8F5FC350";
         public const string EMAIL = "3D045CAE-EA72-4A04-B7BE-7FD1D6214217";
         public const string EMAIL_TEMPLATE = "CE7CA048-551C-4F68-8C0A-FCDCBEB5B956";
@@ -1633,6 +1639,13 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class SignatureDocumentTemplate
+    {
+        public const string PHOTO_RELEASE_SIGNATURE_DOCUMENT_TEMPLATE = "E982C45E-CDD3-481E-8664-85AD36500F1B";
+    }
+
+    /// <summary>
+    /// </summary>
     public class Site
     {
         public const string CHECK_IN_MANAGER = "A5FA7C3C-A238-4E0B-95DE-B540144321EC";
@@ -1685,6 +1698,7 @@ namespace Rock.Client.SystemGuid
         public const string SECURITY_CONFIRM_ACCOUNT = "17aaceef-15ca-4c30-9a3a-11e6cf7e6411";
         public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
         public const string SPARK_DATA_NOTIFICATION = "CBCBE0F0-67FB-6393-4D9C-592C839A2E54";
+        public const string SYSTEM_ELECTRONIC_SIGNATURE_RECEIPT = "224A0E80-069B-463C-8187-E13682F8A550";
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
     }
 

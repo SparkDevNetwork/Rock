@@ -38,8 +38,6 @@ namespace Rock.Model
 
             private History.HistoryChangeList PersonHistoryChangeList { get; set; }
 
-            private ProcessConnectionRequestChange.Message _processConnectionRequestChangeMessage = null;
-
             /// <summary>
             /// Called before the save operation is executed.
             /// </summary>
@@ -51,9 +49,6 @@ namespace Rock.Model
                 HistoryChangeList = new History.HistoryChangeList();
                 PersonHistoryChangeList = new History.HistoryChangeList();
                 var connectionRequest = this.Entity as ConnectionRequest;
-
-                // Create a change notification message to be sent after the connection request has been saved.
-                _processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest, currentPersonAliasId );
 
                 var rockContext = ( RockContext ) this.RockContext;
                 var connectionOpportunity = connectionRequest.ConnectionOpportunity;
@@ -134,8 +129,13 @@ namespace Rock.Model
             /// </remarks>
             protected override void PostSave()
             {
-                // Send the change notification message now that the connection request has been saved.
-                _processConnectionRequestChangeMessage.Send();
+                // Get the current person's alias ID from the current context.
+                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                var connectionRequest = this.Entity as ConnectionRequest;
+
+                // Create and send the change notification message now that the connection request has been saved.
+                var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest, currentPersonAliasId );
+                processConnectionRequestChangeMessage.Send();
 
                 var rockContext = ( RockContext ) this.RockContext;
                 if ( Entity.ConnectionStatus == null )

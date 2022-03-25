@@ -17,6 +17,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -48,6 +51,22 @@ namespace Rock.Model
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the communication identifier if this is a response based on <see cref="Rock.Model.CommunicationRecipient"/>
+        /// </summary>
+        /// <value>
+        /// The communication identifier.
+        /// </value>
+        public int? CommunicationId { get; internal set; }
+
+        /// <summary>
+        /// Gets the communication response identifier if this a response based on <see cref="Rock.Model.CommunicationResponse"/>
+        /// </summary>
+        /// <value>
+        /// The communication response identifier.
+        /// </value>
+        public int? CommunicationResponseId { get; internal set; }
 
         /// <summary>
         /// Gets or sets the recipient person alias identifier.
@@ -130,7 +149,50 @@ namespace Rock.Model
         /// <value>
         /// The binary file unique identifier.
         /// </value>
+        [Obsolete( "Use HasAttachments() or GetBinaryFileGuids() instead" )]
         public List<Guid> BinaryFileGuids { get; set; }
+
+        /// <summary>
+        /// Determines whether the specified rock context has attachments.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified rock context has attachments; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasAttachments( RockContext rockContext )
+        {
+            return GetBinaryFileGuids( rockContext ).Any();
+        }
+
+        private List<Guid> _binaryFileGuids = null;
+
+        /// <summary>
+        /// Gets the binary file guids of any attachments to the message
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public List<Guid> GetBinaryFileGuids( RockContext rockContext )
+        {
+            if ( _binaryFileGuids != null)
+            {
+                return _binaryFileGuids;
+            }
+
+            if ( CommunicationId.HasValue )
+            {
+                _binaryFileGuids = new CommunicationService( rockContext ).GetSelect( CommunicationId.Value, s => s.Attachments.Select( x => x.BinaryFile.Guid ) ).ToList();
+            }
+            else if ( CommunicationResponseId.HasValue )
+            {
+                _binaryFileGuids = new CommunicationResponseService( rockContext ).GetSelect( CommunicationResponseId.Value, s => s.Attachments.Select( x => x.BinaryFile.Guid ) ).ToList();
+            }
+            else
+            {
+                _binaryFileGuids = new List<Guid>();
+            }
+
+            return _binaryFileGuids;
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is read.

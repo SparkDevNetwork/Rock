@@ -2469,9 +2469,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
 
-            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
-                .Queryable().AsNoTracking()
-                .OrderBy( t => t.Name ) )
+            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext ).GetLegacyTemplates() )
             {
                 ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
             }

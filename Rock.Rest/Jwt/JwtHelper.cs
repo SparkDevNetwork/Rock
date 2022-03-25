@@ -22,9 +22,9 @@ using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
 #endif
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -32,6 +32,7 @@ using Microsoft.IdentityModel.Tokens;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Jwt
@@ -42,13 +43,90 @@ namespace Rock.Rest.Jwt
     public static class JwtHelper
     {
         /// <summary>
+        /// Validates the JSON WebToken and returns the UserLogin associated to the specified JSON Web Token.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="jwtString">The JWT string.</param>
+        /// <returns>UserLogin.</returns>
+        public static UserLogin GetUserLoginByJSONWebToken( RockContext rockContext, string jwtString )
+        {
+            var jwtPrefix = HeaderTokens.JwtPrefix;
+
+            // It is standard to prefix JWTs with "Bearer ", but JwtSecurityTokenHandler.ValidateToken will
+            // say the token is malformed if the prefix is not removed
+            if ( jwtString.StartsWith( jwtPrefix ) )
+            {
+                jwtString = jwtString.Substring( jwtPrefix.Length );
+            }
+
+            var jwtConfigs = GetJwtConfigs();
+            if ( !jwtConfigs.Any() )
+            {
+                // if there aren't any GetJwtConfigs defined, do all the standard validation checks, but don't do Audience or Issuer validation
+                var unvalidatedToken = new JwtSecurityToken( jwtString );
+                var issurer = unvalidatedToken.Payload?.Iss ?? ( string ) unvalidatedToken.Header["iss"];
+                if ( issurer.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                jwtConfigs.Add( new JwtConfig
+                {
+                    OpenIdConfigurationUrl = $"{issurer}.well-known/openid-configuration"
+                } );
+            }
+
+            JwtSecurityToken validatedToken = null;
+
+            foreach ( var jwtConfig in jwtConfigs )
+            {
+                validatedToken = ValidateToken( jwtConfig, jwtString );
+                if ( validatedToken != null )
+                {
+                    break;
+                }
+            }
+
+            var subject = validatedToken?.Subject;
+
+            if ( subject.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var userLoginService = new UserLoginService( rockContext );
+
+            // try finding UserName by prefixing jwt.subject with the prefixes that Rock uses for these
+            string[] userLoginPrefixes = { "AUTH0_", "OIDC_" };
+            foreach ( var userLoginPrefix in userLoginPrefixes )
+            {
+                string userName = $"{userLoginPrefix}{subject}";
+
+                var userLogin = userLoginService.GetByUserName( userName );
+                if ( userLogin != null )
+                {
+                    return userLogin;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// If the JWT is valid, the person claimed by that token will be returned. This method uses the configured validation parameters from the
         /// JSON Web Token Configuration Defined Type.
         /// </summary>
         /// <param name="jwtString"></param>
         /// <returns></returns>
-        public async static Task<Person> GetPerson( string jwtString )
+        public static Person GetPersonFromJWTPersonSearchKey( string jwtString )
         {
+            /*
+              2/16/2022 MDP
+
+            Note that this feature is not very well documented, see why at https://app.asana.com/0/0/1201611176520656/f 
+
+            */
+
             if ( jwtString.IsNullOrWhiteSpace() )
             {
                 return null;
@@ -74,7 +152,7 @@ namespace Rock.Rest.Jwt
             {
                 // If the token is valid, this method will return it as an object that we can pull subject from. Even if the token is valid,
                 // if the subject is not set, we cannot match it to a person search key
-                var jwt = await ValidateToken( config, jwtString );
+                var jwt = ValidateToken( config, jwtString );
 
                 if ( jwt == null || jwt.Subject.IsNullOrWhiteSpace() )
                 {
@@ -178,7 +256,7 @@ namespace Rock.Rest.Jwt
         /// <param name="jwtString">The token.</param>
         /// <param name="jwtConfig">The configuration on how to validate the token</param>
         /// <returns></returns>
-        private async static Task<JwtSecurityToken> ValidateToken( JwtConfig jwtConfig, string jwtString )
+        private static JwtSecurityToken ValidateToken( JwtConfig jwtConfig, string jwtString )
         {
             if ( jwtString.IsNullOrWhiteSpace() )
             {
@@ -207,7 +285,7 @@ namespace Rock.Rest.Jwt
 
             // The configuration manager handles caching the configuration documents and keys, which are from another
             // server or provider like Auth0.
-            var openIdConnectConfiguration = await configurationManager.GetConfigurationAsync();
+            var openIdConnectConfiguration = AsyncHelper.RunSync( () => configurationManager.GetConfigurationAsync() );
 
             if ( openIdConnectConfiguration == null || openIdConnectConfiguration.SigningKeys == null || !openIdConnectConfiguration.SigningKeys.Any() )
             {
@@ -245,9 +323,11 @@ namespace Rock.Rest.Jwt
                 var jwtToken = validatedToken as JwtSecurityToken;
                 return jwtToken;
             }
-            catch
+            catch ( Exception ex )
             {
                 // The JWT was not well formed or did not validate in some other way
+                ExceptionLogService.LogException( ex );
+                Debug.WriteLine( ex.Message );
                 return null;
             }
         }

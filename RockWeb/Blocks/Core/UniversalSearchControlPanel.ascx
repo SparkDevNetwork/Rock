@@ -61,7 +61,7 @@
                 <asp:Panel ID="pnlSmartSearchEdit" runat="server" Visible="false">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockCheckBoxList ID="cblSmartSearchEntities" runat="server" Label="Search Entities" Help="Select the entities you would like to be search via the Smart Search feature. If no value is selected all entities will be searched." />
+                            <Rock:RockCheckBoxList ID="cblSmartSearchEntities" runat="server" Label="Search Entities" Help="Select the entities you would like to be searched via the Smart Search feature. If no value is selected all entities will be searched." />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" />

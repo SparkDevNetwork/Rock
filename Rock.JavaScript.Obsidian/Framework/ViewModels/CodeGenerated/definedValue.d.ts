@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type DefinedValue = IEntity & {
+    categoryId?: number | null;
     definedTypeId?: number;
     description?: string | null;
     isActive?: boolean;

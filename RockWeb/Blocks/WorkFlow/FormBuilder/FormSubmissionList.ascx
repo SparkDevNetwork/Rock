@@ -4,21 +4,16 @@
     <ContentTemplate>
         <Rock:ModalAlert ID="mdAlert" runat="server" />
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll">
 
             <div class="panel-heading panel-follow">
-
-                <div class="pull-left">
-                    <h1 class="panel-title"><span class="fa fa-user"></span>&nbsp;
-                    <asp:Label ID="lTitle" runat="server">My Ministry Form</asp:Label></h1>
-                </div>
+                <h1 class="panel-title"><i class="fa fa-poll-h"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
-            <div class="panel-body">
-                <div>
-                    <ul class="nav nav-pills">
+                <div class="d-flex align-items-center p-2 border-bottom border-panel" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 4px;">
+                    <ul class="nav nav-pills nav-sm">
                         <li id="tabSubmissions" runat="server" class="active">
                             <asp:LinkButton ID="lnkSubmissions" runat="server" Text="Submissions" CssClass="show-pill" OnClick="lnkSubmissions_Click" pill="submissions-tab" />
                         </li>
@@ -37,25 +32,23 @@
                     </ul>
                 </div>
 
-                <hr />
+            <div class="panel-body">
 
                 <div>
-                    <h4 class="step-title text-break">Submissions</h4>
-                    <div class="row">
-                        <div class="col-sm-8">
-                            Below is a listing of submissions for this form.
-                        </div>
+                    <h3 class="m-0">Submissions</h3>
+                    <div class="text-sm text-muted">
+                        Below is a listing of submissions for this form.
                     </div>
-                    <hr />
+                    <hr class="section-header-hr" />
                 </div>
 
-                <div class="grid grid-panel">
+                <div class="grid">
                     <Rock:GridFilter ID="gfWorkflows" runat="server">
                         <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true">
+                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true" RowItemText="Submissions">
                         <Columns>
                             <Rock:SelectField />
                             <Rock:DateField DataField="ActivatedDateTime" HeaderText="Submitted" SortExpression="SubmittedDate" />

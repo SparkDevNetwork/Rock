@@ -413,29 +413,30 @@ This can be due to multiple threads updating the same attribute at the same time
             var entityTypeCache = EntityTypeCache.Get( entityType );
 
             List<Rock.Web.Cache.AttributeCache> allAttributes = null;
-            List<int> altEntityIds = null;
+            Dictionary<int, List<int>> inheritedAttributes = null;
 
             //
             // If this entity can provide inherited attribute information then
             // load that data now. If they don't provide any then generate empty lists.
             //
-            if ( entity is Rock.Attribute.IHasInheritedAttributes )
+            if ( entity is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
             {
                 rockContext = rockContext ?? new RockContext();
-                allAttributes = ( ( Rock.Attribute.IHasInheritedAttributes ) entity ).GetInheritedAttributes( rockContext );
-                altEntityIds = ( ( Rock.Attribute.IHasInheritedAttributes ) entity ).GetAlternateEntityIds( rockContext );
+                allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
+                inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
             }
 
             allAttributes = allAttributes ?? new List<AttributeCache>();
-            altEntityIds = altEntityIds ?? new List<int>();
+            inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
 
             //
             // Get all the attributes that apply to this entity type and this entity's
             // properties match any attribute qualifiers.
             //
+            var entityTypeId = entityTypeCache?.Id;
+
             if ( entityTypeCache != null )
             {
-                int entityTypeId = entityTypeCache.Id;
                 var entityTypeAttributesList = AttributeCache.GetByEntityType( entityTypeCache.Id );
                 if ( entityTypeAttributesList.Any() )
                 {
@@ -504,12 +505,23 @@ This can be due to multiple threads updating the same attribute at the same time
                     List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                     IQueryable<AttributeValue> attributeValueQuery;
 
-                    if ( altEntityIds.Any() )
+                    if ( inheritedAttributes.Any() )
                     {
-                        attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
-                            .Where( v =>
-                                v.EntityId.HasValue &&
-                                ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) ) );
+                        // Add the current entity to the set of target items.
+                        inheritedAttributes.Add( entityTypeId.GetValueOrDefault(), new List<int> { entity.Id } );
+
+                        // Create the set of conditions for filtering the target entities.
+                        // Attribute Values are filtered by entity identifiers, grouped by entity type and
+                        // combined with a logical OR.
+                        var predicate = LinqPredicateBuilder.False<AttributeValue>();
+                        foreach ( var inheritedAttribute in inheritedAttributes )
+                        {
+                            predicate = predicate.Or( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
+                                     && v.EntityId.HasValue
+                                     && inheritedAttribute.Value.Contains( v.EntityId.Value ) );
+                        }
+
+                        attributeValueQuery = attributeValueService.Queryable().AsNoTracking().Where( predicate );
                     }
                     else
                     {
@@ -705,50 +717,6 @@ This can be due to multiple threads updating the same attribute at the same time
 #endif
 
         /// <summary>
-        /// Gets the publically editable attribute model. This contains all the
-        /// information required for the individual to make changes to the attribute.
-        /// </summary>
-        /// <param name="attribute">The attribute that will be represented.</param>
-        /// <returns>A <see cref="PublicEditableAttributeViewModel"/> that represents the attribute.</returns>
-        internal static PublicEditableAttributeViewModel GetPublicEditableAttributeViewModel( Rock.Model.Attribute attribute )
-        {
-            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeId );
-            var configurationValues = attribute.AttributeQualifiers.ToDictionary( q => q.Key, q => q.Value );
-
-            return new PublicEditableAttributeViewModel
-            {
-                Guid = attribute.Guid,
-                Name = attribute.Name,
-                Key = attribute.Key,
-                AbbreviatedName = attribute.AbbreviatedName,
-                Description = attribute.Description,
-                IsActive = attribute.IsActive,
-                IsAnalytic = attribute.IsAnalytic,
-                IsAnalyticHistory = attribute.IsAnalyticHistory,
-                PreHtml = attribute.PreHtml,
-                PostHtml = attribute.PostHtml,
-                IsAllowSearch = attribute.AllowSearch,
-                IsEnableHistory = attribute.EnableHistory,
-                IsIndexEnabled = attribute.IsIndexEnabled,
-                IsPublic = attribute.IsPublic,
-                IsRequired = attribute.IsRequired,
-                IsSystem = attribute.IsSystem,
-                IsShowInGrid = attribute.IsGridColumn,
-                IsShowOnBulk = attribute.ShowOnBulk,
-                FieldTypeGuid = fieldTypeCache.Guid,
-                Categories = attribute.Categories
-                    .Select( c => new ListItemViewModel
-                    {
-                        Value = c.Guid.ToString(),
-                        Text = c.Name
-                    } )
-                    .ToList(),
-                ConfigurationOptions = fieldTypeCache.Field?.GetPublicConfigurationOptions( configurationValues ) ?? new Dictionary<string, string>(),
-                DefaultValue = fieldTypeCache.Field?.GetPublicEditValue( attribute.DefaultValue, configurationValues ) ?? string.Empty
-            };
-        }
-
-        /// <summary>
         /// Saves any attribute edits made using a view model.
         /// </summary>
         /// <param name="attribute">The attribute values that were edited.</param>
@@ -796,7 +764,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 throw new Exception( "Unable to save attribute referencing unknown field type." );
             }
 
-            var configurationValues = fieldTypeCache.Field.GetPrivateConfigurationOptions( attribute.ConfigurationOptions );
+            var configurationValues = fieldTypeCache.Field.GetPrivateConfigurationValues( attribute.ConfigurationValues );
 
             // Note: We intentionally ignore IsSystem, that cannot be changed by the user.
             newAttribute.Name = attribute.Name;
@@ -1065,8 +1033,16 @@ This can be due to multiple threads updating the same attribute at the same time
             }
         }
 
+        /*
+            02/18/2022 - KA
+
+            SaveAttributeValue() checks if the Attribute Field Type is an EncryptedTextFieldType
+            or an SSNFieldType and encrypts the value before saving it to the database, there is
+            no need to encrypt the value before calling SaveAttributeValue().
+        */
+
         /// <summary>
-        /// Saves an attribute value.
+        /// Saves an attribute value. If the attribute field type is an <see cref="Field.Types.EncryptedTextFieldType"/> or an <see cref="Field.Types.SSNFieldType"/> the value will be encrypted.
         /// </summary>
         /// <param name="model">The model.</param>
         /// <param name="attribute">The attribute.</param>
@@ -1098,6 +1074,11 @@ This can be due to multiple threads updating the same attribute at the same time
 
                 if ( attributeValue.Value != newValue )
                 {
+                    if ( attribute.FieldType.Field is Field.Types.EncryptedTextFieldType || attribute.FieldType.Field is Field.Types.SSNFieldType )
+                    {
+                        newValue = Security.Encryption.EncryptString( newValue );
+                    }
+
                     attributeValue.Value = newValue;
                     rockContext.SaveChanges();
                 }
@@ -1610,7 +1591,7 @@ This can be due to multiple threads updating the same attribute at the same time
             {
                 foreach ( var attributeKeyValue in item.Attributes )
                 {
-                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
+                    Control control = parentControl?.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
                     if ( control != null )
                     {
                         result.AddOrIgnore( attributeKeyValue.Value, control );

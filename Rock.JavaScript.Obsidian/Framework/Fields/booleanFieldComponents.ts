@@ -142,6 +142,64 @@ export const EditComponent = defineComponent({
 `
 });
 
+export const FilterComponent = defineComponent({
+    name: "BooleanField.Filter",
+    components: {
+        DropDownList
+    },
+    props: getFieldEditorProps(),
+
+    emits: [
+        "update:modelValue"
+    ],
+
+    setup(props, { emit }) {
+        // Internal values
+        const internalValue = ref(asTrueFalseOrNull(props.modelValue) || "");
+
+        // Sync internal values and modelValue
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
+        watch(() => props.modelValue, () => {
+            internalValue.value = asTrueFalseOrNull(props.modelValue) || "";
+        });
+
+        // What labels does the user see for the true/false values
+        const trueText = computed((): string => {
+            const trueConfig = props.configurationValues[ConfigurationValueKey.TrueText];
+
+            return trueConfig || "Yes";
+        });
+
+        const falseText = computed((): string => {
+            const falseConfig = props.configurationValues[ConfigurationValueKey.FalseText];
+
+            return falseConfig || "No";
+        });
+
+        // configuration for a dropdown control
+        const dropDownListOptions = computed((): ListItem[] => {
+            const trueVal = asTrueFalseOrNull(true);
+            const falseVal = asTrueFalseOrNull(false);
+
+            return [
+                { text: falseText.value, value: falseVal },
+                { text: trueText.value, value: trueVal }
+            ] as ListItem[];
+        });
+
+        return {
+            internalValue,
+            dropDownListOptions
+        };
+    },
+    template: `
+<DropDownList v-model="internalValue" :options="dropDownListOptions" />
+`
+});
+
 export const ConfigurationComponent = defineComponent({
     name: "BooleanField.Configuration",
 

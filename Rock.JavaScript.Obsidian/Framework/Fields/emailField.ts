@@ -16,7 +16,6 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
-import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -39,8 +38,8 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Email field.
  */
 export class EmailFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: PublicAttributeValue): string {
-        const textValue = this.getTextValue(value);
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+        const textValue = this.getTextValue(value, configurationValues);
 
         return textValue ? `<a href="mailto:${textValue}">${textValue}</a>` : "";
     }

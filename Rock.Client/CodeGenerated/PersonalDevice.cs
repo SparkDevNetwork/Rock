@@ -53,6 +53,12 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
+        public DateTime? LastSeenDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? LastVerifiedDateTime { get; set; }
+
+        /// <summary />
         public string MACAddress { get; set; }
 
         /// <summary />
@@ -123,6 +129,8 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
+            this.LastSeenDateTime = source.LastSeenDateTime;
+            this.LastVerifiedDateTime = source.LastVerifiedDateTime;
             this.MACAddress = source.MACAddress;
             this.Manufacturer = source.Manufacturer;
             this.Model = source.Model;

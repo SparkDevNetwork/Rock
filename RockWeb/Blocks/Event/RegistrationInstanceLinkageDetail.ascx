@@ -49,7 +49,7 @@
                                         Display="None" />
                         <asp:RegularExpressionValidator runat="server"
                                         ID="rvUrlSlug"
-                                        ErrorMessage="URL Slug cannot contain any special characters other than -"
+                                        ErrorMessage="URL Slug must be lowercase and cannot contain any special characters other than -"
                                         ControlToValidate="tbLinkageUrlSlug"
                                         ValidationExpression="^[a-z0-9]+(?:-[a-z0-9]+)*$" />
                     </div>
@@ -65,7 +65,7 @@
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
-    
+
         <Rock:ModalDialog ID="dlgAddCalendarItemPage1" runat="server" Title="New Calendar Item" SaveButtonText="Next" OnSaveClick="dlgAddCalendarItemPage1_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="DlgPage1">
             <Content>
                 <asp:ValidationSummary ID="vsLinkageAdd" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="DlgPage1" />

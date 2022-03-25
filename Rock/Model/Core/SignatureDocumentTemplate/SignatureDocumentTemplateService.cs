@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 
@@ -355,5 +356,13 @@ namespace Rock.Model
         }
 
         #endregion Obsolete Legacy Provider methods
+
+        /// <summary>
+        /// Gets the legacy templates.
+        /// </summary>
+        public IQueryable<SignatureDocumentTemplate> GetLegacyTemplates()
+        {
+            return Queryable().AsNoTracking().Where( t => t.ProviderEntityTypeId.HasValue ).OrderBy( t => t.Name );
+        }
     }
 }

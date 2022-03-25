@@ -139,7 +139,7 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registration attributes start.
         /// </value>
-        public IEnumerable<PublicEditableAttributeValueViewModel> RegistrationAttributesStart { get; set; }
+        public IEnumerable<PublicAttributeViewModel> RegistrationAttributesStart { get; set; }
 
         /// <summary>
         /// Gets or sets the registration attributes end.
@@ -147,7 +147,7 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registration attributes end.
         /// </value>
-        public IEnumerable<PublicEditableAttributeValueViewModel> RegistrationAttributesEnd { get; set; }
+        public IEnumerable<PublicAttributeViewModel> RegistrationAttributesEnd { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum registrants.
@@ -356,6 +356,15 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// The saved accounts that can be offered to use for payment.
         /// </value>
         public List<SavedFinancialAccountListItemViewModel> SavedAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets a message to show when the registration instance cannot be used,
+        /// either because it cannot be found, or is outside the time you're allowed to register.
+        /// </summary>
+        /// <value>
+        /// A message to show to the indiviual when the registration instance cannot be found.
+        /// </value>
+        public string RegistrationInstanceNotFoundMessage { get; set; }
     }
 
     /// <summary>
@@ -545,7 +554,7 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// <value>
         /// The attribute.
         /// </value>
-        public PublicEditableAttributeValueViewModel Attribute { get; set; }
+        public PublicAttributeViewModel Attribute { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the visibility rule.

@@ -1812,12 +1812,12 @@ function(item) {
                 }
                 else
                 {
-                    gGiversGifts.DataSource = qry.Sort( gGiversGifts.SortProperty ).ToList();
+                    gGiversGifts.SetLinqDataSource( qry.Sort( gGiversGifts.SortProperty ) );
                 }
             }
             else
             {
-                gGiversGifts.DataSource = qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName ).ToList();
+                gGiversGifts.SetLinqDataSource( qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName ) );
             }
 
             gGiversGifts.DataBind();

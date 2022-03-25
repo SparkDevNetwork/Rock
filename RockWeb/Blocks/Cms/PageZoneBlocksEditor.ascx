@@ -1,4 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PageZoneBlocksEditor.ascx.cs" Inherits="RockWeb.Blocks.Cms.PageZoneBlocksEditor" %>
+<script type="text/javascript">
+    function clearDialog() {
+        $('#rock-config-cancel-trigger').trigger('click');
+    }
+</script>
 <asp:UpdatePanel ID="upPages" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfPageId" runat="server" />

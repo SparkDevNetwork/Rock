@@ -16,8 +16,7 @@
 //
 
 import { IEntity } from "./entity";
-import { PublicAttributeValue } from "./publicAttributeValue";
-import { PublicEditableAttributeValue } from "./publicEditableAttributeValue";
+import { PublicAttribute } from "./publicAttribute";
 import { PublicAttributeValueCategory } from "./publicAttributeValueCategory";
 import { ListItem } from "./listItem";
 import { SavedFinancialAccountListItem } from "./savedFinancialAccountListItem";
@@ -27,8 +26,7 @@ export * from "./CodeGenerated/generated-index";
 
 export {
     IEntity,
-    PublicAttributeValue,
-    PublicEditableAttributeValue,
+    PublicAttribute,
     PublicAttributeValueCategory,
     DebugTiming,
     ListItem,

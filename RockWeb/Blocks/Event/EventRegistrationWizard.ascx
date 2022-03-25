@@ -249,7 +249,7 @@
                                         Display="None" />
                                     <asp:RegularExpressionValidator runat="server"
                                         ID="rvUrlSlug"
-                                        ErrorMessage="URL Slug cannot contain any special characters other than -"
+                                        ErrorMessage="URL Slug must be lowercase and cannot contain any special characters other than -"
                                         ControlToValidate="tbSlug"
                                         ValidationExpression="^[a-z0-9]+(?:-[a-z0-9]+)*$" />
                                 </div>

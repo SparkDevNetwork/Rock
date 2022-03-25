@@ -21,6 +21,8 @@ using System.Web;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Data;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -30,10 +32,12 @@ namespace Rock.Field.Types
     /// Field used to save and display a key/value list
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.25,1.88H2.75A1.74,1.74,0,0,0,1,3.62v8.76a1.74,1.74,0,0,0,1.75,1.74h10.5A1.74,1.74,0,0,0,15,12.38V3.62A1.74,1.74,0,0,0,13.25,1.88Zm.44,1.74v2H6V3.19h7.22A.44.44,0,0,1,13.69,3.62ZM6,6.91h7.66V9.09H6ZM4.72,9.09H2.31V6.91H4.72Zm-2-5.9h2v2.4H2.31v-2A.44.44,0,0,1,2.75,3.19Zm-.44,9.19v-2H4.72v2.4h-2A.44.44,0,0,1,2.31,12.38Zm10.94.43H6v-2.4h7.66v2A.44.44,0,0,1,13.25,12.81Z""/></svg>" )]
     public class KeyValueListFieldType : ValueListFieldType
     {
         private const string VALUES_KEY = "values";
+        private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
 
         #region Configuration
 
@@ -50,25 +54,31 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
 
-            // Remove the defined type key if it exists, public devices don't need to see this.
-            if ( publicConfigurationValues.ContainsKey( "definedtype" ) )
-            {
-                publicConfigurationValues.Remove( "definedtype" );
-            }
+            // Get a list of all DefinedTypes that can be selected.
+            var definedTypes = DefinedTypeCache.All()
+                .OrderBy( t => t.Name )
+                .Select( t => new ListItemViewModel
+                {
+                    Value = t.Guid.ToString(),
+                    Text = t.Name
+                } )
+                .ToList();
 
-            // Remove the internal custom values key if it exists, public devices don't
-            // need to see this.
-            if ( publicConfigurationValues.ContainsKey( "customvalues" ) )
-            {
-                publicConfigurationValues.Remove( "customvalues" );
-            }
+            configurationProperties[DEFINED_TYPES_PROPERTY_KEY] = definedTypes.ToCamelCaseJson( false, true );
 
-            // Generate the custom values that the public devices expects to see.
-            publicConfigurationValues[VALUES_KEY] = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+            return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            var options = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
                 .Select( kvp => new
                 {
                     value = kvp.Key,
@@ -76,7 +86,58 @@ namespace Rock.Field.Types
                 } )
                 .ToCamelCaseJson( false, true );
 
+            publicConfigurationValues[VALUES_KEY] = options;
+
+            if ( usage != ConfigurationValueUsage.Configure )
+            {
+                publicConfigurationValues.Remove( "definedtype" );
+                publicConfigurationValues.Remove( "customvalues" );
+            }
+
+            if ( publicConfigurationValues.ContainsKey( "definedtype" ) )
+            {
+                var definedTypeId = publicConfigurationValues["definedtype"].AsIntegerOrNull();
+
+                if ( definedTypeId.HasValue )
+                {
+                    publicConfigurationValues["definedtype"] = DefinedTypeCache.Get( definedTypeId.Value )?.Guid.ToString() ?? "";
+                }
+                else
+                {
+                    publicConfigurationValues["definedtype"] = "";
+                }
+            }
+
             return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            // Don't allow them to provide the actual value items.
+            if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                privateConfigurationValues.Remove( VALUES_KEY );
+            }
+
+            // Convert the defined type value from Guid to Id.
+            if ( privateConfigurationValues.ContainsKey( "definedtype" ) )
+            {
+                var definedTypeGuid = privateConfigurationValues["definedtype"].AsGuidOrNull();
+
+                if ( definedTypeGuid.HasValue )
+                {
+                    privateConfigurationValues["definedtype"] = DefinedTypeCache.Get( definedTypeGuid.Value )?.Id.ToString() ?? "";
+                }
+                else
+                {
+                    privateConfigurationValues["definedtype"] = "";
+                }
+            }
+
+            return privateConfigurationValues;
         }
 
         /// <summary>
@@ -451,7 +512,7 @@ namespace Rock.Field.Types
                 else
                 {
                     values.Add( new KeyValuePair<string, object>( nameAndValue[0], null ) );
-                } 
+                }
             }
 
             return values;

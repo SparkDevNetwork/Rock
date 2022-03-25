@@ -60,15 +60,19 @@ namespace Rock.Field
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public virtual Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
-            return privateConfigurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( privateConfigurationValues );
         }
 
         /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public virtual Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            return GetPublicConfigurationValues( privateConfigurationValues );
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( publicConfigurationValues );
         }
 
         /// <summary>
@@ -103,22 +107,6 @@ namespace Rock.Field
         public virtual Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
             return new Dictionary<string, string>();
-        }
-
-        /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
-        {
-            // Create a new dictionary to protect against the passed dictionary
-            // being changed after we are called.
-            return new Dictionary<string, string>( privateConfigurationValues );
-        }
-
-        /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
-        {
-            // Create a new dictionary to protect against the passed dictionary
-            // being changed after we are called.
-            return new Dictionary<string, string>( publicConfigurationValues );
         }
 
         #endregion
@@ -1116,6 +1104,46 @@ namespace Rock.Field
         /// Occurs when [qualifier updated].
         /// </summary>
         public event EventHandler QualifierUpdated;
+
+        #endregion
+
+        #region Utility Methods
+
+        /// <summary>
+        /// Utility method to convert a string of delimited unique identifiers
+        /// into their integer identifier equivalents.
+        /// </summary>
+        /// <param name="guidValues">The string that contains the delimited unique identifiers.</param>
+        /// <param name="converter">The function to handle the conversion, <c>null</c> return values are removed.</param>
+        /// <returns>A delimited string of integer identifiers.</returns>
+        internal static string ConvertDelimitedGuidsToIds( string guidValues, Func<Guid, int?> converter )
+        {
+            return guidValues
+                .SplitDelimitedValues()
+                .AsGuidList()
+                .Select( v => converter( v ) )
+                .Where( v => v.HasValue )
+                .Select( v => v.Value.ToString() )
+                .JoinStrings( "," );
+        }
+
+        /// <summary>
+        /// Utility method to convert a string of delimited integer identifiers
+        /// into their unique identifier equivalents.
+        /// </summary>
+        /// <param name="idValues">The string that contains the delimited integer identifiers.</param>
+        /// <param name="converter">The function to handle the conversion, <c>null</c> return values are removed.</param>
+        /// <returns>A delimited string of unique identifiers.</returns>
+        internal static string ConvertDelimitedIdsToGuids( string idValues, Func<int, Guid?> converter )
+        {
+            return idValues
+                .SplitDelimitedValues()
+                .AsIntegerList()
+                .Select( v => converter( v ) )
+                .Where( v => v.HasValue )
+                .Select( v => v.Value.ToString() )
+                .JoinStrings( "," );
+        }
 
         #endregion
     }

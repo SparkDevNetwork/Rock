@@ -571,7 +571,15 @@ namespace RockWeb.Blocks.Finance
         private bool _gatewaysIncompatible = false;
         private string _ccSavedAccountFreqSupported = "both";
         private string _achSavedAccountFreqSupported = "both";
-        protected bool FluidLayout = false;
+
+        protected bool FluidLayout
+        {
+            get
+            {
+                return GetAttributeValue( AttributeKey.LayoutStyle ) == "Fluid";
+            }
+        }
+
         private List<ParameterAccount> _parameterAccounts = new List<ParameterAccount>();
         private bool _allowAccountsInUrl = false;
         private bool _onlyPublicAccountsInUrl = true;
@@ -1796,8 +1804,6 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SetControlOptions()
         {
-            FluidLayout = GetAttributeValue( AttributeKey.LayoutStyle ) == "Fluid";
-
             // Set page/panel titles
             lPanelTitle1.Text = GetAttributeValue( AttributeKey.PanelTitle );
             lPanelTitle2.Text = GetAttributeValue( AttributeKey.PanelTitle );
@@ -2579,6 +2585,11 @@ namespace RockWeb.Blocks.Finance
                 if ( string.IsNullOrWhiteSpace( txtFirstName.Text ) || string.IsNullOrWhiteSpace( txtLastName.Text ) )
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name" );
+                }
+
+                if ( !txtFirstName.IsValid )
+                {
+                    errorMessages.Add( txtFirstName.CustomValidator.ErrorMessage );
                 }
             }
 

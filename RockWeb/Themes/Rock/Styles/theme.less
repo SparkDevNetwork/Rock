@@ -57,6 +57,12 @@ main {
   line-height: 18px;
 }
 
+.control-label-sm {
+  display: block;
+  font-size: @font-size-xs;
+  color: @text-muted;
+}
+
 .panel-body {
   // DOES NOT WORK WITH ROWS
   // > .row {
@@ -401,6 +407,10 @@ textarea,
   box-shadow: none;
 }
 
+.dropdown-menu {
+  font-size: 14px;
+}
+
 .has-error {
   .form-control,
   .input-group-addon {
@@ -631,12 +641,19 @@ textarea,
   }
 }
 
-.modal {
-  .box-shadow(@shadow-modal);
-  border-radius: 0;
+.panel-analytics {
+  .panel-body {
+    > .row {
+      > * {
+        padding-left: @panel-body-padding;
+        padding-right: @panel-body-padding;
+      }
 
-  .modal-content {
-    .box-shadow(none);
+      .row {
+        margin-right: -@panel-body-padding;
+        margin-left: -@panel-body-padding;
+      }
+    }
   }
 }
 
@@ -1181,9 +1198,6 @@ body.nav-open {
     border: 0;
 
     a {
-      width: 100%;
-      line-height: 34px;
-
       &:hover {
         color: @white;
         background-color: @brand-primary;
@@ -1801,6 +1815,19 @@ body.navbar-side-open {
   &.active:hover {
     background: #cbeefa;
   }
+
+  &.btn-primary {
+    background: @btn-primary-bg;
+    border-radius: @btn-border-radius-base;
+
+    &:active,
+    &:active:focus,
+    &.active,
+    &.active:focus,
+    &.active:hover {
+      background: darken(@btn-primary-bg, 10%);
+    }
+  }
 }
 
 .btn-mergefield {
@@ -1871,6 +1898,23 @@ body.navbar-side-open {
   background-color: mix(lighten(@brand-success, 4%), #fff, 15%) !important;
 }
 
+.nav-sm {
+  > li > a {
+    font-size: 14px;
+    line-height: 16px;
+    padding: 8px 12px;
+    font-weight: 500;
+  }
+}
+
+.container-in-block {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 /* #endregion */
 @import "_print.less";
 @import "_css-overrides.less";
+
+
+

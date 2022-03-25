@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -399,7 +400,7 @@ namespace Rock.Achievement.Component
             var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, transaction.AuthorizedPersonAlias.PersonId, minDate, maxDate );
             var newCount = transactionDates.Count();
 
-            if (newCount == 0)
+            if ( newCount == 0 )
             {
                 return;
             }
@@ -512,7 +513,7 @@ namespace Rock.Achievement.Component
         /// <returns>
         ///   <br />
         /// </returns>
-        private FinancialAccount GetFinancialAccount ( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
+        private FinancialAccountCache GetFinancialAccount( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
         {
             if ( null == rockContext )
             {
@@ -526,8 +527,7 @@ namespace Rock.Achievement.Component
                 return null;
             }
 
-            var accountService = new FinancialAccountService( rockContext );
-            return accountService.GetByGuids( new List<Guid>() { guid.Value } ).FirstOrDefault();
+            return FinancialAccountCache.Get( guid.Value );
         }
 
         /// <summary>
@@ -538,7 +538,7 @@ namespace Rock.Achievement.Component
         /// <returns>
         ///   <br />
         /// </returns>
-        private int? GetFinancialAccountId ( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
+        private int? GetFinancialAccountId( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
         {
             if ( null == rockContext )
             {
@@ -552,8 +552,8 @@ namespace Rock.Achievement.Component
                 return null;
             }
 
-            var accountService = new FinancialAccountService( rockContext );
-            return accountService.GetId( guid.Value );
+
+            return FinancialAccountCache.GetId( guid.Value );
         }
 
         /// <summary>
@@ -564,7 +564,7 @@ namespace Rock.Achievement.Component
         /// <returns>
         ///   <br />
         /// </returns>
-        private string GetFinancialAccountName ( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
+        private string GetFinancialAccountName( AchievementTypeCache achievementTypeCache, RockContext rockContext = null )
         {
             if ( null == rockContext )
             {
@@ -578,8 +578,7 @@ namespace Rock.Achievement.Component
                 return null;
             }
 
-            var accountService = new FinancialAccountService( rockContext );
-            return accountService.GetSelect( guid.Value, a => a.Name );
+            return FinancialAccountCache.Get( guid.Value )?.Name;
         }
 
         /// <summary>
@@ -607,8 +606,7 @@ namespace Rock.Achievement.Component
             }
 
             // For the include child accounts option to work we need to get the descendents for this Type
-            var accountService = new FinancialAccountService( rockContext );
-            var accountDescendentIds = includeChildAccounts ? accountService.GetAllDescendentIds( accountId.Value ).ToList() : new List<int>();
+            var accountDescendentIds = includeChildAccounts ? FinancialAccountCache.Get( accountId.Value ).GetDescendentFinancialAccounts().Select( a => a.Id ).ToList() : new List<int>();
 
             var transactionService = new FinancialTransactionService( rockContext );
 

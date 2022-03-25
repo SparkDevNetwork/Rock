@@ -129,12 +129,25 @@ namespace Rock.Model
         /// <returns>
         /// A list of any alternate entity Ids that should be used when loading attribute values.
         /// </returns>
+        [Obsolete( "Use GetAlternateEntityIdsByType instead." )]
+        [RockObsolete( "1.13" )]
         public override List<int> GetAlternateEntityIds( RockContext rockContext )
         {
             //
             // Find all the calendar Ids this event item is present on.
             //
             return this.EventCalendarItems.Select( c => c.Id ).ToList();
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<int, List<int>> GetAlternateEntityIdsByType( RockContext rockContext )
+        {
+            // Return all of the EventCalendarItems on which this event item occurs.
+            var entitiesByType = new Dictionary<int, List<int>>
+            {
+                { EntityTypeCache.GetId( typeof(EventCalendarItem) ) ?? 0, this.EventCalendarItems.Select( c => c.Id ).ToList() }
+            };
+            return entitiesByType;
         }
 
         #region Indexing Methods

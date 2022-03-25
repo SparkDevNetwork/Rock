@@ -464,6 +464,7 @@ namespace Rock.Client.Enums
         AlternateGroup = 0x2,
         ParentGroup = 0x3,
         DataView = 0x4,
+        GroupMatchingAssignment = 0x5,
     }
 
     /// <summary>

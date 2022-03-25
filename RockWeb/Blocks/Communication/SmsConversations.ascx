@@ -2,7 +2,8 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text='No "SMS Phone Numbers" are available to view. Either there are none configured or you do not have access to them.' Visible="false"></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbNoNumbers" runat="server" NotificationBoxType="Warning" Text='No "SMS Phone Numbers" are available to view. Either there are none configured or you do not have access to them.' Visible="false" ></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Warning" Text='' Visible="false"></Rock:NotificationBox>
 
         <div class="panel panel-block" runat="server" id="divMain" visible="false">
 
@@ -76,7 +77,7 @@
 
                     <asp:UpdatePanel ID="upConversation" runat="server" class="conversation-panel">
                         <ContentTemplate>
-                            <Rock:HiddenFieldWithClass ID="hfSelectedRecipientPersonAliasId" runat="server" CssClass="js-selected-recipient-id" />
+                            <Rock:HiddenFieldWithClass ID="hfSelectedRecipientPersonAliasId" runat="server" CssClass="js-selected-recipient-personalias-id" />
                             <Rock:HiddenFieldWithClass ID="hfSelectedMessageKey" runat="server" CssClass="js-selected-message-key" />
                             <div class="header">
                                 <a href="#" class="conversation-back js-back pull-left mr-3">
@@ -92,7 +93,7 @@
                                         <asp:Repeater ID="rptConversation" runat="server" OnItemDataBound="rptConversation_ItemDataBound" Visible="false">
                                             <ItemTemplate>
                                                 <div class="message outbound" id="divCommunication" runat="server">
-                                                    <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" />
+                                                    <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientPersonAliasId" runat="server" />
                                                     <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
                                                     <%-- Keep divCommunicationBody and lSMSMessage on same line for rendering --%>
                                                     <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
