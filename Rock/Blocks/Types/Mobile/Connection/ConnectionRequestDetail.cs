@@ -424,12 +424,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
         }
 
         /// <summary>
-        /// Gets all the attributes and values for the connection request in a form
+        /// Gets all the attributes and values for the entity in a form
         /// suitable to use for editing.
         /// </summary>
         /// <param name="request">The connection request.</param>
         /// <returns>A list of editable attribute values.</returns>
-        private List<PublicEditableAttributeValueViewModel> GetPublicEditableAttributeValues( ConnectionRequest request )
+        private List<PublicEditableAttributeValueViewModel> GetPublicEditableAttributeValues( IHasAttributes request )
         {
             var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
                 .ToDictionary( kvp => kvp.Key, kvp => new PublicEditableAttributeValueViewModel
@@ -1608,6 +1608,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="groupMemberRoleGuid">The unique identifier of the role the person will be assigned.</param>
         /// <returns>The attributes that can be filled in by the individual.</returns>
         [BlockAction]
+        [RockObsolete( "1.13.3" )]
         public BlockActionResult GetPlacementGroupMemberAttributes( Guid connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
         {
             using ( var rockContext = new RockContext() )
@@ -1693,9 +1694,113 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     }
                 }
 
-                var attributes = groupMember.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson );
+                var attributes = GetPublicEditableAttributeValues( groupMember );
 
                 return ActionOk( attributes );
+            }
+        }
+
+        /// <summary>
+        /// Get the placement group member attributes that should be set when
+        /// the client changes either the placement group or the member role.
+        /// </summary>
+        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="groupGuid">The unique identifier of the group the person will be placed into.</param>
+        /// <param name="groupMemberRoleGuid">The unique identifier of the role the person will be assigned.</param>
+        /// <returns>The attributes that can be filled in by the individual.</returns>
+        [BlockAction]
+        public BlockActionResult GetPlacementGroupMemberAttributesAndValues( Guid connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var groupService = new GroupService( rockContext );
+
+                // Load the connection request. Include the connection opportunity
+                // and type for security check.
+                var request = connectionRequestService.Queryable()
+                    .Where( r => r.Guid == connectionRequestGuid )
+                    .Include( r => r.ConnectionOpportunity.ConnectionType )
+                    .FirstOrDefault();
+
+                // Validate the request exists and the current person has permission
+                // to make changes to it.
+                if ( request == null )
+                {
+                    return ActionNotFound();
+                }
+                else if ( !request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionUnauthorized();
+                }
+
+                // Validate that the information they provided is valid
+                // group placement options.
+                var validPlacementGroups = GetRequestPlacementGroups( request );
+                var placementGroup = validPlacementGroups.SingleOrDefault( g => g.Guid == groupGuid );
+                var placementRole = placementGroup?.Roles.SingleOrDefault( r => r.Guid == groupMemberRoleGuid );
+
+                if ( placementGroup == null || placementRole == null )
+                {
+                    return ActionBadRequest( "Invalid data." );
+                }
+
+                // Try to load the group identifier along with the group type
+                // identifier so we can load the role from cache.
+                var groupInfo = groupService.Queryable()
+                    .Where( g => g.Guid == groupGuid )
+                    .Select( g => new
+                    {
+                        g.Id,
+                        g.GroupTypeId
+                    } )
+                    .FirstOrDefault();
+
+                if ( groupInfo == null )
+                {
+                    return ActionBadRequest( "Invalid data." );
+                }
+
+                // Try to load the group member role identifier. This also ensures
+                // the unique identifier they provided belongs to the correct
+                // group type.
+                var groupTypeCache = GroupTypeCache.Get( groupInfo.GroupTypeId );
+                var groupMemberRoleId = groupTypeCache?.Roles
+                    .FirstOrDefault( r => r.Guid == groupMemberRoleGuid )
+                    ?.Id;
+
+                if ( !groupMemberRoleId.HasValue )
+                {
+                    return ActionBadRequest( "Invalid data." );
+                }
+
+                // Load the attribute data for an empty group member so we can
+                // send the data to the client.
+                var groupMember = new GroupMember
+                {
+                    GroupId = groupInfo.Id,
+                    GroupRoleId = groupMemberRoleId.Value
+                };
+
+                groupMember.LoadAttributes( rockContext );
+
+                // Restore the saved group member attribute values if we have any.
+                var savedMemberAttributeValues = request.AssignedGroupMemberAttributeValues?.FromJsonOrNull<Dictionary<string, string>>();
+                if ( savedMemberAttributeValues != null )
+                {
+                    foreach ( var item in savedMemberAttributeValues )
+                    {
+                        groupMember.SetAttributeValue( item.Key, item.Value );
+                    }
+                }
+
+                var attributes = GetPublicEditableAttributeValues( groupMember );
+
+                return ActionOk( new AttributesAndValuesViewModel
+                {
+                    Attributes = groupMember.GetPublicAttributesForEdit( RequestContext.CurrentPerson ),
+                    Values = groupMember.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
+                } );
             }
         }
 
@@ -2384,6 +2489,25 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </summary>
             /// <value>The value.</value>
             public string Value { get; set; }
+        }
+
+        /// <summary>
+        /// Used to return the attributes and values from the action
+        /// "GetPlacementGroupMemberAttributesAndValues".
+        /// </summary>
+        public class AttributesAndValuesViewModel
+        {
+            /// <summary>
+            /// Gets or sets the attributes.
+            /// </summary>
+            /// <value>The attributes.</value>
+            public Dictionary<string, PublicAttributeViewModel> Attributes { get; set; }
+
+            /// <summary>
+            /// Gets or sets the values for the attributes.
+            /// </summary>
+            /// <value>The values for the attributes.</value>
+            public Dictionary<string, string> Values { get; set; }
         }
 
         #endregion
