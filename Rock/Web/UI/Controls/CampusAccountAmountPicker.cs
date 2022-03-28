@@ -875,12 +875,12 @@ namespace Rock.Web.UI.Controls
 
             Controls.Add( _pnlAccountAmountEntrySingle );
 
-            // Special big entry for entering a single dollar amount
             _cbAmountAccountSingle = new CurrencyBox();
             _cbAmountAccountSingle.ID = "_cbAmountAccountSingle";
             _cbAmountAccountSingle.CssClass = "js-amount-input";
-            _cbAmountAccountSingle.Attributes["min"] = "0";
-            _cbAmountAccountSingle.Attributes["max"] = int.MaxValue.ToString();
+            _cbAmountAccountSingle.NumberType = ValidationDataType.Currency;
+            _cbAmountAccountSingle.MaximumValue = int.MaxValue.ToString();
+            _cbAmountAccountSingle.MinimumValue = "0";
             _cbAmountAccountSingle.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
 
             // set max length to prevent input from accepting more than $99,999,999.99 (99 million dollars), this will help prevent an Int32 overflow if amount is stored in cents
