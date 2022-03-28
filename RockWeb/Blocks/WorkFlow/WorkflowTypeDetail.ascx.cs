@@ -1434,7 +1434,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             nbWarningMessage.Visible = workflowType.IsFormBuilder;
             if ( workflowType.IsFormBuilder )
             {
-                nbWarningMessage.Text = "This workflow was created from the Form Builder feature. Care should be taken in editing this as a workflow to ensure that you do no break the native capabilities.";
+                nbWarningMessage.Text = "This workflow was created from the Form Builder feature. Care should be taken in editing this as a workflow to ensure that you do not break the native capabilities.";
             }
 
             cbIsActive.Checked = workflowType.IsActive == true;
