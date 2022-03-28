@@ -239,9 +239,6 @@ $('#{0}').tooltip();
 
             if ( !Page.IsPostBack )
             {
-                // Make sure NavigationHistory doesn't get applied with the Browser is Refreshed
-                hfNavigationHistoryInstance.Value = Guid.NewGuid().ToString();
-
                 BindScheduleRepeater();
             }
             else
@@ -479,11 +476,16 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnScheduleUnavailability_Click( object sender, EventArgs e )
         {
+            SetNavigationHistory( pnlUnavailabilitySchedule );
+            NavigateToScheduleUnavailability();
+        }
+
+        private void NavigateToScheduleUnavailability()
+        {
             pnlToolbox.Visible = false;
             pnlSignup.Visible = false;
             pnlPreferences.Visible = false;
             pnlUnavailabilitySchedule.Visible = true;
-            SetNavigationHistory( pnlUnavailabilitySchedule );
             drpUnavailabilityDateRange.DelimitedValues = string.Empty;
             tbUnavailabilityDateDescription.Text = string.Empty;
             BindUnavailabilityGroups();
@@ -525,11 +527,16 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdateSchedulePreferences_Click( object sender, EventArgs e )
         {
+            SetNavigationHistory( pnlPreferences );
+            NavigateToUpdateSchedulePreferences();
+        }
+
+        private void NavigateToUpdateSchedulePreferences()
+        {
             pnlToolbox.Visible = false;
             pnlSignup.Visible = false;
             pnlPreferences.Visible = true;
             pnlUnavailabilitySchedule.Visible = false;
-            SetNavigationHistory( pnlPreferences );
             BindGroupPreferencesRepeater();
         }
 
@@ -540,11 +547,16 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSignUp_Click( object sender, EventArgs e )
         {
+            SetNavigationHistory( pnlSignup );
+            NavigateToSignUp();
+        }
+
+        private void NavigateToSignUp()
+        {
             pnlToolbox.Visible = false;
             pnlSignup.Visible = true;
             pnlPreferences.Visible = false;
             pnlUnavailabilitySchedule.Visible = false;
-            SetNavigationHistory( pnlSignup );
 
             LoadSignupFamilyMembersDropDown();
 
@@ -926,13 +938,6 @@ $('#{0}').tooltip();
         void page_PageNavigate( object sender, HistoryEventArgs e )
         {
             var navigationPanelId = e.State["navigationPanelId"];
-            var navigationHistoryInstance = e.State["navigationHistoryInstance"];
-
-            if ( navigationHistoryInstance != null && navigationHistoryInstance != hfNavigationHistoryInstance.Value )
-            {
-                // Navigation History was in the URL but is from Page Refresh, not Browser Next/Prior, so ignore
-                return;
-            }
 
             Panel navigationPanel = null;
 
@@ -948,14 +953,24 @@ $('#{0}').tooltip();
 
             if ( navigationPanel != null )
             {
-                var navigationPanels = this.ControlsOfTypeRecursive<Panel>().Where( a => a.CssClass.Contains( "js-navigation-panel" ) );
-                foreach ( var pnl in navigationPanels )
-                {
-                    pnl.Visible = false;
-                }
-
-                navigationPanel.Visible = true;
                 if ( navigationPanel == pnlToolbox )
+                {
+                    BindScheduleRepeater();
+                }
+                else if ( navigationPanel == pnlPreferences )
+                {
+                    NavigateToUpdateSchedulePreferences();
+                }
+                else if ( navigationPanel == pnlUnavailabilitySchedule )
+                {
+
+                    NavigateToScheduleUnavailability();
+                }
+                else if ( navigationPanel == pnlSignup )
+                {
+                    NavigateToSignUp();
+                }
+                else
                 {
                     BindScheduleRepeater();
                 }
@@ -969,7 +984,6 @@ $('#{0}').tooltip();
         private void SetNavigationHistory( Panel navigateToPanel )
         {
             this.AddHistory( "navigationPanelId", navigateToPanel.ID );
-            this.AddHistory( "navigationHistoryInstance", hfNavigationHistoryInstance.Value );
         }
 
         /// <summary>
@@ -1476,6 +1490,10 @@ $('#{0}').tooltip();
         private void CreateScheduleSignUpRow( PersonScheduleSignup personScheduleSignup, List<PersonScheduleSignup> availableGroupLocationSchedules )
         {
             var scheduleSignUpRowItem = new HtmlGenericContainer();
+
+            // give this a specific ID so that Postback to cbSignupSchedule works consistently
+            scheduleSignUpRowItem.ID = $"scheduleSignUpRowItem_{personScheduleSignup.GroupId}_{personScheduleSignup.ScheduleId}_{personScheduleSignup.ScheduledDateTime.Date.ToString( "yyyyMMdd" )}";
+
             scheduleSignUpRowItem.Attributes.Add( "class", "row d-flex flex-wrap align-items-center" );
             scheduleSignUpRowItem.AddCssClass( "js-person-schedule-signup-row" );
             phSignUpSchedules.Controls.Add( scheduleSignUpRowItem );
@@ -1489,7 +1507,8 @@ $('#{0}').tooltip();
             scheduleSignUpRowItem.Controls.Add( hfOccurrenceDate );
             scheduleSignUpRowItem.Controls.Add( hfAttendanceId );
 
-            var pnlCheckboxCol = new Panel();
+            var pnlCheckboxCol = new DynamicControlsPanel();
+            pnlCheckboxCol.ID = "pnlCheckboxCol";
             pnlCheckboxCol.Attributes.Add( "class", "col-xs-12 col-sm-5 col-md-4" );
 
             var cbSignupSchedule = new RockCheckBox();
