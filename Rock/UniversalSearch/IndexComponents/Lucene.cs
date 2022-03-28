@@ -814,7 +814,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 case IndexFieldType.Date:
                                 case IndexFieldType.Number:
                                     {
-                                        typeMappingProperty.IndexType = IndexType.NotAnalyzed;
+                                        typeMappingProperty.IndexType = IndexType.Indexed;
                                         typeMappingProperty.Analyzer = string.Empty;
                                         break;
                                     }
