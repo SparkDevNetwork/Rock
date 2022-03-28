@@ -337,6 +337,13 @@
                 $pickerPersonName.val(selectedText);
             });
 
+            // disable the enter key : this will prevent the enter key from clearing the loaded search query.
+            $pickerControl.on('keypress', function (e) {
+                if (e.which == 13) {
+                    return false;
+                }
+            });
+
             var setSelectedPerson = function (selectedValue, selectedText) {
                 var selectedPersonLabel = $pickerControl.find('.js-personpicker-selectedperson-label');
 
@@ -454,7 +461,6 @@
                 personPicker.initialize();
             }
         };
-
         return exports;
     }());
 }(jQuery));

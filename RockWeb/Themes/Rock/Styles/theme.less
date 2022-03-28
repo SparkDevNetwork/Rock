@@ -1908,8 +1908,11 @@ body.navbar-side-open {
 }
 
 .container-in-block {
-  max-width: 960px;
+  max-width: 1020px;
   margin: 0 auto;
+  @media (min-width: @screen-md-min) {
+    padding: 48px 30px;
+  }
 }
 
 /* #endregion */

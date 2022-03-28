@@ -1191,7 +1191,8 @@ mission. We are so grateful for your commitment.</p>
                 dtpStartDate.SelectedDate = RockDateTime.Today;
             }
 
-            pnlScheduledTransaction.Visible = allowScheduledTransactions;
+            pnlScheduledTransactionFrequency.Visible = allowScheduledTransactions;
+            pnlScheduledTransactionStartDate.Visible = allowScheduledTransactions;
 
             return true;
         }
