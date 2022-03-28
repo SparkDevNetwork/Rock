@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -27,6 +28,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -39,13 +41,13 @@ namespace RockWeb.Blocks.Communication
     #region Block Attributes
 
     [SystemCommunicationField( "System Communication",
-        Description = "The system communication to use when previewing the message. When set as a block setting, it will not allow overriding by the query string",
+        Description = "The system communication to use when previewing the message. When set as a block setting, it will not allow overriding by the query string.",
         IsRequired = false,
         Order = 0,
         Key = AttributeKey.SystemCommunication )]
 
     [DaysOfWeekField( "Send Day of the Week",
-        Description = "Used to determine which dates to list in the Message Date drop down. <i><strong>Note:</strong>If no day is selected the Message Date drop down control will not be shown</i>",
+        Description = "Used to determine which dates to list in the Message Date drop down. <i><strong>Note:</strong> If no day is selected the Message Date drop down will not be shown and the ‘SendDateTime’ Lava variable will be set to the current day.</i>",
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.SendDaysOfTheWeek )]
@@ -88,8 +90,6 @@ namespace RockWeb.Blocks.Communication
             public static bool HasTargetPerson => TargetPerson != null;
 
             public static bool HasSendDate { get; set; }
-
-            public static string DropDownSeparator => new string( '-', 30 );
 
             public static ListItem SelectedDate { get; set; }
 
@@ -251,8 +251,8 @@ namespace RockWeb.Blocks.Communication
 
                 var mergeFields = ProcessTemplateMergeFields();
 
-                var fromName = Variables.SystemCommunicationRecord.FromName.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.FromName : CurrentPerson.FullName;
-                var fromEmail = Variables.SystemCommunicationRecord.From.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.From : CurrentPerson.Email;
+                var fromName = Variables.SystemCommunicationRecord.FromName;
+                var fromEmail = Variables.SystemCommunicationRecord.From;
 
                 var emailMessage = new RockEmailMessage( Variables.SystemCommunicationRecord )
                 {
@@ -265,13 +265,17 @@ namespace RockWeb.Blocks.Communication
                     Message = Variables.RockEmailMessage.Message = Variables.RockEmailMessage.Message.Replace( Variables.LavaDebugCommand, string.Empty )
                 };
 
-                var recipient = new RockEmailMessageRecipient( currentPerson, mergeFields );
-                var sendErrorMessages = new List<string>();
-
+                // TODO:
+                // Look at the CommunicationEntryWizard for how this is handled there.
+                // Some other considerations such as history removal, etc need to be handled:
+                // See https://github.com/SparkDevNetwork/Rock/blob/5531816734f398a0c8de20f98c51168b948aae9a/RockWeb/Blocks/Communication/CommunicationEntryWizard.ascx.cs#L2047
                 currentPerson.Email = ebSendTest.Text;
                 rockContext.SaveChanges();
 
+                var recipient = new RockEmailMessageRecipient( currentPerson, mergeFields );
+                var sendErrorMessages = new List<string>();
                 emailMessage.AddRecipient( recipient );
+
                 emailMessage.Send( out sendErrorMessages );
 
                 if ( sendErrorMessages.Count == 0 )
@@ -351,6 +355,26 @@ namespace RockWeb.Blocks.Communication
                 lavaDebug.Text = string.Empty;
             }
 
+            // If certain fields are blank, then use the Global Attribute values to mimic the EmailTransportComponent.cs behavior.
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            if ( Variables.SystemCommunicationRecord.FromName.IsNullOrWhiteSpace() )
+            {
+                Variables.SystemCommunicationRecord.FromName = globalAttributes.GetValue( "OrganizationName" );
+            }
+
+            if ( Variables.SystemCommunicationRecord.From.IsNullOrWhiteSpace() )
+            {
+                Variables.SystemCommunicationRecord.From = globalAttributes.GetValue( "OrganizationEmail" );
+            }
+
+            var emailMessage = Variables.RockEmailMessage;
+            Variables.RockEmailMessage.Subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, mergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot ).Left( 998 );
+            if ( Variables.RockEmailMessage.Subject.IsNotNullOrWhiteSpace() )
+            {
+                Variables.SystemCommunicationRecord.Subject = Regex.Replace( Variables.RockEmailMessage.Subject, @"(\r?\n?)", String.Empty );
+            }
+
             return mergeFields;
         }
 
@@ -385,14 +409,12 @@ namespace RockWeb.Blocks.Communication
 
                 var mergeFields = ProcessTemplateMergeFields();
 
-                var fromName = Variables.SystemCommunicationRecord.FromName.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.FromName : CurrentPerson.FullName;
-                var fromEmail = Variables.SystemCommunicationRecord.From.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.From : CurrentPerson.Email;
                 var publicationDate = Variables.SystemCommunicationRecord.From.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.From : CurrentPerson.Email;
 
                 lTitle.Text = Variables.SystemCommunicationRecord.Title;
                 lNavTitle.Text = Variables.SystemCommunicationRecord.Title;
-                lFrom.Text = $"<span class='text-semibold'>{fromName}</span> <span class='text-muted'>&lt;{fromEmail}&gt;</span>";
-                lSubject.Text = $"<span class='text-semibold'>{Variables.SystemCommunicationRecord.Title} | {Variables.SystemCommunicationRecord.Subject}</small>";
+                lFrom.Text = $"<span class='text-semibold'>{Variables.SystemCommunicationRecord.FromName}</span> <span class='text-muted'>&lt;{Variables.SystemCommunicationRecord.From}&gt;</span>";
+                lSubject.Text = $"<span class='text-semibold'>{Variables.SystemCommunicationRecord.Subject}</small>";
                 lDate.Text = $"<span class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</span>";
 
                 string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
@@ -424,7 +446,7 @@ namespace RockWeb.Blocks.Communication
             var previousWeeks = GetAttributeValue( AttributeKey.PreviousWeeksToShow ).ToIntSafe();
             var futureWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).ToIntSafe();
 
-            Variables.HasSendDate = Variables.RockEmailMessage.Message.Contains( $"{{ {MergeFieldKey.SendDateTime} }}" );
+            Variables.HasSendDate = Variables.RockEmailMessage.Message.Contains( $"{MergeFieldKey.SendDateTime}" );
 
             ddlMessageDate.Visible = Variables.HasSendDate && dayOfWeeks.Count() > 0;
 
@@ -436,20 +458,12 @@ namespace RockWeb.Blocks.Communication
                 {
                     var startDate = RockDateTime.Now.AddDays( -( previousWeeks * 7 ) );
                     var endDate = RockDateTime.Now.AddDays( futureWeeks * 7 );
-                    int previousMonth = 0;
 
                     for ( var dt = startDate; dt <= endDate; dt = dt.AddDays( 1 ) )
                     {
                         if ( dayOfWeeks.Contains( dt.DayOfWeek ) )
                         {
-                            if ( previousMonth != dt.Month && previousMonth > 0 )
-                            {
-                                ddlMessageDate.Items.Add( new ListItem { Text = Variables.DropDownSeparator, Value = $"Separator_{previousMonth}" } );
-                            }
-
                             ddlMessageDate.Items.Add( new ListItem { Text = dt.ToString( "MMMM d, yyyy" ), Value = $"{dt:MMddyyyy}" } );
-
-                            previousMonth = dt.Month;
                         }
                     }
 
@@ -544,6 +558,43 @@ namespace RockWeb.Blocks.Communication
             }
 
             return previewInfo;
+        }
+
+        /// <summary>
+        /// Used to mimic the behavior of the EmailTransportComponent.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="person"></param>
+        /// <param name="enabledLavaCommands"></param>
+        /// <param name="mergeFields"></param>
+        /// <param name="appRoot"></param>
+        /// <param name="themeRoot"></param>
+        /// <returns></returns>
+        private string ResolveText( string content, Person person, string enabledLavaCommands, Dictionary<string, object> mergeFields, string appRoot = "", string themeRoot = "" )
+        {
+            if ( content.IsNullOrWhiteSpace() )
+            {
+                return content;
+            }
+
+            string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
+            value = value.ReplaceWordChars();
+
+            if ( themeRoot.IsNotNullOrWhiteSpace() )
+            {
+                value = value.Replace( "~~/", themeRoot );
+            }
+
+            if ( appRoot.IsNotNullOrWhiteSpace() )
+            {
+                value = value.Replace( "~/", appRoot );
+                value = value.Replace( @" src=""/", @" src=""" + appRoot );
+                value = value.Replace( @" src='/", @" src='" + appRoot );
+                value = value.Replace( @" href=""/", @" href=""" + appRoot );
+                value = value.Replace( @" href='/", @" href='" + appRoot );
+            }
+
+            return value;
         }
 
         /// <summary>
