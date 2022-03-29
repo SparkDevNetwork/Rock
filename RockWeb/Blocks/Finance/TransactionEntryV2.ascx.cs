@@ -1938,7 +1938,7 @@ mission. We are so grateful for your commitment.</p>
             IEntity transactionEntity = GetTransactionEntity();
 
             introMessageMergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
-            if ( transactionEntity != null && introMessageTemplate.HasMergeFields() )
+            if ( transactionEntity != null && LavaHelper.IsLavaTemplate( introMessageTemplate ) )
             {
                 introMessageMergeFields.Add( "TransactionEntity", transactionEntity );
                 var transactionEntityTypeId = transactionEntity.TypeId;

@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             factory.TimeScale = chartTimeScale;
             factory.StartDateTime = dateRange.Start;
             factory.EndDateTime = dateRange.End;
-            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
             factory.ChartColors = new List<string> { "#2ECC71", "#3498DB" };
 
             var viewedDataset = new ChartJsTimeSeriesDataset();
