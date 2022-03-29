@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type MediaElement = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     durationSeconds?: number | null;
     fileDataJson?: string | null;

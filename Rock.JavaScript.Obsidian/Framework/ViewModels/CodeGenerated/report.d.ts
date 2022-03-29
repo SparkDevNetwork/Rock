@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Report = IEntity & {
+    attributeValues?: Record<string, unknown>;
     categoryId?: number | null;
     dataViewId?: number | null;
     description?: string | null;

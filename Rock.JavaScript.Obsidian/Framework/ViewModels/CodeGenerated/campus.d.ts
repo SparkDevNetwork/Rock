@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Campus = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusStatusValueId?: number | null;
     campusTypeValueId?: number | null;
     description?: string | null;

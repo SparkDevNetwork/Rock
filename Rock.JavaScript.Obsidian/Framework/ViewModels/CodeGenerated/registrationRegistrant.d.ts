@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type RegistrationRegistrant = IEntity & {
+    attributeValues?: Record<string, unknown>;
     cost?: number;
     discountApplies?: boolean;
     groupMemberId?: number | null;

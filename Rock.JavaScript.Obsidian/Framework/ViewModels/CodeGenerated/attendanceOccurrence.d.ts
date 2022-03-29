@@ -27,6 +27,7 @@ export type AttendanceOccurrence = IEntity & {
     acceptConfirmationMessage?: string | null;
     anonymousAttendanceCount?: number | null;
     attendanceTypeValueId?: number | null;
+    attributeValues?: Record<string, unknown>;
     declineConfirmationMessage?: string | null;
     declineReasonValueIds?: string | null;
     didNotOccur?: boolean | null;

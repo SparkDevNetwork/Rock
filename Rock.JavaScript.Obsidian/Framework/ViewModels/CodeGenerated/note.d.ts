@@ -28,6 +28,7 @@ export type Note = IEntity & {
     approvalStatus?: number;
     approvedByPersonAliasId?: number | null;
     approvedDateTime?: string | null;
+    attributeValues?: Record<string, unknown>;
     caption?: string | null;
     editedByPersonAliasId?: number | null;
     editedDateTime?: string | null;

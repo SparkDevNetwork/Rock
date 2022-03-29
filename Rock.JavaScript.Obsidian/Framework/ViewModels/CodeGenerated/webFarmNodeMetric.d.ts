@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type WebFarmNodeMetric = IEntity & {
+    attributeValues?: Record<string, unknown>;
     metricType?: number;
     metricValue?: number;
     metricValueDateTime?: string;

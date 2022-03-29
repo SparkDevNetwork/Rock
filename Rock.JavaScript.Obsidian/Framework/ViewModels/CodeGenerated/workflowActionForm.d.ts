@@ -29,6 +29,7 @@ export type WorkflowActionForm = IEntity & {
     actions?: string | null;
     allowNotes?: boolean | null;
     allowPersonEntry?: boolean;
+    attributeValues?: Record<string, unknown>;
     footer?: string | null;
     header?: string | null;
     includeActionsInNotification?: boolean;

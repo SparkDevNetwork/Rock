@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Badge = IEntity & {
+    attributeValues?: Record<string, unknown>;
     badgeComponentEntityTypeId?: number;
     description?: string | null;
     entityTypeId?: number | null;

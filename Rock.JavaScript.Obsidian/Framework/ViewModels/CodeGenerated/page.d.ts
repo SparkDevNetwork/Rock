@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type Page = IEntity & {
     additionalSettings?: string | null;
     allowIndexing?: boolean;
+    attributeValues?: Record<string, unknown>;
     bodyCssClass?: string | null;
     breadCrumbDisplayIcon?: boolean;
     breadCrumbDisplayName?: boolean;

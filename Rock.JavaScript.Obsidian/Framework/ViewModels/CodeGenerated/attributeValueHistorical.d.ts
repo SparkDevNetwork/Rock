@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type AttributeValueHistorical = IEntity & {
     attributeValueId?: number;
+    attributeValues?: Record<string, unknown>;
     currentRowIndicator?: boolean;
     effectiveDateTime?: string;
     expireDateTime?: string;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FinancialPersonSavedAccount = IEntity & {
+    attributeValues?: Record<string, unknown>;
     financialGatewayId?: number | null;
     financialPaymentDetailId?: number | null;
     gatewayPersonIdentifier?: string | null;

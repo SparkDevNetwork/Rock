@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Category = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     entityTypeId?: number;
     entityTypeQualifierColumn?: string | null;

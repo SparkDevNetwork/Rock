@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FinancialTransactionRefund = IEntity & {
+    attributeValues?: Record<string, unknown>;
     originalTransactionId?: number | null;
     refundReasonSummary?: string | null;
     refundReasonValueId?: number | null;

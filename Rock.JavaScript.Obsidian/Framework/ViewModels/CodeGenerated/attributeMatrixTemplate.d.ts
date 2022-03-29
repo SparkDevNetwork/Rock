@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type AttributeMatrixTemplate = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     formattedLava?: string | null;
     isActive?: boolean;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FinancialTransactionImage = IEntity & {
+    attributeValues?: Record<string, unknown>;
     binaryFileId?: number;
     order?: number;
     transactionId?: number;

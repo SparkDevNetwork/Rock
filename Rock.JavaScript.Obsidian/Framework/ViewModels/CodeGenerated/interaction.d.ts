@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Interaction = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campaign?: string | null;
     channelCustom1?: string | null;
     channelCustom2?: string | null;

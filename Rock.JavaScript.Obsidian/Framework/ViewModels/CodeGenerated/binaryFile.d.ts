@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BinaryFile = IEntity & {
+    attributeValues?: Record<string, unknown>;
     binaryFileTypeId?: number | null;
     contentLastModified?: string | null;
     description?: string | null;

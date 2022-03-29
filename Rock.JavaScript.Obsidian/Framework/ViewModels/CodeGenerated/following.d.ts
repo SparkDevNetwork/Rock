@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Following = IEntity & {
+    attributeValues?: Record<string, unknown>;
     entityId?: number;
     entityTypeId?: number;
     personAliasId?: number;

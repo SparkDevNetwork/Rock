@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type FinancialTransactionDetail = IEntity & {
     accountId?: number;
     amount?: number;
+    attributeValues?: Record<string, unknown>;
     entityId?: number | null;
     entityTypeId?: number | null;
     feeAmount?: number | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type MediaAccount = IEntity & {
+    attributeValues?: Record<string, unknown>;
     componentEntityTypeId?: number;
     isActive?: boolean;
     lastRefreshDateTime?: string | null;

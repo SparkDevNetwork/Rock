@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FinancialTransaction = IEntity & {
+    attributeValues?: Record<string, unknown>;
     authorizedPersonAliasId?: number | null;
     batchId?: number | null;
     checkMicrEncrypted?: string | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ScheduleCategoryExclusion = IEntity & {
+    attributeValues?: Record<string, unknown>;
     categoryId?: number;
     endDate?: string;
     startDate?: string;

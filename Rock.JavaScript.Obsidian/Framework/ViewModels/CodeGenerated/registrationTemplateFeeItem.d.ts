@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type RegistrationTemplateFeeItem = IEntity & {
+    attributeValues?: Record<string, unknown>;
     cost?: number;
     isActive?: boolean;
     maximumUsageCount?: number | null;

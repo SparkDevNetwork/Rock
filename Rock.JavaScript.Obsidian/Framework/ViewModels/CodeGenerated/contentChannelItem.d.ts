@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type ContentChannelItem = IEntity & {
     approvedByPersonAliasId?: number | null;
     approvedDateTime?: string | null;
+    attributeValues?: Record<string, unknown>;
     content?: string | null;
     contentChannelId?: number;
     contentChannelTypeId?: number;

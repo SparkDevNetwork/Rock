@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type FieldType = IEntity & {
     assembly?: string | null;
+    attributeValues?: Record<string, unknown>;
     class?: string | null;
     description?: string | null;
     isSystem?: boolean;

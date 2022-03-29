@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type WorkflowActionFormSection = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     order?: number;
     sectionTypeValueId?: number | null;

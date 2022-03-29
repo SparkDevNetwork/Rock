@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type WorkflowActivityType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     isActivatedWithWorkflow?: boolean;
     isActive?: boolean | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BenevolenceType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     isActive?: boolean;
     name?: string | null;

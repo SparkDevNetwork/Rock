@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionOpportunityGroupConfig = IEntity & {
+    attributeValues?: Record<string, unknown>;
     connectionOpportunityId?: number;
     groupMemberRoleId?: number | null;
     groupMemberStatus?: number;

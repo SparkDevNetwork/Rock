@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonSearchKey = IEntity & {
+    attributeValues?: Record<string, unknown>;
     isValuePrivate?: boolean;
     personAliasId?: number | null;
     searchTypeValueId?: number;

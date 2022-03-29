@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Streak = IEntity & {
+    attributeValues?: Record<string, unknown>;
     currentStreakCount?: number;
     currentStreakStartDate?: string | null;
     engagementCount?: number;

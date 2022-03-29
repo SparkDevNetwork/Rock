@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EventCalendarContentChannel = IEntity & {
+    attributeValues?: Record<string, unknown>;
     contentChannelId?: number;
     eventCalendarId?: number;
     createdDateTime?: string | null;

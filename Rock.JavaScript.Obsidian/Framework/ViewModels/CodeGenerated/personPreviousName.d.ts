@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonPreviousName = IEntity & {
+    attributeValues?: Record<string, unknown>;
     lastName?: string | null;
     personAliasId?: number;
     createdDateTime?: string | null;

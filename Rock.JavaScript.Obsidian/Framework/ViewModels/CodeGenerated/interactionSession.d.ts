@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type InteractionSession = IEntity & {
+    attributeValues?: Record<string, unknown>;
     deviceTypeId?: number | null;
     interactionMode?: string | null;
     ipAddress?: string | null;

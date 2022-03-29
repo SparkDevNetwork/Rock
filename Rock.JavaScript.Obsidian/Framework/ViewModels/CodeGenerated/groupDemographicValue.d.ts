@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 import { Guid } from "../../Util/guid";
 
 export type GroupDemographicValue = IEntity & {
+    attributeValues?: Record<string, unknown>;
     groupDemographicTypeId?: number;
     groupId?: number;
     lastCalculatedDateTime?: string | null;

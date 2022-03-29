@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type FinancialAccount = IEntity & {
     accountTypeValueId?: number | null;
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     description?: string | null;
     endDate?: string | null;

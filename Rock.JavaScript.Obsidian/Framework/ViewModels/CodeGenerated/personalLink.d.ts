@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonalLink = IEntity & {
+    attributeValues?: Record<string, unknown>;
     name?: string | null;
     order?: number;
     personAliasId?: number | null;

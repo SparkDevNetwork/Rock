@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type GroupTypeRole = IEntity & {
+    attributeValues?: Record<string, unknown>;
     canEdit?: boolean;
     canManageMembers?: boolean;
     canView?: boolean;

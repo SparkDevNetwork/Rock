@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type FinancialBatch = IEntity & {
     accountingSystemCode?: string | null;
+    attributeValues?: Record<string, unknown>;
     batchEndDateTime?: string | null;
     batchStartDateTime?: string | null;
     campusId?: number | null;

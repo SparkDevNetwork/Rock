@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PageShortLink = IEntity & {
+    attributeValues?: Record<string, unknown>;
     siteId?: number;
     token?: string | null;
     url?: string | null;

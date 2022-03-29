@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type InteractionDeviceType = IEntity & {
     application?: string | null;
+    attributeValues?: Record<string, unknown>;
     clientType?: string | null;
     deviceTypeData?: string | null;
     name?: string | null;

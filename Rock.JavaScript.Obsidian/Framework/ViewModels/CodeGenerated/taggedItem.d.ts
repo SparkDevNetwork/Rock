@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 import { Guid } from "../../Util/guid";
 
 export type TaggedItem = IEntity & {
+    attributeValues?: Record<string, unknown>;
     entityGuid?: Guid;
     entityTypeId?: number;
     isSystem?: boolean;

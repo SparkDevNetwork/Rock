@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type SystemEmail = IEntity & {
+    attributeValues?: Record<string, unknown>;
     bcc?: string | null;
     body?: string | null;
     categoryId?: number | null;

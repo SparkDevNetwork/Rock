@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BenevolenceRequestDocument = IEntity & {
+    attributeValues?: Record<string, unknown>;
     benevolenceRequestId?: number;
     binaryFileId?: number;
     order?: number | null;

@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type FinancialPaymentDetail = IEntity & {
     accountNumberMasked?: string | null;
+    attributeValues?: Record<string, unknown>;
     billingLocationId?: number | null;
     creditCardTypeValueId?: number | null;
     currencyTypeValueId?: number | null;

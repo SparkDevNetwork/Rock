@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Document = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     documentTypeId?: number;
     entityId?: number;

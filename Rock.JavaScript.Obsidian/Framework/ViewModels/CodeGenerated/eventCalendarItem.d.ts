@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EventCalendarItem = IEntity & {
+    attributeValues?: Record<string, unknown>;
     eventCalendarId?: number;
     eventItemId?: number;
     createdDateTime?: string | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type GroupMemberScheduleTemplate = IEntity & {
+    attributeValues?: Record<string, unknown>;
     groupTypeId?: number | null;
     name?: string | null;
     scheduleId?: number;

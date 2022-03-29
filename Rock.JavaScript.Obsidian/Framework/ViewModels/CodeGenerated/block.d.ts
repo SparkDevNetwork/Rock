@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type Block = IEntity & {
     additionalSettings?: string | null;
+    attributeValues?: Record<string, unknown>;
     blockTypeId?: number;
     cssClass?: string | null;
     isSystem?: boolean;

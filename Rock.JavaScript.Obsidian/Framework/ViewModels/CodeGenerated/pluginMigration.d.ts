@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PluginMigration = IEntity & {
+    attributeValues?: Record<string, unknown>;
     migrationName?: string | null;
     migrationNumber?: number;
     pluginAssemblyName?: string | null;

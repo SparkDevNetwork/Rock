@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FinancialScheduledTransaction = IEntity & {
+    attributeValues?: Record<string, unknown>;
     authorizedPersonAliasId?: number;
     cardReminderDate?: string | null;
     endDate?: string | null;

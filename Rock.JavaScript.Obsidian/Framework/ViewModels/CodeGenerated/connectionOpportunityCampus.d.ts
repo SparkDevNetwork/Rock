@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionOpportunityCampus = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusId?: number;
     connectionOpportunityId?: number;
     defaultConnectorPersonAliasId?: number | null;

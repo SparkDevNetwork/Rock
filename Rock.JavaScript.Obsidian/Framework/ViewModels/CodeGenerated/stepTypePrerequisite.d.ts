@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StepTypePrerequisite = IEntity & {
+    attributeValues?: Record<string, unknown>;
     order?: number;
     prerequisiteStepTypeId?: number;
     stepTypeId?: number;

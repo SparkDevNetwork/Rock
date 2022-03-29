@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type NoteWatch = IEntity & {
     allowOverride?: boolean;
+    attributeValues?: Record<string, unknown>;
     entityId?: number | null;
     entityTypeId?: number | null;
     isWatching?: boolean;

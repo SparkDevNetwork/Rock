@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type MediaFolder = IEntity & {
+    attributeValues?: Record<string, unknown>;
     contentChannelAttributeId?: number | null;
     contentChannelId?: number | null;
     contentChannelItemStatus?: number | null;

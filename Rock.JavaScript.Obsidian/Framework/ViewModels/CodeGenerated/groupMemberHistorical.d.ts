@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type GroupMemberHistorical = IEntity & {
     archivedByPersonAliasId?: number | null;
     archivedDateTime?: string | null;
+    attributeValues?: Record<string, unknown>;
     currentRowIndicator?: boolean;
     effectiveDateTime?: string;
     expireDateTime?: string;

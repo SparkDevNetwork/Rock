@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type RegistrationTemplateFee = IEntity & {
     allowMultiple?: boolean;
+    attributeValues?: Record<string, unknown>;
     discountApplies?: boolean;
     feeType?: number;
     hideWhenNoneRemaining?: boolean;

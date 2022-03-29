@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EventItemOccurrence = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     contactEmail?: string | null;
     contactPersonAliasId?: number | null;

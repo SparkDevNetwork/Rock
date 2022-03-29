@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionStatus = IEntity & {
+    attributeValues?: Record<string, unknown>;
     autoInactivateState?: boolean;
     connectionTypeId?: number | null;
     description?: string | null;

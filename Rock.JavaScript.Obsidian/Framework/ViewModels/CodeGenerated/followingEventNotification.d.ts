@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FollowingEventNotification = IEntity & {
+    attributeValues?: Record<string, unknown>;
     entityId?: number;
     followingEventTypeId?: number;
     lastNotified?: string;

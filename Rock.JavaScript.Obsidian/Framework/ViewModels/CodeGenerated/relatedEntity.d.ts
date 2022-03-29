@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type RelatedEntity = IEntity & {
     additionalSettingsJson?: string | null;
+    attributeValues?: Record<string, unknown>;
     isSystem?: boolean;
     note?: string | null;
     order?: number;

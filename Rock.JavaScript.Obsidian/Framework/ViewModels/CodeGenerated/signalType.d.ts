@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type SignalType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     name?: string | null;
     order?: number;

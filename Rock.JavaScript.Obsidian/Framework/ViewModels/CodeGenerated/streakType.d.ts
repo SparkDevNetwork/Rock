@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StreakType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     enableAttendance?: boolean;
     firstDayOfWeek?: number | null;

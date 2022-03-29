@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type EntitySetItem = IEntity & {
     additionalMergeValuesJson?: string | null;
+    attributeValues?: Record<string, unknown>;
     entityId?: number;
     entitySetId?: number;
     order?: number;

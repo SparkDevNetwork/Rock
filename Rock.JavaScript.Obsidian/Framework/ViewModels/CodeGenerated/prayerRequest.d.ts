@@ -28,6 +28,7 @@ export type PrayerRequest = IEntity & {
     answer?: string | null;
     approvedByPersonAliasId?: number | null;
     approvedOnDateTime?: string | null;
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     categoryId?: number | null;
     email?: string | null;

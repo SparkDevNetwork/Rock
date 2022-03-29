@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type SignatureDocumentTemplate = IEntity & {
+    attributeValues?: Record<string, unknown>;
     binaryFileTypeId?: number | null;
     completionSystemCommunicationId?: number | null;
     description?: string | null;

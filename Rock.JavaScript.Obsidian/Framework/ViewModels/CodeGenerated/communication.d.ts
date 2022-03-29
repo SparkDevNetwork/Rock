@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type Communication = IEntity & {
     additionalMergeFieldsJson?: string | null;
+    attributeValues?: Record<string, unknown>;
     bCCEmails?: string | null;
     cCEmails?: string | null;
     communicationTemplateId?: number | null;

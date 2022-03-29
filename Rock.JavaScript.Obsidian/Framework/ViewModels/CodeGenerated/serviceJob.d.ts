@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type ServiceJob = IEntity & {
     assembly?: string | null;
+    attributeValues?: Record<string, unknown>;
     class?: string | null;
     cronExpression?: string | null;
     description?: string | null;

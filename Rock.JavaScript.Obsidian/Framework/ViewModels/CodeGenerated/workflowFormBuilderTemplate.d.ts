@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type WorkflowFormBuilderTemplate = IEntity & {
     allowPersonEntry?: boolean;
+    attributeValues?: Record<string, unknown>;
     completionSettingsJson?: string | null;
     confirmationEmailSettingsJson?: string | null;
     description?: string | null;

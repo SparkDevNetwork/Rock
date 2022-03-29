@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EventItemOccurrenceGroupMap = IEntity & {
+    attributeValues?: Record<string, unknown>;
     eventItemOccurrenceId?: number | null;
     groupId?: number | null;
     publicName?: string | null;

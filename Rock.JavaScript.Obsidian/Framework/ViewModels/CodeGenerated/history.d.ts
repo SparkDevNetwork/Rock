@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type History = IEntity & {
+    attributeValues?: Record<string, unknown>;
     caption?: string | null;
     categoryId?: number;
     changeType?: string | null;

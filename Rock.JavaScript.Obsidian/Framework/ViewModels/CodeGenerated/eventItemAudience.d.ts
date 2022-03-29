@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EventItemAudience = IEntity & {
+    attributeValues?: Record<string, unknown>;
     definedValueId?: number;
     eventItemId?: number;
     createdDateTime?: string | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type DataView = IEntity & {
+    attributeValues?: Record<string, unknown>;
     categoryId?: number | null;
     dataViewFilterId?: number | null;
     description?: string | null;

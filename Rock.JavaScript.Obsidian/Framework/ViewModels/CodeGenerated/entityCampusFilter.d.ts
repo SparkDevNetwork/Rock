@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EntityCampusFilter = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusId?: number;
     entityId?: number;
     entityTypeId?: number;
