@@ -55,7 +55,7 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                        <asp:Literal runat="server" ID="lKPIHtml" />
+                        <asp:Literal ID="lKPIHtml" runat="server" />
                     </div>
                 </div>
 

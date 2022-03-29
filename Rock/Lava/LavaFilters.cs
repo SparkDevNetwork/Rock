@@ -1999,7 +1999,7 @@ namespace Rock.Lava
                 {
                     // Get the value
                     string theValue = globalAttributeCache.GetValue( attributeKey );
-                    if ( theValue.HasMergeFields() )
+                    if ( theValue.IsLavaTemplate() )
                     {
                         // Global attributes may reference other global attributes, so try to resolve this value again
                         var mergeFields = context.GetMergeFields();
@@ -2030,7 +2030,7 @@ namespace Rock.Lava
             else if ( ( input is string ) && input.ToString().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
             {
                 string theValue = Rock.Web.SystemSettings.GetValue( attributeKey );
-                if ( theValue.HasMergeFields() )
+                if ( theValue.IsLavaTemplate() )
                 {
                     // SystemSetting attributes may reference other global attributes, so try to resolve this value again
                     var mergeFields = context.GetMergeFields();
