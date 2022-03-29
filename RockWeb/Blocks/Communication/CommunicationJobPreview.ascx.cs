@@ -1,22 +1,7 @@
-﻿// <copyright>
-// Copyright by the Spark Development Network
-//
-// Licensed under the Rock Community License (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.rockrms.com/license
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -73,26 +58,16 @@ namespace RockWeb.Blocks.Communication
 
     public partial class CommunicationJobPreview : RockBlock
     {
-        #region Variables
+        #region Fields
 
-        private static class Variables
+        internal bool HasSendDate { get; set; }
+        internal bool HasSystemCommunication = false;
+        internal bool HasTargetPerson = false;
+        #endregion
+
+        #region Page Constants
+        private static class PageConstants
         {
-            public static SystemCommunication SystemCommunicationRecord { get; set; }
-
-            public static RockEmailMessage RockEmailMessage { get; set; }
-
-            public const string SystemCommunicationSourceReplacementKey = "[SOURCE_REPLACEMENT]";
-
-            public static bool HasSystemCommunication => SystemCommunicationRecord != null;
-
-            public static Person TargetPerson { get; set; }
-
-            public static bool HasTargetPerson => TargetPerson != null;
-
-            public static bool HasSendDate { get; set; }
-
-            public static ListItem SelectedDate { get; set; }
-
             public const string LavaDebugCommand = "{{ 'Lava' | Debug }}";
 
             public const string EmailContainerHtml = @"
@@ -114,15 +89,12 @@ namespace RockWeb.Blocks.Communication
                                         </div>
                                     </div>
                                 </div>";
+            public const string SystemCommunicationSourceReplacementKey = "[SOURCE_REPLACEMENT]";
         }
-
-        #endregion Variables
+        #endregion
 
         #region Page Parameter Keys
 
-        /// <summary>
-        /// Keys to use for Page Parameters
-        /// </summary>
         private static class PageParameterKey
         {
             public const string SystemCommunicationId = "SystemCommunicationId";
@@ -155,23 +127,23 @@ namespace RockWeb.Blocks.Communication
 
         #endregion Merge Field Keys
 
-        #region Page Events
+        #region ViewState Keys
 
+        private static class ViewStateKey
+        {
+            public const string SystemCommunicationGuid = "SystemCommunicationGuid";
+            public const string TargetPersonId = "TargetPersonId";
+            public const string SelectedDate = "SelectedDate";
+        }
+
+        #endregion ViewState Keys
+
+        #region Page Events
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
-            var ddlMessageDateJs = @"$(document).on('change','#ddlMessageDate',function (e) {
-                    let thisIndex = $('#ddlMessageDate').prop('selectedIndex');
-                    if ( this.value.startsWith('Separator') )
-                    {
-                        $('#ddlMessageDate').prop('selectedIndex', thisIndex + 1 );
-                    }
-                });";
-
-            Page.ClientScript.RegisterStartupScript( Page.GetType(), "ddlMessageDate", ddlMessageDateJs, true );
-
-            LoadSystemCommunication();
+            BuildUI();
         }
 
         #endregion Page Events
@@ -183,10 +155,14 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected void lbUpdate_Click( object sender, EventArgs e )
         {
-            var mergeFields = ProcessTemplateMergeFields();
+            var mergeInfo = BuildSystemCommunication();
 
-            var source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
-            lContent.Text = Variables.EmailContainerHtml.Replace( Variables.SystemCommunicationSourceReplacementKey, source );
+            var source = mergeInfo.RockEmailMessageRecord.Message
+                .ResolveMergeFields( mergeInfo.MergeFields, null, EnabledLavaCommands )
+                .ConvertHtmlStylesToInlineAttributes()
+                .EncodeHtml();
+
+            lContent.Text = PageConstants.EmailContainerHtml.Replace( PageConstants.SystemCommunicationSourceReplacementKey, source );
         }
 
         /// <summary>
@@ -194,19 +170,10 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected void ddlMessageDate_SelectedIndexChanged( object sender, EventArgs e )
         {
-            if ( ddlMessageDate.SelectedItem.Value.StartsWith( "Separator" ) )
-            {
-                var selectedIndex = ddlMessageDate.SelectedIndex + 1;
-                if ( ddlMessageDate.Items.Count - 1 >= selectedIndex )
-                {
-                    ddlMessageDate.Items[selectedIndex].Selected = true;
-                    Variables.SelectedDate = ddlMessageDate.Items[selectedIndex];
-                }
-            }
-            else
-            {
-                Variables.SelectedDate = ddlMessageDate.SelectedItem;
-            }
+            ViewState[ViewStateKey.SelectedDate] = ddlMessageDate.SelectedIndex;
+            HasSendDate = ViewState[ViewStateKey.SelectedDate].ToIntSafe() > 0;
+
+            UpdateSendDateUrlParam();
         }
 
         /// <summary>
@@ -214,8 +181,13 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected void ppTargetPerson_SelectPerson( object sender, EventArgs e )
         {
-            var person = new PersonService( new RockContext() ).Get( ppTargetPerson.SelectedValue.Value );
-            Variables.TargetPerson = person;
+            var targetPersonValue = ppTargetPerson.SelectedValue.GetValueOrDefault( 0 );
+            if ( targetPersonValue > 0 )
+            {
+                ViewState[ViewStateKey.TargetPersonId] = targetPersonValue;
+            }
+
+            UpdateTargetPersonUrlParam( targetPersonValue );
         }
 
         /// <summary>
@@ -234,120 +206,125 @@ namespace RockWeb.Blocks.Communication
         protected void mdSendTest_SaveClick( object sender, EventArgs e )
         {
             string currentEmail = CurrentPerson.Email;
-            var rockContext = new RockContext();
-            try
+            using ( var rockContext = new RockContext() )
             {
-                if ( Variables.RockEmailMessage == null )
+                rockContext.WrapTransactionIf( () =>
                 {
-                    throw new Exception( $"A valid system communication was not selected." );
-                }
-
-                if ( Variables.RockEmailMessage.SystemCommunicationId.GetValueOrDefault( 0 ) == 0 )
-                {
-                    throw new Exception( $"The system communication specified is not valid." );
-                }
-
-                var currentPerson = new PersonService( rockContext ).Get( CurrentPerson.Id );
-
-                var mergeFields = ProcessTemplateMergeFields();
-
-                var fromName = Variables.SystemCommunicationRecord.FromName;
-                var fromEmail = Variables.SystemCommunicationRecord.From;
-
-                var emailMessage = new RockEmailMessage( Variables.SystemCommunicationRecord )
-                {
-                    AdditionalMergeFields = mergeFields.ToDictionary( k => k.Key, v => ( object ) v.Value ),
-                    CurrentPerson = currentPerson,
-                    FromName = fromName,
-                    FromEmail = fromEmail,
-                    AppRoot = ResolveRockUrl( "~/" ),
-                    ThemeRoot = ResolveRockUrl( "~~/" ),
-                    Message = Variables.RockEmailMessage.Message = Variables.RockEmailMessage.Message.Replace( Variables.LavaDebugCommand, string.Empty )
-                };
-
-                // TODO:
-                // Look at the CommunicationEntryWizard for how this is handled there.
-                // Some other considerations such as history removal, etc need to be handled:
-                // See https://github.com/SparkDevNetwork/Rock/blob/5531816734f398a0c8de20f98c51168b948aae9a/RockWeb/Blocks/Communication/CommunicationEntryWizard.ascx.cs#L2047
-                currentPerson.Email = ebSendTest.Text;
-                rockContext.SaveChanges();
-
-                var recipient = new RockEmailMessageRecipient( currentPerson, mergeFields );
-                var sendErrorMessages = new List<string>();
-                emailMessage.AddRecipient( recipient );
-
-                emailMessage.Send( out sendErrorMessages );
-
-                if ( sendErrorMessages.Count == 0 )
-                {
-                    nbSendTest.Text = $"Email submitted to <i>{recipient.EmailAddress}</i>";
-                    nbSendTest.NotificationBoxType = NotificationBoxType.Info;
-                    nbSendTest.Visible = true;
-                }
-                else
-                {
-                    var errorString = $"<ul>[ERRORS]</ul>";
-                    var sbError = new StringBuilder();
-
-                    foreach ( var error in sendErrorMessages )
+                    try
                     {
-                        sbError.AppendLine( $"<li>{error}</li>" );
+                        var mergeInfo = BuildSystemCommunication();
+
+                        var rockEmailMessage = mergeInfo.RockEmailMessageRecord;
+
+                        if ( rockEmailMessage == null )
+                        {
+                            throw new Exception( $"A valid system communication was not selected." );
+                        }
+
+                        if ( rockEmailMessage.SystemCommunicationId.GetValueOrDefault( 0 ) == 0 )
+                        {
+                            throw new Exception( $"The system communication specified is not valid." );
+                        }
+
+                        var emailPerson = new PersonService( rockContext ).Get( CurrentPerson.Id );
+
+                        // Remove the lava debug command if it is specified in the message template.
+                        var message = rockEmailMessage.Message.Replace( PageConstants.LavaDebugCommand, string.Empty );
+
+                        rockEmailMessage.AdditionalMergeFields = mergeInfo.MergeFields.ToDictionary( k => k.Key, v => ( object ) v.Value );
+                        rockEmailMessage.CurrentPerson = emailPerson;
+                        rockEmailMessage.Message = message;
+
+                        var sendErrorMessages = new List<string>();
+
+                        // Set person email to the email specified in the dialog
+                        emailPerson.Email = ebSendTest.Text;
+                        rockContext.SaveChanges();
+
+                        var recipient = new RockEmailMessageRecipient( emailPerson, mergeInfo.MergeFields );
+                        rockEmailMessage.AddRecipient( recipient );
+                        rockEmailMessage.Send( out sendErrorMessages );
+
+                        if ( sendErrorMessages.Count == 0 )
+                        {
+                            nbSendTest.Text = $"Email submitted to <i>{recipient.EmailAddress}</i>";
+                            nbSendTest.NotificationBoxType = NotificationBoxType.Info;
+                            nbSendTest.Visible = true;
+                        }
+                        else
+                        {
+                            var errorString = $"<ul>[ERRORS]</ul>";
+                            var sbError = new StringBuilder();
+
+                            foreach ( var error in sendErrorMessages )
+                            {
+                                sbError.AppendLine( $"<li>{error}</li>" );
+                            }
+
+                            errorString = errorString.Replace( "[ERRORS]", sbError.ToString() );
+
+                            nbSendTest.Text = errorString;
+                            nbSendTest.NotificationBoxType = NotificationBoxType.Danger;
+                            nbSendTest.Visible = true;
+                        }
+
+                        // Restore email to original email address
+                        emailPerson.Email = currentEmail;
+                        rockContext.SaveChanges();
+                    }
+                    catch ( Exception ex )
+                    {
+                        nbSendTest.Text = ex.Message;
+                        nbSendTest.NotificationBoxType = NotificationBoxType.Danger;
+                        nbSendTest.Visible = true;
+                        return false;
                     }
 
-                    errorString = errorString.Replace( "[ERRORS]", sbError.ToString() );
+                    return true;
 
-                    nbSendTest.Text = errorString;
-                    nbSendTest.NotificationBoxType = NotificationBoxType.Danger;
-                    nbSendTest.Visible = true;
-                }
-            }
-            catch ( Exception ex )
-            {
-                nbSendTest.Text = ex.Message;
-                nbSendTest.NotificationBoxType = NotificationBoxType.Danger;
-                nbSendTest.Visible = true;
-            }
-            finally
-            {
-                var person = new PersonService( rockContext ).Get( CurrentPerson.Id );
-                person.Email = currentEmail;
-                rockContext.SaveChanges();
+                } ); // End transaction
             }
         }
 
-        private Dictionary<string, object> ProcessTemplateMergeFields()
+        private SystemCommunicationMergeInfo BuildSystemCommunication()
         {
-            var mergeFields = Variables.SystemCommunicationRecord.LavaFields.ToDictionary( k => k.Key, v => ( object ) v.Value );
+            var systemCommunication = GetSystemCommunication();
+            var rockEmailMessage = GetRockEmailMessage();
 
-            if ( Variables.HasSendDate && Variables.SelectedDate != null )
+            var targetPerson = GetTargetPerson();
+            var selectedDate = GetSelectedDate();
+
+            var mergeFields = systemCommunication.LavaFields
+                .ToDictionary( k => k.Key, v => ( object ) v.Value );
+
+            if ( HasSendDate && selectedDate != null )
             {
                 if ( !mergeFields.ContainsKey( MergeFieldKey.SendDateTime ) )
                 {
-                    mergeFields.Add( MergeFieldKey.SendDateTime, Variables.SelectedDate.Text );
+                    mergeFields.Add( MergeFieldKey.SendDateTime, selectedDate.Text );
                 }
                 else
                 {
-                    mergeFields[MergeFieldKey.SendDateTime] = Variables.SelectedDate.Text;
+                    mergeFields[MergeFieldKey.SendDateTime] = selectedDate.Text;
                 }
             }
 
             var mergeFieldOptions = new Rock.Lava.CommonMergeFieldsOptions { GetCurrentPerson = true };
             var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, mergeFieldOptions );
 
-            mergeFields.AddOrReplace( MergeFieldKey.Person, Variables.TargetPerson );
+            mergeFields.AddOrReplace( MergeFieldKey.Person, targetPerson );
 
             mergeFields = mergeFields
                 .Concat( commonMergeFields.Where( kvp => !mergeFields.ContainsKey( kvp.Key ) ) )
                 .ToDictionary( k => k.Key, v => v.Value );
 
-            Variables.SystemCommunicationRecord.LavaFields = mergeFields.ToDictionary( k => k.Key, v => v.Value?.ToString() );
-
-            if ( Variables.RockEmailMessage.Message.Contains( Variables.LavaDebugCommand ) )
+            if ( rockEmailMessage.Message.Contains( PageConstants.LavaDebugCommand ) )
             {
                 lavaDebug.Visible = true;
                 lavaDebug.Text = mergeFields.lavaDebugInfo();
 
-                Variables.RockEmailMessage.Message = Variables.RockEmailMessage.Message.Replace( Variables.LavaDebugCommand, string.Empty );
+                // Remove Lava Debug from the message content before it getss sent
+                rockEmailMessage.Message = rockEmailMessage.Message.Replace( PageConstants.LavaDebugCommand, string.Empty );
             }
             else
             {
@@ -358,24 +335,42 @@ namespace RockWeb.Blocks.Communication
             // If certain fields are blank, then use the Global Attribute values to mimic the EmailTransportComponent.cs behavior.
             var globalAttributes = GlobalAttributesCache.Get();
 
-            if ( Variables.SystemCommunicationRecord.FromName.IsNullOrWhiteSpace() )
+            // Email - From Name
+            if ( systemCommunication.FromName.IsNullOrWhiteSpace() )
             {
-                Variables.SystemCommunicationRecord.FromName = globalAttributes.GetValue( "OrganizationName" );
+                systemCommunication.FromName = globalAttributes.GetValue( "OrganizationName" );
+            }
+            rockEmailMessage.FromName = ResolveText( systemCommunication.FromName, rockEmailMessage.CurrentPerson, rockEmailMessage.EnabledLavaCommands, mergeFields );
+
+            // Email - From Address
+            if ( systemCommunication.From.IsNullOrWhiteSpace() )
+            {
+                systemCommunication.From = globalAttributes.GetValue( "OrganizationEmail" );
+            }
+            rockEmailMessage.FromEmail = ResolveText( systemCommunication.From, rockEmailMessage.CurrentPerson, rockEmailMessage.EnabledLavaCommands, mergeFields )
+                .Left( 255 );
+
+            // Email - Subject - Max length - RFC 2822 is 998 characters 
+            rockEmailMessage.Subject = ResolveText( systemCommunication.Subject, rockEmailMessage.CurrentPerson, rockEmailMessage.EnabledLavaCommands, mergeFields )
+                .Left( 998 );
+
+            if ( rockEmailMessage.Subject.IsNotNullOrWhiteSpace() )
+            {
+                // Remove carriage returns and line feeds
+                systemCommunication.Subject = Regex.Replace( rockEmailMessage.Subject, @"(\r?\n?)",
+                    string.Empty );
             }
 
-            if ( Variables.SystemCommunicationRecord.From.IsNullOrWhiteSpace() )
-            {
-                Variables.SystemCommunicationRecord.From = globalAttributes.GetValue( "OrganizationEmail" );
-            }
+            systemCommunication.LavaFields = mergeFields.ToDictionary( k => k.Key, v => v.Value?.ToString() );
 
-            var emailMessage = Variables.RockEmailMessage;
-            Variables.RockEmailMessage.Subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, mergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot ).Left( 998 );
-            if ( Variables.RockEmailMessage.Subject.IsNotNullOrWhiteSpace() )
+            return new SystemCommunicationMergeInfo
             {
-                Variables.SystemCommunicationRecord.Subject = Regex.Replace( Variables.RockEmailMessage.Subject, @"(\r?\n?)", String.Empty );
-            }
-
-            return mergeFields;
+                MergeFields = mergeFields,
+                SystemCommunicationRecord = systemCommunication,
+                RockEmailMessageRecord = rockEmailMessage,
+                TargetPerson = targetPerson,
+                SelectedDate = selectedDate
+            };
         }
 
         #endregion Control Events
@@ -383,18 +378,18 @@ namespace RockWeb.Blocks.Communication
         #region Methods
 
         /// <summary>
-        /// Loads the system communication.
+        /// Builds the UI.
         /// </summary>
-        private void LoadSystemCommunication()
+        private void BuildUI()
         {
-            var systemCommunicationPreviewInfo = SetSystemCommunication();
+            var previewInfo = SetSystemCommunication();
 
-            nbMessage.Visible = !Variables.HasSystemCommunication;
+            nbMessage.Visible = !HasSystemCommunication;
 
-            if ( !Variables.HasSystemCommunication )
+            if ( !HasSystemCommunication )
             {
                 nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                var communicationSource = systemCommunicationPreviewInfo.ParameterSettingType == SystemCommunicationPreviewInfo.ParameterSettingTypeEnum.BlockSetting ? "was not specified in the block setting or is invalid" : $"was not specified in the block setting or using the [{PageParameterKey.SystemCommunicationId}] url parameter";
+                var communicationSource = previewInfo.ParameterSettingType == SystemCommunicationPreviewInfo.ParameterSettingTypeEnum.BlockSetting ? "was not specified in the block setting or is invalid" : $"was not specified in the block setting or using the [{PageParameterKey.SystemCommunicationId}] url parameter";
                 nbMessage.Text = $"A communication template {communicationSource}.";
 
                 EnableControls( false );
@@ -403,23 +398,44 @@ namespace RockWeb.Blocks.Communication
             {
                 EnableControls();
 
-                SetTargetPerson();
+                // This allow the person to be changed if a TargetPersonId is specified in the query params
+                // otherwise it would always override it on the postback
+                if ( !Page.IsPostBack )
+                {
+                    SetTargetPerson();
+                }
 
-                CreateDateDropDown();
+                BuildDateDropDown();
 
-                var mergeFields = ProcessTemplateMergeFields();
+                var mergeInfo = BuildSystemCommunication();
+                var systemCommunication = mergeInfo.SystemCommunicationRecord;
+                var emailMessage = mergeInfo.RockEmailMessageRecord;
 
-                var publicationDate = Variables.SystemCommunicationRecord.From.IsNotNullOrWhiteSpace() ? Variables.SystemCommunicationRecord.From : CurrentPerson.Email;
+                var fromName = emailMessage.FromName.IsNotNullOrWhiteSpace() ? emailMessage.FromName : CurrentPerson.FullName;
+                var fromEmail = emailMessage.FromEmail.IsNotNullOrWhiteSpace() ? emailMessage.FromEmail : CurrentPerson.Email;
 
-                lTitle.Text = Variables.SystemCommunicationRecord.Title;
-                lNavTitle.Text = Variables.SystemCommunicationRecord.Title;
-                lFrom.Text = $"<span class='text-semibold'>{Variables.SystemCommunicationRecord.FromName}</span> <span class='text-muted'>&lt;{Variables.SystemCommunicationRecord.From}&gt;</span>";
-                lSubject.Text = $"<span class='text-semibold'>{Variables.SystemCommunicationRecord.Subject}</small>";
-                lDate.Text = $"<span class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</span>";
+                lTitle.Text = systemCommunication.Title;
+                lNavTitle.Text = systemCommunication.Title;
+                lFrom.Text = $"<span class='text-semibold'>{emailMessage.FromName}</span> <span class='text-muted'>&lt;{emailMessage.FromEmail}&gt;</span>";
+                lSubject.Text = $"<span class='text-semibold'>{emailMessage.Subject}</small>";
 
-                string source = Variables.RockEmailMessage.Message.ResolveMergeFields( mergeFields, null, EnabledLavaCommands ).ConvertHtmlStylesToInlineAttributes().EncodeHtml();
 
-                lContent.Text = Variables.EmailContainerHtml.Replace( Variables.SystemCommunicationSourceReplacementKey, source );
+                var messageDateTime = GetSendDateValue();
+                if ( messageDateTime > DateTime.MinValue )
+                {
+                    lDate.Text = $"<span class='text-semibold'>{messageDateTime:MMMM d, yyyy}</span>";
+                }
+                else
+                {
+                    lDate.Text = $"<span class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</span>";
+                }
+
+                string source = mergeInfo.RockEmailMessageRecord.Message
+                    .ResolveMergeFields( mergeInfo.MergeFields, null, EnabledLavaCommands )
+                    .ConvertHtmlStylesToInlineAttributes()
+                    .EncodeHtml();
+
+                lContent.Text = PageConstants.EmailContainerHtml.Replace( PageConstants.SystemCommunicationSourceReplacementKey, source );
             }
         }
 
@@ -438,17 +454,21 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Creates the date drop down.
+        /// Builds the date drop down.
         /// </summary>
-        private void CreateDateDropDown()
+        private void BuildDateDropDown()
         {
-            var dayOfWeeks = GetAttributeValues( AttributeKey.SendDaysOfTheWeek )?.Select( dow => ( DayOfWeek ) Enum.Parse( typeof( DayOfWeek ), dow ) );
+            var systemCommunication = GetSystemCommunication();
+
+            var dayOfWeeks = GetAttributeValues( AttributeKey.SendDaysOfTheWeek )?
+                .Select( dow => ( DayOfWeek ) Enum.Parse( typeof( DayOfWeek ), dow ) );
+
             var previousWeeks = GetAttributeValue( AttributeKey.PreviousWeeksToShow ).ToIntSafe();
             var futureWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).ToIntSafe();
 
-            Variables.HasSendDate = Variables.RockEmailMessage.Message.Contains( $"{MergeFieldKey.SendDateTime}" );
+            HasSendDate = systemCommunication.Body.Contains( $"{{ {MergeFieldKey.SendDateTime} }}" );
 
-            ddlMessageDate.Visible = Variables.HasSendDate && dayOfWeeks.Count() > 0;
+            ddlMessageDate.Visible = HasSendDate && dayOfWeeks.Count() > 0;
 
             if ( ddlMessageDate.Visible )
             {
@@ -458,18 +478,26 @@ namespace RockWeb.Blocks.Communication
                 {
                     var startDate = RockDateTime.Now.AddDays( -( previousWeeks * 7 ) );
                     var endDate = RockDateTime.Now.AddDays( futureWeeks * 7 );
+                    int previousMonth = 0;
 
                     for ( var dt = startDate; dt <= endDate; dt = dt.AddDays( 1 ) )
                     {
                         if ( dayOfWeeks.Contains( dt.DayOfWeek ) )
                         {
-                            ddlMessageDate.Items.Add( new ListItem { Text = dt.ToString( "MMMM d, yyyy" ), Value = $"{dt:MMddyyyy}" } );
+                            ddlMessageDate.Items.Add( new ListItem
+                            {
+                                Text = dt.ToString( "MMMM d, yyyy" ),
+                                Value = $"{dt:MMddyyyy}"
+                            } );
+
+                            previousMonth = dt.Month;
                         }
                     }
 
                     ddlMessageDate.SelectedIndex = 0;
 
-                    // Set the date from the querystring param
+                    // Set the date from the query string param
+                    var inputDate = DateTime.Now;
                     var publicationDate = PageParameter( PageParameterKey.PublicationDate ).AsDateTime();
                     if ( publicationDate.HasValue )
                     {
@@ -479,50 +507,48 @@ namespace RockWeb.Blocks.Communication
                         {
                             ddlMessageDate.SelectedValue = incomingDateItem.Value;
                         }
-                        else
+
+                        inputDate = publicationDate.Value;
+                    }
+
+
+                    // Find the closest date
+                    var allDates = new List<DateTime>();
+
+                    foreach ( ListItem dateItem in ddlMessageDate.Items )
+                    {
+                        DateTime dateItemValue = DateTime.MinValue;
+
+                        if ( DateTime.TryParse( dateItem.Text, out dateItemValue ) )
                         {
-                            // Find the closest date
-                            var allDates = new List<DateTime>();
-
-                            foreach ( ListItem dateItem in ddlMessageDate.Items )
-                            {
-                                DateTime dateItemValue = DateTime.MinValue;
-
-                                if ( DateTime.TryParse( dateItem.Text, out dateItemValue ) )
-                                {
-                                    allDates.Add( dateItemValue );
-                                }
-                            }
-
-                            if ( allDates != null )
-                            {
-                                allDates = allDates.OrderBy( d => d ).ToList();
-
-                                var inputDate = publicationDate.Value;
-
-                                var closestDate = inputDate >= allDates.Last()
-                                    ? allDates.Last()
-                                    : inputDate <= allDates.First()
-                                        ? allDates.First()
-                                        : allDates.First( d => d >= inputDate );
-
-                                ddlMessageDate.SelectedValue = ddlMessageDate.Items.FindByValue( closestDate.ToString( "MMddyyyy" ) ).Value;
-                            }
-                            else
-                            {
-                                ddlMessageDate.SelectedIndex = 0;
-                            }
+                            allDates.Add( dateItemValue );
                         }
                     }
 
-                    Variables.SelectedDate = ddlMessageDate.SelectedItem;
+                    if ( allDates != null )
+                    {
+                        allDates = allDates.OrderBy( d => d ).ToList();
+
+                        var closestDate = inputDate >= allDates.Last()
+                            ? allDates.Last()
+                            : inputDate <= allDates.First()
+                                ? allDates.First()
+                                : allDates.First( d => d.ToDateKey() >= inputDate.ToDateKey() );
+
+                        ddlMessageDate.SelectedValue = ddlMessageDate.Items.FindByValue( closestDate.ToString( "MMddyyyy" ) ).Value;
+                    }
+                    else
+                    {
+                        ddlMessageDate.SelectedIndex = 0;
+                    }
+
+                    ViewState[ViewStateKey.SelectedDate] = ddlMessageDate.SelectedIndex;
                 }
             }
             else
             {
                 ddlMessageDate.Required = false;
-                var rockNow = RockDateTime.Now;
-                Variables.SelectedDate = new ListItem { Text = rockNow.ToString( "MMMM d, yyyy" ), Value = rockNow.Ticks.ToString() };
+                ViewState[ViewStateKey.SelectedDate] = -1;
             }
         }
 
@@ -534,13 +560,12 @@ namespace RockWeb.Blocks.Communication
         {
             var previewInfo = new SystemCommunicationPreviewInfo();
 
-            var communicationService = new SystemCommunicationService( new RockContext() );
             var systemCommunicationGuid = GetAttributeValue( AttributeKey.SystemCommunication ).AsGuid();
 
             if ( !systemCommunicationGuid.IsEmpty() )
             {
                 previewInfo.ParameterSettingType = SystemCommunicationPreviewInfo.ParameterSettingTypeEnum.BlockSetting;
-                Variables.SystemCommunicationRecord = communicationService.Get( systemCommunicationGuid );
+                ViewState[ViewStateKey.SystemCommunicationGuid] = systemCommunicationGuid;
             }
             else
             {
@@ -548,53 +573,69 @@ namespace RockWeb.Blocks.Communication
                 var systemCommunicationId = PageParameter( PageParameterKey.SystemCommunicationId ).AsInteger();
                 if ( systemCommunicationId > 0 )
                 {
-                    Variables.SystemCommunicationRecord = communicationService.Get( systemCommunicationId );
+                    var systemCommunicationService = new SystemCommunicationService( new RockContext() );
+                    var systemCommunication = systemCommunicationService.Get( systemCommunicationId );
+                    if ( systemCommunication != null )
+                    {
+                        systemCommunicationGuid = systemCommunication.Guid;
+                        ViewState[ViewStateKey.SystemCommunicationGuid] = systemCommunicationGuid;
+                    }
                 }
             }
-
-            if ( Variables.SystemCommunicationRecord != null && Variables.SystemCommunicationRecord.Guid != Guid.Empty )
-            {
-                Variables.RockEmailMessage = new RockEmailMessage( Variables.SystemCommunicationRecord.Guid );
-            }
-
+            HasSystemCommunication = ViewState[ViewStateKey.SystemCommunicationGuid].ToStringSafe().Length > 0;
             return previewInfo;
         }
 
-        /// <summary>
-        /// Used to mimic the behavior of the EmailTransportComponent.
-        /// </summary>
-        /// <param name="content"></param>
-        /// <param name="person"></param>
-        /// <param name="enabledLavaCommands"></param>
-        /// <param name="mergeFields"></param>
-        /// <param name="appRoot"></param>
-        /// <param name="themeRoot"></param>
-        /// <returns></returns>
-        private string ResolveText( string content, Person person, string enabledLavaCommands, Dictionary<string, object> mergeFields, string appRoot = "", string themeRoot = "" )
+        private SystemCommunication GetSystemCommunication()
         {
-            if ( content.IsNullOrWhiteSpace() )
+            var systemCommunicationGuid = ViewState[ViewStateKey.SystemCommunicationGuid].ToStringSafe().AsGuid();
+            if ( systemCommunicationGuid != Guid.Empty )
             {
-                return content;
+                var communicationService = new SystemCommunicationService( new RockContext() );
+                return communicationService.Get( systemCommunicationGuid );
             }
 
-            string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
-            value = value.ReplaceWordChars();
+            return null;
+        }
 
-            if ( themeRoot.IsNotNullOrWhiteSpace() )
+        private RockEmailMessage GetRockEmailMessage()
+        {
+            var systemCommunicationGuid = ViewState[ViewStateKey.SystemCommunicationGuid].ToStringSafe().AsGuid();
+            if ( systemCommunicationGuid != Guid.Empty )
             {
-                value = value.Replace( "~~/", themeRoot );
+                var rockMessage = new RockEmailMessage( systemCommunicationGuid )
+                {
+                    AppRoot = ResolveRockUrl( "~/" ),
+                    ThemeRoot = ResolveRockUrl( "~~/" )
+                };
+
+                return rockMessage;
             }
 
-            if ( appRoot.IsNotNullOrWhiteSpace() )
+            return null;
+        }
+
+        private Person GetTargetPerson()
+        {
+            var personId = ViewState[ViewStateKey.TargetPersonId].ToIntSafe();
+            if ( personId > 0 )
             {
-                value = value.Replace( "~/", appRoot );
-                value = value.Replace( @" src=""/", @" src=""" + appRoot );
-                value = value.Replace( @" src='/", @" src='" + appRoot );
-                value = value.Replace( @" href=""/", @" href=""" + appRoot );
-                value = value.Replace( @" href='/", @" href='" + appRoot );
+                var personService = new PersonService( new RockContext() );
+                return personService.Get( personId );
             }
 
-            return value;
+            return null;
+        }
+
+        private ListItem GetSelectedDate()
+        {
+            var selectedIndex = ViewState[ViewStateKey.SelectedDate].ToIntSafe();
+            if ( selectedIndex > 0 )
+            {
+                return ddlMessageDate.Items[selectedIndex];
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -602,31 +643,111 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetTargetPerson()
         {
-            var targetPersonId = PageParameter( PageParameterKey.TargetPersonId ).AsInteger();
-            var personService = new PersonService( new RockContext() );
+            var targetPersonId = PageParameter( PageParameterKey.TargetPersonId ).ToIntSafe();
+
             if ( targetPersonId > 0 )
             {
-                Variables.TargetPerson = personService.Get( targetPersonId );
+                ViewState[ViewStateKey.TargetPersonId] = targetPersonId;
             }
             else
             {
-                if( ppTargetPerson.SelectedValue.GetValueOrDefault( 0 ) >0 )
+                var targetPersonValue = ppTargetPerson.SelectedValue.GetValueOrDefault( 0 );
+                if ( targetPersonValue > 0 )
                 {
-                    var person = new PersonService( new RockContext() ).Get( ppTargetPerson.SelectedValue.Value );
-                    Variables.TargetPerson = person;
+                    ViewState[ViewStateKey.TargetPersonId] = targetPersonValue;
                 }
                 else
                 {
-                    Variables.TargetPerson = CurrentPerson;
+                    ViewState[ViewStateKey.TargetPersonId] = CurrentPerson.Id;
                 }
             }
 
-            if ( Variables.HasTargetPerson )
+            HasTargetPerson = ViewState[ViewStateKey.TargetPersonId].ToIntSafe() > 0;
+
+            if ( HasTargetPerson )
             {
-                ppTargetPerson.SetValue( Variables.TargetPerson );
+                targetPersonId = ViewState[ViewStateKey.TargetPersonId].ToIntSafe();
+                var person = new PersonService( new RockContext() ).Get( targetPersonId );
+                ppTargetPerson.SetValue( person );
             }
         }
 
+        /// <summary>
+        /// Used to mimic the behavior of the EmailTransportComponent.
+        /// </summary>
+        private string ResolveText( string content, Person person, string enabledLavaCommands, Dictionary<string, object> mergeFields )
+        {
+            if ( content.IsNullOrWhiteSpace() )
+            {
+                return content;
+            }
+
+            string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
+
+            return value;
+        }
+
+        /// <summary>
+        /// Updates the target person URL parameter.
+        /// </summary>
+        /// <param name="targetPersonValue">The target person value.</param>
+        private void UpdateTargetPersonUrlParam( int targetPersonValue )
+        {
+            var pageParms = PageParameters();
+
+            if ( pageParms != null )
+            {
+                if ( pageParms.ContainsKey( PageParameterKey.TargetPersonId ) )
+                {
+                    pageParms[PageParameterKey.TargetPersonId] = targetPersonValue;
+                }
+            }
+
+            if ( pageParms != null )
+            {
+                NavigateToCurrentPage( pageParms.ToDictionary( kv => kv.Key, kv => kv.Value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Updates the send date URL parameter.
+        /// </summary>
+        private void UpdateSendDateUrlParam()
+        {
+            var pageParms = PageParameters();
+
+            if ( pageParms != null )
+            {
+                var messageDate = GetSendDateValue();
+                if ( messageDate > DateTime.MinValue )
+                {
+                    if ( pageParms.ContainsKey( PageParameterKey.PublicationDate ) )
+                    {
+                        pageParms[PageParameterKey.PublicationDate] = messageDate.ToString( "MM-dd-yyyy" );
+                    }
+                    else
+                    {
+                        pageParms.Add( PageParameterKey.PublicationDate, messageDate.ToString( "MM-dd-yyyy" ) );
+                    }
+                }
+
+                lDate.Text = $"<span class='text-semibold'>{messageDate:MMMM d, yyyy}</span>";
+            }
+
+            if ( pageParms != null )
+            {
+                NavigateToCurrentPage( pageParms.ToDictionary( kv => kv.Key, kv => kv.Value.ToString() ) );
+            }
+        }
+        private DateTime GetSendDateValue()
+        {
+            DateTime messageDate;
+            if ( !DateTime.TryParseExact( ddlMessageDate.SelectedValue, "MMddyyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out messageDate ) )
+            {
+                messageDate = DateTime.MinValue;
+            }
+            return messageDate;
+        }
         #endregion Methods
 
         #region Properties
@@ -642,6 +763,42 @@ namespace RockWeb.Blocks.Communication
         #endregion
 
         #region Classes
+
+        /// <summary>
+        /// Class SystemCommunicationMergeInfo.
+        /// </summary>
+        internal class SystemCommunicationMergeInfo
+        {
+            /// <summary>
+            /// Gets or sets the merge fields.
+            /// </summary>
+            /// <value>The merge fields.</value>
+            internal Dictionary<string, object> MergeFields { get; set; }
+
+            /// <summary>
+            /// Gets or sets the system communication record.
+            /// </summary>
+            /// <value>The system communication record.</value>
+            internal SystemCommunication SystemCommunicationRecord { get; set; }
+
+            /// <summary>
+            /// Gets or sets the rock email message record.
+            /// </summary>
+            /// <value>The rock email message record.</value>
+            internal RockEmailMessage RockEmailMessageRecord { get; set; }
+
+            /// <summary>
+            /// Gets or sets the target person.
+            /// </summary>
+            /// <value>The target person.</value>
+            internal Person TargetPerson { get; set; }
+
+            /// <summary>
+            /// Gets or sets the selected date.
+            /// </summary>
+            /// <value>The selected date.</value>
+            internal ListItem SelectedDate { get; set; }
+        }
 
         /// <summary>
         /// Class SystemCommunicationPreviewInfo.
