@@ -183,7 +183,7 @@
                             </div>
                             <asp:Repeater ID="rForms" runat="server" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
-                                    <div class="card card-sm group-hover">
+                                    <div class="card card-sm group-hover mb-3">
                                         <div class="card-body d-flex">
                                             <div class="flex-fill">
                                                 <h3 class="m-0"><%# Eval("Name") %></h3>
