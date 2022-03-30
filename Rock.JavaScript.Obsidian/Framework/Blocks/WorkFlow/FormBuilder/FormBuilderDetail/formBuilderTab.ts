@@ -47,10 +47,11 @@ import { FormError } from "../../../../Util/form";
  * drag a zone placeholder into the form to add a new zone.
  *
  * @param sections The (reactive) array of sections to update.
+ * @param defaultSectionType The default value to use for the new section type.
  *
  * @returns The IDragSourceOptions object to use for drag operations.
  */
-function getSectionDragSourceOptions(sections: FormSection[]): IDragSourceOptions {
+function getSectionDragSourceOptions(sections: FormSection[], defaultSectionType: string | null): IDragSourceOptions {
     return {
         id: newGuid(),
         copyElement: true,
@@ -63,7 +64,7 @@ function getSectionDragSourceOptions(sections: FormSection[]): IDragSourceOption
                     title: "",
                     description: "",
                     showHeadingSeparator: false,
-                    type: null,
+                    type: defaultSectionType,
                     fields: [],
                     visibilityRule: {
                         guid: newGuid(),
@@ -314,7 +315,7 @@ export default defineComponent({
         const personEntryAsideSettings = ref<FormPersonEntry>(props.modelValue.personEntry ?? {});
 
         // Generate all the drag options.
-        const sectionDragSourceOptions = getSectionDragSourceOptions(sections);
+        const sectionDragSourceOptions = getSectionDragSourceOptions(sections, sources.defaultSectionType ?? null);
         const sectionReorderDragSourceOptions = getSectionReorderDragSourceOptions(sections);
         const fieldDragSourceOptions = getFieldDragSourceOptions(sections, availableFieldTypes);
         const fieldReorderDragSourceOptions = getFieldReorderDragSourceOptions(sections);

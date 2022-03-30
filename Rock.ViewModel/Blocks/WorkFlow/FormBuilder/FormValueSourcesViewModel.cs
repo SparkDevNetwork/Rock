@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.ViewModel.NonEntities;
@@ -76,5 +77,11 @@ namespace Rock.ViewModel.Blocks.WorkFlow.FormBuilder
         /// The form templates that are available to pick from.
         /// </summary>
         public List<FormTemplateListItemViewModel> FormTemplateOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default type of the section to use when new sections
+        /// are added to the form.
+        /// </summary>
+        public Guid? DefaultSectionType { get; set; }
     }
 }

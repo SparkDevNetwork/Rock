@@ -122,6 +122,15 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
+            // Check if we have any values.
+            if ( string.IsNullOrWhiteSpace( addressValue.Street1 )
+                 && string.IsNullOrWhiteSpace( addressValue.Street2 )
+                 && string.IsNullOrWhiteSpace( addressValue.City )
+                 && string.IsNullOrWhiteSpace( addressValue.PostalCode ) )
+            {
+                return string.Empty;
+            }
+
             var globalAttributesCache = GlobalAttributesCache.Get();
 
             using ( var rockContext = new RockContext() )

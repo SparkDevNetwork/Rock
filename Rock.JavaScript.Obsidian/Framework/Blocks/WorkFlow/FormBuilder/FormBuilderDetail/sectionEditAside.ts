@@ -308,7 +308,8 @@ export default defineComponent({
 
             <DropDownList v-model="sectionType"
                 label="Type"
-                :options="sectionTypeOptions" />
+                :options="sectionTypeOptions"
+                :showBlankItem="false" />
         </Panel>
 
         <Panel title="Conditionals" v-model="conditionalPanelOpen" :hasCollapse="true">
