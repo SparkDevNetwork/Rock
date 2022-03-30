@@ -128,7 +128,7 @@ export default defineComponent({
             const classes = ["panel-heading"];
 
             if (props.hasCollapse) {
-                classes.push("clickable");
+                classes.push("cursor-pointer");
             }
 
             return classes;
@@ -154,7 +154,7 @@ export default defineComponent({
 
         /**
          * Event handler for when a key is pressed down inside the panel.
-         * 
+         *
          * @param ev The event that describes which key was pressed.
          */
         const onPanelKeyDown = (ev: KeyboardEvent): void => {

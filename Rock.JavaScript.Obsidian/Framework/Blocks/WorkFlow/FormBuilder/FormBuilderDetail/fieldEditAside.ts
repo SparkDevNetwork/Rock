@@ -430,12 +430,12 @@ export default defineComponent({
     template: `
 <div class="d-flex flex-column flex-grow-1 overflow-y-hidden">
     <div class="d-flex">
-        <div class="d-flex justify-content-center align-items-center text-white clickable" style="background-color: #484848; width: 40px;" @click="onBackClick">
+        <div class="d-flex justify-content-center align-items-center text-white cursor-pointer" style="background-color: #484848; width: 40px;" @click="onBackClick">
             <i class="fa fa-chevron-left"></i>
         </div>
 
-        <div class="p-2 aside-header flex-grow-1">
-            <span v-if="asideIconSvg" class="icon" v-html="asideIconSvg"></span>
+        <div class="p-2 aside-header d-flex align-items-center flex-grow-1">
+            <span v-if="asideIconSvg" class="inline-svg" v-html="asideIconSvg"></span>
             <span class="title">{{ fieldName }}</span>
         </div>
     </div>

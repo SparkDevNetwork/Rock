@@ -184,7 +184,7 @@ export default defineComponent({
 
             <div class="d-flex flex-wrap mt-1" v-drag-source="fieldDragOptions">
                 <div v-for="field in commonFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
-                    <span class="icon" v-html="field.svg"></span>
+                    <span class="inline-svg icon" v-html="field.svg"></span>
                     <div class="text">{{ field.text }}</div>
                 </div>
             </div>
@@ -196,7 +196,7 @@ export default defineComponent({
             <TransitionVerticalCollapse>
                 <div v-if="isAdditionalFieldsVisible" class="d-flex flex-wrap mt-1" v-drag-source="fieldDragOptions">
                     <div v-for="field in advancedFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
-                        <span class="icon" v-html="field.svg"></span>
+                        <span class="inline-svg icon" v-html="field.svg"></span>
                         <div class="text">{{ field.text }}</div>
                     </div>
                 </div>

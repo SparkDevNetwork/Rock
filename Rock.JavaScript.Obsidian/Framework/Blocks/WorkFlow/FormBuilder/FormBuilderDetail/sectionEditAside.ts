@@ -285,7 +285,7 @@ export default defineComponent({
     template: `
 <div class="d-flex flex-column overflow-y-hidden flex-grow-1">
     <div class="d-flex">
-        <div class="d-flex clickable" style="background-color: #484848; color: #fff; align-items: center; justify-content: center; width: 40px;" @click="onBackClick">
+        <div class="d-flex cursor-pointer" style="background-color: #484848; color: #fff; align-items: center; justify-content: center; width: 40px;" @click="onBackClick">
             <i class="fa fa-chevron-left"></i>
         </div>
 

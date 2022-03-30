@@ -50,7 +50,7 @@
                             </div>
                         </div>
                     </div>
-                    <hr />
+                    <hr class="section-header-hr" />
                 </div>
 
                 <div class="row">

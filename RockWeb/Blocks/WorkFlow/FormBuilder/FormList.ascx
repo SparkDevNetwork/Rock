@@ -199,8 +199,8 @@
 
                                                         </div>
                                                         <div>
-                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-square btn-link text-muted" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-square btn-link text-muted" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -215,7 +215,7 @@
                         </asp:Panel>
                         <asp:Panel ID="pnlAddForm" runat="server" Visible="false">
                             <div class="row">
-                                <div class="col-xs-12 col-md-6">
+                                <div class="col-xs-12 col-md-9 col-lg-8">
                                     <Rock:DataTextBox ID="tbFormName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" Help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." />
                                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" Help="An internal description of what the form will be used for." />
                                     <Rock:RockDropDownList ID="ddlTemplate" Label="Template" runat="server" Help="An optional template to use that provides pre-configured settings." />
@@ -244,7 +244,7 @@
                                 </div>
                             </fieldset>
 
-                            <div class="actions">
+                            <div class="form-actions">
                                 <asp:LinkButton ID="btnCategorySave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnCategorySave_Click" />
                                 <asp:LinkButton ID="btnCategoryCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                             </div>
