@@ -5,7 +5,6 @@
     max-width: 874px;
     margin: 16px auto;
 }
-
 .mobile-preview {
     max-width: 414px;
 }
@@ -29,7 +28,7 @@
                     <div class="col-md-3 filter-options">
                         <Rock:RockLiteral ID="lNavTitle" Label="System Communication" runat="server" />
 
-                        <Rock:RockDropDownList ID="ddlMessageDate" ClientIDMode="Static" runat="server" Label="Message Date"
+                        <Rock:RockDropDownList ID="ddlMessageDate" runat="server" Label="Message Date" AutoPostBack="true"
                             Required="true" DisplayRequiredIndicator="true" Help="Date to use when previewing the message." OnSelectedIndexChanged="ddlMessageDate_SelectedIndexChanged" />
 
                         <Rock:PersonPicker ID="ppTargetPerson" runat="server" Label="Target Person" Help="Person used to customize the email preview." EnableSelfSelection="true" OnSelectPerson="ppTargetPerson_SelectPerson" />
@@ -113,24 +112,21 @@
 <script type="text/javascript">
     function rescaleIframe() {
         var $emailPreviewIframe = $('.js-emailpreview-iframe');
-            $emailPreviewIframe.height('auto');
-
+        $emailPreviewIframe.height('auto');
         var emailPreviewIframe = $emailPreviewIframe[0];
         var newHeight = $(emailPreviewIframe.contentWindow.document).height();
         if ($(emailPreviewIframe).height() != newHeight) {
             $(emailPreviewIframe).height(newHeight);
         }
     }
-    $(function() {
+    $(function () {
         rescaleIframe();
     });
-
     function DesktopMode() {
         $("#messagePreview").removeClass("mobile-preview");
         $(".btn-group-view-control .btn").toggleClass("btn-default btn-info");
         rescaleIframe();
     };
-
     function MobileMode() {
         $("#messagePreview").addClass("mobile-preview");
         $(".btn-group-view-control .btn").toggleClass("btn-default btn-info");
