@@ -205,6 +205,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected void mdSendTest_SaveClick( object sender, EventArgs e )
         {
+            const bool DISABLE_PERSON_HISTORY = true;
             string currentEmail = CurrentPerson.Email;
             using ( var rockContext = new RockContext() )
             {
@@ -239,7 +240,7 @@ namespace RockWeb.Blocks.Communication
 
                         // Set person email to the email specified in the dialog
                         emailPerson.Email = ebSendTest.Text;
-                        rockContext.SaveChanges();
+                        rockContext.SaveChanges( disablePrePostProcessing: DISABLE_PERSON_HISTORY );
 
                         var recipient = new RockEmailMessageRecipient( emailPerson, mergeInfo.MergeFields );
                         rockEmailMessage.AddRecipient( recipient );
@@ -270,7 +271,7 @@ namespace RockWeb.Blocks.Communication
 
                         // Restore email to original email address
                         emailPerson.Email = currentEmail;
-                        rockContext.SaveChanges();
+                        rockContext.SaveChanges( disablePrePostProcessing: DISABLE_PERSON_HISTORY );
                     }
                     catch ( Exception ex )
                     {
