@@ -163,6 +163,8 @@ namespace RockWeb.Blocks.Communication
                 .EncodeHtml();
 
             lContent.Text = PageConstants.EmailContainerHtml.Replace( PageConstants.SystemCommunicationSourceReplacementKey, source );
+
+            UpdateSendDateUrlParam();
         }
 
         /// <summary>
@@ -187,7 +189,7 @@ namespace RockWeb.Blocks.Communication
                 ViewState[ViewStateKey.TargetPersonId] = targetPersonValue;
             }
 
-            UpdateTargetPersonUrlParam( targetPersonValue );
+            UpdateTargetPersonUrlParam();
         }
 
         /// <summary>
@@ -227,7 +229,7 @@ namespace RockWeb.Blocks.Communication
                             throw new Exception( $"The system communication specified is not valid." );
                         }
 
-                        var emailPerson = new PersonService( rockContext ).Get( CurrentPerson.Id );
+                        var emailPerson = GetTargetPerson( rockContext );
 
                         // Remove the lava debug command if it is specified in the message template.
                         var message = rockEmailMessage.Message.Replace( PageConstants.LavaDebugCommand, string.Empty );
@@ -293,21 +295,16 @@ namespace RockWeb.Blocks.Communication
             var rockEmailMessage = GetRockEmailMessage();
 
             var targetPerson = GetTargetPerson();
-            var selectedDate = GetSelectedDate();
 
             var mergeFields = systemCommunication.LavaFields
                 .ToDictionary( k => k.Key, v => ( object ) v.Value );
 
-            if ( HasSendDate && selectedDate != null )
+            DateTime? messageDate = null;
+
+            if ( HasSendDate )
             {
-                if ( !mergeFields.ContainsKey( MergeFieldKey.SendDateTime ) )
-                {
-                    mergeFields.Add( MergeFieldKey.SendDateTime, selectedDate.Text );
-                }
-                else
-                {
-                    mergeFields[MergeFieldKey.SendDateTime] = selectedDate.Text;
-                }
+                messageDate = GetSendDateValue();
+                mergeFields.AddOrReplace( MergeFieldKey.SendDateTime, $"{messageDate.Value:MMMM d, yyyy}" );
             }
 
             var mergeFieldOptions = new Rock.Lava.CommonMergeFieldsOptions { GetCurrentPerson = true };
@@ -368,9 +365,7 @@ namespace RockWeb.Blocks.Communication
             {
                 MergeFields = mergeFields,
                 SystemCommunicationRecord = systemCommunication,
-                RockEmailMessageRecord = rockEmailMessage,
-                TargetPerson = targetPerson,
-                SelectedDate = selectedDate
+                RockEmailMessageRecord = rockEmailMessage
             };
         }
 
@@ -399,12 +394,7 @@ namespace RockWeb.Blocks.Communication
             {
                 EnableControls();
 
-                // This allow the person to be changed if a TargetPersonId is specified in the query params
-                // otherwise it would always override it on the postback
-                if ( !Page.IsPostBack )
-                {
-                    SetTargetPerson();
-                }
+                SetTargetPerson();
 
                 BuildDateDropDown();
 
@@ -422,14 +412,8 @@ namespace RockWeb.Blocks.Communication
 
 
                 var messageDateTime = GetSendDateValue();
-                if ( messageDateTime > DateTime.MinValue )
-                {
-                    lDate.Text = $"<span class='text-semibold'>{messageDateTime:MMMM d, yyyy}</span>";
-                }
-                else
-                {
-                    lDate.Text = $"<span class='text-semibold'>{RockDateTime.Now:MMMM d, yyyy}</span>";
-                }
+
+                lDate.Text = $"<span class='text-semibold'>{messageDateTime:MMMM d, yyyy}</span>";
 
                 string source = mergeInfo.RockEmailMessageRecord.Message
                     .ResolveMergeFields( mergeInfo.MergeFields, null, EnabledLavaCommands )
@@ -500,6 +484,7 @@ namespace RockWeb.Blocks.Communication
                     // Set the date from the query string param
                     var inputDate = DateTime.Now;
                     var publicationDate = PageParameter( PageParameterKey.PublicationDate ).AsDateTime();
+
                     if ( publicationDate.HasValue )
                     {
                         var publicationDateValue = publicationDate.Value.ToString( "MMddyyyy" );
@@ -616,12 +601,12 @@ namespace RockWeb.Blocks.Communication
             return null;
         }
 
-        private Person GetTargetPerson()
+        private Person GetTargetPerson( RockContext rockContext = null )
         {
             var personId = ViewState[ViewStateKey.TargetPersonId].ToIntSafe();
             if ( personId > 0 )
             {
-                var personService = new PersonService( new RockContext() );
+                var personService = new PersonService( rockContext ?? new RockContext() );
                 return personService.Get( personId );
             }
 
@@ -692,61 +677,62 @@ namespace RockWeb.Blocks.Communication
         /// Updates the target person URL parameter.
         /// </summary>
         /// <param name="targetPersonValue">The target person value.</param>
-        private void UpdateTargetPersonUrlParam( int targetPersonValue )
+        private void UpdateTargetPersonUrlParam( bool redirect = true )
         {
             var pageParms = PageParameters();
 
             if ( pageParms != null )
             {
-                if ( pageParms.ContainsKey( PageParameterKey.TargetPersonId ) )
-                {
-                    pageParms[PageParameterKey.TargetPersonId] = targetPersonValue;
-                }
-            }
+                pageParms.AddOrReplace( PageParameterKey.TargetPersonId, ViewState[ViewStateKey.TargetPersonId] );
 
-            if ( pageParms != null )
-            {
-                NavigateToCurrentPage( pageParms.ToDictionary( kv => kv.Key, kv => kv.Value.ToString() ) );
+                if ( redirect )
+                {
+                    NavigateToCurrentPage( pageParms.ToDictionary( kv => kv.Key, kv => kv.Value.ToString() ) );
+                }
             }
         }
 
         /// <summary>
         /// Updates the send date URL parameter.
         /// </summary>
-        private void UpdateSendDateUrlParam()
+        private void UpdateSendDateUrlParam(bool redirect=true)
         {
             var pageParms = PageParameters();
 
             if ( pageParms != null )
             {
                 var messageDate = GetSendDateValue();
-                if ( messageDate > DateTime.MinValue )
-                {
-                    if ( pageParms.ContainsKey( PageParameterKey.PublicationDate ) )
-                    {
-                        pageParms[PageParameterKey.PublicationDate] = messageDate.ToString( "MM-dd-yyyy" );
-                    }
-                    else
-                    {
-                        pageParms.Add( PageParameterKey.PublicationDate, messageDate.ToString( "MM-dd-yyyy" ) );
-                    }
-                }
+
+                pageParms.AddOrReplace( PageParameterKey.PublicationDate, messageDate.ToString( "MM-dd-yyyy" ) );
 
                 lDate.Text = $"<span class='text-semibold'>{messageDate:MMMM d, yyyy}</span>";
-            }
 
-            if ( pageParms != null )
-            {
-                NavigateToCurrentPage( pageParms.ToDictionary( kv => kv.Key, kv => kv.Value.ToString() ) );
+                if ( redirect )
+                {
+                    NavigateToCurrentPage( pageParms.ToDictionary( kv => kv.Key, kv => kv.Value.ToString() ) );
+                }
             }
         }
         private DateTime GetSendDateValue()
         {
+            var selectedDate = GetSelectedDate();
+
             DateTime messageDate;
-            if ( !DateTime.TryParseExact( ddlMessageDate.SelectedValue, "MMddyyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out messageDate ) )
+            if ( !DateTime.TryParseExact( selectedDate?.Value, "MMddyyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out messageDate ) )
             {
-                messageDate = DateTime.MinValue;
+                messageDate = RockDateTime.Now;
             }
+            else
+            {
+                return messageDate;
+            }
+
+            var publicationDate = PageParameter( PageParameterKey.PublicationDate ).AsDateTime();
+            if ( publicationDate.HasValue )
+            {
+                messageDate = publicationDate.Value;
+            }
+
             return messageDate;
         }
         #endregion Methods
@@ -787,18 +773,6 @@ namespace RockWeb.Blocks.Communication
             /// </summary>
             /// <value>The rock email message record.</value>
             internal RockEmailMessage RockEmailMessageRecord { get; set; }
-
-            /// <summary>
-            /// Gets or sets the target person.
-            /// </summary>
-            /// <value>The target person.</value>
-            internal Person TargetPerson { get; set; }
-
-            /// <summary>
-            /// Gets or sets the selected date.
-            /// </summary>
-            /// <value>The selected date.</value>
-            internal ListItem SelectedDate { get; set; }
         }
 
         /// <summary>
