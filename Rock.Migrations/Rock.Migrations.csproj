@@ -93,6 +93,10 @@
     <Compile Include="Migrations\202203301138169_UpdateEmailLogoAttributeDescription.Designer.cs">
       <DependentUpon>202203301138169_UpdateEmailLogoAttributeDescription.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202203302054201_UpdateBackgroundCheckWorkflowActions.cs" />
+    <Compile Include="Migrations\202203302054201_UpdateBackgroundCheckWorkflowActions.Designer.cs">
+      <DependentUpon>202203302054201_UpdateBackgroundCheckWorkflowActions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1054,6 +1058,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202203301138169_UpdateEmailLogoAttributeDescription.resx">
       <DependentUpon>202203301138169_UpdateEmailLogoAttributeDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203302054201_UpdateBackgroundCheckWorkflowActions.resx">
+      <DependentUpon>202203302054201_UpdateBackgroundCheckWorkflowActions.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
