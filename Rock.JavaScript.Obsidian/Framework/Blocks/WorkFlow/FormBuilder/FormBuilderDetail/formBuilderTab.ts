@@ -47,10 +47,11 @@ import { FormError } from "../../../../Util/form";
  * drag a zone placeholder into the form to add a new zone.
  *
  * @param sections The (reactive) array of sections to update.
+ * @param defaultSectionType The default value to use for the new section type.
  *
  * @returns The IDragSourceOptions object to use for drag operations.
  */
-function getSectionDragSourceOptions(sections: FormSection[]): IDragSourceOptions {
+function getSectionDragSourceOptions(sections: FormSection[], defaultSectionType: string | null): IDragSourceOptions {
     return {
         id: newGuid(),
         copyElement: true,
@@ -63,7 +64,7 @@ function getSectionDragSourceOptions(sections: FormSection[]): IDragSourceOption
                     title: "",
                     description: "",
                     showHeadingSeparator: false,
-                    type: null,
+                    type: defaultSectionType,
                     fields: [],
                     visibilityRule: {
                         guid: newGuid(),
@@ -169,7 +170,7 @@ function getFieldReorderDragSourceOptions(sections: FormSection[]): IDragSourceO
     return {
         id: newGuid(),
         copyElement: false,
-        handleSelector: ".zone-actions > .zone-action-move",
+        handleSelector: ".zone-actions > .zone-action-move > .fa",
         dragOver(operation) {
             if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
                 operation.targetContainer.closest(".zone-section")?.classList.add("highlight");
@@ -208,7 +209,7 @@ function getSectionReorderDragSourceOptions(sections: FormSection[]): IDragSourc
     return {
         id: newGuid(),
         copyElement: false,
-        handleSelector: ".zone-section > .zone-actions > .zone-action-move",
+        handleSelector: ".zone-section > .zone-actions > .zone-action-move > .fa",
         dragDrop(operation) {
             if (operation.targetIndex !== undefined) {
                 const section = sections[operation.sourceIndex];
@@ -314,7 +315,7 @@ export default defineComponent({
         const personEntryAsideSettings = ref<FormPersonEntry>(props.modelValue.personEntry ?? {});
 
         // Generate all the drag options.
-        const sectionDragSourceOptions = getSectionDragSourceOptions(sections);
+        const sectionDragSourceOptions = getSectionDragSourceOptions(sections, sources.defaultSectionType ?? null);
         const sectionReorderDragSourceOptions = getSectionReorderDragSourceOptions(sections);
         const fieldDragSourceOptions = getFieldDragSourceOptions(sections, availableFieldTypes);
         const fieldReorderDragSourceOptions = getFieldReorderDragSourceOptions(sections);
@@ -848,42 +849,42 @@ export default defineComponent({
     },
 
     template: `
-<div ref="bodyElement" class="d-flex flex-grow-1 overflow-y-hidden">
-    <div class="d-flex flex-column flex-grow-1 flex-shrink-0 overflow-hidden" style="background-color: #f8f9fa; min-width: 320px; max-width: 480px;">
-        <GeneralAside v-if="showGeneralAside"
-            v-model="generalAsideSettings"
-            ref="generalAsideComponentInstance"
-            :isPersonEntryForced="isPersonEntryForced"
-            :fieldTypes="availableFieldTypes"
-            :sectionDragOptions="sectionDragSourceOptions"
-            :fieldDragOptions="fieldDragSourceOptions" />
+<div ref="bodyElement" class="form-builder-grow">
 
-        <FieldEditAside v-else-if="showFieldAside"
-            :modelValue="editField"
-            ref="fieldEditAsideComponentInstance"
-            :fieldTypes="availableFieldTypes"
-            :formFields="existingFields"
-            @update:modelValue="onFieldEditUpdate"
-            @close="onAsideClose"
-            @validationChanged="onFieldEditValidationChanged" />
+    <GeneralAside v-if="showGeneralAside"
+        v-model="generalAsideSettings"
+        ref="generalAsideComponentInstance"
+        :isPersonEntryForced="isPersonEntryForced"
+        :fieldTypes="availableFieldTypes"
+        :sectionDragOptions="sectionDragSourceOptions"
+        :fieldDragOptions="fieldDragSourceOptions" />
 
-        <SectionEditAside v-else-if="showSectionAside"
-            :modelValue="sectionAsideSettings"
-            ref="sectionEditAsideComponentInstance"
-            :formFields="existingFields"
-            @update:modelValue="onSectionEditUpdate"
-            @close="onAsideClose"
-            @validationChanged="onSectionValidationChanged" />
+    <FieldEditAside v-else-if="showFieldAside"
+        :modelValue="editField"
+        ref="fieldEditAsideComponentInstance"
+        :fieldTypes="availableFieldTypes"
+        :formFields="existingFields"
+        @update:modelValue="onFieldEditUpdate"
+        @close="onAsideClose"
+        @validationChanged="onFieldEditValidationChanged" />
 
-        <PersonEntryEditAside v-else-if="showPersonEntryAside"
-            :modelValue="personEntryAsideSettings"
-            ref="personEntryEditAsideComponentInstance"
-            @update:modelValue="onEditPersonEntryUpdate"
-            @close="onAsideClose"
-            @validationChanged="onPersonEntryValidationChanged" />
-    </div>
+    <SectionEditAside v-else-if="showSectionAside"
+        :modelValue="sectionAsideSettings"
+        ref="sectionEditAsideComponentInstance"
+        :formFields="existingFields"
+        @update:modelValue="onSectionEditUpdate"
+        @close="onAsideClose"
+        @validationChanged="onSectionValidationChanged" />
 
-    <div class="p-3 d-flex flex-column form-layout" style="flex: 3 1; overflow-y: auto;">
+    <PersonEntryEditAside v-else-if="showPersonEntryAside"
+        :modelValue="personEntryAsideSettings"
+        ref="personEntryEditAsideComponentInstance"
+        @update:modelValue="onEditPersonEntryUpdate"
+        @close="onAsideClose"
+        @validationChanged="onPersonEntryValidationChanged" />
+
+
+    <div class="form-layout">
         <FormContentZone v-if="templateFormHeaderContent" :modelValue="templateFormHeaderContent" placeholder="" iconCssClass="" />
 
         <FormContentZone :modelValue="formHeaderContent" :isActive="isFormHeaderActive" @configure="onConfigureFormHeader" placeholder="Form Header" />
@@ -894,7 +895,7 @@ export default defineComponent({
             </div>
         </ConfigurableZone>
 
-        <div class="d-flex flex-grow-1 flex-column" v-drag-target="sectionDragTargetId" v-drag-source="sectionReorderDragSourceOptions" v-drag-target:2="sectionReorderDragSourceOptions.id">
+        <div class="form-layout-body" v-drag-target="sectionDragTargetId" v-drag-source="sectionReorderDragSourceOptions" v-drag-target:2="sectionReorderDragSourceOptions.id">
             <SectionZone v-for="section in sections"
                 :key="section.guid"
                 v-model="section"

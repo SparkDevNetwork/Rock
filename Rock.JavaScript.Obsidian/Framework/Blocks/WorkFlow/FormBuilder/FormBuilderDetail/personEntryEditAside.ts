@@ -110,27 +110,29 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column flex-grow-1 overflow-y-hidden">
-    <div class="d-flex">
-        <div class="d-flex cursor-pointer" style="background-color: #484848; color: #fff; align-items: center; justify-content: center; width: 40px;" @click="onBackClick">
+<div class="form-sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-back" @click="onBackClick">
             <i class="fa fa-chevron-left"></i>
         </div>
 
-        <div class="p-2 aside-header flex-grow-1">
-            <i class="fa fa-user"></i>
-            <span class="title">Person Entry</span>
-        </div>
+        <span class="title">
+            <i class="fa fa-fw fa-user icon"></i>
+            Person Entry
+        </span>
     </div>
 
-    <div ref="scrollableElement" class="aside-body d-flex flex-column flex-grow-1 overflow-y-auto p-3">
-        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column flex-grow-1">
-            <PersonEntrySettings v-model="internalValue"
-                isVertical
-                :recordStatusOptions="recordStatusOptions"
-                :connectionStatusOptions="connectionStatusOptions"
-                :campusTypeOptions="campusTypeOptions"
-                :campusStatusOptions="campusStatusOptions"
-                :addressTypeOptions="addressTypeOptions" />
+    <div ref="scrollableElement" class="sidebar-body">
+        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="sidebar-panels">
+            <div class="panel-body">
+                <PersonEntrySettings v-model="internalValue"
+                    isVertical
+                    :recordStatusOptions="recordStatusOptions"
+                    :connectionStatusOptions="connectionStatusOptions"
+                    :campusTypeOptions="campusTypeOptions"
+                    :campusStatusOptions="campusStatusOptions"
+                    :addressTypeOptions="addressTypeOptions" />
+            </div>
         </RockForm>
     </div>
 </div>

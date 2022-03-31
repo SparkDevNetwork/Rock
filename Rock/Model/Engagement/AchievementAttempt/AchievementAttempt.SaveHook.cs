@@ -23,7 +23,7 @@ namespace Rock.Model
         /// <summary>
         /// SaveHook implementation of <see cref="AchievementAttempt"/>
         /// </summary>
-        internal class SaveHook: EntitySaveHook<AchievementAttempt>
+        internal class SaveHook : EntitySaveHook<AchievementAttempt>
         {
             /// <summary>
             /// Called before the save operation is executed.
@@ -31,7 +31,7 @@ namespace Rock.Model
             protected override void PreSave()
             {
                 var updateAchievementAttemptMsg = GetUpdateAchievementAttemptMessage( this.Entry );
-                updateAchievementAttemptMsg.Send();
+                updateAchievementAttemptMsg.SendWhen( this.DbContext.WrappedTransactionCompleted );
                 base.PreSave();
             }
 
@@ -55,7 +55,7 @@ namespace Rock.Model
 
                 if ( entry.State != EntityContextState.Added )
                 {
-                    wasClosed = ( bool ) entry.OriginalValues[nameof(AchievementAttempt.IsClosed)];
+                    wasClosed = ( bool ) entry.OriginalValues[nameof( AchievementAttempt.IsClosed )];
                     wasSuccessful = ( bool ) entry.OriginalValues[nameof( AchievementAttempt.IsSuccessful )];
                 }
 

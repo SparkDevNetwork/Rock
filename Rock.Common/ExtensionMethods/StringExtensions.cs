@@ -815,7 +815,7 @@ namespace Rock
         public static string ReplaceFirstOccurrence( this string source, string find, string replace )
         {
             var regex = new Regex( Regex.Escape( find ) );
-            return regex.Replace( source, replace, 1);
+            return regex.Replace( source, replace, 1 );
         }
 
         /// <summary>
@@ -1358,7 +1358,12 @@ namespace Rock
         /// <returns>XML encoded string</returns>
         public static string EncodeXml( this string str, bool isAttribute = false )
         {
-            var sb = new StringBuilder( str.Length );
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            var sb =  new StringBuilder( str.Length );
 
             foreach ( var chr in str )
             {

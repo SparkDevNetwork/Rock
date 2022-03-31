@@ -877,7 +877,7 @@ namespace Rock.Web.UI.Controls
 
             _cbAmountAccountSingle = new CurrencyBox();
             _cbAmountAccountSingle.ID = "_cbAmountAccountSingle";
-            _cbAmountAccountSingle.CssClass = "js-amount-input";
+            _cbAmountAccountSingle.CssClass = "js-amount-input amount-input";
             _cbAmountAccountSingle.NumberType = ValidationDataType.Currency;
             _cbAmountAccountSingle.MaximumValue = int.MaxValue.ToString();
             _cbAmountAccountSingle.MinimumValue = "0";

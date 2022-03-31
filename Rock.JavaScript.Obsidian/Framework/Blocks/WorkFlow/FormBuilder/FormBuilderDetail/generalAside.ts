@@ -166,51 +166,53 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column overflow-y-hidden flex-grow-1">
-    <div class="p-2 aside-header" style="border-right: 1px solid #dfe0e1; border-bottom: 1px solid #dfe0e1;">
+<div class="form-sidebar">
+    <div class="sidebar-header">
         <span class="title">Field List</span>
     </div>
 
-    <div class="aside-body d-flex flex-column flex-grow-1 border-right border-panel p-3 overflow-y-auto">
-        <div class="mt-3" v-drag-source="sectionDragOptions">
-            <div class="form-template-item form-template-item-section">
-                <i class="fa fa-expand fa-fw"></i>
-                Section
-            </div>
-        </div>
-
-        <div class="mt-3 flex-grow-1">
-            <RockLabel>Common Fields</RockLabel>
-
-            <div class="d-flex flex-wrap mt-1" v-drag-source="fieldDragOptions">
-                <div v-for="field in commonFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
-                    <span class="inline-svg icon" v-html="field.svg"></span>
-                    <div class="text">{{ field.text }}</div>
+    <div class="sidebar-body">
+        <div class="panel-body">
+            <div v-drag-source="sectionDragOptions">
+                <div class="form-template-item form-template-item-section">
+                    <i class="fa fa-expand fa-fw"></i>
+                    Section
                 </div>
             </div>
 
-            <div @click="onAdditionalFieldsClick" class="mt-2">
-                <RockLabel>Additional Fields <i :class="additionalFieldsClass"></i></RockLabel>
-            </div>
+            <div class="mt-3">
+                <RockLabel>Common Fields</RockLabel>
 
-            <TransitionVerticalCollapse>
-                <div v-if="isAdditionalFieldsVisible" class="d-flex flex-wrap mt-1" v-drag-source="fieldDragOptions">
-                    <div v-for="field in advancedFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
+                <div class="form-template-item-list" v-drag-source="fieldDragOptions">
+                    <div v-for="field in commonFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
                         <span class="inline-svg icon" v-html="field.svg"></span>
                         <div class="text">{{ field.text }}</div>
                     </div>
                 </div>
-            </TransitionVerticalCollapse>
-        </div>
 
-        <div class="mt-3">
-            <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
+                <div @click="onAdditionalFieldsClick" class="mt-2">
+                    <RockLabel>Additional Fields <i :class="additionalFieldsClass"></i></RockLabel>
+                </div>
 
-            <Alert v-else alertType="info">
-                Person entry is enabled on the template and cannot be changed.
-            </Alert>
+                <TransitionVerticalCollapse>
+                    <div v-if="isAdditionalFieldsVisible" class="form-template-item-list" v-drag-source="fieldDragOptions">
+                        <div v-for="field in advancedFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
+                            <span class="inline-svg icon" v-html="field.svg"></span>
+                            <div class="text">{{ field.text }}</div>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </div>
 
-            <DropDownList v-model="campusSetFrom" label="Campus Set From" :options="campusSetFromOptions" />
+            <div class="mt-3">
+                <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
+
+                <Alert v-else alertType="info">
+                    Person entry is enabled on the template and cannot be changed.
+                </Alert>
+
+                <DropDownList v-model="campusSetFrom" label="Campus Set From" :options="campusSetFromOptions" />
+            </div>
         </div>
     </div>
 </div>

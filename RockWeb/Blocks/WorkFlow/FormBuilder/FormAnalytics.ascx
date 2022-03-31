@@ -12,7 +12,7 @@
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
-                <div class="d-flex align-items-center p-2  border-bottom border-panel" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 4px;">
+                <div class="panel-toolbar panel-toolbar-shadow">
                     <ul class="nav nav-pills nav-sm">
                         <li id="tabSubmissions" runat="server">
                             <asp:LinkButton ID="lnkSubmissions" runat="server" Text="Submissions" CssClass="show-pill" OnClick="lnkSubmissions_Click" pill="submissions-tab" />
@@ -34,11 +34,11 @@
 
             <div class="panel-body">
 
-                <div>
-                    <h3 class="m-0">Form Analytics</h3>
+                <div class="rock-header">
+                    <h3 class="title">Form Analytics</h3>
                     <div class="row">
-                        <div class="col-sm-7 text-sm text-muted">
-                            Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.
+                        <div class="col-sm-7">
+                            <span class="description">Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.</span>
                         </div>
                         <div class="col-sm-5">
                             <div class="flex-grow-1 d-flex justify-content-end">

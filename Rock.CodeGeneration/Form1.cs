@@ -1264,7 +1264,7 @@ namespace Rock.ViewModel
 
             var properties = viewModelTypeProperties
                 .Where( p => !( p.Value.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile ) )
-                .Where( p => p.Value.Name != "Id" && p.Value.Name != "Guid" && p.Value.Name != "Attributes" ) // Handled automatically.
+                .Where( p => p.Value.Name != "Id" && p.Value.Name != "Guid" && p.Value.Name != "Attributes" && p.Value.Name != "AttributeValues" ) // Handled automatically.
                 .Select( p =>
                 {
                     var obsolete = p.Value.GetCustomAttribute<ObsoleteAttribute>();

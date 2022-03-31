@@ -345,9 +345,9 @@ export default defineComponent({
 <Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconClass="fa fa-poll-h">
     <template #default>
 
-        <div ref="bodyElement" class="form-builder-detail d-flex flex-column panel-flex-fill-body overflow-hidden styled-scroll">
-            <div class="d-flex align-items-center p-2  border-bottom border-panel" style="box-shadow: rgba(0,0,0,0.15) 0 0 4px;">
-                <ul class="nav nav-pills nav-sm flex-grow-1">
+        <div ref="bodyElement" class="form-builder-detail panel-flex-fill-body styled-scroll">
+            <div class="panel-toolbar panel-toolbar-shadow">
+                <ul class="nav nav-pills nav-sm">
                     <li role="presentation"><a :href="submissionsPageUrl">Submissions</a></li>
                     <li :class="{ active: isFormBuilderTabSelected }" role="presentation"><a href="#" @click.prevent="onFormBuilderTabClick">Form Builder</a></li>
                     <li :class="{ active: isCommunicationsTabSelected }" role="presentation"><a href="#" @click.prevent="onCommunicationsTabClick">Communications</a></li>
@@ -358,14 +358,14 @@ export default defineComponent({
                 <RockButton btnType="primary" btnSize="sm" :disabled="!isFormDirty" @click="onSaveClick">Save</RockButton>
             </div>
 
-            <div class="flex-grow-1 overflow-y-hidden" :style="formBuilderContainerStyle">
+            <div class="form-builder-container form-builder-grow" :style="formBuilderContainerStyle">
                 <FormBuilderTab v-model="builderViewModel"
                     :templateOverrides="selectedTemplate"
                     :submit="formSubmit"
                     @validationChanged="onFormBuilderValidationChanged" />
             </div>
 
-            <div class="flex-grow-1 overflow-y-hidden" :style="communicationsContainerStyle">
+            <div class="communications-container form-builder-grow" :style="communicationsContainerStyle">
                 <CommunicationsTab v-model="communicationsViewModel"
                     :recipientOptions="recipientOptions"
                     :templateOverrides="selectedTemplate"
@@ -373,7 +373,7 @@ export default defineComponent({
                     @validationChanged="onCommunicationsValidationChanged" />
             </div>
 
-            <div class="flex-grow-1 overflow-y-hidden" :style="settingsContainerStyle">
+            <div class="settings-container form-builder-grow" :style="settingsContainerStyle">
                 <SettingsTab v-model="generalViewModel"
                     v-model:completion="completionViewModel"
                     :templateOverrides="selectedTemplate"
