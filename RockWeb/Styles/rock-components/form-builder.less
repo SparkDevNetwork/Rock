@@ -343,17 +343,17 @@
   --gutter: 8px;
   display: flex;
   flex-wrap: wrap;
-  margin-top: calc(-1 * var(--gutter));
-  margin-right: calc(-.5 * var(--gutter));
-  margin-left: calc(-.5 * var(--gutter));
+  margin-top: ~"calc(-1 * var(--gutter))";
+  margin-right: ~"calc(-.5 * var(--gutter))";
+  margin-left: ~"calc(-.5 * var(--gutter))";
 
   .form-template-item {
     flex-shrink: 0;
     width: ~"calc(50% - var(--gutter))";
     max-width: 100%;
     margin-top: var(--gutter);
-    margin-right: calc(var(--gutter) * .5);
-    margin-left: calc(var(--gutter) * .5);
+    margin-right: ~"calc(var(--gutter) * .5)";
+    margin-left: ~"calc(var(--gutter) * .5)";
   }
 }
 
@@ -456,7 +456,6 @@
 }
 
 
-
 .block-instance.form-list {
   .filter-options,
   .form-category-display {
@@ -474,5 +473,14 @@
 
   .form-actions {
     margin-top: 12px;
+  }
+
+  .btn-link-spaced {
+    padding: 0;
+    margin-right: 16px;
+  }
+
+  .btn-link-spaced + .btn-link-spaced {
+    margin-left: 16px;
   }
 }

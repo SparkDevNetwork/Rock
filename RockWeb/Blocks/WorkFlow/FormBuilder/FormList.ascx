@@ -191,11 +191,11 @@
                                                     <span class="text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
                                                     <div class="d-flex justify-content-between align-items-center position-absolute inset-0 group-hover-item group-hover-show">
                                                         <div class="text-muted">
-                                                            <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm p-0" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm p-0" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm p-0" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-sm p-0" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm p-0" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
+                                                            <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
 
                                                         </div>
                                                         <div>
