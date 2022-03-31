@@ -3861,8 +3861,6 @@ REM In a production environment, it will be 10 seconds, even without the VBCSCOM
 if "$(ConfigurationName)" == "Debug" (
  echo "setting VBCSCOMPILER_TTL to 10 seconds"
  call "$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
- REM Set the Git Hooks Directory
- call git config --local core.hooksPath .githooks/
 )
 
 REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
