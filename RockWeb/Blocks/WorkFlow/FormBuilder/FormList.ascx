@@ -199,8 +199,8 @@
 
                                                         </div>
                                                         <div>
-                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-square btn-link text-muted" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-square btn-link text-muted" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-square btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Delete form and all submissions." OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-square btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Copy" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
                                                         </div>
                                                     </div>
                                                 </div>
