@@ -159,11 +159,11 @@
                     <Rock:NotificationBox ID="nbValidationError" runat="server" Title="There is a problem with one or more of the values you entered" NotificationBoxType="Danger" Visible="false" />
                     <asp:HiddenField ID="hfSelectedCategory" runat="server" />
                     <div class="container-in-block">
-                        <div class="my-3">
-                            <h3 class="mt-0 mb-2">
+                        <div class="rock-header">
+                            <h3 class="title mb-2">
                                 <asp:Literal ID="lTitle" runat="server" /></h3>
                             <div class="d-flex flex-wrap justify-content-between">
-                                <div class="text-sm text-muted">
+                                <div class="description">
                                     <asp:Literal ID="lDescription" runat="server" />
                                 </div>
                                 <div id="divFormListTopPanel" runat="server" class="ml-auto">
@@ -172,7 +172,7 @@
                                     <asp:LinkButton ID="btnDeleteCategory" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
                                 </div>
                             </div>
-                            <hr class="mt-2 mb-0" />
+                            <hr class="section-header-hr" />
                         </div>
                         <asp:Panel ID="pnlFormList" runat="server" Visible="false">
                             <div class="d-flex flex-wrap align-items-start justify-content-end">
@@ -205,7 +205,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center justify-content-end ml-2 group-hover-hide" runat="server">
+                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center ml-2 group-hover-hide" runat="server">
                                                 <span class='badge badge-info'><%# Eval("SubmissionCount") %></span>
                                             </asp:Panel>
                                         </div>
