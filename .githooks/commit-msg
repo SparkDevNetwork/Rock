@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+"""
+Git commit hook:
+ .git/hooks/commit-msg
+ Check commit message according to guidelines
+"""
+
+import sys
+import re
+
+REGEX = '(^([+]+[ ]+(\(API\)|\(CMS\)|\(Check\-in\)|\(Communication\)|\(Connection\)|\(Core\)|\(CRM\)|\(Engagement\)|\(Event\)|\(Farm\)|\(Finance\)|\(Group\)|\(Lava\)|\(Mobile\)|\(Prayer\)|\(Reporting\)|\(Workflow\)|\(Other\))+[ ]+(Add*|Fix*|Improv*|Updat*)+)|^([-]+[ ]+(\(API\)|\(CMS\)|\(Check\-in\)|\(Communication\)|\(Connection\)|\(Core\)|\(CRM\)|\(Engagement\)|\(Event\)|\(Farm\)|\(Finance\)|\(Group\)|\(Lava\)|\(Mobile\)|\(Prayer\)|\(Reporting\)|\(Workflow\)|\(Other\))*[ ]*(Add*|Fix*|Improv*|Updat*)+))+[\s\S][^\n]+(\. (\(Fixes \#[0-9]+\))$|[\w]\.$)+|^(Merge+.+)|^(Revert+.+)|^(Cherry+.+)'
+GUIDELINE_LINK = 'https://triumph.slab.com/posts/developer-codex-current-orig-y3tqutbv#h5nco-committing-code'
+
+with open(sys.argv[1]) as commit:
+    lines = commit.readlines()
+    if len(lines) == 0:
+        sys.stderr.write("\nEmpty commit message\n")
+        sys.stderr.write("\n - See commit guidelines: {}\n\n".format(GUIDELINE_LINK))
+        sys.exit(1)
+
+    match_regex = re.match('({})'.format(REGEX), lines[0])
+
+    if match_regex is None:
+        sys.stderr.write("\nYour commit message should be in the format '+/- (Domain) Add/Fix/Improve/Update Text. (Fixes #0000)' \n")
+        sys.stderr.write("\n - See commit guidelines: {}\n\n".format(GUIDELINE_LINK))
+        sys.exit(1)
+
+    #sys.stderr.write("\nYour commit message looks good! \n\n")
+sys.exit(0)
