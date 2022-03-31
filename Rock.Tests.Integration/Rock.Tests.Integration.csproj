@@ -143,6 +143,7 @@
     <Compile Include="Communications\Transport\MailgunTests.cs" />
     <Compile Include="Communications\Transport\SMTPTests.cs" />
     <Compile Include="Communications\Transport\TwilioTests.cs" />
+    <Compile Include="Connections\ConnectionOpportunityTests.cs" />
     <Compile Include="Core\AttributeTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Field.Types\AddressFieldTypeTests.cs" />
@@ -310,6 +311,10 @@
     <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj">
       <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
       <Name>Rock.Tests.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.WebStartup\Rock.WebStartup.csproj">
+      <Project>{515e22e4-4b9b-4886-8477-e5b312b75eb4}</Project>
+      <Name>Rock.WebStartup</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
