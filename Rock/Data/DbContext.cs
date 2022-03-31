@@ -61,6 +61,7 @@ namespace Rock.Data
         /// Is there a transaction in progress?
         /// </summary>
         private bool _transactionInProgress = false;
+        private TaskCompletionSource<bool> _wrappedTransactionCompleted = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
@@ -96,6 +97,30 @@ namespace Rock.Data
         public string SourceOfChange { get; set; }
 
         /// <summary>
+        /// If <see cref="WrapTransaction(Action)"/> in in progress, this will be set as completed after the transaction is committed.
+        /// Otherwise, it will return completed immediately.
+        /// </summary>
+        /// <value>
+        /// The wrapped transaction completed.
+        /// </value>
+        public TaskCompletionSource<bool> WrappedTransactionCompleted
+        {
+            get
+            {
+                if ( _transactionInProgress && _wrappedTransactionCompleted != null)
+                {
+                    return _wrappedTransactionCompleted;
+                }
+                else
+                {
+                    var alreadyCompletedWithSaveChanges = new TaskCompletionSource<bool>();
+                    alreadyCompletedWithSaveChanges.SetResult( true );
+                    return alreadyCompletedWithSaveChanges;
+                }
+            }
+        }
+
+        /// <summary>
         /// Wraps the action in a BeginTransaction and CommitTransaction.
         /// Note that this will *always* commit the transaction (unless an exception occurs).
         /// If need to rollback the transaction within your action (for example, to show a validation warning),
@@ -121,6 +146,7 @@ namespace Rock.Data
             if ( !_transactionInProgress )
             {
                 _transactionInProgress = true;
+                _wrappedTransactionCompleted = new TaskCompletionSource<bool>();
                 using ( var dbContextTransaction = this.Database.BeginTransaction() )
                 {
                     try
@@ -128,20 +154,24 @@ namespace Rock.Data
                         if ( action.Invoke() )
                         {
                             dbContextTransaction.Commit();
+                            _wrappedTransactionCompleted.SetResult( true );
                         }
                         else
                         {
                             dbContextTransaction.Rollback();
+                            _wrappedTransactionCompleted.SetResult( false );
                             return false;
                         }
                     }
                     catch
                     {
                         dbContextTransaction.Rollback();
+                        _wrappedTransactionCompleted.SetResult( false );
                         throw;
                     }
                     finally
                     {
+                        _wrappedTransactionCompleted = null;
                         _transactionInProgress = false;
                     }
                 }
@@ -891,7 +921,7 @@ namespace Rock.Data
                             EntityTypeId = entity.TypeId
                         };
 
-                        processWorkflowTriggerMsg.Send();
+                        processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompleted );
                     }
                 }
             }

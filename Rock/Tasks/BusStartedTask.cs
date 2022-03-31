@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System;
+using System.Threading.Tasks;
+
 using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
@@ -47,12 +50,28 @@ namespace Rock.Tasks
     /// </summary>
     public static class BusStartedTaskMessageExtensions
     {
-        /// <summary>
-        /// Sends the messages to the bus.
-        /// </summary>
+        /// <inheritdoc cref="RockMessageBus.SendAsync{TQueue, TMessage}(TMessage)"/>
         public static void Send( this BusStartedTaskMessage message )
         {
             _ = RockMessageBus.SendAsync( message, message.GetType() );
+        }
+
+        /// <summary>
+        /// Sends the command message when the specified task completes successfully. See also <seealso cref="RockMessageBus.SendAsync{TQueue, TMessage}(TMessage)" />
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="taskCompletionSource">The task completion source.</param>
+        public static void SendWhen( this BusStartedTaskMessage message, TaskCompletionSource<bool> taskCompletionSource)
+        {
+            Task.Run( async () =>
+            {
+                // Wait for specified task to complete, then send the message if the task completed successfully
+                var completedSuccessfully = await taskCompletionSource.Task;
+                if ( completedSuccessfully )
+                {
+                    message.Send();
+                }
+            } );
         }
     }
 

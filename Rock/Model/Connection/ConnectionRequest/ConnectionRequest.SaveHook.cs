@@ -131,7 +131,7 @@ namespace Rock.Model
 
                 // Create and send the change notification message now that the connection request has been saved.
                 var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest, currentPersonAliasId );
-                processConnectionRequestChangeMessage.Send();
+                processConnectionRequestChangeMessage.SendWhen( this.DbContext.WrappedTransactionCompleted );
 
                 var rockContext = ( RockContext ) this.RockContext;
                 if ( Entity.ConnectionStatus == null )
