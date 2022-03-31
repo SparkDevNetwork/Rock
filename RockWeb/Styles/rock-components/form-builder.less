@@ -237,6 +237,7 @@
 }
 
 .form-sidebar {
+  z-index: 20;
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
@@ -245,7 +246,6 @@
   overflow: hidden;
   background-color: @gray-50;
   border-right: 1px solid #dfe0e1;
-  z-index: 20;
 
   .panel-body {
     padding: 12px 16px;
@@ -259,10 +259,10 @@
   width: 40px;
   color: #fff;
   cursor: pointer;
-  background-color: @side-navigation-open-background-color;
+  background-color: #484848;
 
   &:hover {
-    background-color: @side-navigation-background-color;
+    background-color: #3d3d3d;
   }
 }
 
@@ -467,7 +467,7 @@
     padding: 0 !important;
 
     .category-header {
-      padding: 18px 18px 12px 18px;
+      padding: 18px 18px 12px;
     }
   }
 
