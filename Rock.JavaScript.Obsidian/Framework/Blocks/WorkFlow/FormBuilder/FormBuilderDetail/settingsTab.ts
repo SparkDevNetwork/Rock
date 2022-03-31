@@ -96,7 +96,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column flex-grow-1 overflow-y-auto">
+<div class="form-builder-scroll">
     <div class="panel-body">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
             <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />

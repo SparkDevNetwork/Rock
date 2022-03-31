@@ -4,17 +4,17 @@
         pointer-events: auto;
     }
 </style>
-<div class="panel panel-block panel-analytics">
+<div class="panel panel-block panel-analytics styled-scroll">
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa-solid fa-align-left"></i>Form Builder</h1>
     </div>
-    <div class="panel-body">
+    <div class="panel-body overflow-hidden" style="flex: 1 0 0">
         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
         <div class="row row-eq-height-md">
-            <asp:UpdatePanel ID="upnlCategory" Class="col-md-3 col-lg-2 filter-options" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+            <asp:UpdatePanel ID="upnlCategory" Class="filter-options" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                 <ContentTemplate>
                     <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
-                    <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="category-header d-flex align-items-center justify-content-between mb-2">
                         <strong class="d-block text-sm m-0">Form Categories</strong>
                         <div runat="server" id="divTreeviewActions" class="btn-group pull-right">
                             <button type="button" class="btn btn-link text-color btn-xs btn-square dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
@@ -152,7 +152,7 @@
                     </script>
                 </ContentTemplate>
             </asp:UpdatePanel>
-            <asp:UpdatePanel ID="upnlForms" class="col-md-9 col-lg-10" runat="server">
+            <asp:UpdatePanel ID="upnlForms" class="form-category-display flex-fill" runat="server">
                 <ContentTemplate>
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />

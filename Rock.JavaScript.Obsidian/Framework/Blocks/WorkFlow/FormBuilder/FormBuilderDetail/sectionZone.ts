@@ -233,7 +233,7 @@ export default defineComponent({
 
     template: `
 <ConfigurableZone class="zone-section" :modelValue="isSectionActive">
-    <div class="zone-body d-flex flex-column" style="min-height: 100%;">
+    <div class="zone-body">
         <div class="d-flex flex-column" :class="sectionTypeClass" style="flex-grow: 1;">
             <div>
                 <h1 v-if="title">{{ title }}</h1>
@@ -254,8 +254,7 @@ export default defineComponent({
                     </div>
 
                     <template #preActions>
-                        <i class="fa fa-bars fa-fw zone-action zone-action-move"></i>
-                        <span class="zone-action-pad"></span>
+                        <div class="zone-action zone-action-move"><i class="fa fa-bars fa-fw"></i></div>
                     </template>
                     <template #postActions>
                         <i class="fa fa-times fa-fw zone-action zone-action-delete" @click.stop="onDeleteField(field)"></i>
@@ -265,11 +264,10 @@ export default defineComponent({
         </div>
     </div>
     <template #preActions>
-        <i class="fa fa-bars fa-fw zone-action zone-action-move"></i>
-        <span class="zone-action-pad"></span>
+        <div class="zone-action zone-action-move"><i class="fa fa-bars fa-fw "></i></div>
     </template>
     <template #postActions>
-        <i class="fa fa-times fa-fw zone-action zone-action-delete" @click.stop="onDelete"></i>
+        <div class="zone-action zone-action-delete" @click.stop="onDelete"><i class="fa fa-times fa-fw"></i></div>
     </template>
 </ConfigurableZone>
 `

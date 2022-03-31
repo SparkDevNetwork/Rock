@@ -428,20 +428,20 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column flex-grow-1 overflow-y-hidden">
-    <div class="d-flex">
-        <div class="d-flex justify-content-center align-items-center text-white cursor-pointer" style="background-color: #484848; width: 40px;" @click="onBackClick">
+    <div class="form-sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-back" @click="onBackClick">
             <i class="fa fa-chevron-left"></i>
         </div>
 
-        <div class="p-2 aside-header d-flex align-items-center flex-grow-1">
-            <span v-if="asideIconSvg" class="inline-svg" v-html="asideIconSvg"></span>
-            <span class="title">{{ fieldName }}</span>
+        <div class="title">
+            <span v-if="asideIconSvg" class="inline-svg icon" v-html="asideIconSvg"></span>
+            {{ fieldName }}
         </div>
     </div>
 
-    <div ref="scrollableElement" class="aside-body d-flex flex-column flex-grow-1 overflow-y-auto">
-        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="field-edit-aside d-flex flex-column flex-grow-1">
+    <div ref="scrollableElement" class="sidebar-body">
+        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="sidebar-panels sidebar-field-edit field-edit-aside">
             <Panel :modelValue="true" title="Field Type" :hasCollapse="true">
                 <TextBox v-model="fieldName"
                     rules="required"
@@ -487,6 +487,6 @@ export default defineComponent({
     <Modal v-model="conditionalModalOpen" title="Conditional Settings" saveText="Save" @save="onConditionalSave">
         <FieldFilterEditor v-model="conditionalModel" :title="fieldName" :sources="conditionalSources" />
     </Modal>
-</div>
+    </div>
 `
 });

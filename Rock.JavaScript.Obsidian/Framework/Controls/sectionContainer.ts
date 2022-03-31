@@ -77,8 +77,8 @@ export default defineComponent({
 
     template: `
 <div class="section-container well">
-    <div class="section-header d-flex">
-        <div class="section-header-content flex-grow-1 align-items-center">
+    <div class="section-header">
+        <div class="section-header-content">
             <Header :title="title" :description="description" />
         </div>
 
