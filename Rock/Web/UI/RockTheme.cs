@@ -28,12 +28,12 @@ using dotless.Core.Loggers;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class RockTheme
     {
-        static private string _themeDirectory = HttpRuntime.AppDomainAppPath + "Themes";
-        static private string _rockWebStylesDirectory = HttpRuntime.AppDomainAppPath + "Styles";
+        static private string _themeDirectory = System.Web.Hosting.HostingEnvironment.MapPath( "~/Themes" );
+        static private string _rockWebStylesDirectory = System.Web.Hosting.HostingEnvironment.MapPath( "~/Styles" );
 
         /// <summary>
         /// Gets or sets the name.
