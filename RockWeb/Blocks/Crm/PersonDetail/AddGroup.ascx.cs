@@ -1211,12 +1211,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     newPersonCol.ID = string.Format( "newPersonCol_{0}", groupMemberGuidString );
                     dupRow.Controls.Add( newPersonCol );
 
-                    newPersonCol.Controls.Add( PersonHtmlPanel(
+                    var newPersonColPanel = PersonHtmlPanel(
                         groupMemberGuidString,
                         groupMember.Person,
                         groupMember.GroupRole,
                         location,
-                        rockContext ) );
+                        rockContext );
+
+                    if( newPersonColPanel != null )
+                    {
+                        newPersonCol.Controls.Add( newPersonColPanel );
+                    }
 
                     LinkButton lbRemoveMember = new LinkButton();
                     lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", groupMemberGuidString );
@@ -1249,7 +1254,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 s.Person,
                                 GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid.Equals( _locationType.Guid ) ).Select( a => a.Location ).FirstOrDefault()
                             } )
-                            .AsNoTracking().FirstOrDefault();
+                            .AsNoTracking()
+                            .FirstOrDefault();
 
                         if ( dupGroupMember != null )
                         {
@@ -1258,12 +1264,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             duplicatePerson = dupGroupMember.Person;
                         }
 
-                        dupPersonCol.Controls.Add( PersonHtmlPanel(
+                        var dupPersonColPanel = PersonHtmlPanel(
                             groupMemberGuidString,
                             duplicatePerson,
                             groupTypeRole,
                             duplocation,
-                            rockContext ) );
+                            rockContext );
+
+                        if ( dupPersonColPanel != null )
+                        {
+                            dupPersonCol.Controls.Add( dupPersonColPanel );
+                        }
                     }
                 }
             }
@@ -1360,6 +1371,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Location location,
             RockContext rockContext )
         {
+            if ( person == null )
+            {
+                return null;
+            }
+
             var personInfoHtml = new StringBuilder();
 
             Guid? recordTypeValueGuid = null;
