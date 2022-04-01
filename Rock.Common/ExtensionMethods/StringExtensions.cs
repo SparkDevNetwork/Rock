@@ -1358,12 +1358,7 @@ namespace Rock
         /// <returns>XML encoded string</returns>
         public static string EncodeXml( this string str, bool isAttribute = false )
         {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            var sb =  new StringBuilder( str.Length );
+            var sb = new StringBuilder( str.Length );
 
             foreach ( var chr in str )
             {
@@ -1411,3 +1406,4 @@ namespace Rock
         #endregion String Extensions
     }
 }
+
