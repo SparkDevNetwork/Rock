@@ -1655,33 +1655,6 @@ namespace Rock.Lava
         #region Number Filters
 
         /// <summary>
-        /// Formats the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="format">The format.</param>
-        /// <returns></returns>
-        public static string Format( object input, string format )
-        {
-            var inputString = input.ToStringSafe();
-
-            if ( string.IsNullOrWhiteSpace( format ) )
-            {
-                return inputString;
-            }
-
-            var decimalValue = inputString.AsDecimalOrNull();
-
-            if ( decimalValue == null )
-            {
-                return string.Format( "{0:" + format + "}", inputString );
-            }
-            else
-            {
-                return string.Format( "{0:" + format + "}", decimalValue );
-            }
-        }
-
-        /// <summary>
         /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
         /// </summary>
         /// <param name="input">The input.</param>

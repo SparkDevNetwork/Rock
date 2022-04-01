@@ -16,6 +16,7 @@
 //
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
@@ -33,7 +34,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// The Format filter should format a numeric input using a recognized .NET format string correctly.
         /// </summary>
         [TestMethod]
-        public void Format_UsingValidDotNetFormatString_ProducesValidNumber()
+        public void Format_UsingValidDotNetCustomFormatString_ProducesValidNumber()
         {
             TestHelper.AssertTemplateOutput( "1,234,567.89", "{{ '1234567.89' | Format:'#,##0.00' }}" );
         }
@@ -51,9 +52,79 @@ namespace Rock.Tests.UnitTests.Lava
         /// Non-numeric input should be returned unchanged in the output.
         /// </summary>
         [TestMethod]
-        public void Format_NonnumericInput_ProducesUnchangedOutput()
+        public void Format_NonNumericInput_ProducesUnchangedOutput()
         {
             TestHelper.AssertTemplateOutput( "not_a_number", "{{ 'not_a_number' | Format:'#,##0.00' }}" );
+        }
+
+        /// <summary>
+        /// Numeric input formatted with a preset format string should be formatted correctly.
+        /// </summary>
+        /// <remarks>
+        /// All valid .NET format strings are supported in Lava:
+        /// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings?redirectedfrom=MSDN
+        /// Test output assumes culture setting is "en-US".
+        /// </remarks>
+        [DataTestMethod]
+        [DataRow( "123.456", "C", "$123.46" )]
+        [DataRow( "123.456", "C3", "$123.456" )]
+        [DataRow( "'123.456'", "C3", "$123.456" )]
+        [DataRow( "123.456", "D", "123" )]
+        [DataRow( "1", "D3", "001" )]
+        [DataRow( "'1'", "D3", "001" )]
+        [DataRow( "1052.0329112756", "E", "1.052033E+003" )]
+        [DataRow( "1052.0329112756", "E2", "1.05E+003" )]
+        [DataRow( "'1052.0329112756'", "E2", "1.05E+003" )]
+        [DataRow( "1234.567", "F", "1234.57" )]
+        [DataRow( "1234.56", "F4", "1234.5600" )]
+        [DataRow( "'1234.56'", "F4", "1234.5600" )]
+        [DataRow( "123.456", "G", "123.456" )]
+        [DataRow( "123.4546", "G4", "123.5" )]
+        [DataRow( "'123.4546'", "G4", "123.5" )]
+        [DataRow( "1234.567", "N", "1,234.57" )]
+        [DataRow( "1234", "N1", "1,234.0" )]
+        [DataRow( "'1234'", "N1", "1,234.0" )]
+        [DataRow( "1", "P", "100.00%" )]
+        [DataRow( "-0.39678", "P1", "-39.7%" )]
+        [DataRow( "'-0.39678'", "P1", "-39.7%" )]
+        [DataRow( "123456789.1234567", "R", "123456789.1234567" )]
+        [DataRow( "255", "X", "FF" )]
+        [DataRow( "255.4", "X", "FF" )]
+        [DataRow( "'255.4'", "X", "FF" )]
+        public void Format_UsingValidDotNetStandardFormatString_ProducesValidNumber( string input, string format, string expectedOutput )
+        {
+            var inputTemplate = @"{% assign number = $1 %}{{ number | Format:'$2' }}"
+                .Replace("$1", input)
+                .Replace("$2", format);
+
+            TestHelper.AssertTemplateOutput( expectedOutput,
+                inputTemplate,
+                ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Integer input formatted with the preset decimal format string should be formatted correctly.
+        /// </summary>
+        /// <remarks>
+        /// Verifies a fix for Issue #4958: https://github.com/SparkDevNetwork/Rock/issues/4958
+        /// </remarks>
+        [TestMethod]
+        public void Format_DecimalFormatAppliedToIntegerInput_ProducesIntegerOutput()
+        {
+            TestHelper.AssertTemplateOutput( "001",
+                "{% assign number = 1 %}{{ number | Format:'D3' }}",
+                ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Numeric input formatted with an invalid format string should return the format string.
+        /// </summary>
+        [TestMethod]  
+        public void Format_InvalidFormatStringAppliedToNumericInput_ProducesFormatString()
+        {
+            TestHelper.AssertTemplateOutput( "<invalidFormatString>",
+                "{% assign number = 1 %}{{ number | Format:'<invalidFormatString>' }}",
+                ignoreWhitespace: true );
         }
 
         #endregion
