@@ -299,8 +299,9 @@ namespace Rock.UniversalSearch.IndexModels
 
                 AddIndexableAttributes( personIndex, person );
             }
-            catch ( Exception )
+            catch ( Exception ex )
             {
+                ExceptionLogService.LogException( ex );
             }
 
             return personIndex;

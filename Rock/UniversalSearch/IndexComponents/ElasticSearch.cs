@@ -21,7 +21,10 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
 
+using Elasticsearch.Net;
+
 using Nest;
+using Nest.JsonNetSerializer;
 
 using Newtonsoft.Json.Linq;
 
@@ -71,15 +74,6 @@ namespace Rock.UniversalSearch.IndexComponents
         IsRequired = false,
         Order = 3 )]
 
-    /*
-    [BooleanField(
-        "Enable Api Versioning Header",
-        Key = AttributeKey.EnableApiVersioningHeader,
-        Description = "Enables the v7 to v8 compatibility mode. See https://www.elastic.co/guide/en/elasticsearch/client/net-api/7.17/connecting-to-elasticsearch-v8.html#_enabling_compatibility_mode",
-        DefaultBooleanValue = true,
-        Order = 4 )]
-    */
-
     [IntegerField( "Shard Count",
         Key = AttributeKey.ShardCount,
         Description = "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).",
@@ -94,7 +88,6 @@ namespace Rock.UniversalSearch.IndexComponents
             public const string UserName = "UserName";
             public const string Password = "Password";
             public const string CertificateFingerprint = "CertificateFingerprint";
-            //public const string EnableApiVersioningHeader = "EnableApiVersioningHeader";
         }
 
         /// <summary>
@@ -188,7 +181,18 @@ namespace Rock.UniversalSearch.IndexComponents
                 try
                 {
                     var node = new Uri( GetAttributeValue( AttributeKey.NodeURL ) );
-                    var config = new ConnectionSettings( node );
+                    var pool = new SingleNodeConnectionPool( new Uri( "http://localhost:9200" ) );
+
+                    /* 04-01-2022 MDP
+
+                       Make sure to use JsonNetSerializer. NEST's default serializer doesn't support inheritance on POCOs.
+
+                    */
+
+                    var config = new ConnectionSettings( new SingleNodeConnectionPool( node ), JsonNetSerializer.Default );
+
+                    // use same casing as CLR Property Names
+                    config.DefaultFieldNameInferrer( s => s );
                     config.DisableDirectStreaming();
 
                     var userName = GetAttributeValue( AttributeKey.UserName );
@@ -204,15 +208,11 @@ namespace Rock.UniversalSearch.IndexComponents
                         config.CertificateFingerprint( certificateFingerprint );
                     }
 
-                    //var enableApiVersioningHeader = GetAttributeValue( AttributeKey.EnableApiVersioningHeader ).AsBoolean();
-
-                    //config.EnableApiVersioningHeader( enableApiVersioningHeader );
-
-
                     _client = new ElasticClient( config );
                 }
-                catch
+                catch ( Exception ex )
                 {
+                    ExceptionLogService.LogException( ex );
                 }
             }
         }
@@ -235,9 +235,8 @@ namespace Rock.UniversalSearch.IndexComponents
             {
                 mappingType = document.GetType().Name.ToLower();
             }
-
-            var task = _client.IndexAsync<T>( document, c => c.Index( indexName ) );
-            var result = task.Result;
+            
+            var indexResult = _client.IndexAsync( document, s => s.Index( indexName ) );
         }
 
         /// <summary>
@@ -282,9 +281,13 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="deleteIfExists">if set to <c>true</c> [delete if exists].</param>
         public override void CreateIndex( Type documentType, bool deleteIfExists = true )
         {
-            var indexName = documentType.Name.ToLower();
+            // make sure this is an index document
+            if ( !typeof( IndexModelBase ).IsAssignableFrom( documentType ) )
+            {
+                return;
+            }
 
-            object instance = Activator.CreateInstance( documentType );
+            var indexName = documentType.Name.ToLower();
 
             // check if index already exists
             var existsResponse = _client.Indices.Exists( indexName );
@@ -301,94 +304,92 @@ namespace Rock.UniversalSearch.IndexComponents
                 }
             }
 
-            // make sure this is an index document
-            if ( instance is IndexModelBase )
+            // create a new index request
+            var createIndexRequest = new CreateIndexRequest( indexName );
+            createIndexRequest.Settings = new IndexSettings();
+            createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
+
+            var typeMapping = new TypeMapping();
+            typeMapping.Dynamic = true;
+            typeMapping.Properties = new Properties();
+
+            createIndexRequest.Mappings = typeMapping;
+
+            // get properties from the model and add them to the index (hint: attributes will be added dynamically as the documents are loaded)
+            var modelProperties = documentType.GetProperties();
+
+            foreach ( var propertyInfo in modelProperties )
             {
-                // create a new index request
-
-                /*
-                var createIndexRequest = new CreateIndexRequest( indexName );
-                createIndexRequest.Settings = new IndexSettings();
-                createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
-                */
-
-                /*
-                var typeMapping = new TypeMapping();
-                typeMapping.Dynamic = true;
-                typeMapping.Properties = new Properties();
-
-                createIndexRequest.Mappings = typeMapping;
-                */
-
-                // get properties from the model and add them to the index (hint: attributes will be added dynamically as the documents are loaded)
-                var modelProperties = documentType.GetProperties();
-
-                
-
-
-                Func<PropertiesDescriptor<object>, IPromise<IProperties>> propertiesSelector = ( ps ) =>
+                var indexAttributes = propertyInfo.GetCustomAttributes( false );
+                var indexAttribute = propertyInfo.GetCustomAttributes( typeof( RockIndexField ), false );
+                if ( indexAttribute.Length > 0 )
                 {
-                    foreach ( var property in modelProperties )
+                    var attribute = ( RockIndexField ) indexAttribute[0];
+
+                    //var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
+
+                    // rewrite non-string index option (would be nice if they made the enums match up...)
+                    bool nsIndexOption = true;
+                    if ( attribute.Type != IndexFieldType.String )
                     {
-                        var indexAttributes = property.GetCustomAttributes( false );
-                        var indexAttribute = property.GetCustomAttributes( typeof( RockIndexField ), false );
-                        if ( indexAttribute.Length > 0 )
+                        if ( attribute.Index == IndexType.NotIndexed )
                         {
-                            var attribute = ( RockIndexField ) indexAttribute[0];
-
-                            var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
-
-                            // rewrite non-string index option (would be nice if they made the enums match up...)
-                            bool nsIndexOption = true;
-                            if ( attribute.Type != IndexFieldType.String )
-                            {
-                                if ( attribute.Index == IndexType.NotIndexed )
-                                {
-                                    nsIndexOption = false;
-                                }
-                            }
-
-                            switch ( attribute.Type )
-                            {
-                                case IndexFieldType.Boolean:
-                                    {
-                                        ps = ps.Boolean( s => s.Name( propertyName ).Index( nsIndexOption ) );
-                                        break;
-                                    }
-
-                                case IndexFieldType.Date:
-                                    {
-                                        ps = ps.Date( s => s.Name( propertyName ).Index( nsIndexOption ) );
-                                        break;
-                                    }
-
-                                case IndexFieldType.Number:
-                                    {
-                                        ps = ps.Number( s => s.Name( propertyName ).Index( nsIndexOption ) );
-                                        break;
-                                    }
-
-                                default:
-                                    {
-                                        ps = ps.Text( s => s.Name( propertyName ).Index( nsIndexOption ) );
-                                        break;
-                                    }
-                            }
+                            nsIndexOption = false;
                         }
                     }
 
-                    return ps;
-                };
+                    switch ( attribute.Type )
+                    {
+                        case IndexFieldType.Boolean:
+                            {
+                                typeMapping.Properties.Add( propertyInfo, new BooleanProperty()
+                                {
+                                    Name = propertyInfo,
+                                    //Boost = attribute.Boost,
+                                    Index = nsIndexOption
+                                } );
+                                break;
+                            }
+                        case IndexFieldType.Date:
+                            {
+                                typeMapping.Properties.Add( propertyInfo, new DateProperty()
+                                {
+                                    Name = propertyInfo,
+                                    //Boost = attribute.Boost,
+                                    Index = nsIndexOption
+                                } );
+                                break;
+                            }
+                        case IndexFieldType.Number:
+                            {
+                                typeMapping.Properties.Add( propertyInfo, new NumberProperty()
+                                {
+                                    Name = propertyInfo,
+                                    //  Boost = attribute.Boost,
+                                    Index = nsIndexOption
+                                } );
+                                break;
+                            }
+                        default:
+                            {
+                                var stringProperty = new TextProperty();
+                                stringProperty.Name = propertyInfo;
+                                //stringProperty.Boost = attribute.Boost;
+                                stringProperty.Index = true;
 
-                Func<CreateIndexDescriptor, ICreateIndexRequest> selector = ( c ) =>
-                {
-                    c.Index( indexName );
-                    c.Map( m => m.Properties( propertiesSelector) );
-                    return c;
-                };
+                                if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
+                                {
+                                    stringProperty.Analyzer = attribute.Analyzer;
+                                }
 
-                var response = _client.Indices.Create( indexName, selector );
+                                typeMapping.Properties.Add( propertyInfo, stringProperty );
+                                break;
+                            }
+                    }
+                }
             }
+
+            var response = _client.Indices.Create( createIndexRequest );
         }
 
         /// <summary>
@@ -412,8 +413,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <returns></returns>
         public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
         {
-            long totalResultsAvailable = 0;
-            return Search( query, searchType, entities, fieldCriteria, size, from, out totalResultsAvailable );
+            return Search( query, searchType, entities, fieldCriteria, size, from, out _ );
         }
 
         /// <summary>
@@ -463,22 +463,27 @@ namespace Rock.UniversalSearch.IndexComponents
                 // add and field constraints
                 var searchDescriptor = new SearchDescriptor<dynamic>().AllIndices();
 
+                List<Type> indexModelTypes;
+
                 if ( entities == null || entities.Count == 0 )
                 {
                     searchDescriptor = searchDescriptor.AllIndices();
+                    indexModelTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" ).Select( a => a.IndexModelType ).ToList();
                 }
                 else
                 {
-                    var entityTypes = new List<string>();
+                    indexModelTypes = new List<Type>();
+                    var indexNameList = new List<IndexName>();
                     foreach ( var entityId in entities )
                     {
-
                         // get entities search model name
-                        var entityType = new EntityTypeService( new RockContext() ).Get( entityId );
+                        var entityType = EntityTypeCache.Get( entityId );
+                        indexModelTypes.Add( entityType.IndexModelType );
                         var indexName = entityType.IndexModelType.Name.ToLower();
+
                         if ( _client.Indices.Exists( indexName ).Exists )
                         {
-                            entityTypes.Add( indexName );
+                            indexNameList.Add( indexName );
                         }
 
                         // check if this is a person model, if so we need to add two model types one for person and the other for businesses
@@ -487,12 +492,12 @@ namespace Rock.UniversalSearch.IndexComponents
                         {
                             if ( _client.Indices.Exists( "businessindex" ).Exists )
                             {
-                                entityTypes.Add( "businessindex" );
+                                indexNameList.Add( "businessindex" );
                             }
                         }
                     }
 
-                    searchDescriptor = searchDescriptor.Index( string.Join( ",", entityTypes ) ); // todo: consider adding indexmodeltype to the entity cache
+                    searchDescriptor = searchDescriptor.Index( indexNameList.ToArray() );
                 }
 
                 QueryContainer matchQuery = null;
@@ -510,6 +515,30 @@ namespace Rock.UniversalSearch.IndexComponents
                         }
                     }
                 }
+                /*
+                else
+                {
+                    List<Nest.Field> fieldList = new List<Nest.Field>();
+                    foreach ( var indexModelType in indexModelTypes )
+                    {
+                        foreach ( var property in indexModelType.GetProperties() )
+                        {
+                            var rockIndexFieldAttribute = property.GetCustomAttribute<RockIndexField>();
+                            if ( rockIndexFieldAttribute != null )
+                            {
+                                if ( rockIndexFieldAttribute?.Index == IndexType.Indexed )
+                                {
+                                    var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
+                                    fieldList.Add( new Nest.Field( propertyName, boost: rockIndexFieldAttribute.Boost ) );
+                                }
+                            }
+                        }
+                    }
+
+                    matchQuery |= new MultiMatchQuery() { Fields = fieldList.ToArray() };
+                }
+                */
+
 
                 switch ( searchType )
                 {
@@ -632,11 +661,11 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             searchDescriptor.Query( q => queryContainer );
 
-                            var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
+                            var globalIndexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
 
-                            if ( indexBoost.IsNotNullOrWhiteSpace() )
+                            if ( globalIndexBoost.IsNotNullOrWhiteSpace() )
                             {
-                                var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                var boostItems = globalIndexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                                 foreach ( var boostItem in boostItems )
                                 {
                                     var boostParms = boostItem.Split( new char[] { '^' } );
@@ -650,56 +679,32 @@ namespace Rock.UniversalSearch.IndexComponents
                                 }
                             }
 
+                            var resultsAsIndexModelBase = _client.Search<IndexModelBase>( searchDescriptor );
+                            var resultsAsObject = _client.Search<object>( searchDescriptor );
+                            var resultsAsDynamic = _client.Search<dynamic>( searchDescriptor );
                             results = _client.Search<dynamic>( searchDescriptor );
                             break;
                         }
                 }
 
+                if ( results == null )
+                {
+                    return documents;
+                }
+
                 totalResultsAvailable = results.Total;
 
-                // normalize the results to rock search results
-                if ( results != null )
+                foreach ( var hit in results.Hits )
                 {
-                    foreach ( var hit in results.Hits )
+                    IndexModelBase document = hit.Source;
+                    if ( document == null )
                     {
-                        IndexModelBase document = new IndexModelBase();
-
-                        try
-                        {
-                            if ( hit.Source is IDictionary<string, object> source )
-                            {
-                                Type indexModelType = source["indexModelType"] as Type;
-                                //document = source[]
-                                //Type indexModelType = Type.GetType( $"{ ( ( string ) ( ( JObject ) hit.Source )["indexModelType"] )}, { ( ( string ) ( ( JObject ) hit.Source )["indexModelAssembly"] )}" );
-
-                                if ( indexModelType != null )
-                                {
-                                    document = ( IndexModelBase ) ( ( JObject ) hit.Source ).ToObject( indexModelType ); // return the source document as the derived type
-                                }
-                                else
-                                {
-                                    document = ( ( JObject ) hit.Source ).ToObject<IndexModelBase>(); // return the source document as the base type
-                                }
-                            }
-
-                            if ( hit.Explanation != null )
-                            {
-                                document["Explain"] = hit.Explanation.ToJson();
-                            }
-
-                            if ( hit.Score.HasValue )
-                            {
-                                document.Score = hit.Score.Value;
-                            }
-
-                            documents.Add( document );
-                        }
-                        catch ( Exception ex )
-                        {
-                            Debug.WriteLine( ex );
-                            // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
-                        }
+                        continue;
                     }
+
+                    document["Explain"] = hit.Explanation.ToJson();
+                    document.Score = hit.Score ?? 0.00;
+                    documents.Add( document );
                 }
             }
 
