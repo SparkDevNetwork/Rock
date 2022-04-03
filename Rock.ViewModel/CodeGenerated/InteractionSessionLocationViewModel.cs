@@ -27,49 +27,33 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// InteractionSession View Model
+    /// InteractionSessionLocation View Model
     /// </summary>
-    public partial class InteractionSessionViewModel : ViewModelBase
+    public partial class InteractionSessionLocationViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the DeviceTypeId.
+        /// Gets or sets the CountryCode.
         /// </summary>
         /// <value>
-        /// The DeviceTypeId.
+        /// The CountryCode.
         /// </value>
-        public int? DeviceTypeId { get; set; }
+        public string CountryCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the DurationLastCalculatedDateTime.
+        /// Gets or sets the CountryValueId.
         /// </summary>
         /// <value>
-        /// The DurationLastCalculatedDateTime.
+        /// The CountryValueId.
         /// </value>
-        public DateTime DurationLastCalculatedDateTime { get; set; }
+        public int? CountryValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DurationSeconds.
+        /// Gets or sets the GeoPoint.
         /// </summary>
         /// <value>
-        /// The DurationSeconds.
+        /// The GeoPoint.
         /// </value>
-        public int? DurationSeconds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the InteractionMode.
-        /// </summary>
-        /// <value>
-        /// The InteractionMode.
-        /// </value>
-        public string InteractionMode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the InteractionSessionLocationId.
-        /// </summary>
-        /// <value>
-        /// The InteractionSessionLocationId.
-        /// </value>
-        public int? InteractionSessionLocationId { get; set; }
+        public object GeoPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the IpAddress.
@@ -80,20 +64,52 @@ namespace Rock.ViewModel
         public string IpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionData.
+        /// Gets or sets the ISP.
         /// </summary>
         /// <value>
-        /// The SessionData.
+        /// The ISP.
         /// </value>
-        public string SessionData { get; set; }
+        public string ISP { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionStartDateKey.
+        /// Gets or sets the Location.
         /// </summary>
         /// <value>
-        /// The SessionStartDateKey.
+        /// The Location.
         /// </value>
-        public int? SessionStartDateKey { get; set; }
+        public string Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the LookupDateTime.
+        /// </summary>
+        /// <value>
+        /// The LookupDateTime.
+        /// </value>
+        public DateTime LookupDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PostalCode.
+        /// </summary>
+        /// <value>
+        /// The PostalCode.
+        /// </value>
+        public string PostalCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RegionCode.
+        /// </summary>
+        /// <value>
+        /// The RegionCode.
+        /// </value>
+        public string RegionCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RegionValueId.
+        /// </summary>
+        /// <value>
+        /// The RegionValueId.
+        /// </value>
+        public int? RegionValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

@@ -448,6 +448,15 @@ namespace Rock.Model
         public bool EnableExclusiveRoutes { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable page view geo tracking].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePageViewGeoTracking { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
         /// <value>
