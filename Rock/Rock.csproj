@@ -875,6 +875,7 @@
     <Compile Include="Model\Communication\Notification\NotificationClassification.cs" />
     <Compile Include="Model\Core\AuthAuditLog\ChangeType.cs" />
     <Compile Include="Model\Core\CampusSchedule\CampusSchedule.Logic.cs" />
+    <Compile Include="Model\Core\InteractionSessionLocation\InteractionSessionLocation.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureType.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.Logic.cs" />
@@ -1654,6 +1655,7 @@
     <Compile Include="Web\UI\Controls\Pickers\MediaElementPicker.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
+    <Compile Include="Web\UI\IDisallowReturnUrlBlock.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

@@ -1343,6 +1343,14 @@ namespace Rock.Data
         public DbSet<InteractionSession> InteractionSessions { get; set; }
 
         /// <summary>
+        /// Gets or sets the Interaction Session Locations.
+        /// </summary>
+        /// <value>
+        /// the Interaction Sessions Locations.
+        /// </value>
+        public DbSet<InteractionSessionLocation> InteractionSessionLocations { get; set; }
+
+        /// <summary>
         /// Gets or sets the lava shortcodes.
         /// </summary>
         /// <value>

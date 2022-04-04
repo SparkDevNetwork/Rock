@@ -159,7 +159,6 @@ namespace RockWeb.Blocks.Communication
 
             var source = mergeInfo.RockEmailMessageRecord.Message
                 .ResolveMergeFields( mergeInfo.MergeFields, null, EnabledLavaCommands )
-                .ConvertHtmlStylesToInlineAttributes()
                 .EncodeHtml();
 
             lContent.Text = PageConstants.EmailContainerHtml.Replace( PageConstants.SystemCommunicationSourceReplacementKey, source );
@@ -348,7 +347,7 @@ namespace RockWeb.Blocks.Communication
             rockEmailMessage.FromEmail = ResolveText( systemCommunication.From, rockEmailMessage.CurrentPerson, rockEmailMessage.EnabledLavaCommands, mergeFields )
                 .Left( 255 );
 
-            // Email - Subject - Max length - RFC 2822 is 998 characters 
+            // Email - Subject - Max length - RFC 2822 is 998 characters
             rockEmailMessage.Subject = ResolveText( systemCommunication.Subject, rockEmailMessage.CurrentPerson, rockEmailMessage.EnabledLavaCommands, mergeFields )
                 .Left( 998 );
 
@@ -417,7 +416,6 @@ namespace RockWeb.Blocks.Communication
 
                 string source = mergeInfo.RockEmailMessageRecord.Message
                     .ResolveMergeFields( mergeInfo.MergeFields, null, EnabledLavaCommands )
-                    .ConvertHtmlStylesToInlineAttributes()
                     .EncodeHtml();
 
                 lContent.Text = PageConstants.EmailContainerHtml.Replace( PageConstants.SystemCommunicationSourceReplacementKey, source );

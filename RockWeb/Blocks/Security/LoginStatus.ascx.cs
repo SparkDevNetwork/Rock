@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
@@ -176,7 +177,7 @@ namespace RockWeb.Blocks.Security
                 var site = RockPage.Layout.Site;
                 if ( site.LoginPageId.HasValue )
                 {
-                    site.RedirectToLoginPage( true );
+                    site.RedirectToLoginPage( !RockPage.RockBlocks.Where( a => a is IDisallowReturnUrlBlock ).Any() );
                 }
                 else
                 {

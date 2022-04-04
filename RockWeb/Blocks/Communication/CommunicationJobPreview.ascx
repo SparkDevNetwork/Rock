@@ -43,26 +43,26 @@
                         <div id="messagePreview" class="card shadow card-message-preview">
                             <div class="card-header bg-white py-2 px-0">
                                 <div class="row no-gutters p-2">
-                                    <div class="col-xs-2 text-right">
+                                    <div class="col-xs-3 text-right">
                                         <span class="text-muted pr-md-4 text-nowrap">From</span>
                                     </div>
-                                    <div class="col-xs-10">
+                                    <div class="col-xs-9">
                                         <asp:Literal ID="lFrom" runat="server" />
                                     </div>
                                 </div>
                                 <div class="row no-gutters p-2">
-                                    <div class="col-xs-2  text-right">
+                                    <div class="col-xs-3  text-right">
                                         <span class="text-muted pr-md-4 text-nowrap">Subject</span>
                                     </div>
-                                    <div class="col-xs-10 ">
+                                    <div class="col-xs-9 ">
                                         <asp:Literal ID="lSubject" runat="server" />
                                     </div>
                                 </div>
                                 <div class="row no-gutters p-2">
-                                    <div class="col-xs-2 text-right">
+                                    <div class="col-xs-3 text-right">
                                         <span class="text-muted pr-md-4 text-nowrap">Date</span>
                                     </div>
-                                    <div class="col-xs-10 ">
+                                    <div class="col-xs-9 ">
                                         <asp:Literal ID="lDate" runat="server" />
                                     </div>
                                 </div>
@@ -118,10 +118,23 @@
         if ($(emailPreviewIframe).height() != newHeight) {
             $(emailPreviewIframe).height(newHeight);
         }
+
+        $emailPreviewIframe.load(function () {
+            var emailPreviewIframe = $emailPreviewIframe[0];
+            var newHeight = $(emailPreviewIframe.contentWindow.document).height();
+            if ($(emailPreviewIframe).height() != newHeight) {
+                $(emailPreviewIframe).height(newHeight);
+            }
+        });
     }
-    $(function () {
+
+    $(document).ready(function () {
         rescaleIframe();
+        Sys.Application.add_load(function () {
+            rescaleIframe();
+        });
     });
+
     function DesktopMode() {
         $("#messagePreview").removeClass("mobile-preview");
         $(".btn-group-view-control .btn").toggleClass("btn-default btn-info");

@@ -115,6 +115,7 @@ namespace Rock.Model
                 EnabledForShortening = model.EnabledForShortening,
                 EnableExclusiveRoutes = model.EnableExclusiveRoutes,
                 EnableMobileRedirect = model.EnableMobileRedirect,
+                EnablePageViewGeoTracking = model.EnablePageViewGeoTracking,
                 EnablePageViews = model.EnablePageViews,
                 ErrorPage = model.ErrorPage,
                 ExternalUrl = model.ExternalUrl,
@@ -224,6 +225,7 @@ namespace Rock.Model
             target.EnabledForShortening = source.EnabledForShortening;
             target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
+            target.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
             target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
             target.ExternalUrl = source.ExternalUrl;

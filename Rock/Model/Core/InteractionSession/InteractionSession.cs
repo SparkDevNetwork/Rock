@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -75,6 +76,42 @@ namespace Rock.Model
         [MaxLength( 45 )]
         public string IpAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the session start date key which is the form YYYYMMDD.
+        /// </summary>
+        /// <value>
+        /// The session start date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? SessionStartDateKey { get; set; }
+
+        /// <summary>
+        /// Gets or set the duration in seconds.
+        /// </summary>
+        /// <value>
+        /// A integer representing the duration in seconds.
+        /// </value>
+        [DataMember]
+        public int? DurationSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last date and time when this was calculated.
+        /// </summary>
+        /// <value>
+        /// The last calculated date time.
+        /// </value>
+        public DateTime DurationLastCalculatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionSessionLocation"/> Session Location that that is associated with this Interaction Session.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionSessionLocation"/> session location that this Interaction Session is associated with.
+        /// </value>
+        [DataMember]
+        public int? InteractionSessionLocationId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -87,6 +124,15 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual InteractionDeviceType DeviceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction session location.
+        /// </summary>
+        /// <value>
+        /// The interaction session location.
+        /// </value>
+        [LavaVisible]
+        public virtual InteractionSessionLocation InteractionSessionLocation { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Interaction">Interactions</see>  for this session.
@@ -118,6 +164,7 @@ namespace Rock.Model
         public InteractionSessionConfiguration()
         {
             this.HasOptional( r => r.DeviceType ).WithMany().HasForeignKey( r => r.DeviceTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.InteractionSessionLocation ).WithMany().HasForeignKey( r => r.InteractionSessionLocationId ).WillCascadeOnDelete( false );
         }
     }
 

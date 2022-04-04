@@ -21,14 +21,18 @@
 // </copyright>
 //
 
-export const enum ConnectionActivityType {
-    /** The assigned activity type */
-    Assigned = "DB4C6D25-211C-4995-B194-9FEF7551F26B",
-    /** The connected activity type */
-    Connected = "04C61230-97B6-4702-89C0-634E5AE57D6F",
-    /** The transferred activity type */
-    Transferred = "6E7C8475-2A03-42EB-A883-5B2CC6CAE519",
-    /** The Follow-up Date Reached activity type */
-    FollowupDateReached = "D0FBB866-9029-4705-B3BA-07364F3D7FC1",
-}
+using Rock.Model;
 
+namespace Rock.Rest.Controllers
+{
+    /// <summary>
+    /// InteractionSessionLocations REST API
+    /// </summary>
+    public partial class InteractionSessionLocationsController : Rock.Rest.ApiController<Rock.Model.InteractionSessionLocation>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractionSessionLocationsController"/> class.
+        /// </summary>
+        public InteractionSessionLocationsController() : base( new Rock.Model.InteractionSessionLocationService( new Rock.Data.RockContext() ) ) { } 
+    }
+}

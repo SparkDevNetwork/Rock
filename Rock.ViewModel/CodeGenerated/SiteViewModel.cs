@@ -152,6 +152,14 @@ namespace Rock.ViewModel
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary>
+        /// Gets or sets the EnablePageViewGeoTracking.
+        /// </summary>
+        /// <value>
+        /// The EnablePageViewGeoTracking.
+        /// </value>
+        public bool EnablePageViewGeoTracking { get; set; }
+
+        /// <summary>
         /// Gets or sets the EnablePageViews.
         /// </summary>
         /// <value>

@@ -496,7 +496,7 @@ namespace Rock.Web.UI.Controls
             _dpBirthdate.Required = false;
 
             _ddlGradePicker.CssClass = "form-control";
-            _ddlGradePicker.RequiredErrorMessage = _ddlGradePicker.Label + " is required for all children";
+            _ddlGradePicker.RequiredErrorMessage = "Grade is required for all children";
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDelete.Controls.Add( iDelete );

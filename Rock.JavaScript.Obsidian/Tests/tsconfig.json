@@ -1,7 +1,7 @@
 {
   "extends": "../Framework/tsconfig.json",
   "compilerOptions": {
-    "rootDir": "../Tests",
+    "rootDir": "../",
     "outDir": "./",
     "noEmit": false,
     "module": "CommonJS",

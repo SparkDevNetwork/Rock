@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// InteractionSession Service class
+    /// InteractionSessionLocation Service class
     /// </summary>
-    public partial class InteractionSessionService : Service<InteractionSession>
+    public partial class InteractionSessionLocationService : Service<InteractionSessionLocation>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractionSessionService"/> class
+        /// Initializes a new instance of the <see cref="InteractionSessionLocationService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public InteractionSessionService(RockContext context) : base(context)
+        public InteractionSessionLocationService(RockContext context) : base(context)
         {
         }
 
@@ -51,24 +51,18 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( InteractionSession item, out string errorMessage )
+        public bool CanDelete( InteractionSessionLocation item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<Interaction>( Context ).Queryable().Any( a => a.InteractionSessionId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionSession.FriendlyTypeName, Interaction.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
 
     /// <summary>
-    /// InteractionSession View Model Helper
+    /// InteractionSessionLocation View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( InteractionSession ) )]
-    public partial class InteractionSessionViewModelHelper : ViewModelHelper<InteractionSession, Rock.ViewModel.InteractionSessionViewModel>
+    [DefaultViewModelHelper( typeof( InteractionSessionLocation ) )]
+    public partial class InteractionSessionLocationViewModelHelper : ViewModelHelper<InteractionSessionLocation, Rock.ViewModel.InteractionSessionLocationViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,25 +71,27 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.InteractionSessionViewModel CreateViewModel( InteractionSession model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.InteractionSessionLocationViewModel CreateViewModel( InteractionSessionLocation model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.InteractionSessionViewModel
+            var viewModel = new Rock.ViewModel.InteractionSessionLocationViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
-                DeviceTypeId = model.DeviceTypeId,
-                DurationLastCalculatedDateTime = model.DurationLastCalculatedDateTime,
-                DurationSeconds = model.DurationSeconds,
-                InteractionMode = model.InteractionMode,
-                InteractionSessionLocationId = model.InteractionSessionLocationId,
+                CountryCode = model.CountryCode,
+                CountryValueId = model.CountryValueId,
+                GeoPoint = model.GeoPoint,
                 IpAddress = model.IpAddress,
-                SessionData = model.SessionData,
-                SessionStartDateKey = model.SessionStartDateKey,
+                ISP = model.ISP,
+                Location = model.Location,
+                LookupDateTime = model.LookupDateTime,
+                PostalCode = model.PostalCode,
+                RegionCode = model.RegionCode,
+                RegionValueId = model.RegionValueId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -112,36 +108,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class InteractionSessionExtensionMethods
+    public static partial class InteractionSessionLocationExtensionMethods
     {
         /// <summary>
-        /// Clones this InteractionSession object to a new InteractionSession object
+        /// Clones this InteractionSessionLocation object to a new InteractionSessionLocation object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static InteractionSession Clone( this InteractionSession source, bool deepCopy )
+        public static InteractionSessionLocation Clone( this InteractionSessionLocation source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as InteractionSession;
+                return source.Clone() as InteractionSessionLocation;
             }
             else
             {
-                var target = new InteractionSession();
+                var target = new InteractionSessionLocation();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this InteractionSession object to a new InteractionSession object with default values for the properties in the Entity and Model base classes.
+        /// Clones this InteractionSessionLocation object to a new InteractionSessionLocation object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static InteractionSession CloneWithoutIdentity( this InteractionSession source )
+        public static InteractionSessionLocation CloneWithoutIdentity( this InteractionSessionLocation source )
         {
-            var target = new InteractionSession();
+            var target = new InteractionSessionLocation();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -158,23 +154,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another InteractionSession object to this InteractionSession object
+        /// Copies the properties from another InteractionSessionLocation object to this InteractionSessionLocation object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this InteractionSession target, InteractionSession source )
+        public static void CopyPropertiesFrom( this InteractionSessionLocation target, InteractionSessionLocation source )
         {
             target.Id = source.Id;
-            target.DeviceTypeId = source.DeviceTypeId;
-            target.DurationLastCalculatedDateTime = source.DurationLastCalculatedDateTime;
-            target.DurationSeconds = source.DurationSeconds;
+            target.CountryCode = source.CountryCode;
+            target.CountryValueId = source.CountryValueId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InteractionMode = source.InteractionMode;
-            target.InteractionSessionLocationId = source.InteractionSessionLocationId;
+            target.GeoPoint = source.GeoPoint;
             target.IpAddress = source.IpAddress;
-            target.SessionData = source.SessionData;
-            target.SessionStartDateKey = source.SessionStartDateKey;
+            target.ISP = source.ISP;
+            target.Location = source.Location;
+            target.LookupDateTime = source.LookupDateTime;
+            target.PostalCode = source.PostalCode;
+            target.RegionCode = source.RegionCode;
+            target.RegionValueId = source.RegionValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -190,9 +188,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.InteractionSessionViewModel ToViewModel( this InteractionSession model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.InteractionSessionLocationViewModel ToViewModel( this InteractionSessionLocation model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new InteractionSessionViewModelHelper();
+            var helper = new InteractionSessionLocationViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }

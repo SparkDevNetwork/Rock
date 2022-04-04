@@ -94,8 +94,7 @@
                                 return false;
                             }
 
-                            var $targetOccurrence = $(target).closest('.js-scheduled-occurrence')
-                            var targetOccurrenceDate = new Date($targetOccurrence.find('.js-attendanceoccurrence-date').val()).getTime();
+                            var targetOccurrenceDate = new Date($(target).closest('.js-scheduled-occurrence').attr('data-attendanceoccurrence-date')).getTime();
 
                             if (blackoutDates) {
                                 // In the case of a schedule that has multiple occurrences during the week, the blackout logic is done when attempting to drag, vs preventing them from dragging
@@ -113,7 +112,6 @@
 
                             // if getting dragged from the 'No Location Specified' div, restrict to occurrences that have the same date as they signed up for
                             var $sourceOccurrence = $resourceDiv.closest('.js-scheduled-occurrence');
-                            //var allowedDate = $resourceDiv.data('occurrenceDate');
                             var hasLocation = $resourceDiv.data('hasLocation');
 
                             if ($sourceOccurrence.length && hasLocation === 0) {
