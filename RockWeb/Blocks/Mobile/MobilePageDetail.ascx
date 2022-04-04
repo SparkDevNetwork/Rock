@@ -32,8 +32,11 @@
             </div>
 
             <div class="panel-body">
+
+                <asp:Literal ID="lDescription" runat="server" />
+               
                 <div class="row">
-                    <asp:Literal ID="ltDetails" runat="server" />
+                    <asp:Literal ID="lDetails" runat="server" />
                 </div>
 
                 <div class="actions">
