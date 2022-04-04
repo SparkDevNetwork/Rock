@@ -455,13 +455,13 @@ namespace Rock.UniversalSearch.IndexComponents
 
             if ( _client != null )
             {
-                ISearchResponse<dynamic> results = null;
+                ISearchResponse<IndexModelBase> results = null;
                 List<SearchResultModel> searchResults = new List<SearchResultModel>();
 
                 QueryContainer queryContainer = new QueryContainer();
 
                 // add and field constraints
-                var searchDescriptor = new SearchDescriptor<dynamic>().AllIndices();
+                var searchDescriptor = new SearchDescriptor<IndexModelBase>().AllIndices();
 
                 List<Type> indexModelTypes;
 
@@ -552,13 +552,13 @@ namespace Rock.UniversalSearch.IndexComponents
                             // special logic to support emails
                             if ( query.Contains( "@" ) )
                             {
-                                queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
+                                queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.Email )}:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
                             }
 
                             // special logic to support phone search
                             if ( query.IsDigitsOnly() )
                             {
-                                queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
+                                queryContainer |= new QueryStringQuery { Query = $"{nameof(PersonIndex.PhoneNumbers)}:*" + query + "*", AnalyzeWildcard = true };
                             }
 
                             // add a search for all the words as one single search term
@@ -581,13 +581,13 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             searchDescriptor.Query( q => queryContainer );
 
-                            results = _client.Search<dynamic>( searchDescriptor );
+                            results = _client.Search<IndexModelBase>( searchDescriptor );
                             break;
                         }
 
                     case SearchType.Fuzzy:
                         {
-                            results = _client.Search<dynamic>( d =>
+                            results = _client.Search<IndexModelBase>( d =>
                                         d.AllIndices()
                                         .Query( q =>
                                             q.Fuzzy( f => f.Value( query )
@@ -609,7 +609,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 // special logic to support emails
                                 if ( queryTerms.Count == 1 && query.Contains( "@" ) )
                                 {
-                                    wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                                    wildcardQuery |= new QueryStringQuery { Query = $"{nameof( PersonIndex.Email )}:*" + query + "*", Analyzer = "whitespace" };
                                     enablePhraseSearch = false;
                                 }
                                 else
@@ -622,15 +622,15 @@ namespace Rock.UniversalSearch.IndexComponents
                                     if ( queryTerms.Count > 1 )
                                     {
                                         QueryContainer nameQuery = null;
-                                        nameQuery &= new QueryStringQuery { Query = "lastName:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
-                                        nameQuery &= new QueryStringQuery { Query = "firstName:" + queryTerms.First() + "*", Analyzer = "whitespace" };
+                                        nameQuery &= new QueryStringQuery { Query = $"{nameof( PersonIndex.LastName )}:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
+                                        nameQuery &= new QueryStringQuery { Query = $"{nameof( PersonIndex.FirstName )}:" + queryTerms.First() + "*", Analyzer = "whitespace" };
                                         wildcardQuery |= nameQuery;
                                     }
 
                                     // special logic to support phone search
                                     if ( query.IsDigitsOnly() )
                                     {
-                                        wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                        wildcardQuery |= new QueryStringQuery { Query = $"{nameof( PersonIndex.PhoneNumbers )}:*" + query, Analyzer = "whitespace" };
                                     }
                                 }
 
@@ -680,9 +680,7 @@ namespace Rock.UniversalSearch.IndexComponents
                             }
 
                             var resultsAsIndexModelBase = _client.Search<IndexModelBase>( searchDescriptor );
-                            var resultsAsObject = _client.Search<object>( searchDescriptor );
-                            var resultsAsDynamic = _client.Search<dynamic>( searchDescriptor );
-                            results = _client.Search<dynamic>( searchDescriptor );
+                            results = resultsAsIndexModelBase;
                             break;
                         }
                 }
@@ -725,7 +723,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 ""value"": ""{1}""
       }}
         }}
-}}", Char.ToLowerInvariant( propertyName[0] ) + propertyName.Substring( 1 ), propertyValue );
+}}", propertyName, propertyValue );
 
 
             // v2.3
@@ -743,7 +741,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="id">The identifier.</param>
         public override void DeleteDocumentById( Type documentType, int id )
         {
-            this.DeleteDocumentByProperty( documentType, "id", id );
+            this.DeleteDocumentByProperty( documentType, $"{nameof(IndexModelBase.Id)}", id );
         }
 
         /// <summary>
@@ -769,23 +767,9 @@ namespace Rock.UniversalSearch.IndexComponents
 
             var request = new GetRequest( indexName, id ) { };
 
-            var result = _client.Get<dynamic>( request );
+            var result = _client.Get<IndexModelBase>( request );
 
-            IndexModelBase document = new IndexModelBase();
-
-            if ( result.Source != null )
-            {
-                Type indexModelType = Type.GetType( ( string ) ( ( JObject ) result.Source )["indexModelType"] );
-
-                if ( indexModelType != null )
-                {
-                    document = ( IndexModelBase ) ( ( JObject ) result.Source ).ToObject( indexModelType ); // return the source document as the derived type
-                }
-                else
-                {
-                    document = ( ( JObject ) result.Source ).ToObject<IndexModelBase>(); // return the source document as the base type
-                }
-            }
+            var document = result.Source;
 
             return document;
         }
