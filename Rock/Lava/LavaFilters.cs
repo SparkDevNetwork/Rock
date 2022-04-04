@@ -3997,8 +3997,9 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="dataObject">The data object.</param>
+        /// <param name="purposeKey">The purpose key.</param>
         /// <returns></returns>
-        public static object AppendFollowing( ILavaRenderContext context, object dataObject )
+        public static object AppendFollowing( ILavaRenderContext context, object dataObject, string purposeKey = null )
         {
             if ( dataObject == null )
             {
@@ -4127,8 +4128,18 @@ namespace Rock.Lava
 
             if ( currentPerson != null )
             {
-                followedEntityIds = new FollowingService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
-                    .Where( e => entityIdList.Contains( e.Id ) ).Select( a => a.Id ).ToList();
+                if ( purposeKey.IsNotNullOrWhiteSpace() )
+                {
+                    // Get with purpose key
+                    followedEntityIds = new FollowingService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id, purposeKey )
+                        .Where( e => entityIdList.Contains( e.Id ) ).Select( a => a.Id ).ToList();
+                }
+                else
+                {
+                    // Get without purpose key
+                    followedEntityIds = new FollowingService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
+                        .Where( e => entityIdList.Contains( e.Id ) ).Select( a => a.Id ).ToList();
+                } 
             }
             else
             {
@@ -5846,8 +5857,35 @@ namespace Rock.Lava
         /// <param name="input">The input entity to use for follow testing.</param>
         /// <param name="personObject">An optional Person object to use when determining followed status.</param>
         /// <returns></returns>
-        public static bool IsFollowed( ILavaRenderContext context, object input, object personObject = null )
+        public static bool IsFollowed( ILavaRenderContext context, object input, object parameter1 = null, object parameter2 = null )
         {
+            /*
+                JME 4/4/2022
+                This filter used to take one optional parameter 'AlternatePerson'. We however want to also be able to provide
+                a 'PurposeKey'. The purpose key though should be the second paramter. We change the input names to be parameter1 and
+                parameter2 so we can keep any old use cases (using alternate person) though unlikely working.
+            */
+
+            Person personObject = null;
+            var purposeKey = string.Empty;
+
+            // Check if the first parameter is a person (backwards compatibility). If it's
+            // not then we can assume the second parameter is for the alternate person
+            if ( parameter1 is Person )
+            {
+                personObject = (Person)parameter1;
+            }
+            else
+            {
+                personObject = ( Person ) parameter2;
+            }
+
+            // Check if first parameter is the purpose key
+            if ( parameter1 is String )
+            {
+                purposeKey = ( string ) parameter1;
+            }
+
             //
             // Ensure the input is an entity object.
             //
@@ -5874,12 +5912,21 @@ namespace Rock.Lava
             using ( var rockContext = new RockContext() ) // Can't use LavaHelper.GetRockContextFromLavaContext( context) since it's wrapped in a using
             {
                 int followingEntityTypeId = entity.TypeId;
-                var followed = new FollowingService( rockContext ).Queryable()
+                var followedQry = new FollowingService( rockContext ).Queryable()
                     .Where( f => f.EntityTypeId == followingEntityTypeId && f.EntityId == entity.Id )
-                    .Where( f => f.PersonAlias.PersonId == person.Id )
-                    .Any();
+                    .Where( f => f.PersonAlias.PersonId == person.Id );
 
-                return followed;
+                // Add purpose key logic
+                if ( purposeKey.IsNotNullOrWhiteSpace() )
+                {
+                    followedQry = followedQry.Where( f => f.PurposeKey == purposeKey );
+                }
+                else
+                {
+                    followedQry = followedQry.Where( f => string.IsNullOrEmpty( f.PurposeKey ) );
+                }
+
+                return followedQry.Any();
             }
         }
 
