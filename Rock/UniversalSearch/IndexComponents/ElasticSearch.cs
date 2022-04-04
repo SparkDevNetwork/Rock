@@ -235,7 +235,7 @@ namespace Rock.UniversalSearch.IndexComponents
             {
                 mappingType = document.GetType().Name.ToLower();
             }
-            
+
             var indexResult = _client.IndexAsync( document, s => s.Index( indexName ) );
         }
 
@@ -251,10 +251,6 @@ namespace Rock.UniversalSearch.IndexComponents
                 indexName = typeof( T ).Name.ToLower();
             }
 
-            // v2.3
-            //_client.DeleteByQueryAsync<T>( indexName, typeof( T ).Name.ToLower(), d => d.MatchAll() );
-
-            // v7.x ??
             _client.DeleteByQueryAsync<T>( d => d.Index( indexName ).MatchAll() );
         }
 
@@ -320,32 +316,26 @@ namespace Rock.UniversalSearch.IndexComponents
 
             foreach ( var propertyInfo in modelProperties )
             {
-                var indexAttributes = propertyInfo.GetCustomAttributes( false );
-                var indexAttribute = propertyInfo.GetCustomAttributes( typeof( RockIndexField ), false );
-                if ( indexAttribute.Length > 0 )
+                var indexAttribute = propertyInfo.GetCustomAttribute<RockIndexField>();
+                if ( indexAttribute != null )
                 {
-                    var attribute = ( RockIndexField ) indexAttribute[0];
-
-                    //var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
-
                     // rewrite non-string index option (would be nice if they made the enums match up...)
                     bool nsIndexOption = true;
-                    if ( attribute.Type != IndexFieldType.String )
+                    if ( indexAttribute.Type != IndexFieldType.String )
                     {
-                        if ( attribute.Index == IndexType.NotIndexed )
+                        if ( indexAttribute.Index == IndexType.NotIndexed )
                         {
                             nsIndexOption = false;
                         }
                     }
 
-                    switch ( attribute.Type )
+                    switch ( indexAttribute.Type )
                     {
                         case IndexFieldType.Boolean:
                             {
                                 typeMapping.Properties.Add( propertyInfo, new BooleanProperty()
                                 {
                                     Name = propertyInfo,
-                                    //Boost = attribute.Boost,
                                     Index = nsIndexOption
                                 } );
                                 break;
@@ -355,7 +345,6 @@ namespace Rock.UniversalSearch.IndexComponents
                                 typeMapping.Properties.Add( propertyInfo, new DateProperty()
                                 {
                                     Name = propertyInfo,
-                                    //Boost = attribute.Boost,
                                     Index = nsIndexOption
                                 } );
                                 break;
@@ -365,7 +354,6 @@ namespace Rock.UniversalSearch.IndexComponents
                                 typeMapping.Properties.Add( propertyInfo, new NumberProperty()
                                 {
                                     Name = propertyInfo,
-                                    //  Boost = attribute.Boost,
                                     Index = nsIndexOption
                                 } );
                                 break;
@@ -374,12 +362,11 @@ namespace Rock.UniversalSearch.IndexComponents
                             {
                                 var stringProperty = new TextProperty();
                                 stringProperty.Name = propertyInfo;
-                                //stringProperty.Boost = attribute.Boost;
                                 stringProperty.Index = true;
 
-                                if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
+                                if ( !string.IsNullOrWhiteSpace( indexAttribute.Analyzer ) )
                                 {
-                                    stringProperty.Analyzer = attribute.Analyzer;
+                                    stringProperty.Analyzer = indexAttribute.Analyzer;
                                 }
 
                                 typeMapping.Properties.Add( propertyInfo, stringProperty );
@@ -515,9 +502,9 @@ namespace Rock.UniversalSearch.IndexComponents
                         }
                     }
                 }
-                /*
                 else
                 {
+                    //  ##TODO## figure out how to make boost work like it used to ###
                     List<Nest.Field> fieldList = new List<Nest.Field>();
                     foreach ( var indexModelType in indexModelTypes )
                     {
@@ -528,16 +515,14 @@ namespace Rock.UniversalSearch.IndexComponents
                             {
                                 if ( rockIndexFieldAttribute?.Index == IndexType.Indexed )
                                 {
-                                    var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
-                                    fieldList.Add( new Nest.Field( propertyName, boost: rockIndexFieldAttribute.Boost ) );
+                                    fieldList.Add( new Nest.Field( property, boost: rockIndexFieldAttribute.Boost ) );
                                 }
                             }
                         }
                     }
 
-                    matchQuery |= new MultiMatchQuery() { Fields = fieldList.ToArray() };
+                    matchQuery |= new MultiMatchQuery() { Fields = fieldList.ToArray(), Query = query, Analyzer = "whitespace", FuzzyRewrite = MultiTermQueryRewrite.ScoringBoolean };
                 }
-                */
 
 
                 switch ( searchType )
@@ -558,7 +543,7 @@ namespace Rock.UniversalSearch.IndexComponents
                             // special logic to support phone search
                             if ( query.IsDigitsOnly() )
                             {
-                                queryContainer |= new QueryStringQuery { Query = $"{nameof(PersonIndex.PhoneNumbers)}:*" + query + "*", AnalyzeWildcard = true };
+                                queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.PhoneNumbers )}:*" + query + "*", AnalyzeWildcard = true };
                             }
 
                             // add a search for all the words as one single search term
@@ -725,11 +710,6 @@ namespace Rock.UniversalSearch.IndexComponents
         }}
 }}", propertyName, propertyValue );
 
-
-            // v2.3
-            //var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ) );
-
-            // v7
             var response = _client.DeleteByQuery<IndexModelBase>( qd =>
                 qd.Index( documentType.Name.ToLower() ).Query( q => q.Raw( jsonSearch ) ) );
         }
@@ -741,7 +721,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="id">The identifier.</param>
         public override void DeleteDocumentById( Type documentType, int id )
         {
-            this.DeleteDocumentByProperty( documentType, $"{nameof(IndexModelBase.Id)}", id );
+            this.DeleteDocumentByProperty( documentType, $"{nameof( IndexModelBase.Id )}", id );
         }
 
         /// <summary>
