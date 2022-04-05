@@ -312,6 +312,15 @@ export default defineComponent({
             </Panel>
             <Panel title="Conditionals" v-model="conditionalPanelOpen" :hasCollapse="true">
                 <LoadingIndicator v-if="isConditionalsLoading" />
+
+                <div v-else-if="conditionalSources.length < 1">
+                    <Alert :alertType="AlertType.Warning">No source fields available.</Alert>
+
+                    <div class="d-flex justify-content-end">
+                        <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>
+                    </div>
+                </div>
+
                 <div v-else>
                     <div v-if="hasConditions">
                         <div v-html="conditionalTitle"></div>
