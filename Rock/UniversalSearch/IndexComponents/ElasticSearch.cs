@@ -26,10 +26,7 @@ using Elasticsearch.Net;
 using Nest;
 using Nest.JsonNetSerializer;
 
-using Newtonsoft.Json.Linq;
-
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch.IndexModels.Attributes;
