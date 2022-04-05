@@ -176,26 +176,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         connectionNameHtml = connectionName;
                     }
 
-                    listHtml += string.Format(
-                        "<li {0}>{1} - <small>{2}</small></li>",
-                        ( connectRequest.ConnectionRequestConnectionState == ConnectionState.Connected || connectRequest.ConnectionRequestConnectionState == ConnectionState.Inactive ) ? "class='is-inactive'" : string.Empty,
-                        connectionNameHtml,
-                        connectRequest.ConnectionRequestConnectionState == ConnectionState.Connected ? "Connected" : connectRequest.ConnectionStatus.ToString() );
-
-                    var isFirstRow = _currentConnectionTypeId == 0;
                     if ( ShowNewConnectionType( connectRequest.ConnectionType.Id ) )
                     {
-                        var headerHtml = @"<li>
-                                <span class=""control-label"">" + connectRequest.ConnectionType.Name + @"</span>
-                                  <ul class=""connectionopportunity-list list-unstyled margin-l-md"">";
+                        listHtml += string.Format( "<div class='card-subheader'>{0}</div>", connectRequest.ConnectionType.Name );
+                    }
 
-                        if ( !isFirstRow )
-                        {
-                            // Close previous connection type.
-                            headerHtml = "</ul></li>" + headerHtml;
-                        }
-
-                        listHtml = headerHtml + listHtml;
+                    const string evenTemplate = @"
+<dl class='m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium'>
+    <dt class='text-gray-900'>{0}</dt>
+    <dd class='text-gray-500'>{1}</dd>
+ </dl>";
+                    const string oddTemplate = @"
+<dl class='bg-gray-100 m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium'>
+    <dt class='text-gray-900'>{0}</dt>
+    <dd class='text-gray-500'>{1}</dd>
+</dl>
+";
+                    string connectionStatus = connectRequest.ConnectionRequestConnectionState == ConnectionState.Connected ? "Connected" : connectRequest.ConnectionStatus.ToString();
+                    if ( e.Item.ItemIndex % 2 == 0 )
+                    {
+                        listHtml += string.Format( evenTemplate, connectionNameHtml, connectionStatus );
+                    }
+                    else
+                    {
+                        listHtml += string.Format( oddTemplate, connectionNameHtml, connectionStatus );
                     }
 
                     lConnectionOpportunityList.Text = listHtml;

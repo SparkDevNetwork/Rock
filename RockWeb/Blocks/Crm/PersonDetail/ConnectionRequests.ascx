@@ -2,29 +2,17 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <section class="panel panel-persondetails">
-
-            <div class="panel-heading clearfix">
-                <h3 class="panel-title pull-left">
-                    <i class="fa fa-plug"></i>
-                    <asp:Literal ID="lTitle" runat="server" Text="Connection Requests" /></h3>
+        <div class="card card-profile overflow-hidden">
+            <div class="card-header">Connection Requests</div>
+            <div class="" style="">
+                <asp:Repeater ID="rConnectionTypes" runat="server" OnItemDataBound="rConnectionTypes_ItemDataBound">
+                    <ItemTemplate>
+                        <asp:Literal runat="server" ID="lConnectionOpportunityList" />
+                    </ItemTemplate>
+                </asp:Repeater>
             </div>
 
-            <div class="panel-body">
-                <ul class="connectiontype-list list-unstyled">
-                    <asp:Repeater ID="rConnectionTypes" runat="server" OnItemDataBound="rConnectionTypes_ItemDataBound">
-                        <ItemTemplate>
-                            <asp:Literal runat="server" ID="lConnectionOpportunityList" />
-                        </ItemTemplate>
-                        <FooterTemplate>
-                                </ul>
-                            </li>
-                        </FooterTemplate>
-                    </asp:Repeater>
-                </ul>
-            </div>
-
-        </section>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>
