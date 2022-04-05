@@ -33,9 +33,6 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Stark List" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new list block." )]

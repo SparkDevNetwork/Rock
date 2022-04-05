@@ -33,9 +33,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "System Configuration" )]
     [Category( "Administration" )]
     [Description( "Used for making configuration changes to configurable items in the web.config." )]

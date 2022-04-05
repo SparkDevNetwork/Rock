@@ -36,9 +36,6 @@ using Rock.Lava;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Internal Communication View" )]
     [Category( "Utility" )]
     [Description( "Block for showing the contents of internal content channels." )]

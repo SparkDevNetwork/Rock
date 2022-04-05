@@ -32,9 +32,6 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Member Add From URL" )]
     [Category( "Groups" )]
     [Description( "Adds a person to a group based on inputs from the URL query string." )]
