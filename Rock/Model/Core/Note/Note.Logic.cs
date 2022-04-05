@@ -223,7 +223,7 @@ namespace Rock.Model
                 }
                 else 
                 {
-                    return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
+                    return base.IsAuthorized( Rock.Security.Authorization.EDIT, person );
                 }
             }
             else
