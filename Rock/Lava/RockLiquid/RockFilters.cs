@@ -6064,8 +6064,9 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input entity to use for follow testing.</param>
-        /// <param name="personObject">An optional Person object to use when determining followed status.</param>
-        /// <returns></returns>
+        /// <param name="parameter1">The parameter1.</param>
+        /// <param name="parameter2">The parameter2.</param>
+        /// <returns><c>true</c> if the specified context is followed; otherwise, <c>false</c>.</returns>
         public static bool IsFollowed( Context context, object input, object parameter1 = null, object parameter2 = null )
         {
             /*
