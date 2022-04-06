@@ -153,6 +153,27 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool IsAuthorized( string action, Person person )
         {
+            /*
+                SUMMARY OF NOTE SECURITY LOGIC
+
+                Private      - Private notes are ONLY viewable by the creator. No one else no matter what their permissions are can see them.
+
+                Approve      - This is a custom security verb for notes.
+
+                View         - You can view a note if you have View security to the note itself
+                               OR you have approval rights to the note
+                               OR you created or modified it in the past
+                               OR you have rights based off of the note type
+
+                Edit         - Edit access gives you rights to add a new note
+                               AND edit notes that you have authored
+                               IMPORTANT - Edit does not give you rights to edit notes that someone else has authored
+
+                Administrate - Allows you to edit notes, even those you did not create.
+            */
+           
+
+
             if ( this.IsPrivateNote )
             {
                 // If this is a private note, the creator has FULL access to it. Everybody else has NO access (including admins)
