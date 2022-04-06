@@ -775,6 +775,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 var resultAccountAmounts = new List<AccountIdAmount>();
+                var selectedCampusId = this.CampusId ?? 0;
 
                 if ( AmountEntryMode == AccountAmountEntryMode.MultipleAccounts )
                 {
@@ -783,7 +784,7 @@ namespace Rock.Web.UI.Controls
                         var hfAccountAmountMultiAccountId = item.FindControl( RepeaterControlIds.ID_hfAccountAmountMultiAccountId ) as HiddenField;
                         var displayedAccountId = hfAccountAmountMultiAccountId.Value.AsInteger();
                         var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
-                        var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( _ddlMultiAccountCampus.SelectedValue.AsInteger(), displayedAccount );
+                        var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( selectedCampusId, displayedAccount );
                         var cbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
                         resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, cbAccountAmountMulti.Value ) );
                     }
@@ -792,7 +793,7 @@ namespace Rock.Web.UI.Controls
                 {
                     var displayedAccountId = _ddlAccountSingle.SelectedValue.AsInteger();
                     var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
-                    var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( _ddlMultiAccountCampus.SelectedValue.AsInteger(), displayedAccount );
+                    var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( selectedCampusId, displayedAccount );
 
                     resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, _cbAmountAccountSingle.Value ) );
                 }

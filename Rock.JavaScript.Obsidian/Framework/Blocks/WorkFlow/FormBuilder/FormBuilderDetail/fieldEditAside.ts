@@ -18,6 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldFilterEditor from "../../../../Controls/fieldFilterEditor";
 import FieldTypeEditor from "../../../../Controls/fieldTypeEditor";
+import Alert, { AlertType } from "../../../../Elements/alert";
 import Modal from "../../../../Controls/modal";
 import Panel from "../../../../Controls/panel";
 import RockForm from "../../../../Controls/rockForm";
@@ -85,7 +86,8 @@ export default defineComponent({
         RockButton,
         RockForm,
         Slider,
-        TextBox
+        TextBox,
+        Alert
     },
 
     props: {
@@ -131,7 +133,6 @@ export default defineComponent({
 
     setup(props, { emit }) {
         // #region Values
-
         const invokeBlockAction = useInvokeBlockAction();
         const fieldTypes = useFormSources().fieldTypes ?? [];
         let conditionalSourcesLoadAttempted = false;
@@ -423,7 +424,8 @@ export default defineComponent({
             onFieldTypeModelValueUpdate,
             onValidationChanged,
             scrollableElement,
-            validationErrors
+            validationErrors,
+            AlertType
         };
     },
 
@@ -454,6 +456,14 @@ export default defineComponent({
 
             <Panel title="Conditionals" v-model="conditionalPanelOpen" :hasCollapse="true">
                 <LoadingIndicator v-if="isConditionalsLoading" />
+
+                <div v-else-if="conditionalSources.length < 1">
+                    <Alert :alertType="AlertType.Warning">No source fields available.</Alert>
+
+                    <div class="d-flex justify-content-end">
+                        <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>
+                    </div>
+                </div>
 
                 <div v-else>
                     <div v-if="hasConditions">

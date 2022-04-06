@@ -213,7 +213,7 @@ WHERE
             RockMigrationHelper.UpdateEntityType( "Rock.Model.Interaction", SystemGuid.EntityType.INTERACTION, true, true );
             Sql( $"UPDATE [EntityType] SET [IsAchievementsEnabled] = 1 WHERE [Guid] = '{ SystemGuid.EntityType.INTERACTION }';" );
 
-            RockMigrationHelper.AddEntityAttribute(
+            RockMigrationHelper.AddOrUpdateEntityAttribute(
                 "Rock.Model.AchievementType",
                 "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
                 "ComponentEntityTypeId",
@@ -223,9 +223,10 @@ WHERE
                 "The source streak type from which achievements are earned.",
                 4,
                 string.Empty,
-                "E926DAAE-980A-4BEE-9CF8-C3BF52F28D9D" );
+                "E926DAAE-980A-4BEE-9CF8-C3BF52F28D9D",
+                null );
 
-            RockMigrationHelper.AddEntityAttribute(
+            RockMigrationHelper.AddOrUpdateEntityAttribute(
                 "Rock.Model.AchievementType",
                 "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
                 "ComponentEntityTypeId",
@@ -235,7 +236,8 @@ WHERE
                 "The source streak type from which achievements are earned.",
                 4,
                 string.Empty,
-                "BEDD14D0-450E-475C-8D9F-404DDE350530" );
+                "BEDD14D0-450E-475C-8D9F-404DDE350530",
+                null );
 
             Sql(
 $@"INSERT INTO AttributeValue (
