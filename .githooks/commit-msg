@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# set all strings to UTF-8
+LC_CTYPE=en_US.utf8
+
 # regex to validate the commit message against
 commit_regex='(^([+]+[ ]+(\(API\)|\(CMS\)|\(Check\-in\)|\(Communication\)|\(Connection\)|\(Core\)|\(CRM\)|\(Engagement\)|\(Event\)|\(Farm\)|\(Finance\)|\(Group\)|\(Lava\)|\(Mobile\)|\(Prayer\)|\(Reporting\)|\(Workflow\)|\(Other\))+[ ]+(Add*|Fix*|Improv*|Updat*)+)|^([-]+[ ]+(\(API\)|\(CMS\)|\(Check\-in\)|\(Communication\)|\(Connection\)|\(Core\)|\(CRM\)|\(Engagement\)|\(Event\)|\(Farm\)|\(Finance\)|\(Group\)|\(Lava\)|\(Mobile\)|\(Prayer\)|\(Reporting\)|\(Workflow\)|\(Other\))*[ ]*(Add*|Fix*|Improv*|Updat*)+))+[\s\S][^\n]+(\. (\(Fixes \#[0-9]+\))$|[\w]\.$)+|^(Merge+.+)|^(Revert+.+)|^(Cherry+.+)'
 error_message="Your commit message should be in the format '+/- (Domain) Add/Fix/Improve/Update Text. (Fixes #0000)'"
