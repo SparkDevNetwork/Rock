@@ -211,7 +211,7 @@ namespace Rock.Data
                 id = Rock.Utility.IdHasher.Instance.GetId( key );
             }
 
-            return id.HasValue ? Queryable().Where( e => e.Id == id.Value ) : null;
+            return id.HasValue ? Queryable().Where( e => e.Id == id.Value ) : Queryable().Where( e => false );
         }
 
         #endregion

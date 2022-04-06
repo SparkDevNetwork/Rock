@@ -188,6 +188,7 @@
     <Compile Include="Lava\Engine\MockTemplateCacheService.cs" />
     <Compile Include="Model\EventTests.cs" />
     <Compile Include="Model\BinaryFileTests.cs" />
+    <Compile Include="Model\IdKeyTests.cs" />
     <Compile Include="Model\LocationTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
