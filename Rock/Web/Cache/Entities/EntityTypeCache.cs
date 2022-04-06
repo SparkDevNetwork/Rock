@@ -593,7 +593,7 @@ namespace Rock.Web.Cache
 
             if ( rockContext != null )
             {
-                var entityTypeModel = new EntityTypeService( rockContext ).Get( name, createNew );
+                var entityTypeModel = new EntityTypeService( rockContext ).GetByName( name, createNew );
                 if ( entityTypeModel != null )
                 {
                     entityType = Get( entityTypeModel );
@@ -603,7 +603,7 @@ namespace Rock.Web.Cache
             {
                 using ( var myRockContext = new RockContext() )
                 {
-                    var entityTypeModel = new EntityTypeService( myRockContext ).Get( name, createNew );
+                    var entityTypeModel = new EntityTypeService( myRockContext ).GetByName( name, createNew );
                     if ( entityTypeModel != null )
                     {
                         entityType = Get( entityTypeModel );
