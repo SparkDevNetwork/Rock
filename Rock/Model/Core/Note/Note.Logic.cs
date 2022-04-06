@@ -171,8 +171,6 @@ namespace Rock.Model
 
                 Administrate - Allows you to edit notes, even those you did not create.
             */
-           
-
 
             if ( this.IsPrivateNote )
             {
