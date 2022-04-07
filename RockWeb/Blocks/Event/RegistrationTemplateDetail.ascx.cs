@@ -2313,7 +2313,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbDisplayInLine.Visible = isNonLegacySelected;
             cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
-            cbAllowExternalUpdates.Help = getAllowExternalUpdatesHelpText( !isNonLegacySelected );
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
 
             if ( isNonLegacySelected )
             {
@@ -2618,7 +2618,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
             cbAllowExternalUpdates.Enabled = !isNonLegacySignatureSelected;
-            cbAllowExternalUpdates.Help = getAllowExternalUpdatesHelpText( !isNonLegacySignatureSelected );
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySignatureSelected );
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
@@ -2683,7 +2683,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// Gets the help text for the AllowExternalUpdates field based on whether or not it is enabled
         /// because if it's disabled, we'd like to explain to the user why.
         /// </summary>
-        private string getAllowExternalUpdatesHelpText(bool isEnabled)
+        private string GetAllowExternalUpdatesHelpText(bool isEnabled)
         {
             if (isEnabled)
             {
