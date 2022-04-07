@@ -112,6 +112,10 @@
     <Compile Include="Migrations\202204042108359_MemberAttendeeDataViewWhoseFix.Designer.cs">
       <DependentUpon>202204042108359_MemberAttendeeDataViewWhoseFix.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202204072027407_Rollup_20220407.cs" />
+    <Compile Include="Migrations\202204072027407_Rollup_20220407.Designer.cs">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1086,6 +1090,9 @@
     <EmbeddedResource Include="Migrations\202204042108359_MemberAttendeeDataViewWhoseFix.resx">
       <DependentUpon>202204042108359_MemberAttendeeDataViewWhoseFix.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202204072027407_Rollup_20220407.resx">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
     </EmbeddedResource>
@@ -1805,6 +1812,15 @@
     </Content>
     <Content Include="Migrations\202203152204281_Rollup_20220315_update-chartjs.sql">
       <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202204072027407_Rollup_20220407_FixDuplicateConnectionOpportunitySelectBlock.sql">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202204072027407_Rollup_20220407_FixDuplicateConnectionRequestBoardBlock.sql">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 13.0\Version 1.13.0\202108251744427_Rollups_20210825_kpilinkshortcode.sql">
       <DependentUpon>202108251744427_Rollups_20210825.cs</DependentUpon>

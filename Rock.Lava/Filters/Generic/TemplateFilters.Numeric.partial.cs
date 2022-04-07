@@ -65,29 +65,51 @@ namespace Rock.Lava.Filters
         }
 
         /// <summary>
-        /// Formats the specified input.
+        /// Formats numeric input using the specified pattern string.
+        /// Supports numeric formats that are implemented in the .NET Framework.
+        /// For more details, refer https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="format">The format.</param>
+        /// <param name="input">The input value.</param>
+        /// <param name="format">The format string.</param>
         /// <returns></returns>
         public static string Format( object input, string format )
         {
-            var inputString = input.ToString();
-            
-            if ( string.IsNullOrWhiteSpace( format ) )
+            var inputString = input.ToStringSafe();
+
+            if ( string.IsNullOrWhiteSpace( inputString )
+                 || string.IsNullOrWhiteSpace( format ) )
             {
                 return inputString;
             }
 
-            var decimalValue = inputString.AsDecimalOrNull();
+            try
+            {
+                // Attempt to convert the value to a number.
+                var decimalValue = inputString.AsDecimalOrNull();
 
-            if ( decimalValue == null )
-            {
-                return string.Format( "{0:" + format + "}", inputString );
+                if ( decimalValue != null )
+                {
+                    var formatChar = format.Trim().Left( 1 ).ToLower();
+                    if ( formatChar == "d"
+                         || formatChar == "x" )
+                    {
+                        // Decimal and hexadecimal formats are only supported for integral types, so convert the value to an integer before formatting.
+                        return string.Format( "{0:" + format + "}", ( int ) Math.Truncate( decimalValue.Value ) );
+                    }
+
+                    return string.Format( "{0:" + format + "}", decimalValue );
+                }
+                else
+                {
+                    // The value is not numeric, so try to apply the format directly to the input string.
+                    return string.Format( "{0:" + format + "}", inputString );
+                }
+
             }
-            else
+            catch ( FormatException )
             {
-                return string.Format( "{0:" + format + "}", decimalValue );
+                // The format string is invalid, so return the unformatted input.
+                return inputString;
             }
         }
 
