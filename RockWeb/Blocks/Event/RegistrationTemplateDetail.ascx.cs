@@ -2309,9 +2309,16 @@ The logged-in person's information will be used to complete the registrar inform
         protected void ddlSignatureDocumentTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
             var selectedTemplate = GetSelectedTemplate();
-            cbDisplayInLine.Visible = selectedTemplate != null && selectedTemplate.IsLegacy != true;
-            cbAllowExternalUpdates.Enabled = selectedTemplate == null || selectedTemplate.IsLegacy == true;
-            cbAllowExternalUpdates.Help = getAllowExternalUpdatesHelpText( cbAllowExternalUpdates.Enabled );
+            var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
+
+            cbDisplayInLine.Visible = isNonLegacySelected;
+            cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
+            cbAllowExternalUpdates.Help = getAllowExternalUpdatesHelpText( !isNonLegacySelected );
+
+            if ( isNonLegacySelected )
+            {
+                cbAllowExternalUpdates.Checked = false;
+            }
         }
 
         #endregion
@@ -2566,6 +2573,8 @@ The logged-in person's information will be used to complete the registrar inform
         private void ShowEditDetails( RegistrationTemplate registrationTemplate, RockContext rockContext )
         {
             var signatureDocTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
+            var isNonLegacySignatureSelected = signatureDocTemplate != null && signatureDocTemplate.IsLegacy != true;
+
             if ( registrationTemplate.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( RegistrationTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -2593,7 +2602,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
-            cbDisplayInLine.Visible = signatureDocTemplate != null && signatureDocTemplate.IsLegacy != true;
+            cbDisplayInLine.Visible = isNonLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
@@ -2608,8 +2617,8 @@ The logged-in person's information will be used to complete the registrar inform
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
-            cbAllowExternalUpdates.Enabled = signatureDocTemplate == null || signatureDocTemplate.IsLegacy == true;
-            cbAllowExternalUpdates.Help = getAllowExternalUpdatesHelpText( cbAllowExternalUpdates.Enabled );
+            cbAllowExternalUpdates.Enabled = !isNonLegacySignatureSelected;
+            cbAllowExternalUpdates.Help = getAllowExternalUpdatesHelpText( !isNonLegacySignatureSelected );
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
