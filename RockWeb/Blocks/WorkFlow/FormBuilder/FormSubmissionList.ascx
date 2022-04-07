@@ -48,12 +48,12 @@
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true" RowItemText="Submissions">
+                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true" RowItemText="Submission">
                         <Columns>
                             <Rock:SelectField />
-                            <Rock:DateField DataField="ActivatedDateTime" HeaderText="Submitted" SortExpression="SubmittedDate" />
-                            <Rock:CampusField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
-                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="Person" />
+                            <Rock:DateField DataField="ActivatedDateTime" HeaderText="Submitted" SortExpression="ActivatedDateTime" />
+                            <Rock:CampusField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="InitiatorPersonAlias.Person.FirstName,InitiatorPersonAlias.Person.LastName,InitiatorPersonAlias.Person.NickName" />
                         </Columns>
                     </Rock:Grid>
                 </div>
