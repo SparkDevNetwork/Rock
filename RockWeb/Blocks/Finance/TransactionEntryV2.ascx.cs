@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The Lava template to use to provide the cover the fees prompt to the individual. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         Key = AttributeKey.FeeCoverageMessage,
-        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% ({{ CalculatedAmount }}) to help cover the electronic transaction fees.",
+        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% ({{ AmountHTML }}) to help cover the electronic transaction fees.",
         Order = 28 )]
 
     #region Scheduled Transactions
@@ -1304,9 +1304,9 @@ mission. We are so grateful for your commitment.</p>
                     return;
                 }
 
-                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, $"{RockCurrencyCodeInfo.GetCurrencySymbol()}<span class='{calculatedAmountJSHook}' decimal-places='{RockCurrencyCodeInfo.GetDecimalPlaces()}'></span>" );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, $"{RockCurrencyCodeInfo.GetCurrencySymbol()}<span class='{calculatedAmountJSHook}' decimal-places='{RockCurrencyCodeInfo.GetDecimalPlaces()}'></span>" );
                 feeCoverageMergeFields.AddOrReplace( MergeFieldKey.IsSavedAccount, true );
-                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.AmountHTML, null );
+                feeCoverageMergeFields.AddOrReplace( MergeFieldKey.CalculatedAmount, null );
 
                 cbGiveNowCoverTheFee.Text = feeCoverageMessageTemplate.ResolveMergeFields( feeCoverageMergeFields );
             }

@@ -31,7 +31,7 @@ namespace Rock.Model
             protected override void PreSave()
             {
                 var updateAchievementAttemptMsg = GetUpdateAchievementAttemptMessage( this.Entry );
-                updateAchievementAttemptMsg.SendWhen( this.DbContext.WrappedTransactionCompleted );
+                updateAchievementAttemptMsg.SendWhen( this.DbContext.WrappedTransactionCompletedTask );
                 base.PreSave();
             }
 
