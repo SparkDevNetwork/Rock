@@ -80,8 +80,10 @@ namespace Rock.Tests.Integration.Connections
                     producedConnectionRequestWorkflow = connectionRequestWorkflowQuery.Any();
                     if ( producedConnectionRequestWorkflow )
                     {
-                        // clean up produced workflow
+                        // Looks like it created it, so cleanup and break out
                         connectionRequestWorkflowService.DeleteRange( connectionRequestWorkflowQuery.ToList() );
+
+                        break;
                     }
 
                     retryAttempt++;
