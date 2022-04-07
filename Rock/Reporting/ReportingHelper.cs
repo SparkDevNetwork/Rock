@@ -1031,7 +1031,7 @@ namespace Rock.Reporting
                         if ( !string.IsNullOrWhiteSpace( fieldName ) )
                         {
                             var entityFields = EntityHelper.GetEntityFields( reportEntityTypeModel );
-                            var entityField = entityFields.Where( a => a.Name == fieldName ).FirstOrDefault();
+                            var entityField = entityFields.FindFromFilterSelection( fieldName );
                             if ( entityField != null )
                             {
                                 filterInfo.Title = entityField.Title;

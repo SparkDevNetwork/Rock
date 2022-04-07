@@ -506,6 +506,24 @@ namespace Rock.Field
                 row.Controls.Add( col1 );
                 if ( !compareControl.Visible )
                 {
+                    // if we aren't displaying the CompareControl, render a hidden field with the selected compare value
+                    // so that reportingInclude.js can do the display logic based on the selected compare value;
+                    if ( compareControl is ListControl ddlCompareControl )
+                    {
+                        HiddenFieldWithClass hfFilterControlValue = new HiddenFieldWithClass
+                        {
+                            CssClass = "js-filter-compare",
+                            Value = ddlCompareControl.SelectedValue
+                        };
+
+                        hfFilterControlValue.PreRender += ( object sender, EventArgs e ) =>
+                        {
+                            hfFilterControlValue.Value = ddlCompareControl.SelectedValue;
+                        };
+
+                        row.Controls.Add( hfFilterControlValue );
+                    }
+
                     col1Class = string.Empty;
                     col2Class = "col-md-12";
                 }
@@ -682,23 +700,38 @@ namespace Rock.Field
                     filterValueControlVisible = false;
                 }
 
-                // if the CompareControl is hidden, but the ValueControl is visible, pick the appropriate ComparisonType
+
+                // if the CompareControl is hidden and not configured, but the ValueControl is visible, pick an appropriate default ComparisonType
                 if ( !ddlCompare.Visible && filterValueControlVisible )
                 {
                     if ( filterMode == FilterMode.SimpleFilter )
                     {
-                        // in FilterMode.SimpleFilter...
-                        if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes )
-                        {
-                            // ...if the compare only support EqualTo/NotEqual to, return EqualTo
-                            return ComparisonType.EqualTo.ConvertToInt().ToString();
-                        }
+                        /*
 
-                        if ( FilterComparisonType == ComparisonHelper.StringFilterComparisonTypes ||
-                            FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes )
+                        04-06-2022 MDP
+
+                        - This originally would change all Text comparisons to 'Contains' and Boolean comparisons to 'Equals'
+                        if this filter was used in FilterMode.SimpleFilter mode. This was re-discussed on 04/06/2022
+                        and decided that the comparison should keep whatever was originally configured. If nothing was
+                        configured, then we'll pick a default.
+
+                        */
+
+                        var selectedComparisonType = ddlCompare.SelectedValue?.ConvertToEnumOrNull<ComparisonType>();
+                        if ( !selectedComparisonType.HasValue )
                         {
-                            // ... if the compare is the string or list type comparison, return Contains
-                            return ComparisonType.Contains.ConvertToInt().ToString();
+                            if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes )
+                            {
+                                // ...if the compare only support EqualTo/NotEqual to, return EqualTo
+                                return ComparisonType.EqualTo.ConvertToInt().ToString();
+                            }
+
+                            if ( FilterComparisonType == ComparisonHelper.StringFilterComparisonTypes ||
+                                FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes )
+                            {
+                                // ... if the compare is the string or list type comparison, return Contains
+                                return ComparisonType.Contains.ConvertToInt().ToString();
+                            }
                         }
                     }
                 }

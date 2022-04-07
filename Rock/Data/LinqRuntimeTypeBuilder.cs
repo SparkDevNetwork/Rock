@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -44,7 +45,7 @@ namespace Rock.Data
         /// <summary>
         /// A place to store the types have already created so we don't have to recreate a type that has already been created
         /// </summary>
-        private static Dictionary<string, Type> builtTypes = new Dictionary<string, Type>();
+        private static ConcurrentDictionary<string, Type> builtTypes = new ConcurrentDictionary<string, Type>();
 
         /// <summary>
         /// Initializes the <see cref="LinqRuntimeTypeBuilder"/> class.
@@ -71,6 +72,8 @@ namespace Rock.Data
             return "LinqRuntimeType" + key.GetHashCode();
         }
 
+        private static object _lockCreateType = new object();
+
         /// <summary>
         /// Creates a Type from a list of fields and their type then returns that Type 
         /// </summary>
@@ -90,52 +93,56 @@ namespace Rock.Data
                 throw new ArgumentOutOfRangeException( "fields", "fields must have at least 1 field definition" );
             }
 
+
+            string className = GetTypeKey( fields );
             try
             {
-                string className = GetTypeKey( fields );
-
-                if ( builtTypes.ContainsKey( className ) )
+                lock ( _lockCreateType )
                 {
-                    return builtTypes[className];
-                }
-
-                TypeBuilder typeBuilder = moduleBuilder.DefineType( className, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Serializable );
-
-                foreach ( var field in fields )
-                {
-                    // make firstchar of fieldName lowercase
-                    string fieldName = field.Key.ToLower()[0] + field.Key.Substring( 1 );
-                    if ( fieldName == field.Key )
+                    if ( builtTypes.ContainsKey( className ) )
                     {
-                        throw new Exception( "Field names must start with an uppercase character" );
+                        return builtTypes[className];
                     }
 
-                    var fieldBuilder = typeBuilder.DefineField( fieldName, field.Value, FieldAttributes.Public );
+                    TypeBuilder typeBuilder = moduleBuilder.DefineType( className, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Serializable );
 
-                    // create a Property for each Field so that DataGrids can bind to the object
-                    var propertyBuilder = typeBuilder.DefineProperty( field.Key, PropertyAttributes.HasDefault, field.Value, null );
+                    foreach ( var field in fields )
+                    {
+                        // make firstchar of fieldName lowercase
+                        string fieldName = field.Key.ToLower()[0] + field.Key.Substring( 1 );
+                        if ( fieldName == field.Key )
+                        {
+                            throw new Exception( "Field names must start with an uppercase character" );
+                        }
 
-                    // The property set and property get methods require a special set of attributes.
-                    MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
+                        var fieldBuilder = typeBuilder.DefineField( fieldName, field.Value, FieldAttributes.Public );
 
-                    // Define the "get" accessor method for the property and gen IL code so its value comes from the field
-                    MethodBuilder getPropMthdBldr = typeBuilder.DefineMethod( "get_" + field.Key, getSetAttr, field.Value, Type.EmptyTypes );
+                        // create a Property for each Field so that DataGrids can bind to the object
+                        var propertyBuilder = typeBuilder.DefineProperty( field.Key, PropertyAttributes.HasDefault, field.Value, null );
 
-                    ILGenerator fieldGetIL = getPropMthdBldr.GetILGenerator();
+                        // The property set and property get methods require a special set of attributes.
+                        MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
-                    fieldGetIL.Emit( OpCodes.Ldarg_0 );
-                    fieldGetIL.Emit( OpCodes.Ldfld, fieldBuilder );
-                    fieldGetIL.Emit( OpCodes.Ret );
+                        // Define the "get" accessor method for the property and gen IL code so its value comes from the field
+                        MethodBuilder getPropMthdBldr = typeBuilder.DefineMethod( "get_" + field.Key, getSetAttr, field.Value, Type.EmptyTypes );
 
-                    propertyBuilder.SetGetMethod( getPropMthdBldr );
+                        ILGenerator fieldGetIL = getPropMthdBldr.GetILGenerator();
+
+                        fieldGetIL.Emit( OpCodes.Ldarg_0 );
+                        fieldGetIL.Emit( OpCodes.Ldfld, fieldBuilder );
+                        fieldGetIL.Emit( OpCodes.Ret );
+
+                        propertyBuilder.SetGetMethod( getPropMthdBldr );
+                    }
+
+                    builtTypes[className] = typeBuilder.CreateType();
+
+                    return builtTypes[className];
                 }
-
-                builtTypes[className] = typeBuilder.CreateType();
-
-                return builtTypes[className];
             }
-            catch
+            catch ( Exception ex )
             {
+                Rock.Model.ExceptionLogService.LogException( ex );
                 return null;
             }
         }

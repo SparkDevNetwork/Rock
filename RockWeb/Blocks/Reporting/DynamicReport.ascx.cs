@@ -337,11 +337,17 @@ namespace RockWeb.Blocks.Reporting
                                 filterControl.SetSelection( selection );
 
                                 // if the selection is the same as what is stored in the database for that DataViewFilter,
-                                // Do a GetSelection to get the selection in the current format for that filter
+                                // Do a GetSelection in AdvancedFilter mode to get the selection in the current format for that filter
                                 // This will prevent this dynamic report from thinking the selection has changed from the orig filter
                                 if ( selection == filter.Selection )
                                 {
+                                    // get the selection which would have been returned when the filter was in AdvancedFilter mode
+                                    // This would simulate Opening and Saving the dataview without making any changes.
+                                    var origFilterMode = filterControl.FilterMode;
+                                    filterControl.FilterMode = FilterMode.AdvancedFilter;
                                     var normalizedSelection = filterControl.GetSelection();
+                                    filterControl.FilterMode = origFilterMode;
+
                                     if ( normalizedSelection != filter.Selection )
                                     {
                                         // if the format of the filter.Selection has changed, update the dataViewFilter's Selection to match the current format

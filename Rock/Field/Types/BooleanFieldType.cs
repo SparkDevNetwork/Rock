@@ -525,15 +525,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
-            if ( filterMode == FilterMode.SimpleFilter )
-            {
-                // hard code to EqualTo when in SimpleFilter mode (the comparison control is not visible)
-                return ComparisonType.EqualTo.ConvertToInt().ToString();
-            }
-            else
-            {
-                return base.GetFilterCompareValue( control, filterMode );
-            }
+            /*
+
+            04-06-2022 MDP
+
+            - This originally would change all Text comparisons to 'Contains' and Boolean comparisons to 'Equals'
+            if this filter was used in FilterMode.SimpleFilter mode. This was re-discussed on 04/06/2022
+            and decided that the comparison should keep whatever was originally configured. If nothing was
+            configured, then we'll pick a default.
+
+            - This logic is done in base.GetFilterCompareValue, so we don't need any special logic here
+
+            */
+
+            return base.GetFilterCompareValue( control, filterMode );
         }
 
         /// <summary>
@@ -563,39 +568,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
-            if ( filterMode == FilterMode.SimpleFilter )
-            {
-                var values = new List<string>();
-
-                if ( filterControl != null )
-                {
-                    try
-                    {
-                        // hard code to EqualTo when in SimpleFilter mode (the comparison control is not visible)
-                        string compare = ComparisonType.EqualTo.ConvertToInt().ToString();
-                        string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
-
-                        if ( value != null )
-                        {
-                            // since SimpleFilter is limit to just IsEqual, only return FilterValues if they actually picked something
-                            values.Add( compare );
-                            values.Add( value );
-                        }
-                    }
-                    catch
-                    {
-                        // intentionally ignore error
-                    }
-                }
-
-                return values;
-            }
-            else
-            {
-                return base.GetFilterValues( filterControl, configurationValues, filterMode );
-            }
+            return base.GetFilterValues( filterControl, configurationValues, filterMode );
         }
-
 
         /// <summary>
         /// Sets the filter value value.

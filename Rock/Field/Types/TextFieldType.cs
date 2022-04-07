@@ -371,15 +371,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
-            // If this is a simple filter, only return values if something was actually entered into the filter's text field
             var values = base.GetFilterValues( filterControl, configurationValues, filterMode );
-            if ( filterMode == FilterMode.SimpleFilter &&
-                values.Count == 2 &&
-                values[0].ConvertToEnum<ComparisonType>() == ComparisonType.Contains &&
-                values[1] == "" )
-            {
-                return new List<string>();
-            }
 
             return values;
         }
@@ -392,22 +384,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
-            bool filterValueControlVisible = true;
-            var filterField = control.FirstParentControlOfType<FilterField>();
-            if ( filterField != null && filterField.HideFilterCriteria )
-            {
-                filterValueControlVisible = false;
-            }
+            /*
 
-            if ( filterMode == FilterMode.SimpleFilter && filterValueControlVisible )
-            {
-                // hard code to Contains when in SimpleFilter mode and the FilterValue control is visible
-                return ComparisonType.Contains.ConvertToInt().ToString();
-            }
-            else
-            {
-                return base.GetFilterCompareValue( control, filterMode );
-            }
+            04-06-2022 MDP
+
+            - This originally would change all Text comparisons to 'Contains' and Boolean comparisons to 'Equals'
+            if this filter was used in FilterMode.SimpleFilter mode. This was re-discussed on 04/06/2022
+            and decided that the comparison should keep whatever was originally configured. If nothing was
+            configured, then we'll pick a default.
+
+            - This logic is done in base.GetFilterCompareValue, so we don't need any special logic here
+
+            */
+
+            return base.GetFilterCompareValue( control, filterMode );
         }
 
         /// <summary>
