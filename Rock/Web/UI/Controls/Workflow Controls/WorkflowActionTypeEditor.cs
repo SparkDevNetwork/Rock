@@ -588,10 +588,13 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6 control-label-offset" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbIsActionCompletedOnSuccess.ValidationGroup = ValidationGroup;
             _cbIsActionCompletedOnSuccess.RenderControl( writer );
             _cbIsActivityCompletedOnSuccess.ValidationGroup = ValidationGroup;
             _cbIsActivityCompletedOnSuccess.RenderControl( writer );
+            writer.RenderEndTag();
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
