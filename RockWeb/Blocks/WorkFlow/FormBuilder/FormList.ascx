@@ -169,7 +169,7 @@
                                 <div id="divFormListTopPanel" runat="server" class="ml-auto">
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
                                     <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnDeleteCategory" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnDeleteCategory" data-toggle="tooltip" data-trigger="hover" data-delay="250" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
                                 </div>
                             </div>
                             <hr class="section-header-hr" />
