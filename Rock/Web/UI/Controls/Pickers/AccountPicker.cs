@@ -124,7 +124,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelectAll = new HyperLink();
             _btnSelectAll.ID = "_btnSelectAll";
-            _btnSelectAll.CssClass = "btn btn-default btn-xs js-select-all pull-right";
+            _btnSelectAll.CssClass = "btn btn-default btn-select-all btn-xs js-select-all pull-right";
             _btnSelectAll.Text = "Select All";
 
             this.Controls.Add( _btnSelectAll );

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using Rock;
 using Rock.Attribute;
@@ -84,6 +83,18 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         #endregion
 
+        #region User Preference Keys
+
+        /// <summary>
+        /// Keys to use for UserPreferences
+        /// </summary>
+        protected static class UserPreferenceKeys
+        {
+            public const string CategoryId = "CategoryId";
+        }
+
+        #endregion User Preference Keys
+
         public const string CategoryNodePrefix = "C";
 
         /// <summary>
@@ -100,7 +111,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            btnDeleteCategory.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Category.FriendlyTypeName );
         }
 
         /// <summary>
@@ -135,7 +145,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     RestParms = parms;
 
                     Category category = null;
-                    var categoryId = PageParameter( PageParameterKey.CategoryId ).AsIntegerOrNull();
+                    var categoryId = GetCategoryId();
                     if ( categoryId.HasValue )
                     {
                         category = new CategoryService( new RockContext() ).Get( categoryId.Value );
@@ -168,7 +178,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                                 break;
                             }
                         }
-
                     }
 
                     hfInitialCategoryParentIds.Value = parentIdList.AsDelimited( "," );
@@ -177,6 +186,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     ListCategoryForms();
                 }
             }
+
             // handle custom postback events
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
@@ -188,6 +198,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     if ( eventParam.Equals( "category-selected" ) )
                     {
                         hfSelectedCategory.Value = nameValue[1];
+                        SetBlockUserPreference( UserPreferenceKeys.CategoryId, nameValue[1] );
                         ListCategoryForms();
                     }
                 }
@@ -377,7 +388,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             workflowType.FormBuilderSettingsJson = formBuilderSettings.ToJson();
             if ( validationErrors.Any() )
             {
-                nbValidationError.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>",
+                nbValidationError.Text = string.Format(
+                    "Please correct the following:<ul><li>{0}</li></ul>",
                     validationErrors.AsDelimited( "</li><li>" ) );
                 nbValidationError.Visible = true;
 
@@ -394,6 +406,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
             // Create temporary state objects for the new workflow type
             var newAttributesState = new List<Rock.Model.Attribute>();
+
             // Dictionary to keep the attributes and activity types linked between the source and the target based on their guids
             var guidXref = new Dictionary<Guid, Guid>();
 
@@ -470,6 +483,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             {
                 workflowActionType.WorkflowForm.NotificationSystemCommunicationId = systemEmail.Id;
             }
+
             workflowActionType.EntityTypeId = formBuilderEntityTypeId.Value;
             workflowActionType.Name = "Form Builder";
             workflowActionType.Order = 0;
@@ -627,7 +641,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <summary>
         /// Binds the form to repeater.
         /// </summary>
-
         private void BindFormListRepeater( int categoryId )
         {
             var rockContext = new RockContext();
@@ -640,24 +653,40 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             if ( workflowTypeQry.Any() )
             {
                 btnDeleteCategory.ToolTip = "All forms and workflow types (not shown here) must be removed to enable deleting a category.";
+                btnDeleteCategory.Attributes.Remove( "onclick" );
+            }
+            else
+            {
+                btnDeleteCategory.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Category.FriendlyTypeName );
+                btnDeleteCategory.ToolTip = string.Empty;
             }
 
             workflowTypeQry = workflowTypeQry.Where( a => a.IsFormBuilder );
 
-            var sortBy = ddlSortBy.SelectedValueAsEnum<FormOrder>( FormOrder.DateCreated );
+            var sortBy = ddlSortBy.SelectedValueAsEnum<FormOrder>( FormOrder.DateCreatedOldestFirst );
+
             switch ( sortBy )
             {
-                case FormOrder.DateCreated:
+                case FormOrder.DateCreatedNewestFirst:
+                    {
+                        workflowTypeQry = workflowTypeQry.OrderByDescending( a => a.CreatedDateTime );
+                    }
+
+                    break;
+                case FormOrder.DateCreatedOldestFirst:
                     {
                         workflowTypeQry = workflowTypeQry.OrderBy( a => a.CreatedDateTime );
                     }
+
                     break;
                 case FormOrder.Name:
                     {
                         workflowTypeQry = workflowTypeQry.OrderBy( a => a.Name );
                     }
+
                     break;
-                case FormOrder.SubmissionCount:
+                case FormOrder.SubmissionCountLeastToMost:
+                case FormOrder.SubmissionCountMostToLeast:
                 default:
                     break;
             }
@@ -678,9 +707,13 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 formResult.SubmissionCount = workflowService.Queryable().Where( a => a.WorkflowTypeId == workflowType.Id ).Count();
             }
 
-            if ( sortBy == FormOrder.SubmissionCount )
+            if ( sortBy == FormOrder.SubmissionCountLeastToMost )
             {
                 formResults = formResults.OrderBy( a => a.SubmissionCount ).ToList();
+            }
+            else if ( sortBy == FormOrder.SubmissionCountMostToLeast )
+            {
+                formResults = formResults.OrderByDescending( a => a.SubmissionCount ).ToList();
             }
 
             rForms.DataSource = formResults;
@@ -770,6 +803,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             if ( workflowType != null )
             {
                 var existingActivityTypes = workflowType.ActivityTypes.OrderBy( a => a.Order ).ToList();
+
                 // Load the state objects for the source workflow type
                 var existingWorkflowTypeAttributes = LoadWorkflowTypeAttributeForCopy( workflowType, rockContext );
                 var existingWorkflowTypeActivityAttributes = LoadWorkflowTypeActivityAttributeForCopy( existingActivityTypes, rockContext );
@@ -784,6 +818,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
                 // Create temporary state objects for the new workflow type
                 var newAttributesState = new List<Rock.Model.Attribute>();
+
                 // Dictionary to keep the attributes and activity types linked between the source and the target based on their guids
                 var guidXref = new Dictionary<Guid, Guid>();
 
@@ -809,6 +844,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                         guidXref.Add( qualifier.Guid, newQualifier.Guid );
                     }
                 }
+
                 // Save the workflow type attributes
                 SaveAttributes( new Workflow().TypeId, "WorkflowTypeId", newWorkflowType.Id.ToString(), newAttributesState, rockContext );
 
@@ -849,6 +885,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                             guidXref.Add( qualifier.Guid, newQualifier.Guid );
                         }
                     }
+
                     // Save ActivityType Attributes
                     SaveAttributes( new WorkflowActivity().TypeId, "ActivityTypeId", newActivityType.Id.ToString(), newActivityAttributes, rockContext );
 
@@ -866,6 +903,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                         {
                             newActionType.CriteriaAttributeGuid = guidXref[actionType.CriteriaAttributeGuid.Value];
                         }
+
                         Guid criteriaAttributeGuid = actionType.CriteriaValue.AsGuid();
                         if ( !criteriaAttributeGuid.IsEmpty() &&
                             guidXref.ContainsKey( criteriaAttributeGuid ) )
@@ -947,6 +985,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                                     newActionType.SetAttributeValue( attributeKey, value );
                                 }
                             }
+
                             newActionType.SaveAttributeValues( rockContext );
                         }
                     }
@@ -1027,6 +1066,17 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             return activityAttributes;
         }
 
+        private int? GetCategoryId()
+        {
+            var categoryId = PageParameter( PageParameterKey.CategoryId ).AsIntegerOrNull();
+            if ( !categoryId.HasValue )
+            {
+                categoryId = GetBlockUserPreference( UserPreferenceKeys.CategoryId ).AsIntegerOrNull();
+            }
+
+            return categoryId;
+        }
+
         #endregion
 
         #region Block Specific Enums
@@ -1038,22 +1088,34 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         public enum FormOrder
         {
             /// <summary>
-            /// Date Created
+            /// Date Created (newest first)
             /// </summary>
-            [Description( "Date Created" )]
-            DateCreated = 0,
+            [Description( "Date Created (newest first)" )]
+            DateCreatedNewestFirst = 0,
+
+            /// <summary>
+            /// Date Created (oldest first)
+            /// </summary>
+            [Description( "Date Created (oldest first)" )]
+            DateCreatedOldestFirst = 1,
 
             /// <summary>
             /// Name
             /// </summary>
             [Description( "Name" )]
-            Name = 1,
+            Name = 2,
 
             /// <summary>
-            /// Submission Count
+            /// Submission Count (least to most)
             /// </summary>
-            [Description( "Submission Count" )]
-            SubmissionCount = 2
+            [Description( "Submission Count (least to most)" )]
+            SubmissionCountLeastToMost = 3,
+
+            /// <summary>
+            /// Submission Count (most to least)
+            /// </summary>
+            [Description( "Submission Count (most to least)" )]
+            SubmissionCountMostToLeast = 4,
         }
 
         #endregion
@@ -1136,6 +1198,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             }
         }
 
-        # endregion Supporting Classes
+        #endregion Supporting Classes
     }
 }
